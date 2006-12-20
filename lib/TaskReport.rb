@@ -1,3 +1,14 @@
+#
+# ReportTable.rb - TaskJuggler
+#
+# Copyright (c) 2006 by Chris Schlaeger <cs@kde.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# $Id$
+#
 require 'ReportTable'
 
 class TaskReport
@@ -9,7 +20,9 @@ class TaskReport
   end
 
   def generate
-    @descr.columns.each { |col| @table.addColumn(ReportColumn.new(col)) }
+    @descr.columns.each do |col|
+      @table.addColumn(ReportColumn.new(@project.tasks.attributeName(col)))
+    end
 
     taskList = PropertyList.new(@project.tasks)
     #taskList.delete_if { |task| !task.leaf? || task['milestone', scIdx] }

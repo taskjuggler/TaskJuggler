@@ -1,6 +1,24 @@
+#
+# PropertySet.rb - TaskJuggler
+#
+# Copyright (c) 2006 by Chris Schlaeger <cs@kde.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# $Id$
+#
 require 'AttributeDefinition'
 require 'PropertyTreeNode'
 
+# A PropertySet is a collection of properties of the same kind. Properties can
+# be tasks, resources, scenarios, shifts or accounts. All properties of the
+# same kind have the same set of attributes. Some attributes are predefined,
+# but the attribute set can be extended by the user. E.g. a task has the
+# predefined attribute 'start' and 'end' date. The user can extend tasks with
+# a user defined attribute like an URL that contains more details about the
+# task.
 class PropertySet
 
   attr_reader :project
@@ -8,7 +26,7 @@ class PropertySet
   def initialize(project, flatNamespace)
     if $DEBUG && project.nil?
       raise "project parameter may not be NIL"
-    end  
+    end
     @flatNamespace = flatNamespace
     @project = project
     @attributeDefinitions = Hash.new
@@ -32,6 +50,22 @@ class PropertySet
       @properties[property.fullId] = property
     else
       @properties[property.id] = property
+    end
+  end
+
+  # Returns the name (human readable description) of the attribute with the
+  # Id specified by _attrId_.
+  def attributeName(attrId)
+    # Some attributes are hardwired into the properties. These need to be
+    # treated separately.
+    if attrId == "id"
+      "ID"
+    elsif attrId == "name"
+      "Name"
+    elsif attrId == "seqno"
+      "Seq. No."
+    else
+      @attributeDefinitions[attrId].name
     end
   end
 
