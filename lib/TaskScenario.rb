@@ -64,6 +64,19 @@ class TaskScenario < ScenarioData
     end
   end
 
+  def implicitXref
+    # Automatically detect and mark task that have no duration criteria but
+    # either proper start or end specification.
+    return if !@property.leaf? || a('milestone')
+
+    hasDurationSpec = a('length') != 0 || a('duration') != 0 || a('effort') != 0
+    hasStartSpec = !(a('start').nil? && a('depends').empty?)
+    hasEndSpec = !(a('end').nil? && a('precedes').empty?)
+
+    @property['milestone', @scenarioIdx] =
+      !hasDurationSpec && (hasStartSpec ^ hasEndSpec)
+  end
+
   def preScheduleCheck
   end
 
@@ -86,18 +99,20 @@ class TaskScenario < ScenarioData
   end
 
   def readyForScheduling?
-    return false if a('scheduled') || a('milestone')
+    return false if a('scheduled')
 
     if a('forward')
       if !a('start').nil? &&
-          (a('effort') != 0 || a('length') != 0 || a('duration') != 0) &&
-          a('end').nil?
+         (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
+          a('milestone')) &&
+         a('end').nil?
         return true
       end
     else
       if !a('end').nil? &&
-         (a('effort') != 0 || a('length') != 0 || a('duration') != 0) &&
-          a('start').nil?
+         (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
+          a('milestone')) &&
+         a('start').nil?
         return true
       end
     end
@@ -158,8 +173,18 @@ class TaskScenario < ScenarioData
         @property['scheduled', @scenarioIdx] = true
         return true
       end
+    elsif a('milestone')
+      puts "Setting mileston @property.id"
+      if a('forward')
+        @property['end', @scenarioIdx] = a('start')
+        propagateEnd
+      else
+        @property['start', @scenarioIdx] = a('end')
+        propagateStart
+      end
+    else
+      #TODO: Handle start/end task
     end
-
   end
 
   def propagateStart(notUpwards = true)

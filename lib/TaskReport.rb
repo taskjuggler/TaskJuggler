@@ -25,7 +25,6 @@ class TaskReport
     end
 
     taskList = PropertyList.new(@project.tasks)
-    #taskList.delete_if { |task| !task.leaf? || task['milestone', scIdx] }
     taskList.setSorting([ [ 'start', true, 0 ],
                           [ 'seqno', true, -1 ] ])
 

@@ -28,6 +28,10 @@ class TjTime
     TjTime.new(Time.now)
   end
 
+  def TjTime.local(*args)
+    TjTime.new(Time.local(*args))
+  end
+
   def secondsOfDay(tz = nil)
     (@time.to_i + @time.gmt_offset) % (60 * 60 * 24)
   end

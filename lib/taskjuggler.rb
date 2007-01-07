@@ -35,7 +35,7 @@ taskReport = HTMLTaskReport.new(prj, "TaskReport.html")
 element = ReportElement.new(taskReport)
 element.columns = %w( name start end )
 
-prj.scheduleAllScenarios
+prj.schedule
 
 prj.generateReports
 

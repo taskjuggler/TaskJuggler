@@ -147,7 +147,7 @@ class Project
     @resources[id]
   end
 
-  def scheduleAllScenarios
+  def schedule
     begin
       @scenarios.each do |sc|
         # Skip disabled scenarios
@@ -161,12 +161,6 @@ class Project
         AttributeBase.setMode(1)
 
         prepareScenario(scIdx)
-        @tasks.each do |task|
-          task.Xref(scIdx)
-        end
-        @tasks.each do |task|
-          task.preScheduleCheck(scIdx)
-        end
 
         # Now change to mode 2 so all values that are modified are marked
         # as computed.
@@ -192,7 +186,8 @@ class Project
 
   ####################################################################
   # The following functions are not intended to be called from outside
-  # the TaskJuggler library.
+  # the TaskJuggler library. There is no guarantee that these
+  # functions will be usable or present in future releases.
   ####################################################################
 
   def addScenario(scenario)
@@ -245,16 +240,25 @@ protected
     @tasks.each do |task|
       task.prepareScenario(scIdx)
     end
+    @tasks.each do |task|
+      task.Xref(scIdx)
+    end
+    @tasks.each do |task|
+      task.implicitXref(scIdx)
+    end
+    @tasks.each do |task|
+      task.preScheduleCheck(scIdx)
+    end
   end
 
   def finishScenario(scIdx)
   end
 
   def scheduleScenario(scIdx)
-    # The scheduler directly only cares for leaf tasks that are not
-    # milestones. These are put in the allWorkItems list.
+    # The scheduler directly only cares for leaf tasks. These are put in the
+    # allWorkItems list.
     allWorkItems = PropertyList.new(@tasks)
-    allWorkItems.delete_if { |task| !task.leaf? || task['milestone', scIdx] }
+    allWorkItems.delete_if { |task| !task.leaf? }
     allWorkItems.setSorting([ [ 'priority', true, scIdx ],
                               [ 'seqno', true, -1 ] ])
 
