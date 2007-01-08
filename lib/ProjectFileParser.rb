@@ -1,3 +1,15 @@
+#
+# ProjectFileParser.rb - TaskJuggler
+#
+# Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# $Id$
+#
+
 require 'Project'
 require 'TextParser'
 
@@ -49,7 +61,28 @@ class ProjectFileParser < TextParser
     newRule('projectBodyAttributes')
     repeatable
     optional
+    newPattern(%w( !scenario ))
     newPattern(%w( !timezone ))
+
+    newRule('scenario')
+    newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {
+      @scenario = @scenario.parent
+    })
+
+    newRule('scenarioHeader')
+    newPattern(%w( _scenario $ID $STRING ), Proc.new {
+      @scenario = Scenario.new(@project, @val[1], @val[2], @scenario)
+    })
+
+    newRule('scenarioBody')
+    optional
+    newPattern(%w( _{ !scenarioAttributes _} ))
+
+    newRule('scenarioAttributes')
+    optional
+    repeatable
+    newPattern(%w( !scenario ))
+    # Other attributes will be added automatically.
 
     newRule('timezone')
     newPattern(%w( _timezone $STRING ))
@@ -78,6 +111,16 @@ class ProjectFileParser < TextParser
     repeatable
     optional
     newPattern(%w( !resource ))
+    newPattern(%w( !resourceScenarioAttributes ))
+    newPattern(%w( $ID_WITH_COLON !taskScenarioAttributes ), Proc.new {
+      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
+        error("Unknown scenario: @val[0]")
+      end
+    })
+    # Other attributes will be added automatically.
+
+    newRule('resourceScenarioAttributes')
+    # Other attributes will be added automatically.
 
     newRule('task')
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
@@ -104,8 +147,10 @@ class ProjectFileParser < TextParser
         error("Unknown scenario: @val[0]")
       end
     })
+    # Other attributes will be added automatically.
 
     newRule('taskScenarioAttributes')
+    # Other attributes will be added automatically.
     newPattern(%w( _start $DATE ), Proc.new {
       @task['start', @scenarioIdx] = @val[1]
       @scenarioIdx = 0
@@ -118,6 +163,8 @@ class ProjectFileParser < TextParser
     newRule('reportHeader')
     newPattern(%w( !reportType $STRING ), Proc.new {
       case @val[0]
+      when 'export'
+        @report = ExportReport.new(@project, @val[1])
       when 'htmltaskreport'
         @report = HTMLTaskReport.new(@project, @val[1])
         @reportElement = ReportElement.new(@report)
@@ -126,6 +173,9 @@ class ProjectFileParser < TextParser
     })
 
     newRule('reportType')
+    newPattern(%w( _export ), Proc.new {
+      @val[0]
+    })
     newPattern(%w( _htmltaskreport ), Proc.new {
       @val[0]
     })
@@ -138,6 +188,8 @@ class ProjectFileParser < TextParser
     optional
     repeatable
     newPattern(%w( _foo ))
+
+    updateTransitions
   end
 
   def open(masterFile)
@@ -161,17 +213,9 @@ class ProjectFileParser < TextParser
   end
 
   def addAttribute(property, attributeName, attributeType)
-    @cr = @rules[property + "Body"]
+    @cr = @rules[property + "Attributes"]
     addPattern([ "_" + attributeName, "!" + attributeType ])
   end
 
 end
 
-parser = ProjectFileParser.new
-parser.updateTransitions
-parser.open('test.prj')
-project = parser.parse('project')
-parser.close
-project.schedule
-project.generateReports
-puts project.task('foo1')['end', 0]
