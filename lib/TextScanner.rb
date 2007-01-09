@@ -20,10 +20,6 @@ class TextScanner
   def initialize(masterFile)
     @masterFile = masterFile
     @file = nil
-
-    keys = %w( project task resource )
-    @keywords = Hash.new
-    keys.each { |key| @keywords[key] = true }
   end
 
   def open
@@ -50,16 +46,16 @@ class TextScanner
     # Start processing characters from the input.
     while c = nextChar
       case c
-        when 32, ?\n, ?\t
-	        if tok = readBlanks(c)
-	          return tok
-          end
-        when ?0..?9
-          return readNumber(c)
-        when ?"
-          return readString(c)
-        when ?a..?z, ?A..?Z, ?_
-          return readId(c)
+      when 32, ?\n, ?\t
+	      if tok = readBlanks(c)
+	        return tok
+        end
+      when ?0..?9
+        return readNumber(c)
+      when ?"
+        return readString(c)
+      when ?a..?z, ?A..?Z, ?_
+        return readId(c)
       else
         str = ""
         str << c
@@ -126,7 +122,7 @@ private
         raise TjException.new, "Year must be between 1970 and 2030"
       end
 
-      month = readDigits
+      month = readDigits.to_i
       if month < 1 || month > 12
         raise TjException.new, "Month must be between 1 and 12"
       end
@@ -134,12 +130,16 @@ private
         raise TjException.new, "Corrupted date"
       end
 
-      day = readDigits
+      day = readDigits.to_i
       if day < 1 || day > 31
         raise TjException.new, "Day must be between 1 and 31"
       end
 
       return [ 'DATE', TjTime.local(year, month, day, 0, 0 ,0, 0) ]
+    elsif c == ?.
+      frac = readDigits
+
+      return [ 'FLOAT', token.to_f + frac.to_f / (10.0 ** frac.length) ]
     else
       returnChar(c)
     end
@@ -183,7 +183,7 @@ private
     end
     # Push back the non-digit that terminated the digits.
     returnChar(c)
-    token.to_i
+    token
   end
 
 end

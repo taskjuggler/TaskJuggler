@@ -174,7 +174,7 @@ class TaskScenario < ScenarioData
         return true
       end
     elsif a('milestone')
-      puts "Setting mileston @property.id"
+      puts "Setting milestone #{@property.id}"
       if a('forward')
         @property['end', @scenarioIdx] = a('start')
         propagateEnd

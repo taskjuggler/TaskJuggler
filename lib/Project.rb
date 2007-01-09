@@ -41,8 +41,8 @@ class Project
       'id' => id,
       'name' => name,
       'version' => version,
-      'dailyWorkingHours' => 8.0,
-      'yearlyWorkingDays' => 260.714,
+      'dailyworkinghours' => 8.0,
+      'yearlyworkingdays' => 260.714,
       'scheduleGranularity' => 3600,
       'weekStartsMonday' => true,
       'workingHours' => WorkingHours.new,
@@ -214,7 +214,7 @@ class Project
   end
 
   def converToDailyLoad(seconds)
-    seconds / (@attributes['dailyWorkingHours'] * 3600)
+    seconds / (@attributes['dailyworkinghours'] * 3600)
   end
 
   def scoreboardSize

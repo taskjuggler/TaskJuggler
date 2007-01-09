@@ -47,16 +47,25 @@ class ProjectFileParser < TextParser
     newPattern([ '_ - ', '$DATE' ], Proc.new {
       [ 0, @val[1] ]
     })
-    newPattern(%w( _+ !duration ), Proc.new {
+    newPattern(%w( _+ !intervalDuration ), Proc.new {
       [ 1, @val[1] ]
     })
 
-    newRule('duration')
-    newPattern(%w( $INTEGER $ID ))
+    newRule('intervalDuration')
+    newPattern(%w( $INTEGER !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * 24, # days
+                      60 * 60 * 24 * 7, # weeks
+                      60 * 60 * 24 * 30.4167, # months
+                      60 * 60 * 24 * 365 # years
+                     ]
+      (@val[0] * convFactors[@val[1]]).to_i
+    })
 
     newRule('projectBody')
     optional
-    newPattern(%w( _{  !projectBodyAttributes _} ))
+    newPattern(%w( _{ !projectBodyAttributes _} ))
 
     newRule('projectBodyAttributes')
     repeatable
@@ -142,20 +151,99 @@ class ProjectFileParser < TextParser
     optional
     newPattern(%w( !task ))
     newPattern(%w( !taskScenarioAttributes ))
-    newPattern(%w( $ID_WITH_COLON !taskScenarioAttributes ), Proc.new {
-      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error("Unknown scenario: @val[0]")
-      end
+    newPattern(%w( !scenarioId !taskScenarioAttributes ), Proc.new {
+      @scenarioIdx = 0
     })
     # Other attributes will be added automatically.
 
     newRule('taskScenarioAttributes')
-    # Other attributes will be added automatically.
-    newPattern(%w( _start $DATE ), Proc.new {
-      @task['start', @scenarioIdx] = @val[1]
-      @scenarioIdx = 0
+    newPattern(%w( _duration !number !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * 24, # days
+                      60 * 60 * 24 * 7, # weeks
+                      60 * 60 * 24 * 30.4167, # months
+                      60 * 60 * 24 * 365 # years
+                     ]
+      @task['duration', @scenarioIdx] =
+        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
     })
-    newPattern(%w( _end $DATE ))
+    newPattern(%w( _effort !number !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * @project['dailyworkinghours'], # days
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 521429), # weeks
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 12), # months
+                      60 * 60 * @project['dailyworkinghours'] *
+                      @project['yearlyworkingdays'] # years
+                    ]
+      @task['effort', @scenarioIdx] =
+        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
+    })
+    newPattern(%w( _end !valDate ), Proc.new {
+      @task['end', @scenarioIdx] = @val[1]
+      @task['forward'] = false
+    })
+    newPattern(%w( _length !number !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * @project['dailyworkinghours'], # days
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 521429), # weeks
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 12), # months
+                      60 * 60 * @project['dailyworkinghours'] *
+                      @project['yearlyworkingdays'] # years
+                    ]
+      @task['length', @scenarioIdx] =
+        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
+    })
+    newPattern(%w( _priority $INTEGER ), Proc.new {
+      if @val[1] < 0 || @val[1] > 1000
+        error("Priority must have a value between 0 and 1000")
+      end
+    })
+    newPattern(%w( _start !valDate), Proc.new {
+      @task['start', @scenarioIdx] = @val[1]
+      @task['forward', @scenarioIdx] = true
+    })
+    # Other attributes will be added automatically.
+
+    newRule('durationUnit')
+    newPattern(%w( $ID ), Proc.new {
+      units = [ 'min', 'h', 'd', 'w', 'm', 'y' ]
+      res = units.index(@val[0])
+      if res.nil?
+        error("Unit must be one of #{units.join(', ')}")
+      end
+      res
+    })
+
+    newRule('number')
+    newPattern(%w( $INTEGER ), Proc.new {
+      @val[0]
+    })
+    newPattern(%w( $FLOAT ), Proc.new {
+      @val[0]
+    })
+
+    newRule('valDate')
+    newPattern(%w( $DATE ), Proc.new {
+      if @val[0] < @project['start'] || @val[0] > @project['end']
+        error("Date must be within the project time frame " +
+          "#{@project['start']} +  - #{@project['end']}")
+      end
+      @val[0]
+    })
+
+    newRule('scenarioId')
+    newPattern(%w( $ID_WITH_COLON ), Proc.new {
+      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
+        error("Unknown scenario: @val[0]")
+      end
+    })
 
     newRule('report')
     newPattern(%w( !reportHeader !reportBody ))
@@ -188,8 +276,6 @@ class ProjectFileParser < TextParser
     optional
     repeatable
     newPattern(%w( _foo ))
-
-    updateTransitions
   end
 
   def open(masterFile)
