@@ -72,6 +72,20 @@ class ProjectFileParser < TextParser
     optional
     newPattern(%w( !scenario ))
     newPattern(%w( !timezone ))
+    newPattern(%w( _dailyworkinghours !number ), Proc.new {
+      @project['dailyworkinghours'] = @val[1]
+    })
+    newPattern(%w( _yearlyworkingdays !number ), Proc.new {
+      @project['yearlyworkingdays'] = @val[1]
+    })
+    newPattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
+        Proc.new {
+      @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
+    })
+    newPattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
+        Proc.new {
+      @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
+    })
 
     newRule('scenario')
     newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {

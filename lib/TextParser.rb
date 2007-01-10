@@ -49,6 +49,8 @@ class TextParser
   # TextParser@repeatable will then implicitely operate on the most recently
   # added rule.
   def newRule(name)
+    raise "Fatal Error: Rule #{name} already exists" if @rules.has_key?(name)
+
     @rules[name] = @cr = TextParserRule.new(name)
   end
 

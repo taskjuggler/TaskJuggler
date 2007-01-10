@@ -22,6 +22,7 @@ require 'StringAttribute'
 require 'TaskListAttribute'
 require 'ResourceListAttribute'
 require 'WorkingHoursAttribute'
+require 'RealFormat'
 require 'PropertyList'
 require 'TaskDependency'
 require 'Scenario'
@@ -41,14 +42,22 @@ class Project
       'id' => id,
       'name' => name,
       'version' => version,
+      'currency' => "EUR",
+      'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
       'dailyworkinghours' => 8.0,
-      'yearlyworkingdays' => 260.714,
+      'end' => nil,
+      'now' => TjTime.new,
+      'numberformat' => RealFormat.new([ '-', '', '', ',', 2]),
+      'priority' => 500,
       'scheduleGranularity' => 3600,
+      'shorttimeformat' => "%H:%M",
+      'start' => nil,
+      'timeformat' => "%Y-%m-%d",
+      'timezone' => nil,
+      'weekstartsmonday' => true,
       'weekStartsMonday' => true,
       'workingHours' => WorkingHours.new,
-      'priority' => 500,
-      'start' => nil,
-      'end' => nil
+      'yearlyworkingdays' => 260.714
     }
 
     @scenarios = PropertySet.new(self, true)
