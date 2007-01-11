@@ -43,11 +43,11 @@ class WorkingHours
       raise "dayOfWeek out of range: #{dayOfWeek}"
     end
     intervals.each do |iv|
-      if iv[0] < 0 || iv[0] > 24 * 60 * 60 ||
-         iv[1] < 0 || iv[1] > 24 * 60 * 60
+      if iv[0] < 0 || iv[0] >= 24 * 60 * 60 ||
+         iv[1] < 0 || iv[1] >= 24 * 60 * 60
         raise "Time interval has illegal values: #{iv[0]} - #{iv[1]}"
       end
-      if iv[1] > iv[0]
+      if iv[0] >= iv[1]
         raise "Interval end time must be larger than start time"
       end
     end

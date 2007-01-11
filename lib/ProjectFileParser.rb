@@ -17,6 +17,9 @@ class ProjectFileParser < TextParser
 
   def initialize
     super
+
+    @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON )
+
     newRule('project')
     newPattern(%w( !projectHeader !projectBody !properties ), Proc.new {
       @val[0]
@@ -70,23 +73,74 @@ class ProjectFileParser < TextParser
     newRule('projectBodyAttributes')
     repeatable
     optional
-    newPattern(%w( !scenario ))
-    newPattern(%w( !timezone ))
-    newPattern(%w( _dailyworkinghours !number ), Proc.new {
-      @project['dailyworkinghours'] = @val[1]
-    })
-    newPattern(%w( _yearlyworkingdays !number ), Proc.new {
-      @project['yearlyworkingdays'] = @val[1]
-    })
     newPattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
         Proc.new {
       @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
+    })
+    newPattern(%w( _currency $STRING ), Proc.new {
+      @project['currency'] = @val[1]
+    })
+    newPattern(%w( _dailyworkinghours !number ), Proc.new {
+      @project['dailyworkinghours'] = @val[1]
+    })
+    newPattern(%w( _now $DATE ), Proc.new {
+      @project['now'] = @val[1]
     })
     newPattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
         Proc.new {
       @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
     })
+    newPattern(%w( !scenario ))
+    newPattern(%w( _shorttimeformat $STRING ), Proc.new {
+      @project['shorttimeformat'] = @val[1]
+    })
+    newPattern(%w( _timeformat $STRING ), Proc.new {
+      @project['timeformat'] = @val[1]
+    })
+    newPattern(%w( !timezone ), Proc.new {
+      @project['timezone'] = @val[1]
+    })
+    newPattern(%w( _timingresolution !calendarDuration ), Proc.new {
+      error('Timing resolution must be at least 5 min.') if @val[1] < 60 * 5
+      error('Timing resolution must be 1 hour or less.') if @val[1] > 60 * 60
+      @project['scheduleGranularity'] = @val[1]
+    })
+    newPattern(%w( _weekstartsmonday ), Proc.new {
+      @project['weekstartsmonday'] = true
+    })
+    newPattern(%w( _weekstartssunday ), Proc.new {
+      @project['weekstartsmonday'] = false
+    })
+    newPattern(%w( _yearlyworkingdays !number ), Proc.new {
+      @project['yearlyworkingdays'] = @val[1]
+    })
 
+    newRule('calendarDuration')
+    newPattern(%w( !number !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * 24, # days
+                      60 * 60 * 24 * 7, # weeks
+                      60 * 60 * 24 * 30.4167, # months
+                      60 * 60 * 24 * 365 # years
+                     ]
+      (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
+    })
+
+    newRule('workingDuration')
+    newPattern(%w( !number !durationUnit ), Proc.new {
+      convFactors = [ 60, # minutes
+                      60 * 60, # hours
+                      60 * 60 * @project['dailyworkinghours'], # days
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 52.1429), # weeks
+                      60 * 60 * @project['dailyworkinghours'] *
+                      (@project['yearlyworkingdays'] / 12), # months
+                      60 * 60 * @project['dailyworkinghours'] *
+                      @project['yearlyworkingdays'] # years
+                    ]
+      (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
+    })
     newRule('scenario')
     newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {
       @scenario = @scenario.parent
@@ -112,13 +166,83 @@ class ProjectFileParser < TextParser
 
     newRule('properties')
     repeatable
+    newPattern(%w( !workinghours ))
     newPattern(%w( !resource ))
     newPattern(%w( !task ))
     newPattern(%w( !report ))
 
+    newRule('workinghours')
+    newPattern(%w( _workinghours !listOfDays !listOfTimes), Proc.new {
+      wh = @resource.nil? ? @project['workinghours'] : @resource['workinghours']
+      0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+    })
+
+    newRule('listOfDays')
+    newPattern(%w( !weekDayInterval !moreListOfDays), Proc.new {
+      weekDays = Array.new(7, false)
+      ([ @val[0] ] + @val[1]).each do |dayList|
+        0.upto(6) { |i| weekDays[i] = true if dayList[i] }
+      end
+    })
+
+    newRule('moreListOfDays')
+    repeatable
+    optional
+    newPattern(%w( _, !weekDayInterval ), Proc.new {
+      @val[1]
+    })
+
+    newRule('weekDayInterval')
+    newPattern(%w( $ID !weekDayIntervalEnd ), Proc.new {
+      def weekDay(name)
+        names = %w( sun mon tue wed thu fri sat )
+        if (day = names.index(@val[0])).nil?
+          error("Weekday name expected (#{names.join(', ')})")
+        end
+        day
+      end
+
+      weekdays = Array.new(7, false)
+      if @val[1].nil?
+        weekdays[weekDay(@val[0])] = true
+      else
+        first = weekDay(@val[0])
+        last = weekDay(@val[1])
+        first.upto(last + 7) { |i| weekdays[i % 7] = true }
+      end
+
+      weekdays
+    })
+
+    newRule('weekDayIntervalEnd')
+    optional
+    newPattern([ '_ - ', '$ID' ], Proc.new {
+      @val[1]
+    })
+
     newRule('resource')
     newPattern(%w( !resourceHeader !resourceBody ), Proc.new {
        @resource = @resource.parent
+    })
+
+    newRule('listOfTimes')
+    newPattern(%w( !timeInterval !moreTimeIntervals ), Proc.new {
+      [ @val[0] ] + @val[1]
+    })
+
+    newRule('timeInterval')
+    newPattern([ '$TIME', '_ - ', '$TIME' ], Proc.new {
+      if @val[0] >= @val[2]
+        error("End time of interval must be larger than start time")
+      end
+      [ @val[0], @val[2] ]
+    })
+
+    newRule('moreTimeIntervals')
+    repeatable
+    optional
+    newPattern(%w( _, !timeInterval ), Proc.new {
+      @val[1]
     })
 
     newRule('resourceHeader')
@@ -140,9 +264,11 @@ class ProjectFileParser < TextParser
         error("Unknown scenario: @val[0]")
       end
     })
+    newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.
 
     newRule('resourceScenarioAttributes')
+    newPattern(%w( _foo ))
     # Other attributes will be added automatically.
 
     newRule('task')
@@ -171,48 +297,21 @@ class ProjectFileParser < TextParser
     # Other attributes will be added automatically.
 
     newRule('taskScenarioAttributes')
-    newPattern(%w( _duration !number !durationUnit ), Proc.new {
-      convFactors = [ 60, # minutes
-                      60 * 60, # hours
-                      60 * 60 * 24, # days
-                      60 * 60 * 24 * 7, # weeks
-                      60 * 60 * 24 * 30.4167, # months
-                      60 * 60 * 24 * 365 # years
-                     ]
-      @task['duration', @scenarioIdx] =
-        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
+    newPattern(%w( _depends !taskList ), Proc.new {
+      @task['depends', @scenarioIdx] = @val[1]
     })
-    newPattern(%w( _effort !number !durationUnit ), Proc.new {
-      convFactors = [ 60, # minutes
-                      60 * 60, # hours
-                      60 * 60 * @project['dailyworkinghours'], # days
-                      60 * 60 * @project['dailyworkinghours'] *
-                      (@project['yearlyworkingdays'] / 521429), # weeks
-                      60 * 60 * @project['dailyworkinghours'] *
-                      (@project['yearlyworkingdays'] / 12), # months
-                      60 * 60 * @project['dailyworkinghours'] *
-                      @project['yearlyworkingdays'] # years
-                    ]
-      @task['effort', @scenarioIdx] =
-        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
+    newPattern(%w( _duration !calendarDuration ), Proc.new {
+      @task['duration', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _effort !workingDuration ), Proc.new {
+      @task['effort', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _end !valDate ), Proc.new {
       @task['end', @scenarioIdx] = @val[1]
       @task['forward'] = false
     })
-    newPattern(%w( _length !number !durationUnit ), Proc.new {
-      convFactors = [ 60, # minutes
-                      60 * 60, # hours
-                      60 * 60 * @project['dailyworkinghours'], # days
-                      60 * 60 * @project['dailyworkinghours'] *
-                      (@project['yearlyworkingdays'] / 521429), # weeks
-                      60 * 60 * @project['dailyworkinghours'] *
-                      (@project['yearlyworkingdays'] / 12), # months
-                      60 * 60 * @project['dailyworkinghours'] *
-                      @project['yearlyworkingdays'] # years
-                    ]
-      @task['length', @scenarioIdx] =
-        (@val[1] * convFactors[@val[2]] / @project['scheduleGranularity']).to_i
+    newPattern(%w( _length !workingDuration ), Proc.new {
+      @task['length', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
@@ -224,6 +323,23 @@ class ProjectFileParser < TextParser
       @task['forward', @scenarioIdx] = true
     })
     # Other attributes will be added automatically.
+
+    newRule('taskList')
+    newPattern(%w( !taskId !moreTasks ), Proc.new {
+      [ TaskDependency.new(@val[0]) ] + @val[1]
+    })
+
+    newRule('taskId')
+    newPattern(%w( $ID ), Proc.new {
+      @val[0]
+    })
+
+    newRule('moreTasks')
+    repeatable
+    optional
+    newPattern(%w( _, !taskList ), Proc.new {
+      @val[1]
+    })
 
     newRule('durationUnit')
     newPattern(%w( $ID ), Proc.new {

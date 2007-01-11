@@ -16,6 +16,7 @@ class TaskDependency
 
   def initialize(taskId)
     @taskId = taskId
+    @task = nil
     @gapDuration = 0
     @gapLength = 0
   end

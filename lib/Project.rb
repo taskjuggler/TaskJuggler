@@ -46,7 +46,7 @@ class Project
       'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
       'dailyworkinghours' => 8.0,
       'end' => nil,
-      'now' => TjTime.new,
+      'now' => TjTime.now,
       'numberformat' => RealFormat.new([ '-', '', '', ',', 2]),
       'priority' => 500,
       'scheduleGranularity' => 3600,
@@ -56,7 +56,7 @@ class Project
       'timezone' => nil,
       'weekstartsmonday' => true,
       'weekStartsMonday' => true,
-      'workingHours' => WorkingHours.new,
+      'workinghours' => WorkingHours.new,
       'yearlyworkingdays' => 260.714
     }
 
@@ -92,7 +92,7 @@ class Project
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
       [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-        @attributes['workingHours'] ],
+        @attributes['workinghours'] ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
       [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0],
       [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ]

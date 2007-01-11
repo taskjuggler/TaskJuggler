@@ -25,7 +25,8 @@ require 'TextParserStackElement'
 #
 # This class is just a base class. A complete parser would derive from this
 # class and implement the rule set and the functions _nextToken()_ and
-# _returnToken()_.
+# _returnToken()_. It also needs to set the array _variables_ to declare all
+# variables ($SOMENAME) that the scanner may deliver.
 #
 # To describe the syntax the functions TextParser#newRule,
 # TextParser#newPattern, TextParser#optional and
@@ -39,6 +40,7 @@ class TextParser
 
   def initialize
     @rules = { }
+    @variables = []
     @cr = nil
     @@debug = 0
   end
@@ -85,7 +87,10 @@ class TextParser
   # added and before the next call to TextParser#parse.
   def updateParserTables
     @rules.each_value { |rule| rule.transitions = {} }
-    @rules.each_value { |rule| getTransitions(rule) }
+    @rules.each_value do |rule|
+      getTransitions(rule)
+      checkRule(rule)
+    end
   end
 
   # To parse the input this function needs to be called with the name of the
@@ -157,6 +162,30 @@ private
     end
     # Store the list of found transitions with the rule.
     rule.transitions = transitions.clone
+  end
+
+  def checkRule(rule)
+    if rule.patterns.empty?
+      raise "Rule #{rule.name} must have at least one pattern"
+    end
+
+    rule.patterns.each do |pat|
+      pat.each do |tok|
+        type = tok[0]
+        token = tok.slice(1, tok.length - 1)
+        if type == ?$
+          if @variables.index(token).nil?
+            raise "Fatal Error: Illegal variable type #{token} used for " +
+                  "rule #{rule.name} in pattern '#{pat}'"
+          end
+        elsif type == ?!
+          if @rules[token].nil?
+            raise "Fatal Error: Reference to unknown rule #{token} in " +
+                  "pattern '#{pat}' of rule #{rule.name}"
+          end
+        end
+      end
+    end
   end
 
   # This function processes the input starting with the syntax description of

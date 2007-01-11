@@ -140,6 +140,18 @@ private
       frac = readDigits
 
       return [ 'FLOAT', token.to_f + frac.to_f / (10.0 ** frac.length) ]
+    elsif c == ?:
+      hours = token.to_i
+      mins = readDigits.to_i
+      if hours < 0 || hours > 23
+        raise TjException.new, "Hour must be between 0 and 23"
+      end
+      if mins < 0 || mins > 59
+        raise TjException.new, "Minutes must be between 0 and 59"
+      end
+
+      # Return time as seconds of day since midnight.
+      return [ 'TIME', hours * 60 * 60 + mins * 60 ]
     else
       returnChar(c)
     end
