@@ -18,7 +18,8 @@ class ProjectFileParser < TextParser
   def initialize
     super
 
-    @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON )
+    @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
+                     RELATIVE_ID ABSOLUTE_ID )
 
     newRule('project')
     newPattern(%w( !projectHeader !projectBody !properties ), Proc.new {
@@ -30,8 +31,7 @@ class ProjectFileParser < TextParser
       @project = Project.new(@val[1], @val[2], @val[3])
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
-      @task = nil
-      @resource = nil
+      @property = nil
       @project
     })
 
@@ -83,6 +83,10 @@ class ProjectFileParser < TextParser
     newPattern(%w( _dailyworkinghours !number ), Proc.new {
       @project['dailyworkinghours'] = @val[1]
     })
+    newPattern(%w( _extend !extendProperty !extendBody ), Proc.new {
+      updateParserTables
+    })
+    newPattern(%w( !include ))
     newPattern(%w( _now $DATE ), Proc.new {
       @project['now'] = @val[1]
     })
@@ -141,6 +145,114 @@ class ProjectFileParser < TextParser
                     ]
       (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
     })
+
+    newRule('extendProperty')
+    newPattern(%w( $ID ), Proc.new {
+      case @val[0]
+      when 'task'
+        @ruleToExtend = @rules['taskAttributes']
+        @ruleToExtendWithScenario = @rules['taskScenarioAttributes']
+        @propertySet = @project.tasks
+      when 'resource'
+        @ruleToExtend = @rules['resourceAttributes']
+        @ruleToExtendWithScenario = @rules['resourceScenarioAttributes']
+        @propertySet = @project.resources
+      else
+        error("Extendable property expected: task or resource")
+      end
+    })
+
+    newRule('extendBody')
+    optional
+    newPattern(%w( _{ !extendAttributes _} ), Proc.new {
+      @val[1]
+    })
+
+    newRule('extendAttributes')
+    optional
+    repeatable
+    newPattern(%w( _date !extendId  $STRING !extendOptionsBody ), Proc.new {
+      # Extend the propertySet definition and parser rules
+      if extendPropertySetDefinition(DateAttribute, nil)
+        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$DATE' ], Proc.new {
+            @property[@val[0], @scenarioIdx] = @val[1]
+          }))
+      else
+        @ruleToExtend.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$DATE' ], Proc.new {
+            @property.set(@val[0], @val[1])
+          }))
+      end
+    })
+    newPattern(%w( _reference $STRING !extendOptionsBody ), Proc.new {
+      # Extend the propertySet definition and parser rules
+      reference = ReferenceAttribute.new
+      reference.set([ @val[1], @val[2].nil? ? nil : @val[2][0] ])
+      if extendPropertySetDefinition(ReferenceAttribute, nil)
+        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$STRING', '!referenceBody' ], Proc.new {
+            @property[@val[0], @scenarioIdx] = reference
+          }))
+      else
+        @ruleToExtend.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$STRING', '!referenceBody' ], Proc.new {
+            @property.set(reference)
+          }))
+      end
+    })
+    newPattern(%w( _text !extendId $STRING !extendOptionsBody ), Proc.new {
+      # Extend the propertySet definition and parser rules
+      if extendPropertySetDefinition(StringAttribute, nil)
+        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$STRING' ], Proc.new {
+            @property[@val[0], @scenarioIdx] = @val[1]
+          }))
+      else
+        @ruleToExtend.addPattern(TextParserPattern.new(
+          [ '_' + @val[1], '$STRING' ], Proc.new {
+            @property.set(@val[0], @val[1])
+          }))
+      end
+    })
+
+    newRule('extendId')
+    newPattern(%w( $ID ), Proc.new {
+      unless (?A..?Z) === @val[0][0]
+        error("User defined attributes IDs must start with a capital letter")
+      end
+      @val[0]
+    })
+
+    newRule('extendOptionsBody')
+    optional
+    newPattern(%w( _{ !extendOptions _} ), Proc.new {
+      @val[1]
+    })
+
+    newRule('extendOptions')
+    optional
+    repeatable
+    newPattern(%w( _inherit ), Proc.new {
+      @val[0]
+    })
+    newPattern(%w( _scenariospecific ), Proc.new {
+      @val[0]
+    })
+
+    newRule('referenceBody')
+    optional
+    newPattern(%w( _{ !referenceAttributes _} ), Proc.new {
+      @val[1]
+    })
+
+    newRule('referenceAttributes')
+    optional
+    repeatable
+    newPattern(%w( _label $STRING ), Proc.new {
+      @val[1]
+    })
+
     newRule('scenario')
     newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {
       @scenario = @scenario.parent
@@ -166,14 +278,20 @@ class ProjectFileParser < TextParser
 
     newRule('properties')
     repeatable
-    newPattern(%w( !workinghours ))
+    newPattern(%w( !include ))
+    newPattern(%w( !report ))
     newPattern(%w( !resource ))
     newPattern(%w( !task ))
-    newPattern(%w( !report ))
+    newPattern(%w( !workinghours ))
+
+    newRule('include')
+    newPattern(%w( _include $STRING ), Proc.new {
+      @scanner.include(@val[1])
+    })
 
     newRule('workinghours')
     newPattern(%w( _workinghours !listOfDays !listOfTimes), Proc.new {
-      wh = @resource.nil? ? @project['workinghours'] : @resource['workinghours']
+      wh = @property.nil? ? @project['workinghours'] : @property['workinghours']
       0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
 
@@ -194,14 +312,6 @@ class ProjectFileParser < TextParser
 
     newRule('weekDayInterval')
     newPattern(%w( $ID !weekDayIntervalEnd ), Proc.new {
-      def weekDay(name)
-        names = %w( sun mon tue wed thu fri sat )
-        if (day = names.index(@val[0])).nil?
-          error("Weekday name expected (#{names.join(', ')})")
-        end
-        day
-      end
-
       weekdays = Array.new(7, false)
       if @val[1].nil?
         weekdays[weekDay(@val[0])] = true
@@ -222,10 +332,13 @@ class ProjectFileParser < TextParser
 
     newRule('resource')
     newPattern(%w( !resourceHeader !resourceBody ), Proc.new {
-       @resource = @resource.parent
+       @property = @property.parent
     })
 
     newRule('listOfTimes')
+    newPattern(%w( _off ), Proc.new {
+      [ ]
+    })
     newPattern(%w( !timeInterval !moreTimeIntervals ), Proc.new {
       [ @val[0] ] + @val[1]
     })
@@ -247,7 +360,7 @@ class ProjectFileParser < TextParser
 
     newRule('resourceHeader')
     newPattern(%w( _resource $ID $STRING ), Proc.new {
-      @resource = Resource.new(@project, @val[1], @val[2], @resource)
+      @property = Resource.new(@project, @val[1], @val[2], @property)
     })
 
     newRule('resourceBody')
@@ -273,12 +386,12 @@ class ProjectFileParser < TextParser
 
     newRule('task')
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
-      @task = @task.parent
+      @property = @property.parent
     })
 
     newRule('taskHeader')
     newPattern(%w( _task $ID $STRING ), Proc.new {
-      @task = Task.new(@project, @val[1], @val[2], @task)
+      @property = Task.new(@project, @val[1], @val[2], @property)
       @scenarioIdx = 0
     })
 
@@ -297,21 +410,41 @@ class ProjectFileParser < TextParser
     # Other attributes will be added automatically.
 
     newRule('taskScenarioAttributes')
+    newPattern(%w( _allocate !resourceId !allocationAttributes ), Proc.new {
+      candidates = [ @val[1] ]
+      selectionMode = 1 # Defaults to min. allocation probability
+      mandatory = false
+      persistant = false
+      if @val[2]
+        @val[2].each do |attribute|
+          case attribute[0]
+          when 'alternative'
+            candidates += attribute[1]
+          when 'persistant'
+            persistant = true
+          when 'mandatory'
+            mandatory = true
+          end
+        end
+      end
+      @property['allocate', @scenarioIdx] <<
+        Allocation.new(candidates, selectionMode, persistant, mandatory)
+    })
     newPattern(%w( _depends !taskList ), Proc.new {
-      @task['depends', @scenarioIdx] = @val[1]
+      @property['depends', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _duration !calendarDuration ), Proc.new {
-      @task['duration', @scenarioIdx] = @val[1]
+      @property['duration', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _effort !workingDuration ), Proc.new {
-      @task['effort', @scenarioIdx] = @val[1]
+      @property['effort', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _end !valDate ), Proc.new {
-      @task['end', @scenarioIdx] = @val[1]
-      @task['forward'] = false
+      @property['end', @scenarioIdx] = @val[1]
+      @property['forward'] = false
     })
     newPattern(%w( _length !workingDuration ), Proc.new {
-      @task['length', @scenarioIdx] = @val[1]
+      @property['length', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
@@ -319,10 +452,51 @@ class ProjectFileParser < TextParser
       end
     })
     newPattern(%w( _start !valDate), Proc.new {
-      @task['start', @scenarioIdx] = @val[1]
-      @task['forward', @scenarioIdx] = true
+      @property['start', @scenarioIdx] = @val[1]
+      @property['forward', @scenarioIdx] = true
     })
     # Other attributes will be added automatically.
+
+    newRule('allocationAttributes')
+    optional
+    newPattern(%w( _{ !allocationAttribute _} ), Proc.new {
+      @val[1]
+    })
+
+    newRule('allocationAttribute')
+    optional
+    repeatable
+    newPattern(%w( _alternative !resourceId !moreAlternatives ), Proc.new {
+      [ 'alternative', [ @val[1] ] + @val[2] ]
+    })
+    newPattern(%w( _select $ID ), Proc.new {
+      modes = %w( maxloaded minloaded minallocated order random )
+      if (index = modes.index(@val[1])).nil?
+        error("Selection mode must be one of #{modes.join(', ')}")
+      end
+      [ 'select', @val[1] ]
+    })
+    newPattern(%w( _persistent ), Proc.new {
+      [ @val[0] ]
+    })
+    newPattern(%w( _mandatory ), Proc.new {
+      [ @val[0] ]
+    })
+
+    newRule('resourceId')
+    newPattern(%w( $ID ), Proc.new {
+      if (resource = @project.resource(@val[0])).nil?
+        error("Resource ID expected")
+      end
+      resource
+    })
+
+    newRule('moreAlternatives')
+    optional
+    repeatable
+    newPattern(%w( _, !resourceId), Proc.new {
+      @val[1]
+    })
 
     newRule('taskList')
     newPattern(%w( !taskId !moreTasks ), Proc.new {
@@ -330,8 +504,25 @@ class ProjectFileParser < TextParser
     })
 
     newRule('taskId')
+    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
+      @val[0]
+    })
     newPattern(%w( $ID ), Proc.new {
       @val[0]
+    })
+    newPattern(%w( $RELATIVE_ID ), Proc.new {
+      task = @property
+      id = @val[0]
+      while task && id[0] == ?!
+        id = id.slice(1, id.length)
+        task = task.parent
+      end
+      error("Too many '!' for relative task in this context.") if id[0] == ?!
+      if task
+        task.id + '.' + id
+      else
+        id
+      end
     })
 
     newRule('moreTasks')
@@ -409,11 +600,14 @@ class ProjectFileParser < TextParser
   end
 
   def open(masterFile)
-    @scanner = TextScanner.new(masterFile)
-    @scanner.open
+    begin
+      @scanner = TextScanner.new(masterFile)
+      @scanner.open
+    rescue
+      error($!)
+    end
 
-    @task = nil
-    @parentTask = nil
+    @property = nil
   end
 
   def close
@@ -428,9 +622,33 @@ class ProjectFileParser < TextParser
     @scanner.returnToken(token)
   end
 
-  def addAttribute(property, attributeName, attributeType)
-    @cr = @rules[property + "Attributes"]
-    addPattern([ "_" + attributeName, "!" + attributeType ])
+private
+
+  def weekDay(name)
+    names = %w( sun mon tue wed thu fri sat )
+    if (day = names.index(@val[0])).nil?
+      error("Weekday name expected (#{names.join(', ')})")
+    end
+    day
+  end
+
+  def extendPropertySetDefinition(type, default)
+    inherit = false
+    scenarioSpecific = false
+    unless @val[3].nil?
+      @val[3].each do |option|
+        case option
+        when 'inherit'
+          inherit = true
+        when 'scenariospecific'
+          scenarioSpecific = true
+        end
+      end
+    end
+    @propertySet.addAttributeType(AttributeDefinition.new(
+      @val[1], @val[2], type, inherit, scenarioSpecific, default))
+
+    scenarioSpecific
   end
 
 end

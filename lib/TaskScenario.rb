@@ -36,10 +36,6 @@ class TaskScenario < ScenarioData
     @doneEffort = 0
   end
 
-  def a(attributeName)
-    @property[attributeName, @scenarioIdx]
-  end
-
   def Xref
     @property['depends', @scenarioIdx].each do |dependency|
       depTask = dependency.resolve(@project)
@@ -78,6 +74,98 @@ class TaskScenario < ScenarioData
   end
 
   def preScheduleCheck
+  end
+
+  def postScheduleCheck
+    @errors = 0
+    @property.children.each do |task|
+      @errors += 1 unless task.postScheduleCheck(@scenarioIdx)
+    end
+
+    # There is no point the check the parent if the child(s) have errors.
+    return false if @errors > 0
+
+    # Same for runaway tasks. They have already been reported.
+    return false if isRunAway
+
+    # Make sure the task is marked complete
+    unless a('scheduled')
+      error("Task #{@property.id} has not been marked as scheduled.")
+    end
+
+    # If the task has a follower or predecessor that is a runaway this task
+    # is also incomplete.
+    @followers.each do |follower|
+      return false if follower.isRunAway(@scenarioIdx)
+    end
+    @previous.each do |previous|
+      return false if previous.isRunAway(@scenarioIdx)
+    end
+
+    # Check if the start time is ok
+    error("Task #{@property.id} has undefined start time") if a('start').nil?
+    if a('start') < @project['start'] || a('start') > @project['end']
+      error("The start time (#{a('start')}) of task #{@property.id} " +
+            "is outside the project interval (#{@project['start']} - " +
+            "#{@project['end']})")
+    end
+    if !a('minstart').nil? && a('start') < a('minstart')
+      error("The start time (#{a('start')}) of task #{@property.id} " +
+            "is too early. Must be after #{a('minstart')}.")
+    end
+    if !a('maxstart').nil? && a('start') > a('maxstart')
+      error("The start time (#{a('start')}) of task #{@property.id} " +
+            "is too late. Must be before #{a('maxstart')}.")
+    end
+
+    # Check if the end time is ok
+    error("Task #{@property.id} has undefined end time") if a('end').nil?
+    if a('end') < @project['start'] || a('end') > @project['end']
+      error("The end time (#{a('end')}) of task #{@property.id} " +
+            "is outside the project interval (#{@project['start']} - " +
+            "#{@project['end']})")
+    end
+    if !a('minend').nil? && a('end') < a('minend')
+      error("The end time (#{a('end')}) of task #{@property.id} " +
+            "is too early. Must be after #{a('minend')}.")
+    end
+    if !a('maxend').nil? && a('end') > a('maxend')
+      error("The end time (#{a('end')}) of task #{@property.id} " +
+            "is too late. Must be before #{a('maxend')}.")
+    end
+
+    # Check that tasks fits into parent task.
+    unless @property.parent.nil?
+      parent = @property.parent
+      if a('start') < parent['start', @scenarioIdx]
+        error("The start date (#{a('start')}) of task #{@property.id} " +
+              "is before the start date of the enclosing task " +
+              "#{parent['start', scenarioIdx]}. ")
+      end
+      if a('end') > parent['end', @scenarioIdx]
+        error("The end date (#{a('end')}) of task #{@property.id} " +
+              "is after the end date of the enclosing task " +
+              "#{parent['end', scenarioIdx]}. ")
+      end
+    end
+
+    # Check that all preceding tasks end before this task.
+    @previous.each do |task|
+      if task['end', @scenarioIdx] > a('start')
+        error("Task #{@property.id} starts before task #{@task.id} " +
+              "ends needs to follow it.")
+      end
+    end
+
+    # Check that all following tasks end before this task
+    @followers.each do |task|
+      if task['start', @scenarioIdx] < a('end')
+        error("Task #{@property.id} ends after task #{@task.id} " +
+              "starts but needs to precede it.")
+      end
+    end
+
+    @errors == 0
   end
 
   def addFollower(task)
@@ -264,7 +352,7 @@ class TaskScenario < ScenarioData
   end
 
   def scheduleContainer(notUpwards)
-    return true if a('scheduled') || !@property.isContainer
+    return true if a('scheduled') || !@property.container?
 
     nStart = nil
     nEnd = nil
@@ -290,27 +378,28 @@ class TaskScenario < ScenarioData
       propagateEnd(notUpwards)
     end
 
-    return false
+    @property['scheduled', @scenarioIdx] = true
 
+    false
   end
 
   def hasStartDependency
-    return true if a('start').provided || @depends.empty?
+    return true if @property.provided('start', @scenarioIdx) || @depends.empty?
 
-    p = @property.parent
-    while p do
-      return true if p['start'].provided
+    p = @property
+    while (p = p.parent) do
+      return true if p.provided('start', @scenarioIdx)
     end
 
     false
   end
 
   def hasEndDependency
-    return true if a('end').provided || @precedes.empty?
+    return true if @property.provided('end', @scenarioIdx) || @precedes.empty?
 
-    p = @property.parent
-    while p do
-      return true if p['end'].provided
+    p = @property
+    while (p = p.parent) do
+      return true if p.provided('end', @scenarioIdx)
     end
 
     false
@@ -332,9 +421,9 @@ class TaskScenario < ScenarioData
       gapLength = dependency.gapLength
       while gapLength > 0 && dateAfterLengthGap < @project['end'] do
         if @project.isWorkingTime(dateAfterLengthGap)
-	  gapLength -= @project.scheduleGranularity
-	end
-	dateAfterLengthGap += @project.scheduleGranularity
+          gapLength -= @project.scheduleGranularity
+        end
+        dateAfterLengthGap += @project.scheduleGranularity
       end
 
       if dateAfterLengthGap > potentialStartDate + dependency.gapDuration
@@ -346,9 +435,11 @@ class TaskScenario < ScenarioData
       startDate = potentialStartDate if potentialStartDate > startDate
     end
 
-    task = @property.parent
-    while !task.nil? do
-      if task['start', @scenarioIdx] > startDate
+    # If any of the parent tasks has an explicit start date, the task must
+    # start at or after this date.
+    task = @property
+    while (task = task.parent) do
+      if task['start', @scenarioIdx] && task['start', @scenarioIdx] > startDate
         return task['start', @scenarioIdx]
       end
     end
@@ -373,9 +464,9 @@ class TaskScenario < ScenarioData
       gapLength = dependency.gapLength
       while gapLength > 0 && dateBeforeLengthGap < @project['start'] do
         if @project.isWorkingTime(dateBeforeLengthGap)
-	  gapLength -= @project.scheduleGranularity
-	end
-	dateBeforeLengthGap -= @project.scheduleGranularity
+          gapLength -= @project.scheduleGranularity
+        end
+        dateBeforeLengthGap -= @project.scheduleGranularity
       end
       if dateBeforeLengthGap < potentialEndDate - dependency.gapDuration
         potentialEndDate = dateBeforeLengthGap
@@ -386,9 +477,9 @@ class TaskScenario < ScenarioData
       endDate = potentialEndDate if potentialEndDate < endDate
     end
 
-    task = @property.parent
-    while !task.nil? do
-      if task['end', @scenarioIdx] < endDate
+    task = @property
+    while (task = task.parent) do
+      if task['end', @scenarioIdx] && task['end', @scenarioIdx] < endDate
         return task['end', @scenarioIdx]
       end
     end
@@ -402,7 +493,7 @@ class TaskScenario < ScenarioData
     # that these are all available for the time slot.
     @property['allocate', sc].each do |allocation|
       if allocation.mandatory
-        return unless allocation.isOnShift(iv)
+        return unless allocation.onShift?(iv)
 
         # For mandatory allocations with alternatives at least one of the
         # alternatives must be available.
@@ -412,7 +503,7 @@ class TaskScenario < ScenarioData
           # group must be available.
           allAvailable = true
           candidate.all.each do |resource|
-            if !resource.available?(sbIdx)
+            if !resource.available?(@scenarioIdx, sbIdx)
               allAvailable = false
               break
             end

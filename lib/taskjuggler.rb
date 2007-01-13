@@ -25,7 +25,11 @@ def main
   master = true
   project = nil
   ARGV.each do |file|
-    parser.open(file)
+    begin
+      parser.open(file)
+    rescue
+      exit 1
+    end
     if master
       project = parser.parse('project')
       master = false
@@ -35,8 +39,11 @@ def main
     parser.close
   end
 
-  project.schedule
-  project.generateReports
+  exit 1 if project.nil?
+  exit 1 unless project.schedule
+  exit 1 unless project.generateReports
+
+  exit 0
 end
 
 main()

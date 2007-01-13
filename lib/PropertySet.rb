@@ -48,9 +48,9 @@ class PropertySet
     end
 
     if @flatNamespace
-      @properties[property.fullId] = property
-    else
       @properties[property.id] = property
+    else
+      @properties[property.fullId] = property
     end
   end
 

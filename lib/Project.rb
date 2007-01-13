@@ -18,6 +18,7 @@ require 'DateAttribute'
 require 'DurationAttribute'
 require 'FloatAttribute'
 require 'FixnumAttribute'
+require 'ReferenceAttribute'
 require 'StringAttribute'
 require 'TaskListAttribute'
 require 'ResourceListAttribute'
@@ -71,20 +72,23 @@ class Project
     @tasks = PropertySet.new(self, false)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
-      [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
-      [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
-      [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
-      [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
-      [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
-      [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
-      [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
-      [ 'depends',   'Predecessors', TaskListAttribute, true,  true,  [] ],
-      [ 'precedes',  'Successors',   TaskListAttribute, true,  true,  [] ],
-      [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
-      [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
-      [ 'bookedresources', 'Assigned Resources', ResourceListAttribute, false,
-      true, [] ]
+      [ 'bookedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
+      [ 'depends',   'Predecessors', TaskListAttribute, true,  true,  [] ],
+      [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
+      [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
+      [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
+      [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
+      [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
+      [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],
+      [ 'maxstart',  'Max. Start',   DateAttribute,     true,  true,  nil ],
+      [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
+      [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
+      [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
+      [ 'precedes',  'Successors',   TaskListAttribute, true,  true,  [] ],
+      [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
+      [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
+      [ 'start',     'Start',        DateAttribute,     true,  true,  nil ]
     ]
     attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -180,19 +184,21 @@ class Project
         scheduleScenario(scIdx)
         finishScenario(scIdx)
       end
-    rescue => details
-      $stderr.print "Fatal error: " + $! + "\n" +
-                    details.backtrace.join("\n")
+    rescue TjException
+      false
     end
+
+    true
   end
 
   def generateReports
     begin
       @reports.each { |report| report.generate }
-    rescue => details
-      $stderr.print "Fatal error: " + $! + "\n" +
-                    details.backtrace.join("\n")
+    rescue TjException
+      false
     end
+
+    true
   end
 
   ####################################################################
@@ -263,6 +269,9 @@ protected
   end
 
   def finishScenario(scIdx)
+    @tasks.each do |task|
+      task.postScheduleCheck(scIdx) if task.parent.nil?
+    end
   end
 
   def scheduleScenario(scIdx)

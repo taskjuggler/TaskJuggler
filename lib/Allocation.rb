@@ -69,6 +69,11 @@ class Allocation
     @candidates.push(candidate)
   end
 
+  def onShift?(iv)
+    # TODO
+    true
+  end
+
   def to_tjp
     out = []
     out << candidates[0].id # TODO: incomplete

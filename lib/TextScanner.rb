@@ -13,26 +13,71 @@
 require 'TjTime'
 require 'TjException'
 
+# The TextScanner class can scan text files and chop then into tokens to be
+# used by a parser. Files can be nested. A file can include an other file.
 class TextScanner
 
-  attr_reader :line
+  # File records are entries on the parser stack. For each nested file the
+  # scanner puts an entry on the stack while the files are scanned. With this
+  # stack the scanner an resume the processing of the enclosing file once the
+  # included files has been completely processed.
+  class FileRecord
+
+    attr_reader :file, :fileName
+    attr_accessor :lineNo, :columnNo, :line, :charBuffer
+
+    def initialize(fileName)
+      @fileName = fileName
+      @file = File.new(fileName, 'r')
+      @lineNo = 1
+      @columnNo = 1
+      @line = ""
+      @charBuffer = []
+    end
+
+  end
 
   def initialize(masterFile)
     @masterFile = masterFile
-    @file = nil
+    @stack = []
   end
 
   def open
-    @file = File.new(@masterFile, 'r')
-    @stack = []
-    @lineNo = 1
-    @line = ""
+    begin
+      @stack = [ (@cf = FileRecord.new(@masterFile)) ]
+    rescue
+      raise TjException.new, "Cannot open file #{@masterFile}"
+    end
     @tokenBuffer = nil
   end
 
   def close
-    @tokenBuffer = nil
-    @file.close
+    @stack = []
+    @cf = @tokenBuffer = nil
+  end
+
+  def include(fileName)
+    begin
+      @stack << (@cf = FileRecord.new(fileName))
+    rescue
+      raise TjException.new, "Cannot open include file #{fileName}"
+    end
+  end
+
+  def fileName
+    @cf ? @cf.fileName : "No File"
+  end
+
+  def lineNo
+    @cf ? @cf.lineNo : 0
+  end
+
+  def columnNo
+    @cf ? @cf.columnNo : 0
+  end
+
+  def line
+    @cf ? @cf.line : ""
   end
 
   def nextToken
@@ -44,7 +89,7 @@ class TextScanner
     end
 
     # Start processing characters from the input.
-    while c = nextChar
+    while c = nextChar(true)
       case c
       when 32, ?\n, ?\t
 	      if tok = readBlanks(c)
@@ -54,6 +99,8 @@ class TextScanner
         return readNumber(c)
       when ?"
         return readString(c)
+      when ?!
+        return readRelativeId(c)
       when ?a..?z, ?A..?Z, ?_
         return readId(c)
       else
@@ -74,37 +121,53 @@ class TextScanner
 
 private
 
-  def nextChar
-    if @stack.empty?
-      c = @file.getc
+  def nextChar(eofOk = false)
+    return nil if @cf.nil?
+
+    if @cf.charBuffer.empty?
+      while (c = @cf.file.getc).nil? && !@stack.empty?
+        @cf.file.close
+        @stack.pop
+        @cf = @stack.last
+
+        return nil if @cf.nil?
+      end
     else
-      c = @stack.pop
+      c = @cf.charBuffer.pop
     end
 
-    @line = "" if @line[-1] == '\n'
-    @line << c if c
+    @cf.line = "" if @cf.line[-1] == ?\n
+    if c
+      @cf.line << c
+    else
+      unless eofOk
+        raise TjException.new, "Unexpected end of file"
+      end
+    end
     c
   end
 
   def returnChar(c)
-    @line.chop!
-    @stack << c
-    @lineNo -= 1 if c == '\n'
+    return if c.nil?
+
+    @cf.line.chop!
+    @cf.charBuffer << c
+    @cf.lineNo -= 1 if c == ?\n
   end
 
   def readBlanks(c)
     if c == 32
-      if (c2 = nextChar) == ?-
-        if (c3 = nextChar) == 32
-	  return [ 'LITERAL', ' - ']
-	end
-	returnChar(c3)
+      if (c2 = nextChar(true)) == ?-
+        if (c3 = nextChar(true)) == 32
+          return [ 'LITERAL', ' - ']
+        end
+        returnChar(c3)
       end
       returnChar(c2)
 
       return nil
-    elsif c == '\n'
-      @lineNo += 1
+    elsif c == ?\n
+      @cf.lineNo += 1
     end
 
     nil
@@ -113,7 +176,7 @@ private
   def readNumber(c)
     token = ""
     token << c
-    while (?0..?9) === (c = nextChar)
+    while (?0..?9) === (c = nextChar(true))
       token << c
     end
     if c == ?-
@@ -143,11 +206,14 @@ private
     elsif c == ?:
       hours = token.to_i
       mins = readDigits.to_i
-      if hours < 0 || hours > 23
+      if hours < 0 || hours > 24
         raise TjException.new, "Hour must be between 0 and 23"
       end
       if mins < 0 || mins > 59
         raise TjException.new, "Minutes must be between 0 and 59"
+      end
+      if hours == 24 && mins != 0
+        raise TjException.new, "Time may not be larger than 24:00"
       end
 
       # Return time as seconds of day since midnight.
@@ -157,6 +223,21 @@ private
     end
 
     [ 'INTEGER', token.to_i ]
+  end
+
+  def readRelativeId(c)
+    token = ""
+    token << c
+    while (c = nextChar) && c == ?!
+      token << c
+    end
+    unless (?a..?z) === c || (?A..?Z) === c || c == ?_
+      raise TjException.new, "Identifier expected"
+    end
+    id = readId(c)
+    id[0] = 'RELATIVE_ID'
+    id[1] = token + id[1]
+    id
   end
 
   def readString(c)
@@ -171,12 +252,21 @@ private
   def readId(c)
     token = ""
     token << c
-    while (c = nextChar) &&
+    while (c = nextChar(true)) &&
           ((?a..?z) === c || (?A..?Z) === c || (?0..?9)  === c || c == ?_)
       token << c
     end
     if c == ?:
       return [ 'ID_WITH_COLON', token ]
+    elsif  c == ?.
+      token << c
+      loop do
+        token += readIdentifier
+        break if (c = nextChar) != ?.
+      end
+      returnChar c
+
+      return [ 'ABSOLUTE_ID', token ]
     else
       returnChar c
       return [ 'ID', token ]
@@ -186,7 +276,7 @@ private
   # Read only decimal digits and return the result als Fixnum.
   def readDigits
     token = ""
-    while (?0..?9) === (c = nextChar)
+    while (?0..?9) === (c = nextChar(true))
       token << c
     end
     # Make sure that we have read at least one digit.
@@ -195,6 +285,21 @@ private
     end
     # Push back the non-digit that terminated the digits.
     returnChar(c)
+    token
+  end
+
+  def readIdentifier(noDigit = true)
+    token = ""
+    while (c = nextChar(true)) &&
+          ((?a..?z) === c || (?A..?Z) === c ||
+           (!noDigit && ((?0..?9)  === c)) || c == ?_)
+      token << c
+      noDigit = false
+    end
+    returnChar(c)
+    if token == ""
+      raise TjException.new, "Identifier expected"
+    end
     token
   end
 

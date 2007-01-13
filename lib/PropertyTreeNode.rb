@@ -137,6 +137,14 @@ class PropertyTreeNode
     end
   end
 
+  def provided(attributeId, scenarioIdx = nil)
+    if scenarioIdx
+      @scenarioAttributes[scenarioIdx][attributeId].provided
+    else
+      @attributes[attributeId].provided
+    end
+  end
+
   def to_s
     res = "#{self.class} #{fullId} \"#{@name}\"\n" +
           "  Sequence No: #{@sequenceNo}\n"

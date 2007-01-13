@@ -10,6 +10,8 @@
 # $Id$
 #
 
+require 'TjException'
+
 class ScenarioData
 
   def initialize(property, idx)
@@ -20,6 +22,17 @@ class ScenarioData
 
   def a(attributeName)
     @property[attributeName, @scenarioIdx]
+  end
+
+  def error(text, abort = true)
+    # TODO: Add source file and line info
+    $stderr.puts "Error: " + text
+    raise TjException.new, "Scheduling error" if abort
+  end
+
+  def warning(text)
+    # TODO: Add source file and line info
+    $stderr.puts "Warning: " + text
   end
 
 end

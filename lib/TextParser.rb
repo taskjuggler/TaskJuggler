@@ -97,11 +97,16 @@ class TextParser
   # rule to start with.
   def parse(ruleName)
     @stack = []
+    @@expectedTokens = []
     updateParserTables
-    result = parseRule(@rules[ruleName])
+    begin
+      result = parseRule(@rules[ruleName])
 
-    if nextToken != [ false, false ]
-      error("Synatx error")
+      if nextToken != [ false, false ]
+        error("Synatx error")
+      end
+    rescue TjException
+      return nil
     end
 
     result
@@ -109,9 +114,10 @@ class TextParser
 
   # Call this function to report any errors related to the parsed input.
   def error(text)
-    # Very preliminary implementation.
-    $stderr.puts @scanner.line
-    raise text
+    str = "#{@scanner.fileName}:#{@scanner.lineNo}: #{text}\n" +
+          "#{@scanner.line}\n"
+    $stderr.puts str
+    raise TjException.new, "Syntax error"
   end
 
 private
@@ -204,7 +210,7 @@ private
         token = nextToken
         puts "  Token: #{token[0]}/#{token[1]}" if @@debug >= 20
       rescue TjException
-        error("Error: " + $!)
+        error($!)
       end
 
       # The scanner cannot differentiate between keywords and identifiers. So
@@ -228,8 +234,18 @@ private
       # the token back to the scanner. Otherwise we have found a token we
       # cannot handle at this point.
       if patIdx.nil?
+        # Append the list of expected tokens to the @@expectedToken array.
+        # This may be used in a later rule to details when an error occured.
+        rule.transitions.each do |transition|
+          keys = transition.keys
+          keys.collect! { |key| key.slice(1, key.length - 1) }
+          @@expectedTokens += keys
+          @@expectedTokens.sort!
+        end
+
         unless rule.optional || repeatMode
-          error("Unexpected token '#{token[1]}' of type '#{token[0]}'")
+          error("Unexpected token '#{token[1]}' of type '#{token[0]}'." +
+                "Expecting #{@@expectedTokens.join(', ')}")
         end
         returnToken(token)
         puts "Finished parsing with rule #{rule.name} (*)" if @@debug >= 10
@@ -260,23 +276,36 @@ private
                 error("Unexpected end of file")
               end
             rescue TjException
-              error("Error: " + $!)
+              error($!)
             end
           end
 
           if elType == ?_
             # If the element requires a keyword the token must match this
             # keyword.
-            error("#{elToken} expected") if token[1] != elToken
+            if token[1] != elToken
+              text = "#{elToken} expected"
+              unless @@expectedTokens.empty?
+                text = "#{@@expectedTokens.join(', ')} or " + text
+              end
+              error(text)
+            end
             @stack.last.store(elToken)
           else
             # The token must match the expected variable type.
-            error("#{elToken} expected") if token[0] != elToken
+            if token[0] != elToken
+              text = "#{elToken} expected"
+              unless @@expectedTokens.empty?
+                text = "#{@@expectedTokens.join(', ')} or " + text
+              end
+              error(text)
+            end
             # If the element is a variable store the value of the token.
             @stack.last.store(token[1])
           end
           # The token has been consumed. Reset the variable.
           token = nil
+          @@expectedTokens = []
         end
       end
 
@@ -285,11 +314,7 @@ private
       # entry for this rule from the stack.
       @val = @stack.last.val
       res = nil
-      begin
-        res = @stack.last.function.call unless @stack.last.function.nil?
-      rescue TjException
-        error("Error: " + $!)
-      end
+      res = @stack.last.function.call unless @stack.last.function.nil?
       @stack.pop
 
       # If the rule is not repeatable we can store the result and break the
