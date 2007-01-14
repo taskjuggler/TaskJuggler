@@ -35,9 +35,10 @@ class ReportTable
   end
 
   def to_html(indent)
-    @out << " " * indent + "<table>\n"
+    @out << " " * indent + "<table align=\"center\" cellpadding=\"2\"; " +
+            "class=\"tab\">\n"
 
-    @out << " " * (indent + 2) + "<thead><tr>\n"
+    @out << " " * (indent + 2) + "<thead><tr class=\"tabhead\">\n"
     @columns.each { |col| col.to_html(indent + 4) }
     @out << " " * (indent + 2) + "</tr></thead>\n"
 

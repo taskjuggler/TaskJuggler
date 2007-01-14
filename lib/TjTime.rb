@@ -72,8 +72,8 @@ class TjTime
     @time <=> t.time
   end
 
-  def to_s
-    @time.strftime("%Y-%m-%d-%H:%M:%S-%z")
+  def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
+    @time.strftime(format)
   end
 
   def to_i

@@ -32,14 +32,60 @@ class PropertySet
     @project = project
     @attributeDefinitions = Hash.new
     @properties = Hash.new
+
+    @@fixedAttributeNames = {
+      "id" => "ID",
+      "name" => "Name",
+      "seqno" => "Seq. No."
+    }
+    @@fixedAttributesTypes = {
+      "id" => :String,
+      "name" => :String,
+      "seqno" => :Fixnum
+    }
   end
 
+  # Use the function to declare the various attributes that properties of this
+  # PropertySet can have. The attributes must be declared before the first
+  # property is added to the set.
   def addAttributeType(attributeType)
     if !@properties.empty?
       raise "Attribute types must be defined before properties are added."
     end
 
     @attributeDefinitions[attributeType.id] = attributeType
+  end
+
+  # Return whether the attribute with _attrId_ is scenario specific or not.
+  def scenarioSpecific?(attrId)
+    if @attributeDefinitions[attrId].nil?
+      # All hardwired attributes are not scenario specific.
+      false
+    else
+      @attributeDefinitions[attrId].scenarioSpecific
+    end
+  end
+
+  # Returns the name (human readable description) of the attribute with the
+  # Id specified by _attrId_.
+  def attributeName(attrId)
+    # Some attributes are hardwired into the properties. These need to be
+    # treated separately.
+    if @@fixedAttributeNames[attrId].nil?
+      @attributeDefinitions[attrId].name
+    else
+      @@fixedAttributeNames[attrId]
+    end
+  end
+
+  # Return the type of the attribute with the Id specified by _attrId_.
+  def attributeType(attrId)
+    # Hardwired attributes need special treatment.
+    if @@fixedAttributesTypes[attrId].nil?
+      @attributeDefinitions[attrId].objClass
+    else
+      @@fixedAttributesTypes[attrId]
+    end
   end
 
   def addProperty(property)
@@ -51,22 +97,6 @@ class PropertySet
       @properties[property.id] = property
     else
       @properties[property.fullId] = property
-    end
-  end
-
-  # Returns the name (human readable description) of the attribute with the
-  # Id specified by _attrId_.
-  def attributeName(attrId)
-    # Some attributes are hardwired into the properties. These need to be
-    # treated separately.
-    if attrId == "id"
-      "ID"
-    elsif attrId == "name"
-      "Name"
-    elsif attrId == "seqno"
-      "Seq. No."
-    else
-      @attributeDefinitions[attrId].name
     end
   end
 

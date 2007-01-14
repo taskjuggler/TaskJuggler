@@ -14,8 +14,11 @@ require 'ReportCell'
 
 class ReportLine
 
+  attr_accessor :indentation
+
   def initialize
     @cells = []
+    @indentation = 0
   end
 
   def setOut(out)
@@ -28,7 +31,7 @@ class ReportLine
   end
 
   def to_html(indent)
-    @out << " " * indent + "<tr>\n"
+    @out << " " * indent + "<tr class=\"tabline1\">\n"
     @cells.each { |cell| cell.to_html(indent + 2) }
     @out << " " * indent + "</tr>\n"
   end

@@ -16,8 +16,25 @@ require 'ReportTable'
 
 class HTMLTaskReport < ReportBase
 
-  def inititialize(project, name)
+  include HTMLUtils
+
+  attr_reader :element
+
+  def initialize(project, name)
     super(project, name)
+    @element = ReportElement.new(self)
+
+    # Set the default column for this report
+    %w( seqno name start end ).each do |col|
+      @element.columns << TableColumnDefinition.new(
+          col, defaultColumnTitle(col))
+    end
+  end
+
+  def defaultColumnTitle(id)
+    (name = @project.tasks.attributeName(id)).nil? &&
+    (name = @project.resources.attributeName(id)).nil?
+    name
   end
 
   def generate
@@ -26,21 +43,12 @@ class HTMLTaskReport < ReportBase
 
     openFile
 
-    @file << <<END_OF_TEXT
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
-"http://www.w3.org/TR/REC-html40/loose.dtd">
-<html>
-<head>
-  <title>Task Report</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-</head>
-<body>
-END_OF_TEXT
+    generateHeader
 
     table.setOut(@file)
     table.to_html(2)
 
-    @file << "</body></html>\n"
+    generateFooter
 
     closeFile
   end

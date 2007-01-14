@@ -21,8 +21,8 @@ class TaskReport
   end
 
   def generate
-    @descr.columns.each do |col|
-      @table.addColumn(ReportColumn.new(@project.tasks.attributeName(col)))
+    @descr.columns.each do |column|
+      @table.addColumn(ReportColumn.new(column.title))
     end
 
     taskList = PropertyList.new(@project.tasks)
@@ -32,7 +32,8 @@ class TaskReport
     taskList.each do |task|
       line = ReportLine.new
       @descr.columns.each do |column|
-        cell = ReportCell.new(task[column, 0].to_s)
+        line.indentation = task.level
+        cell = ReportCell.new(@descr.cellText(task, column.id))
         line.addCell(cell)
       end
       @table.addLine(line)

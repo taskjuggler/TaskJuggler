@@ -43,6 +43,7 @@ class Project
       'id' => id,
       'name' => name,
       'version' => version,
+      'copyright' => nil,
       'currency' => "EUR",
       'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
       'dailyworkinghours' => 8.0,

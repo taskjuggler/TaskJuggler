@@ -57,11 +57,18 @@ class PropertyTreeNode
 
   def fullId
     res = @id
-    parent = self
-    while (parent = parent.parent) != nil
-      res = parent.id + "." + res
+    t = self
+    unless (t = t.parent).nil?
+      res = t.id + "." + res
     end
-    res
+  end
+
+  def level
+    t = self
+    level = 0
+    until (t = t.parent).nil?
+      level += 1
+    end
   end
 
   def addChild(child)

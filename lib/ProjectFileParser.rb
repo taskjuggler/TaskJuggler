@@ -278,6 +278,9 @@ class ProjectFileParser < TextParser
 
     newRule('properties')
     repeatable
+    newPattern(%w( _copyright $STRING ), Proc.new {
+      @project['copyright'] = @val[1]
+    })
     newPattern(%w( !include ))
     newPattern(%w( !report ))
     newPattern(%w( !resource ))
@@ -576,8 +579,7 @@ class ProjectFileParser < TextParser
         @report = ExportReport.new(@project, @val[1])
       when 'htmltaskreport'
         @report = HTMLTaskReport.new(@project, @val[1])
-        @reportElement = ReportElement.new(@report)
-        @reportElement.columns = %w( name start end )
+        @reportElement = @report.element
       end
     })
 
@@ -596,7 +598,47 @@ class ProjectFileParser < TextParser
     newRule('reportAttributes')
     optional
     repeatable
-    newPattern(%w( _foo ))
+    newPattern(%w( _columns !columnDef !moreColumnDef ), Proc.new {
+      columns = [ @val[1] ]
+      columns += @val[2] if @val[2]
+      @reportElement.columns = columns
+    })
+    newPattern(%w( _timeformat $STRING ), Proc.new {
+      @reportElement.timeformat = @val[1]
+    })
+
+    newRule('columnDef')
+    newPattern(%w( !columnId !columnBody ), Proc.new {
+      @val[0]
+    })
+
+    newRule('columnId')
+    newPattern(%w( $ID ), Proc.new {
+      if (title = @reportElement.defaultColumnTitle(@val[0])).nil?
+        error("Unknown column #{@val[0]}")
+      end
+      @column = TableColumnDefinition.new(@val[0], title)
+    })
+
+    newRule('columnBody')
+    optional
+    newPattern(%w( _{ !columnOptions _} ), Proc.new {
+      @val[1]
+    })
+
+    newRule('columnOptions')
+    optional
+    repeatable
+    newPattern(%w( _title $STRING ), Proc.new {
+      @column.title = @val[1]
+    })
+
+    newRule('moreColumnDef')
+    optional
+    repeatable
+    newPattern(%w( _, !columnDef ), Proc.new {
+      @val[1]
+    })
   end
 
   def open(masterFile)
