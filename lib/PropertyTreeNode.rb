@@ -34,6 +34,78 @@ class PropertyTreeNode
     end
   end
 
+  def inheritAttributes
+    whitelist = %w( priority projectid rate vacation workinghours )
+
+    # Inherit on scenario-specific values
+    @propertySet.eachAttributeDefinition do |attrDef|
+      next if attrDef.scenarioSpecific || !attrDef.inheritable
+
+      if parent
+        # Inherit values from parent property
+        if parent.provided(attrDef)
+          @attributes[attrDef.id].inherit(parent.get(attrDef))
+        end
+      else
+        # Inherit selected values from project if top-level property
+        if whitelist.index(attrDef.id)
+          if @project[attrDef.id]
+            puts attrDef.id
+            @attributes[attrDef.id].inherit(@project[attrDef.id])
+          end
+        end
+      end
+    end
+
+    # Inherit scenario-specific values
+    @propertySet.eachAttributeDefinition do |attrDef|
+      next unless attrDef.scenarioSpecific || attrDef.inheritable
+
+      0.upto(@project.scenarioCount - 1) do |scenarioIdx|
+        if parent
+          # Inherit scenario specific values from parent property
+          if parent.provided(attrDef.id, scenarioIdx)
+            @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
+                parent[attrDef.id, scenarioIdx])
+          end
+        else
+          # Inherit selected values from project if top-level property
+          if whitelist.index(attrDef.id)
+            if @project[attrDef.id]
+              @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
+                  @project[attrDef.id])
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def inheritScenarioAttributes
+    # Inherit scenario-specific values
+    @propertySet.eachAttributeDefinition do |attrDef|
+      next unless attrDef.scenarioSpecific || attrDef.inheritable
+
+      # We know that parents precede their children in the list. So it's safe
+      # to iterate over the list instead of recursively descend the tree.
+      0.upto(@project.scenarioCount - 1) do |scenarioIdx|
+        scenario = @project.scenario(scenarioIdx)
+        next if scenario.parent.nil?
+        parentScenarioIdx = scenario.parent['seqno']
+
+        # We copy only provided or inherited values from parent scenario when
+        # we don't have a provided or inherited value in this scenario.
+        if (provided(attrDef.id, parentScenarioIdx) ||
+            inherited(attrDef.id, parentScenarioIdx)) &&
+           !(provided(attrDef.id, scenarioIdx) ||
+             inherited(attrDef.id, scenarioIdx))
+          @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
+              @scenarioAttributes[parentScenarioIdx][attrDef.id].value)
+        end
+      end
+    end
+  end
+
   # Returns a list of this node and all transient sub nodes.
   def all
     res = [ self ]

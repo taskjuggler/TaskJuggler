@@ -364,6 +364,7 @@ class ProjectFileParser < TextParser
     newRule('resourceHeader')
     newPattern(%w( _resource $ID $STRING ), Proc.new {
       @property = Resource.new(@project, @val[1], @val[2], @property)
+      @property.inheritAttributes
     })
 
     newRule('resourceBody')
@@ -395,6 +396,7 @@ class ProjectFileParser < TextParser
     newRule('taskHeader')
     newPattern(%w( _task $ID $STRING ), Proc.new {
       @property = Task.new(@project, @val[1], @val[2], @property)
+      @property.inheritAttributes
       @scenarioIdx = 0
     })
 

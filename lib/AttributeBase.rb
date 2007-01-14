@@ -22,6 +22,19 @@ class AttributeBase
     @@mode = 0
   end
 
+  def inherit(value)
+    @inherited = true
+    if value.is_a?(Fixnum) || value.is_a?(Float)
+      @value = value
+    elsif value.is_a?(String)
+      @value = value.clone
+    elsif value.is_a?(WorkingHours)
+      @value = WorkingHours.new(value)
+    else
+      raise "Don't know how to copy values of class #{value.class}"
+    end
+  end
+
   def AttributeBase.setMode(mode)
     @@mode = mode
   end

@@ -45,6 +45,11 @@ class PropertySet
     }
   end
 
+  # Inherit all attributes of each property from the parent scenario.
+  def inheritScenarioAttributes
+    @properties.each_value { |p| p.inheritScenarioAttributes }
+  end
+
   # Use the function to declare the various attributes that properties of this
   # PropertySet can have. The attributes must be declared before the first
   # property is added to the set.
@@ -56,6 +61,12 @@ class PropertySet
     @attributeDefinitions[attributeType.id] = attributeType
   end
 
+  def eachAttributeDefinition
+    @attributeDefinitions.each do |key, value|
+      yield(value)
+    end
+  end
+
   # Return whether the attribute with _attrId_ is scenario specific or not.
   def scenarioSpecific?(attrId)
     if @attributeDefinitions[attrId].nil?
@@ -63,6 +74,16 @@ class PropertySet
       false
     else
       @attributeDefinitions[attrId].scenarioSpecific
+    end
+  end
+
+  # Return wheter the attribute with _attrId_ is scenario specific or not.
+  def inheritable?(attrId)
+    if @attributeDefinitions[attrId].nil?
+      # All hardwired attributes are not inheritable.
+      false
+    else
+      @attributeDefinitions[attrId].inheritable
     end
   end
 

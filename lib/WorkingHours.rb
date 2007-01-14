@@ -33,7 +33,7 @@ class WorkingHours
       end
     else
       0.upto(6) do |day|
-        setWorkingHours(day, wh.days[day])
+        setWorkingHours(day, wh.days[day].clone)
       end
     end
   end

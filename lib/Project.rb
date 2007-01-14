@@ -164,6 +164,9 @@ class Project
   end
 
   def schedule
+    @resources.inheritScenarioAttributes
+    @tasks.inheritScenarioAttributes
+
     begin
       @scenarios.each do |sc|
         # Skip disabled scenarios
@@ -173,7 +176,8 @@ class Project
 
         # All user provided values are set now. The next step is to
         # propagate inherited values. These values must be marked as
-        # inherited by setting the mode to 1.
+        # inherited by setting the mode to 1. As we always call
+        # PropertyTreeNode#inherit this is just a safeguard.
         AttributeBase.setMode(1)
 
         prepareScenario(scIdx)
