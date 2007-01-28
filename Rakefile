@@ -4,7 +4,7 @@ require 'rake/gempackagetask'
 
 spec = Gem::Specification.new do |s|
   s.name = 'tj3'
-  s.version = 'Y.Y.Y'
+  s.version = '0.0.3'
   s.author = 'Chris Schlaeger'
   s.email = 'cs@kde.org'
   s.homepage = 'http://www.taskjuggler.org'

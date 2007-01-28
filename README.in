@@ -18,15 +18,15 @@ This is a prototype. Consider it being alpha quality at best!
 == Requirements 
 
 Ruby applications are platform independent. There is no need to
-compile anything. But ClickSpotter has a very small set of
+compile anything. But TaskJuggler has a very small set of
 dependencies that you have to take care of first. Most Linux version
 already have them included. Just have sure you have the minimum
 required version.
 
-[*Ruby*] ClickSpotter is written in Ruby. You need a Ruby runtime
+[*Ruby*] TaskJuggler is written in Ruby. You need a Ruby runtime
          environment to run it. This can be downloaded from
          RubyForge[http://rubyforge.org]. Most Linux distributions usually have
-         Ruby already included. ClickSpotter currently needs at least version
+         Ruby already included. TaskJuggler currently needs at least version
          1.8.4. Older version have been reported to show frequent crashes due
          to what seems to be bugs in the networking libraries.
 
@@ -35,22 +35,7 @@ required version.
 	     so it's only listed for completeness. See
 	     here[http://docs.rubygems.org] how to get and install it.
 
-#[*Qt*] ClickSpotter uses the Qt Toolkit from
-#       Trolltech[http://www.trolltech.com]. This toolkit was choosen because
-#       it matches the elegance and beauty of Ruby. Almost every Linux
-#       distribution has a recent version of Qt included.
-#
-#[*qtruby*] To use Qt with Ruby, you also need the qtruby bindings. This is the
-#           magic glue that let's Ruby interact with Qt. See {the page on
-#           RubyForge}[http://rubyforge.org/projects/korundum] for details. You
-#	   need at least version 1.0.11. Then you need to manually add
-#	   {this small
-#	   patch}[http://websvn.kde.org/branches/KDE/3.5/kdebindings/qtruby/rubylib/qtruby/lib/Qt/qtruby.rb?rev=496301&r1=486770&r2=496301]
-#	   to <tt>rubylib/qtruby/lib/Qt/qtruby.rb</tt> adding
-#	   <tt>uchar|</tt> to line 583.
-
-[*TaskJuggler*] Get it from the {Download
-Page}[http://www.taskjuggler.org/download.php]
+[*TaskJuggler*] Get it from the {Download Page}[http://www.taskjuggler.org/download.php]
 
 == Installation Process
 
@@ -64,7 +49,7 @@ the appropriate place.
 See here[http://i.loveruby.net/en/projects/setup/doc/usage.html] for
 instructions on how to install the tarball. If you use a non-standard
 prefix or datadir you need to add the path to AppConfig.rb. Otherwise
-ClickSpotter will not be able to find the worldmap images.
+TaskJuggler will not be able to find the worldmap images.
 
 == Update from previous versions
 
@@ -82,7 +67,7 @@ work!
 
 = Copyright and License
 
-TaskJuggler is (c) 2006 by Chris Schlaeger <cs (at) kde (dot) org>
+TaskJuggler is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as
