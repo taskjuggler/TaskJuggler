@@ -22,9 +22,10 @@ class HTMLTaskReport < ReportBase
 
   def initialize(project, name)
     super(project, name)
+    # This report only has one element.
     @element = ReportElement.new(self)
 
-    # Set the default column for this report
+    # Set the default columns for this report.
     %w( seqno name start end ).each do |col|
       @element.columns << TableColumnDefinition.new(
           col, defaultColumnTitle(col))

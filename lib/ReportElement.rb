@@ -13,6 +13,8 @@
 require 'ReportBase'
 require 'TableColumnDefinition'
 
+# A report can be composed of multiple report elements. Each element consists
+# of a table and a few optional items like a heading and caption around it.
 class ReportElement
 
   attr_accessor :columns, :timeformat
@@ -24,6 +26,8 @@ class ReportElement
     @timeformat = project['timeformat']
   end
 
+  # This is the default attribute value to text converter. It is used
+  # whenever we need no special treatment.
   def cellText(property, colId)
     if property.class == Resource
       attribute = project.resources
@@ -33,6 +37,7 @@ class ReportElement
       raise "Fatal Error: Unknown property #{property.class}"
     end
 
+    # Get the value no matter if it's scenario specific or not.
     if attribute.scenarioSpecific?(colId)
       value = property[colId, 0]
     else
@@ -42,6 +47,7 @@ class ReportElement
     if value.nil?
       ''
     else
+      # Certain attribute types need special treatment.
       case attribute.attributeType(colId)
       when DateAttribute.class
         value.to_s(timeformat)
@@ -51,6 +57,7 @@ class ReportElement
     end
   end
 
+  # Convenience function to access the project object.
   def project
     @report.project
   end
