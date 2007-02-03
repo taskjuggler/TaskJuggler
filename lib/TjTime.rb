@@ -73,6 +73,7 @@ class TjTime
   end
 
   def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
+    return "unknown" if @time.nil?
     @time.strftime(format)
   end
 

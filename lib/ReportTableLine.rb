@@ -1,5 +1,5 @@
 #
-# ReportLine.rb - TaskJuggler
+# ReportTableLine.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,9 +10,9 @@
 # $Id$
 #
 
-require 'ReportCell'
+require 'ReportTableCell'
 
-class ReportLine
+class ReportTableLine
 
   attr_accessor :indentation
 

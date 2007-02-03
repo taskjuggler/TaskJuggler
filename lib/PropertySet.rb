@@ -46,8 +46,13 @@ class PropertySet
   end
 
   # Inherit all attributes of each property from the parent scenario.
-  def inheritScenarioAttributes
-    @properties.each_value { |p| p.inheritScenarioAttributes }
+  def inheritAttributesFromScenario
+    @properties.each_value { |p| p.inheritAttributesFromScenario }
+  end
+
+  # Call this function to delete all registered properties.
+  def clearProperties
+    @properties.clear
   end
 
   # Use the function to declare the various attributes that properties of this
@@ -55,7 +60,8 @@ class PropertySet
   # property is added to the set.
   def addAttributeType(attributeType)
     if !@properties.empty?
-      raise "Attribute types must be defined before properties are added."
+      raise "Fatal Error: Attribute types must be defined before " +
+            "properties are added."
     end
 
     @attributeDefinitions[attributeType.id] = attributeType

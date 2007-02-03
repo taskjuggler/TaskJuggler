@@ -16,6 +16,7 @@ require 'AllocationAttribute'
 require 'BooleanAttribute'
 require 'DateAttribute'
 require 'DurationAttribute'
+require 'FlagListAttribute'
 require 'FloatAttribute'
 require 'FixnumAttribute'
 require 'ReferenceAttribute'
@@ -48,6 +49,7 @@ class Project
       'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
       'dailyworkinghours' => 8.0,
       'end' => nil,
+      'flags' => [],
       'now' => TjTime.now,
       'numberformat' => RealFormat.new([ '-', '', '', ',', 2]),
       'priority' => 500,
@@ -68,7 +70,6 @@ class Project
       [ 'enabled',   'Enabled',    BooleanAttribute,  true,    false, true ]
     ]
     attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
-    @scenariosByIndex = []
 
     @tasks = PropertySet.new(self, false)
     attrs = [
@@ -79,6 +80,7 @@ class Project
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
+      [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
       [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
       [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],
@@ -129,10 +131,13 @@ class Project
 
   def scenario(arg)
     if arg.class == Fixnum
-      if $DEBUG && (arg < 0 || arg >= @scenariosByIndex.length)
+      if $DEBUG && (arg < 0 || arg >= @scenarios.length)
         raise "Scenario index out of range: #{arg}"
       end
-      @scenariosByIndex[arg]
+      @scenarios.each do |sc|
+        return sc if sc.sequenceNo - 1 == arg
+      end
+      raise "No scenario with index #{arg}"
     else
       if $DEBUG && @scenarios[arg].nil?
         raise "No scenario with id '#{arg}'"
@@ -142,10 +147,10 @@ class Project
   end
 
   def scenarioIdx(sc)
-    if sc.class == Scenario
-      sc.sequenceNo - 1
+    if sc.is_a?(Scenario)
+      return sc.sequenceNo - 1
     else
-      @scenarios[sc].sequenceNo - 1
+      return @scenarios[sc].sequenceNo - 1
     end
   end
 
@@ -164,9 +169,9 @@ class Project
   end
 
   def schedule
-    @resources.inheritScenarioAttributes
-    @tasks.inheritScenarioAttributes
-
+    @resources.inheritAttributesFromScenario
+    @tasks.inheritAttributesFromScenario
+    puts @tasks['cont.foo']
     begin
       @scenarios.each do |sc|
         # Skip disabled scenarios
@@ -214,7 +219,6 @@ class Project
 
   def addScenario(scenario)
     @scenarios.addProperty(scenario)
-    @scenariosByIndex << scenario
   end
 
   def addTask(task)

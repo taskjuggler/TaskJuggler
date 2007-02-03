@@ -77,7 +77,7 @@ class TextScanner
   end
 
   def line
-    @cf ? @cf.line : ""
+    @cf ? @cf.line : 0
   end
 
   def nextToken
@@ -95,6 +95,8 @@ class TextScanner
 	      if tok = readBlanks(c)
 	        return tok
         end
+      when ?#
+        skipComment
       when ?0..?9
         return readNumber(c)
       when ?"
@@ -134,6 +136,7 @@ private
       end
     else
       c = @cf.charBuffer.pop
+      @cf.lineNo += 1 if c == ?\n
     end
 
     @cf.line = "" if @cf.line[-1] == ?\n
@@ -153,6 +156,13 @@ private
     @cf.line.chop!
     @cf.charBuffer << c
     @cf.lineNo -= 1 if c == ?\n
+  end
+
+  def skipComment
+    # Read all characters till line of file end is found
+    while (c = nextChar(true)) && c != ?\n
+    end
+    returnChar(c)
   end
 
   def readBlanks(c)

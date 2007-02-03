@@ -30,6 +30,8 @@ class AttributeBase
       @value = value.clone
     elsif value.is_a?(WorkingHours)
       @value = WorkingHours.new(value)
+    elsif value.is_a?(Array)
+      @value = Array.new(value)
     else
       raise "Don't know how to copy values of class #{value.class}"
     end

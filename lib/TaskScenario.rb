@@ -160,7 +160,7 @@ class TaskScenario < ScenarioData
     # Check that all following tasks end before this task
     @followers.each do |task|
       if task['start', @scenarioIdx] < a('end')
-        error("Task #{@property.id} ends after task #{@task.id} " +
+        error("Task #{@property.id} ends after task #{task.id} " +
               "starts but needs to precede it.")
       end
     end
@@ -262,7 +262,6 @@ class TaskScenario < ScenarioData
         return true
       end
     elsif a('milestone')
-      puts "Setting milestone #{@property.id}"
       if a('forward')
         @property['end', @scenarioIdx] = a('start')
         propagateEnd
@@ -303,7 +302,7 @@ class TaskScenario < ScenarioData
     @property.children.each do |task|
       if !task.hasStartDependency(@scenarioIdx) &&
          !task['scheduled', @scenarioIdx]
-        task['start', @scenarioIdx] = start
+        task['start', @scenarioIdx] = a('start')
         task.propagateStart(@scenarioIdx, true)
       end
     end
@@ -547,7 +546,7 @@ class TaskScenario < ScenarioData
             allocation.lockedResource = candidate
             found = true
             break
-          elsif candidate.booked?
+          elsif candidate.booked?(@scenarioIdx, sbIdx)
             busy = true
           end
         end
@@ -562,6 +561,7 @@ class TaskScenario < ScenarioData
   end
 
   def bookResource(resource, sbIdx)
+    booked = false
     resource.all.each do |r|
       if r.book(@scenarioIdx, sbIdx, @property)
 
@@ -578,9 +578,14 @@ class TaskScenario < ScenarioData
 
         @doneEffort += 1
 
-        a('bookedresources') << r unless a('bookedresources').index(r)
+        unless a('bookedresources').include?(r)
+          @property['bookedresources', @scenarioIdx] << r
+        end
+        booked = true
       end
     end
+
+    booked
   end
 
   def createCandidateList(sbIdx, allocation)

@@ -12,23 +12,45 @@
 
 require 'ReportBase'
 require 'TableColumnDefinition'
+require 'LogicalExpression'
 
 # A report can be composed of multiple report elements. Each element consists
 # of a table and a few optional items like a heading and caption around it.
 class ReportElement
 
-  attr_accessor :columns, :timeformat
+  attr_accessor :columns, :start, :end, :scenarios, :taskRoot, :timeFormat,
+                :hideTask, :rollupTask, :hideResource, :rollupResource,
+                :propertiesById, :propertiesByType
 
   def initialize(report)
     @report = report
     @report.addElement(self)
     @columns = []
-    @timeformat = project['timeformat']
+    @start = @report.start
+    @end = @report.end
+    @scenarios = [ 0 ]
+    @taskRoot = nil
+    @timeFormat = project['timeformat']
+    @hideTask = nil
+    @rollupTask = nil
+    @hideResource = nil
+    @rollupResource = nil
+
+    @propertiesById = {
+      # ID               Header    Indent  Align
+      "name"        => [ "Name",   true,   0, ],
+      "id"          => [ "Id",     false,  0, ]
+    }
+    @propertiesByType = {
+      # Type                  Indent  Align
+      StringAttribute    => [ false, 0 ],
+      FloatAttribute     => [ false, 2 ]
+    }
   end
 
   # This is the default attribute value to text converter. It is used
   # whenever we need no special treatment.
-  def cellText(property, colId)
+  def cellText(property, scenarioIdx, colId)
     if property.class == Resource
       attribute = project.resources
     elsif property.class == Task
@@ -39,7 +61,7 @@ class ReportElement
 
     # Get the value no matter if it's scenario specific or not.
     if attribute.scenarioSpecific?(colId)
-      value = property[colId, 0]
+      value = property[colId, scenarioIdx]
     else
       value = property.get(colId)
     end
@@ -50,10 +72,30 @@ class ReportElement
       # Certain attribute types need special treatment.
       case attribute.attributeType(colId)
       when DateAttribute.class
-        value.to_s(timeformat)
+        value.to_s(timeFormat)
       else
         value.to_s
       end
+    end
+  end
+
+  def indent(colId, propertyType)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][1]
+    elsif @propertiesByType.has_key?(propertyType)
+      return @propertiesByType[propertyType][0]
+    else
+      false
+    end
+  end
+
+  def alignment(colId, propertyType)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][2]
+    elsif @propertiesByType.has_key?(propertyType)
+      return @propertiesByType[propertyType][1]
+    else
+      1
     end
   end
 

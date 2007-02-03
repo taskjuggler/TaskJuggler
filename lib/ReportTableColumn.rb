@@ -1,5 +1,5 @@
 #
-# ReportColumn.rb - TaskJuggler
+# ReportTableColumn.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -12,16 +12,12 @@
 
 require 'HTMLUtils'
 
-class ReportColumn
+class ReportTableColumn
 
   include HTMLUtils
 
-  attr_accessor :alignment, :indent
-
   def initialize(title)
     @title = title
-    # How to horizontally align the cells of this column
-    # 0 : left, 1 center, 2 right
     @alignment = 0
     @indent = false
   end

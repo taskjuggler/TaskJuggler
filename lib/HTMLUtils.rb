@@ -31,6 +31,7 @@ module HTMLUtils
                text-align:center }
     .tabline1 { background-color:#d3eefd}
     .tabline2 { background-color:#dff1fb}
+    .tabcell { }
   </style>
 </head>
 <body>
@@ -41,8 +42,8 @@ END_OF_TEXT
   def generateFooter
     @file << "<p align=\"center\"><span style=\"font-size:0.7em\">"
     @file << htmlFilter(@project['copyright']) + " - " if @project['copyright']
-    @file << htmlFilter(@project['version']) + " - " +
-             "Created on #{TjTime.now.to_s(@element.timeformat)} with " +
+    @file << "Version " + htmlFilter(@project['version']) + " - " +
+             "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} with " +
              "<a href=\"http://www.taskjuggler.org\">TaskJuggler</a> " +
              "</span></p>"
     @file << "</body></html>\n"

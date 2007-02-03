@@ -29,15 +29,16 @@ class PropertyTreeNode
 
     @attributes = Hash.new
     @scenarioAttributes = Array.new(@project.scenarioCount)
-    for i in 0...@project.scenarioCount
+    0.upto(@project.scenarioCount - 1) do |i|
       @scenarioAttributes[i] = Hash.new
     end
   end
 
   def inheritAttributes
+    # These attributes are inherited from the global context
     whitelist = %w( priority projectid rate vacation workinghours )
 
-    # Inherit on scenario-specific values
+    # Inherit scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|
       next if attrDef.scenarioSpecific || !attrDef.inheritable
 
@@ -50,7 +51,6 @@ class PropertyTreeNode
         # Inherit selected values from project if top-level property
         if whitelist.index(attrDef.id)
           if @project[attrDef.id]
-            puts attrDef.id
             @attributes[attrDef.id].inherit(@project[attrDef.id])
           end
         end
@@ -81,17 +81,18 @@ class PropertyTreeNode
     end
   end
 
-  def inheritScenarioAttributes
+  def inheritAttributesFromScenario
     # Inherit scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|
-      next unless attrDef.scenarioSpecific || attrDef.inheritable
+      next unless attrDef.scenarioSpecific
 
-      # We know that parents precede their children in the list. So it's safe
-      # to iterate over the list instead of recursively descend the tree.
+      # We know that parent scenarios precede their children in the list. So
+      # it's safe to iterate over the list instead of recursively descend
+      # the tree.
       0.upto(@project.scenarioCount - 1) do |scenarioIdx|
         scenario = @project.scenario(scenarioIdx)
         next if scenario.parent.nil?
-        parentScenarioIdx = scenario.parent['seqno']
+        parentScenarioIdx = scenario.parent.sequenceNo - 1
 
         # We copy only provided or inherited values from parent scenario when
         # we don't have a provided or inherited value in this scenario.
@@ -100,7 +101,7 @@ class PropertyTreeNode
            !(provided(attrDef.id, scenarioIdx) ||
              inherited(attrDef.id, scenarioIdx))
           @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
-              @scenarioAttributes[parentScenarioIdx][attrDef.id].value)
+              @scenarioAttributes[parentScenarioIdx][attrDef.id].get)
         end
       end
     end
@@ -130,9 +131,10 @@ class PropertyTreeNode
   def fullId
     res = @id
     t = self
-    unless (t = t.parent).nil?
+    until (t = t.parent).nil?
       res = t.id + "." + res
     end
+    res
   end
 
   def level
@@ -141,10 +143,21 @@ class PropertyTreeNode
     until (t = t.parent).nil?
       level += 1
     end
+    level
   end
 
   def addChild(child)
     @children.push(child)
+  end
+
+  # Find out if this property is a direct or indirect child of _ancestor_.
+  def isChildOf?(ancestor)
+    parent = self
+    while (parent)
+      return true if (parent == ancestor)
+      parent = parent.parent
+    end
+    false
   end
 
   def leaf?
@@ -156,12 +169,13 @@ class PropertyTreeNode
   end
 
   def declareAttribute(attributeType)
-    attribute = attributeType.objClass.new(attributeType, self)
     if attributeType.scenarioSpecific
-      for i in 0...@project.scenarioCount
+      0.upto(@project.scenarioCount - 1) do |i|
+        attribute = attributeType.objClass.new(attributeType, self)
         @scenarioAttributes[i][attribute.id] = attribute
       end
     else
+      attribute = attributeType.objClass.new(attributeType, self)
       @attributes[attribute.id] = attribute
     end
   end
@@ -203,16 +217,8 @@ class PropertyTreeNode
   def [](attributeId, scenario)
     if @scenarioAttributes[scenario].has_key?(attributeId)
       @scenarioAttributes[scenario][attributeId].get
-    elsif @attributes.has_key?(attributeId)
-      @attributes[attributeId].get
-    elsif attributeId == 'id'
-      @id
-    elsif attributeId == 'name'
-      @name
-    elsif attributeId == 'seqno'
-      @sequenceNo
     else
-      raise "Unknown attribute #{attributeId}"
+      get(attributeId);
     end
   end
 
@@ -224,16 +230,24 @@ class PropertyTreeNode
     end
   end
 
+  def inherited(attributeId, scenarioIdx = nil)
+    if scenarioIdx
+      @scenarioAttributes[scenarioIdx][attributeId].inherited
+    else
+      @attributes[attributeId].inherited
+    end
+  end
+
   def to_s
     res = "#{self.class} #{fullId} \"#{@name}\"\n" +
           "  Sequence No: #{@sequenceNo}\n"
 
-    res += "  Parent: #{@parent['id']}\n" if @parent
+    res += "  Parent: #{@parent.get('id')}\n" if @parent
     @attributes.each do |key, attr|
       res += "  #{key}: " + attr.to_s + "\n"
     end
     0.upto(project.scenarioCount - 1) do |sc|
-      res += "  Scenario #{project.scenario(sc).get('id')}\n"
+      res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
       @scenarioAttributes[sc].each do |key, attr|
         res += "    #{key}: " + attr.to_s + "\n"
       end

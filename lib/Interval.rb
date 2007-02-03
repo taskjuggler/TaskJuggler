@@ -9,7 +9,6 @@
 #
 # $Id$
 #
-
 require 'TjTime'
 
 # The Interval class provides objects that model a time interval. The start
@@ -50,11 +49,17 @@ class Interval
   def contains(arg)
     if arg.class == TjTime
       @start <= arg && arg < @end
-    else if arg.class == Interval
+    elsif arg.class == Interval
       @start <= arg.start && arg.end <= @end
     else
       raise "Unsupported argument"
     end
+  end
+
+  # Check whether the Interval _iv_ overlaps with this interval.
+  def overlaps?(iv)
+    (@start <= iv.start && iv.start < @end) ||
+    (iv.start <= @start && @start < iv.end)
   end
 
   def combine(iv)
@@ -82,5 +87,4 @@ class Interval
     @start == iv.start && @end == iv.end
   end
 
-end
 end

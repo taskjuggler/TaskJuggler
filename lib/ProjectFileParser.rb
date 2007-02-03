@@ -260,6 +260,9 @@ class ProjectFileParser < TextParser
 
     newRule('scenarioHeader')
     newPattern(%w( _scenario $ID $STRING ), Proc.new {
+      # If this is the top-level scenario, we must delete the default scenario
+      # first.
+      @project.scenarios.clearProperties if @scenario.nil?
       @scenario = Scenario.new(@project, @val[1], @val[2], @scenario)
     })
 
@@ -282,6 +285,11 @@ class ProjectFileParser < TextParser
       @project['copyright'] = @val[1]
     })
     newPattern(%w( !include ))
+    newPattern(%w( _flags !declareFlagList ), Proc.new {
+      unless @project['flags'].include?(@val[1])
+        @project['flags'] += @val[1]
+      end
+    })
     newPattern(%w( !report ))
     newPattern(%w( !resource ))
     newPattern(%w( !task ))
@@ -290,6 +298,22 @@ class ProjectFileParser < TextParser
     newRule('include')
     newPattern(%w( _include $STRING ), Proc.new {
       @scanner.include(@val[1])
+    })
+
+    newRule('declareFlagList')
+    newPattern(%w( $ID !moreDeclareFlags ), Proc.new {
+      if @val[1].nil?
+        [ @val[0] ]
+      else
+        [ @val[0] ] + @val[1]
+      end
+    })
+
+    newRule('moreDeclareFlags')
+    optional
+    repeatable
+    newPattern(%w( _, $ID ), Proc.new {
+      @val[1]
     })
 
     newRule('workinghours')
@@ -385,7 +409,9 @@ class ProjectFileParser < TextParser
     # Other attributes will be added automatically.
 
     newRule('resourceScenarioAttributes')
-    newPattern(%w( _foo ))
+    newPattern(%w( _flags !flagList ), Proc.new {
+      @property['flags', @scenarioIdx] += @val[1]
+    })
     # Other attributes will be added automatically.
 
     newRule('task')
@@ -432,8 +458,10 @@ class ProjectFileParser < TextParser
           end
         end
       end
-      @property['allocate', @scenarioIdx] <<
-        Allocation.new(candidates, selectionMode, persistant, mandatory)
+      # Don't use << operator here so the 'provided' flag gets set properly.
+      @property['allocate', @scenarioIdx] =
+        @property['allocate', @scenarioIdx] +
+        [ Allocation.new(candidates, selectionMode, persistant, mandatory) ]
     })
     newPattern(%w( _depends !taskList ), Proc.new {
       @property['depends', @scenarioIdx] = @val[1]
@@ -447,6 +475,9 @@ class ProjectFileParser < TextParser
     newPattern(%w( _end !valDate ), Proc.new {
       @property['end', @scenarioIdx] = @val[1]
       @property['forward'] = false
+    })
+    newPattern(%w( _flags !flagList ), Proc.new {
+      @property['flags', @scenarioIdx] += @val[1]
     })
     newPattern(%w( _length !workingDuration ), Proc.new {
       @property['length', @scenarioIdx] = @val[1]
@@ -537,6 +568,30 @@ class ProjectFileParser < TextParser
       @val[1]
     })
 
+    newRule('flagList')
+    newPattern(%w( !flag !moreFlags ), Proc.new {
+      if @val[1].nil?
+        [ @val[0] ]
+      else
+        [ @val[0] ] + @val[1]
+      end
+    })
+
+    newRule('flag')
+    newPattern(%w( $ID ), Proc.new {
+      unless @project['flags'].include?(@val[0])
+        error("Undeclared flag #{@val[0]}")
+      end
+      @val[0]
+    })
+
+    newRule('moreFlags')
+    optional
+    repeatable
+    newPattern(%w( _, !flag ), Proc.new {
+      @val[1]
+    })
+
     newRule('durationUnit')
     newPattern(%w( $ID ), Proc.new {
       units = [ 'min', 'h', 'd', 'w', 'm', 'y' ]
@@ -605,6 +660,23 @@ class ProjectFileParser < TextParser
       columns += @val[2] if @val[2]
       @reportElement.columns = columns
     })
+    newPattern(%w( _hidetask !logicalExpression ), Proc.new {
+      @reportElement.hideTask = @val[1]
+    })
+    newPattern(%w( _rolluptask !logicalExpression ), Proc.new {
+      @reportElement.rollupTask = @val[1]
+    })
+    newPattern(%w( _scenarios !scenarioIdList ), Proc.new {
+      # Don't include disabled scenarios in the report
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      @reportElement.scenarios = @val[1]
+    })
+    newPattern(%w( _taskroot $ABSOLUTE_ID ), Proc.new {
+      if (task = @project.task(@val[1])).nil?
+        error "Unknown task #{@val[1]}"
+      end
+      @reportElement.taskroot = task
+    })
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @reportElement.timeformat = @val[1]
     })
@@ -641,6 +713,126 @@ class ProjectFileParser < TextParser
     newPattern(%w( _, !columnDef ), Proc.new {
       @val[1]
     })
+
+    newRule('scenarioIdList')
+    newPattern(%w( !scenarioIdx !moreScenarioIds ), Proc.new {
+      if @val[1].nil?
+        [ @val[0] ]
+      else
+        [ @val[0] ] + @val[1]
+      end
+    })
+
+    newRule('scenarioIdx')
+    newPattern(%w( $ID ), Proc.new {
+      if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
+        error("Unknown scenario #{@val[1]}")
+      end
+      scenarioIdx
+    })
+
+    newRule('moreScenarioIds')
+    optional
+    repeatable
+    newPattern(%w( _, !scenarioIdx ), Proc.new {
+      @val[1]
+    })
+
+    newRule('logicalExpression')
+    newPattern(%w( !operation ), Proc.new {
+      LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
+    })
+
+    newRule('operation')
+    newPattern(%w( !operand !operatorAndOperand ), Proc.new {
+      operation = LogicalOperation.new(@val[0])
+      unless @val[1].nil?
+        operation.operator = @val[1][0]
+        operation.operand2 = @val[1][1]
+      end
+      operation
+    })
+
+    newRule('operand')
+    newPattern(%w( _( !operation _) ), Proc.new {
+      @val[1]
+    })
+    newPattern(%w( _~ !operand ), Proc.new {
+      operation = LogicalOperation.new(@val[1])
+      operation.operator = '~'
+      operation
+    })
+    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
+      if @val[0].count('.') > 1
+        error "Attributes must be specified as <scenarioID>.<attribute>"
+      end
+      scenario, attribute = @val[0].split('.')
+      if (scenarioIdx = @project.scenarioIdx(scenario)).nil?
+        error "Unknown scenario ID #{scenario}"
+      end
+      LogicalAttribute.new(attribute, scenarioIdx)
+    })
+    newPattern(%w( $DATE ), Proc.new {
+      LogicalOperation.new(@val[0])
+    })
+    newPattern(%w( $ID !argumentList ), Proc.new {
+      if @val[1].nil?
+        unless @project['flags'].include?(@val[0])
+          error "Undeclared flag #{@val[0]}"
+        end
+        operation = LogicalFlag.new(@val[0])
+      else
+        # TODO: add support for old functions
+      end
+    })
+    newPattern(%w( $INTEGER ), Proc.new {
+      LogicalOperation.new(@val[0])
+    })
+    newPattern(%w( $STRING ), Proc.new {
+      LogicalOperation.new(@val[0])
+    })
+
+    newRule('operatorAndOperand')
+    optional
+    newPattern(%w( _| !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _& !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _> !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _< !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _= !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _>= !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+    newPattern(%w( _<= !operand), Proc.new {
+      [ @val[0], @val[1] ]
+    })
+
+    newRule('argumentList')
+    optional
+    newPattern(%w( _( !operation !moreArguments _) ), Proc.new {
+      if @val[1].nil?
+        [ @val[0] ]
+      else
+        [ @val[0] ] + @val[1]
+      end
+    })
+
+    newRule('moreArguments')
+    optional
+    repeatable
+    newPattern(%w( _, !operation), Proc.new {
+      @val[1]
+    })
+
   end
 
   def open(masterFile)

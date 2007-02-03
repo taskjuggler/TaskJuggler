@@ -14,13 +14,15 @@ require 'ReportElement'
 
 class ReportBase
 
-  attr_reader :project
+  attr_reader :project, :start, :end
 
   def initialize(project, name)
     @project = project
     @project.addReport(self)
     @name = name
     @file = nil
+    @start = @project['start']
+    @end = @project['end']
 
     @elements = []
   end

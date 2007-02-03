@@ -1,5 +1,5 @@
 #
-# TaskListAttribute.rb - TaskJuggler
+# FlagListAttribute.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,7 +10,9 @@
 # $Id$
 #
 
-class TaskListAttribute < AttributeBase
+require 'AttributeBase'
+
+class FlagListAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
 
@@ -18,16 +20,14 @@ class TaskListAttribute < AttributeBase
   end
 
   def to_s
-    out = []
-    @value.each { |t| out << t.task.fullId if t.task }
-    out.join(', ')
+    @value.join(', ')
   end
 
   def to_tjp
-    out = []
-    @value.each { |taskDep| out << taskDep.task.fullId }
-    @type.id + " " + out.join(', ')
+    "flags #{@value.join(', ')}\n"
   end
 
 end
+
+
 

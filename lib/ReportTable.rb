@@ -10,8 +10,8 @@
 # $Id$
 #
 
-require 'ReportColumn'
-require 'ReportLine'
+require 'ReportTableColumn'
+require 'ReportTableLine'
 
 # This class models the intermediate format of all report tables. The
 # generators for all the table reports create the report in this intermediate
