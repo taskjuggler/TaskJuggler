@@ -26,7 +26,7 @@ class ScenarioData
 
   def error(text, abort = true)
     # TODO: Add source file and line info
-    $stderr.puts "Error: " + text
+    $stderr.puts "Error: Scenario #{@project.scenario(@scenarioIdx).id}: "+ text
     raise TjException.new, "Scheduling error" if abort
   end
 

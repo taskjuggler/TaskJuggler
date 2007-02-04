@@ -34,6 +34,8 @@ class TaskScenario < ScenarioData
     @doneDuration = 0
     @doneLength = 0
     @doneEffort = 0
+
+    propagateInitialValues
   end
 
   def Xref
@@ -151,6 +153,7 @@ class TaskScenario < ScenarioData
 
     # Check that all preceding tasks end before this task.
     @previous.each do |task|
+      next if task['end', @scenarioIdx].nil?
       if task['end', @scenarioIdx] > a('start')
         error("Task #{@property.id} starts before task #{@task.id} " +
               "ends needs to follow it.")
@@ -159,6 +162,7 @@ class TaskScenario < ScenarioData
 
     # Check that all following tasks end before this task
     @followers.each do |task|
+      next if task['start', @scenarioIdx].nil?
       if task['start', @scenarioIdx] < a('end')
         error("Task #{@property.id} ends after task #{task.id} " +
               "starts but needs to precede it.")
@@ -239,11 +243,9 @@ class TaskScenario < ScenarioData
       if (a('length') > 0 && @doneLength >= a('length')) ||
          (a('duration') > 0 && @doneDuration >= a('duration'))
         if a('forward')
-          @property['end', @scenarioIdx] = slot + slotDuration
-          propagateEnd
+          propagateEnd(slot + slotDuration)
         else
-          @property['start', @scenarioIdx] = slot
-          propagateStart
+          propagateStart(slot)
         end
         @property['scheduled', @scenarioIdx] = true
         return true
@@ -252,39 +254,39 @@ class TaskScenario < ScenarioData
       bookResources(@scenarioIdx, slot, slotDuration)
       if @doneEffort >= a('effort')
         if a('forward')
-          @property['end', @scenarioIdx] = @tentativeEnd
-          propagateEnd
+          propagateEnd(@tentativeEnd)
         else
-          @property['start', @scenarioIdx] = @tentativeStart
-          propagateStart
+          propagateStart(@tentativeStart)
         end
         @property['scheduled', @scenarioIdx] = true
         return true
       end
     elsif a('milestone')
       if a('forward')
-        @property['end', @scenarioIdx] = a('start')
-        propagateEnd
+        propagateEnd(a('start'))
       else
-        @property['start', @scenarioIdx] = a('end')
-        propagateStart
+        propagateStart(a('end'))
       end
     else
       #TODO: Handle start/end task
     end
   end
 
-  def propagateStart(notUpwards = true)
-    return if a('start').nil?
+  def propagateStart(date)
+    @property['start', @scenarioIdx] = date
 
     if a('milestone')
+      # Start and end date of a milestone are identical.
       @property['scheduled', @scenarioIdx] = true
       if a('end').nil?
-        @property['end', @scenarioIdx] = a('start')
-        propagateEnd(notUpwards)
+        propagateEnd(a('start'))
+      else
+        raise "Milestone may not have 2 dates."
       end
     end
 
+    # Set start date to all previous tasks that have no start, are ALAP
+    # tasks or have no duration. */
     @previous.each do |task|
       if task['end', @scenarioIdx].nil? &&
          !task.latestEnd(@scenarioIdx).nil? &&
@@ -294,32 +296,31 @@ class TaskScenario < ScenarioData
            task['length', @scenarioIdx] == 0 &&
            task['duration', @scenarioIdx] == 0 &&
            !task['milestone', @scenarioIdx]))
-        task['end', @scenarioIdx] = task.latestEnd(@scenarioIdx)
-        task.propagateEnd(@scenarioIdx, notUpwards)
+        task.propagateEnd(@scenarioIdx, task.latestEnd(@scenarioIdx))
       end
     end
 
+    # Propagate start date to sub tasks which have only an implicit
+    # dependency on the parent task. Do not touch container tasks.
     @property.children.each do |task|
       if !task.hasStartDependency(@scenarioIdx) &&
          !task['scheduled', @scenarioIdx]
-        task['start', @scenarioIdx] = a('start')
-        task.propagateStart(@scenarioIdx, true)
+        task.propagateStart(@scenarioIdx, a('start'))
       end
     end
 
-    if notUpwards && !@property.parent.nil?
-      @property.parent.scheduleContainer(@scenarioIdx, true)
+    if !@property.parent.nil?
+      @property.parent.scheduleContainer(@scenarioIdx)
     end
   end
 
-  def propagateEnd(notUpwards = true)
-    return if a('end').nil?
+  def propagateEnd(date)
+    @property['end', @scenarioIdx] = date
 
     if a('milestone')
       @property['scheduled', @scenarioIdx] = true
       if a('start').nil?
-        @property['start', @scenarioIdx] = a('end')
-        propagateStart(notUpwards)
+        propagateStart(a('end'))
       end
     end
 
@@ -332,25 +333,23 @@ class TaskScenario < ScenarioData
            task['length', @scenarioIdx] == 0 &&
            task['duration', @scenarioIdx] == 0 &&
            !task['milestone', @scenarioIdx]))
-        task['start', @scenarioIdx] = task.earliestStart(@scenarioIdx)
-        task.propagateStart(@scenarioIdx, notUpwards)
+        task.propagateStart(@scenarioIdx, task.earliestStart(@scenarioIdx))
       end
     end
 
     @property.children.each do |task|
       if !task.hasEndDependency(@scenarioIdx) &&
          !task['scheduled', @scenarioIdx]
-        task['end', @scenarioIdx] = a('end')
-        task.propagateEnd(@scenarioIdx, true)
+        task.propagateEnd(@scenarioIdx, a('end'), true)
       end
     end
 
-    if notUpwards && !@property.parent.nil?
-      @property.parent.scheduleContainer(@scenarioIdx, true)
+    if !@property.parent.nil?
+      @property.parent.scheduleContainer(@scenarioIdx)
     end
   end
 
-  def scheduleContainer(notUpwards)
+  def scheduleContainer
     return true if a('scheduled') || !@property.container?
 
     nStart = nil
@@ -368,13 +367,11 @@ class TaskScenario < ScenarioData
     end
 
     if a('start').nil? || a('start') > nStart
-      @property['start', @scenarioIdx] = nStart;
-      propagateStart(notUpwards)
+      propagateStart(nStart)
     end
 
     if a('end').nil? || a('end') < nEnd
-      @property['end', @scenarioIdx] = nEnd
-      propagateEnd(notUpwards)
+      propagateEnd(nEnd)
     end
 
     @property['scheduled', @scenarioIdx] = true
@@ -383,22 +380,22 @@ class TaskScenario < ScenarioData
   end
 
   def hasStartDependency
-    return true if @property.provided('start', @scenarioIdx) || @depends.empty?
+    return true if a('start') || !@previous.empty? || !a('forward')
 
     p = @property
     while (p = p.parent) do
-      return true if p.provided('start', @scenarioIdx)
+      return true if p.hasStartDependency(@scenarioIdx)
     end
 
     false
   end
 
   def hasEndDependency
-    return true if @property.provided('end', @scenarioIdx) || @precedes.empty?
+    return true if a('end') || !@followers.empty? || a('forward')
 
     p = @property
     while (p = p.parent) do
-      return true if p.provided('end', @scenarioIdx)
+      return true if p.hasEndDependency(@scenarioIdx)
     end
 
     false
@@ -593,7 +590,17 @@ class TaskScenario < ScenarioData
   end
 
   def markAsRunaway
-    puts "Task #{@property.get('id')} does not fit into project time frame"
+    error "Task #{@property.get('id')} does not fit into project time frame"
     @isRunAway = true
   end
+
+private
+
+  def propagateInitialValues
+    propagateStart(a('start')) if a('start')
+    propagateEnd(a('end')) if a('end')
+
+    scheduleContainer if @property.container?
+  end
+
 end

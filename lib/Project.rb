@@ -171,7 +171,6 @@ class Project
   def schedule
     @resources.inheritAttributesFromScenario
     @tasks.inheritAttributesFromScenario
-    puts @tasks['cont.foo']
     begin
       @scenarios.each do |sc|
         # Skip disabled scenarios
