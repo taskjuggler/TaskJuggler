@@ -41,6 +41,10 @@ class PropertyList < Array
     @sortingLevels += 1
   end
 
+  def treeMode?
+    @sortingLevels > 0 && @sortingCriteria[0] == 'tree'
+  end
+
   def sort!
     super do |a, b|
       res = 0
@@ -55,6 +59,15 @@ class PropertyList < Array
       end
       res
     end
+    index
+  end
+
+  def index
+    i = 0
+    each do |p|
+      p.set('index', i += 1)
+    end
+
   end
 
   def to_s

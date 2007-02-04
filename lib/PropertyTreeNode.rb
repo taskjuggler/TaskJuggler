@@ -12,19 +12,24 @@
 
 class PropertyTreeNode
 
-  attr_reader :id, :name, :parent, :project, :sequenceNo, :children
+  attr_reader :id, :name, :parent, :project, :sequenceNo, :levelSeqNo,
+              :children
 
   def initialize(propertySet, id, name, parent)
     @id = id
     @name = name
     @propertySet = propertySet
     @project = propertySet.project
-    @sequenceNo = @propertySet.items + 1
+    @level = -1
 
     @parent = parent
+    @sequenceNo = @propertySet.items + 1
     @children = Array.new
     if (@parent)
       @parent.addChild(self)
+      @levelSeqNo = parent.children.length + 1
+    else
+      @levelSeqNo = @propertySet.topLevelItems + 1
     end
 
     @attributes = Hash.new
@@ -137,13 +142,28 @@ class PropertyTreeNode
     res
   end
 
+  # Returns the level that this property is on. Top-level properties return
+  # 0, their children 1 and so on. This value is cached internally, so it does
+  # not have to be calculated each time the function is called.
   def level
+    return @level if @level >= 0
+
     t = self
-    level = 0
+    @level = 0
     until (t = t.parent).nil?
-      level += 1
+      @level += 1
     end
-    level
+    @level
+  end
+
+  def getWBSIndicies
+    idcs = []
+    p = self
+    begin
+      idcs.insert(0, p.levelSeqNo)
+      p = p.parent
+    end while p
+    idcs
   end
 
   def addChild(child)
@@ -153,9 +173,8 @@ class PropertyTreeNode
   # Find out if this property is a direct or indirect child of _ancestor_.
   def isChildOf?(ancestor)
     parent = self
-    while (parent)
+    while parent = parent.parent
       return true if (parent == ancestor)
-      parent = parent.parent
     end
     false
   end

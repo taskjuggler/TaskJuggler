@@ -82,6 +82,7 @@ class Project
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
+      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
       [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],
       [ 'maxstart',  'Max. Start',   DateAttribute,     true,  true,  nil ],
@@ -91,7 +92,9 @@ class Project
       [ 'precedes',  'Successors',   TaskListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
-      [ 'start',     'Start',        DateAttribute,     true,  true,  nil ]
+      [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
+      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]
     attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -102,7 +105,10 @@ class Project
         @attributes['workinghours'] ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
       [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0],
-      [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ]
+      [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ],
+      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]
     attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -170,7 +176,10 @@ class Project
 
   def schedule
     @resources.inheritAttributesFromScenario
+    @resources.index
     @tasks.inheritAttributesFromScenario
+    @tasks.index
+
     begin
       @scenarios.each do |sc|
         # Skip disabled scenarios

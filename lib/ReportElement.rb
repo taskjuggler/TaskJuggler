@@ -37,14 +37,14 @@ class ReportElement
     @rollupResource = nil
 
     @propertiesById = {
-      # ID               Header    Indent  Align
-      "name"        => [ "Name",   true,   0, ],
-      "id"          => [ "Id",     false,  0, ]
+      # ID               Header    Indent  Align FontFac.
+      "name"        => [ "Name",   true,   0,    1.0 ],
+      "id"          => [ "Id",     false,  0,    1.0 ]
     }
     @propertiesByType = {
-      # Type                  Indent  Align
-      StringAttribute    => [ false, 0 ],
-      FloatAttribute     => [ false, 2 ]
+      # Type                  Indent  Align FontFac.
+      StringAttribute    => [ false,  0,    1.0 ],
+      FloatAttribute     => [ false,  2,    1.0 ]
     }
   end
 
@@ -70,8 +70,8 @@ class ReportElement
       ''
     else
       # Certain attribute types need special treatment.
-      case attribute.attributeType(colId)
-      when DateAttribute.class
+      type = attribute.attributeType(colId)
+      if type == DateAttribute
         value.to_s(timeFormat)
       else
         value.to_s
@@ -96,6 +96,16 @@ class ReportElement
       return @propertiesByType[propertyType][1]
     else
       1
+    end
+  end
+
+  def fontFactor(colId, propertyType)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][3]
+    elsif @propertiesByType.has_key?(propertyType)
+      return @propertiesByType[propertyType][2]
+    else
+      1.0
     end
   end
 

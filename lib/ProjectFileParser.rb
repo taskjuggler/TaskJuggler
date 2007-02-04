@@ -671,14 +671,22 @@ class ProjectFileParser < TextParser
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
       @reportElement.scenarios = @val[1]
     })
-    newPattern(%w( _taskroot $ABSOLUTE_ID ), Proc.new {
+    newPattern(%w( _taskroot !taskRootId), Proc.new {
       if (task = @project.task(@val[1])).nil?
         error "Unknown task #{@val[1]}"
       end
-      @reportElement.taskroot = task
+      @reportElement.taskRoot = task
     })
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @reportElement.timeformat = @val[1]
+    })
+
+    newRule('taskRootId')
+    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
+      @val[0]
+    })
+    newPattern(%w( $ID ), Proc.new {
+      @val[0]
     })
 
     newRule('columnDef')

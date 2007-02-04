@@ -22,7 +22,7 @@ require 'PropertyTreeNode'
 # task.
 class PropertySet
 
-  attr_reader :project
+  attr_reader :project, :topLevelItems
 
   def initialize(project, flatNamespace)
     if $DEBUG && project.nil?
@@ -30,6 +30,7 @@ class PropertySet
     end
     @flatNamespace = flatNamespace
     @project = project
+    @topLevelItems = 0
     @attributeDefinitions = Hash.new
     @properties = Hash.new
 
@@ -125,6 +126,7 @@ class PropertySet
     else
       @properties[property.fullId] = property
     end
+    @topLevelItems += 1 unless property.parent
   end
 
   def [](id)
@@ -132,6 +134,36 @@ class PropertySet
       raise "The property with id #{id} is undefined"
     end
     @properties[id]
+  end
+
+  def index
+    digits = Math.log10(maxDepth).to_i + 1
+
+    each do |p|
+      wbsIdcs = p.getWBSIndicies
+      tree = ""
+      wbs = ""
+      first = true
+      wbsIdcs.each do |idx|
+        tree += idx.to_s.rjust(digits, '0')
+        if first
+          first = false
+        else
+          wbs += '.'
+        end
+        wbs += idx.to_s
+      end
+      p.set('wbs', wbs)
+      p.set('tree', tree)
+    end
+  end
+
+  def maxDepth
+    md = 0
+    each do |p|
+      md = p.level if p.level > md
+    end
+    md + 1
   end
 
   def items

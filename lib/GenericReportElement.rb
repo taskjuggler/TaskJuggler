@@ -22,12 +22,12 @@ class GenericReportElement
 
   # Take the complete task list and remove all tasks that are matching the
   # hide expression, the rollup Expression or are not a descendent of
-  # @taskroot. In case resource is not nil, a task is only included if
+  # @descr.taskRoot. In case resource is not nil, a task is only included if
   # the resource is allocated to it in any of the reported scenarios.
   def filterTaskList(list, resource, hideExpr, rollupExpr)
-    if @taskroot
-      # Remove all tasks that are not descendents of the taskroot.
-      list.delete_if { |task| !task.isChildOf?(taskroot) }
+    if @descr.taskRoot
+      # Remove all tasks that are not descendents of the taskRoot.
+      list.delete_if { |task| !task.isChildOf?(@descr.taskRoot) }
     end
 
     if resource
@@ -78,6 +78,7 @@ class GenericReportElement
       end
     end
 
+    # TODO: Re-add parents in tree mode
     list
   end
 
