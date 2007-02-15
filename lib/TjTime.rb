@@ -89,9 +89,9 @@ class TjTime
   end
 
   def beginOfWeek(startMonday)
-    t = @time.local.to_a
+    t = @time.to_a
     t[0, 3] = Array.new(3, 0)
-    t[3] -= t[6] - startMonday ? 1 : 0
+    t[3] -= t[6] - (startMonday ? 1 : 0)
     t.slice!(6, 4)
     t.reverse!
     TjTime.new(Time.local(*t))
@@ -193,6 +193,10 @@ class TjTime
 
   def to_i
     @time.to_i
+  end
+
+  def shortMonthName
+    @time.strftime('%b')
   end
 
   def method_missing(func, *args)

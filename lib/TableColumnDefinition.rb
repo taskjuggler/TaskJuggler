@@ -13,11 +13,12 @@
 class TableColumnDefinition
 
   attr_reader :id
-  attr_accessor :title
+  attr_accessor :title, :content
 
   def initialize(id, title)
     @id = id
     @title = title
+    @content = "load"
   end
 
 end

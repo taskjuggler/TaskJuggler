@@ -14,10 +14,12 @@ class ReportTableCell
 
   include HTMLUtils
 
-  attr_accessor :alignment, :indent, :fontFactor, :bold, :rows, :columns
+  attr_accessor :text, :hidden, :alignment, :indent,
+                :fontFactor, :bold, :rows, :columns
 
-  def initialize(text)
+  def initialize(text = '')
     @text = text
+    @hidden = false
     # How to horizontally align the cell
     # 0 : left, 1 center, 2 right
     @alignment = 0
@@ -34,6 +36,8 @@ class ReportTableCell
   end
 
   def to_html(indent)
+    return if @hidden
+
     # Determine cell style
     aligns = %w( left center right)
     style = "text-align:#{aligns[@alignment]}; "

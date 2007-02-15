@@ -32,6 +32,7 @@ class ProjectFileParser < TextParser
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
       @property = nil
+      @scenario = nil
       @project
     })
 

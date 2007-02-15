@@ -251,7 +251,7 @@ class TaskScenario < ScenarioData
         return true
       end
     elsif a('effort') > 0
-      bookResources(@scenarioIdx, slot, slotDuration)
+      bookResources(slot, slotDuration)
       if @doneEffort >= a('effort')
         if a('forward')
           propagateEnd(@tentativeEnd)
@@ -481,13 +481,13 @@ class TaskScenario < ScenarioData
     end
   end
 
-  def bookResources(sc, date, slotDuration)
+  def bookResources(date, slotDuration)
     iv = Interval.new(date, date + slotDuration)
     sbIdx = @project.dateToIdx(date)
 
     # We first have to make sure that if there are mandatory resources
     # that these are all available for the time slot.
-    @property['allocate', sc].each do |allocation|
+    @property['allocate', @scenarioIdx].each do |allocation|
       if allocation.mandatory
         return unless allocation.onShift?(iv)
 
@@ -514,7 +514,7 @@ class TaskScenario < ScenarioData
       end
     end
 
-    @property['allocate', sc].each do |allocation|
+    @property['allocate', @scenarioIdx].each do |allocation|
       # TODO: Handle shifts
       # TODO: Handle limits
 
@@ -592,6 +592,27 @@ class TaskScenario < ScenarioData
   def markAsRunaway
     error "Task #{@property.get('id')} does not fit into project time frame"
     @isRunAway = true
+  end
+
+  def getLoad(startIdx, endIdx, resource)
+    return 0.0 if a('milestone')
+
+    workLoad = 0.0
+    if @property.container?
+      @property.children.each do |task|
+        workLoad += getLoad(startIdx, endIdx, resource)
+      end
+    else
+      if resource
+        workLoad += resource.getLoad(@scenarioIdx, startIdx, endIdx, @property)
+      else
+        a('bookedresources').each do |resource|
+          workLoad += resource.getLoad(@scenarioIdx, startIdx, endIdx,
+              @property)
+        end
+      end
+    end
+    workLoad
   end
 
 private

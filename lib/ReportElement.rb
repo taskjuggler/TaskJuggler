@@ -18,7 +18,8 @@ require 'LogicalExpression'
 # of a table and a few optional items like a heading and caption around it.
 class ReportElement
 
-  attr_accessor :columns, :start, :end, :scenarios, :taskRoot, :timeFormat,
+  attr_accessor :columns, :start, :end, :scenarios, :taskRoot,
+                :timeFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
                 :propertiesById, :propertiesByType
 
@@ -31,6 +32,7 @@ class ReportElement
     @scenarios = [ 0 ]
     @taskRoot = nil
     @timeFormat = project['timeformat']
+    @weekStartsMonday = project['weekstartsmonday']
     @hideTask = nil
     @rollupTask = nil
     @hideResource = nil
@@ -115,7 +117,12 @@ class ReportElement
   end
 
   def defaultColumnTitle(id)
-    @report.defaultColumnTitle(id)
+    specials = %w( daily weekly monthly quarterly yearly)
+    return '' if specials.include?(id)
+
+    (name = @report.project.tasks.attributeName(id)).nil? &&
+    (name = @report.project.resources.attributeName(id)).nil?
+    name
   end
 
 end

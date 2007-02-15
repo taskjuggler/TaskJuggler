@@ -59,7 +59,6 @@ class Project
       'timeformat' => "%Y-%m-%d",
       'timezone' => nil,
       'weekstartsmonday' => true,
-      'weekStartsMonday' => true,
       'workinghours' => WorkingHours.new,
       'yearlyworkingdays' => 260.714
     }
@@ -103,8 +102,9 @@ class Project
       # ID           Name            Type               Inher. Scen.  Default
       [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
         @attributes['workinghours'] ],
+      [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
-      [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0],
+      [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0 ],
       [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
@@ -137,7 +137,7 @@ class Project
 
   def scenario(arg)
     if arg.class == Fixnum
-      if $DEBUG && (arg < 0 || arg >= @scenarios.length)
+      if $DEBUG && (arg < 0 || arg >= @scenarios.items)
         raise "Scenario index out of range: #{arg}"
       end
       @scenarios.each do |sc|
@@ -245,7 +245,7 @@ class Project
     return true
   end
 
-  def converToDailyLoad(seconds)
+  def convertToDailyLoad(seconds)
     seconds / (@attributes['dailyworkinghours'] * 3600)
   end
 
@@ -261,9 +261,15 @@ class Project
     @attributes['start'] + idx * @attributes['scheduleGranularity']
   end
 
-  def dateToIdx(date)
-    if $DEBUG && (date < @attributes['start'] || date >= @attributes['end'])
-      raise "Date is out of project time range"
+  def dateToIdx(date, forceIntoProject = false)
+    if (date < @attributes['start'] || date >= @attributes['end'])
+      if forceIntoProject
+        return 0 if date < @attributes['start']
+        return scoreboardSize - 1 if date >= @attributes['end']
+      else
+        raise "Date #{date} is out of project time range " +
+              "(#{@attributes['start']} - #{@attributes['end']})"
+      end
     end
     ((date - @attributes['start']) / @attributes['scheduleGranularity']).to_i
   end

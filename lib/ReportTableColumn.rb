@@ -16,20 +16,25 @@ class ReportTableColumn
 
   include HTMLUtils
 
-  def initialize(title)
-    @title = title
-    @alignment = 0
-    @indent = false
+  attr_reader :descr, :cell1, :cell2
+
+  def initialize(descr, title)
+    @descr = descr
+    @cell1 = ReportTableCell.new(title)
+    @cell2 = ReportTableCell.new('')
   end
 
   def setOut(out)
-    @out = out
+    @cell1.setOut(out)
+    @cell2.setOut(out)
   end
 
-  def to_html(indent)
-    @out << " " * indent + "<td>"
-    @out << htmlFilter(@title)
-    @out << "</td>\n"
+  def to_html(indent, row)
+    if row == 1
+      @cell1.to_html(indent)
+    else
+      @cell2.to_html(indent)
+    end
   end
 
 end

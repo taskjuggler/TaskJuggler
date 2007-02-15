@@ -28,14 +28,8 @@ class HTMLTaskReport < ReportBase
     # Set the default columns for this report.
     %w( seqno name start end ).each do |col|
       @element.columns << TableColumnDefinition.new(
-          col, defaultColumnTitle(col))
+          col, @element.defaultColumnTitle(col))
     end
-  end
-
-  def defaultColumnTitle(id)
-    (name = @project.tasks.attributeName(id)).nil? &&
-    (name = @project.resources.attributeName(id)).nil?
-    name
   end
 
   def generate

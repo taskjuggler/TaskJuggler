@@ -17,6 +17,8 @@ class ResourceScenario < ScenarioData
   def initialize(resource, scenarioIdx)
     super
     @scoreboard = nil
+    @firstBookedSlot = nil
+    @lastBookedSlot = nil
   end
 
   def prepareScenario
@@ -40,6 +42,12 @@ class ResourceScenario < ScenarioData
 
 #puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
+    if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
+      @firstBookedSlot = sbIdx
+    end
+    if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
+      @lastBookedSlot = sbIdx
+    end
   end
 
   def initScoreboard
@@ -56,6 +64,42 @@ class ResourceScenario < ScenarioData
 
   def onShift?(iv)
     a('workinghours').onShift?(iv)
+  end
+
+  def getLoad(startIdx, endIdx, task)
+    return 0.0 if @scoreboard.nil? || @firstBookedSlot.nil?
+
+    a('efficiency') * getAllocatedTimeLoad(startIdx, endIdx, task)
+  end
+
+private
+
+  def getAllocatedTimeLoad(startIdx, endIdx, task)
+    @project.convertToDailyLoad(getAllocatedTime(startIdx, endIdx, task))
+  end
+
+  def getAllocatedTime(startIdx, endIdx, task)
+    getAllocatedSlots(startIdx, endIdx, task) *
+      @project['scheduleGranularity']
+  end
+
+  # Count the booked slots between the start and end index. If _task_ is not
+  # nil count only those slots that are assigned to this particular task.
+  def getAllocatedSlots(startIdx, endIdx, task)
+    # To speedup the counting we start with the first booked slot and end
+    # with the last booked slot.
+    startIdx = @firstBookedSlot if startIdx < @firstBookedSlot
+    endIdx = @lastBookedSlot if endIdx > @lastBookedSlot
+
+    bookedSlots = 0
+    startIdx.upto(endIdx) do |idx|
+      if (task.nil? && @scoreboard[idx].is_a?(Task)) ||
+         (task && @scoreboard[idx] == task)
+        bookedSlots += 1
+      end
+    end
+
+    bookedSlots
   end
 
 end

@@ -47,9 +47,17 @@ class ReportTable
     @out << " " * indent + "<table align=\"center\" cellpadding=\"2\"; " +
             "class=\"tab\">\n"
 
-    @out << " " * (indent + 2) + "<thead><tr class=\"tabhead\">\n"
-    @columns.each { |col| col.to_html(indent + 4) }
-    @out << " " * (indent + 2) + "</tr></thead>\n"
+    @out << " " * (indent + 2) + "<thead>\n"
+
+    @out << " " * (indent + 4) + "<tr class=\"tabhead\">\n"
+    @columns.each { |col| col.to_html(indent + 6, 1) }
+    @out << " " * (indent + 4) + "</tr>\n"
+
+    @out << " " * (indent + 4) + "<tr class=\"tabhead\">\n"
+    @columns.each { |col| col.to_html(indent + 6, 2) }
+    @out << " " * (indent + 4) + "</tr>\n"
+
+    @out << " " * (indent + 2) + "</thead>\n"
 
     @out << " " * (indent + 2) + "<tbody>\n"
     @lines.each { |line| line.to_html(indent + 4) }
