@@ -58,11 +58,14 @@ class WorkingHours
     @days[dayOfWeek]
   end
 
+  # Return true if the whole interval is covered by working hour interval.
+  # The interval may not span across a day boundary.
   def onShift?(interval)
     # TODO: Add support for different time zones
     dow = interval.start.wday
     intervalStart = interval.start.secondsOfDay
     intervalEnd = interval.end.secondsOfDay
+    # Make sure we represent the end as 24:00 and not 0:00
     intervalEnd = 60 * 60 * 24 if intervalEnd == 0
     if $DEBUG && intervalEnd < intervalStart
       raise "Can't operate accross day boundaries"
@@ -74,10 +77,49 @@ class WorkingHours
     false
   end
 
+  # Return true if we have no working interval defined for the whole period
+  # specified by _interval_.
+  def timeOff?(interval)
+    t = interval.start.midnight
+    while t < interval.end
+      dow = t.wday
+      unless @days[dow].empty?
+        dayStart = t < interval.start ? interval.start.secondsOfDay :
+                                        t.secondsOfDay
+        dayEnd = t.sameTimeNextDay > interval.end ? interval.end.secondsOfDay :
+                 60 * 60 * 24;
+        @days[dow].each do |iv|
+          return false if (dayStart <= iv[0] && iv[0] < dayEnd) ||
+                          (iv[0] <= dayStart && dayStart < iv[1])
+        end
+      end
+      t = t.sameTimeNextDay
+    end
+    true
+  end
+
   def dayOff?(date)
     # TODO: Add support for different time zones
     dow = interval.start.wday
     @days[dow].empty?
+  end
+
+  def to_s
+    dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )
+    str = ''
+    0.upto(6) do |day|
+      str += "#{dayNames[day]}: "
+      if @days[day].empty?
+        str += "off\n"
+        next
+      end
+      @days[day].each do |iv|
+        str += "#{iv[0] / 3600}:#{iv[0] % 3600} - " +
+               "#{iv[1] / 3600}:#{iv[1] % 3600}   "
+      end
+      str += "\n"
+    end
+    str
   end
 
 end

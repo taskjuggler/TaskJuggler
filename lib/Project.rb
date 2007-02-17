@@ -241,8 +241,19 @@ class Project
     @reports.push(report)
   end
 
-  def isWorkingTime(iStart, iEnd)
-    return true
+  def isWorkingTime(*args)
+    if args.length == 1
+      if args[0].is_a?(Interval)
+        iv = args[0]
+      else
+        iv = Interval.new(args[0], args[0] + @attributes['scheduleGranularity'])
+      end
+    else
+      iv = Interval.new(args[0]. args[1])
+    end
+    return false if @attributes['workinghours'].timeOff?(iv)
+
+    true
   end
 
   def convertToDailyLoad(seconds)
@@ -262,10 +273,10 @@ class Project
   end
 
   def dateToIdx(date, forceIntoProject = false)
-    if (date < @attributes['start'] || date >= @attributes['end'])
+    if (date < @attributes['start'] || date > @attributes['end'])
       if forceIntoProject
         return 0 if date < @attributes['start']
-        return scoreboardSize - 1 if date >= @attributes['end']
+        return scoreboardSize if date > @attributes['end']
       else
         raise "Date #{date} is out of project time range " +
               "(#{@attributes['start']} - #{@attributes['end']})"

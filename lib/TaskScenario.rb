@@ -213,15 +213,18 @@ class TaskScenario < ScenarioData
   end
 
   def schedule(slot, slotDuration)
+    # Tasks must always be scheduled in a single contigous fashion. @lastSlot
+    # indicates the slot that was used for the previous call. Depending on the
+    # scheduling direction the next slot must be scheduled either right before
+    # or after this slot. If the current slot is not directly aligned, we'll
+    # wait for another call with a proper slot.
     if a('forward')
-       if @lastSlot.nil?
-         @lastSlot = a('start') - slotDuration
-         @tentativeEnd = slot + slotDuration
-       end
+      if @lastSlot.nil?
+        @lastSlot = a('start') - slotDuration
+        @tentativeEnd = slot + slotDuration
+      end
 
-       return false unless slot == @lastSlot + slotDuration
-
-       @lastSlot = slot + slotDuration
+      return false unless slot == @lastSlot + slotDuration
     else
       if @lastSlot.nil?
         @lastSlot = a('end')
@@ -229,9 +232,8 @@ class TaskScenario < ScenarioData
       end
 
       return false unless slot == @lastSlot - slotDuration
-
-      @lastSlot = slot
     end
+    @lastSlot = slot
 
     if a('length') > 0 || a('duration') > 0
       @doneDuration += 1
@@ -600,7 +602,7 @@ class TaskScenario < ScenarioData
     workLoad = 0.0
     if @property.container?
       @property.children.each do |task|
-        workLoad += getLoad(startIdx, endIdx, resource)
+        workLoad += task.getLoad(@scenarioIdx, startIdx, endIdx, resource)
       end
     else
       if resource

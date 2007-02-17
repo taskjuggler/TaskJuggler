@@ -21,6 +21,7 @@ class ReportElement
   attr_accessor :columns, :start, :end, :scenarios, :taskRoot,
                 :timeFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
+                :ganttBars,
                 :propertiesById, :propertiesByType
 
   def initialize(report)
@@ -37,6 +38,7 @@ class ReportElement
     @rollupTask = nil
     @hideResource = nil
     @rollupResource = nil
+    @ganttBars = true;
 
     @propertiesById = {
       # ID               Header    Indent  Align FontFac.
@@ -117,7 +119,7 @@ class ReportElement
   end
 
   def defaultColumnTitle(id)
-    specials = %w( daily weekly monthly quarterly yearly)
+    specials = %w( hourly daily weekly monthly quarterly yearly)
     return '' if specials.include?(id)
 
     (name = @report.project.tasks.attributeName(id)).nil? &&

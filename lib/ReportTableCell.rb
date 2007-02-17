@@ -14,11 +14,12 @@ class ReportTableCell
 
   include HTMLUtils
 
-  attr_accessor :text, :hidden, :alignment, :indent,
+  attr_accessor :text, :category, :hidden, :alignment, :indent,
                 :fontFactor, :bold, :rows, :columns
 
   def initialize(text = '')
     @text = text
+    @category = nil
     @hidden = false
     # How to horizontally align the cell
     # 0 : left, 1 center, 2 right
@@ -29,6 +30,13 @@ class ReportTableCell
     @bold = false
     @rows = 1
     @columns = 1
+  end
+
+  def ==(c)
+    @text == c.text &&
+    @alignment == c.alignment &&
+    @indent == c.indent
+    @category == c.category
   end
 
   def setOut(out)
@@ -58,8 +66,13 @@ class ReportTableCell
     attribs += "rowspan=\"#{@rows}\" " if @rows > 1
     attribs += "colspan=\"#{@columns}\" " if @columns > 1
 
-    @out << " " * indent + "<td #{attribs} " +
-            "style=\"#{style}\" class=\"tabcell\">"
+    @out << " " * indent + "<td "
+    if @category
+      @out << "class=\"#{category}\" "
+    else
+      @out << "class=\"tabcell\" "
+    end
+    @out << "#{attribs} style=\"#{style}\">"
     @out << htmlFilter(@text)
     @out << "</td>\n"
   end

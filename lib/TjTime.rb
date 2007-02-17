@@ -99,7 +99,8 @@ class TjTime
 
   def beginOfMonth
     t = @time.localtime.to_a
-    t[0, 4] = Array.new(4, 0)
+    t[0, 3] = Array.new(3, 0)
+    t[3] = 1
     t.slice!(6, 4)
     t.reverse!
     TjTime.new(Time.local(*t))
@@ -107,8 +108,9 @@ class TjTime
 
   def beginOfQuarter
     t = @time.localtime.to_a
-    t[0, 4] = Array.new(4, 0)
-    t[4] %= 3
+    t[0, 3] = Array.new(3, 0)
+    t[3] = 1
+    t[4] = ((t[4] - 1) % 3) + 1
     t.slice!(6, 4)
     t.reverse!
     TjTime.new(Time.local(*t))
@@ -116,7 +118,8 @@ class TjTime
 
   def beginOfYear
     t = @time.localtime.to_a
-    t[0, 5] = Array.new(5, 0)
+    t[0, 3] = Array.new(3, 0)
+    t[3, 2] = Array.new(2, 1)
     t.slice!(6, 4)
     t.reverse!
     TjTime.new(Time.local(*t))
@@ -124,6 +127,10 @@ class TjTime
 
   def hoursLater(hours)
     TjTime.new(@time + hours * 3600)
+  end
+
+  def sameTimeNextHour
+    hoursLater(1)
   end
 
   def sameTimeNextDay
@@ -197,6 +204,14 @@ class TjTime
 
   def shortMonthName
     @time.strftime('%b')
+  end
+
+  def quarterName
+    "Q#{(@time.mon / 3) + 1}"
+  end
+
+  def weekdayAndDate
+    @time.strftime('%A %Y-%m-%d')
   end
 
   def method_missing(func, *args)

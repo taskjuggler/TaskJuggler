@@ -48,9 +48,9 @@ class Interval
 
   def contains(arg)
     if arg.class == TjTime
-      @start <= arg && arg < @end
+      return @start <= arg && arg < @end
     elsif arg.class == Interval
-      @start <= arg.start && arg.end <= @end
+      return @start <= arg.start && arg.end <= @end
     else
       raise "Unsupported argument"
     end
@@ -85,6 +85,10 @@ class Interval
 
   def ==(iv)
     @start == iv.start && @end == iv.end
+  end
+
+  def to_s
+    @start.to_s + ' - ' + @end.to_s
   end
 
 end

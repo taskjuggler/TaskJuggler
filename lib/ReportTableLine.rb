@@ -14,11 +14,20 @@ require 'ReportTableCell'
 
 class ReportTableLine
 
-  attr_accessor :indentation
+  attr_accessor :indentation, :even
 
   def initialize
     @cells = []
     @indentation = 0
+    @even = true
+  end
+
+  def last
+    # Return the last non-hidden cell of the line.
+    1.upto(@cells.length) do |i|
+      return @cells[-i] unless @cells[-i].hidden
+    end
+    nil
   end
 
   def setOut(out)

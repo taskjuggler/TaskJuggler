@@ -13,8 +13,18 @@
 module HTMLUtils
 
   def htmlFilter(text)
-    # TODO: Implement HTML sanitizer
-    text
+    out = ''
+    text.each_byte do |c|
+      case c
+      when ?<
+        out << '&lt;'
+      when ?>
+        out << '&gt;'
+      else
+        out << c
+      end
+    end
+    out
   end
 
   def generateHeader
@@ -29,9 +39,17 @@ module HTMLUtils
     .tab { background-color:#4486ac }
     .tabhead { background-color:#8fd0f6; font-size:110%; font-weight:bold;
                text-align:center }
-    .tabline1 { background-color:#d3eefd}
-    .tabline2 { background-color:#dff1fb}
-    .tabcell { }
+    .tabhead_offduty { background-color:#dde375 }
+    .tabcell1 { background-color:#d3eefd }
+    .tabcell2 { background-color:#effbfd }
+    .busy1 { background-color:#ff6262 }
+    .busy2 { background-color:#ff7b7b }
+    .free1 { background-color:#64ff64 }
+    .free2 { background-color:#78ff78 }
+    .offduty1 { background-color:#dde375 }
+    .offduty2 { background-color:#f3f990 }
+    .taskbar1 { background-color:#adc3cf }
+    .taskbar2 { background-color:#c9dce0 }
   </style>
 </head>
 <body>

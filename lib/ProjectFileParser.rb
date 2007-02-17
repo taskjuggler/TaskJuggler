@@ -67,6 +67,25 @@ class ProjectFileParser < TextParser
       (@val[0] * convFactors[@val[1]]).to_i
     })
 
+    newRule('valInterval')
+    newPattern(%w( $DATE !intervalEnd ), Proc.new {
+      mode = @val[1][0]
+      endSpec = @val[1][1]
+      if mode == 0
+        iv = Interval.new(@val[0], endSpec)
+      else
+        iv = Interval.new(@val[0], @val[0] + endSpec)
+      end
+      # Make sure the interval is within the project time frame.
+      if iv.start < @project['start'] || iv.start >= @project['end']
+        error("Start date #{iv.start} must be within the project time frame")
+      end
+      if iv.end <= @project['start'] || iv.end > @project['end']
+        error("End date #{iv.end} must be within the project time frame")
+      end
+      iv
+    })
+
     newRule('projectBody')
     optional
     newPattern(%w( _{ !projectBodyAttributes _} ))
@@ -144,7 +163,8 @@ class ProjectFileParser < TextParser
                       60 * 60 * @project['dailyworkinghours'] *
                       @project['yearlyworkingdays'] # years
                     ]
-      (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
+      (@val[0] * convFactors[@val[1]] /
+       @project['scheduleGranularity']).round.to_i
     })
 
     newRule('extendProperty')
@@ -329,6 +349,7 @@ class ProjectFileParser < TextParser
       ([ @val[0] ] + @val[1]).each do |dayList|
         0.upto(6) { |i| weekDays[i] = true if dayList[i] }
       end
+      weekDays
     })
 
     newRule('moreListOfDays')
@@ -661,8 +682,15 @@ class ProjectFileParser < TextParser
       columns += @val[2] if @val[2]
       @reportElement.columns = columns
     })
+    newPattern(%w( _end !valDate ), Proc.new {
+      @reportElement.end = @val[1]
+    })
     newPattern(%w( _hidetask !logicalExpression ), Proc.new {
       @reportElement.hideTask = @val[1]
+    })
+    newPattern(%w( _period !valInterval), Proc.new {
+      @reportElement.start = @val[1].start
+      @reportElement.end = @val[1].end
     })
     newPattern(%w( _rolluptask !logicalExpression ), Proc.new {
       @reportElement.rollupTask = @val[1]
@@ -671,6 +699,9 @@ class ProjectFileParser < TextParser
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
       @reportElement.scenarios = @val[1]
+    })
+    newPattern(%w( _start !valDate ), Proc.new {
+      @reportElement.start = @val[1]
     })
     newPattern(%w( _taskroot !taskRootId), Proc.new {
       if (task = @project.task(@val[1])).nil?

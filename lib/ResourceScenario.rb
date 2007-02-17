@@ -40,7 +40,7 @@ class ResourceScenario < ScenarioData
   def book(sbIdx, task)
     return false if !available?(sbIdx)
 
-#puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)} for task #{task.fullId}\n"
+#puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
     if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
       @firstBookedSlot = sbIdx
