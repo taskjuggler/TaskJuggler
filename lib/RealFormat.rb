@@ -21,14 +21,29 @@ class RealFormat
   end
 
   def format(number)
-    intPart = number.to_i.to_s
-    fracPart = ((number - number.to_i) * (10 ** @fractionDigits)).to_i
-    out = ""
-    (intPart.length - 1).downto(0) do |i|
-      out = @thousandsSeparator + out if i % 3 == 0 && i > 0
-      out = intPart[i] + out
+    if number < 0
+      negate = true
+      number = -number
+    else
+      negate = false
     end
-    out = @signPrefix + out + @signSuffix if number < 0
+
+    intPart = number.to_i.to_s
+    if @fractionDigits > 0
+      fracPart = @fractionSeparator +
+                 ((number - number.to_i) *
+                  (10 ** @fractionDigits)).round.to_i.to_s
+    else
+      fracPart = ''
+    end
+
+    out = ''
+    1.upto(intPart.length) do |i|
+      out = intPart[-i, 1] + out
+      out = @thousandsSeparator + out if i % 3 == 0 && i < intPart.length
+    end
+    out += fracPart
+    out = @signPrefix + out + @signSuffix if negate
     out
   end
 

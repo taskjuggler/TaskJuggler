@@ -15,6 +15,7 @@ require 'PropertySet'
 require 'AllocationAttribute'
 require 'BooleanAttribute'
 require 'DateAttribute'
+require 'DependencyListAttribute'
 require 'DurationAttribute'
 require 'FlagListAttribute'
 require 'FloatAttribute'
@@ -32,6 +33,7 @@ require 'Task'
 require 'Resource'
 require 'ExportReport'
 require 'HTMLTaskReport'
+require 'HTMLResourceReport'
 require 'WorkingHours'
 require 'ProjectFileParser'
 
@@ -51,7 +53,7 @@ class Project
       'end' => nil,
       'flags' => [],
       'now' => TjTime.now,
-      'numberformat' => RealFormat.new([ '-', '', '', ',', 2]),
+      'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
       'scheduleGranularity' => 3600,
       'shorttimeformat' => "%H:%M",
@@ -75,7 +77,7 @@ class Project
       # ID           Name            Type               Inher. Scen.  Default
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
       [ 'bookedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
-      [ 'depends',   'Predecessors', TaskListAttribute, true,  true,  [] ],
+      [ 'depends',   'Predecessors', DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
@@ -88,7 +90,7 @@ class Project
       [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
       [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
-      [ 'precedes',  'Successors',   TaskListAttribute, true,  true,  [] ],
+      [ 'precedes',  'Successors',   DependencyListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
@@ -102,6 +104,7 @@ class Project
       # ID           Name            Type               Inher. Scen.  Default
       [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
         @attributes['workinghours'] ],
+      [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
       [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
       [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0 ],

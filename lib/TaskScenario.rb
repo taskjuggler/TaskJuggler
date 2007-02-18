@@ -596,21 +596,23 @@ class TaskScenario < ScenarioData
     @isRunAway = true
   end
 
-  def getLoad(startIdx, endIdx, resource)
+  def getEffectiveLoad(startIdx, endIdx, resource)
     return 0.0 if a('milestone')
 
     workLoad = 0.0
     if @property.container?
       @property.children.each do |task|
-        workLoad += task.getLoad(@scenarioIdx, startIdx, endIdx, resource)
+        workLoad += task.getEffectiveLoad(@scenarioIdx, startIdx, endIdx,
+                                          resource)
       end
     else
       if resource
-        workLoad += resource.getLoad(@scenarioIdx, startIdx, endIdx, @property)
+        workLoad += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx,
+                                              @property)
       else
         a('bookedresources').each do |resource|
-          workLoad += resource.getLoad(@scenarioIdx, startIdx, endIdx,
-              @property)
+          workLoad += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx,
+                                                @property)
         end
       end
     end

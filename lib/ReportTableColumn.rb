@@ -18,10 +18,12 @@ class ReportTableColumn
 
   attr_reader :descr, :cell1, :cell2
 
-  def initialize(descr, title)
+  def initialize(table, descr, title)
+    @table = table
+    @table.addColumn(self)
     @descr = descr
-    @cell1 = ReportTableCell.new(title)
-    @cell2 = ReportTableCell.new('')
+    @cell1 = ReportTableCell.new(nil, title)
+    @cell2 = ReportTableCell.new(nil, '')
   end
 
   def setOut(out)

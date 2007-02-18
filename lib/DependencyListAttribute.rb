@@ -1,5 +1,5 @@
 #
-# TaskListAttribute.rb - TaskJuggler
+# DependencyListAttribute.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,7 +10,7 @@
 # $Id$
 #
 
-class TaskListAttribute < AttributeBase
+class DependencyListAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
 
@@ -19,13 +19,13 @@ class TaskListAttribute < AttributeBase
 
   def to_s
     out = []
-    @value.each { |r| out << r.fullId }
-    out.join(", ")
+    @value.each { |t| out << t.task.fullId if t.task }
+    out.join(', ')
   end
 
   def to_tjp
     out = []
-    @value.each { |r| out << r.fullId }
+    @value.each { |taskDep| out << taskDep.task.fullId }
     @type.id + " " + out.join(', ')
   end
 

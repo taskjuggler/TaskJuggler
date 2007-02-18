@@ -19,9 +19,12 @@ require 'ReportTableLine'
 # appropriate format.
 class ReportTable
 
+  attr_reader :maxIndent
+
   def initialize
     @columns = []
     @lines = []
+    @maxIndent = 0
   end
 
   # Use this function to set the output stream. It can be any type that
@@ -32,18 +35,20 @@ class ReportTable
     @lines.each { |line| line.setOut(out) }
   end
 
-  # This function is called by the generators to add a column definition.
+  # This function should only be called by the ReportTableColumn constructor.
   def addColumn(col)
     @columns << col
   end
 
-  # The generators call this function to append a new line to the table.
+  # This function should only be called by the ReportTableLine constructor.
   def addLine(line)
     @lines << line
   end
 
   # Output the table as textual HTML table.
   def to_html(indent)
+    determineMaxIndents
+
     @out << " " * indent + "<table align=\"center\" cellpadding=\"2\"; " +
             "class=\"tab\">\n"
 
@@ -64,6 +69,15 @@ class ReportTable
     @out << " " * (indent + 2) + "</tbody>\n"
 
     @out << " " * indent + "</table>\n"
+  end
+
+private
+
+  def determineMaxIndents
+    @maxIndent = 0
+    @lines.each do |line|
+      @maxIndent = line.indentation if line.indentation > @maxIndent
+    end
   end
 
 end

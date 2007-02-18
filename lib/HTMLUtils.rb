@@ -40,12 +40,16 @@ module HTMLUtils
     .tabhead { background-color:#8fd0f6; font-size:110%; font-weight:bold;
                text-align:center }
     .tabhead_offduty { background-color:#dde375 }
-    .tabcell1 { background-color:#d3eefd }
-    .tabcell2 { background-color:#effbfd }
+    .taskcell1 { background-color:#d3eefd }
+    .taskcell2 { background-color:#effbfd }
+    .resourcecell1 { background-color:#f4ecef }
+    .resourcecell2 { background-color:#e0d9db }
     .busy1 { background-color:#ff6262 }
     .busy2 { background-color:#ff7b7b }
-    .free1 { background-color:#64ff64 }
-    .free2 { background-color:#78ff78 }
+    .loaded1 { background-color:#ffb0b0 }
+    .loaded2 { background-color:#ffc8c8 }
+    .free1 { background-color:#b2ffbe }
+    .free2 { background-color:#ceffcc }
     .offduty1 { background-color:#dde375 }
     .offduty2 { background-color:#f3f990 }
     .taskbar1 { background-color:#adc3cf }

@@ -1,5 +1,5 @@
 #
-# TaskReport.rb - TaskJuggler
+# ResourceReport.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -14,7 +14,7 @@ require 'GenericReportElement'
 require 'ReportTable'
 require 'ReportUtils'
 
-class TaskReport < GenericReportElement
+class ResourceReport < GenericReportElement
 
   include ReportUtils
 
@@ -28,16 +28,19 @@ class TaskReport < GenericReportElement
       generateHeaderCell(columnDescr)
     end
 
-    taskList = PropertyList.new(@project.tasks)
-    taskList = filterTaskList(taskList, nil, @descr.hideTask, @descr.rollupTask)
-    taskList.setSorting(@descr.sortTasks)
-
     resourceList = PropertyList.new(@project.resources)
     resourceList = filterResourceList(resourceList, nil, @descr.hideResource,
         @descr.rollupResource)
-    resourceList.setSorting(@descr.sortResources)
+    resourceList.setSorting([ [ 'tree', true, 0 ],
+                              [ 'id', true, -1 ] ])
 
-    generateTaskList(taskList, resourceList, nil, nil)
+    taskList = PropertyList.new(@project.tasks)
+    taskList = filterTaskList(taskList, nil, @descr.hideTask, @descr.rollupTask)
+    taskList.setSorting([ [ 'tree', true, 0 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
+
+    generateResourceList(resourceList, taskList, nil, nil)
 
     @table
   end

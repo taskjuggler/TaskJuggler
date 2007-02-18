@@ -14,10 +14,14 @@ class ReportTableCell
 
   include HTMLUtils
 
+  attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :indent,
                 :fontFactor, :bold, :rows, :columns
 
-  def initialize(text = '')
+  def initialize(line, text = '')
+    @line = line
+    @line.addCell(self) if line
+
     @text = text
     @category = nil
     @hidden = false
@@ -52,11 +56,10 @@ class ReportTableCell
     if @indent && @alignment != 1 # center
       style += 'padding-'
       if @alignment == 0 # left
-        style += 'left'
+        style += "left:#{2 + @indent * 8}; "
       elsif @alignment == 2 # right
-        style += 'right'
+        style += "right:#{2 + (@line.table.maxIndent - @indent) * 8}; "
       end
-      style += ":#{@indent * 8}; "
     end
     style += 'font-weight:bold; ' if @bold
     style += "font-size: #{@fontFactor * 100.0}%; " if fontFactor != 1.0

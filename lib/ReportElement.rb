@@ -18,9 +18,10 @@ require 'LogicalExpression'
 # of a table and a few optional items like a heading and caption around it.
 class ReportElement
 
-  attr_accessor :columns, :start, :end, :scenarios, :taskRoot,
-                :timeFormat, :weekStartsMonday,
+  attr_accessor :columns, :start, :end, :scenarios, :taskRoot, :resourceRoot,
+                :timeFormat, :numberFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
+                :sortTasks, :sortResources,
                 :ganttBars,
                 :propertiesById, :propertiesByType
 
@@ -32,18 +33,23 @@ class ReportElement
     @end = @report.end
     @scenarios = [ 0 ]
     @taskRoot = nil
+    @resourceRoot = nil
     @timeFormat = project['timeformat']
+    @numberFormat = project['numberformat']
     @weekStartsMonday = project['weekstartsmonday']
     @hideTask = nil
     @rollupTask = nil
     @hideResource = nil
     @rollupResource = nil
+    @sortTasks = [[ 'seqno', true, -1 ]]
+    @sortResources = [[ 'seqno', true, -1 ]]
     @ganttBars = true;
 
     @propertiesById = {
-      # ID               Header    Indent  Align FontFac.
-      "name"        => [ "Name",   true,   0,    1.0 ],
-      "id"          => [ "Id",     false,  0,    1.0 ]
+      # ID               Header    Indent  Align FontFac. Calced.
+      "effort"      => [ "Effort", true,   2,    1.0,     true ],
+      "id"          => [ "Id",     false,  0,    1.0,     false ],
+      "name"        => [ "Name",   true,   0,    1.0,     false ]
     }
     @propertiesByType = {
       # Type                  Indent  Align FontFac.
@@ -55,9 +61,9 @@ class ReportElement
   # This is the default attribute value to text converter. It is used
   # whenever we need no special treatment.
   def cellText(property, scenarioIdx, colId)
-    if property.class == Resource
+    if property.is_a?(Resource)
       attribute = project.resources
-    elsif property.class == Task
+    elsif property.is_a?(Task)
       attribute = project.tasks
     else
       raise "Fatal Error: Unknown property #{property.class}"
@@ -81,6 +87,13 @@ class ReportElement
         value.to_s
       end
     end
+  end
+
+  def calculated?(colId)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][4]
+    end
+    return false
   end
 
   def indent(colId, propertyType)

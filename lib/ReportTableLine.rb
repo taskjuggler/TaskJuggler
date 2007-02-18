@@ -14,17 +14,24 @@ require 'ReportTableCell'
 
 class ReportTableLine
 
-  attr_accessor :indentation, :even
+  attr_reader :table, :property, :parentLine
+  attr_accessor :indentation, :fontFactor, :even
 
-  def initialize
+  def initialize(table, property, parentLine)
+    @table = table
+    @property = property
+    @parentLine = parentLine
+
+    @table.addLine(self)
     @cells = []
     @indentation = 0
+    @fontFactor = 1.0
     @even = true
   end
 
-  def last
+  def last(count = 0)
     # Return the last non-hidden cell of the line.
-    1.upto(@cells.length) do |i|
+    (1 + count).upto(@cells.length) do |i|
       return @cells[-i] unless @cells[-i].hidden
     end
     nil

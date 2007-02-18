@@ -659,6 +659,9 @@ class ProjectFileParser < TextParser
       when 'htmltaskreport'
         @report = HTMLTaskReport.new(@project, @val[1])
         @reportElement = @report.element
+      when 'htmlresourcereport'
+        @report = HTMLResourceReport.new(@project, @val[1])
+        @reportElement = @report.element
       end
     })
 
@@ -667,6 +670,9 @@ class ProjectFileParser < TextParser
       @val[0]
     })
     newPattern(%w( _htmltaskreport ), Proc.new {
+      @val[0]
+    })
+    newPattern(%w( _htmlresourcereport ), Proc.new {
       @val[0]
     })
 
@@ -684,6 +690,9 @@ class ProjectFileParser < TextParser
     })
     newPattern(%w( _end !valDate ), Proc.new {
       @reportElement.end = @val[1]
+    })
+    newPattern(%w( _hideresource !logicalExpression ), Proc.new {
+      @reportElement.hideResource = @val[1]
     })
     newPattern(%w( _hidetask !logicalExpression ), Proc.new {
       @reportElement.hideTask = @val[1]

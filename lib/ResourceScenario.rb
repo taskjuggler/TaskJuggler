@@ -42,6 +42,10 @@ class ResourceScenario < ScenarioData
 
 #puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
+
+    # Make sure the task is in the list of duties.
+    @property['duties', @scenarioIdx] << task unless a('duties').include?(task)
+
     if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
       @firstBookedSlot = sbIdx
     end
@@ -66,22 +70,82 @@ class ResourceScenario < ScenarioData
     a('workinghours').onShift?(iv)
   end
 
-  def getLoad(startIdx, endIdx, task)
-    return 0.0 if @scoreboard.nil? || @firstBookedSlot.nil?
+  # Returns the load of the resource (and its children) weighted by their
+  # efficiency.
+  def getEffectiveLoad(startIdx, endIdx, task)
+    load = 0.0
+    if @property.container?
+      @property.children.each do |resource|
+        load += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx, task)
+      end
+    else
+      load = @project.convertToDailyLoad(
+               getAllocatedSlots(startIdx, endIdx, task) *
+               @project['scheduleGranularity']) * a('efficiency')
+    end
+    load
+  end
 
-    a('efficiency') * getAllocatedTimeLoad(startIdx, endIdx, task)
+  # Returns the allocated load of the resource (and its children).
+  def getAllocatedLoad(startIdx, endIdx, task)
+    load = 0.0
+    if @property.container?
+      @property.children.each do |resource|
+        load += resource.getAllocatedLoad(@scenarioIdx, startIdx, endIdx, task)
+      end
+    else
+      load = @project.convertToDailyLoad(
+               getAllocatedSlots(startIdx, endIdx, task) *
+               @project['scheduleGranularity'])
+    end
+    load
+  end
+
+  # Returns the allocated accumulated time of this resource and its children.
+  def getAllocatedTime(startIdx, endIdx, task)
+    time = 0
+    if @property.container?
+      @property.children.each do |resource|
+        time += resource.getAllocatedLoad(@scenarioIdx, startIdx, endIdx, task)
+      end
+    else
+      time = @project.convertToDailyLoad(
+          getAllocatedSlots(startIdx, endIdx, task))
+    end
+    time
+  end
+
+  # Return the unallocated load of the resource and its children wheighted by
+  # their effeciency.
+  def getEffectiveFreeLoad(startIdx, endIdx)
+    load = 0.0
+    if @property.container?
+      @property.children.each do |resource|
+        load += resource.getEffectiveFreeLoad(@scenarioIdx, startIdx, endIdx)
+      end
+    else
+      load = @project.convertToDailyLoad(
+               getFreeSlots(startIdx, endIdx) *
+               @project['scheduleGranularity']) * a('efficiency')
+    end
+    load
+  end
+
+  # Returns true if the resource or any of its children is allocated during
+  # the period specified with the Interval _iv_. If task is not nil
+  # only allocations to this tasks are respected.
+  def allocated?(iv, task = nil)
+    startIdx = @project.dateToIdx(iv.start, true)
+    endIdx = @project.dateToIdx(iv.end, true)
+
+    startIdx = @firstBookedSlot if startIdx < @firstBookedSlot
+    endIdx = @lastBookedSlot if endIdx < @lastBookedSlot
+    return false if startIdx > endIdx
+
+    return allocatedSub(startIdx, endIdx, task)
   end
 
 private
-
-  def getAllocatedTimeLoad(startIdx, endIdx, task)
-    @project.convertToDailyLoad(getAllocatedTime(startIdx, endIdx, task))
-  end
-
-  def getAllocatedTime(startIdx, endIdx, task)
-    getAllocatedSlots(startIdx, endIdx, task) *
-      @project['scheduleGranularity']
-  end
 
   # Count the booked slots between the start and end index. If _task_ is not
   # nil count only those slots that are assigned to this particular task.
@@ -100,6 +164,37 @@ private
     end
 
     bookedSlots
+  end
+
+  # Count the free slots between the start and end index.
+  def getFreeSlots(startIdx, endIdx)
+    initScoreboard if @scoreboard.nil?
+
+    freeSlots = 0
+    startIdx.upto(endIdx) do |idx|
+      freeSlots += 1 if @scoreboard[idx].nil?
+    end
+
+    freeSlots
+  end
+
+  # Returns true if the resource or any of its children is allocated during
+  # the period specified with _startIdx_ and _endIdx_. If task is not nil
+  # only allocations to this tasks are respected.
+  def allocatedSub(startIdx, endIdx, task)
+    if @property.container?
+      @property.children.each do |resource|
+        return true if resource.allocatedSub(@scenarioIdx, startIdx, endIdx,
+                                             task)
+      end
+    else
+      return false unless a('duties').include?(task)
+
+      startIdx.upto(endIdx) do |idx|
+        return true if @scoreboard[idx] == task
+      end
+    end
+    false
   end
 
 end
