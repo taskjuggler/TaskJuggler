@@ -24,9 +24,10 @@ class AttributeBase
 
   def inherit(value)
     @inherited = true
-    if value.is_a?(Fixnum) || value.is_a?(Float)
+    if value.is_a?(Fixnum) || value.is_a?(Float) ||
+       value.is_a?(TrueClass) || value.is_a?(FalseClass)
       @value = value
-    elsif value.is_a?(String)
+    elsif value.is_a?(String) || value.is_a?(TjTime)
       @value = value.clone
     elsif value.is_a?(WorkingHours)
       @value = WorkingHours.new(value)

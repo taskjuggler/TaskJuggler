@@ -389,11 +389,29 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_moreResourceAllocations
+    newRule('moreResourceAllocations')
+    optional
+    repeatable
+    newPattern(%w( _, !resourceAllocation ), Proc.new {
+      @val[1]
+    })
+  end
+
   def rule_moreScenarioIds
     newRule('moreScenarioIds')
     optional
     repeatable
     newPattern(%w( _, !scenarioIdx ), Proc.new {
+      @val[1]
+    })
+  end
+
+  def rule_moreSortCriteria
+    newRule('moreSortCriteria')
+    optional
+    repeatable
+    newPattern(%w( _, !sortCriterium), Proc.new {
       @val[1]
     })
   end
@@ -651,6 +669,12 @@ module TjpSyntaxRules
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
       @reportElement.scenarios = @val[1]
     })
+    newPattern(%w( _sortresources !sortCriteria ), Proc.new {
+      @reportElement.sortResources = @val[1]
+    })
+    newPattern(%w( _sorttasks !sortCriteria ), Proc.new {
+      @reportElement.sortTasks = @val[1]
+    })
     newPattern(%w( _start !valDate ), Proc.new {
       @reportElement.start = @val[1]
     })
@@ -704,6 +728,36 @@ module TjpSyntaxRules
     newRule('resource')
     newPattern(%w( !resourceHeader !resourceBody ), Proc.new {
        @property = @property.parent
+    })
+  end
+
+  def rule_resourceAllocation
+    newRule('resourceAllocation')
+    newPattern(%w( !resourceId !allocationAttributes ), Proc.new {
+      candidates = [ @val[0] ]
+      selectionMode = 1 # Defaults to min. allocation probability
+      mandatory = false
+      persistant = false
+      if @val[1]
+        @val[1].each do |attribute|
+          case attribute[0]
+          when 'alternative'
+            candidates += attribute[1]
+          when 'persistant'
+            persistant = true
+          when 'mandatory'
+            mandatory = true
+          end
+        end
+      end
+      [ Allocation.new(candidates, selectionMode, persistant, mandatory) ]
+    })
+  end
+
+  def rule_resourceAllocations
+    newRule('resourceAllocations')
+    newPattern(%w( !resourceAllocation !moreResourceAllocations ), Proc.new {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -815,6 +869,44 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_sortCriteria
+    newRule('sortCriteria')
+    newPattern(%w( !sortCriterium !moreSortCriteria ), Proc.new {
+      [ @val[0] ] + (@val[1] ? @val[1] : [])
+    })
+  end
+
+  def rule_sortCriterium
+    newRule('sortCriterium')
+    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
+      args = @val[0].split('.')
+      case args.count
+      when 1
+        scenario = -1
+        direction = args[1]
+        attribute = args[0]
+      when 2
+        if (scenario = @project.scenarioIdx(args[0])).nil?
+          error "Unknown scenario #{args[0]} in sorting criterium"
+        end
+        attribute = args[1]
+        if args[2] != 'up' && args[2] != 'down'
+          error "Sorting direction must be 'up' or 'down'"
+        end
+        direction = args[2] == 'up'
+      else
+        error("Sorting criterium may only contain 2 or 3 dots.")
+      end
+      [ attribute, direction, scenario ]
+    })
+    newPattern(%w( $ID ), Proc.new {
+      if @val[0] != 'tree'
+        error "Sorting criterium with direction must be 'tree'"
+      end
+      [ 'tree', true, -1 ]
+    })
+  end
+
   def rule_task
     newRule('task')
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
@@ -892,27 +984,10 @@ module TjpSyntaxRules
 
   def rule_taskScenarioAttributes
     newRule('taskScenarioAttributes')
-    newPattern(%w( _allocate !resourceId !allocationAttributes ), Proc.new {
-      candidates = [ @val[1] ]
-      selectionMode = 1 # Defaults to min. allocation probability
-      mandatory = false
-      persistant = false
-      if @val[2]
-        @val[2].each do |attribute|
-          case attribute[0]
-          when 'alternative'
-            candidates += attribute[1]
-          when 'persistant'
-            persistant = true
-          when 'mandatory'
-            mandatory = true
-          end
-        end
-      end
+    newPattern(%w( _allocate !resourceAllocations ), Proc.new {
       # Don't use << operator here so the 'provided' flag gets set properly.
       @property['allocate', @scenarioIdx] =
-        @property['allocate', @scenarioIdx] +
-        [ Allocation.new(candidates, selectionMode, persistant, mandatory) ]
+        @property['allocate', @scenarioIdx] + @val[1]
     })
     newPattern(%w( _depends !taskList ), Proc.new {
       @property['depends', @scenarioIdx] = @val[1]

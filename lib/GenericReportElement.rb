@@ -50,8 +50,10 @@ class GenericReportElement
     list.delete_if do |task|
       delete = true
       @descr.scenarios.each do |scenarioIdx|
-        iv = Interval.new(task['start', scenarioIdx],
-                          task['end', scenarioIdx])
+        iv = Interval.new(task['start', scenarioIdx].nil? ?
+                          @project['start'] : task['start', scenarioIdx],
+                          task['end', scenarioIdx].nil? ?
+                          @project['end'] : task['end', scenarioIdx])
         if iv.overlaps?(Interval.new(@descr.start, @descr.end))
           delete = false
           break;

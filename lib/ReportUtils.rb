@@ -244,8 +244,10 @@ private
     # When we list multiple scenarios we reduce the font size by 25%.
     cellFontFactor = line. fontFactor -
                      (@descr.scenarios.length > 1 ? 0.25 : 0.0)
-    taskIv = Interval.new(task['start', scenarioIdx],
-                          task['end', scenarioIdx])
+    taskIv = Interval.new(task['start', scenarioIdx].nil? ?
+                          @project['start'] : task['start', scenarioIdx],
+                          task['end', scenarioIdx].nil? ?
+                          @project['end'] : task['end', scenarioIdx])
 
     firstCell = nil
     while t < @descr.end
@@ -393,17 +395,20 @@ private
       cell.alignment = 1
       if task['milestone', scenarioIdx]
         # Milestones are shown as diamonds '<>'
-        if cellIv.contains(task['start', scenarioIdx])
+        if cellIv.contains(task['start', scenarioIdx].nil? ?
+                           @project['start'] : task['start', scenarioIdx])
           cell.text = '<>'
           cell.bold = true
         end
       else
         # Container tasks are shown as 'v----v'
         # Normal tasks are shown as '[======]'
-        if cellIv.contains(task['start', scenarioIdx])
+        if cellIv.contains(task['start', scenarioIdx].nil? ?
+                           @project['start'] : task['start', scenarioIdx])
           cell.text = (task.container? ? 'v-' : '[=') + cell.text
         end
-        if cellIv.contains(task['end', scenarioIdx])
+        if cellIv.contains(task['end', scenarioIdx].nil? ?
+                           @project['end'] : task['end', scenarioIdx])
           cell.text += (task.container? ? '-v': '=]')
         end
         if cell.text == '' && taskIv.overlaps?(cellIv)

@@ -131,7 +131,7 @@ class PropertySet
 
   def [](id)
     if !@properties.key?(id)
-      raise "The property with id #{id} is undefined"
+      raise TjException.new, "The property with id #{id} is undefined"
     end
     @properties[id]
   end

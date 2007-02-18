@@ -138,8 +138,10 @@ class ResourceScenario < ScenarioData
     startIdx = @project.dateToIdx(iv.start, true)
     endIdx = @project.dateToIdx(iv.end, true)
 
-    startIdx = @firstBookedSlot if startIdx < @firstBookedSlot
-    endIdx = @lastBookedSlot if endIdx < @lastBookedSlot
+    startIdx = @firstBookedSlot if @firstBookedSlot &&
+                                   startIdx < @firstBookedSlot
+    endIdx = @lastBookedSlot if @lastBookedSlot &&
+                                endIdx < @lastBookedSlot
     return false if startIdx > endIdx
 
     return allocatedSub(startIdx, endIdx, task)
@@ -150,10 +152,12 @@ private
   # Count the booked slots between the start and end index. If _task_ is not
   # nil count only those slots that are assigned to this particular task.
   def getAllocatedSlots(startIdx, endIdx, task)
+    initScoreboard if @scoreboard.nil?
     # To speedup the counting we start with the first booked slot and end
     # with the last booked slot.
-    startIdx = @firstBookedSlot if startIdx < @firstBookedSlot
-    endIdx = @lastBookedSlot if endIdx > @lastBookedSlot
+    startIdx = @firstBookedSlot if @firstBookedSlot &&
+                                   startIdx < @firstBookedSlot
+    endIdx = @lastBookedSlot if @lastBookedSlot && endIdx > @lastBookedSlot
 
     bookedSlots = 0
     startIdx.upto(endIdx) do |idx|
