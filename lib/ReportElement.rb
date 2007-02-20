@@ -18,7 +18,8 @@ require 'LogicalExpression'
 # of a table and a few optional items like a heading and caption around it.
 class ReportElement
 
-  attr_accessor :columns, :start, :end, :scenarios, :taskRoot, :resourceRoot,
+  attr_accessor :headline, :columns, :start, :end, :scenarios,
+                :taskRoot, :resourceRoot,
                 :timeFormat, :numberFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
@@ -28,6 +29,7 @@ class ReportElement
   def initialize(report)
     @report = report
     @report.addElement(self)
+    @headline = nil
     @columns = []
     @start = @report.start
     @end = @report.end
@@ -69,23 +71,27 @@ class ReportElement
       raise "Fatal Error: Unknown property #{property.class}"
     end
 
-    # Get the value no matter if it's scenario specific or not.
-    if attribute.scenarioSpecific?(colId)
-      value = property[colId, scenarioIdx]
-    else
-      value = property.get(colId)
-    end
-
-    if value.nil?
-      ''
-    else
-      # Certain attribute types need special treatment.
-      type = attribute.attributeType(colId)
-      if type == DateAttribute
-        value.to_s(timeFormat)
+    begin
+      # Get the value no matter if it's scenario specific or not.
+      if attribute.scenarioSpecific?(colId)
+        value = property[colId, scenarioIdx]
       else
-        value.to_s
+        value = property.get(colId)
       end
+
+      if value.nil?
+        ''
+      else
+        # Certain attribute types need special treatment.
+        type = attribute.attributeType(colId)
+        if type == DateAttribute
+          value.to_s(timeFormat)
+        else
+          value.to_s
+        end
+      end
+    rescue
+      ''
     end
   end
 

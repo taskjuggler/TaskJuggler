@@ -110,7 +110,11 @@ class PropertySet
   def attributeType(attrId)
     # Hardwired attributes need special treatment.
     if @@fixedAttributesTypes[attrId].nil?
-      @attributeDefinitions[attrId].objClass
+      if @attributeDefinitions.has_key?(attrId)
+        @attributeDefinitions[attrId].objClass
+      else
+        nil
+      end
     else
       @@fixedAttributesTypes[attrId]
     end
@@ -130,9 +134,6 @@ class PropertySet
   end
 
   def [](id)
-    if !@properties.key?(id)
-      raise TjException.new, "The property with id #{id} is undefined"
-    end
     @properties[id]
   end
 

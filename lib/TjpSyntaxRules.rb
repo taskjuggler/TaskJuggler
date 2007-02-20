@@ -651,6 +651,9 @@ module TjpSyntaxRules
     newPattern(%w( _end !valDate ), Proc.new {
       @reportElement.end = @val[1]
     })
+    newPattern(%w( _headline $STRING ), Proc.new {
+      @reportElement.headline = @val[1]
+    })
     newPattern(%w( _hideresource !logicalExpression ), Proc.new {
       @reportElement.hideResource = @val[1]
     })
@@ -750,7 +753,7 @@ module TjpSyntaxRules
           end
         end
       end
-      [ Allocation.new(candidates, selectionMode, persistant, mandatory) ]
+      Allocation.new(candidates, selectionMode, persistant, mandatory)
     })
   end
 
@@ -880,12 +883,12 @@ module TjpSyntaxRules
     newRule('sortCriterium')
     newPattern(%w( $ABSOLUTE_ID ), Proc.new {
       args = @val[0].split('.')
-      case args.count
-      when 1
+      case args.length
+      when 2
         scenario = -1
         direction = args[1]
         attribute = args[0]
-      when 2
+      when 3
         if (scenario = @project.scenarioIdx(args[0])).nil?
           error "Unknown scenario #{args[0]} in sorting criterium"
         end
@@ -895,13 +898,15 @@ module TjpSyntaxRules
         end
         direction = args[2] == 'up'
       else
-        error("Sorting criterium may only contain 2 or 3 dots.")
+        error("Sorting criterium expected (e.g. tree, start.up or " +
+              "plan.end.down).")
       end
       [ attribute, direction, scenario ]
     })
     newPattern(%w( $ID ), Proc.new {
       if @val[0] != 'tree'
-        error "Sorting criterium with direction must be 'tree'"
+        error("Sorting criterium expected (e.g. tree, start.up or " +
+              "plan.end.down).")
       end
       [ 'tree', true, -1 ]
     })

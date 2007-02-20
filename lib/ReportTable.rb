@@ -49,8 +49,8 @@ class ReportTable
   def to_html(indent)
     determineMaxIndents
 
-    @out << " " * indent + "<table align=\"center\" cellpadding=\"2\"; " +
-            "class=\"tab\">\n"
+    @out << " " * indent + "<table align=\"center\" cellspacing=\"1\" " +
+            "cellpadding=\"2\" class=\"tab\">\n"
 
     @out << " " * (indent + 2) + "<thead>\n"
 

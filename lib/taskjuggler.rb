@@ -39,9 +39,9 @@ def main
     parser.close
   end
 
-  exit 1 if project.nil?
-  exit 1 unless project.schedule
-  exit 1 unless project.generateReports
+  if project.nil? || !project.schedule || !project.generateReports
+    exit 1
+  end
 
   exit 0
 end

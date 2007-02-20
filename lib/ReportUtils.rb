@@ -161,7 +161,7 @@ private
         genCalculatedCell(scenarioIdx, line, column, property)
         return true
       else
-        return genStandardCell(scenarioIdx, line, column, property)
+        return genStandardCell(scenarioIdx, line, column)
       end
     end
 
@@ -176,7 +176,8 @@ private
     true
   end
 
-  def genStandardCell(scenarioIdx, line, column, property)
+  def genStandardCell(scenarioIdx, line, column)
+    property = line.property
     # Create a new cell
     cell = ReportTableCell.new(line, @descr.cellText(property, scenarioIdx,
                                                      column.id))
@@ -277,7 +278,7 @@ private
 
       # Determine cell category (mostly the background color)
       if cellIv.overlaps?(taskIv)
-        cell.category = 'taskbar'
+        cell.category = 'done'
       elsif !@project.isWorkingTime(cellIv)
         cell.category = 'offduty'
       else

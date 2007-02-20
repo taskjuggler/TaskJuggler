@@ -56,9 +56,9 @@ class ReportTableCell
     if @indent && @alignment != 1 # center
       style += 'padding-'
       if @alignment == 0 # left
-        style += "left:#{2 + @indent * 8}; "
+        style += "left:#{2 + @indent * 8}px; "
       elsif @alignment == 2 # right
-        style += "right:#{2 + (@line.table.maxIndent - @indent) * 8}; "
+        style += "right:#{2 + (@line.table.maxIndent - @indent) * 8}px; "
       end
     end
     style += 'font-weight:bold; ' if @bold

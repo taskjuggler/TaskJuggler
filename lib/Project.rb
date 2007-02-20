@@ -206,7 +206,7 @@ class Project
         finishScenario(scIdx)
       end
     rescue TjException
-      false
+      return false
     end
 
     true
@@ -216,7 +216,8 @@ class Project
     begin
       @reports.each { |report| report.generate }
     rescue TjException
-      false
+      $stderr.puts "Reporting Error: #{$!}"
+      return false
     end
 
     true
@@ -339,6 +340,7 @@ protected
           priority = task['priority', scIdx]
           forward = task['forward', scIdx]
 
+          #puts "#{slot}: #{task.id} (#{priority}) #{forward ? '-->' : '<--'}"
           if (slot < @attributes['start'] ||
               slot > @attributes['end'])
             task.markAsRunaway(scIdx)

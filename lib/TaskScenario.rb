@@ -40,9 +40,8 @@ class TaskScenario < ScenarioData
 
   def Xref
     @property['depends', @scenarioIdx].each do |dependency|
-      depTask = dependency.resolve(@project)
-      if depTask.nil?
-        raise "Task #{@property.id} has unknown depends #{task}"
+      if (depTask = dependency.resolve(@project)).nil?
+        error("Task #{@property.id} has unknown depends #{dependency.taskId}")
       end
 
       @depends.push(depTask)
@@ -51,9 +50,8 @@ class TaskScenario < ScenarioData
     end
 
     @property['precedes', @scenarioIdx].each do |dependency|
-      predTask = dependency.resolve(@project)
-      if predTask.nil?
-        raise "Task #{@property.id} has unknown precedes #{task}"
+      if (predTask = dependency.resolve(@project)).nil?
+        error("Task #{@property.id} has unknown precedes #{dependency.taskId}")
       end
 
       @precedes.push(predTask)
@@ -283,7 +281,7 @@ class TaskScenario < ScenarioData
       if a('end').nil?
         propagateEnd(a('start'))
       else
-        raise "Milestone may not have 2 dates."
+        error("Milestone may not have 2 dates.")
       end
     end
 
