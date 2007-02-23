@@ -37,12 +37,8 @@ module TjpSyntaxRules
       end
       [ 'select', @val[1] ]
     })
-    newPattern(%w( _persistent ), Proc.new {
-      [ @val[0] ]
-    })
-    newPattern(%w( _mandatory ), Proc.new {
-      [ @val[0] ]
-    })
+    singlePattern("_persistent")
+    singlePattern("_mandatory")
   end
 
   def rule_allocationAttributes
@@ -197,12 +193,8 @@ module TjpSyntaxRules
     newRule('extendOptions')
     optional
     repeatable
-    newPattern(%w( _inherit ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( _scenariospecific ), Proc.new {
-      @val[0]
-    })
+    singlePattern("_inherit")
+    singlePattern("_scenariospecific")
   end
 
   def rule_extendOptionsBody
@@ -347,12 +339,8 @@ module TjpSyntaxRules
 
   def rule_number
     newRule('number')
-    newPattern(%w( $INTEGER ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( $FLOAT ), Proc.new {
-      @val[0]
-    })
+    singlePattern("$INTEGER")
+    singlePattern("$FLOAT")
   end
 
   def rule_operand
@@ -411,27 +399,13 @@ module TjpSyntaxRules
   def rule_operatorAndOperand
     newRule('operatorAndOperand')
     optional
-    newPattern(%w( _| !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _& !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _> !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _< !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _= !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _>= !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
-    newPattern(%w( _<= !operand), Proc.new {
-      [ @val[0], @val[1] ]
-    })
+    operandPattern("|")
+    operandPattern("&")
+    operandPattern(">")
+    operandPattern("<")
+    operandPattern("=")
+    operandPattern(">=")
+    operandPattern("<=")
   end
 
   def rule_project
@@ -630,15 +604,9 @@ module TjpSyntaxRules
 
   def rule_reportType
     newRule('reportType')
-    newPattern(%w( _export ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( _htmltaskreport ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( _htmlresourcereport ), Proc.new {
-      @val[0]
-    })
+    singlePattern("_export")
+    singlePattern("_htmltaskreport")
+    singlePattern("_htmlresourcereport")
   end
 
   def rule_resource
@@ -853,12 +821,8 @@ module TjpSyntaxRules
 
   def rule_taskId
     newRule('taskId')
-    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( $ID ), Proc.new {
-      @val[0]
-    })
+    singlePattern("$ABSOLUTE_ID")
+    singlePattern("$ID")
     newPattern(%w( $RELATIVE_ID ), Proc.new {
       task = @property
       id = @val[0]
@@ -884,12 +848,8 @@ module TjpSyntaxRules
 
   def rule_taskRootId
     newRule('taskRootId')
-    newPattern(%w( $ABSOLUTE_ID ), Proc.new {
-      @val[0]
-    })
-    newPattern(%w( $ID ), Proc.new {
-      @val[0]
-    })
+    singlePattern("$ABSOLUTE_ID")
+    singlePattern("$ID")
   end
 
   def rule_taskScenarioAttributes

@@ -99,5 +99,23 @@ private
     })
   end
 
+  def singlePattern(item)
+    newPattern([ item ], Proc.new {
+      @val[0]
+    })
+  end
+
+  def operandPattern(operand)
+    newPattern([ "_#{operand}", "!operand" ], Proc.new {
+      [ @val[0], @val[1] ]
+    })
+  end
+
+  def optionsPattern(item)
+    newPattern(%w( _{ !allocationAttribute _} ), Proc.new {
+      @val[1]
+    })
+  end
+
 end
 
