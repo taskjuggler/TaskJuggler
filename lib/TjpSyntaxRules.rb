@@ -57,11 +57,7 @@ module TjpSyntaxRules
     newRule('argumentList')
     optional
     newPattern(%w( _( !operation !moreArguments _) ), Proc.new {
-      if @val[1].nil?
-        [ @val[0] ]
-      else
-        [ @val[0] ] + @val[1]
-      end
+      [ @val[0] ] + @val[1].nil? ? [] : @val[1]
     })
   end
 
@@ -114,14 +110,7 @@ module TjpSyntaxRules
   end
 
   def rule_declareFlagList
-    newRule('declareFlagList')
-    newPattern(%w( $ID !moreDeclareFlags ), Proc.new {
-      if @val[1].nil?
-        [ @val[0] ]
-      else
-        [ @val[0] ] + @val[1]
-      end
-    })
+    newListRule('declareFlagList', '$ID')
   end
 
   def rule_durationUnit
@@ -253,14 +242,7 @@ module TjpSyntaxRules
   end
 
   def rule_flagList
-    newRule('flagList')
-    newPattern(%w( !flag !moreFlags ), Proc.new {
-      if @val[1].nil?
-        [ @val[0] ]
-      else
-        [ @val[0] ] + @val[1]
-      end
-    })
+    newListRule('flagList', '!flag')
   end
 
   def rule_include
@@ -308,7 +290,7 @@ module TjpSyntaxRules
   end
 
   def rule_intervals
-    newListRule('intervals', 'interval')
+    newListRule('intervals', '!interval')
   end
 
   def rule_listOfDays
@@ -340,102 +322,27 @@ module TjpSyntaxRules
   end
 
   def rule_moreAlternatives
-    newRule('moreAlternatives')
-    optional
-    repeatable
-    newPattern(%w( _, !resourceId), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreAlternatives', '!resourceId')
   end
 
   def rule_moreArguments
-    newRule('moreArguments')
-    optional
-    repeatable
-    newPattern(%w( _, !operation), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreArguments', '!operation')
   end
 
   def rule_moreColumnDef
-    newRule('moreColumnDef')
-    optional
-    repeatable
-    newPattern(%w( _, !columnDef ), Proc.new {
-      @val[1]
-    })
-  end
-
-  def rule_moreDeclareFlags
-    newRule('moreDeclareFlags')
-    optional
-    repeatable
-    newPattern(%w( _, $ID ), Proc.new {
-      @val[1]
-    })
-  end
-
-  def rule_moreFlags
-    newRule('moreFlags')
-    optional
-    repeatable
-    newPattern(%w( _, !flag ), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreColumnDef', '!columnDef')
   end
 
   def rule_moreListOfDays
-    newRule('moreListOfDays')
-    repeatable
-    optional
-    newPattern(%w( _, !weekDayInterval ), Proc.new {
-      @val[1]
-    })
-  end
-
-  def rule_moreResourceAllocations
-    newRule('moreResourceAllocations')
-    optional
-    repeatable
-    newPattern(%w( _, !resourceAllocation ), Proc.new {
-      @val[1]
-    })
-  end
-
-  def rule_moreScenarioIds
-    newRule('moreScenarioIds')
-    optional
-    repeatable
-    newPattern(%w( _, !scenarioIdx ), Proc.new {
-      @val[1]
-    })
-  end
-
-  def rule_moreSortCriteria
-    newRule('moreSortCriteria')
-    optional
-    repeatable
-    newPattern(%w( _, !sortCriterium), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreListOfDays', '!weekDayInterval')
   end
 
   def rule_moreTasks
-    newRule('moreTasks')
-    repeatable
-    optional
-    newPattern(%w( _, !taskList ), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreTasks', '!taskList')
   end
 
   def rule_moreTimeIntervals
-    newRule('moreTimeIntervals')
-    repeatable
-    optional
-    newPattern(%w( _, !timeInterval ), Proc.new {
-      @val[1]
-    })
+    newCommaListRule('moreTimeIntervals', '!timeInterval')
   end
 
   def rule_number
@@ -765,10 +672,7 @@ module TjpSyntaxRules
   end
 
   def rule_resourceAllocations
-    newRule('resourceAllocations')
-    newPattern(%w( !resourceAllocation !moreResourceAllocations ), Proc.new {
-      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
-    })
+    newListRule('resourceAllocations', '!resourceAllocation')
   end
 
   def rule_resourceAttributes
@@ -863,14 +767,7 @@ module TjpSyntaxRules
   end
 
   def rule_scenarioIdList
-    newRule('scenarioIdList')
-    newPattern(%w( !scenarioIdx !moreScenarioIds ), Proc.new {
-      if @val[1].nil?
-        [ @val[0] ]
-      else
-        [ @val[0] ] + @val[1]
-      end
-    })
+    newListRule('scenarioIdList', '!scenarioIdx')
   end
 
   def rule_scenarioIdx
@@ -884,10 +781,7 @@ module TjpSyntaxRules
   end
 
   def rule_sortCriteria
-    newRule('sortCriteria')
-    newPattern(%w( !sortCriterium !moreSortCriteria ), Proc.new {
-      [ @val[0] ] + (@val[1] ? @val[1] : [])
-    })
+    newListRule('sortCriteria', '!sortCriterium')
   end
 
   def rule_sortCriterium
