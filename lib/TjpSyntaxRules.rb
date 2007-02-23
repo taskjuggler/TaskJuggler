@@ -307,6 +307,10 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_intervals
+    newListRule('intervals', 'interval')
+  end
+
   def rule_listOfDays
     newRule('listOfDays')
     newPattern(%w( !weekDayInterval !moreListOfDays), Proc.new {
@@ -614,6 +618,9 @@ module TjpSyntaxRules
     newPattern(%w( !report ))
     newPattern(%w( !resource ))
     newPattern(%w( !task ))
+    newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
+      @project['vacations'] = @project['vacations'] + @val[2]
+    })
     newPattern(%w( !workinghours ))
   end
 
@@ -768,13 +775,13 @@ module TjpSyntaxRules
     newRule('resourceAttributes')
     repeatable
     optional
-    newPattern(%w( !resource ))
-    newPattern(%w( !resourceScenarioAttributes ))
     newPattern(%w( $ID_WITH_COLON !taskScenarioAttributes ), Proc.new {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
         error("Unknown scenario: @val[0]")
       end
     })
+    newPattern(%w( !resource ))
+    newPattern(%w( !resourceScenarioAttributes ))
     newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.
   end
@@ -807,6 +814,10 @@ module TjpSyntaxRules
     newRule('resourceScenarioAttributes')
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
+    })
+    newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
+      @resource['vacations', @scenarioIdx] =
+        @resource['vacations', @scenarioIdx ] + @val[2]
     })
     # Other attributes will be added automatically.
   end
@@ -1038,6 +1049,12 @@ module TjpSyntaxRules
   def rule_timezone
     newRule('timezone')
     newPattern(%w( _timezone $STRING ))
+  end
+
+  def rule_vacationName
+    newRule('vacationName')
+    optional
+    newPattern(%w( $STRING )) # We just throw the name away
   end
 
   def rule_valDate

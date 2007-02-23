@@ -20,6 +20,7 @@ require 'DurationAttribute'
 require 'FlagListAttribute'
 require 'FloatAttribute'
 require 'FixnumAttribute'
+require 'IntervalListAttribute'
 require 'ReferenceAttribute'
 require 'StringAttribute'
 require 'TaskListAttribute'
@@ -60,6 +61,7 @@ class Project
       'start' => nil,
       'timeformat' => "%Y-%m-%d",
       'timezone' => nil,
+      'vacations' => [],
       'weekstartsmonday' => true,
       'workinghours' => WorkingHours.new,
       'yearlyworkingdays' => 260.714
@@ -111,6 +113,7 @@ class Project
       [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
+      [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]
     attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
@@ -246,6 +249,7 @@ class Project
   end
 
   def isWorkingTime(*args)
+    # Normalize argument(s) to Interval
     if args.length == 1
       if args[0].is_a?(Interval)
         iv = args[0]
@@ -255,6 +259,12 @@ class Project
     else
       iv = Interval.new(args[0]. args[1])
     end
+
+    # Check if the interval has overlap with any of the global vacations.
+    @attributes['vacations'].each do |vacation|
+      return false if vacation.overlaps?(iv)
+    end
+
     return false if @attributes['workinghours'].timeOff?(iv)
 
     true

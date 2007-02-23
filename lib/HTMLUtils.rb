@@ -51,8 +51,8 @@ module HTMLUtils
     .loaded2 { background-color:#eb8f8f }
     .free1 { background-color:#a5ffb4 }
     .free2 { background-color:#98eba6 }
-    .offduty1 { background-color:#dde375 }
-    .offduty2 { background-color:#f3f990 }
+    .offduty1 { background-color:#f3f990 }
+    .offduty2 { background-color:#dde375 }
     .done1 { background-color:#abbeae }
     .done2 { background-color:#99aa9c }
     .todo1 { background-color:#beabab }

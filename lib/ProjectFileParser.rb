@@ -80,5 +80,20 @@ private
     scenarioSpecific
   end
 
+  def newListRule(name, listItem)
+    moreName = 'more' + name[0, 1].capitalize + name[1, name.length - 1]
+    newRule(name)
+    newPattern([ "!#{listItem}",
+                 "!#{moreName}" ],
+      Proc.new { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
+    )
+    newRule(moreName)
+    optional
+    repeatable
+    newPattern([ "_,", "!#{listItem}" ], Proc.new {
+      @val[1]
+    })
+  end
+
 end
 

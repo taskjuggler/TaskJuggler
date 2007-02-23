@@ -58,11 +58,30 @@ class ResourceScenario < ScenarioData
     # Create scoreboard and mark all slots as unavailable
     @scoreboard = Array.new(@project.scoreboardSize, 1)
 
+    # Change all work time slots to nil (available) again.
     0.upto(@project.scoreboardSize) do |i|
       ivStart = @property.project.idxToDate(i)
       iv = Interval.new(ivStart, ivStart +
                         @property.project['scheduleGranularity'])
       @scoreboard[i] = nil if onShift?(iv)
+    end
+
+    # Mark all resource specific vacation slots as such (2)
+    a('vacations').each do |vacation|
+      startIdx = @project.dateToIdx(vacation.start)
+      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx.upto(endIdx) do |i|
+         @scoreboard[i] = 1
+      end
+    end
+
+    # Mark all global vacation slots as such (3)
+    @project['vacations'].each do |vacation|
+      startIdx = @project.dateToIdx(vacation.start)
+      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx.upto(endIdx) do |i|
+         @scoreboard[i] = 2
+      end
     end
   end
 
