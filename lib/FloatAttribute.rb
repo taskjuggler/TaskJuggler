@@ -15,5 +15,9 @@ class FloatAttribute < AttributeBase
     super(property, type)
   end
 
+  def to_tjp
+    @value.to_s
+  end
+
 end
 

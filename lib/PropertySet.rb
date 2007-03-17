@@ -76,22 +76,25 @@ class PropertySet
 
   # Return whether the attribute with _attrId_ is scenario specific or not.
   def scenarioSpecific?(attrId)
-    if @attributeDefinitions[attrId].nil?
-      # All hardwired attributes are not scenario specific.
-      false
-    else
-      @attributeDefinitions[attrId].scenarioSpecific
-    end
+    # All hardwired attributes are not scenario specific.
+    return false if @attributeDefinitions[attrId].nil?
+
+    @attributeDefinitions[attrId].scenarioSpecific
   end
 
-  # Return wheter the attribute with _attrId_ is scenario specific or not.
+  # Return whether the attribute with _attrId_ is scenario specific or not.
   def inheritable?(attrId)
-    if @attributeDefinitions[attrId].nil?
-      # All hardwired attributes are not inheritable.
-      false
-    else
-      @attributeDefinitions[attrId].inheritable
-    end
+    # All hardwired attributes are not inheritable.
+    return false if @attributeDefinitions[attrId].nil?
+
+    @attributeDefinitions[attrId].inheritable
+  end
+
+  # Return whether or not the attribute was user defined.
+  def userDefined?(attrId)
+    return false if @attributeDefinitions[attrId].nil?
+
+    @attributeDefinitions[attribute].userDefined
   end
 
   # Returns the name (human readable description) of the attribute with the

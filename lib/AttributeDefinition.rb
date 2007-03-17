@@ -11,15 +11,18 @@
 #
 
 class AttributeDefinition
-  attr_reader :id, :name, :objClass, :inheritable, :scenarioSpecific, :default
+  attr_reader :id, :name, :objClass, :inheritable, :scenarioSpecific,
+              :userDefined, :default
 
-  def initialize(id, name, objClass, inheritable, scenarioSpecific, default)
+  def initialize(id, name, objClass, inheritable, scenarioSpecific, default,
+                 userDefined = false)
     @id = id
     @name = name
     @objClass = objClass
     @inheritable = inheritable
     @scenarioSpecific = scenarioSpecific
     @default = default
+    @userDefined = userDefined
   end
 end
 

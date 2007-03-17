@@ -79,7 +79,8 @@ class Project
       # ID           Name            Type               Inher. Scen.  Default
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
       [ 'bookedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
-      [ 'depends',   'Predecessors', DependencyListAttribute, true,  true,  [] ],
+      [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
+      [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
@@ -92,10 +93,14 @@ class Project
       [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
       [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
-      [ 'precedes',  'Successors',   DependencyListAttribute, true,  true,  [] ],
+      [ 'note',      'Note',         StringAttribute,   false, false, nil ],
+      [ 'precedes',  '-',   DependencyListAttribute, true,  true,  [] ],
+      [ 'predecessors', 'Predecessors', TaskListAttribute, false, true, [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
+      [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
+      [ 'successors', 'Successors',  TaskListAttribute, false, true, [] ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]

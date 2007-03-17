@@ -75,7 +75,7 @@ private
       end
     end
     @propertySet.addAttributeType(AttributeDefinition.new(
-      @val[1], @val[2], type, inherit, scenarioSpecific, default))
+      @val[1], @val[2], type, inherit, scenarioSpecific, default, true))
 
     scenarioSpecific
   end

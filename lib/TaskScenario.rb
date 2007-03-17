@@ -23,8 +23,8 @@ class TaskScenario < ScenarioData
   def prepareScenario
     @depends = []
     @precedes = []
-    @previous = []
-    @followers = []
+    @property['predecessors', @scenarioIdx] = []
+    @property['successors', @scenarioIdx] = []
 
     @isRunAway = false
 
@@ -45,7 +45,7 @@ class TaskScenario < ScenarioData
       end
 
       @depends.push(depTask)
-      @previous.push(depTask)
+      a('predecessors').push(depTask)
       depTask.addFollower(@scenarioIdx, @property)
     end
 
@@ -55,7 +55,7 @@ class TaskScenario < ScenarioData
       end
 
       @precedes.push(predTask)
-      @followers.push(predTask)
+      a('successors').push(predTask)
       predTask.addPrevious(@scenarioIdx, @property)
     end
   end
@@ -95,10 +95,10 @@ class TaskScenario < ScenarioData
 
     # If the task has a follower or predecessor that is a runaway this task
     # is also incomplete.
-    @followers.each do |follower|
+    a('successors').each do |follower|
       return false if follower.isRunAway(@scenarioIdx)
     end
-    @previous.each do |previous|
+    a('predecessors').each do |previous|
       return false if previous.isRunAway(@scenarioIdx)
     end
 
@@ -150,7 +150,7 @@ class TaskScenario < ScenarioData
     end
 
     # Check that all preceding tasks end before this task.
-    @previous.each do |task|
+    a('predecessors').each do |task|
       next if task['end', @scenarioIdx].nil?
       if task['end', @scenarioIdx] > a('start')
         error("Task #{@property.id} starts before task #{@task.id} " +
@@ -159,7 +159,7 @@ class TaskScenario < ScenarioData
     end
 
     # Check that all following tasks end before this task
-    @followers.each do |task|
+    a('successors').each do |task|
       next if task['start', @scenarioIdx].nil?
       if task['start', @scenarioIdx] < a('end')
         error("Task #{@property.id} ends after task #{task.id} " +
@@ -171,11 +171,11 @@ class TaskScenario < ScenarioData
   end
 
   def addFollower(task)
-    @followers.push(task)
+    a('successors').push(task)
   end
 
   def addPrevious(task)
-    @previous.push(task)
+    a('predecessors').push(task)
   end
 
   def nextSlot(slotDuration)
@@ -287,7 +287,7 @@ class TaskScenario < ScenarioData
 
     # Set start date to all previous tasks that have no start, are ALAP
     # tasks or have no duration. */
-    @previous.each do |task|
+    a('predecessors').each do |task|
       if task['end', @scenarioIdx].nil? &&
          !task.latestEnd(@scenarioIdx).nil? &&
          !task['scheduled', @scenarioIdx] &&
@@ -324,7 +324,7 @@ class TaskScenario < ScenarioData
       end
     end
 
-    @followers.each do |task|
+    a('successors').each do |task|
       if task['start', @scenarioIdx].nil? &&
          !task.earliestStart(@scenarioIdx).nil?
          !task['scheduled', @scenarioIdx] &&
@@ -380,7 +380,7 @@ class TaskScenario < ScenarioData
   end
 
   def hasStartDependency
-    return true if a('start') || !@previous.empty? || !a('forward')
+    return true if a('start') || !a('predecessors').empty? || !a('forward')
 
     p = @property
     while (p = p.parent) do
@@ -391,7 +391,7 @@ class TaskScenario < ScenarioData
   end
 
   def hasEndDependency
-    return true if a('end') || !@followers.empty? || a('forward')
+    return true if a('end') || !a('successors').empty? || a('forward')
 
     p = @property
     while (p = p.parent) do
@@ -403,7 +403,7 @@ class TaskScenario < ScenarioData
 
   def earliestStart
     startDate = TjTime.new(0)
-    @previous.each do |task|
+    a('predecessors').each do |task|
       if task['end', @scenarioIdx].nil?
         return nil if task['forward', @scenarioIdx]
       elsif task['end', @scenarioIdx] > startDate
@@ -445,7 +445,7 @@ class TaskScenario < ScenarioData
 
   def latestEnd
     endDate = TjTime.at(0)
-    @followers.each do |task|
+    a('successors').each do |task|
       if task['start', @scenarioIdx].nil?
         return nil unless task['forward', @scenarioIdx]
       elsif endDate == TjTime.at(0) ||
