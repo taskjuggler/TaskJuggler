@@ -244,8 +244,8 @@ private
         end
 
         unless rule.optional || repeatMode
-          error("Unexpected token '#{token[1]}' of type '#{token[0]}'." +
-                "Expecting #{@@expectedTokens.join(', ')}")
+          error("Unexpected token '#{token[1]}' of type '#{token[0]}'. " +
+                "Expecting one of #{@@expectedTokens.join(', ')}")
         end
         returnToken(token)
         puts "Finished parsing with rule #{rule.name} (*)" if @@debug >= 10

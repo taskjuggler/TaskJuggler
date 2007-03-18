@@ -16,7 +16,7 @@ class FloatAttribute < AttributeBase
   end
 
   def to_tjp
-    @value.to_s
+    id + ' ' + @value.to_s
   end
 
 end

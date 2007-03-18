@@ -215,6 +215,14 @@ class PropertyTreeNode
     end
   end
 
+  def getAttr(attributeId, scenarioIdx = nil)
+    if scenarioIdx.nil?
+      @attributes[attributeId]
+    else
+      @scenarioAttributes[scenarioIdx][attributeId]
+    end
+  end
+
   def set(attributeId, value)
     unless @attributes.has_key?(attributeId)
       raise "Unknown attribute #{attributeId}"

@@ -37,8 +37,8 @@ module TjpSyntaxRules
       end
       [ 'select', @val[1] ]
     })
-    singlePattern("_persistent")
-    singlePattern("_mandatory")
+    singlePattern('_persistent')
+    singlePattern('_mandatory')
   end
 
   def rule_allocationAttributes
@@ -47,6 +47,12 @@ module TjpSyntaxRules
     newPattern(%w( _{ !allocationAttribute _} ), Proc.new {
       @val[1]
     })
+  end
+
+  def rule_anyId
+    newRule('anyId')
+    singlePattern('$ID')
+    singlePattern('$ABSOLUTE_ID')
   end
 
   def rule_argumentList
@@ -193,8 +199,8 @@ module TjpSyntaxRules
     newRule('extendOptions')
     optional
     repeatable
-    singlePattern("_inherit")
-    singlePattern("_scenariospecific")
+    singlePattern('_inherit')
+    singlePattern('_scenariospecific')
   end
 
   def rule_extendOptionsBody
@@ -329,6 +335,10 @@ module TjpSyntaxRules
     newCommaListRule('moreListOfDays', '!weekDayInterval')
   end
 
+  def rule_moreResources
+    newCommaListRule('moreResources', '!resourceList')
+  end
+
   def rule_moreTasks
     newCommaListRule('moreTasks', '!taskList')
   end
@@ -339,8 +349,8 @@ module TjpSyntaxRules
 
   def rule_number
     newRule('number')
-    singlePattern("$INTEGER")
-    singlePattern("$FLOAT")
+    singlePattern('$INTEGER')
+    singlePattern('$FLOAT')
   end
 
   def rule_operand
@@ -498,6 +508,7 @@ module TjpSyntaxRules
     })
     newPattern(%w( !report ))
     newPattern(%w( !resource ))
+    newPattern(%w( _supplement !supplement ))
     newPattern(%w( !task ))
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
       @project['vacations'] = @project['vacations'] + @val[2]
@@ -604,9 +615,9 @@ module TjpSyntaxRules
 
   def rule_reportType
     newRule('reportType')
-    singlePattern("_export")
-    singlePattern("_htmltaskreport")
-    singlePattern("_htmlresourcereport")
+    singlePattern('_export')
+    singlePattern('_htmltaskreport')
+    singlePattern('_htmlresourcereport')
   end
 
   def rule_resource
@@ -679,6 +690,13 @@ module TjpSyntaxRules
     newPattern(%w( _resource $ID $STRING ), Proc.new {
       @property = Resource.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
+    })
+  end
+
+  def rule_resourceList
+    newRule('resourceList')
+    newPattern(%w( !resourceId !moreResources ), Proc.new {
+      [ @val[0] ] + @val[1]
     })
   end
 
@@ -785,6 +803,32 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_supplement
+    newRule('supplement')
+    newPattern(%w( !supplementResource !resourceBody ))
+    newPattern(%w( !supplementTask !taskBody ))
+  end
+
+  def rule_supplementResource
+    newRule('supplementResource')
+    newPattern(%w( _resource !anyId ), Proc.new {
+      @property = @project.resource(@val[1])
+      if @property.nil?
+        error("Unknown resource #{@val[1]}")
+      end
+    })
+  end
+
+  def rule_supplementTask
+    newRule('supplementTask')
+    newPattern(%w( _task !anyId ), Proc.new {
+      @property = @project.task(@val[1])
+      if @property.nil?
+        error("Unknown task #{@val[1]}")
+      end
+    })
+  end
+
   def rule_task
     newRule('task')
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
@@ -821,8 +865,8 @@ module TjpSyntaxRules
 
   def rule_taskId
     newRule('taskId')
-    singlePattern("$ABSOLUTE_ID")
-    singlePattern("$ID")
+    singlePattern('$ABSOLUTE_ID')
+    singlePattern('$ID')
     newPattern(%w( $RELATIVE_ID ), Proc.new {
       task = @property
       id = @val[0]
@@ -848,8 +892,8 @@ module TjpSyntaxRules
 
   def rule_taskRootId
     newRule('taskRootId')
-    singlePattern("$ABSOLUTE_ID")
-    singlePattern("$ID")
+    singlePattern('$ABSOLUTE_ID')
+    singlePattern('$ID')
   end
 
   def rule_taskScenarioAttributes
@@ -858,6 +902,12 @@ module TjpSyntaxRules
       # Don't use << operator here so the 'provided' flag gets set properly.
       @property['allocate', @scenarioIdx] =
         @property['allocate', @scenarioIdx] + @val[1]
+    })
+    newPattern(%w( _complete $FLOAT ), Proc.new {
+      if @val[1] < 0.0 || @val[1] > 100.0
+        error("Complete value must be between 0 and 100")
+      end
+      @property['complete', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _depends !taskList ), Proc.new {
       @property['depends', @scenarioIdx] = @val[1]
@@ -870,7 +920,7 @@ module TjpSyntaxRules
     })
     newPattern(%w( _end !valDate ), Proc.new {
       @property['end', @scenarioIdx] = @val[1]
-      @property['forward'] = false
+      @property['forward', @scenarioIdx] = false
     })
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
@@ -878,9 +928,39 @@ module TjpSyntaxRules
     newPattern(%w( _length !workingDuration ), Proc.new {
       @property['length', @scenarioIdx] = @val[1]
     })
+    newPattern(%w( _maxend !valDate ), Proc.new {
+      @property['maxend', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _maxstart !valDate ), Proc.new {
+      @property['maxstart', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _minend !valDate ), Proc.new {
+      @property['minend', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _minstart !valDate ), Proc.new {
+      @property['minstart', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _milestone ), Proc.new {
+      @property['milestone', @scenarioIdx] = true
+    })
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
         error("Priority must have a value between 0 and 1000")
+      end
+    })
+    newPattern(%w( _responsible !resourceList ), Proc.new {
+      @property['responsible', @scenarioIdx] = @val[1]
+    })
+    newPattern(%w( _scheduled ), Proc.new {
+      @property['scheduled', @scenarioIdx] = true
+    })
+    newPattern(%w( _scheduling $ID ), Proc.new {
+      if @val[1] == 'alap'
+        @property['forward', @scenarioIdx] = false
+      elsif @val[1] == 'asap'
+        @property['forward', @scenarioIdx] = true
+      else
+        error("Scheduling must be 'asap' or 'alap'")
       end
     })
     newPattern(%w( _start !valDate), Proc.new {

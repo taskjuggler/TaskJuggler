@@ -190,25 +190,7 @@ private
       token << c
     end
     if c == ?-
-      year = token.to_i
-      if year < 1970 || year > 2030
-        raise TjException.new, "Year must be between 1970 and 2030"
-      end
-
-      month = readDigits.to_i
-      if month < 1 || month > 12
-        raise TjException.new, "Month must be between 1 and 12"
-      end
-      if nextChar != ?-
-        raise TjException.new, "Corrupted date"
-      end
-
-      day = readDigits.to_i
-      if day < 1 || day > 31
-        raise TjException.new, "Day must be between 1 and 31"
-      end
-
-      return [ 'DATE', TjTime.local(year, month, day, 0, 0 ,0, 0) ]
+      return readDate(token)
     elsif c == ?.
       frac = readDigits
 
@@ -250,6 +232,90 @@ private
     id
   end
 
+  def readDate(token)
+    year = token.to_i
+    if year < 1970 || year > 2030
+      raise TjException.new, "Year must be between 1970 and 2030"
+    end
+
+    month = readDigits.to_i
+    if month < 1 || month > 12
+      raise TjException.new, "Month must be between 1 and 12"
+    end
+    if nextChar != ?-
+      raise TjException.new, "Corrupted date"
+    end
+
+    day = readDigits.to_i
+    if day < 1 || day > 31
+      raise TjException.new, "Day must be between 1 and 31"
+    end
+
+    if (c = nextChar(true)) != ?-
+      returnChar(c)
+      return [ 'DATE', TjTime.local(year, month, day) ]
+    end
+
+    hour = readDigits.to_i
+    if hour < 0 || hour > 23
+      raise TjException.new, "Hour must be between 0 and 23"
+    end
+
+    if nextChar != ?:
+      raise TjException.new, "Corrupted time"
+    end
+
+    minutes = readDigits.to_i
+    if minutes < 0 || minutes > 59
+      raise TjException.new, "Minutes must be between 0 and 59"
+    end
+
+    if (c = nextChar(true)) != ?:
+      returnChar(c)
+      return [ 'DATE', TjTime.local(year, month, day, hour, minutes) ]
+    end
+
+    seconds = readDigits.to_i
+    if seconds < 0 || seconds > 59
+      raise TjException.new, "Seconds must be between 0 and 59"
+    end
+
+    if (c = nextChar(true)) != ?-
+      returnChar(c)
+      return [ 'DATE', TjTime.local(year, month, day, hour, minutes, seconds) ]
+    end
+
+    if (c = nextChar) == ?-
+      delta = -1
+    elsif c == ?+
+      delta = 1
+    else
+      # An actual time zone name
+      tz = readId(c)
+      oldTz = ENV['TZ']
+      ENV['TZ'] = tz
+      timeVal = TjTime.local(year, month, day, hour, minutes, seconds)
+      ENV['TZ'] = oldTz
+      if timeVal.to_a[9] != tz
+        raise TjException.new, "Unknown time zone #{tz}"
+      end
+      return [ 'DATE', timeVal ]
+    end
+
+    utcDiff = readDigits
+    utcHour = utcDiff[0, 2].to_i
+    if utcHour < 0 || utcHour > 23
+      raise TjException.new, "Hour must be between 0 and 23"
+    end
+    utcMin = utcDiff[2, 2].to_i
+    if utcMin < 0 || utcMin > 59
+      raise TjException.new, "Minutes must be between 0 and 59"
+    end
+
+    [ 'DATE', TjTime.gm(year, month, day, hour, minutes, seconds) +
+              delta * ((utcHour * 3600) + utcMin * 60) ]
+  end
+
   def readString(c)
     token = ""
     while (c = nextChar) && c != ?"
@@ -273,6 +339,7 @@ private
       loop do
         token += readIdentifier
         break if (c = nextChar) != ?.
+        token += '.'
       end
       returnChar c
 

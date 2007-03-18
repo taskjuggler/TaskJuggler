@@ -34,24 +34,29 @@ class ExportReport < ReportBase
 
   def generateProjectProperty
     @file << "project #{@project['id']} \"#{@project['name']}\" " +
-             "\"#{@project['version']}\" #{@project['start']} " +
+             "\"#{@project['version']}\" #{@project['start']} - " +
              "#{@project['end']} {"
     generateCustomAttributeDeclarations('task', @project.tasks)
     @file << "}\n"
   end
 
   def generateCustomAttributeDeclarations(tag, propertySet)
+    # First we search the attribute definitions for any user defined
+    # attributes and count them.
     customAttributes = 0
     propertySet.eachAttributeDefinition do |ad|
       customAttributes += 1 if ad.userDefined
     end
+    # Return if there are no user defined attributes.
     return if customAttributes == 0
 
+   # This hash maps attributes types to the labels in the extned definition.
     attrTags = {
       DateAttribute => 'date',
       ReferenceAttribute => 'reference',
       StringAttribute => 'text'
     }
+    # Generate definitions for each user defined attribute.
     @file << '  extend ' + tag + "{\n"
       propertySet.eachAttributeDefinition do |ad|
         next unless ad.userDefined
@@ -106,8 +111,7 @@ class ExportReport < ReportBase
       end
     end
 
-    # Only for leaf tasks we include the start and end dates and the scheduled
-    # attribute.
+    # For leaf tasks we put some attributes right here.
     if isLeafTask
       @scenarios.each do |scenarioIdx|
         generateScAttribute(scenarioIdx, 'start', task['start', scenarioIdx],
@@ -119,22 +123,19 @@ class ExportReport < ReportBase
         if task['scheduled', scenarioIdx]
           generateScAttribute(scenarioIdx, 'scheduled', nil, indent + 2)
         end
+        generateScAttribute(scenarioIdx, 'scheduling',
+                            task['forward', scenarioIdx] ? 'asap' : 'alap',
+                            indent + 2)
+        if task['milestone', scenarioIdx]
+          generateScAttribute(scenarioIdx, 'milestone', nil, indent + 2)
+        end
       end
     end
 
-    @scenarios.each do |scenarioIdx|
-      if task['milestone', scenarioIdx]
-        generateScAttribute(scenarioIdx, 'milestone', nil, indent + 2)
-      end
-
-      generateScAttribute(scenarioIdx, 'scheduling',
-                          task['forward', scenarioIdx] ? 'asap' : 'alap',
-                          indent + 2)
-    end
     @file << ' ' * indent + "}\n"
   end
 
-  # Generate 'depends' of 'precedes' attributes for a task.
+  # Generate 'depends' or 'precedes' attributes for a task.
   def generateTaskDependency(scenarioIdx, task, tag, indent)
     return unless @taskAttrs.include?('depends') || !taskAttrs.include?('all')
 
@@ -159,8 +160,22 @@ class ExportReport < ReportBase
   def generateTaskAttributes
     taskList = PropertyList.new(@project.tasks)
     taskList.setSorting([ ['seqno', true, -1 ] ])
+
+    flags = []
     taskList.each do |task|
-      @file << "supplement task #{task.fullId} \"#{task.name}\" {\n"
+      @scenarios.each do |scenarioIdx|
+        task['flags', scenarioIdx].each do |flag|
+          flags << flag unless flags.include?(flag)
+        end
+      end
+    end
+    flags.sort
+    unless flags.empty?
+      @file << "flags #{flags.join(', ')}\n"
+    end
+
+    taskList.each do |task|
+      @file << "supplement task #{task.fullId} {\n"
       @supportedTaskAttrs.each do |attr|
         next unless @taskAttrs.include?('all') || @taskAttrs.include?(attr)
 
@@ -170,19 +185,20 @@ class ExportReport < ReportBase
             prefix += "#{@project.scenario(scenarioIdx).id}:"
           end
 
+          # Some attributes need special treatment.
           case attr
           when 'depends'
             next     # already taken care of
-          when 'note'
-            unless task.get('note').nil?
-             @file << prefix + 'note ' + task.get('note') + "\n"
-            end
           else
-            @file << prefix + attr + ' '
-            if scenSpec
-              @file << "#{task[attr, scenarioIdx].to_s}\n"
-            else
-              @file << "#{task.get(attr).to_s}\n"
+            # The rest can be generated with a generic routine.
+            unless task[attr, scenarioIdx].nil? ||
+                   (task[attr, scenarioIdx].is_a?(Array) &&
+                    task[attr, scenarioIdx].empty?)
+              if scenSpec
+                @file << prefix + "#{task.getAttr(attr, scenarioIdx).to_tjp}\n"
+              else
+                @file << prefix + "#{task.getAttr(attr).to_tjp}\n"
+              end
             end
           end
 
@@ -193,9 +209,9 @@ class ExportReport < ReportBase
     end
   end
 
-  def generateAttribute(attr)
-    @file << "  #{attr.to_tjp}\n" if attr.provided
-  end
+#def generateAttribute(attr)
+#    @file << "  #{attr.to_tjp}\n" if attr.provided
+#  end
 
   def generateScAttribute(scenarioIdx, name, value, indent)
     @file << ' ' * indent +

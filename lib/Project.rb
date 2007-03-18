@@ -172,16 +172,10 @@ class Project
   end
 
   def task(id)
-    if $DEBUG && @tasks[id].nil?
-      raise "No task with id '#{id}'"
-    end
     @tasks[id]
   end
 
   def resource(id)
-    if $DEBUG && @resources[id].nil?
-      raise "No resource with id '#{id}'"
-    end
     @resources[id]
   end
 
