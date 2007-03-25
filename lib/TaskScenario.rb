@@ -40,20 +40,14 @@ class TaskScenario < ScenarioData
 
   def Xref
     @property['depends', @scenarioIdx].each do |dependency|
-      if (depTask = dependency.resolve(@project)).nil?
-        error("Task #{@property.id} has unknown depends #{dependency.taskId}")
-      end
-
+      depTask = checkDependency(dependency, 'depends')
       @depends.push(depTask)
       a('predecessors').push(depTask)
       depTask.addFollower(@scenarioIdx, @property)
     end
 
     @property['precedes', @scenarioIdx].each do |dependency|
-      if (predTask = dependency.resolve(@project)).nil?
-        error("Task #{@property.id} has unknown precedes #{dependency.taskId}")
-      end
-
+      predTask = checkDependency(dependency, 'precedes')
       @precedes.push(predTask)
       a('successors').push(predTask)
       predTask.addPrevious(@scenarioIdx, @property)
@@ -62,7 +56,7 @@ class TaskScenario < ScenarioData
 
   def implicitXref
     # Automatically detect and mark task that have no duration criteria but
-    # either proper start or end specification.
+    # proper start or end specification.
     return if !@property.leaf? || a('milestone')
 
     hasDurationSpec = a('length') != 0 || a('duration') != 0 || a('effort') != 0
@@ -215,8 +209,11 @@ class TaskScenario < ScenarioData
     # indicates the slot that was used for the previous call. Depending on the
     # scheduling direction the next slot must be scheduled either right before
     # or after this slot. If the current slot is not directly aligned, we'll
-    # wait for another call with a proper slot.
+    # wait for another call with a proper slot. The function returns true
+    # only if a slot could be scheduled.
     if a('forward')
+      # On first call, the @lastSlot is not set yet. We set it to the slot
+      # before the start slot.
       if @lastSlot.nil?
         @lastSlot = a('start') - slotDuration
         @tentativeEnd = slot + slotDuration
@@ -234,12 +231,16 @@ class TaskScenario < ScenarioData
     @lastSlot = slot
 
     if a('length') > 0 || a('duration') > 0
+      # The doneDuration counts the number of scheduled slots. It is increased
+      # by one with every scheduled slot. The doneLength is only increased for
+      # global working time slots.
       @doneDuration += 1
-
       if @project.isWorkingTime(slot, slot + slotDuration)
         @doneLength += 1
       end
 
+      # If we have reached the specified duration or lengths, we set the end
+      # or start date and propagate the value to neighbouring tasks.
       if (a('length') > 0 && @doneLength >= a('length')) ||
          (a('duration') > 0 && @doneDuration >= a('duration'))
         if a('forward')
@@ -267,9 +268,20 @@ class TaskScenario < ScenarioData
       else
         propagateStart(a('end'))
       end
-    else
-      #TODO: Handle start/end task
+    elsif a('start') && a('end')
+      # Task with start and end date but no duration criteria
+      bookResources(slot, slotDuration) unless a('allocate').emtpy?
+
+      # Depending on the scheduling direction we can mark the task as
+      # scheduled once we have reached the other end.
+      if (a('forward') && slot + slotDuration >= a('end')) ||
+         (!a('forward') && slot < a('start'))
+         @property['scheduled', @scenarioIdx] = true
+         return true
+      end
     end
+
+    false
   end
 
   def propagateStart(date)
@@ -624,6 +636,40 @@ private
     propagateEnd(a('end')) if a('end')
 
     scheduleContainer if @property.container?
+  end
+
+  def checkDependency(dependency, depType)
+    if (depTask = dependency.resolve(@project)).nil?
+      # Remove the broken dependency. It could cause trouble later on.
+      @property[depType, @scenarioIdx].delete(dependency)
+      error("Task #{@property.id} has unknown #{depType} #{dependency.taskId}")
+    end
+
+    if depTask == @property
+      # Remove the broken dependency. It could cause trouble later on.
+      @property[depType, @scenarioIdx].delete(dependency)
+      error("Task #{@property.id} cannot depend on self")
+    end
+
+    if depTask.isChildOf?(@property)
+      # Remove the broken dependency. It could cause trouble later on.
+      @property[depType, @scenarioIdx].delete(dependency)
+      error("Task #{property.id} cannot depend on child #{depTask.id}")
+    end
+
+    if @property.isChildOf?(depTask)
+      # Remove the broken dependency. It could cause trouble later on.
+      @property[depType, @scenarioIdx].delete(dependency)
+      error("Task #{property.id} cannot depend on parent #{depTask.id}")
+    end
+
+    if @depends.include?(dependency)
+      # Remove the broken dependency. It could cause trouble later on.
+      @property[depType, @scenarioIdx].delete(dependency)
+      error("No need to specify dependency #{depTask.id} multiple times.")
+    end
+
+    depTask
   end
 
 end

@@ -256,7 +256,7 @@ class Project
         iv = Interval.new(args[0], args[0] + @attributes['scheduleGranularity'])
       end
     else
-      iv = Interval.new(args[0]. args[1])
+      iv = Interval.new(args[0], args[1])
     end
 
     # Check if the interval has overlap with any of the global vacations.

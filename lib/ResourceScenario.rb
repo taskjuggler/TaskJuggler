@@ -135,7 +135,7 @@ class ResourceScenario < ScenarioData
   end
 
   # Return the unallocated load of the resource and its children wheighted by
-  # their effeciency.
+  # their efficiency.
   def getEffectiveFreeLoad(startIdx, endIdx)
     load = 0.0
     if @property.container?

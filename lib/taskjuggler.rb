@@ -10,7 +10,7 @@
 # $Id$
 #
 
-require 'Project'
+require 'TaskJuggler'
 
 def showUsage
   $stderr.puts "$0 file.prj [ file1.tji ...]"
@@ -19,27 +19,15 @@ end
 def main
   if ARGV.empty?
     showUsage
+    exit 1
   end
 
-  parser = ProjectFileParser.new
-  master = true
-  project = nil
-  ARGV.each do |file|
-    begin
-      parser.open(file)
-    rescue
-      exit 1
-    end
-    if master
-      project = parser.parse('project')
-      master = false
-    else
-      parser.parse('properties')
-    end
-    parser.close
+  TaskJuggler tj.new
+  unless tj.parse(ARGV)
+    exit 1
   end
 
-  if project.nil? || !project.schedule || !project.generateReports
+  if tj.schedule || !tj.generateReports
     exit 1
   end
 
