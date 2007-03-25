@@ -11,6 +11,7 @@
 #
 
 require 'TjException'
+require 'Message'
 
 class ScenarioData
 
@@ -24,15 +25,19 @@ class ScenarioData
     @property[attributeName, @scenarioIdx]
   end
 
-  def error(text, abort = true)
-    # TODO: Add source file and line info
-    $stderr.puts "Error: Scenario #{@project.scenario(@scenarioIdx).id}: "+ text
+  def error(id, text, abort = true)
+    message = Message.new(id, 'error', text, @property,
+                          @project.scenario(@scenarioIdx),
+                          @property.sourceFileInfo)
+    @project.sendMessage(message)
     raise TjException.new, "Scheduling error" if abort
   end
 
-  def warning(text)
-    # TODO: Add source file and line info
-    $stderr.puts "Warning: " + text
+  def warning(id, text)
+    message = Message.new(id, 'warning', text, @property,
+                          @project.scenario(@scenarioIdx),
+                          @property.sourceFileInfo)
+    @project.sendMessage(message)
   end
 
 end

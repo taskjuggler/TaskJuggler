@@ -103,10 +103,14 @@ class PropertySet
     # Some attributes are hardwired into the properties. These need to be
     # treated separately.
     if @@fixedAttributeNames[attrId].nil?
-      @attributeDefinitions[attrId].name
+      if @attributeDefinitions.include?(attrId)
+        return @attributeDefinitions[attrId].name
+      end
     else
-      @@fixedAttributeNames[attrId]
+      return @@fixedAttributeNames[attrId]
     end
+
+    nil
   end
 
   # Return the type of the attribute with the Id specified by _attrId_.

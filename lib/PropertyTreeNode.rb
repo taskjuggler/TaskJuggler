@@ -14,6 +14,7 @@ class PropertyTreeNode
 
   attr_reader :id, :name, :parent, :project, :sequenceNo, :levelSeqNo,
               :children
+  attr_accessor :sourceFileInfo
 
   def initialize(propertySet, id, name, parent)
     @id = id
@@ -21,6 +22,7 @@ class PropertyTreeNode
     @propertySet = propertySet
     @project = propertySet.project
     @level = -1
+    @sourceFileInfo = nil
 
     @parent = parent
     @sequenceNo = @propertySet.items + 1

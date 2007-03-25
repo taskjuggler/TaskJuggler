@@ -84,7 +84,8 @@ class TaskScenario < ScenarioData
 
     # Make sure the task is marked complete
     unless a('scheduled')
-      error("Task #{@property.id} has not been marked as scheduled.")
+      error('not_scheduled',
+            "Task #{@property.id} has not been marked as scheduled.")
     end
 
     # If the task has a follower or predecessor that is a runaway this task
@@ -97,47 +98,57 @@ class TaskScenario < ScenarioData
     end
 
     # Check if the start time is ok
-    error("Task #{@property.id} has undefined start time") if a('start').nil?
+    error('task_start_undef',
+          "Task #{@property.id} has undefined start time") if a('start').nil?
     if a('start') < @project['start'] || a('start') > @project['end']
-      error("The start time (#{a('start')}) of task #{@property.id} " +
+      error('task_start_range',
+            "The start time (#{a('start')}) of task #{@property.id} " +
             "is outside the project interval (#{@project['start']} - " +
             "#{@project['end']})")
     end
     if !a('minstart').nil? && a('start') < a('minstart')
-      error("The start time (#{a('start')}) of task #{@property.id} " +
-            "is too early. Must be after #{a('minstart')}.")
+      warning('minstart',
+             "The start time (#{a('start')}) of task #{@property.id} " +
+             "is too early. Must be after #{a('minstart')}.")
     end
     if !a('maxstart').nil? && a('start') > a('maxstart')
-      error("The start time (#{a('start')}) of task #{@property.id} " +
-            "is too late. Must be before #{a('maxstart')}.")
+      warning('maxstart',
+             "The start time (#{a('start')}) of task #{@property.id} " +
+             "is too late. Must be before #{a('maxstart')}.")
     end
 
     # Check if the end time is ok
-    error("Task #{@property.id} has undefined end time") if a('end').nil?
+    error('task_end_undef',
+          "Task #{@property.id} has undefined end time") if a('end').nil?
     if a('end') < @project['start'] || a('end') > @project['end']
-      error("The end time (#{a('end')}) of task #{@property.id} " +
+      error('task_end_range',
+            "The end time (#{a('end')}) of task #{@property.id} " +
             "is outside the project interval (#{@project['start']} - " +
             "#{@project['end']})")
     end
     if !a('minend').nil? && a('end') < a('minend')
-      error("The end time (#{a('end')}) of task #{@property.id} " +
-            "is too early. Must be after #{a('minend')}.")
+      warning('minend',
+              "The end time (#{a('end')}) of task #{@property.id} " +
+              "is too early. Must be after #{a('minend')}.")
     end
     if !a('maxend').nil? && a('end') > a('maxend')
-      error("The end time (#{a('end')}) of task #{@property.id} " +
-            "is too late. Must be before #{a('maxend')}.")
+      warning('maxend',
+              "The end time (#{a('end')}) of task #{@property.id} " +
+              "is too late. Must be before #{a('maxend')}.")
     end
 
     # Check that tasks fits into parent task.
     unless @property.parent.nil?
       parent = @property.parent
       if a('start') < parent['start', @scenarioIdx]
-        error("The start date (#{a('start')}) of task #{@property.id} " +
+        error('task_start_in_parent',
+              "The start date (#{a('start')}) of task #{@property.id} " +
               "is before the start date of the enclosing task " +
               "#{parent['start', scenarioIdx]}. ")
       end
       if a('end') > parent['end', @scenarioIdx]
-        error("The end date (#{a('end')}) of task #{@property.id} " +
+        error('task_end_in_parent',
+              "The end date (#{a('end')}) of task #{@property.id} " +
               "is after the end date of the enclosing task " +
               "#{parent['end', scenarioIdx]}. ")
       end
@@ -147,7 +158,8 @@ class TaskScenario < ScenarioData
     a('predecessors').each do |task|
       next if task['end', @scenarioIdx].nil?
       if task['end', @scenarioIdx] > a('start')
-        error("Task #{@property.id} starts before task #{@task.id} " +
+        error('task_pred_before',
+              "Task #{@property.id} starts before task #{@task.id} " +
               "ends needs to follow it.")
       end
     end
@@ -156,9 +168,16 @@ class TaskScenario < ScenarioData
     a('successors').each do |task|
       next if task['start', @scenarioIdx].nil?
       if task['start', @scenarioIdx] < a('end')
-        error("Task #{@property.id} ends after task #{task.id} " +
+        error('task_succ_after',
+              "Task #{@property.id} ends after task #{task.id} " +
               "starts but needs to precede it.")
       end
+    end
+
+    if a('milestone') && a('start') != a('end')
+      error('milestone_times_equal',
+            "Milestone #{@property.id} must have identical start and end " +
+            "date.")
     end
 
     @errors == 0
@@ -292,8 +311,6 @@ class TaskScenario < ScenarioData
       @property['scheduled', @scenarioIdx] = true
       if a('end').nil?
         propagateEnd(a('start'))
-      else
-        error("Milestone may not have 2 dates.")
       end
     end
 
@@ -642,31 +659,35 @@ private
     if (depTask = dependency.resolve(@project)).nil?
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error("Task #{@property.id} has unknown #{depType} #{dependency.taskId}")
+      error('task_depend_unknown',
+            "Task #{@property.id} has unknown #{depType} #{dependency.taskId}")
     end
 
     if depTask == @property
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error("Task #{@property.id} cannot depend on self")
+      error('task_depend_self', "Task #{@property.id} cannot depend on self")
     end
 
     if depTask.isChildOf?(@property)
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error("Task #{property.id} cannot depend on child #{depTask.id}")
+      error('task_depend_child',
+            "Task #{property.id} cannot depend on child #{depTask.id}")
     end
 
     if @property.isChildOf?(depTask)
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error("Task #{property.id} cannot depend on parent #{depTask.id}")
+      error('task_depend_parent',
+            "Task #{property.id} cannot depend on parent #{depTask.id}")
     end
 
     if @depends.include?(dependency)
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error("No need to specify dependency #{depTask.id} multiple times.")
+      error('task_depend_multi',
+            "No need to specify dependency #{depTask.id} multiple times.")
     end
 
     depTask

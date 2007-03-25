@@ -94,7 +94,8 @@ class TextParser
   end
 
   # To parse the input this function needs to be called with the name of the
-  # rule to start with.
+  # rule to start with. It returns the result of the processing function of
+  # the top-level parser rule that was specified by _ruleName_.
   def parse(ruleName)
     @stack = []
     @@expectedTokens = []
@@ -103,7 +104,7 @@ class TextParser
       result = parseRule(@rules[ruleName])
 
       if nextToken != [ false, false ]
-        error("Synatx error")
+        error('syntax_error', 'Synatx error')
       end
     rescue TjException
       return nil
@@ -113,11 +114,13 @@ class TextParser
   end
 
   # Call this function to report any errors related to the parsed input.
-  def error(text)
-    str = "#{@scanner.fileName}:#{@scanner.lineNo}: #{text}\n" +
-          "#{@scanner.line}\n"
-    $stderr.puts str
-    raise TjException.new, "Syntax error"
+  def error(id, text, property = nil)
+    message = Message.new(id, 'error', text + "\n" + @scanner.line.to_s,
+                          property, nil,
+                          SourceFileInfo.new(@scanner.fileName,
+                                             @scanner.lineNo, -1))
+    @messageHandler.send(message)
+    raise TjException.new, 'Syntax error'
   end
 
 private
@@ -210,7 +213,7 @@ private
         token = nextToken
         puts "  Token: #{token[0]}/#{token[1]}" if @@debug >= 20
       rescue TjException
-        error($!)
+        error('parse_rule1', $!)
       end
 
       # The scanner cannot differentiate between keywords and identifiers. So
@@ -244,8 +247,13 @@ private
         end
 
         unless rule.optional || repeatMode
-          error("Unexpected token '#{token[1]}' of type '#{token[0]}'. " +
-                "Expecting one of #{@@expectedTokens.join(', ')}")
+          error('unexpctd_token',
+                (token[0] != false ?
+                 "Unexpected token '#{token[1]}' of type '#{token[0]}'. " :
+                 "Unexpected end of file in #{@scanner.fileName}. ") +
+                (@@expectedTokens.length > 1 ?
+                 "Expecting one of #{@@expectedTokens.join(', ')}" :
+                 "Expecting #{@@expectedTokens[0]}"))
         end
         returnToken(token)
         puts "Finished parsing with rule #{rule.name} (*)" if @@debug >= 10
@@ -273,10 +281,10 @@ private
           if token.nil?
             begin
               if (token = nextToken) == [ false, false ]
-                error("Unexpected end of file")
+                error('unexpctd_eof', "Unexpected end of file")
               end
             rescue TjException
-              error($!)
+              error('parse_rule2', $!)
             end
           end
 
@@ -288,7 +296,7 @@ private
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end
-              error(text)
+              error('spec_keywork_expctd', text)
             end
             @stack.last.store(elToken)
           else
@@ -298,7 +306,7 @@ private
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end
-              error(text)
+              error('spec_token_expctd', text)
             end
             # If the element is a variable store the value of the token.
             @stack.last.store(token[1])

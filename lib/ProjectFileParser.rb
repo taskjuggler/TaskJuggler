@@ -18,9 +18,10 @@ class ProjectFileParser < TextParser
 
   include TjpSyntaxRules
 
-  def initialize
-    super
+  def initialize(messageHandler)
+    super()
 
+    @messageHandler = messageHandler
     @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
                      RELATIVE_ID ABSOLUTE_ID )
 
@@ -33,10 +34,11 @@ class ProjectFileParser < TextParser
       @scanner = TextScanner.new(masterFile)
       @scanner.open
     rescue
-      error($!)
+      error('file_open', $!)
     end
 
     @property = nil
+    @scenarioIdx = 0
   end
 
   def close
@@ -56,7 +58,7 @@ private
   def weekDay(name)
     names = %w( sun mon tue wed thu fri sat )
     if (day = names.index(@val[0])).nil?
-      error("Weekday name expected (#{names.join(', ')})")
+      error('weekday', "Weekday name expected (#{names.join(', ')})")
     end
     day
   end

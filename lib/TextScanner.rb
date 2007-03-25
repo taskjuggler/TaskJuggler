@@ -12,6 +12,7 @@
 
 require 'TjTime'
 require 'TjException'
+require 'SourceFileInfo'
 
 # The TextScanner class can scan text files and chop then into tokens to be
 # used by a parser. Files can be nested. A file can include an other file.
@@ -64,8 +65,14 @@ class TextScanner
     end
   end
 
+  def sourceFileInfo
+    return nil unless @cf
+
+    SourceFileInfo.new(@cf.fileName, @cf.lineNo, @cf.columnNo)
+  end
+
   def fileName
-    @cf ? @cf.fileName : "No File"
+    @cf ? @cf.fileName : @masterFile
   end
 
   def lineNo
@@ -136,9 +143,9 @@ private
       end
     else
       c = @cf.charBuffer.pop
-      @cf.lineNo += 1 if c == ?\n
     end
 
+    @cf.lineNo += 1 if c == ?\n
     @cf.line = "" if @cf.line[-1] == ?\n
     if c
       @cf.line << c
@@ -166,21 +173,21 @@ private
   end
 
   def readBlanks(c)
-    if c == 32
-      if (c2 = nextChar(true)) == ?-
-        if (c3 = nextChar(true)) == 32
-          return [ 'LITERAL', ' - ']
+    loop do
+      if c == 32
+        if (c2 = nextChar(true)) == ?-
+          if (c3 = nextChar(true)) == 32
+            return [ 'LITERAL', ' - ']
+          end
+          returnChar(c3)
         end
-        returnChar(c3)
+        returnChar(c2)
+      elsif c != ?\n && c != ?\t
+        returnChar(c)
+        return nil
       end
-      returnChar(c2)
-
-      return nil
-    elsif c == ?\n
-      @cf.lineNo += 1
+      c = nextChar(true)
     end
-
-    nil
   end
 
   def readNumber(c)

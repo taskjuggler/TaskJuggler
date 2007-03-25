@@ -11,18 +11,22 @@
 #
 
 require 'Project'
+require 'MessageHandler'
 
 class TaskJuggler
 
-  def initialize
+  attr_reader :messageHandler
+
+  def initialize(console)
     @project = nil
+    @messageHandler = MessageHandler.new(console)
   end
 
   # Read in the files passed as file names in _files_, parse them and
   # construct a Project object. In case of success true is returned.
   # Otherwise false.
   def parse(files)
-    parser = ProjectFileParser.new
+    parser = ProjectFileParser.new(@messageHandler)
     master = true
     @project = nil
     files.each do |file|
@@ -40,7 +44,7 @@ class TaskJuggler
       parser.close
     end
 
-    true
+    @messageHandler.messages.empty?
   end
 
   def schedule

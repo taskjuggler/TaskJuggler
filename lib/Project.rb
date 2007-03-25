@@ -40,9 +40,10 @@ require 'ProjectFileParser'
 
 class Project
 
-  attr_reader :tasks, :resources, :scenarios
+  attr_reader :tasks, :resources, :scenarios, :messageHandler
 
-  def initialize(id, name, version)
+  def initialize(id, name, version, messageHandler)
+    @messageHandler = messageHandler
     @attributes = {
       'id' => id,
       'name' => name,
@@ -128,6 +129,10 @@ class Project
     @reports = []
   end
 
+  def sendMessage(message)
+    @messageHandler.send(message)
+  end
+
   def [](name)
     if !@attributes.has_key?(name)
       raise "Unknown project attribute #{name}"
@@ -166,6 +171,8 @@ class Project
   def scenarioIdx(sc)
     if sc.is_a?(Scenario)
       return sc.sequenceNo - 1
+    elsif @scenarios[sc].nil?
+      return nil
     else
       return @scenarios[sc].sequenceNo - 1
     end

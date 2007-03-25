@@ -1,0 +1,5 @@
+project test "Test" "1.0" 2007-03-25 +2m {
+# MARK: error 3 max_timing_res	
+	timingresolution 61min
+}
+

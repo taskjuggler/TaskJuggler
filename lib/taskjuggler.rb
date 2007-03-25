@@ -22,7 +22,7 @@ def main
     exit 1
   end
 
-  TaskJuggler tj.new
+  tj = TaskJuggler.new(true)
   unless tj.parse(ARGV)
     exit 1
   end

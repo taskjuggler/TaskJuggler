@@ -1,13 +1,34 @@
-project test "Test" "1.0" 2007-03-25 +2m
+project test "Test" "1.0" 2007-03-25 +6m
 
-task t1 "Duration 5d" {
+task duration "Duration Tasks" {
 	start 2007-03-27
-	duration 5d
-	minend 2007-04-01
-	maxend 2007-04-01
-}
 
+  task t1 "Duration 5h" {
+  	duration 5h
+		minend 2007-03-27-5:00
+		maxend 2007-03-27-5:00
+  }
+  
+  task t2 "Duration 5d" {
+  	duration 5d
+  	minend 2007-04-01
+  	maxend 2007-04-01
+  }
+  
+  task t3 "Duration 5w" {
+  	duration 5w
+		minend 2007-05-01
+		maxend 2007-05-01
+  }
+  
+  task t4 "Duration 5m" {
+		duration 5m
+		minend 2007-08-26-2:00
+		maxend 2007-08-26-2:00
+	}
+}
+  
 htmltaskreport "Duration.html" {
 	columns name, start, end, daily
 }
-
+  

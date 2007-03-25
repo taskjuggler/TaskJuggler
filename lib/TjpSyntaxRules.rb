@@ -33,7 +33,8 @@ module TjpSyntaxRules
     newPattern(%w( _select $ID ), Proc.new {
       modes = %w( maxloaded minloaded minallocated order random )
       if (index = modes.index(@val[1])).nil?
-        error("Selection mode must be one of #{modes.join(', ')}")
+        error('alloc_select_mode',
+              "Selection mode must be one of #{modes.join(', ')}", @property)
       end
       [ 'select', @val[1] ]
     })
@@ -96,7 +97,7 @@ module TjpSyntaxRules
     newRule('columnId')
     newPattern(%w( $ID ), Proc.new {
       if (title = @reportElement.defaultColumnTitle(@val[0])).nil?
-        error("Unknown column #{@val[0]}")
+        error('report_column', "Unknown column #{@val[0]}")
       end
       @column = TableColumnDefinition.new(@val[0], title)
     })
@@ -121,7 +122,7 @@ module TjpSyntaxRules
       units = [ 'min', 'h', 'd', 'w', 'm', 'y' ]
       res = units.index(@val[0])
       if res.nil?
-        error("Unit must be one of #{units.join(', ')}")
+        error('duration_unit', "Unit must be one of #{units.join(', ')}")
       end
       res
     })
@@ -189,7 +190,8 @@ module TjpSyntaxRules
     newRule('extendId')
     newPattern(%w( $ID ), Proc.new {
       unless (?A..?Z) === @val[0][0]
-        error("User defined attributes IDs must start with a capital letter")
+        error('extend_id_cap',
+              "User defined attributes IDs must start with a capital letter")
       end
       @val[0]
     })
@@ -224,7 +226,7 @@ module TjpSyntaxRules
         @ruleToExtendWithScenario = @rules['resourceScenarioAttributes']
         @propertySet = @project.resources
       else
-        error("Extendable property expected: task or resource")
+        error('extend_prop', "Extendable property expected: task or resource")
       end
     })
   end
@@ -233,7 +235,7 @@ module TjpSyntaxRules
     newRule('flag')
     newPattern(%w( $ID ), Proc.new {
       unless @project['flags'].include?(@val[0])
-        error("Undeclared flag #{@val[0]}")
+        error('undecl_flag', "Undeclared flag #{@val[0]}")
       end
       @val[0]
     })
@@ -466,9 +468,11 @@ module TjpSyntaxRules
     newPattern(%w( !timezone ), Proc.new {
       @project['timezone'] = @val[1]
     })
-    newPattern(%w( _timingresolution !calendarDuration ), Proc.new {
-      error('Timing resolution must be at least 5 min.') if @val[1] < 60 * 5
-      error('Timing resolution must be 1 hour or less.') if @val[1] > 60 * 60
+    newPattern(%w( _timingresolution $INTEGER _min ), Proc.new {
+      error('min_timing_res',
+            'Timing resolution must be at least 5 min.') if @val[1] < 5
+      error('max_timing_res',
+            'Timing resolution must be 1 hour or less.') if @val[1] > 60
       @project['scheduleGranularity'] = @val[1]
     })
     newPattern(%w( _weekstartsmonday ), Proc.new {
@@ -485,7 +489,7 @@ module TjpSyntaxRules
   def rule_projectHeader
     newRule('projectHeader')
     newPattern(%w( _project $ID $STRING $STRING !interval ), Proc.new {
-      @project = Project.new(@val[1], @val[2], @val[3])
+      @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
       @property = nil
@@ -658,14 +662,11 @@ module TjpSyntaxRules
     newRule('resourceAttributes')
     repeatable
     optional
-    newPattern(%w( $ID_WITH_COLON !taskScenarioAttributes ), Proc.new {
-      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error("Unknown scenario: @val[0]")
-      end
+    newPattern(%w( !scenarioId !resourceScenarioAttributes ), Proc.new {
+      @scenarioIdx = 0
     })
     newPattern(%w( !resource ))
     newPattern(%w( !resourceScenarioAttributes ))
-    newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.
   end
 
@@ -679,7 +680,7 @@ module TjpSyntaxRules
     newRule('resourceId')
     newPattern(%w( $ID ), Proc.new {
       if (resource = @project.resource(@val[0])).nil?
-        error("Resource ID expected")
+        error('resource_id_expct', "Resource ID expected")
       end
       resource
     })
@@ -709,6 +710,7 @@ module TjpSyntaxRules
       @resource['vacations', @scenarioIdx] =
         @resource['vacations', @scenarioIdx ] + @val[2]
     })
+    newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.
   end
 
@@ -747,7 +749,7 @@ module TjpSyntaxRules
     newRule('scenarioId')
     newPattern(%w( $ID_WITH_COLON ), Proc.new {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error("Unknown scenario: @val[0]")
+        error('unknown_scenario_id', "Unknown scenario: @val[0]")
       end
     })
   end
@@ -760,7 +762,7 @@ module TjpSyntaxRules
     newRule('scenarioIdx')
     newPattern(%w( $ID ), Proc.new {
       if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error("Unknown scenario #{@val[1]}")
+        error('unknown_scenario', "Unknown scenario #{@val[1]}")
       end
       scenarioIdx
     })
@@ -789,14 +791,16 @@ module TjpSyntaxRules
         end
         direction = args[2] == 'up'
       else
-        error("Sorting criterium expected (e.g. tree, start.up or " +
+        error('sorting_crit_exptd1',
+              "Sorting criterium expected (e.g. tree, start.up or " +
               "plan.end.down).")
       end
       [ attribute, direction, scenario ]
     })
     newPattern(%w( $ID ), Proc.new {
       if @val[0] != 'tree'
-        error("Sorting criterium expected (e.g. tree, start.up or " +
+        error('sorting_crit_exptd2',
+              "Sorting criterium expected (e.g. tree, start.up or " +
               "plan.end.down).")
       end
       [ 'tree', true, -1 ]
@@ -814,7 +818,7 @@ module TjpSyntaxRules
     newPattern(%w( _resource !anyId ), Proc.new {
       @property = @project.resource(@val[1])
       if @property.nil?
-        error("Unknown resource #{@val[1]}")
+        error('suppl_unknown_res', "Unknown resource #{@val[1]}")
       end
     })
   end
@@ -824,7 +828,7 @@ module TjpSyntaxRules
     newPattern(%w( _task !anyId ), Proc.new {
       @property = @project.task(@val[1])
       if @property.nil?
-        error("Unknown task #{@val[1]}")
+        error('suppl_unknown_task', "Unknown task #{@val[1]}")
       end
     })
   end
@@ -858,6 +862,7 @@ module TjpSyntaxRules
     newRule('taskHeader')
     newPattern(%w( _task $ID $STRING ), Proc.new {
       @property = Task.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
       @scenarioIdx = 0
     })
@@ -874,7 +879,9 @@ module TjpSyntaxRules
         id = id.slice(1, id.length)
         task = task.parent
       end
-      error("Too many '!' for relative task in this context.") if id[0] == ?!
+      error('too_many_bangs',
+            "Too many '!' for relative task in this context.",
+            @property) if id[0] == ?!
       if task
         task.id + '.' + id
       else
@@ -905,7 +912,8 @@ module TjpSyntaxRules
     })
     newPattern(%w( _complete $FLOAT ), Proc.new {
       if @val[1] < 0.0 || @val[1] > 100.0
-        error("Complete value must be between 0 and 100")
+        error('task_complete', "Complete value must be between 0 and 100",
+              @property)
       end
       @property['complete', @scenarioIdx] = @val[1]
     })
@@ -945,7 +953,8 @@ module TjpSyntaxRules
     })
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
-        error("Priority must have a value between 0 and 1000")
+        error('task_priority', "Priority must have a value between 0 and 1000",
+              @property)
       end
     })
     newPattern(%w( _responsible !resourceList ), Proc.new {
@@ -960,7 +969,8 @@ module TjpSyntaxRules
       elsif @val[1] == 'asap'
         @property['forward', @scenarioIdx] = true
       else
-        error("Scheduling must be 'asap' or 'alap'")
+        error('task_scheduling', "Scheduling must be 'asap' or 'alap'",
+              @property)
       end
     })
     newPattern(%w( _start !valDate), Proc.new {
@@ -974,7 +984,8 @@ module TjpSyntaxRules
     newRule('timeInterval')
     newPattern([ '$TIME', '_ - ', '$TIME' ], Proc.new {
       if @val[0] >= @val[2]
-        error("End time of interval must be larger than start time")
+        error('time_interval',
+              "End time of interval must be larger than start time")
       end
       [ @val[0], @val[2] ]
     })
@@ -995,8 +1006,8 @@ module TjpSyntaxRules
     newRule('valDate')
     newPattern(%w( $DATE ), Proc.new {
       if @val[0] < @project['start'] || @val[0] > @project['end']
-        error("Date must be within the project time frame " +
-          "#{@project['start']} +  - #{@project['end']}")
+        error('date_in_range', "Date must be within the project time frame " +
+              "#{@project['start']} +  - #{@project['end']}")
       end
       @val[0]
     })
@@ -1014,10 +1025,12 @@ module TjpSyntaxRules
       end
       # Make sure the interval is within the project time frame.
       if iv.start < @project['start'] || iv.start >= @project['end']
-        error("Start date #{iv.start} must be within the project time frame")
+        error('interval_start_in_range',
+              "Start date #{iv.start} must be within the project time frame")
       end
       if iv.end <= @project['start'] || iv.end > @project['end']
-        error("End date #{iv.end} must be within the project time frame")
+        error('interval_end_in_rage',
+              "End date #{iv.end} must be within the project time frame")
       end
       iv
     })
@@ -1068,7 +1081,8 @@ module TjpSyntaxRules
   def rule_workinghours
     newRule('workinghours')
     newPattern(%w( _workinghours !listOfDays !listOfTimes), Proc.new {
-      wh = @property.nil? ? @project['workinghours'] : @property['workinghours']
+      wh = @property.nil? ? @project['workinghours'] :
+           @property['workinghours', @scenarioIdx]
       0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
   end
