@@ -408,8 +408,8 @@ private
                            @project['start'] : task['start', scenarioIdx])
           cell.text = (task.container? ? 'v-' : '[=') + cell.text
         end
-        if cellIv.contains(task['end', scenarioIdx].nil? ?
-                           @project['end'] : task['end', scenarioIdx])
+        if cellIv.contains((task['end', scenarioIdx].nil? ?
+                            @project['end'] : task['end', scenarioIdx]) - 1)
           cell.text += (task.container? ? '-v': '=]')
         end
         if cell.text == '' && taskIv.overlaps?(cellIv)

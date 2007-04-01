@@ -1,0 +1,36 @@
+project test "Test" "1.0" 2007-04-02 +3m
+
+macro Fixstart [ minstart ${1} maxstart ${1} ]
+macro Fixend [ minend ${1} maxend ${1} ]
+
+task t1 "T1" {
+	start ${projectstart}
+	duration 1w
+	${Fixend "2007-04-09"}
+}
+
+task t2 "T2" {
+	depends t1
+	duration 1w
+	${Fixstart "2007-04-09"}
+	${Fixend "2007-04-16"}
+}
+
+task t3 "T3" {
+	depends t2 { gapduration 1w }
+	duration 1w
+	${Fixstart "2007-04-23"}
+	${Fixend "2007-04-30"}
+}
+
+task t4 "T4" {
+	depends t3 { gaplength 1w }
+	duration 1w
+	${Fixstart "2007-05-04-18:00"}
+  ${Fixend "2007-05-11-18:00"}
+}
+
+htmltaskreport "Depends.html" {
+	columns name, start, end, weekly
+}
+

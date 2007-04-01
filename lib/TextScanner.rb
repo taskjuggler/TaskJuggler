@@ -368,9 +368,9 @@ private
     end
 
     if (c = nextChar) == ?-
-      delta = -1
-    elsif c == ?+
       delta = 1
+    elsif c == ?+
+      delta = -1
     else
       # An actual time zone name
       tz = readId(c)

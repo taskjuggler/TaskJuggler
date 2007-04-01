@@ -120,20 +120,20 @@ private
 <table summary="Legend" width="100%" align="center" border="0" cellpadding="2"
        cellspacing="1">
   <thead>
-    <tr><td colspan="10"></td></tr>
+    <tr><td colspan="8"></td></tr>
     <tr class="tabfront">
-      <td class="tabback"></td>
+<!--      <td class="tabback"></td> -->
       <td align="center" width="33%" colspan="2"><b>Gantt Symbols</b></td>
       <td class="tabback"></td>
       <td align="center" width="33%" colspan="2"><b>Task Colors</b></td>
       <td class="tabback"></td>
       <td align="center" width="33%" colspan="2"><b>Resource Colors</b></td>
-      <td class="tabback"></td>
+<!--      <td class="tabback"></td> -->
     </tr>
   </thead>
   <tbody>
     <tr class="tabfront">
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
     <td width="23%">Container Task</td>
     <td width="10%" align="center"><b>v--------v</b></td>
     <td class="tabback"></td>
@@ -142,10 +142,10 @@ private
     <td class="tabback"></td>
     <td width="23%">Free</td>
     <td width="10%" class="free1"></td>
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
   </tr>
   <tr class="tabfront">
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
     <td>Normal Task</td>
     <td align="center">[======]</td>
     <td class="tabback"></td>
@@ -154,10 +154,10 @@ private
     <td class="tabback"></td>
     <td>Partially Loaded</td>
     <td class="loaded1"></td>
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
   </tr>
   <tr class="tabfront">
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
     <td>Milestone</td>
     <td align="center"><b>&lt;&gt;</b></td>
     <td class="tabback"></td>
@@ -166,9 +166,9 @@ private
     <td class="tabback"></td>
     <td>Fully Loaded</td>
     <td class="busy1"></td>
-    <td class="tabback"></td>
+<!--    <td class="tabback"></td> -->
   </tr>
-  <tr><td colspan="10"></td></tr>
+  <tr><td colspan="8"></td></tr>
   </tbody>
 </table>
 END_OF_TEXT

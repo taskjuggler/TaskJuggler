@@ -60,7 +60,7 @@ class Project
       'scheduleGranularity' => 3600,
       'shorttimeformat' => "%H:%M",
       'start' => nil,
-      'timeformat' => "%Y-%m-%d",
+      'timeformat' => "%Y-%m-%d %H:%M",
       'timezone' => nil,
       'vacations' => [],
       'weekstartsmonday' => true,
@@ -71,7 +71,9 @@ class Project
     @scenarios = PropertySet.new(self, true)
     attrs = [
       # ID           Name          Type               Inh.     Scen.  Default
-      [ 'enabled',   'Enabled',    BooleanAttribute,  true,    false, true ]
+      [ 'enabled',   'Enabled',    BooleanAttribute,  true,    false, true ],
+      [ 'projection', 'Projection Mode', BooleanAttribute, true, false, false ],
+      [ 'strict', 'Strict Bookings', BooleanAttribute, true, false, false ]
     ]
     attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -79,7 +81,8 @@ class Project
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
-      [ 'bookedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
+      [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
+      [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
       [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],

@@ -37,7 +37,7 @@ class GenericReportElement
       list.delete_if do |task|
         delete = true
         @descr.scenarios.each do |scenarioIdx|
-          if task['bookedresources', scenarioIdx].include?(resource)
+          if task['assignedresources', scenarioIdx].include?(resource)
             delete = false
             break;
           end

@@ -55,6 +55,8 @@ class TaskScenario < ScenarioData
   end
 
   def implicitXref
+    # TODO: Propagate implicit dependencies.
+
     # Automatically detect and mark task that have no duration criteria but
     # proper start or end specification.
     return if !@property.leaf? || a('milestone')
@@ -68,6 +70,7 @@ class TaskScenario < ScenarioData
   end
 
   def preScheduleCheck
+    # TODO: Fixme
   end
 
   def postScheduleCheck
@@ -446,9 +449,9 @@ class TaskScenario < ScenarioData
       gapLength = dependency.gapLength
       while gapLength > 0 && dateAfterLengthGap < @project['end'] do
         if @project.isWorkingTime(dateAfterLengthGap)
-          gapLength -= @project.scheduleGranularity
+          gapLength -= 1
         end
-        dateAfterLengthGap += @project.scheduleGranularity
+        dateAfterLengthGap += @project['scheduleGranularity']
       end
 
       if dateAfterLengthGap > potentialStartDate + dependency.gapDuration
@@ -489,9 +492,9 @@ class TaskScenario < ScenarioData
       gapLength = dependency.gapLength
       while gapLength > 0 && dateBeforeLengthGap < @project['start'] do
         if @project.isWorkingTime(dateBeforeLengthGap)
-          gapLength -= @project.scheduleGranularity
+          gapLength -= 1
         end
-        dateBeforeLengthGap -= @project.scheduleGranularity
+        dateBeforeLengthGap -= @project['scheduleGranularity']
       end
       if dateBeforeLengthGap < potentialEndDate - dependency.gapDuration
         potentialEndDate = dateBeforeLengthGap
@@ -511,6 +514,17 @@ class TaskScenario < ScenarioData
   end
 
   def bookResources(date, slotDuration)
+    # In projection mode we do not allow bookings prior to the current date
+    # for any task (in strict mode) or tasks which have user specified
+    # bookings (sloppy mode).
+    if @project.scenario(@scenarioIdx).get('projection') &&
+       date < @project['now'] &&
+       (project.scenario(@scenarioIdx).get('strict') ||
+        a('bookedresources').empty?)
+      return
+    end
+
+    # TODO: Handle shifts
     iv = Interval.new(date, date + slotDuration)
     sbIdx = @project.dateToIdx(date)
 
@@ -591,7 +605,7 @@ class TaskScenario < ScenarioData
     resource.all.each do |r|
       if r.book(@scenarioIdx, sbIdx, @property)
 
-        if a('bookedresources').empty?
+        if a('assignedresources').empty?
 	        if a('forward')
             @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
           else
@@ -604,8 +618,8 @@ class TaskScenario < ScenarioData
 
         @doneEffort += 1
 
-        unless a('bookedresources').include?(r)
-          @property['bookedresources', @scenarioIdx] << r
+        unless a('assignedresources').include?(r)
+          @property['assignedresources', @scenarioIdx] << r
         end
         booked = true
       end
@@ -615,6 +629,7 @@ class TaskScenario < ScenarioData
   end
 
   def createCandidateList(sbIdx, allocation)
+    # TODO: Fixme
     allocation.candidates
   end
 
@@ -637,7 +652,7 @@ class TaskScenario < ScenarioData
         workLoad += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx,
                                               @property)
       else
-        a('bookedresources').each do |resource|
+        a('assignedresources').each do |resource|
           workLoad += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx,
                                                 @property)
         end

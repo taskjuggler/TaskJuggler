@@ -333,6 +333,10 @@ module TjpSyntaxRules
     newCommaListRule('moreColumnDef', '!columnDef')
   end
 
+  def rule_moreDepTasks
+    newCommaListRule('moreDepTasks', '!taskDepList')
+  end
+
   def rule_moreListOfDays
     newCommaListRule('moreListOfDays', '!weekDayInterval')
   end
@@ -341,8 +345,8 @@ module TjpSyntaxRules
     newCommaListRule('moreResources', '!resourceList')
   end
 
-  def rule_moreTasks
-    newCommaListRule('moreTasks', '!taskList')
+  def rule_morePrevTasks
+    newCommaListRule('morePredTasks', '!taskPredList')
   end
 
   def rule_moreTimeIntervals
@@ -504,6 +508,24 @@ module TjpSyntaxRules
       @property = nil
       @scenario = nil
       @project
+    })
+  end
+
+  def rule_projection
+    newRule('projection')
+    optional
+    newPattern(%w( _{ !projectionAttributes _} ))
+  end
+
+  def rule_projectionAttributes
+    newRule('projectionAttributes')
+    optional
+    repeatable
+    newPattern(%w( _sloppy ), Proc.new {
+      @property['strict', @scenarioIdx] = false
+    })
+    newPattern(%w( _strict ), Proc.new {
+      @property['strict', @scenarioIdx] = true
     })
   end
 
@@ -735,8 +757,10 @@ module TjpSyntaxRules
     newRule('scenarioAttributes')
     optional
     repeatable
+    newPattern(%w( _projection !projection ), Proc.new {
+      @property['projection', @scenarioIdx] = true
+    })
     newPattern(%w( !scenario ))
-    # Other attributes will be added automatically.
   end
 
   def rule_scenarioBody
@@ -868,18 +892,46 @@ module TjpSyntaxRules
     newPattern(%w( _{ !taskAttributes _} ))
   end
 
-  def rule_taskHeader
-    newRule('taskHeader')
-    newPattern(%w( _task $ID $STRING ), Proc.new {
-      @property = Task.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @scanner.sourceFileInfo
-      @property.inheritAttributes
-      @scenarioIdx = 0
+  def rule_taskDep
+    newRule('taskDep')
+    newPattern(%w( !taskDepHeader !taskDepBody ), Proc.new {
+      @val[0]
     })
   end
 
-  def rule_taskId
-    newRule('taskId')
+  def rule_taskDepAttributes
+    newRule('taskDepAttributes')
+    optional
+    repeatable
+    newPattern(%w( _gapduration !intervalDuration ), Proc.new {
+      @taskDependency.gapDuration = @val[1]
+    })
+    newPattern(%w( _gaplength !workingDuration ), Proc.new {
+      @taskDependency.gapLength = @val[1]
+    })
+    newPattern(%w( _onend ), Proc.new {
+      @taskDependency.onEnd = true
+    })
+    newPattern(%w( _onstart ), Proc.new {
+      @taskDependency.onEnd = false
+    })
+  end
+
+  def rule_taskDepBody
+    newRule('taskDepBody')
+    optional
+    newPattern(%w( _{ !taskDepAttributes _} ))
+  end
+
+  def rule_taskDepHeader
+    newRule('taskDepHeader')
+    newPattern(%w( !taskDepId ), Proc.new {
+      @taskDependency = TaskDependency.new(@val[0], true)
+    })
+  end
+
+  def rule_taskDepId
+    newRule('taskDepId')
     singlePattern('$ABSOLUTE_ID')
     singlePattern('$ID')
     newPattern(%w( $RELATIVE_ID ), Proc.new {
@@ -900,10 +952,41 @@ module TjpSyntaxRules
     })
   end
 
-  def rule_taskList
-    newRule('taskList')
-    newPattern(%w( !taskId !moreTasks ), Proc.new {
-      [ TaskDependency.new(@val[0]) ] + @val[1]
+  def rule_taskDepList
+    newRule('taskDepList')
+    newPattern(%w( !taskDep !moreDepTasks ), Proc.new {
+      [ @val[0] ] + @val[1]
+    })
+  end
+
+  def rule_taskHeader
+    newRule('taskHeader')
+    newPattern(%w( _task $ID $STRING ), Proc.new {
+      @property = Task.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.inheritAttributes
+      @scenarioIdx = 0
+    })
+  end
+
+  def rule_taskPred
+    newRule('taskPred')
+    newPattern(%w( !taskPredHeader !taskDepBody ), Proc.new {
+      @val[0]
+    })
+  end
+
+  def rule_taskPredHeader
+    newRule('taskPredHeader')
+    newPattern(%w( !taskDepId ), Proc.new {
+      @taskDependency = TaskDependency.new(@val[0], false)
+    })
+  end
+
+  def rule_taskPredList
+    newRule('taskPredList')
+    newPattern(%w( !taskPred !morePredTasks ), Proc.new {
+      [ @val[0] ] + @val[1]
     })
   end
 
@@ -927,8 +1010,9 @@ module TjpSyntaxRules
       end
       @property['complete', @scenarioIdx] = @val[1]
     })
-    newPattern(%w( _depends !taskList ), Proc.new {
+    newPattern(%w( _depends !taskDepList ), Proc.new {
       @property['depends', @scenarioIdx] = @val[1]
+      @property['forward', @scenarioIdx] = true
     })
     newPattern(%w( _duration !calendarDuration ), Proc.new {
       @property['duration', @scenarioIdx] = @val[1]
@@ -960,6 +1044,10 @@ module TjpSyntaxRules
     })
     newPattern(%w( _milestone ), Proc.new {
       @property['milestone', @scenarioIdx] = true
+    })
+    newPattern(%w( _precedes !taskPredList ), Proc.new {
+      @property['precedes', @scenarioIdx] = @val[1]
+      @property['forward', @scenarioIdx] = false
     })
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000

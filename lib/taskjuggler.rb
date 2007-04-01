@@ -27,7 +27,7 @@ def main
     exit 1
   end
 
-  if tj.schedule || !tj.generateReports
+  if !tj.schedule || !tj.generateReports
     exit 1
   end
 

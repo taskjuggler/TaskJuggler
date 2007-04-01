@@ -12,12 +12,16 @@
 
 class TaskDependency
 
-  attr_reader :gapDuration, :gapLength, :taskId, :task
+  attr_accessor :onEnd, :gapDuration, :gapLength
+  attr_reader :taskId, :task
 
-  def initialize(taskId)
+  def initialize(taskId, onEnd)
     @taskId = taskId
     @task = nil
+    @onEnd = onEnd
+    # The gap duration is stored in seconds of calendar time.
     @gapDuration = 0
+    # The gap length is stored in number of scheduling slots.
     @gapLength = 0
   end
 
