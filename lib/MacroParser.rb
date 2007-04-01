@@ -46,8 +46,27 @@ class MacroParser < TextParser
 
   def rule_macroCall
     newRule('macroCall')
-    newPattern(%w( _{ $ID !macroArguments _} ), Proc.new {
-      [ @val[1] ] + @val[2]
+    newPattern(%w( _{ !relax $ID !macroArguments _} ), Proc.new {
+      # When the ID is prefixed by a '?' the macro may be undefined and the
+      # macro call is replaced by an empty string.
+      unless @scanner.macroDefined?(@val[2])
+        if @val[1].nil?
+          error('undef_macro', "Macro #{name} is undefined", sourceFileInfo)
+        end
+        return nil
+      end
+      @scanner.expandMacro([ @val[2] ] + @val[3])
+    })
+    newPattern(%w( _( $ID _) ), Proc.new {
+      $ENV[@val[0]]
+    })
+  end
+
+  def rule_relax
+    newRule('relax')
+    optional
+    newPattern(%w( _? ), Proc.new {
+      true
     })
   end
 

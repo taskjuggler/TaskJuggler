@@ -454,6 +454,8 @@ module TjpSyntaxRules
     newPattern(%w( !include ))
     newPattern(%w( _now $DATE ), Proc.new {
       @project['now'] = @val[1]
+      @scanner.addMacro(Macro.new('now', @val[1].to_s,
+                                  @scanner.sourceFileInfo))
     })
     newPattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
         Proc.new {
@@ -496,6 +498,8 @@ module TjpSyntaxRules
                                   @scanner.sourceFileInfo))
       @project['end'] = @val[4].end
       @scanner.addMacro(Macro.new('projectend', @project['end'].to_s,
+                                  @scanner.sourceFileInfo))
+      @scanner.addMacro(Macro.new('now', TjTime.now.to_s,
                                   @scanner.sourceFileInfo))
       @property = nil
       @scenario = nil

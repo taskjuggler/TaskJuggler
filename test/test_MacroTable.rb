@@ -41,9 +41,6 @@ class TestMacroTable < Test::Unit::TestCase
                  @mt.resolve(%w( macro2 arg1 arg2 arg3), nil)[1])
     assert_equal('This is macro 2 with arg1 and ${2}',
                  @mt.resolve(%w( macro2 arg1), nil)[1])
-    assert_raise(TjException) do
-      @mt.resolve(%w( foo ), nil)
-    end
   end
 
 end

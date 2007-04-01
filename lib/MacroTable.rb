@@ -38,28 +38,30 @@ class MacroTable
     @macros = {}
   end
 
+  # Add a new macro definition to the table or replace an existing one.
   def add(macro)
     @macros[macro.name] = macro
   end
 
+  # Remove all definitions from the table.
   def clear
     @macros = []
   end
 
+  # Returns true only if a macro named _name_ is defined in the table.
+  def include?(name)
+    @macros.include?(name)
+  end
+
+  # Returns the definition of the macro specified by name as first entry of
+  # _args_. The other entries of _args_ are parameters that are replacing the
+  # ${n} tokens in the macro definition. In case the macro call has less
+  # arguments than the macro definition uses, the ${n} tokens remain
+  # unchanged. No error is generated.
   def resolve(args, sourceFileInfo)
-    name = args.delete_at(0)
-    if name[0] == ??
-      name.slice!(1..-1)
-      unless @macros.include?(name)
-        return nil
-      end
-    end
-    unless @macros.include?(name)
-      error('undef_macro', "Macro #{name} is undefined", sourceFileInfo)
-      return nil
-    end
+    name = args[0]
     resolved = @macros[name].value.clone
-    i = 1
+    i = 0
     args.each do |arg|
       resolved.gsub!("${#{i}}", arg)
       i += 1
@@ -67,6 +69,7 @@ class MacroTable
     [ @macros[name], resolved ]
   end
 
+  # This function sends an error message to the message handler.
   def error(id, text, sourceFileInfo)
     message = Message.new(id, 'error', text, nil, nil, sourceFileInfo)
     @messageHandler.send(message)

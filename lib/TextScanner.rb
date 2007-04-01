@@ -138,11 +138,36 @@ class TextScanner
     @macroTable.add(macro)
   end
 
+  def macroDefined?(name)
+    @macroTable.include?(name)
+  end
+
+  def expandMacro(args)
+    macro, text = @macroTable.resolve(args, sourceFileInfo)
+    return if text == ''
+
+    @macroStack << [ macro, args ]
+    text.reverse.each_byte do |c|
+      @cf.charBuffer << c
+    end
+    @cf.line = ''
+  end
+
   # Call this function to report any errors related to the parsed input.
   def error(id, text, property = nil)
     message = Message.new(id, 'error', text + "\n" + line.to_s,
                           property, nil, sourceFileInfo)
     @messageHandler.send(message)
+
+    until @macroStack.empty?
+      macro, args = @macroStack.pop
+      args.collect! { |a| '"' + a + '"' }
+      message = Message.new('macro_stack', 'info',
+                            "   #{macro.name} #{args.join(' ')}", nil, nil,
+                            macro.sourceFileInfo)
+      @messageHandler.send(message)
+    end
+
     raise TjException.new, 'Syntax error'
   end
 
@@ -159,8 +184,10 @@ private
       @ignoreMacros = true
       returnChar(c)
       macroParser = MacroParser.new(self, @messageHandler)
-      expandMacro(macroParser.parse('macroCall', false))
-      # TODO: Error handling missing
+      begin
+        macroParser.parse('macroCall', false)
+      rescue
+      end
       @ignoreMacros = false
       return nextCharI(eofOk)
     else
@@ -211,19 +238,6 @@ private
     @cf.line.chop!
     @cf.charBuffer << c
     @cf.lineNo -= 1 if c == ?\n && @macroStack.empty?
-  end
-
-  def expandMacro(args)
-    puts "Expanding #{args.join(' ')}"
-    return if (res = @macroTable.resolve(args, sourceFileInfo)).nil?
-
-    macro, text = res
-    return if text == ''
-
-    @macroStack << macro
-    text.reverse.each_byte do |c|
-      @cf.charBuffer << c
-    end
   end
 
   def skipComment
