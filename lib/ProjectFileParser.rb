@@ -12,6 +12,7 @@
 
 require 'Project'
 require 'TextParser'
+require 'TextScanner'
 require 'TjpSyntaxRules'
 
 class ProjectFileParser < TextParser
@@ -23,7 +24,7 @@ class ProjectFileParser < TextParser
 
     @messageHandler = messageHandler
     @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
-                     RELATIVE_ID ABSOLUTE_ID )
+                     RELATIVE_ID ABSOLUTE_ID MACRO )
 
     initRules
 
@@ -31,7 +32,7 @@ class ProjectFileParser < TextParser
 
   def open(masterFile)
     begin
-      @scanner = TextScanner.new(masterFile)
+      @scanner = TextScanner.new(masterFile, @messageHandler)
       @scanner.open
     rescue
       error('file_open', $!)

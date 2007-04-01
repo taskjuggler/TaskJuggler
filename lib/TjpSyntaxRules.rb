@@ -15,13 +15,6 @@
 # necessary but make the file more readable and receptable to syntax folding.
 module TjpSyntaxRules
 
-  def initRules
-    # Call all functions that start with 'rule_' to initialize the rules.
-    methods.each do |m|
-      send(m) if m[0, 5] == 'rule_'
-    end
-  end
-
 
   def rule_allocationAttribute
     newRule('allocationAttribute')
@@ -321,6 +314,13 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_macro
+    newRule('macro')
+    newPattern(%w( _macro $ID $MACRO ), Proc.new {
+      @scanner.addMacro(Macro.new(@val[1], @val[2], @scanner.sourceFileInfo))
+    })
+  end
+
   def rule_moreAlternatives
     newCommaListRule('moreAlternatives', '!resourceId')
   end
@@ -425,6 +425,7 @@ module TjpSyntaxRules
     newPattern(%w( !projectHeader !projectBody !properties ), Proc.new {
       @val[0]
     })
+    newPattern(%w( !macro ))
   end
 
   def rule_projectBody
@@ -491,7 +492,11 @@ module TjpSyntaxRules
     newPattern(%w( _project $ID $STRING $STRING !interval ), Proc.new {
       @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
       @project['start'] = @val[4].start
+      @scanner.addMacro(Macro.new('projectstart', @project['start'].to_s,
+                                  @scanner.sourceFileInfo))
       @project['end'] = @val[4].end
+      @scanner.addMacro(Macro.new('projectend', @project['end'].to_s,
+                                  @scanner.sourceFileInfo))
       @property = nil
       @scenario = nil
       @project
@@ -510,6 +515,7 @@ module TjpSyntaxRules
         @project['flags'] += @val[1]
       end
     })
+    newPattern(%w( !macro ))
     newPattern(%w( !report ))
     newPattern(%w( !resource ))
     newPattern(%w( _supplement !supplement ))

@@ -12,7 +12,6 @@
 
 require 'TextParserPattern'
 require 'TextParserRule'
-require 'TextScanner'
 require 'TextParserStackElement'
 
 # The TextParser implements a regular LALR parser. But it uses a recursive
@@ -43,6 +42,13 @@ class TextParser
     @variables = []
     @cr = nil
     @@debug = 0
+  end
+
+  # Call all functions that start with 'rule_' to initialize the rules.
+  def initRules
+    methods.each do |m|
+      send(m) if m[0, 5] == 'rule_'
+    end
   end
 
   # Add a new rule to the rule set. _name_ must be a unique identifier. The
@@ -96,15 +102,15 @@ class TextParser
   # To parse the input this function needs to be called with the name of the
   # rule to start with. It returns the result of the processing function of
   # the top-level parser rule that was specified by _ruleName_.
-  def parse(ruleName)
+  def parse(ruleName, enforceEndOfFile = true)
     @stack = []
     @@expectedTokens = []
     updateParserTables
     begin
       result = parseRule(@rules[ruleName])
 
-      if nextToken != [ false, false ]
-        error('syntax_error', 'Synatx error')
+      if enforceEndOfFile && nextToken != [ false, false ]
+        error('syntax_error', 'Syntax error')
       end
     rescue TjException
       return nil
@@ -113,14 +119,8 @@ class TextParser
     result
   end
 
-  # Call this function to report any errors related to the parsed input.
   def error(id, text, property = nil)
-    message = Message.new(id, 'error', text + "\n" + @scanner.line.to_s,
-                          property, nil,
-                          SourceFileInfo.new(@scanner.fileName,
-                                             @scanner.lineNo, -1))
-    @messageHandler.send(message)
-    raise TjException.new, 'Syntax error'
+    @scanner.error(id, text, property)
   end
 
 private

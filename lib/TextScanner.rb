@@ -13,6 +13,8 @@
 require 'TjTime'
 require 'TjException'
 require 'SourceFileInfo'
+require 'MacroTable'
+require 'MacroParser'
 
 # The TextScanner class can scan text files and chop then into tokens to be
 # used by a parser. Files can be nested. A file can include an other file.
@@ -38,14 +40,18 @@ class TextScanner
 
   end
 
-  def initialize(masterFile)
+  def initialize(masterFile, messageHandler)
     @masterFile = masterFile
-    @stack = []
+    @messageHandler = messageHandler
+    @macroTable = MacroTable.new(messageHandler)
+    @fileStack = []
+    @macroStack = []
+    @ignoreMacros = false
   end
 
   def open
     begin
-      @stack = [ (@cf = FileRecord.new(@masterFile)) ]
+      @fileStack = [ (@cf = FileRecord.new(@masterFile)) ]
     rescue
       raise TjException.new, "Cannot open file #{@masterFile}"
     end
@@ -53,22 +59,20 @@ class TextScanner
   end
 
   def close
-    @stack = []
+    @fileStack = []
     @cf = @tokenBuffer = nil
   end
 
   def include(fileName)
     begin
-      @stack << (@cf = FileRecord.new(fileName))
+      @fileStack << (@cf = FileRecord.new(fileName))
     rescue
       raise TjException.new, "Cannot open include file #{fileName}"
     end
   end
 
   def sourceFileInfo
-    return nil unless @cf
-
-    SourceFileInfo.new(@cf.fileName, @cf.lineNo, @cf.columnNo)
+    SourceFileInfo.new(fileName, lineNo, columnNo)
   end
 
   def fileName
@@ -112,6 +116,8 @@ class TextScanner
         return readRelativeId(c)
       when ?a..?z, ?A..?Z, ?_
         return readId(c)
+      when ?[
+        return readMacro
       else
         str = ""
         str << c
@@ -128,32 +134,74 @@ class TextScanner
     @tokenBuffer = token
   end
 
+  def addMacro(macro)
+    @macroTable.add(macro)
+  end
+
+  # Call this function to report any errors related to the parsed input.
+  def error(id, text, property = nil)
+    message = Message.new(id, 'error', text + "\n" + line.to_s,
+                          property, nil, sourceFileInfo)
+    @messageHandler.send(message)
+    raise TjException.new, 'Syntax error'
+  end
+
 private
 
+  # This function is called by the scanner to get the next character. It
+  # features a FIFO buffer that can hold any amount of returned characters.
+  # When it has reached the end of the master file it returns nil.
   def nextChar(eofOk = false)
+    if (c = nextCharI(eofOk)) == ?$ && !@ignoreMacros
+      # Double $ are reduced to a single $.
+      return c if (c = nextCharI(false)) == ?$
+
+      @ignoreMacros = true
+      returnChar(c)
+      macroParser = MacroParser.new(self, @messageHandler)
+      expandMacro(macroParser.parse('macroCall', false))
+      # TODO: Error handling missing
+      @ignoreMacros = false
+      return nextCharI(eofOk)
+    else
+      return c
+    end
+  end
+
+  def nextCharI(eofOk)
+    # This can only happen when a previous call already returned nil.
     return nil if @cf.nil?
 
-    if @cf.charBuffer.empty?
-      while (c = @cf.file.getc).nil? && !@stack.empty?
-        @cf.file.close
-        @stack.pop
-        @cf = @stack.last
-
-        return nil if @cf.nil?
+    # If there are characters in the return buffer process them first.
+    # Otherwise get next character from input stream.
+    unless @cf.charBuffer.empty?
+      c = @cf.charBuffer.pop
+      @cf.lineNo -= 1 if c == ?\n && !@macroStack.empty?
+      while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == nil
+        @cf.charBuffer.pop
+        @macroStack.pop
       end
     else
-      c = @cf.charBuffer.pop
-    end
+      # If EOF has been reached, try the parent file until even the master
+      # file has been processed completely.
+      while (c = @cf.file.getc).nil? && !@fileStack.empty?
+        @cf.file.close
+        @fileStack.pop
+        @cf = @fileStack.last
 
+        if @cf.nil?
+          # If the caller does not expect an EOF, we raise an exception.
+          unless eofOk
+            raise TjException.new, "Unexpected end of file"
+          end
+          return nil
+        end
+      end
+    end
     @cf.lineNo += 1 if c == ?\n
     @cf.line = "" if @cf.line[-1] == ?\n
-    if c
-      @cf.line << c
-    else
-      unless eofOk
-        raise TjException.new, "Unexpected end of file"
-      end
-    end
+    @cf.line << c
+
     c
   end
 
@@ -162,11 +210,24 @@ private
 
     @cf.line.chop!
     @cf.charBuffer << c
-    @cf.lineNo -= 1 if c == ?\n
+    @cf.lineNo -= 1 if c == ?\n && @macroStack.empty?
+  end
+
+  def expandMacro(args)
+    puts "Expanding #{args.join(' ')}"
+    return if (res = @macroTable.resolve(args, sourceFileInfo)).nil?
+
+    macro, text = res
+    return if text == ''
+
+    @macroStack << macro
+    text.reverse.each_byte do |c|
+      @cf.charBuffer << c
+    end
   end
 
   def skipComment
-    # Read all characters till line of file end is found
+    # Read all characters untill line or file end is found
     while (c = nextChar(true)) && c != ?\n
     end
     returnChar(c)
@@ -355,6 +416,14 @@ private
       returnChar c
       return [ 'ID', token ]
     end
+  end
+
+  def readMacro
+    token = ''
+    while (c = nextCharI(false)) != ?]
+      token << c
+    end
+    return [ 'MACRO', token ]
   end
 
   # Read only decimal digits and return the result als Fixnum.
