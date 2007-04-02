@@ -1011,7 +1011,8 @@ module TjpSyntaxRules
       @property['complete', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _depends !taskDepList ), Proc.new {
-      @property['depends', @scenarioIdx] = @val[1]
+      @property['depends', @scenarioIdx] =
+        @property['depends', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = true
     })
     newPattern(%w( _duration !calendarDuration ), Proc.new {
@@ -1046,7 +1047,8 @@ module TjpSyntaxRules
       @property['milestone', @scenarioIdx] = true
     })
     newPattern(%w( _precedes !taskPredList ), Proc.new {
-      @property['precedes', @scenarioIdx] = @val[1]
+      @property['precedes', @scenarioIdx] =
+        @property['precedes', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = false
     })
     newPattern(%w( _priority $INTEGER ), Proc.new {

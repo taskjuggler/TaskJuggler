@@ -18,6 +18,8 @@ class TaskDependency
   def initialize(taskId, onEnd)
     @taskId = taskId
     @task = nil
+    # Specifies whether the dependency is relative to the start or the
+    # end of the dependent task.
     @onEnd = onEnd
     # The gap duration is stored in seconds of calendar time.
     @gapDuration = 0

@@ -30,6 +30,13 @@ task t4 "T4" {
   ${Fixend "2007-05-11-18:00"}
 }
 
+task t5 "T5" {
+	depends t4 { onstart }
+	duration 1w
+	${Fixstart "2007-05-04-18:00"}
+  ${Fixend "2007-05-11-18:00"}
+}
+
 htmltaskreport "Depends.html" {
 	columns name, start, end, weekly
 }

@@ -88,6 +88,8 @@ class Project
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
+      [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true, [] ],
+      [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true, [] ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
@@ -99,12 +101,12 @@ class Project
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
       [ 'note',      'Note',         StringAttribute,   false, false, nil ],
       [ 'precedes',  '-',   DependencyListAttribute, true,  true,  [] ],
-      [ 'predecessors', 'Predecessors', TaskListAttribute, false, true, [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
-      [ 'successors', 'Successors',  TaskListAttribute, false, true, [] ],
+      [ 'startpreds', 'Start Preds.', TaskListAttribute, false, true, [] ],
+      [ 'startsuccs', 'Start Succs.', TaskListAttribute, false, true, [] ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]

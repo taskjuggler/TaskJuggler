@@ -1,0 +1,10 @@
+project test "Test" "1.0" 2007-04-01 +2m
+
+task t1 "T1" {
+# MARK: error 3 task_depend_child
+	depends t1.t2
+  task t2 "T2" {
+	  start ${projectstart}
+  }
+}
+

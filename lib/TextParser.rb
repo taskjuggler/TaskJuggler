@@ -291,7 +291,7 @@ private
           if elType == ?_
             # If the element requires a keyword the token must match this
             # keyword.
-            if token[1] != elToken
+            if elToken != token[1]
               text = "#{elToken} expected"
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text

@@ -26,7 +26,7 @@ class TestScheduler < Test::Unit::TestCase
   def test_syntaxErrors
     Dir.glob('TestSuite/Syntax/Errors/*.tjp').each do |f|
       puts("Testing file #{f}")
-      tj = TaskJuggler.new(true)
+      tj = TaskJuggler.new(false)
       assert(!tj.parse(f))
       checkMessages(tj, f)
     end
@@ -35,8 +35,8 @@ class TestScheduler < Test::Unit::TestCase
   def test_SchedulerErrors
     Dir.glob('TestSuite/Scheduler/Errors/*.tjp').each do |f|
       puts("Testing file #{f}")
-      tj = TaskJuggler.new(true)
-      assert(tj.parse(f))
+      tj = TaskJuggler.new(false)
+      assert(tj.parse(f), "Parser failed for #{f}")
       tj.schedule
       checkMessages(tj, f)
     end
@@ -47,7 +47,7 @@ class TestScheduler < Test::Unit::TestCase
       puts("Testing file #{f}")
       tj = TaskJuggler.new(true)
       assert(tj.parse(f))
-      assert(tj.schedule)
+      assert(tj.schedule, "Scheduler failed for #{f}")
       assert(tj.messageHandler.messages.empty?)
     end
   end

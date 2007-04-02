@@ -21,10 +21,10 @@ class TaskScenario < ScenarioData
   end
 
   def prepareScenario
-    @depends = []
-    @precedes = []
-    @property['predecessors', @scenarioIdx] = []
-    @property['successors', @scenarioIdx] = []
+    @property['startpreds', @scenarioIdx] = []
+    @property['startsuccs', @scenarioIdx] =[]
+    @property['endpreds', @scenarioIdx] = []
+    @property['endsuccs', @scenarioIdx] = []
 
     @isRunAway = false
 
@@ -41,16 +41,16 @@ class TaskScenario < ScenarioData
   def Xref
     @property['depends', @scenarioIdx].each do |dependency|
       depTask = checkDependency(dependency, 'depends')
-      @depends.push(depTask)
-      a('predecessors').push(depTask)
-      depTask.addFollower(@scenarioIdx, @property)
+      a('startpreds').push([ depTask, dependency.onEnd ])
+      depTask[dependency.onEnd ? 'endsuccs' : 'startsuccs', @scenarioIdx].
+        push([ @property, false ])
     end
 
     @property['precedes', @scenarioIdx].each do |dependency|
       predTask = checkDependency(dependency, 'precedes')
-      @precedes.push(predTask)
-      a('successors').push(predTask)
-      predTask.addPrevious(@scenarioIdx, @property)
+      a('endsuccs').push([ predTask, dependency.onEnd ])
+      depTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].\
+        push([@property, true ])
     end
   end
 
@@ -88,110 +88,109 @@ class TaskScenario < ScenarioData
     # Make sure the task is marked complete
     unless a('scheduled')
       error('not_scheduled',
-            "Task #{@property.id} has not been marked as scheduled.")
+            "Task #{@property.fullId} has not been marked as scheduled.")
     end
 
     # If the task has a follower or predecessor that is a runaway this task
     # is also incomplete.
-    a('successors').each do |follower|
-      return false if follower.isRunAway(@scenarioIdx)
+    (a('startsuccs') + a('endsuccs')).each do |task, onEnd|
+      return false if task.isRunAway(@scenarioIdx)
     end
-    a('predecessors').each do |previous|
-      return false if previous.isRunAway(@scenarioIdx)
+    (a('startpreds') + a('endpreds')).each do |task, onEnd|
+      return false if task.isRunAway(@scenarioIdx)
     end
 
     # Check if the start time is ok
-    error('task_start_undef',
-          "Task #{@property.id} has undefined start time") if a('start').nil?
+    if a('start').nil?
+      error('task_start_undef',
+            "Task #{@property.fullId} has undefined start time")
+    end
     if a('start') < @project['start'] || a('start') > @project['end']
       error('task_start_range',
-            "The start time (#{a('start')}) of task #{@property.id} " +
+            "The start time (#{a('start')}) of task #{@property.fullId} " +
             "is outside the project interval (#{@project['start']} - " +
             "#{@project['end']})")
     end
     if !a('minstart').nil? && a('start') < a('minstart')
       warning('minstart',
-             "The start time (#{a('start')}) of task #{@property.id} " +
+             "The start time (#{a('start')}) of task #{@property.fullId} " +
              "is too early. Must be after #{a('minstart')}.")
     end
     if !a('maxstart').nil? && a('start') > a('maxstart')
       warning('maxstart',
-             "The start time (#{a('start')}) of task #{@property.id} " +
+             "The start time (#{a('start')}) of task #{@property.fullId} " +
              "is too late. Must be before #{a('maxstart')}.")
     end
 
     # Check if the end time is ok
     error('task_end_undef',
-          "Task #{@property.id} has undefined end time") if a('end').nil?
+          "Task #{@property.fullId} has undefined end time") if a('end').nil?
     if a('end') < @project['start'] || a('end') > @project['end']
       error('task_end_range',
-            "The end time (#{a('end')}) of task #{@property.id} " +
+            "The end time (#{a('end')}) of task #{@property.fullId} " +
             "is outside the project interval (#{@project['start']} - " +
             "#{@project['end']})")
     end
     if !a('minend').nil? && a('end') < a('minend')
       warning('minend',
-              "The end time (#{a('end')}) of task #{@property.id} " +
+              "The end time (#{a('end')}) of task #{@property.fullId} " +
               "is too early. Must be after #{a('minend')}.")
     end
     if !a('maxend').nil? && a('end') > a('maxend')
       warning('maxend',
-              "The end time (#{a('end')}) of task #{@property.id} " +
+              "The end time (#{a('end')}) of task #{@property.fullId} " +
               "is too late. Must be before #{a('maxend')}.")
     end
 
     # Check that tasks fits into parent task.
-    unless @property.parent.nil?
-      parent = @property.parent
+    unless (parent = @property.parent).nil? ||
+            parent['start', @scenarioIdx].nil? ||
+            parent['end', @scenarioIdx].nil?
       if a('start') < parent['start', @scenarioIdx]
         error('task_start_in_parent',
-              "The start date (#{a('start')}) of task #{@property.id} " +
+              "The start date (#{a('start')}) of task #{@property.fullId} " +
               "is before the start date of the enclosing task " +
               "#{parent['start', scenarioIdx]}. ")
       end
       if a('end') > parent['end', @scenarioIdx]
         error('task_end_in_parent',
-              "The end date (#{a('end')}) of task #{@property.id} " +
+              "The end date (#{a('end')}) of task #{@property.fullId} " +
               "is after the end date of the enclosing task " +
               "#{parent['end', scenarioIdx]}. ")
       end
     end
 
-    # Check that all preceding tasks end before this task.
-    a('predecessors').each do |task|
-      next if task['end', @scenarioIdx].nil?
-      if task['end', @scenarioIdx] > a('start')
+    # Check that all preceding tasks start/end before this task.
+    @property['depends', @scenarioIdx].each do |dependency|
+      task = dependency.task
+      limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
+      next if limit.nil?
+      if limit > a('start')
         error('task_pred_before',
-              "Task #{@property.id} starts before task #{@task.id} " +
-              "ends needs to follow it.")
+              "Task #{@property.fullId} must start after " +
+              "#{dependency.onEnd ? 'end' : 'start'} of task #{@task.fullId}.")
       end
     end
 
     # Check that all following tasks end before this task
-    a('successors').each do |task|
-      next if task['start', @scenarioIdx].nil?
-      if task['start', @scenarioIdx] < a('end')
+    @property['precedes', @scenarioIdx].each do |dependency|
+      task = dependency.task
+      limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
+      next if limit.nil?
+      if limit < a('end')
         error('task_succ_after',
-              "Task #{@property.id} ends after task #{task.id} " +
-              "starts but needs to precede it.")
+              "Task #{@property.fullId} must end before " +
+              "#{dependency.onEnd ? 'end' : 'start'} of task #{task.fullId}.")
       end
     end
 
     if a('milestone') && a('start') != a('end')
       error('milestone_times_equal',
-            "Milestone #{@property.id} must have identical start and end " +
+            "Milestone #{@property.fullId} must have identical start and end " +
             "date.")
     end
 
     @errors == 0
-  end
-
-  def addFollower(task)
-    a('successors').push(task)
-  end
-
-  def addPrevious(task)
-    a('predecessors').push(task)
   end
 
   def nextSlot(slotDuration)
@@ -265,23 +264,23 @@ class TaskScenario < ScenarioData
       # or start date and propagate the value to neighbouring tasks.
       if (a('length') > 0 && @doneLength >= a('length')) ||
          (a('duration') > 0 && @doneDuration >= a('duration'))
+        @property['scheduled', @scenarioIdx] = true
         if a('forward')
           propagateEnd(slot + slotDuration)
         else
           propagateStart(slot)
         end
-        @property['scheduled', @scenarioIdx] = true
         return true
       end
     elsif a('effort') > 0
       bookResources(slot, slotDuration)
       if @doneEffort >= a('effort')
+        @property['scheduled', @scenarioIdx] = true
         if a('forward')
           propagateEnd(@tentativeEnd)
         else
           propagateStart(@tentativeStart)
         end
-        @property['scheduled', @scenarioIdx] = true
         return true
       end
     elsif a('milestone')
@@ -308,7 +307,6 @@ class TaskScenario < ScenarioData
 
   def propagateStart(date)
     @property['start', @scenarioIdx] = date
-
     if a('milestone')
       # Start and end date of a milestone are identical.
       @property['scheduled', @scenarioIdx] = true
@@ -317,18 +315,26 @@ class TaskScenario < ScenarioData
       end
     end
 
-    # Set start date to all previous tasks that have no start, are ALAP
+    # Set start date to all previous tasks that have no end, are ALAP
     # tasks or have no duration. */
-    a('predecessors').each do |task|
-      if task['end', @scenarioIdx].nil? &&
-         !task.latestEnd(@scenarioIdx).nil? &&
+    a('startpreds').each do |task, onEnd|
+      if task[onEnd ? 'end' : 'start', @scenarioIdx].nil? &&
+         !(lEnd = task.latestEnd(@scenarioIdx)).nil? &&
          !task['scheduled', @scenarioIdx] &&
          (!task['forward', @scenarioIdx] ||
-          (task['effort', @scenarioIdx] == 0 &&
-           task['length', @scenarioIdx] == 0 &&
-           task['duration', @scenarioIdx] == 0 &&
-           !task['milestone', @scenarioIdx]))
-        task.propagateEnd(@scenarioIdx, task.latestEnd(@scenarioIdx))
+          !task.hasDurationSpec(@scenarioIdx))
+        task.propagateEnd(@scenarioIdx, lEnd)
+      end
+    end
+    # Set start date to all start-following tasks that have no start,
+    # are ASAP tasks or have no duration. */
+    a('startsuccs').each do |task, onEnd|
+      if task[onEnd ? 'end' : 'start', @scenarioIdx].nil? &&
+         !(eStart = task.earliestStart(@scenarioIdx)).nil? &&
+         !task['scheduled', @scenarioIdx] &&
+         (task['forward', @scenarioIdx] ||
+          !task.hasDurationSpec(@scenarioIdx))
+        task.propagateStart(@scenarioIdx, eStart)
       end
     end
 
@@ -356,19 +362,31 @@ class TaskScenario < ScenarioData
       end
     end
 
-    a('successors').each do |task|
-      if task['start', @scenarioIdx].nil? &&
-         !task.earliestStart(@scenarioIdx).nil?
+    # Set start date to all end followers that have no start date, are ASAP
+    # tasks or have no duration. */
+    a('endsuccs').each do |task, onEnd|
+      if task[onEnd ? 'end' : 'start', @scenarioIdx].nil? &&
+         !(eStart = task.earliestStart(@scenarioIdx)).nil?
          !task['scheduled', @scenarioIdx] &&
          (task['forward', @scenarioIdx] ||
-          (task['effort', @scenarioIdx] == 0 &&
-           task['length', @scenarioIdx] == 0 &&
-           task['duration', @scenarioIdx] == 0 &&
-           !task['milestone', @scenarioIdx]))
-        task.propagateStart(@scenarioIdx, task.earliestStart(@scenarioIdx))
+          !task.hasDurationSpec(@scenarioIdx))
+        task.propagateStart(@scenarioIdx, eStart)
+      end
+    end
+    # Set end date to all end preceding tasks that have no end date, are ALAP
+    # tasks or have no duration. */
+    a('endpreds').each do |task, onEnd|
+      if task[onEnd ? 'end' : 'start', @scenarioIdx].nil? &&
+         !(lEnd = task.latestEnd(@scenarioIdx)).nil?
+         !task['scheduled', @scenarioIdx] &&
+         (!task['forward', @scenarioIdx] ||
+          !task.hasDurationSpec(@scenarioIdx))
+        task.propagateEnd(@scenarioIdx, lEnd)
       end
     end
 
+    # Propagate end date to sub tasks which have only an implicit
+    # dependency on the parent task. Do not touch container tasks.
     @property.children.each do |task|
       if !task.hasEndDependency(@scenarioIdx) &&
          !task['scheduled', @scenarioIdx]
@@ -398,6 +416,8 @@ class TaskScenario < ScenarioData
       end
     end
 
+    @property['scheduled', @scenarioIdx] = true
+
     if a('start').nil? || a('start') > nStart
       propagateStart(nStart)
     end
@@ -406,13 +426,19 @@ class TaskScenario < ScenarioData
       propagateEnd(nEnd)
     end
 
-    @property['scheduled', @scenarioIdx] = true
-
     false
   end
 
+  def hasDurationSpec
+    (task['effort', @scenarioIdx] > 0 ||
+     task['length', @scenarioIdx] > 0 ||
+     task['duration', @scenarioIdx] > 0) &&
+    !task['milestone', @scenarioIdx]
+  end
+
   def hasStartDependency
-    return true if a('start') || !a('predecessors').empty? || !a('forward')
+    return true if a('start') || !a('forward') ||
+                   !a('startpreds').empty? || !a('startsuccs').empty?
 
     p = @property
     while (p = p.parent) do
@@ -423,7 +449,8 @@ class TaskScenario < ScenarioData
   end
 
   def hasEndDependency
-    return true if a('end') || !a('successors').empty? || a('forward')
+    return true if a('end') ||  a('forward') ||
+                   !a('endsuccs').empty? || !a('endpreds').empty?
 
     p = @property
     while (p = p.parent) do
@@ -434,17 +461,21 @@ class TaskScenario < ScenarioData
   end
 
   def earliestStart
+    # Find the latest end date of all start predecessors. If any of them is a
+    # forward task and has no end date yet, we have to return nil.
     startDate = TjTime.new(0)
-    a('predecessors').each do |task|
-      if task['end', @scenarioIdx].nil?
+    a('startpreds').each do |task, onEnd|
+      target = onEnd ? 'end' : 'start'
+      if task[target, @scenarioIdx].nil?
         return nil if task['forward', @scenarioIdx]
-      elsif task['end', @scenarioIdx] > startDate
-        startDate = task['end', @scenarioIdx]
+      elsif task[target, @scenarioIdx] > startDate
+        startDate = task[target, @scenarioIdx]
       end
     end
 
     a('depends').each do |dependency|
-      potentialStartDate = dependency.task['end', @scenarioIdx]
+      potentialStartDate =
+        dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
       dateAfterLengthGap = potentialStartDate
       gapLength = dependency.gapLength
       while gapLength > 0 && dateAfterLengthGap < @project['end'] do
@@ -476,18 +507,20 @@ class TaskScenario < ScenarioData
   end
 
   def latestEnd
-    endDate = TjTime.at(0)
-    a('successors').each do |task|
-      if task['start', @scenarioIdx].nil?
+    endDate = TjTime.new(0)
+    a('endsuccs').each do |task, onEnd|
+      target = onEnd ? 'end' : 'start'
+      if task[target, @scenarioIdx].nil?
         return nil unless task['forward', @scenarioIdx]
       elsif endDate == TjTime.at(0) ||
-            task['start', @scenarioIdx] < endDate
-	      endDate = task['start', @scenarioIdx]
+            task[target, @scenarioIdx] < endDate
+	      endDate = task[target, @scenarioIdx]
       end
     end
 
     a('precedes').each do |dependency|
-      potentialEndDate = dependency.task['start', @scenarioIdx]
+      potentialEndDate =
+        dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
       dateBeforeLengthGap = potentialEndDate
       gapLength = dependency.gapLength
       while gapLength > 0 && dateBeforeLengthGap < @project['start'] do
@@ -675,37 +708,44 @@ private
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
       error('task_depend_unknown',
-            "Task #{@property.id} has unknown #{depType} #{dependency.taskId}")
+            "Task #{@property.fullId} has unknown #{depType} " +
+            "#{dependency.taskId}")
     end
 
     if depTask == @property
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
-      error('task_depend_self', "Task #{@property.id} cannot depend on self")
+      error('task_depend_self', "Task #{@property.fullId} cannot " +
+            "depend on self")
     end
 
     if depTask.isChildOf?(@property)
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
       error('task_depend_child',
-            "Task #{property.id} cannot depend on child #{depTask.id}")
+            "Task #{@property.fullId} cannot depend on child #{depTask.fullId}")
     end
 
     if @property.isChildOf?(depTask)
       # Remove the broken dependency. It could cause trouble later on.
       @property[depType, @scenarioIdx].delete(dependency)
       error('task_depend_parent',
-            "Task #{property.id} cannot depend on parent #{depTask.id}")
+            "Task #{@property.fullId} cannot depend on parent " +
+            "#{depTask.fullId}")
     end
 
-    if @depends.include?(dependency)
-      # Remove the broken dependency. It could cause trouble later on.
-      @property[depType, @scenarioIdx].delete(dependency)
-      error('task_depend_multi',
-            "No need to specify dependency #{depTask.id} multiple times.")
+    @property[depType, @scenarioIdx].each do |dep|
+      if dep.task == depTask && dep != dependency
+        # Remove the broken dependency. It could cause trouble later on.
+        @property[depType, @scenarioIdx].delete(dependency)
+        error('task_depend_multi',
+              "No need to specify dependency #{depTask.fullId} multiple " +
+              "times for task #{@property.fullId}.")
+      end
     end
 
     depTask
   end
 
 end
+
