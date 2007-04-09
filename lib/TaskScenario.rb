@@ -38,6 +38,16 @@ class TaskScenario < ScenarioData
     propagateInitialValues
   end
 
+  # The parser only stores the full task IDs for each of the dependencies. This
+  # function resolves them to task references and checks them. In addition to
+  # the 'depends' and 'precedes' property lists we also keep 4 additional lists.
+  # startpreds: All precedessors to the start of this task
+  # startsuccs: All successors to the start of this task
+  # endpreds: All predecessors to the end of this task
+  # endsuccs: All successors to the end of this task
+  # Each list element consists of a reference/boolean pair. The reference points
+  # to the dependent task and the boolean specifies whether the dependency
+  # originates from the end of the task or not.
   def Xref
     @property['depends', @scenarioIdx].each do |dependency|
       depTask = checkDependency(dependency, 'depends')
@@ -49,7 +59,7 @@ class TaskScenario < ScenarioData
     @property['precedes', @scenarioIdx].each do |dependency|
       predTask = checkDependency(dependency, 'precedes')
       a('endsuccs').push([ predTask, dependency.onEnd ])
-      depTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].\
+      predTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].\
         push([@property, true ])
     end
   end
@@ -503,7 +513,7 @@ class TaskScenario < ScenarioData
       end
     end
 
-    return startDate
+    startDate
   end
 
   def latestEnd
@@ -512,7 +522,7 @@ class TaskScenario < ScenarioData
       target = onEnd ? 'end' : 'start'
       if task[target, @scenarioIdx].nil?
         return nil unless task['forward', @scenarioIdx]
-      elsif endDate == TjTime.at(0) ||
+      elsif endDate == TjTime.new(0) ||
             task[target, @scenarioIdx] < endDate
 	      endDate = task[target, @scenarioIdx]
       end
@@ -523,8 +533,9 @@ class TaskScenario < ScenarioData
         dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
       dateBeforeLengthGap = potentialEndDate
       gapLength = dependency.gapLength
-      while gapLength > 0 && dateBeforeLengthGap < @project['start'] do
-        if @project.isWorkingTime(dateBeforeLengthGap)
+      while gapLength > 0 && dateBeforeLengthGap > @project['start'] do
+        if @project.isWorkingTime(dateBeforeLengthGap -
+                                  @project['scheduleGranularity'])
           gapLength -= 1
         end
         dateBeforeLengthGap -= @project['scheduleGranularity']
@@ -544,6 +555,8 @@ class TaskScenario < ScenarioData
         return task['end', @scenarioIdx]
       end
     end
+
+    endDate
   end
 
   def bookResources(date, slotDuration)

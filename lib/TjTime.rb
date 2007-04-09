@@ -25,7 +25,7 @@ class TjTime
   end
 
   def TjTime.now
-    TjTime.new(Time.now)
+    TjTime.new(Time.now.gmtime)
   end
 
   def TjTime.gm(*args)
@@ -33,7 +33,7 @@ class TjTime
   end
 
   def TjTime.local(*args)
-    TjTime.new(Time.local(*args))
+    TjTime.new(Time.local(*args).gmtime)
   end
 
   def secondsOfDay(tz = nil)
@@ -199,7 +199,8 @@ class TjTime
 
   def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
     return "unknown" if @time.nil?
-    @time.strftime(format)
+    # Always report values in local timezone
+    @time.clone.localtime.strftime(format)
   end
 
   def to_i
