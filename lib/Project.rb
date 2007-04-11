@@ -325,6 +325,9 @@ protected
     @tasks.each do |task|
       task.preScheduleCheck(scIdx)
     end
+    @tasks.each do |task|
+      task.checkForLoops(scIdx, [], [], false, true)
+    end
   end
 
   def finishScenario(scIdx)

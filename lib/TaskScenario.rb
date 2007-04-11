@@ -203,6 +203,157 @@ class TaskScenario < ScenarioData
     @errors == 0
   end
 
+  def checkForLoops(checkedTasks, path, atEnd, fromOutside)
+
+    # First check whether the task has already been checked for loops.
+    return if checkedTasks.include?([@property, atEnd])
+
+    # Check if we have been here before on this path.
+    if path.include?([ @property, atEnd ])
+      pathText = ''
+      path.each { |t, e| pathText += "#{t.fullId}(#{e ? 'end' : 'start'}) -> " }
+      pathText += "#{@property.fullId}(#{atEnd ? 'end' : 'start'})"
+      error('loop_detected', "Loop detected #{pathText}")
+    end
+    path << [ @property, atEnd ]
+
+    # Now we have to traverse the graph in the direction of the specified
+    # dependencies. 'precedes' and 'depends' specify dependencies in the
+    # opposite direction of the flow of the tasks. So we have to make sure
+    # that we do not follow the arcs in the direction that precedes and
+    # depends points us. Parent/Child relationships also specify a
+    # dependency. The scheduling mode of the child determines the direction
+    # of the flow. With help of the 'fromOutside' parameter we make sure that we
+    # only visit childs if we were referred to the task by a non-parent-child
+    # relationship.
+    unless atEnd
+      if fromOutside
+        #
+        #         |
+        #         v
+        #       +--------
+        #    -->| o--+
+        #       +--- | --
+        #            |
+        #            V
+        #
+        @property.children.each do |child|
+          child.checkForLoops(@scenarioIdx, checkedTasks, path, false, 'parent')
+        end
+
+        #         |
+        #         v
+        #       +--------
+        #    -->| o
+        #       +-| -----
+        #         |
+        #         +->
+        #
+        a('startsuccs').each do |task, targetEnd|
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
+                             'previous')
+        end
+
+        #         |
+        #         v
+        #       +--------
+        #    -->| o---->
+        #       +--------
+        #
+        checkForLoops(checkedTasks, path, true, 'otherEnd')
+      else
+        #
+        #         ^
+        #         |
+        #       + | -----
+        #       | o <--
+        #       +--------
+        #         ^
+        #         |
+        #
+        if @property.parent
+          @property.parent.checkForLoops(@scenarioIdx, checkedTasks, path,
+                                         true, 'successor')
+        end
+
+        #       +--------
+        #    <--|- o <--
+        #       +--------
+        #          ^
+        #          |
+        #
+        a('startpreds').each do |task, targetEnd|
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
+                             'successor')
+        end
+      end
+    else
+      if fromOutside
+        #
+        #          |
+        #          v
+        #    --------+
+        #       +--o |<--
+        #    -- | ---+
+        #       |
+        #       v
+        #
+        @property.children.each do |child|
+          child.checkForLoops(@scenarioIdx, checkedTasks, path, true, 'parent')
+        end
+
+        #
+        #          |
+        #          v
+        #    --------+
+        #          o |<--
+        #    ----- | +
+        #          |
+        #        <-+
+        #
+        a('endpreds').each do |task, targetEnd|
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
+                             'successor')
+        end
+
+        #          |
+        #          v
+        #    --------+
+        #     <----o |<--
+        #    --------+
+        #
+        checkForLoops(checkedTasks, path, false, 'otherEnd')
+      else
+        #
+        #          ^
+        #          |
+        #    ----- | +
+        #      --> o |
+        #    --------+
+        #          ^
+        #          |
+        #
+        if @property.parent
+          @property.parent.checkForLoops(@scenarioIdx, checkedTasks, path,
+                                         true, 'child')
+        end
+
+        #    --------+
+        #      --> o-|-->
+        #    --------+
+        #          ^
+        #          |
+        #
+        a('endsuccs').each do |task, targetEnd|
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
+                             'previous')
+        end
+      end
+    end
+
+    checkedTasks << path.pop
+  end
+
   def nextSlot(slotDuration)
     return nil if a('scheduled')
 
@@ -680,7 +831,9 @@ class TaskScenario < ScenarioData
   end
 
   def markAsRunaway
-    error "Task #{@property.get('id')} does not fit into project time frame"
+    error('runaway', "Task #{@property.get('id')} does not fit into project " +
+                     "time frame")
+
     @isRunAway = true
   end
 
@@ -748,6 +901,7 @@ private
     end
 
     @property[depType, @scenarioIdx].each do |dep|
+      puts dep.class
       if dep.task == depTask && dep != dependency
         # Remove the broken dependency. It could cause trouble later on.
         @property[depType, @scenarioIdx].delete(dependency)

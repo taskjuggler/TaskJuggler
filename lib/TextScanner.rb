@@ -181,6 +181,12 @@ private
       # Double $ are reduced to a single $.
       return c if (c = nextCharI(false)) == ?$
 
+      # Macros start with $( or ${. All other $. are ignored.
+      if c != ?( && c != ?{
+         returnChar(c)
+         return ?$
+      end
+
       @ignoreMacros = true
       returnChar(c)
       macroParser = MacroParser.new(self, @messageHandler)
