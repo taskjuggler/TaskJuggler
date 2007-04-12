@@ -325,8 +325,10 @@ protected
     @tasks.each do |task|
       task.preScheduleCheck(scIdx)
     end
+    checkedTasks = []
     @tasks.each do |task|
-      task.checkForLoops(scIdx, [], [], false, true)
+      task.checkForLoops(scIdx, checkedTasks, [], false, true)
+      task.checkForLoops(scIdx, checkedTasks, [], true, true)
     end
   end
 

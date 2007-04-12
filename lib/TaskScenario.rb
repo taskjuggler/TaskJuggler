@@ -206,7 +206,7 @@ class TaskScenario < ScenarioData
   def checkForLoops(checkedTasks, path, atEnd, fromOutside)
 
     # First check whether the task has already been checked for loops.
-    return if checkedTasks.include?([@property, atEnd])
+    return if checkedTasks.include?([@property, atEnd, fromOutside])
 
     # Check if we have been here before on this path.
     if path.include?([ @property, atEnd ])
@@ -238,7 +238,7 @@ class TaskScenario < ScenarioData
         #            V
         #
         @property.children.each do |child|
-          child.checkForLoops(@scenarioIdx, checkedTasks, path, false, 'parent')
+          child.checkForLoops(@scenarioIdx, checkedTasks, path, false, true)
         end
 
         #         |
@@ -251,7 +251,7 @@ class TaskScenario < ScenarioData
         #
         a('startsuccs').each do |task, targetEnd|
           task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
-                             'previous')
+                             true)
         end
 
         #         |
@@ -260,7 +260,7 @@ class TaskScenario < ScenarioData
         #    -->| o---->
         #       +--------
         #
-        checkForLoops(checkedTasks, path, true, 'otherEnd')
+        checkForLoops(checkedTasks, path, true, false)
       else
         #
         #         ^
@@ -273,7 +273,7 @@ class TaskScenario < ScenarioData
         #
         if @property.parent
           @property.parent.checkForLoops(@scenarioIdx, checkedTasks, path,
-                                         true, 'successor')
+                                         false, false)
         end
 
         #       +--------
@@ -283,8 +283,7 @@ class TaskScenario < ScenarioData
         #          |
         #
         a('startpreds').each do |task, targetEnd|
-          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
-                             'successor')
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd, true)
         end
       end
     else
@@ -299,7 +298,7 @@ class TaskScenario < ScenarioData
         #       v
         #
         @property.children.each do |child|
-          child.checkForLoops(@scenarioIdx, checkedTasks, path, true, 'parent')
+          child.checkForLoops(@scenarioIdx, checkedTasks, path, true, true)
         end
 
         #
@@ -312,8 +311,7 @@ class TaskScenario < ScenarioData
         #        <-+
         #
         a('endpreds').each do |task, targetEnd|
-          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
-                             'successor')
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd, true)
         end
 
         #          |
@@ -322,7 +320,7 @@ class TaskScenario < ScenarioData
         #     <----o |<--
         #    --------+
         #
-        checkForLoops(checkedTasks, path, false, 'otherEnd')
+        checkForLoops(checkedTasks, path, false, false)
       else
         #
         #          ^
@@ -335,7 +333,7 @@ class TaskScenario < ScenarioData
         #
         if @property.parent
           @property.parent.checkForLoops(@scenarioIdx, checkedTasks, path,
-                                         true, 'child')
+                                         true, false)
         end
 
         #    --------+
@@ -345,13 +343,12 @@ class TaskScenario < ScenarioData
         #          |
         #
         a('endsuccs').each do |task, targetEnd|
-          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd,
-                             'previous')
+          task.checkForLoops(@scenarioIdx, checkedTasks, path, targetEnd, true)
         end
       end
     end
 
-    checkedTasks << path.pop
+    checkedTasks << [ @property, atEnd, fromOutside ]
   end
 
   def nextSlot(slotDuration)
@@ -901,7 +898,6 @@ private
     end
 
     @property[depType, @scenarioIdx].each do |dep|
-      puts dep.class
       if dep.task == depTask && dep != dependency
         # Remove the broken dependency. It could cause trouble later on.
         @property[depType, @scenarioIdx].delete(dependency)

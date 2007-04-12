@@ -334,7 +334,7 @@ module TjpSyntaxRules
   end
 
   def rule_moreDepTasks
-    newCommaListRule('moreDepTasks', '!taskDepList')
+    newCommaListRule('moreDepTasks', '!taskDep')
   end
 
   def rule_moreListOfDays
@@ -945,7 +945,7 @@ module TjpSyntaxRules
             "Too many '!' for relative task in this context.",
             @property) if id[0] == ?!
       if task
-        task.id + '.' + id
+        task.fullId + '.' + id
       else
         id
       end
