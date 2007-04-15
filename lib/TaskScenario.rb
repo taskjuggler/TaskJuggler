@@ -93,8 +93,8 @@ class TaskScenario < ScenarioData
        (@property.container? || (@property.leaf? && a('forward')))
       @property['end', @scenarioIdx] = nil
     end
-    propagateStart(a('start')) if a('start')
-    propagateEnd(a('end')) if a('end')
+    propagateDate(a('start'), false) if a('start')
+    propagateDate(a('end'), true) if a('end')
 
     scheduleContainer if @property.container?
   end
@@ -248,16 +248,25 @@ class TaskScenario < ScenarioData
     end
     path << [ @property, atEnd ]
 
-
-    # Now we have to traverse the graph in the direction of the specified
-    # dependencies. 'precedes' and 'depends' specify dependencies in the
-    # opposite direction of the flow of the tasks. So we have to make sure
-    # that we do not follow the arcs in the direction that precedes and
-    # depends points us. Parent/Child relationships also specify a
-    # dependency. The scheduling mode of the child determines the direction
-    # of the flow. With help of the 'fromOutside' parameter we make sure that we
-    # only visit childs if we were referred to the task by a non-parent-child
-    # relationship.
+    # To find loops we have to traverse the graph in a certain order. When we
+    # enter a task we can either come from outside or inside. The following
+    # graph explains these definitions:
+    #
+    #             |      /          \      |
+    #  outside    v    /              \    v   outside
+    #          +------------------------------+
+    #          |    /                    \    |
+    #       -->|  o   <---          --->   o  |<--
+    #          |/ Start                  End \|
+    #         /+------------------------------+\
+    #       /     ^                        ^     \
+    #             |        inside          |
+    #
+    # At the top we have the parent task. At the botton the child tasks.
+    # The horizontal arrors are start predecessors or end successors.
+    # As the graph is doubly-linked, we need to becareful to only find real
+    # loops. When coming from outside, we only continue to the inside and vice
+    # versa. Horizontal mores are only made when we are in a leaf task.
     unless atEnd
       if fromOutside
         if @property.container?
@@ -451,9 +460,9 @@ class TaskScenario < ScenarioData
          (a('duration') > 0 && @doneDuration >= a('duration'))
         @property['scheduled', @scenarioIdx] = true
         if a('forward')
-          propagateEnd(slot + slotDuration)
+          propagateDate(slot + slotDuration, true)
         else
-          propagateStart(slot)
+          propagateDate(slot, false)
         end
         return true
       end
@@ -462,17 +471,17 @@ class TaskScenario < ScenarioData
       if @doneEffort >= a('effort')
         @property['scheduled', @scenarioIdx] = true
         if a('forward')
-          propagateEnd(@tentativeEnd)
+          propagateDate(@tentativeEnd, true)
         else
-          propagateStart(@tentativeStart)
+          propagateDate(@tentativeStart, false)
         end
         return true
       end
     elsif a('milestone')
       if a('forward')
-        propagateEnd(a('start'))
+        propagateDate(a('start'), true)
       else
-        propagateStart(a('end'))
+        propagateDate(a('end'), false)
       end
     elsif a('start') && a('end')
       # Task with start and end date but no duration criteria
@@ -490,87 +499,56 @@ class TaskScenario < ScenarioData
     false
   end
 
-  def propagateStart(date)
-    # puts "Setting start of #{@property.fullId} to #{date}"
-    @property['start', @scenarioIdx] = date
+  # Set a new start or end date and propagate the value to all other
+  # task ends that have a direct dependency to this end of the task.
+  def propagateDate(date, atEnd)
+    thisEnd = atEnd ? 'end' : 'start'
+    otherEnd = atEnd ? 'start' : 'end'
+    # puts "Setting #{thisEnd} of #{@property.fullId} to #{date}"
+    @property[thisEnd, @scenarioIdx] = date
     if a('milestone')
       # Start and end date of a milestone are identical.
       @property['scheduled', @scenarioIdx] = true
-      if a('end').nil?
-        propagateEnd(a('start'))
+      if a(otherEnd).nil?
+        propagateDate(a(thisEnd), !atEnd)
       end
     end
 
-    # Set start date to all previous tasks that have no end, are ALAP
-    # tasks or have no duration. */
-    a('startpreds').each do |task, onEnd|
-      onEnd ? propagateEndToDep(task) : propagateStartToDep(task)
+    # Propagate date to all dependent tasks.
+    a(thisEnd + 'preds').each do |task, onEnd|
+      propagateDateToDep(task, onEnd)
     end
-    # Set start date to all start-following tasks that have no start,
-    # are ASAP tasks or have no duration. */
-    a('startsuccs').each do |task, onEnd|
-      onEnd ? propagateEndToDep(task) : propagateStartToDep(task)
+    a(thisEnd + 'succs').each do |task, onEnd|
+      propagateDateToDep(task, onEnd)
     end
 
-    # Propagate start date to sub tasks which have only an implicit
-    # dependency on the parent task. Do not touch container tasks.
+    # Propagate date to sub tasks which have only an implicit
+    # dependency on the parent task.
     @property.children.each do |task|
-      if !task.hasStartDependency(@scenarioIdx) &&
+      if !task.hasDependencies(@scenarioIdx, !atEnd) &&
          !task['scheduled', @scenarioIdx]
-        task.propagateStart(@scenarioIdx, a('start'))
+        task.propagateDate(@scenarioIdx, a(thisEnd), !atEnd)
       end
     end
 
+    # The date propagation might have completed the date set of the enclosing
+    # containter task. If so, we can schedule it as well.
     if !@property.parent.nil?
       @property.parent.scheduleContainer(@scenarioIdx)
     end
   end
 
-  def propagateEnd(date)
-    # puts "Setting end of #{@property.fullId} to #{date}"
-    @property['end', @scenarioIdx] = date
-
-    if a('milestone')
-      @property['scheduled', @scenarioIdx] = true
-      if a('start').nil?
-        propagateStart(a('end'))
-      end
-    end
-
-    # Set start date to all end followers that have no start date, are ASAP
-    # tasks or have no duration. */
-    a('endsuccs').each do |task, onEnd|
-      onEnd ? propagateEndToDep(task) : propagateStartToDep(task)
-    end
-    # Set end date to all end preceding tasks that have no end date, are ALAP
-    # tasks or have no duration. */
-    a('endpreds').each do |task, onEnd|
-      onEnd ? propagateEndToDep(task) : propagateStartToDep(task)
-    end
-
-    # Propagate end date to sub tasks which have only an implicit
-    # dependency on the parent task. Do not touch container tasks.
-    @property.children.each do |task|
-      if !task.hasEndDependency(@scenarioIdx) &&
-         !task['scheduled', @scenarioIdx]
-        task.propagateEnd(@scenarioIdx, a('end'), true)
-      end
-    end
-
-    if !@property.parent.nil?
-      @property.parent.scheduleContainer(@scenarioIdx)
-    end
-  end
-
+  # Find the smallest possible interval that encloses all child tasks. Abort
+  # the opration if any of the child tasks are not yet scheduled.
   def scheduleContainer
-    return true if a('scheduled') || !@property.container?
+    return if a('scheduled') || !@property.container?
 
     nStart = nil
     nEnd = nil
 
     @property.children.each do |task|
-      return true if task['start', @scenarioIdx].nil? ||
-                     task['end', @scenarioIdx].nil?
+      # Abort if a child has not yet been scheduled.
+      return unless task['scheduled', @scenarioIdx]
       if nStart.nil? || task['start', @scenarioIdx] < nStart
         nStart = task['start', @scenarioIdx]
       end
@@ -581,15 +559,13 @@ class TaskScenario < ScenarioData
 
     @property['scheduled', @scenarioIdx] = true
 
+    # Propagate the dates to other dependent tasks.
     if a('start').nil? || a('start') > nStart
-      propagateStart(nStart)
+      propagateDate(nStart, false)
     end
-
     if a('end').nil? || a('end') < nEnd
-      propagateEnd(nEnd)
+      propagateDate(nEnd, true)
     end
-
-    false
   end
 
   def hasDurationSpec
@@ -599,25 +575,18 @@ class TaskScenario < ScenarioData
     !@property['milestone', @scenarioIdx]
   end
 
-  def hasStartDependency
-    return true if a('start') || !a('forward') ||
-                   !a('startpreds').empty? || !a('startsuccs').empty?
-
-    p = @property
-    while (p = p.parent) do
-      return true if p.hasStartDependency(@scenarioIdx)
+  def hasDependencies(atEnd)
+    if atEnd
+      return true if a('end') ||  a('forward') ||
+                     !a('endsuccs').empty? || !a('endpreds').empty?
+    else
+      return true if a('start') || !a('forward') ||
+                     !a('startpreds').empty? || !a('startsuccs').empty?
     end
 
-    false
-  end
-
-  def hasEndDependency
-    return true if a('end') ||  a('forward') ||
-                   !a('endsuccs').empty? || !a('endpreds').empty?
-
     p = @property
     while (p = p.parent) do
-      return true if p.hasEndDependency(@scenarioIdx)
+      return true if p.hasDependencies(@scenarioIdx, atEnd)
     end
 
     false
@@ -950,23 +919,14 @@ private
     setStart ? @startIsDetermed = value : @endIsDetermed = value
   end
 
-  def propagateStartToDep(task)
-    if task['start', @scenarioIdx].nil? &&
-       !(eStart = task.earliestStart(@scenarioIdx)).nil?
+  def propagateDateToDep(task, atEnd)
+    if task[atEnd ? 'end' : 'start', @scenarioIdx].nil? &&
+       !(nDate = (atEnd ? task.latestEnd(@scenarioIdx) :
+                          task.earliestStart(@scenarioIdx))).nil?
        !task['scheduled', @scenarioIdx] &&
-       (task['forward', @scenarioIdx] ||
+       ((atEnd ^ task['forward', @scenarioIdx]) ||
         !task.hasDurationSpec(@scenarioIdx))
-      task.propagateStart(@scenarioIdx, eStart)
-    end
-  end
-
-  def propagateEndToDep(task)
-    if task['end', @scenarioIdx].nil? &&
-       !(lEnd = task.latestEnd(@scenarioIdx)).nil? &&
-       !task['scheduled', @scenarioIdx] &&
-       (!task['forward', @scenarioIdx] ||
-        !task.hasDurationSpec(@scenarioIdx))
-      task.propagateEnd(@scenarioIdx, lEnd)
+      task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
   end
 
