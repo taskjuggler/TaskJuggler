@@ -45,7 +45,7 @@ class TjTime
   end
 
   def -(arg)
-    if arg.class == TjTime
+    if arg.is_a?(TjTime)
       @time - arg.time
     else
       TjTime.new(@time - arg)

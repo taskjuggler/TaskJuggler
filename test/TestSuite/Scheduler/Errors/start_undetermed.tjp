@@ -1,0 +1,10 @@
+project prj "Loop Detector Test" "$Id" 2000-01-01 - 2000-01-06
+
+# MARK: error 5 start_undetermed
+
+task t1 "Task1" {
+	end 2000-01-01
+	duration 2d
+	scheduling asap
+}
+

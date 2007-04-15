@@ -1,0 +1,46 @@
+project test "Test" "1.0" 2000-01-01 - 2000-01-08
+
+task m1 "Milestone1" {
+  start 2000-01-01
+	scheduling asap
+	milestone
+}	
+task a1 "Task A1" {
+	depends !m1
+	length 1d
+}
+task b1 "Task B1" {
+	length 1d
+	depends !a1
+  precedes !m2 { onend }
+	scheduling asap
+}
+task a2 "Task A2" {
+	precedes !b2
+	depends !m1 { onstart }
+	scheduling alap
+}
+task b2 "Task B2" {
+	precedes !m2
+	length 1d
+}
+task m2 "Milestone2" {
+	scheduling alap
+	milestone
+}
+
+# MARK: error 3 loop_detected
+# MARK: info 3 loop_at_end
+# MARK: info 8 loop_at_start
+# MARK: info 8 loop_at_end
+# MARK: info 12 loop_at_start
+# MARK: info 12 loop_at_end
+# MARK: info 27 loop_at_end
+# MARK: info 27 loop_at_start
+# MARK: info 23 loop_at_end
+# MARK: info 23 loop_at_start
+# MARK: info 18 loop_at_end
+# MARK: info 18 loop_at_start
+# MARK: error 3 loop_end
+
+

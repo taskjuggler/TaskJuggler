@@ -19,13 +19,13 @@ class TaskListAttribute < AttributeBase
 
   def to_s
     out = []
-    @value.each { |r| out << r.fullId }
+    @value.each { |r| out << r[0].fullId }
     out.join(", ")
   end
 
   def to_tjp
     out = []
-    @value.each { |r| out << r.fullId }
+    @value.each { |r| out << r[0].fullId }
     @type.id + " " + out.join(', ')
   end
 

@@ -1,0 +1,20 @@
+project test "Test" "1.0" 2000-01-01 - 2000-01-10
+
+task t1 "Task1" {
+	task t2 "Task2" {
+		start 2000-01-01
+    length 1d
+	  depends !t3
+	}
+	task t3 "Task3" {
+		length 1d
+		depends !t2
+	}
+}
+
+# MARK: error 4 loop_detected
+# MARK: info 4 loop_at_end
+# MARK: info 9 loop_at_start
+# MARK: info 9 loop_at_end
+# MARK: error 4 loop_end
+

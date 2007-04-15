@@ -40,4 +40,12 @@ class ScenarioData
     @project.sendMessage(message)
   end
 
+  def info(id, text, property = nil)
+    property = @property if property.nil?
+    message = Message.new(id, 'info', text, property,
+                          @project.scenario(@scenarioIdx),
+                          property.sourceFileInfo)
+    @project.sendMessage(message)
+  end
+
 end

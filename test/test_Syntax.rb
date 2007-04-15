@@ -1,5 +1,5 @@
 #
-# test_Scheduler.rb - TaskJuggler
+# test_Syntax.rb - TaskJuggler
 #
 # Copyright (c) 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -26,22 +26,13 @@ class TestScheduler < Test::Unit::TestCase
   def teardown
   end
 
-  def test_SchedulerErrors
-    Dir.glob('TestSuite/Scheduler/Errors/*.tjp').each do |f|
+  def test_syntaxErrors
+    Dir.glob('TestSuite/Syntax/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)
-      assert(tj.parse(f), "Parser failed for #{f}")
-      tj.schedule
+      assert(!tj.parse(f))
       checkMessages(tj, f)
     end
   end
 
-  def test_SchedulerCorrect
-    Dir.glob('TestSuite/Scheduler/Correct/*.tjp').each do |f|
-      tj = TaskJuggler.new(true)
-      assert(tj.parse(f), "Parser failed for ${f}")
-      assert(tj.schedule, "Scheduler failed for #{f}")
-      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
-    end
-  end
-
 end
+

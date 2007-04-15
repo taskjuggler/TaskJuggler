@@ -313,22 +313,31 @@ class Project
 protected
 
   def prepareScenario(scIdx)
-    @tasks.each do |task|
+    tasks = PropertyList.new(@tasks)
+    tasks.each do |task|
       task.prepareScenario(scIdx)
     end
-    @tasks.each do |task|
+    tasks.each do |task|
       task.Xref(scIdx)
     end
-    @tasks.each do |task|
+    tasks.each do |task|
       task.implicitXref(scIdx)
     end
-    @tasks.each do |task|
+    tasks.each do |task|
+      task.propagateInitialValues(scIdx)
+    end
+    tasks.each do |task|
       task.preScheduleCheck(scIdx)
     end
-    checkedTasks = []
-    @tasks.each do |task|
-      task.checkForLoops(scIdx, checkedTasks, [], false, true)
-      task.checkForLoops(scIdx, checkedTasks, [], true, true)
+   tasks.each do |task|
+#puts task
+   end
+    tasks.each do |task|
+      task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
+      task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
+    end
+    tasks.each do |task|
+      task.checkDetermination(scIdx)
     end
   end
 
@@ -366,7 +375,7 @@ protected
           priority = task['priority', scIdx]
           forward = task['forward', scIdx]
 
-          #puts "#{slot}: #{task.id} (#{priority}) #{forward ? '-->' : '<--'}"
+          # puts "#{slot}: #{task.fullId} (#{priority}) #{forward ? '-->' : '<--'}"
           if (slot < @attributes['start'] ||
               slot > @attributes['end'])
             task.markAsRunaway(scIdx)

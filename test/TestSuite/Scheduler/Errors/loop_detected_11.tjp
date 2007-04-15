@@ -1,0 +1,27 @@
+project prj "Loop Detector Test" "$Id" 2000-01-01 - 2000-01-10
+
+task t1 "Task1" {
+	task t2 "Task2" {
+		start 2000-01-01
+    length 1d
+	}
+	task t3 "Task3" {
+		length 1d
+		depends !t2, !t4
+	}
+	task t4 "Task4" {
+		length 1d
+		depends !t3
+	}
+  task t5 "Task5" {
+		length 1d
+		depends !t4
+	}
+}
+
+# MARK: error 8 loop_detected
+# MARK: info 8 loop_at_end
+# MARK: info 12 loop_at_start
+# MARK: info 12 loop_at_end
+# MARK: error 8 loop_end
+

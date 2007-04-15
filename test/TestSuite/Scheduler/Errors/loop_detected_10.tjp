@@ -1,0 +1,36 @@
+project test "Test" "1.0" 2000-01-01 - 2000-01-08
+
+task a "Task A" {
+	start 2000-01-01
+	
+	task b1 "Task B1" {
+		task c1 "Task C1" {
+			length 1d
+			depends !!b2
+		}
+		task c2 "Task C2" {
+			length 1d
+			depends !c1
+		}
+	}
+
+	task b2 "Task B2" {
+		task c1 "Task C1" {
+			length 1d
+		}
+		task c2 "Task C2" {
+			depends !!b1.c2
+			length 1d
+		}
+	}	
+}
+
+# MARK: error 7 loop_detected
+# MARK: info 7 loop_at_end
+# MARK: info 11 loop_at_start
+# MARK: info 11 loop_at_end
+# MARK: info 21 loop_at_start
+# MARK: info 21 loop_at_end
+# MARK: info 17 loop_at_end
+# MARK: error 7 loop_end
+

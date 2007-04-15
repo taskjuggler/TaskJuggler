@@ -17,6 +17,7 @@ class PropertyList < Array
     super(propertySet.to_ary)
     resetSorting
     addSortingCriteria('seqno', true, -1)
+    self.sort!
   end
 
   def setSorting(modes)

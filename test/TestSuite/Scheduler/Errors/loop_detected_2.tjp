@@ -1,0 +1,24 @@
+project test "Test" "1.0" 2000-01-01 - 2000-01-04
+
+task t1 "Task1" {
+  length 1d
+	depends !t3
+}
+
+task t2 "Task2" {
+  length 1d
+	depends !t1
+}
+
+task t3 "Task3" {
+	length 1d
+	depends !t2
+}
+
+# MARK: error 3 loop_detected
+# MARK: info 3 loop_at_end
+# MARK: info 8 loop_at_start
+# MARK: info 8 loop_at_end
+# MARK: info 13 loop_at_start
+# MARK: info 13 loop_at_end
+# MARK: error 3 loop_end
