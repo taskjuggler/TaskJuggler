@@ -1,0 +1,13 @@
+project test "Test" "1.0" 2007-04-22 +2m
+
+resource tux "Tux"
+
+task foo "Foo" {
+	start ${projectstart}
+}
+
+supplement resource tux {
+# MARK: error 11 sloppy_range 
+	booking foo ${projectstart} +1h { sloppy 4 }
+}
+

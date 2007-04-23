@@ -11,8 +11,10 @@
 #
 
 require 'TjTime'
+require 'Booking'
 require 'PropertySet'
 require 'AllocationAttribute'
+require 'BookingListAttribute'
 require 'BooleanAttribute'
 require 'DateAttribute'
 require 'DependencyListAttribute'
@@ -83,6 +85,7 @@ class Project
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
+      [ 'bookings',  'Bookings',     BookingListAttribute, false, true, [] ],
       [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
       [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],

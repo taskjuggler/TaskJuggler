@@ -115,7 +115,7 @@ private
   end
 
   def optionsPattern(item)
-    newPattern(%w( _{ !allocationAttribute _} ), Proc.new {
+    newPattern([ '_{', item, '_}' ], Proc.new {
       @val[1]
     })
   end

@@ -37,8 +37,8 @@ class ResourceScenario < ScenarioData
     !(@scoreboard[sbIdx].nil? || @scoreboard[sbIdx].class == Fixnum)
   end
 
-  def book(sbIdx, task)
-    return false if !available?(sbIdx)
+  def book(sbIdx, task, force = false)
+    return false if !force && !available?(sbIdx)
 
 #puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
@@ -52,6 +52,22 @@ class ResourceScenario < ScenarioData
     if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
       @lastBookedSlot = sbIdx
     end
+  end
+
+  def bookBooking(sbIdx, booking)
+    initScoreboard if @scoreboard.nil?
+
+    unless @scoreboard[sbIdx].nil?
+      if @scoreboard[sbIdx].is_a?(Task)
+        error('booking_conflict',
+              "Resource #{@property.fullId} has multiple conflicting " +
+              "bookings for #{@project.idxToDate(sbIdx)}. The conflicting " +
+              "tasks are #{@scoreboard[sbIdx].fullId} and " +
+              "#{booking.task.fullId}.", true, booking.sourceFileInfo)
+      end
+    end
+
+    book(sbIdx, booking.task, true)
   end
 
   def initScoreboard

@@ -57,6 +57,32 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_bookingAttributes
+    newRule('bookingAttributes')
+    optional
+    repeatable
+    newPattern(%w( _overtime $INTEGER ), Proc.new {
+      if @val[1] < 0 || @val[1] > 2
+        error('overtime_range',
+              "Overtime value #{@val[1]} out of range (0 - 2).", @property)
+      end
+      @booking.overtime = @val[1]
+    })
+    newPattern(%w( _sloppy $INTEGER ), Proc.new {
+      if @val[1] < 0 || @val[1] > 3
+        error('sloppy_range',
+              "Sloppyness value #{@val[1]} out of range (0 - 3).", @property)
+      end
+      @booking.sloppy = @val[1]
+    })
+  end
+
+  def rule_bookingBody
+    newRule('bookingBody')
+    optional
+    optionsPattern('!bookingAttributes')
+  end
+
   def rule_calendarDuration
     newRule('calendarDuration')
     newPattern(%w( !number !durationUnit ), Proc.new {
@@ -506,7 +532,6 @@ module TjpSyntaxRules
       @scanner.addMacro(Macro.new('now', TjTime.now.to_s,
                                   @scanner.sourceFileInfo))
       @property = nil
-      @scenario = nil
       @project
     })
   end
@@ -616,11 +641,8 @@ module TjpSyntaxRules
     newPattern(%w( _start !valDate ), Proc.new {
       @reportElement.start = @val[1]
     })
-    newPattern(%w( _taskroot !taskRootId), Proc.new {
-      if (task = @project.task(@val[1])).nil?
-        error "Unknown task #{@val[1]}"
-      end
-      @reportElement.taskRoot = task
+    newPattern(%w( _taskroot !taskId), Proc.new {
+      @reportElement.taskRoot = @val[1]
     })
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @reportElement.timeformat = @val[1]
@@ -708,6 +730,22 @@ module TjpSyntaxRules
     newPattern(%w( _{ !resourceAttributes _} ))
   end
 
+  def rule_resourceBooking
+    newRule('resourceBooking')
+    newPattern(%w( !resourceBookingHeader !bookingBody ), Proc.new {
+      @val[0].task.addBooking(@scenarioIdx, @val[0])
+    })
+  end
+
+  def rule_resourceBookingHeader
+    newRule('resourceBookingHeader')
+    newPattern(%w( !taskId !intervals ), Proc.new {
+      @booking = Booking.new(@property, @val[0], @val[1])
+      @booking.sourceFileInfo = @scanner.sourceFileInfo
+      @booking
+    })
+  end
+
   def rule_resourceId
     newRule('resourceId')
     newPattern(%w( $ID ), Proc.new {
@@ -738,6 +776,7 @@ module TjpSyntaxRules
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
+    newPattern(%w( _booking !resourceBooking ))
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
       @resource['vacations', @scenarioIdx] =
         @resource['vacations', @scenarioIdx ] + @val[2]
@@ -749,7 +788,7 @@ module TjpSyntaxRules
   def rule_scenario
     newRule('scenario')
     newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {
-      @scenario = @scenario.parent
+      @property = @property.parent
     })
   end
 
@@ -758,7 +797,7 @@ module TjpSyntaxRules
     optional
     repeatable
     newPattern(%w( _projection !projection ), Proc.new {
-      @property['projection', @scenarioIdx] = true
+      @property.set('projection', true)
     })
     newPattern(%w( !scenario ))
   end
@@ -766,7 +805,7 @@ module TjpSyntaxRules
   def rule_scenarioBody
     newRule('scenarioBody')
     optional
-    newPattern(%w( _{ !scenarioAttributes _} ))
+    optionsPattern('!scenarioAttributes')
   end
 
   def rule_scenarioHeader
@@ -774,8 +813,8 @@ module TjpSyntaxRules
     newPattern(%w( _scenario $ID $STRING ), Proc.new {
       # If this is the top-level scenario, we must delete the default scenario
       # first.
-      @project.scenarios.clearProperties if @scenario.nil?
-      @scenario = Scenario.new(@project, @val[1], @val[2], @scenario)
+      @project.scenarios.clearProperties if @property.nil?
+      @property = Scenario.new(@project, @val[1], @val[2], @property)
     })
   end
 
@@ -892,6 +931,22 @@ module TjpSyntaxRules
     newPattern(%w( _{ !taskAttributes _} ))
   end
 
+  def rule_taskBooking
+    newRule('taskBooking')
+    newPattern(%w( !taskBookingHeader !bookingBody ), Proc.new {
+      @val[0].task.addBooking(@scenarioIdx, @val[0])
+    })
+  end
+
+  def rule_taskBookingHeader
+    newRule('taskBookingHeader')
+    newPattern(%w( !resourceId !intervals ), Proc.new {
+      @booking = Booking.new(@val[0], @property, @val[1])
+      @booking.sourceFileInfo = @scanner.sourceFileInfo
+      @booking
+    })
+  end
+
   def rule_taskDep
     newRule('taskDep')
     newPattern(%w( !taskDepHeader !taskDepBody ), Proc.new {
@@ -969,6 +1024,22 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_taskId
+    newRule('taskId')
+    newPattern(%w( !taskIdUnverifd ), Proc.new {
+      if (task = @project.task(@val[0])).nil?
+        error "Unknown task #{@val[0]}"
+      end
+      task
+    })
+  end
+
+  def rule_taskIdUnverifd
+    newRule('taskIdUnverifd')
+    singlePattern('$ABSOLUTE_ID')
+    singlePattern('$ID')
+  end
+
   def rule_taskPred
     newRule('taskPred')
     newPattern(%w( !taskPredHeader !taskDepBody ), Proc.new {
@@ -990,12 +1061,6 @@ module TjpSyntaxRules
     })
   end
 
-  def rule_taskRootId
-    newRule('taskRootId')
-    singlePattern('$ABSOLUTE_ID')
-    singlePattern('$ID')
-  end
-
   def rule_taskScenarioAttributes
     newRule('taskScenarioAttributes')
     newPattern(%w( _allocate !resourceAllocations ), Proc.new {
@@ -1003,6 +1068,7 @@ module TjpSyntaxRules
       @property['allocate', @scenarioIdx] =
         @property['allocate', @scenarioIdx] + @val[1]
     })
+    newPattern(%w( _booking !taskBooking ))
     newPattern(%w( _complete $FLOAT ), Proc.new {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",

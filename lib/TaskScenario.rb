@@ -33,10 +33,13 @@ class TaskScenario < ScenarioData
     # The 'done' variables count scheduled values in number of time slots.
     @doneDuration = 0
     @doneLength = 0
-    @doneEffort = 0
+    # Due to the 'efficiency' factor the effort slots must be a float.
+    @doneEffort = 0.0
 
     @startIsDetermed = nil
     @endIsDetermed = nil
+
+    bookBookings
   end
 
   # The parser only stores the full task IDs for each of the dependencies. This
@@ -675,7 +678,7 @@ class TaskScenario < ScenarioData
     # bookings (sloppy mode).
     if @project.scenario(@scenarioIdx).get('projection') &&
        date < @project['now'] &&
-       (project.scenario(@scenarioIdx).get('strict') ||
+       (@project.scenario(@scenarioIdx).get('strict') ||
         a('bookedresources').empty?)
       return
     end
@@ -772,7 +775,7 @@ class TaskScenario < ScenarioData
         @tentativeStart = @project.idxToDate(sbIdx)
         @tentativeEnd = @project.idxToDate(sbIdx + 1)
 
-        @doneEffort += 1
+        @doneEffort += r['efficiency', @scenarioIdx]
 
         unless a('assignedresources').include?(r)
           @property['assignedresources', @scenarioIdx] << r
@@ -787,6 +790,10 @@ class TaskScenario < ScenarioData
   def createCandidateList(sbIdx, allocation)
     # TODO: Fixme
     allocation.candidates
+  end
+
+  def addBooking(booking)
+    @property['bookings', @scenarioIdx] = a('bookings') + [ booking ]
   end
 
   def markAsRunaway
@@ -820,6 +827,38 @@ class TaskScenario < ScenarioData
   end
 
 private
+
+  def bookBookings
+    a('bookings').each do |booking|
+      unless booking.resource.leaf?
+        error('booking_resource_not_leaf',
+              "Booked resources may not be group resources", true,
+              booking.sourceFileInfo)
+      end
+      booking.intervals.each do |interval|
+        startIdx = @project.dateToIdx(interval.start)
+        date = interval.start
+        endIdx = @project.dateToIdx(interval.end)
+        startIdx.upto(endIdx) do |idx|
+          if booking.resource.bookBooking(@scenarioIdx, idx, booking)
+            @doneEffort += booking.resource['efficiency', @scenarioIdx]
+
+            # Set start and lastSlot if appropriate. The task start will be set
+            # to the begining of the first booked slot. The lastSlot will be set
+            # to the last booked slot
+            @lastSlot = date if @lastSlot.nil? || date > @lastSlot
+            @property['start', @scenarioIdx] = date if a('start').nil? ||
+                                                       date < a('start')
+
+            unless a('assignedresources').include?(booking.resource)
+              @property['assignedresources', @scenarioIdx] << booking.resource
+            end
+          end
+          date += @project['scheduleGranularity']
+        end
+      end
+    end
+  end
 
   def checkDependency(dependency, depType)
     if (depTask = dependency.resolve(@project)).nil?

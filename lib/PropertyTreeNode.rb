@@ -275,10 +275,12 @@ class PropertyTreeNode
     @attributes.each do |key, attr|
       res += "  #{key}: " + attr.to_s + "\n"
     end
-    0.upto(project.scenarioCount - 1) do |sc|
-      res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
-      @scenarioAttributes[sc].each do |key, attr|
-        res += "    #{key}: " + attr.to_s + "\n"
+    unless @scenarioAttributes.empty?
+      0.upto(project.scenarioCount - 1) do |sc|
+        res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
+        @scenarioAttributes[sc].each do |key, attr|
+          res += "    #{key}: " + attr.to_s + "\n"
+        end
       end
     end
     res += "***\n"

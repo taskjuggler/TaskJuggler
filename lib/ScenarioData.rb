@@ -25,10 +25,11 @@ class ScenarioData
     @property[attributeName, @scenarioIdx]
   end
 
-  def error(id, text, abort = true)
+  def error(id, text, abort = true, sourceFileInfo = nil)
     message = Message.new(id, 'error', text, @property,
                           @project.scenario(@scenarioIdx),
-                          @property.sourceFileInfo)
+                          sourceFileInfo.nil? ?
+                          @property.sourceFileInfo : sourceFileInfo)
     @project.sendMessage(message)
     raise TjException.new, "Scheduling error" if abort
   end

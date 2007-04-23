@@ -147,6 +147,8 @@ class TextScanner
     return if text == ''
 
     @macroStack << [ macro, args ]
+    # Mark end of macro with a 0 element
+    @cf.charBuffer << 0
     text.reverse.each_byte do |c|
       @cf.charBuffer << c
     end
@@ -210,7 +212,7 @@ private
     unless @cf.charBuffer.empty?
       c = @cf.charBuffer.pop
       @cf.lineNo -= 1 if c == ?\n && !@macroStack.empty?
-      while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == nil
+      while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == 0
         @cf.charBuffer.pop
         @macroStack.pop
       end
