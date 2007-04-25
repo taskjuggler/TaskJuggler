@@ -20,7 +20,7 @@ class WorkingHours
 
   attr_reader :days
 
-  def initialize(wh = nil)
+  def initialize(wh = nil, tz = nil)
     # One entry for every day of the week. Sunday === 0.
     @days = Array.new(7, [])
 
@@ -36,6 +36,7 @@ class WorkingHours
         setWorkingHours(day, wh.days[day].clone)
       end
     end
+    @timezone = tz
   end
 
   def setWorkingHours(dayOfWeek, intervals)
@@ -61,10 +62,26 @@ class WorkingHours
   # Return true if the whole interval is covered by working hour interval.
   # The interval may not span across a day boundary.
   def onShift?(interval)
+    oldTimezone = nil
+    # Set environment variable TZ to appropriate time zone
+    if @timezone
+      oldTimezone = ENV['tz']
+      ENV['tz'] = @timezone
+    end
     # TODO: Add support for different time zones
     dow = interval.start.wday
-    intervalStart = interval.start.secondsOfDay
-    intervalEnd = interval.end.secondsOfDay
+    localStart = interval.start.clone
+    localStart.localtime
+    intervalStart = localStart.secondsOfDay
+    localEnd = interval.end.clone
+    localEnd.localtime
+    intervalEnd = localEnd.secondsOfDay
+
+    # Restore environment
+    if oldTimezone
+      ENV['tz'] = oldTimezone
+    end
+
     # Make sure we represent the end as 24:00 and not 0:00
     intervalEnd = 60 * 60 * 24 if intervalEnd == 0
     if $DEBUG && intervalEnd < intervalStart

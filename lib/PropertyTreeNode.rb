@@ -272,13 +272,13 @@ class PropertyTreeNode
           "  Sequence No: #{@sequenceNo}\n"
 
     res += "  Parent: #{@parent.get('id')}\n" if @parent
-    @attributes.each do |key, attr|
+    @attributes.sort.each do |key, attr|
       res += "  #{key}: " + attr.to_s + "\n"
     end
     unless @scenarioAttributes.empty?
       0.upto(project.scenarioCount - 1) do |sc|
         res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
-        @scenarioAttributes[sc].each do |key, attr|
+        @scenarioAttributes[sc].sort.each do |key, attr|
           res += "    #{key}: " + attr.to_s + "\n"
         end
       end

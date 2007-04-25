@@ -58,7 +58,7 @@ class MacroParser < TextParser
       @scanner.expandMacro([ @val[2] ] + @val[3])
     })
     newPattern(%w( _( $ID _) ), Proc.new {
-      $ENV[@val[0]]
+      ENV[@val[0]]
     })
   end
 

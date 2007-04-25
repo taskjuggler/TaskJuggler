@@ -29,7 +29,7 @@ class TestScheduler < Test::Unit::TestCase
   def test_syntaxErrors
     Dir.glob('TestSuite/Syntax/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)
-      assert(!tj.parse(f))
+      assert(!tj.parse(f), "Parser succedded for #{f}")
       checkMessages(tj, f)
     end
   end

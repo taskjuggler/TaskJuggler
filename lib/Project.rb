@@ -332,9 +332,9 @@ protected
     tasks.each do |task|
       task.preScheduleCheck(scIdx)
     end
-   tasks.each do |task|
-#puts task
-   end
+    #tasks.each do |task|
+    #  puts task
+    #end
     tasks.each do |task|
       task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
       task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
@@ -378,7 +378,7 @@ protected
           priority = task['priority', scIdx]
           forward = task['forward', scIdx]
 
-          # puts "#{slot}: #{task.fullId} (#{priority}) #{forward ? '-->' : '<--'}"
+          #puts "#{slot}: #{task.fullId} (#{priority}) #{forward ? '-->' : '<--'}"
           if (slot < @attributes['start'] ||
               slot > @attributes['end'])
             task.markAsRunaway(scIdx)

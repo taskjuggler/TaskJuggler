@@ -98,8 +98,6 @@ class TaskScenario < ScenarioData
     end
     propagateDate(a('start'), false) if a('start')
     propagateDate(a('end'), true) if a('end')
-
-    scheduleContainer if @property.container?
   end
 
   def preScheduleCheck
@@ -546,12 +544,15 @@ class TaskScenario < ScenarioData
   def scheduleContainer
     return if a('scheduled') || !@property.container?
 
+    # puts "Scheduling container #{@property.fullId}"
     nStart = nil
     nEnd = nil
 
     @property.children.each do |task|
       # Abort if a child has not yet been scheduled.
-      return unless task['scheduled', @scenarioIdx]
+      return if task['start', @scenarioIdx].nil? ||
+                task['end', @scenarioIdx].nil?
+
       if nStart.nil? || task['start', @scenarioIdx] < nStart
         nStart = task['start', @scenarioIdx]
       end
@@ -560,8 +561,6 @@ class TaskScenario < ScenarioData
       end
     end
 
-    @property['scheduled', @scenarioIdx] = true
-
     # Propagate the dates to other dependent tasks.
     if a('start').nil? || a('start') > nStart
       propagateDate(nStart, false)
@@ -569,6 +568,7 @@ class TaskScenario < ScenarioData
     if a('end').nil? || a('end') < nEnd
       propagateDate(nEnd, true)
     end
+    @property['scheduled', @scenarioIdx] = true
   end
 
   def hasDurationSpec
@@ -839,7 +839,7 @@ private
         startIdx = @project.dateToIdx(interval.start)
         date = interval.start
         endIdx = @project.dateToIdx(interval.end)
-        startIdx.upto(endIdx) do |idx|
+        startIdx.upto(endIdx - 1) do |idx|
           if booking.resource.bookBooking(@scenarioIdx, idx, booking)
             @doneEffort += booking.resource['efficiency', @scenarioIdx]
 

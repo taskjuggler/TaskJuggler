@@ -72,7 +72,7 @@ class TextScanner
   end
 
   def sourceFileInfo
-    SourceFileInfo.new(fileName, lineNo, columnNo)
+    @pos ? @pos.clone : SourceFileInfo.new(fileName, lineNo, columnNo)
   end
 
   def fileName
@@ -96,35 +96,46 @@ class TextScanner
     unless @tokenBuffer.nil?
       res = @tokenBuffer
       @tokenBuffer = nil
+      @pos = nil
       return res
     end
 
+    token = [ false, false ]
     # Start processing characters from the input.
     while c = nextChar(true)
       case c
       when 32, ?\n, ?\t
 	      if tok = readBlanks(c)
-	        return tok
+	        token = tok
+          break
         end
       when ?#
         skipComment
       when ?0..?9
-        return readNumber(c)
+        token = readNumber(c)
+        break
       when ?"
-        return readString(c)
+        token = readString(c)
+        break
       when ?!
-        return readRelativeId(c)
+        token = readRelativeId(c)
+        break
       when ?a..?z, ?A..?Z, ?_
-        return readId(c)
+        token = readId(c)
+        break
       when ?[
-        return readMacro
+        token = readMacro
+        break
       else
         str = ""
         str << c
-        return [ 'LITERAL', str ]
+        token = [ 'LITERAL', str ]
+        break
       end
     end
-    [ false, false ]
+    @lastPos = @pos
+    @pos = SourceFileInfo.new(fileName, lineNo, columnNo)
+    return token
   end
 
   def returnToken(token)
@@ -132,6 +143,7 @@ class TextScanner
       raise "Fatal Error: Cannot return 2 tokens in a row"
     end
     @tokenBuffer = token
+    @pos = @lastPos
   end
 
   def addMacro(macro)

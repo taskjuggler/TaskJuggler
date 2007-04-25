@@ -40,7 +40,8 @@ class ResourceScenario < ScenarioData
   def book(sbIdx, task, force = false)
     return false if !force && !available?(sbIdx)
 
-#puts "Booking resource #{@property.fullId} at #{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
+    #puts "Booking resource #{@property.fullId} at " +
+    #     "#{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
 
     # Make sure the task is in the list of duties.
@@ -65,40 +66,21 @@ class ResourceScenario < ScenarioData
               "tasks are #{@scoreboard[sbIdx].fullId} and " +
               "#{booking.task.fullId}.", true, booking.sourceFileInfo)
       end
+      if @scoreboard[sbIdx] > booking.overtime
+        if @scoreboard[sbIdx] == 1 && booking.sloppy == 0
+          error('booking_no_duty',
+                "Resource #{@property.fullId} has no duty at " +
+                "#{@project.idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+        end
+        if @scoreboard[sbIdx] == 2 && booking.sloppy <= 1
+          error('booking_on_vacation',
+                "Resource #{@property.fullId} is on vacation at " +
+                "#{@project.idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+        end
+      end
     end
 
     book(sbIdx, booking.task, true)
-  end
-
-  def initScoreboard
-    # Create scoreboard and mark all slots as unavailable
-    @scoreboard = Array.new(@project.scoreboardSize, 1)
-
-    # Change all work time slots to nil (available) again.
-    0.upto(@project.scoreboardSize) do |i|
-      ivStart = @property.project.idxToDate(i)
-      iv = Interval.new(ivStart, ivStart +
-                        @property.project['scheduleGranularity'])
-      @scoreboard[i] = nil if onShift?(iv)
-    end
-
-    # Mark all resource specific vacation slots as such (2)
-    a('vacations').each do |vacation|
-      startIdx = @project.dateToIdx(vacation.start)
-      endIdx = @project.dateToIdx(vacation.end) - 1
-      startIdx.upto(endIdx) do |i|
-         @scoreboard[i] = 1
-      end
-    end
-
-    # Mark all global vacation slots as such (3)
-    @project['vacations'].each do |vacation|
-      startIdx = @project.dateToIdx(vacation.start)
-      endIdx = @project.dateToIdx(vacation.end) - 1
-      startIdx.upto(endIdx) do |i|
-         @scoreboard[i] = 2
-      end
-    end
   end
 
   def onShift?(iv)
@@ -183,6 +165,37 @@ class ResourceScenario < ScenarioData
   end
 
 private
+
+  def initScoreboard
+    # Create scoreboard and mark all slots as unavailable
+    @scoreboard = Array.new(@project.scoreboardSize, 1)
+
+    # Change all work time slots to nil (available) again.
+    0.upto(@project.scoreboardSize) do |i|
+      ivStart = @property.project.idxToDate(i)
+      iv = Interval.new(ivStart, ivStart +
+                        @property.project['scheduleGranularity'])
+      @scoreboard[i] = nil if onShift?(iv)
+    end
+
+    # Mark all resource specific vacation slots as such (2)
+    a('vacations').each do |vacation|
+      startIdx = @project.dateToIdx(vacation.start)
+      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx.upto(endIdx) do |i|
+         @scoreboard[i] = 1
+      end
+    end
+
+    # Mark all global vacation slots as such (3)
+    @project['vacations'].each do |vacation|
+      startIdx = @project.dateToIdx(vacation.start)
+      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx.upto(endIdx) do |i|
+         @scoreboard[i] = 2
+      end
+    end
+  end
 
   # Count the booked slots between the start and end index. If _task_ is not
   # nil count only those slots that are assigned to this particular task.

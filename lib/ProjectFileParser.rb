@@ -35,7 +35,7 @@ class ProjectFileParser < TextParser
       @scanner = TextScanner.new(masterFile, @messageHandler)
       @scanner.open
     rescue
-      error('file_open', $!)
+      error('file_open', $!.message)
     end
 
     @property = nil
