@@ -1,0 +1,9 @@
+project test "Test" "1.0" 2007-04-26 +2m
+
+resource tux "Tux" { vacation 2007-04-27 +2d }
+
+# MARK: error 8 booking_on_vacation
+
+task foo "Foo" {
+  booking tux 2007-04-27-10:00 +1h
+}

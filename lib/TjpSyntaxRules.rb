@@ -778,8 +778,8 @@ module TjpSyntaxRules
     })
     newPattern(%w( _booking !resourceBooking ))
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
-      @resource['vacations', @scenarioIdx] =
-        @resource['vacations', @scenarioIdx ] + @val[2]
+      @property['vacations', @scenarioIdx] =
+        @property['vacations', @scenarioIdx ] + @val[2]
     })
     newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.

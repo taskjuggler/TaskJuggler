@@ -183,11 +183,11 @@ private
       startIdx = @project.dateToIdx(vacation.start)
       endIdx = @project.dateToIdx(vacation.end) - 1
       startIdx.upto(endIdx) do |i|
-         @scoreboard[i] = 1
+         @scoreboard[i] = 2
       end
     end
 
-    # Mark all global vacation slots as such (3)
+    # Mark all global vacation slots as such (2)
     @project['vacations'].each do |vacation|
       startIdx = @project.dateToIdx(vacation.start)
       endIdx = @project.dateToIdx(vacation.end) - 1
