@@ -79,9 +79,11 @@ private
 
   def generateTaskList(taskList, resourceList, resource, parentLine)
     lineDict = { }
+    no = 0
     taskList.each do |task|
       even = true
       line = nil
+      no += 1
       @descr.scenarios.each do |scenarioIdx|
         # Generate line for each task
         line = ReportTableLine.new(@table, task,
@@ -91,6 +93,7 @@ private
 
         line.even = even
         even = !even
+        line.no = no unless resource
         setFontAndIndent(line, @descr.taskRoot, taskList.treeMode?)
 
         @descr.columns.each do |column|
@@ -109,9 +112,11 @@ private
 
   def generateResourceList(resourceList, taskList, task, parentLine)
     lineDict = { }
+    no = 0
     resourceList.each do |resource|
       even = true
       line = nil
+      no += 1
       @descr.scenarios.each do |scenarioIdx|
         line = ReportTableLine.new(@table, resource,
             resource.parent.nil? || !resourceList.treeMode? ?
@@ -120,6 +125,7 @@ private
 
         line.even = even
         even = !even
+        line.no = no unless task
         setFontAndIndent(line, @descr.resourceRoot, resourceList.treeMode?)
 
         @descr.columns.each do |column|
@@ -205,7 +211,8 @@ private
     end
 
     setStandardCellAttributes(cell, column,
-        properties.attributeType(column.id), line, cellFontFactor)
+                              properties.attributeType(column.id), line,
+                              cellFontFactor)
     true
   end
 
@@ -229,6 +236,8 @@ private
       workLoad = property.getEffectiveLoad(scenarioIdx, startIdx, endIdx, nil)
       cell.text = @descr.numberFormat.format(workLoad) + 'd'
       cell.bold = true if property.container?
+    when 'no'
+      cell.text = line.no.to_s
     else
       raise "Unsupported column #{column.id}"
     end

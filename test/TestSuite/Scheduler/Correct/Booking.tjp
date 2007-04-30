@@ -1,4 +1,4 @@
-project test "Test" "1.0" 2007-04-22 +2m {
+project test "Test" "1.0" 2007-04-22 +3w {
 	now 2007-04-30
 	scenario plan "Plan" {
 		projection
@@ -10,12 +10,16 @@ resource tux "Tux"
 task t1 "Task 1" {
 	effort 10d
 	allocate tux
-	booking tux 2007-04-22 +10h,
-					    2007-04-23 +10h { sloppy 1 }
-  booking tux 2007-04-24 +10h { overtime 2 }
+	booking tux 2007-04-24 +10h,
+					    2007-04-25 +10h { sloppy 1 }
+  booking tux 2007-04-27 +10h { overtime 2 }
 }
 
 supplement resource tux {
 	booking t1 2007-04-26 +10h { sloppy 1 }
+}
+
+htmltaskreport "Booking.html" {
+	columns no, name, hourly
 }
 

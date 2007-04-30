@@ -15,7 +15,7 @@ require 'ReportTableCell'
 class ReportTableLine
 
   attr_reader :table, :property, :parentLine
-  attr_accessor :indentation, :fontFactor, :even
+  attr_accessor :indentation, :fontFactor, :even, :no
 
   def initialize(table, property, parentLine)
     @table = table
@@ -27,6 +27,7 @@ class ReportTableLine
     @indentation = 0
     @fontFactor = 1.0
     @even = true
+    @no = nil
   end
 
   def last(count = 0)

@@ -49,9 +49,10 @@ class ReportElement
 
     @propertiesById = {
       # ID               Header    Indent  Align FontFac. Calced.
-      "effort"      => [ "Effort", true,   2,    1.0,     true ],
-      "id"          => [ "Id",     false,  0,    1.0,     false ],
-      "name"        => [ "Name",   true,   0,    1.0,     false ]
+      'effort'      => [ 'Effort', true,   2,    1.0,     true ],
+      'id'          => [ 'Id',     false,  0,    1.0,     false ],
+      'name'        => [ 'Name',   true,   0,    1.0,     false ],
+      'no'          => [ 'No.',    false,  2,    1.0,     true ]
     }
     @propertiesByType = {
       # Type                  Indent  Align FontFac.
@@ -140,6 +141,8 @@ class ReportElement
   def defaultColumnTitle(id)
     specials = %w( hourly daily weekly monthly quarterly yearly)
     return '' if specials.include?(id)
+
+    return @propertiesById[id][0] if @propertiesById.include?(id)
 
     (name = @report.project.tasks.attributeName(id)).nil? &&
     (name = @report.project.resources.attributeName(id)).nil?
