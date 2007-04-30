@@ -111,6 +111,8 @@ class TextScanner
         end
       when ?#
         skipComment
+      when ?/
+        skipMultiLineComment
       when ?0..?9
         token = readNumber(c)
         break
@@ -261,10 +263,23 @@ private
   end
 
   def skipComment
-    # Read all characters untill line or file end is found
+    # Read all characters until line or file end is found
     while (c = nextChar(true)) && c != ?\n
     end
     returnChar(c)
+  end
+
+  def skipMultiLineComment
+    if (c = nextChar(false)) != ?*
+      returnChar(c)
+      returnChar(?/)
+      return
+    end
+
+    begin
+      while (c = nextChar(false)) != ?*
+      end
+    end until (c = nextChar(false)) == ?/
   end
 
   def readBlanks(c)

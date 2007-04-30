@@ -53,6 +53,7 @@ class ResourceScenario < ScenarioData
     if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
       @lastBookedSlot = sbIdx
     end
+    true
   end
 
   def bookBooking(sbIdx, booking)
@@ -77,6 +78,7 @@ class ResourceScenario < ScenarioData
                 "Resource #{@property.fullId} is on vacation at " +
                 "#{@project.idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
         end
+        return false
       end
     end
 

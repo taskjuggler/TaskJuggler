@@ -213,7 +213,7 @@ private
         token = nextToken
         puts "  Token: #{token[0]}/#{token[1]}" if @@debug >= 20
       rescue TjException
-        error('parse_rule1', $!)
+        error('parse_rule1', $!.message)
       end
 
       # The scanner cannot differentiate between keywords and identifiers. So

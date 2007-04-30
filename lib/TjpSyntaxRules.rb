@@ -69,9 +69,9 @@ module TjpSyntaxRules
       @booking.overtime = @val[1]
     })
     newPattern(%w( _sloppy $INTEGER ), Proc.new {
-      if @val[1] < 0 || @val[1] > 3
+      if @val[1] < 0 || @val[1] > 2
         error('sloppy_range',
-              "Sloppyness value #{@val[1]} out of range (0 - 3).", @property)
+              "Sloppyness value #{@val[1]} out of range (0 - 2).", @property)
       end
       @booking.sloppy = @val[1]
     })

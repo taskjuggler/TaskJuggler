@@ -29,7 +29,7 @@ class LogicalOperation
         if @operand1.is_a?(LogicalOperation)
           return @operand1.eval(expr)
         else
-          return @operand1
+          return @operand1 != 0
         end
       when '~'
         return !@operand1.eval(expr)

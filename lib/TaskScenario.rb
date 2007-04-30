@@ -468,7 +468,7 @@ class TaskScenario < ScenarioData
         return true
       end
     elsif a('effort') > 0
-      bookResources(slot, slotDuration)
+      bookResources(slot, slotDuration) if @doneEffort < a('effort')
       if @doneEffort >= a('effort')
         @property['scheduled', @scenarioIdx] = true
         if a('forward')
@@ -835,6 +835,12 @@ private
               "Booked resources may not be group resources", true,
               booking.sourceFileInfo)
       end
+      if @project.scenario(@scenarioIdx).get('strict') &&
+         !a('forward')
+        error('booking_forward_only',
+              "In strict projection mode only forward scheduled tasks " +
+              "may have booking statements.")
+      end
       booking.intervals.each do |interval|
         startIdx = @project.dateToIdx(interval.start)
         date = interval.start
@@ -847,8 +853,18 @@ private
             # to the begining of the first booked slot. The lastSlot will be set
             # to the last booked slot
             @lastSlot = date if @lastSlot.nil? || date > @lastSlot
-            @property['start', @scenarioIdx] = date if a('start').nil? ||
-                                                       date < a('start')
+            tEnd = date + @project['scheduleGranularity']
+            if a('forward')
+              @tentativeEnd = tEnd if @tentativeEnd.nil? ||
+                                      @tentativeEnd < tEnd
+              @property['start', @scenarioIdx] = date if a('start').nil? ||
+                                                         date < a('start')
+            else
+              @tentativeStart = date if @tentativeStart.nil? ||
+                                        date < @tentativeStart
+              @property['end', @scenarioIdx] = tEnd if a('end').nil? ||
+                                                       tEnd > a('end')
+            end
 
             unless a('assignedresources').include?(booking.resource)
               @property['assignedresources', @scenarioIdx] << booking.resource

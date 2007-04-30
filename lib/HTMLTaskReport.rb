@@ -30,6 +30,7 @@ class HTMLTaskReport < ReportBase
       @element.columns << TableColumnDefinition.new(
           col, @element.defaultColumnTitle(col))
     end
+    @element.hideResource = LogicalExpression.new(LogicalOperation.new(1))
   end
 
   def generate
