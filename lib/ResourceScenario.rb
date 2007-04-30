@@ -25,6 +25,22 @@ class ResourceScenario < ScenarioData
     @scoreboard = nil
   end
 
+  # The criticalness of a resource is a measure for the probabilty that all
+  # allocations can be fullfilled. The smaller the value, the more likely
+  # will the tasks get the resource. A value above 1.0 means that
+  # statistically some tasks will not get their resources. A value between
+  # 0 and 1 implies no guarantee, though.
+  def calcCriticalness
+    return if @scoreboard.nil?
+
+    freeSlots = 0
+    @scoreboard.each do |slot|
+      freeSlots += 1 if slot.nil?
+    end
+    @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
+                                              a('alloctdeffort') / freeSlots
+  end
+
   def available?(sbIdx)
     initScoreboard if @scoreboard.nil?
 

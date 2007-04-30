@@ -388,6 +388,62 @@ class TaskScenario < ScenarioData
     end
   end
 
+  def countResourceAllocations
+    return if a('effort') <= 0
+
+    resources = []
+    a('allocate').each do |allocation|
+      allocation.candidates.each do |candidate|
+        candidate.all.each do |resource|
+          resources << resource unless resources.include?(resource)
+        end
+      end
+    end
+    avgEffort = a('effort') / resources.length
+    resources.each do |resource|
+      resource['alloctdeffort', @scenarioIdx] += avgEffort
+    end
+  end
+
+  def calcCriticalness
+    return if a('effort') <= 0
+
+    # Users feel that milestones are somewhat important. So we use an
+    # arbitrary value larger than 0 for them.
+    @property['criticalness', @scenarioIdx] = 1.0 if a('milestone')
+
+    resources = []
+    a('allocate').each do |allocation|
+      allocation.candidates.each do |candidate|
+        candidate.all.each do |resource|
+          resources << resource unless resources.include?(resource)
+        end
+      end
+    end
+
+    criticalness = 0.0
+    resources.each do |resource|
+      criticalness += resource['criticalness', @scenarioIdx]
+    end
+    @property['criticalness', @scenarioIdx] = a('effort') *
+                                              criticalness / resources.length
+  end
+
+  # The path criticalness is a measure for the overall criticalness of the
+  # task taking the dependencies into account. The fact that a task is part
+  # of a chain of effort-based task raises all the task in the chain to a
+  # higher criticalness level than the individual tasks. In fact, the path
+  # criticalness of this chain is equal to the sum of the individual
+  # criticalnesses of the tasks.
+  #
+  # Since both the forward and backward functions include the
+  # criticalness of this function we have to subtract it again.
+  def calcPathCriticalness
+    @property['pathcriticalness', @scenarioIdx] =
+      calcDirCriticalness(false) - a('criticalness') +
+      calcDirCriticalness(true)
+  end
+
   def nextSlot(slotDuration)
     return nil if a('scheduled')
 
@@ -983,6 +1039,28 @@ private
         !task.hasDurationSpec(@scenarioIdx))
       task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
+  end
+
+  def calcDirCriticalness(forward)
+    maxCriticalness = 0.0
+
+    unless !property.container?
+      a(forward ? 'endsuccs' : 'startpreds').each do |task|
+        if (criticalness = task.calcCriticalness(@scenarioIdx, forward)) >
+           maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+    end
+
+    if @property.parent &&
+       (criticalness =
+          @property.parent.calcDirCriticalness(@scenarioIdx, forward)) >
+       maxCriticalness
+      maxCriticalness = criticalness
+    end
+
+    a('criticalness') + maxCriticalness
   end
 
 end

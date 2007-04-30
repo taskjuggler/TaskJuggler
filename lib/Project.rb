@@ -87,6 +87,7 @@ class Project
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookings',  'Bookings',     BookingListAttribute, false, true, [] ],
       [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
+      [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
@@ -103,6 +104,7 @@ class Project
       [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
       [ 'note',      'Note',         StringAttribute,   false, false, nil ],
+      [ 'pathcriticalness', 'Path Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'precedes',  '-',   DependencyListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
@@ -118,8 +120,8 @@ class Project
     @resources = PropertySet.new(self, true)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
-      [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-        @attributes['workinghours'] ],
+      [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute, false, true, 0.0 ],
+      [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
       [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
@@ -128,7 +130,9 @@ class Project
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
-      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
+      [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
+        @attributes['workinghours'] ]
     ]
     attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -341,6 +345,16 @@ protected
     end
     tasks.each do |task|
       task.checkDetermination(scIdx)
+    end
+
+    tasks.each do |task|
+      task.countResourceAllocations(scIdx)
+    end
+    resources.each do |resource|
+      resource.calcCriticalness(scIdx)
+    end
+    tasks.each do |task|
+      task.calcCriticalness(scIdx)
     end
   end
 
