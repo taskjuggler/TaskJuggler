@@ -39,6 +39,21 @@ class TaskScenario < ScenarioData
     @startIsDetermed = nil
     @endIsDetermed = nil
 
+    # Inheriting start or end values is a bit tricky. This should really only
+    # happen if the task is a leaf task and scheduled away from the specified
+    # date. Since the default meachanism inherites all values, we have to
+    # delete the wrong ones again.
+    if a('start') && @property.inherited('start', @scenarioIdx) &&
+       (@property.container? || (@property.leaf? && !a('forward')) ||
+        !a('depends').empty?)
+      @property['start', @scenarioIdx] = nil
+    end
+    if a('end') && @property.inherited('end', @scenarioIdx) &&
+       (@property.container? || (@property.leaf? && a('forward')) ||
+        !a('predeces').empty?)
+      @property['end', @scenarioIdx] = nil
+    end
+
     bookBookings
   end
 
@@ -84,18 +99,6 @@ class TaskScenario < ScenarioData
   end
 
   def propagateInitialValues
-    # Inheriting start or end values is a bit tricky. This should really only
-    # happen if the task is a leaf task and scheduled away from the specified
-    # date. Since the default meachanism inherites all values, we have to
-    # delete the wrong ones again.
-    if a('start') && @property.inherited('start', @scenarioIdx) &&
-       (@property.container? || (@property.leaf? && !a('forward')))
-      @property['start', @scenarioIdx] = nil
-    end
-    if a('end') && @property.inherited('end', @scenarioIdx) &&
-       (@property.container? || (@property.leaf? && a('forward')))
-      @property['end', @scenarioIdx] = nil
-    end
     propagateDate(a('start'), false) if a('start')
     propagateDate(a('end'), true) if a('end')
   end
@@ -224,6 +227,10 @@ class TaskScenario < ScenarioData
     @errors == 0
   end
 
+  def resetLoopFlags
+    @deadEndFlags = Array.new(4, false)
+  end
+
   def checkForLoops(path, atEnd, fromOutside)
     # Check if we have been here before on this path.
     if path.include?([ @property, atEnd ])
@@ -247,6 +254,7 @@ class TaskScenario < ScenarioData
       pathText += "#{@property.fullId}(#{atEnd ? 'end' : 'start'})"
       puts pathText
     end
+    return if @deadEndFlags[(atEnd ? 2 : 0) + (fromOutside ? 1 : 0)]
     path << [ @property, atEnd ]
 
     # To find loops we have to traverse the graph in a certain order. When we
@@ -256,18 +264,18 @@ class TaskScenario < ScenarioData
     #             |      /          \      |
     #  outside    v    /              \    v   outside
     #          +------------------------------+
-    #          |    /                    \    |
+    #          |    /        Task        \    |
     #       -->|  o   <---          --->   o  |<--
     #          |/ Start                  End \|
     #         /+------------------------------+\
     #       /     ^                        ^     \
-    #             |        inside          |
+    #             |         inside         |
     #
     # At the top we have the parent task. At the botton the child tasks.
     # The horizontal arrors are start predecessors or end successors.
     # As the graph is doubly-linked, we need to becareful to only find real
     # loops. When coming from outside, we only continue to the inside and vice
-    # versa. Horizontal mores are only made when we are in a leaf task.
+    # versa. Horizontal moves are only made when we are in a leaf task.
     unless atEnd
       if fromOutside
         if @property.container?
@@ -372,6 +380,7 @@ class TaskScenario < ScenarioData
     end
 
     path.pop
+    @deadEndFlags[(atEnd ? 2 : 0) + (fromOutside ? 1 : 0)] = true
     # puts "Finished with #{@property.fullId} #{atEnd ? 'end' : 'start'} " +
     #      "#{fromOutside ? 'outside' : 'inside'}"
   end
@@ -406,6 +415,11 @@ class TaskScenario < ScenarioData
   end
 
   def calcCriticalness
+    # We cache the value for the directional path criticalness. Every time we
+    # recalculate the criticalnesses, we have to clear the cached values.
+    @maxForwardCriticalness = nil
+    @maxBackwardCriticalness = nil
+
     return if a('effort') <= 0
 
     # Users feel that milestones are somewhat important. So we use an
@@ -652,6 +666,7 @@ class TaskScenario < ScenarioData
   end
 
   def earliestStart
+    # puts "Finding earliest start date for #{@property.fullId}"
     startDate = nil
     a('depends').each do |dependency|
       potentialStartDate =
@@ -691,6 +706,7 @@ class TaskScenario < ScenarioData
   end
 
   def latestEnd
+    # puts "Finding latest end date for #{@property.fullId}"
     endDate = nil
     a('precedes').each do |dependency|
       potentialEndDate =
@@ -1026,6 +1042,8 @@ private
   end
 
   def propagateDateToDep(task, atEnd)
+    # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId}"
+    nDate = nil
     if task[atEnd ? 'end' : 'start', @scenarioIdx].nil? &&
        !(nDate = (atEnd ? task.latestEnd(@scenarioIdx) :
                           task.earliestStart(@scenarioIdx))).nil?
@@ -1034,6 +1052,7 @@ private
         !task.hasDurationSpec(@scenarioIdx))
       task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
+    # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
   end
 
   # This function computes the maximum criticalness of all possible pathes
@@ -1042,6 +1061,12 @@ private
   # criticalness of a path is the sum of all criticalness of the tasks along
   # the path.
   def calcDirCriticalness(forward)
+    # If we have computed this already, use cached value.
+    if forward && @maxForwardCriticalness
+      return @maxForwardCriticalness
+    elsif !forward && @maxBackwardCriticalness
+      return @maxBackwardCriticalness
+    end
     maxCriticalness = 0.0
 
     if @property.container?
@@ -1071,7 +1096,11 @@ private
       end
     end
 
-    maxCriticalness
+    if forward
+      @maxForwardCriticalness = maxCriticalness
+    else
+      @maxBackwardCriticalness = maxCriticalness
+    end
   end
 
 end

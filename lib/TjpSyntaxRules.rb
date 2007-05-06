@@ -1085,6 +1085,9 @@ module TjpSyntaxRules
       @property['duration', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _effort !workingDuration ), Proc.new {
+      if @val[1] <= 0.0
+        error('effort_zero', "Effort value must be larger than 0", @property)
+      end
       @property['effort', @scenarioIdx] = @val[1]
     })
     newPattern(%w( _end !valDate ), Proc.new {

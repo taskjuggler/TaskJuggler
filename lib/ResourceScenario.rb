@@ -22,8 +22,8 @@ class ResourceScenario < ScenarioData
   end
 
   def prepareScenario
-    @scoreboard = nil
     @property['effort', @scenarioIdx] = 0
+    initScoreboard
   end
 
   # The criticalness of a resource is a measure for the probabilty that all
@@ -32,8 +32,6 @@ class ResourceScenario < ScenarioData
   # statistically some tasks will not get their resources. A value between
   # 0 and 1 implies no guarantee, though.
   def calcCriticalness
-    initScoreboard if @scoreboard.nil?
-
     freeSlots = 0
     @scoreboard.each do |slot|
       freeSlots += 1 if slot.nil?
@@ -43,14 +41,10 @@ class ResourceScenario < ScenarioData
   end
 
   def available?(sbIdx)
-    initScoreboard if @scoreboard.nil?
-
     @scoreboard[sbIdx].nil?
   end
 
   def booked?(sbIdx)
-    initScoreboard if @scoreboard.nil?
-
     !(@scoreboard[sbIdx].nil? || @scoreboard[sbIdx].class == Fixnum)
   end
 
@@ -81,8 +75,6 @@ class ResourceScenario < ScenarioData
   end
 
   def bookBooking(sbIdx, booking)
-    initScoreboard if @scoreboard.nil?
-
     unless @scoreboard[sbIdx].nil?
       if @scoreboard[sbIdx].is_a?(Task)
         error('booking_conflict',
@@ -226,7 +218,6 @@ private
   # Count the booked slots between the start and end index. If _task_ is not
   # nil count only those slots that are assigned to this particular task.
   def getAllocatedSlots(startIdx, endIdx, task)
-    initScoreboard if @scoreboard.nil?
     # To speedup the counting we start with the first booked slot and end
     # with the last booked slot.
     startIdx = @firstBookedSlot if @firstBookedSlot &&
@@ -246,8 +237,6 @@ private
 
   # Count the free slots between the start and end index.
   def getFreeSlots(startIdx, endIdx)
-    initScoreboard if @scoreboard.nil?
-
     freeSlots = 0
     startIdx.upto(endIdx) do |idx|
       freeSlots += 1 if @scoreboard[idx].nil?

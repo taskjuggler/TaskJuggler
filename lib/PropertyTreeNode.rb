@@ -45,13 +45,13 @@ class PropertyTreeNode
     # These attributes are inherited from the global context
     whitelist = %w( priority projectid rate vacation workinghours )
 
-    # Inherit scenario-specific values
+    # Inherit non-scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|
       next if attrDef.scenarioSpecific || !attrDef.inheritable
 
       if parent
         # Inherit values from parent property
-        if parent.provided(attrDef)
+        if parent.provided(attrDef.id) || parent.inherited(attrDef.id)
           @attributes[attrDef.id].inherit(parent.get(attrDef))
         end
       else
@@ -71,7 +71,8 @@ class PropertyTreeNode
       0.upto(@project.scenarioCount - 1) do |scenarioIdx|
         if parent
           # Inherit scenario specific values from parent property
-          if parent.provided(attrDef.id, scenarioIdx)
+          if parent.provided(attrDef.id, scenarioIdx) ||
+             parent.inherited(attrDef.id, scenarioIdx)
             @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
                 parent[attrDef.id, scenarioIdx])
           end
@@ -253,16 +254,20 @@ class PropertyTreeNode
 
   def provided(attributeId, scenarioIdx = nil)
     if scenarioIdx
+      return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
       @scenarioAttributes[scenarioIdx][attributeId].provided
     else
+      return false if @attributes[attributeId].nil?
       @attributes[attributeId].provided
     end
   end
 
   def inherited(attributeId, scenarioIdx = nil)
     if scenarioIdx
+      return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
       @scenarioAttributes[scenarioIdx][attributeId].inherited
     else
+      return false if @attributes[attributeId].nil?
       @attributes[attributeId].inherited
     end
   end

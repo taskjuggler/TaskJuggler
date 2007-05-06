@@ -126,8 +126,8 @@ class Project
       [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
       [ 'effort', 'Total Effort',    FixnumAttribute,   false, true, 0 ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
-      [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0 ],
-      [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ],
+      [ 'fte',       'FTE',          FloatAttribute,    false,  false, 1.0 ],
+      [ 'headcount', 'Headcount',    FixnumAttribute,   false,  false, 1 ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
@@ -321,10 +321,16 @@ class Project
 protected
 
   def prepareScenario(scIdx)
+    resources = PropertyList.new(@resources)
     tasks = PropertyList.new(@tasks)
+
+    resources.each do |resource|
+      resource.prepareScenario(scIdx)
+    end
     tasks.each do |task|
       task.prepareScenario(scIdx)
     end
+
     tasks.each do |task|
       task.Xref(scIdx)
     end
@@ -338,7 +344,15 @@ protected
       task.preScheduleCheck(scIdx)
     end
     tasks.each do |task|
+      task.resetLoopFlags(scIdx)
+    end
+    tasks.each do |task|
       task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
+    end
+    tasks.each do |task|
+      task.resetLoopFlags(scIdx)
+    end
+    tasks.each do |task|
       task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
     end
     tasks.each do |task|
@@ -357,6 +371,7 @@ protected
     tasks.each do |task|
       task.calcPathCriticalness(scIdx)
     end
+
     if false
       resources.each do |resource|
         puts resource
