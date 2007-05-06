@@ -24,10 +24,37 @@ class AllocationAttribute < AttributeBase
     out = []
     @value.each do |allocation|
       out.push("allocate #{allocation.to_tjp}\n")
+      # TODO: incomplete
+    end
+    out
+  end
+
+  def to_s
+    out = ''
+    first = true
+    @value.each do |allocation|
+      if first
+        first = false
+      else
+        out << "\n"
+      end
+      out << '[ '
+      firstR = true
+      allocation.candidates.each do |resource|
+        if firstR
+          firstR = false
+        else
+          out << ', '
+        end
+        out << resource.fullId
+      end
+      modes = %w(order lowprob lowload hiload random)
+      out << " ] select by #{modes[allocation.selectionMode]} "
+      out << 'mandatory ' if allocation.mandatory
+      out << 'persistent ' if allocation.persistent
     end
     out
   end
 
 end
-
 

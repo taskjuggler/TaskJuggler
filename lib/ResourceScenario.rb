@@ -23,6 +23,7 @@ class ResourceScenario < ScenarioData
 
   def prepareScenario
     @scoreboard = nil
+    @property['effort', @scenarioIdx] = 0
   end
 
   # The criticalness of a resource is a measure for the probabilty that all
@@ -31,7 +32,7 @@ class ResourceScenario < ScenarioData
   # statistically some tasks will not get their resources. A value between
   # 0 and 1 implies no guarantee, though.
   def calcCriticalness
-    return if @scoreboard.nil?
+    initScoreboard if @scoreboard.nil?
 
     freeSlots = 0
     @scoreboard.each do |slot|
@@ -59,6 +60,13 @@ class ResourceScenario < ScenarioData
     #puts "Booking resource #{@property.fullId} at " +
     #     "#{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
+    # Track the total allocated slots for this resource and all parent
+    # resources.
+    t = @property
+    while t
+      t['effort', @scenarioIdx] += 1
+      t = t.parent
+    end
 
     # Make sure the task is in the list of duties.
     @property['duties', @scenarioIdx] << task unless a('duties').include?(task)

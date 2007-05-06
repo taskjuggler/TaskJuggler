@@ -1,0 +1,62 @@
+project test "Test" "1.0" 2000-01-01-0:00 +2m
+
+macro Fixend [ minend ${1} maxend ${1} ]
+
+resource tux1 "Tux1"
+resource tux2 "Tux2"
+resource tux3 "Tux3"
+
+task t0 "Task0" {
+	start 2000-01-01
+	${Fixend "2000-01-07-18:00"}
+	effort 5d
+	allocate tux1 { alternative tux3 }
+}
+
+task t1 "Task1" {
+  start 2000-01-01
+	${Fixend "2000-01-07-18:00"}
+	effort 5d
+	allocate tux1
+}
+
+task t2 "Task2" {
+	start 2000-01-01
+	${Fixend "2000-01-07-18:00"}
+	effort 5d
+	allocate tux2
+}
+
+task t3 "Task3" {
+	depends !t1, !t2
+	${Fixend "2000-01-11-18:00"}
+	effort 4d
+	allocate tux1, tux2
+}
+
+task t4 "Task4" {
+	depends !t3
+	${Fixend "2000-01-18-18:00"}
+	effort 5d
+	allocate tux1
+}
+
+task t5 "Task5" {
+	depends !t3
+	${Fixend "2000-01-25-18:00"}
+	effort 10d
+	allocate tux2
+}
+
+task t6 "Task6" {
+	start 2000-01-01
+	effort 5d
+	allocate tux1
+	${Fixend "2000-01-25-18:00"}
+}
+
+htmltaskreport "Optimize-5.html" {
+	columns name, start, end, criticalness, pathcriticalness, daily
+	hideresource 0
+}
+

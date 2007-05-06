@@ -69,6 +69,7 @@ class TjTime
   end
 
   def ==(t)
+    return false if t.nil?
     @time == t.time
   end
 

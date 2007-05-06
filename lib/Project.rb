@@ -124,6 +124,7 @@ class Project
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
       [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
+      [ 'effort', 'Total Effort',    FixnumAttribute,   false, true, 0 ],
       [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
       [ 'fte',       'FTE',          FloatAttribute,    true,  false, 1.0 ],
       [ 'headcount', 'Headcount',    FixnumAttribute,   true,  false, 1 ],
@@ -336,9 +337,6 @@ protected
     tasks.each do |task|
       task.preScheduleCheck(scIdx)
     end
-    #tasks.each do |task|
-    #  puts task
-    #end
     tasks.each do |task|
       task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
       task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
@@ -356,6 +354,17 @@ protected
     tasks.each do |task|
       task.calcCriticalness(scIdx)
     end
+    tasks.each do |task|
+      task.calcPathCriticalness(scIdx)
+    end
+    if false
+      resources.each do |resource|
+        puts resource
+      end
+      tasks.each do |task|
+        puts task
+      end
+    end
   end
 
   def finishScenario(scIdx)
@@ -369,7 +378,8 @@ protected
     # allWorkItems list.
     allWorkItems = PropertyList.new(@tasks)
     allWorkItems.delete_if { |task| !task.leaf? }
-    allWorkItems.setSorting([ [ 'priority', true, scIdx ],
+    allWorkItems.setSorting([ [ 'priority', false, scIdx ],
+                              [ 'pathcriticalness', false, scIdx ],
                               [ 'seqno', true, -1 ] ])
 
     # The main scheduler loop only needs to look at the tasks that are ready

@@ -31,6 +31,8 @@ class HTMLTaskReport < ReportBase
           col, @element.defaultColumnTitle(col))
     end
     @element.hideResource = LogicalExpression.new(LogicalOperation.new(1))
+    @element.sortTasks = [ [ 'start', true, 0 ],
+                           [ 'seqno', true, -1 ] ]
   end
 
   def generate

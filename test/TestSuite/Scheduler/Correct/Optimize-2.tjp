@@ -1,0 +1,33 @@
+project test "Test" "1.0" 2000-01-01-0:00 +1m
+
+macro Fixend [ minend ${1} maxend ${1} ]
+
+resource tux1 "Tux1"
+resource tux2 "Tux2"
+
+task t1 "Task1" {
+  start 2000-01-01
+	${Fixend "2000-01-14-18:00"}
+	effort 10d
+	allocate tux2 { alternative tux1 persistent }
+}
+
+task t2 "Task2" {
+	start 2000-01-01
+	${Fixend "2000-01-06-18:00"}
+	effort 4d
+	allocate tux2 { persistent }
+}
+
+task t3 "Task3" {
+	depends !t2
+	${Fixend "2000-01-20-18:00"}
+	effort 10d
+	allocate tux2 { persistent }
+}
+
+htmltaskreport "Optimize-2.html" {
+	columns name, start, end, daily
+	hideresource 0
+}
+

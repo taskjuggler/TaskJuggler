@@ -752,7 +752,7 @@ class TaskScenario < ScenarioData
         # For mandatory allocations with alternatives at least one of the
         # alternatives must be available.
         found = false
-        allocation.candidates.each do |candidate|
+        allocation.candidates(scenarioIdx).each do |candidate|
           # When a resource group is marked mandatory, all members of the
           # group must be available.
           allAvailable = true
@@ -796,7 +796,7 @@ class TaskScenario < ScenarioData
         busy = false
         # Create a list of candidates in the proper order and assign
         # the first one available.
-        createCandidateList(sbIdx, allocation).each do |candidate|
+        allocation.candidates(@scenarioIdx).each do |candidate|
           if bookResource(candidate, sbIdx)
             allocation.lockedResource = candidate
             found = true
@@ -841,11 +841,6 @@ class TaskScenario < ScenarioData
     end
 
     booked
-  end
-
-  def createCandidateList(sbIdx, allocation)
-    # TODO: Fixme
-    allocation.candidates
   end
 
   def addBooking(booking)
@@ -1041,26 +1036,42 @@ private
     end
   end
 
+  # This function computes the maximum criticalness of all possible pathes
+  # that run trough this task in either forward or backward direction. The
+  # pathes start at the start (forward) or end (backward) of the task. The
+  # criticalness of a path is the sum of all criticalness of the tasks along
+  # the path.
   def calcDirCriticalness(forward)
     maxCriticalness = 0.0
 
-    unless !property.container?
-      a(forward ? 'endsuccs' : 'startpreds').each do |task|
-        if (criticalness = task.calcCriticalness(@scenarioIdx, forward)) >
+    if @property.container?
+      @property.children.each do |task|
+        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
+            maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+    else
+      a(forward ? 'endsuccs' : 'startpreds').each do |task, onEnd|
+        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
            maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+
+      # For start predecessors or end successors we also include the
+      # criticalness of this task.
+      maxCriticalness += a('criticalness')
+
+      a(forward ? 'startsuccs' : 'endpreds').each do |task, onEnd|
+        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
+            maxCriticalness
           maxCriticalness = criticalness
         end
       end
     end
 
-    if @property.parent &&
-       (criticalness =
-          @property.parent.calcDirCriticalness(@scenarioIdx, forward)) >
-       maxCriticalness
-      maxCriticalness = criticalness
-    end
-
-    a('criticalness') + maxCriticalness
+    maxCriticalness
   end
 
 end

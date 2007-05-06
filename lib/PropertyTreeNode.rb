@@ -273,17 +273,31 @@ class PropertyTreeNode
 
     res += "  Parent: #{@parent.get('id')}\n" if @parent
     @attributes.sort.each do |key, attr|
-      res += "  #{key}: " + attr.to_s + "\n"
+      if attr.get != @propertySet.defaultValue(key)
+        res += indent("  #{key}: ", attr.to_s)
+      end
     end
     unless @scenarioAttributes.empty?
       0.upto(project.scenarioCount - 1) do |sc|
-        res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
+        headerShown = false
         @scenarioAttributes[sc].sort.each do |key, attr|
-          res += "    #{key}: " + attr.to_s + "\n"
+          if attr.get != @propertySet.defaultValue(key)
+            unless headerShown
+              res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
+              headerShown = true
+            end
+            res += indent("    #{key}: ", attr.to_s)
+          end
         end
       end
     end
-    res += "***\n"
+    res += '-' * 75 + "\n"
+  end
+
+private
+
+  def indent(tag, str)
+    tag + str.gsub(/\n/, "\n#{' ' * tag.length}") + "\n"
   end
 
 end

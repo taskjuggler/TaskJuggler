@@ -14,36 +14,12 @@ require 'Resource'
 
 class Allocation
 
-  attr_reader :candidates, :selectionMode, :persistent, :mandatory,
+  attr_reader :selectionMode, :persistent, :mandatory,
               :lockedResource, :conflictStart
   attr_writer :lockedResource, :conflictStart
 
   def initialize(candidates, selectionMode = 0, persistent = false,
                  mandatory = false)
-    if $DEBUG
-      # Check candidates
-      if candidates.class != Array
-        raise "candiates must be a list of Resources"
-      end
-      candidates.each do |c|
-        if c.class != Resource
-          raise "candidates must be of type Resource"
-        end
-      end
-      # Check selection mode
-      if (selectionMode < 0 || selectionMode > 4)
-        raise "Illegal selection mode"
-      end
-      # Check persistent
-      if persistent.class != TrueClass && persistent.class != FalseClass
-        raise "persistent must be true or false (#{persistent.class})"
-      end
-      # Check mandatory
-      if mandatory.class != TrueClass && mandatory.class != FalseClass
-        raise "mandatory must be true or false"
-      end
-    end
-
     @candidates = candidates
     # The selection mode determines how the candidate is selected from the
     # list of candidates.
@@ -74,9 +50,31 @@ class Allocation
     true
   end
 
-  def to_tjp
-    out = []
-    out << candidates[0].id # TODO: incomplete
+  # Return the candidate list sorted according to the selectionMode.
+  def candidates(scenarioIdx = -1)
+    if scenarioIdx < 0 || @selectionMode == 0 # oder
+      return @candidates
+    end
+    if @selectionMode == 4 # random
+      hash = {}
+      @candidates.each { |c| hash[rand] = c }
+      twinList = hash.sort { |x, y| x[0] <=> y[0] }
+      list = []
+      twinList.each { |k, v| list << v }
+      return list
+    end
+
+    list = @candidates.sort do |x, y|
+      case @selectionMode
+      when 1 # lowest alloc probability
+        x['criticalness', scenarioIdx] <=> y['criticalness', scenarioIdx]
+      when 2 # lowest allocated load
+        x['effort', scenarioIdx] <=> y['effort', scenarioIdx]
+      when 3 # hightes allocated load
+        y['effort', scenarioIdx] <=> x['effort', scenarioIdx]
+      end
+    end
+    list
   end
 
 end

@@ -94,7 +94,14 @@ class PropertySet
   def userDefined?(attrId)
     return false if @attributeDefinitions[attrId].nil?
 
-    @attributeDefinitions[attribute].userDefined
+    @attributeDefinitions[attrId].userDefined
+  end
+
+  # Return the default value of the attribute.
+  def defaultValue(attrId)
+    return nil if @attributeDefinitions[attrId].nil?
+
+    @attributeDefinitions[attrId].default
   end
 
   # Returns the name (human readable description) of the attribute with the
