@@ -102,6 +102,14 @@ private
     })
   end
 
+  def newOptionsRule(name, attributes)
+    newRule(name)
+    optional
+    newPattern([ '_{', "!#{attributes}", '_}' ], Proc.new {
+      @val[1]
+    })
+  end
+
   def singlePattern(item)
     newPattern([ item ], Proc.new {
       @val[0]
@@ -111,12 +119,6 @@ private
   def operandPattern(operand)
     newPattern([ "_#{operand}", "!operand" ], Proc.new {
       [ @val[0], @val[1] ]
-    })
-  end
-
-  def optionsPattern(item)
-    newPattern([ '_{', item, '_}' ], Proc.new {
-      @val[1]
     })
   end
 

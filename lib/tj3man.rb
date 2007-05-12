@@ -1,5 +1,5 @@
 #
-# taskjuggler.rb - TaskJuggler
+# tj3man.rb - TaskJuggler
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,29 +10,23 @@
 # $Id$
 #
 
-require 'TaskJuggler'
+require 'SyntaxDocumentation'
 
 def showUsage
-  $stderr.puts "$0 file.prj [ file1.tji ...]"
+  $stderr.puts "tj3man <keyword>"
 end
 
 def main
-  if ARGV.empty?
+  if ARGV.length != 1
     showUsage
-    exit 1
   end
 
-  tj = TaskJuggler.new(true)
-  unless tj.parse(ARGV)
-    exit 1
-  end
-
-  if !tj.schedule || !tj.generateReports
-    exit 1
-  end
+  man = SyntaxDocumentation.new(ARGV[0])
+  puts man.to_s
 
   exit 0
 end
 
 main()
+
 

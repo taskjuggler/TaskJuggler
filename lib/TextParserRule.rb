@@ -10,6 +10,15 @@
 # $Id$
 #
 
+# The TextParserRule holds the basic elment of the syntax description. Each
+# rule has a name and a set of patterns. The parser uses these rules to parse
+# the input files. The first token of a pattern must resolve to a terminal
+# token. The resolution can run transitively over a set of rules. The first
+# tokens of each pattern of a rule must be unique. The parser uses this first
+# token to select the next pattern it uses for the syntactical analysis. A
+# rule can be marked as repeatable and/or optional. In this case the syntax
+# element described by the rule may occur 0 or multiple times in the parsed
+# file.
 class TextParserRule
 
   attr_reader :name, :patterns, :optional, :repeatable
@@ -20,6 +29,7 @@ class TextParserRule
     @patterns = []
     @repeatable = false
     @optional = false
+    @doc = nil
     @transitions = []
   end
 
@@ -31,12 +41,20 @@ class TextParserRule
     @optional = true
   end
 
-  def pattern(idx)
-    @patterns[idx]
-  end
-
   def setRepeatable
     @repeatable = true
+  end
+
+  def setDoc(doc)
+    @doc = doc
+  end
+
+  def has_doc?
+    !@doc.nil?
+  end
+
+  def pattern(idx)
+    @patterns[idx]
   end
 
   def matchingPatternIndex(token)
@@ -47,9 +65,23 @@ class TextParserRule
     nil
   end
 
-  def matchingRule(patIdx, token)
-    puts "Index: #{patIdx}  Token: #{token}"
-    @transitions[patIdx][token]
+  def to_syntax(stack, rules, skip)
+    str = ''
+    str << '[' if @optional || @repeatable
+    str << '(' if @patterns.length > 1
+    first = true
+    @patterns.each do |pat|
+      if first
+        first = false
+      else
+        str << ' | '
+      end
+      str << pat.to_syntax_r(stack, rules, skip)
+    end
+    str << ')' if @patterns.length > 1
+    str << ']' if @optional || @repeatable
+    str << ', ...' if @repeatable
+    str
   end
 
   def dump
@@ -59,10 +91,10 @@ class TextParserRule
       puts "  Pattern: \"#{@patterns[i]}\""
       @transitions[i].each do |key, rule|
         if key[0] == ?_
-	  token = "\"" + key.slice(1, key.length - 1) + "\""
-	else
-	  token = key.slice(1, key.length - 1)
-	end
+          token = "\"" + key.slice(1, key.length - 1) + "\""
+        else
+          token = key.slice(1, key.length - 1)
+        end
         puts "    #{token} -> #{rule.name}"
       end
     end

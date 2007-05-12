@@ -37,6 +37,8 @@ require 'TextParserStackElement'
 # with the name of the start rule.
 class TextParser
 
+  attr_reader :rules
+
   def initialize
     @rules = { }
     @variables = []
@@ -89,6 +91,10 @@ class TextParser
     @cr.setRepeatable
   end
 
+  def doc(text)
+    @cr.setDoc(text)
+  end
+
   # This function needs to be called whenever new rules or patterns have been
   # added and before the next call to TextParser#parse.
   def updateParserTables
@@ -117,6 +123,15 @@ class TextParser
     end
 
     result
+  end
+
+  def matchingRules(keyword)
+    matches = []
+    @rules.each do |name, rule|
+      patIdx = rule.matchingPatternIndex('_' + keyword)
+      matches << [ rule, patIdx ] if patIdx
+    end
+    matches
   end
 
   def error(id, text, property = nil)
@@ -220,16 +235,16 @@ private
       # whenever an identifier is returned we have to see if we have a
       # matching keyword first. If none is found, then look for normal
       # identifiers.
-      if token[0] == "ID"
-        if (patIdx = rule.matchingPatternIndex("_" + token[1])).nil?
+      if token[0] == 'ID'
+        if (patIdx = rule.matchingPatternIndex('_' + token[1])).nil?
           patIdx = rule.matchingPatternIndex("$ID")
         end
-      elsif token[0] == "LITERAL"
-        patIdx = rule.matchingPatternIndex("_" + token[1])
+      elsif token[0] == 'LITERAL'
+        patIdx = rule.matchingPatternIndex('_' + token[1])
       elsif token[0] == false
         patIdx = nil
       else
-        patIdx = rule.matchingPatternIndex("$" + token[0])
+        patIdx = rule.matchingPatternIndex('$' + token[0])
       end
 
       # If no matching pattern is found for the token we have to check if the

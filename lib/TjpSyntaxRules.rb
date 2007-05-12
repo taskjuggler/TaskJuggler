@@ -36,11 +36,7 @@ module TjpSyntaxRules
   end
 
   def rule_allocationAttributes
-    newRule('allocationAttributes')
-    optional
-    newPattern(%w( _{ !allocationAttribute _} ), Proc.new {
-      @val[1]
-    })
+    newOptionsRule('allocationAttributes', 'allocationAttribute')
   end
 
   def rule_anyId
@@ -78,9 +74,7 @@ module TjpSyntaxRules
   end
 
   def rule_bookingBody
-    newRule('bookingBody')
-    optional
-    optionsPattern('!bookingAttributes')
+    newOptionsRule('bookingBody', 'bookingAttributes')
   end
 
   def rule_calendarDuration
@@ -98,11 +92,7 @@ module TjpSyntaxRules
   end
 
   def rule_columnBody
-    newRule('columnBody')
-    optional
-    newPattern(%w( _{ !columnOptions _} ), Proc.new {
-      @val[1]
-    })
+    newOptionsRule('columnBody', 'columnOptions')
   end
 
   def rule_columnDef
@@ -198,11 +188,7 @@ module TjpSyntaxRules
   end
 
   def rule_extendBody
-    newRule('extendBody')
-    optional
-    newPattern(%w( _{ !extendAttributes _} ), Proc.new {
-      @val[1]
-    })
+    newOptionsRule('extendBody', 'extendAttributes')
   end
 
   def rule_extendId
@@ -225,11 +211,7 @@ module TjpSyntaxRules
   end
 
   def rule_extendOptionsBody
-    newRule('extendOptionsBody')
-    optional
-    newPattern(%w( _{ !extendOptions _} ), Proc.new {
-      @val[1]
-    })
+    newOptionsRule('extendOptionsBody', 'extendOptions')
   end
 
   def rule_extendProperty
@@ -338,6 +320,7 @@ module TjpSyntaxRules
     newPattern(%w( !operation ), Proc.new {
       LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
     })
+    doc('')
   end
 
   def rule_macro
@@ -452,16 +435,14 @@ module TjpSyntaxRules
 
   def rule_project
     newRule('project')
-    newPattern(%w( !projectHeader !projectBody !properties ), Proc.new {
+    newPattern(%w( !projectDeclaration !properties ), Proc.new {
       @val[0]
     })
     newPattern(%w( !macro ))
   end
 
   def rule_projectBody
-    newRule('projectBody')
-    optional
-    newPattern(%w( _{ !projectBodyAttributes _} ))
+    newOptionsRule('projectBody', 'projectBodyAttributes')
   end
 
   def rule_projectBodyAttributes
@@ -519,6 +500,13 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_projectDeclaration
+    newRule('projectDeclaration')
+    newPattern(%w( !projectHeader !projectBody ), Proc.new {
+      @val[0]
+    })
+  end
+
   def rule_projectHeader
     newRule('projectHeader')
     newPattern(%w( _project $ID $STRING $STRING !interval ), Proc.new {
@@ -537,9 +525,7 @@ module TjpSyntaxRules
   end
 
   def rule_projection
-    newRule('projection')
-    optional
-    newPattern(%w( _{ !projectionAttributes _} ))
+    newOptionsRule('projection', 'projectionAttributes')
   end
 
   def rule_projectionAttributes
@@ -587,11 +573,7 @@ module TjpSyntaxRules
   end
 
   def rule_referenceBody
-    newRule('referenceBody')
-    optional
-    newPattern(%w( _{ !referenceAttributes _} ), Proc.new {
-      @val[1]
-    })
+    newOptionsRule('referenceBody', 'referenceAttributes')
   end
 
   def rule_report
@@ -650,9 +632,7 @@ module TjpSyntaxRules
   end
 
   def rule_reportBody
-    newRule('reportBody')
-    optional
-    newPattern(%w( _{ !reportAttributes _} ))
+    newOptionsRule('reportBody', 'reportAttributes')
   end
 
   def rule_reportHeader
@@ -716,18 +696,16 @@ module TjpSyntaxRules
     newRule('resourceAttributes')
     repeatable
     optional
+    newPattern(%w( !resource ))
+    newPattern(%w( !resourceScenarioAttributes ))
     newPattern(%w( !scenarioId !resourceScenarioAttributes ), Proc.new {
       @scenarioIdx = 0
     })
-    newPattern(%w( !resource ))
-    newPattern(%w( !resourceScenarioAttributes ))
     # Other attributes will be added automatically.
   end
 
   def rule_resourceBody
-    newRule('resourceBody')
-    optional
-    newPattern(%w( _{ !resourceAttributes _} ))
+    newOptionsRule('resourceBody', 'resourceAttributes')
   end
 
   def rule_resourceBooking
@@ -803,9 +781,7 @@ module TjpSyntaxRules
   end
 
   def rule_scenarioBody
-    newRule('scenarioBody')
-    optional
-    optionsPattern('!scenarioAttributes')
+    newOptionsRule('scenarioBody', 'scenarioAttributes')
   end
 
   def rule_scenarioHeader
@@ -911,12 +887,16 @@ module TjpSyntaxRules
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
       @property = @property.parent
     })
+    doc('')
   end
 
   def rule_taskAttributes
     newRule('taskAttributes')
     repeatable
     optional
+    newPattern(%w( _note $STRING ), Proc.new {
+      @property.set('note', @val[1])
+    })
     newPattern(%w( !task ))
     newPattern(%w( !taskScenarioAttributes ))
     newPattern(%w( !scenarioId !taskScenarioAttributes ), Proc.new {
@@ -926,9 +906,7 @@ module TjpSyntaxRules
   end
 
   def rule_taskBody
-    newRule('taskBody')
-    optional
-    newPattern(%w( _{ !taskAttributes _} ))
+    newOptionsRule('taskBody', 'taskAttributes')
   end
 
   def rule_taskBooking
@@ -973,9 +951,7 @@ module TjpSyntaxRules
   end
 
   def rule_taskDepBody
-    newRule('taskDepBody')
-    optional
-    newPattern(%w( _{ !taskDepAttributes _} ))
+    newOptionsRule('taskDepBody', 'taskDepAttributes')
   end
 
   def rule_taskDepHeader

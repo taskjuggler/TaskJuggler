@@ -12,7 +12,7 @@
 
 class TextParserPattern
 
-  attr_reader :function
+  attr_reader :tokens, :function
 
   def initialize(tokens, function = nil)
     tokens.each do |token|
@@ -43,6 +43,46 @@ class TextParserPattern
 
   def terminalSymbol?(i)
     @tokens[i][0] == ?$ || @tokens[i][0] == ?_
+  end
+
+  def to_syntax(rules, skip = 0)
+    to_syntax_r({}, rules, skip)
+  end
+
+  def to_syntax_r(stack, rules, skip)
+    if stack[self]
+      return '[, ... ]'
+    end
+
+    stack[self] = true
+
+    str = ''
+    first = true
+    skip.upto(@tokens.length - 1) do |i|
+      token = @tokens[i]
+      if first
+        first = false
+        return '' if token == '_{'
+      else
+        str << ' '
+      end
+
+      typeId = token[0]
+      token = token.slice(1, token.length - 1)
+      case typeId
+      when ?_
+        str << token
+      when ?$
+        str << '<' + token + '>'
+      when ?!
+        if rules[token].has_doc?
+          str << token
+        else
+          str << rules[token].to_syntax(stack, rules, 0)
+        end
+      end
+    end
+    str
   end
 
   def to_s

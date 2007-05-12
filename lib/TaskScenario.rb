@@ -50,7 +50,7 @@ class TaskScenario < ScenarioData
     end
     if a('end') && @property.inherited('end', @scenarioIdx) &&
        (@property.container? || (@property.leaf? && a('forward')) ||
-        !a('predeces').empty?)
+        !a('precedes').empty?)
       @property['end', @scenarioIdx] = nil
     end
 
