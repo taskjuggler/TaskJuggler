@@ -29,7 +29,6 @@ class TextParserRule
     @patterns = []
     @repeatable = false
     @optional = false
-    @doc = nil
     @transitions = []
   end
 
@@ -45,12 +44,8 @@ class TextParserRule
     @repeatable = true
   end
 
-  def setDoc(doc)
-    @doc = doc
-  end
-
-  def has_doc?
-    !@doc.nil?
+  def setDoc(idx, doc)
+    @patterns[-1].setDoc(idx, doc)
   end
 
   def pattern(idx)
@@ -65,22 +60,25 @@ class TextParserRule
     nil
   end
 
-  def to_syntax(stack, rules, skip)
+  def to_syntax(stack, docs, rules, skip)
     str = ''
     str << '[' if @optional || @repeatable
     str << '(' if @patterns.length > 1
     first = true
+    pStr = ''
     @patterns.each do |pat|
       if first
         first = false
       else
-        str << ' | '
+        pStr << ' | '
       end
-      str << pat.to_syntax_r(stack, rules, skip)
+      pStr << pat.to_syntax_r(stack, docs, rules, skip)
     end
+    return '' if pStr == ''
+    str << pStr
+    str << '...' if @repeatable
     str << ')' if @patterns.length > 1
     str << ']' if @optional || @repeatable
-    str << ', ...' if @repeatable
     str
   end
 

@@ -10,19 +10,28 @@
 # $Id$
 #
 
+require 'ParserTokenDoc'
+
 class TextParserPattern
 
   attr_reader :tokens, :function
 
   def initialize(tokens, function = nil)
+    @doc = []
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
         raise "Fatal Error: All pattern tokens must start with type " +
               "identifier [!$_]: #{tokens.join(', ')}"
       end
+      # Initialize token doc as empty.
+      @doc << nil
     end
     @tokens = tokens
     @function = function
+  end
+
+  def setDoc(idx, doc)
+    @doc[idx] = doc
   end
 
   def [](i)
@@ -45,11 +54,11 @@ class TextParserPattern
     @tokens[i][0] == ?$ || @tokens[i][0] == ?_
   end
 
-  def to_syntax(rules, skip = 0)
-    to_syntax_r({}, rules, skip)
+  def to_syntax(docs, rules, skip = 0)
+    to_syntax_r({}, docs, rules, skip)
   end
 
-  def to_syntax_r(stack, rules, skip)
+  def to_syntax_r(stack, docs, rules, skip)
     if stack[self]
       return '[, ... ]'
     end
@@ -62,26 +71,38 @@ class TextParserPattern
       token = @tokens[i]
       if first
         first = false
-        return '' if token == '_{'
+        return '{ <attributes> }' if token == '_{'
       else
         str << ' '
       end
 
       typeId = token[0]
       token = token.slice(1, token.length - 1)
-      case typeId
-      when ?_
-        str << token
-      when ?$
-        str << '<' + token + '>'
-      when ?!
-        if rules[token].has_doc?
+      if @doc[i]
+        str << "<#{@doc[i].name}>"
+        docs << @doc[i]
+        if @doc[i].syntax.nil?
+          case typeId
+          when ?$
+            @doc[i].syntax = '<' + token + '> '
+          when ?!
+            @doc[i].syntax = "See #{token} for more details. "
+          else
+            @doc[i].syntax = ''
+          end
+        end
+      else
+        case typeId
+        when ?_
           str << token
-        else
-          str << rules[token].to_syntax(stack, rules, 0)
+        when ?$
+          str << '<' + token + '>'
+        when ?!
+          str << rules[token].to_syntax(stack, docs, rules, 0)
         end
       end
     end
+    stack.delete(self)
     str
   end
 

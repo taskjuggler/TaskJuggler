@@ -1,6 +1,0 @@
-project test "Test" "1.0" 2007-03-25 +2m
-
-task t "T" {
-# MARK: error 5 duration_unit
-  duration 1x
-}

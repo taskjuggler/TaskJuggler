@@ -27,7 +27,6 @@ class ProjectFileParser < TextParser
                      RELATIVE_ID ABSOLUTE_ID MACRO )
 
     initRules
-
   end
 
   def open(masterFile)
@@ -97,7 +96,7 @@ private
     newRule(name)
     optional
     repeatable
-    newPattern([ "_,", "#{listItem}" ], Proc.new {
+    newPattern([ '_,', "#{listItem}" ], Proc.new {
       @val[1]
     })
   end

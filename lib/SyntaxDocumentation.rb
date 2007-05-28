@@ -16,38 +16,45 @@ require 'ProjectFileParser'
 
 class SyntaxDocumentation
 
-  def initialize(keyword)
-    @keyword = keyword
-
+  def initialize
     @messageHandler = MessageHandler.new(true)
     @parser = ProjectFileParser.new(@messageHandler)
     @parser.updateParserTables
 
+    # This hash stores all documented keywords using the rule patterns as
+    # index.
     @keywords = {}
     @parser.rules.each_value do |rule|
       rule.patterns.each do |pattern|
+        #  Only patterns that have a terminal token as first token are of
+        #  interest.
         next if (res = terminalToken(pattern)).nil?
+
         keyword = res[0]
         unless (attrs = optionalAttributes(pattern)).empty?
           kwd = addKeyword(pattern, false)
-          puts "Rule: #{keyword} #{rule.name}"
+          kwd.rule = rule
+          kwd.pattern = pattern
           attrs.each do |pat, scenarioSpecific|
             kwd.addOptionalAttribute(addKeyword(pat, scenarioSpecific))
+            kwd.rule = rule
+            kwd.pattern = pat
           end
         end
       end
     end
     attributes('!properties').each do |pat, scenarioSpecific|
-      addKeyword(pat, scenarioSpecific)
+      kw = addKeyword(pat, scenarioSpecific)
+      kw.pattern = pat
     end
   end
 
   def addKeyword(pat, scenarioSpecific)
+    docs = []
     kwd= KeywordDocumentation.new(terminalToken(pat)[0],
-                                  pat.to_syntax(@parser.rules),
+                                  pat.to_syntax(docs, @parser.rules), docs,
                                   scenarioSpecific)
     @keywords[pat] = kwd
-    puts "  #{terminalToken(pat)[0]}#{scenarioSpecific ? '*' : ''}"
     kwd
   end
 
@@ -63,9 +70,9 @@ class SyntaxDocumentation
     nil
   end
 
-  def optionalAttributes(pattern)
+  def optionalAttributes(pattern, tokenIndex = -1)
     return {} if pattern[0] == '_{'
-    token, pattern = terminalToken(pattern, -1)
+    token, pattern = terminalToken(pattern, tokenIndex)
     if token && pattern[0] == '_{' && pattern[2] == '_}'
       return attributes(pattern[1])
     end
@@ -100,11 +107,14 @@ class SyntaxDocumentation
     end
   end
 
-  def to_s
+  def to_s(keyword)
     str = ''
     @keywords.each_value do |kw|
-      str += '-' * 75 + "\n"
-      str += kw.to_s
+      if (keyword.nil? && kw.contexts.empty?) ||
+         (kw.keyword == keyword)
+        str += '-' * 75 + "\n"
+        str += kw.to_s
+      end
     end
     str
   end

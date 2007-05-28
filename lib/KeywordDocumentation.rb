@@ -13,12 +13,16 @@
 class KeywordDocumentation
 
   attr_reader :keyword
-  attr_accessor :contexts
+  attr_accessor :rule, :pattern, :contexts
 
-  def initialize(keyword, syntax, scenarioSpecific)
+  def initialize(keyword, syntax, docs, scenarioSpecific)
     @keyword = keyword
     @syntax = syntax
+    @docs = docs
     @scenarioSpecific = scenarioSpecific
+
+    @rule = nil
+    @pattern = nil
 
     @inheritable = false
     @optionalAttributes = []
@@ -31,19 +35,77 @@ class KeywordDocumentation
   end
 
   def to_s
-    str = "Keyword: #{@keyword}\n" +
-          "Syntax:  #{@syntax}\n" +
+    tagW = 13
+    textW = 79 - tagW
+    str = "Keyword:     #{@keyword}   " +
           "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}   " +
           "Inheriable: #{@inheritable ? 'Yes' : 'No'}\n" +
-          "Context: "
+          "Syntax:      #{format(tagW, @syntax, textW)}\n"
+
+    str += "Arguments:   "
+    argStr = ''
+    @docs.each do |doc|
+      argStr += "#{doc.name}: " +
+                "#{format(doc.name.length + 2, doc.syntax + doc.text, textW - doc.name.length - 2)}\n"
+    end
+    str += format(tagW, argStr, textW)
+
+    str += "Context:     "
+    cxtStr = ''
     @contexts.each do |context|
-      str += "#{context.keyword}, "
+      unless cxtStr.empty?
+        cxtStr += ', '
+      end
+      cxtStr += context.keyword
     end
-    str += "\nOptional Attributes: "
+    str += format(tagW, cxtStr, textW)
+
+    str += "\nAttributes:  "
+    attrStr = ''
     @optionalAttributes.each do |attr|
-      str += "#{attr.keyword}, "
+      unless attrStr.empty?
+        attrStr += ', '
+      end
+      attrStr += attr.keyword
     end
+    str += format(tagW, attrStr, textW)
     str += "\n"
+#    str += "Rule:    #{@rule.name}\n" if @rule
+#    str += "Pattern: #{@pattern.tokens.join(' ')}\n" if @pattern
+    str
+  end
+
+  def format(indent, str, width)
+    out = ''
+    width - indent
+    linePos = 0
+    word = ''
+    i = 0
+    while i < str.length
+      if linePos >= width
+        out += "\n" + ' ' * indent
+        linePos = 0
+        unless word.empty?
+          i -= word.length - 1
+          word = ''
+          next
+        end
+      end
+      if str[i] == ?\n
+        out += word + "\n" + ' ' * indent
+        word = ''
+        linePos = 0
+      elsif str[i] == ?\s
+        out += word
+        word = ' '
+        linePos += 1
+      else
+        word << str[i]
+        linePos += 1
+      end
+      i += 1
+    end
+    out += word
   end
 
 end

@@ -17,12 +17,12 @@ def showUsage
 end
 
 def main
-  if ARGV.length != 1
+  if ARGV.length > 1
     showUsage
   end
 
-  man = SyntaxDocumentation.new(ARGV[0])
-  puts man.to_s
+  man = SyntaxDocumentation.new
+  puts man.to_s(ARGV[0])
 
   exit 0
 end

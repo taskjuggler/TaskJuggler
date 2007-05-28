@@ -39,12 +39,6 @@ module TjpSyntaxRules
     newOptionsRule('allocationAttributes', 'allocationAttribute')
   end
 
-  def rule_anyId
-    newRule('anyId')
-    singlePattern('$ID')
-    singlePattern('$ABSOLUTE_ID')
-  end
-
   def rule_argumentList
     newRule('argumentList')
     optional
@@ -127,14 +121,12 @@ module TjpSyntaxRules
 
   def rule_durationUnit
     newRule('durationUnit')
-    newPattern(%w( $ID ), Proc.new {
-      units = [ 'min', 'h', 'd', 'w', 'm', 'y' ]
-      res = units.index(@val[0])
-      if res.nil?
-        error('duration_unit', "Unit must be one of #{units.join(', ')}")
-      end
-      res
-    })
+    newPattern(%w( _min ), Proc.new { 0 })
+    newPattern(%w( _h ), Proc.new { 1 })
+    newPattern(%w( _d ), Proc.new { 2 })
+    newPattern(%w( _w ), Proc.new { 3 })
+    newPattern(%w( _m ), Proc.new { 4 })
+    newPattern(%w( _y ), Proc.new { 5 })
   end
 
   def rule_extendAttributes
@@ -320,7 +312,6 @@ module TjpSyntaxRules
     newPattern(%w( !operation ), Proc.new {
       LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
     })
-    doc('')
   end
 
   def rule_macro
@@ -522,6 +513,9 @@ module TjpSyntaxRules
       @property = nil
       @project
     })
+    doc(1, 'id', 'The ID of the project')
+    doc(2, 'name', 'The name of the project')
+    doc(3, 'version', 'The version of the project plan')
   end
 
   def rule_projection
@@ -864,21 +858,15 @@ module TjpSyntaxRules
 
   def rule_supplementResource
     newRule('supplementResource')
-    newPattern(%w( _resource !anyId ), Proc.new {
-      @property = @project.resource(@val[1])
-      if @property.nil?
-        error('suppl_unknown_res', "Unknown resource #{@val[1]}")
-      end
+    newPattern(%w( _resource !resourceId ), Proc.new {
+      @property = @val[1]
     })
   end
 
   def rule_supplementTask
     newRule('supplementTask')
-    newPattern(%w( _task !anyId ), Proc.new {
-      @property = @project.task(@val[1])
-      if @property.nil?
-        error('suppl_unknown_task', "Unknown task #{@val[1]}")
-      end
+    newPattern(%w( _task !taskId ), Proc.new {
+      @property = @val[1]
     })
   end
 
@@ -887,7 +875,6 @@ module TjpSyntaxRules
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
       @property = @property.parent
     })
-    doc('')
   end
 
   def rule_taskAttributes
@@ -1181,28 +1168,41 @@ module TjpSyntaxRules
     })
   end
 
+  def rule_weekday
+    newRule('weekday')
+    newPattern(%w( _sun ), Proc.new { 0 })
+    newPattern(%w( _mon ), Proc.new { 1 })
+    newPattern(%w( _tue ), Proc.new { 2 })
+    newPattern(%w( _wed ), Proc.new { 3 })
+    newPattern(%w( _thu ), Proc.new { 4 })
+    newPattern(%w( _fri ), Proc.new { 5 })
+    newPattern(%w( _sat ), Proc.new { 6 })
+  end
+
   def rule_weekDayInterval
     newRule('weekDayInterval')
-    newPattern(%w( $ID !weekDayIntervalEnd ), Proc.new {
+    newPattern(%w( !weekday !weekDayIntervalEnd ), Proc.new {
       weekdays = Array.new(7, false)
       if @val[1].nil?
-        weekdays[weekDay(@val[0])] = true
+        weekdays[@val[0]] = true
       else
-        first = weekDay(@val[0])
-        last = weekDay(@val[1])
+        first = @val[0]
+        last = @val[1]
         first.upto(last + 7) { |i| weekdays[i % 7] = true }
       end
 
       weekdays
     })
+    doc(0, 'weekday', 'Weekday (sun - sat)')
   end
 
   def rule_weekDayIntervalEnd
     newRule('weekDayIntervalEnd')
     optional
-    newPattern([ '_ - ', '$ID' ], Proc.new {
+    newPattern([ '_ - ', '!weekday' ], Proc.new {
       @val[1]
     })
+    doc(1, 'end weekday', 'Weekday (sun - sat). It is included in the interval.')
   end
 
   def rule_workingDuration
