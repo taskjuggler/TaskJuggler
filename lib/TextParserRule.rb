@@ -14,11 +14,12 @@
 # rule has a name and a set of patterns. The parser uses these rules to parse
 # the input files. The first token of a pattern must resolve to a terminal
 # token. The resolution can run transitively over a set of rules. The first
-# tokens of each pattern of a rule must be unique. The parser uses this first
-# token to select the next pattern it uses for the syntactical analysis. A
-# rule can be marked as repeatable and/or optional. In this case the syntax
-# element described by the rule may occur 0 or multiple times in the parsed
-# file.
+# tokens of each pattern of a rule must resolve to a terminal symbol and all
+# terminals must be unique in the scope that they appear in. The parser uses
+# this first token to select the next pattern it uses for the syntactical
+# analysis. A rule can be marked as repeatable and/or optional. In this case
+# the syntax element described by the rule may occur 0 or multiple times in
+# the parsed file.
 class TextParserRule
 
   attr_reader :name, :patterns, :optional, :repeatable
@@ -44,8 +45,12 @@ class TextParserRule
     @repeatable = true
   end
 
-  def setDoc(idx, doc)
-    @patterns[-1].setDoc(idx, doc)
+  def setDoc(keyword, doc)
+    @patterns[-1].setDoc(keyword, doc)
+  end
+
+  def setArg(idx, doc)
+    @patterns[-1].setArg(idx, doc)
   end
 
   def pattern(idx)

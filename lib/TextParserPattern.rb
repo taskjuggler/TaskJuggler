@@ -14,24 +14,35 @@ require 'ParserTokenDoc'
 
 class TextParserPattern
 
-  attr_reader :tokens, :function
+  attr_reader :keyword, :doc, :tokens, :function
 
   def initialize(tokens, function = nil)
-    @doc = []
+    # Initialize pattern doc as empty.
+    @doc = nil
+    @args = []
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
         raise "Fatal Error: All pattern tokens must start with type " +
               "identifier [!$_]: #{tokens.join(', ')}"
       end
-      # Initialize token doc as empty.
-      @doc << nil
+      # Initialize pattern argument descriptions as empty.
+      @args << nil
     end
     @tokens = tokens
     @function = function
   end
 
-  def setDoc(idx, doc)
-    @doc[idx] = doc
+  def setDoc(keyword, doc)
+    @keyword = keyword
+    # Remove all single line breaks but preserve paragraphs. Multi linefeeds
+    # are temporarily converted to form feeds (ASCII 0x0C).
+    @doc = doc.chomp.gsub(/[\n]{2,}/, "\0C").
+                     gsub(/[\n]([^\n])/, ' \1').
+                     gsub(/[\0C]/, "\n")
+  end
+
+  def setArg(idx, doc)
+    @args[idx] = doc
   end
 
   def [](i)
@@ -52,6 +63,28 @@ class TextParserPattern
 
   def terminalSymbol?(i)
     @tokens[i][0] == ?$ || @tokens[i][0] == ?_
+  end
+
+  # Find recursively the first terminal token of this pattern. If an index is
+  # specified start the search at this n-th pattern token instead of the
+  # first. The return value is either nil or a [ token, pattern ] tuple.
+  def terminalToken(rules, index = 0)
+    # Terminal token start with an underscore or dollar character.
+    if @tokens[index][0] == ?_ || @tokens[index][0] == ?$
+      return [ @tokens[index].slice(1, @tokens[index].length - 1), self ]
+    elsif @tokens[index][0] == ?!
+      # Token starting with a bang reference another rule. We have to continue
+      # the search at this rule. First, we get rid of the bang to get the rule
+      # name.
+      token = @tokens[index].slice(1, @tokens[index].length - 1)
+      # Then find the rule
+      rule = rules[token]
+      # The rule may only have a single pattern. If not, then this pattern has
+      # no terminal token.
+      return nil if rule.patterns.length != 1
+      return rule.patterns[0].terminalToken(rules)
+    end
+    nil
   end
 
   def to_syntax(docs, rules, skip = 0)
@@ -78,17 +111,17 @@ class TextParserPattern
 
       typeId = token[0]
       token = token.slice(1, token.length - 1)
-      if @doc[i]
-        str << "<#{@doc[i].name}>"
-        docs << @doc[i]
-        if @doc[i].syntax.nil?
+      if @args[i]
+        str << "<#{@args[i].name}>"
+        docs << @args[i]
+        if @args[i].syntax.nil?
           case typeId
           when ?$
-            @doc[i].syntax = '<' + token + '> '
+            @args[i].syntax = '<' + token + '>'
           when ?!
-            @doc[i].syntax = "See #{token} for more details. "
+            @args[i].syntax = "See #{token} for more details. "
           else
-            @doc[i].syntax = ''
+            @args[i].syntax = ''
           end
         end
       else

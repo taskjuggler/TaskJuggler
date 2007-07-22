@@ -13,20 +13,39 @@
 class KeywordDocumentation
 
   attr_reader :keyword
-  attr_accessor :rule, :pattern, :contexts
+  attr_accessor :contexts
 
-  def initialize(keyword, syntax, docs, scenarioSpecific)
-    @keyword = keyword
+  def initialize(rule, pattern, syntax, docs, optAttrPatterns)
+    @rule = rule
+    @pattern = pattern
+    @keyword = pattern.keyword
     @syntax = syntax
     @docs = docs
-    @scenarioSpecific = scenarioSpecific
-
-    @rule = nil
-    @pattern = nil
+    # Hash that maps patterns of optional attributes to a boolean value. True
+    # if the pattern is a scenario specific attribute.
+    @optAttrPatterns = optAttrPatterns
+    # The above hash is later converted into a list that points to the keyword
+    # documentation of the optional attribute.
+    @optionalAttributes = []
+    @scenarioSpecific = false
 
     @inheritable = false
-    @optionalAttributes = []
     @contexts = []
+  end
+
+  def crossReference(keywords, rules)
+    @optAttrPatterns.each do |pattern, scenarioSpecific|
+      token = pattern.terminalToken(rules)
+      if pattern.keyword.nil?
+        puts "Pattern #{pattern} has no keyword defined"
+        next
+      end
+      if (kwd = keywords[pattern.keyword]).nil?
+        puts "Keyword #{keyword} has undocumented optional attribute #{token[0]}"
+      else
+        @optionalAttributes << kwd
+      end
+    end
   end
 
   def addOptionalAttribute(attr)
@@ -37,39 +56,64 @@ class KeywordDocumentation
   def to_s
     tagW = 13
     textW = 79 - tagW
-    str = "Keyword:     #{@keyword}   " +
-          "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}   " +
-          "Inheriable: #{@inheritable ? 'Yes' : 'No'}\n" +
-          "Syntax:      #{format(tagW, @syntax, textW)}\n"
+
+    # Top line with multiple elements
+    str = "Keyword:     #{@keyword}     " +
+          "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}     " +
+          "Inheriable: #{@inheritable ? 'Yes' : 'No'}\n\n"
+
+    str += "Purpose:     #{format(tagW, @pattern.doc, textW)}\n\n"
+
+    str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
 
     str += "Arguments:   "
-    argStr = ''
-    @docs.each do |doc|
-      argStr += "#{doc.name}: " +
-                "#{format(doc.name.length + 2, doc.syntax + doc.text, textW - doc.name.length - 2)}\n"
+    if @docs.empty?
+      str += format(tagW, "none\n\n", textW)
+    else
+      argStr = ''
+      @docs.each do |doc|
+        typeSpec = doc.syntax
+        typeSpec[0] = '['
+        typeSpec[-1] = ']'
+        argStr += "#{doc.name} #{doc.syntax}: " +
+                  "#{format(doc.name.length + doc.syntax.length + 3,
+                  doc.text, textW - doc.name.length - 2)}\n\n"
+      end
+      str += format(tagW, argStr, textW)
     end
-    str += format(tagW, argStr, textW)
 
     str += "Context:     "
-    cxtStr = ''
-    @contexts.each do |context|
-      unless cxtStr.empty?
-        cxtStr += ', '
+    if @contexts.empty?
+      str += format(tagW, "Global scope", textW)
+    else
+      cxtStr = ''
+      @contexts.each do |context|
+        unless cxtStr.empty?
+          cxtStr += ', '
+        end
+        cxtStr += context.keyword
       end
-      cxtStr += context.keyword
+      str += format(tagW, cxtStr, textW)
     end
-    str += format(tagW, cxtStr, textW)
 
-    str += "\nAttributes:  "
-    attrStr = ''
-    @optionalAttributes.each do |attr|
-      unless attrStr.empty?
-        attrStr += ', '
+    str += "\n\nAttributes:  "
+    if @optionalAttributes.empty?
+      str += "none\n\n"
+    else
+      attrStr = ''
+      @optionalAttributes.sort! do |a, b|
+        a.keyword <=> b.keyword
       end
-      attrStr += attr.keyword
+      @optionalAttributes.each do |attr|
+        unless attrStr.empty?
+          attrStr += ', '
+        end
+        attrStr += attr.keyword
+      end
+      str += format(tagW, attrStr, textW)
+      str += "\n"
     end
-    str += format(tagW, attrStr, textW)
-    str += "\n"
+
 #    str += "Rule:    #{@rule.name}\n" if @rule
 #    str += "Pattern: #{@pattern.tokens.join(' ')}\n" if @pattern
     str
@@ -81,6 +125,7 @@ class KeywordDocumentation
     linePos = 0
     word = ''
     i = 0
+    indentBuf = ''
     while i < str.length
       if linePos >= width
         out += "\n" + ' ' * indent
@@ -92,10 +137,15 @@ class KeywordDocumentation
         end
       end
       if str[i] == ?\n
-        out += word + "\n" + ' ' * indent
+        out += word + "\n"
+        indentBuf = ' ' * indent
         word = ''
         linePos = 0
       elsif str[i] == ?\s
+        unless indentBuf.empty?
+          out += indentBuf
+          indentBuf = ''
+        end
         out += word
         word = ' '
         linePos += 1
@@ -104,6 +154,9 @@ class KeywordDocumentation
         linePos += 1
       end
       i += 1
+    end
+    unless word.empty? || indentBuf.empty?
+      out += indentBuf
     end
     out += word
   end

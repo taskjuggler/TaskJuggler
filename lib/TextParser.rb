@@ -91,8 +91,12 @@ class TextParser
     @cr.setRepeatable
   end
 
-  def doc(idx, name, text)
-    @cr.setDoc(idx, ParserTokenDoc.new(name, text))
+  def doc(keyword, text)
+    @cr.setDoc(keyword, text)
+  end
+
+  def arg(idx, name, text)
+    @cr.setArg(idx, ParserTokenDoc.new(name, text))
   end
 
   # This function needs to be called whenever new rules or patterns have been

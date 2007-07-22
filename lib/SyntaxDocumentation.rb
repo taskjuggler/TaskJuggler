@@ -21,58 +21,35 @@ class SyntaxDocumentation
     @parser = ProjectFileParser.new(@messageHandler)
     @parser.updateParserTables
 
-    # This hash stores all documented keywords using the rule patterns as
+    # This hash stores all documented keywords using the keyword as
     # index.
     @keywords = {}
     @parser.rules.each_value do |rule|
       rule.patterns.each do |pattern|
-        #  Only patterns that have a terminal token as first token are of
-        #  interest.
-        next if (res = terminalToken(pattern)).nil?
+        #  Only patterns that are documented are of interest.
+        next if pattern.doc.nil?
 
-        keyword = res[0]
-        unless (attrs = optionalAttributes(pattern)).empty?
-          kwd = addKeyword(pattern, false)
-          kwd.rule = rule
-          kwd.pattern = pattern
-          attrs.each do |pat, scenarioSpecific|
-            kwd.addOptionalAttribute(addKeyword(pat, scenarioSpecific))
-            kwd.rule = rule
-            kwd.pattern = pat
-          end
+        # Make sure each keyword is unique.
+        if @keywords.include?(pattern.keyword)
+          raise "Multiple patterns have keyword #{pattern.keyword}"
         end
+
+        docs = []
+        kwd = KeywordDocumentation.new(rule, pattern,
+                pattern.to_syntax(docs, @parser.rules), docs,
+                optionalAttributes(pattern))
+        @keywords[pattern.keyword] = kwd
       end
     end
-    attributes('!properties').each do |pat, scenarioSpecific|
-      kw = addKeyword(pat, scenarioSpecific)
-      kw.pattern = pat
-    end
-  end
 
-  def addKeyword(pat, scenarioSpecific)
-    docs = []
-    kwd= KeywordDocumentation.new(terminalToken(pat)[0],
-                                  pat.to_syntax(docs, @parser.rules), docs,
-                                  scenarioSpecific)
-    @keywords[pat] = kwd
-    kwd
-  end
-
-  def terminalToken(pattern, index = 0)
-    if pattern[index][0] == ?_ || pattern[index][0] == ?$
-      return [ pattern[index].slice(1, pattern[index].length - 1), pattern ]
-    elsif pattern[index][0] == ?!
-      token = pattern[index].slice(1, pattern[index].length - 1)
-      rule = @parser.rules[token]
-      return nil if rule.patterns.length != 1
-      return terminalToken(rule.patterns[0])
+    @keywords.each_value do |kwd|
+      kwd.crossReference(@keywords, @parser.rules)
     end
-    nil
   end
 
   def optionalAttributes(pattern, tokenIndex = -1)
     return {} if pattern[0] == '_{'
-    token, pattern = terminalToken(pattern, tokenIndex)
+    token, pattern = pattern.terminalToken(@parser.rules, tokenIndex)
     if token && pattern[0] == '_{' && pattern[2] == '_}'
       return attributes(pattern[1])
     end

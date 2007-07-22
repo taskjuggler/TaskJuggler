@@ -407,6 +407,7 @@ protected
       done = true
       slot = nil
       priority = 0
+      pathCriticalness = 0.0
       forward = true
 
       workItems.each do |task|
@@ -415,9 +416,9 @@ protected
           next if slot.nil?
 
           priority = task['priority', scIdx]
+          pathCriticalness = task['pathcriticalness', scIdx]
           forward = task['forward', scIdx]
 
-          #puts "#{slot}: #{task.fullId} (#{priority}) #{forward ? '-->' : '<--'}"
           if (slot < @attributes['start'] ||
               slot > @attributes['end'])
             task.markAsRunaway(scIdx)
@@ -430,7 +431,9 @@ protected
 
         break if (task['forward', scIdx] != forward &&
                   !task['milestone', scIdx]) ||
-                 task['priority', scIdx] < priority
+                 task['priority', scIdx] < priority ||
+                 (task['priority', scIdx] == priority &&
+                  task['pathcriticalness', scIdx] < pathCriticalness)
 
         if task.schedule(scIdx, slot, @attributes['scheduleGranularity'])
           # If one or more tasks have been scheduled completely, we

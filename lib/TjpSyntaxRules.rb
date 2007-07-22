@@ -15,7 +15,6 @@
 # necessary but make the file more readable and receptable to syntax folding.
 module TjpSyntaxRules
 
-
   def rule_allocationAttribute
     newRule('allocationAttribute')
     optional
@@ -243,6 +242,20 @@ module TjpSyntaxRules
     newPattern(%w( _include $STRING ), Proc.new {
       @scanner.include(@val[1])
     })
+    doc('include', <<'EOT'
+Includes the specified file name as if its contents would be written
+instead of the include property. The only exception is the include
+statement itself. When the included files contains other include
+statements or report definitions, the filenames are relative to file
+where they are defined in. include commands can be used in the project
+header, at global scope or between property declarations of tasks,
+resources, and accounts.
+
+For technical reasons you have to supply the optional pair of curly
+brackets if the include is followed immediately by a macro call that
+is defined within the included file.
+EOT
+       )
   end
 
   def rule_interval
@@ -256,6 +269,7 @@ module TjpSyntaxRules
         Interval.new(@val[0], @val[0] + endSpec)
       end
     })
+    arg(1, 'start date', 'The start date of the interval')
   end
 
   def rule_intervalDuration
@@ -270,6 +284,7 @@ module TjpSyntaxRules
                      ]
       (@val[0] * convFactors[@val[1]]).to_i
     })
+    arg(1, 'duration', 'The duration of the interval')
   end
 
   def rule_intervalEnd
@@ -277,6 +292,8 @@ module TjpSyntaxRules
     newPattern([ '_ - ', '$DATE' ], Proc.new {
       [ 0, @val[1] ]
     })
+    arg(2, 'end date', 'The end date of the interval')
+
     newPattern(%w( _+ !intervalDuration ), Proc.new {
       [ 1, @val[1] ]
     })
@@ -440,39 +457,88 @@ module TjpSyntaxRules
     newRule('projectBodyAttributes')
     repeatable
     optional
+
     newPattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
         Proc.new {
       @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
     })
+    doc('currencyformat',
+        'These values specify the default format used for all currency ' +
+        'values.')
+    arg(1, 'negativeprefix', 'Prefix for negative numbers')
+    arg(2, 'negativesuffix', 'Suffix for negative numbers')
+    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
+    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
+    arg(5, 'fractiondigits', 'Number of fraction digits to show')
+
     newPattern(%w( _currency $STRING ), Proc.new {
       @project['currency'] = @val[1]
     })
+    doc('currency', 'The default currency unit.')
+    arg(1, 'symbol', 'Currency symbol')
+
     newPattern(%w( _dailyworkinghours !number ), Proc.new {
       @project['dailyworkinghours'] = @val[1]
     })
+    doc('dailyworkinghours',
+        'Set the average number of working hours per day. This is used as ' +
+        'the base to convert working hours into working days. This affects ' +
+        'for example the length task attribute. The default value is 8 hours ' +
+        'and should work for most Western countries. The value you specify ' +
+        'should match the settings you specified for workinghours.')
+    arg(1, 'hours', 'Average number of working hours per working day')
+
     newPattern(%w( _extend !extendProperty !extendBody ), Proc.new {
       updateParserTables
     })
+
     newPattern(%w( !include ))
+
     newPattern(%w( _now $DATE ), Proc.new {
       @project['now'] = @val[1]
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
                                   @scanner.sourceFileInfo))
     })
+    doc('now',
+        'Specify the date that TaskJuggler uses for calculation as current' +
+        'date. If no value is specified, the current value of the system ' +
+        'clock is used.')
+    arg(1, 'date', 'Alternative date to be used as current date for all ' +
+        'computations')
+
     newPattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
         Proc.new {
       @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
     })
+    doc('numberformat',
+        'These values specify the default format used for all numerical ' +
+        'real values.')
+    arg(1, 'negativeprefix', 'Prefix for negative numbers')
+    arg(2, 'negativesuffix', 'Suffix for negative numbers')
+    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
+    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
+    arg(5, 'fractiondigits', 'Number of fraction digits to show')
+
     newPattern(%w( !scenario ))
     newPattern(%w( _shorttimeformat $STRING ), Proc.new {
       @project['shorttimeformat'] = @val[1]
     })
+    doc('shorttimeformat',
+        'Specifies time format for time short specifications. This is normal' +
+        'just the hour and minutes.')
+    arg(1, 'format', 'strftime like format string')
+
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @project['timeformat'] = @val[1]
     })
+    doc('timeformat',
+        'Determines how time specifications in reports look like.')
+    arg(1, 'format', 'strftime like format string')
+
     newPattern(%w( !timezone ), Proc.new {
       @project['timezone'] = @val[1]
     })
+
     newPattern(%w( _timingresolution $INTEGER _min ), Proc.new {
       error('min_timing_res',
             'Timing resolution must be at least 5 min.') if @val[1] < 5
@@ -480,15 +546,53 @@ module TjpSyntaxRules
             'Timing resolution must be 1 hour or less.') if @val[1] > 60
       @project['scheduleGranularity'] = @val[1]
     })
+    doc('timingresolution', <<'EOT'
+Sets the minimum timing resolution. The smaller the value, the longer the
+scheduling process lasts and the more memory the application needs. The
+default and maximum value is 1 hour. The smallest value is 5 min.
+This value is a pretty fundamental setting of TaskJuggler. It has a severe
+impact on memory usage and scheduling performance. You should set this value
+to the minimum required resolution. Make sure that all values that you specify
+are aligned with the resolution.
+
+The timing resolution should be set prior to any value that represents a time
+value like now or workinghours.
+EOT
+        )
+    arg(1, 'resolution', 'The minimum interval that the scheduler uses to ' +
+        'align tasks')
+
     newPattern(%w( _weekstartsmonday ), Proc.new {
       @project['weekstartsmonday'] = true
     })
+    doc('weekstartsmonday',
+        'Specify that you want to base all week calculation on weeks ' +
+        'starting on Monday. This is common in many European countries.')
+
     newPattern(%w( _weekstartssunday ), Proc.new {
       @project['weekstartsmonday'] = false
     })
+    doc('weekstartssunday',
+        'Specify that you want to base all week calculation on weeks ' +
+        'starting on Sunday. This is common in the United States of America.')
+
     newPattern(%w( _yearlyworkingdays !number ), Proc.new {
       @project['yearlyworkingdays'] = @val[1]
     })
+    doc('yearlyworkingdays', <<'EOT'
+Specifies the number of average working days per year. This should correlate
+to the specified workinghours and vacation. It affects the conversion of
+working hours, working days, working weeks, working months and working years
+into each other.
+
+When public holidays and vacations are disregarded, this value should be equal
+to the number of working days per week times 52.1428 (the average number of
+weeks per year). E. g. for a culture with 5 working days it is 260.714 (the
+default), for 6 working days it is 312.8568 and for 7 working days it is
+365.
+EOT
+       )
+    arg(1, 'days', 'Number of average working days for a year')
   end
 
   def rule_projectDeclaration
@@ -496,6 +600,10 @@ module TjpSyntaxRules
     newPattern(%w( !projectHeader !projectBody ), Proc.new {
       @val[0]
     })
+    doc('project',
+        'The project property is mandatory and should be the first property ' +
+        'in a project file. It is used to capture basic attributes such as ' +
+        'the project id, name and the expected time frame.')
   end
 
   def rule_projectHeader
@@ -513,9 +621,9 @@ module TjpSyntaxRules
       @property = nil
       @project
     })
-    doc(1, 'id', 'The ID of the project')
-    doc(2, 'name', 'The name of the project')
-    doc(3, 'version', 'The version of the project plan')
+    arg(1, 'id', 'The ID of the project')
+    arg(2, 'name', 'The name of the project')
+    arg(3, 'version', 'The version of the project plan')
   end
 
   def rule_projection
@@ -780,12 +888,15 @@ module TjpSyntaxRules
 
   def rule_scenarioHeader
     newRule('scenarioHeader')
+
     newPattern(%w( _scenario $ID $STRING ), Proc.new {
       # If this is the top-level scenario, we must delete the default scenario
       # first.
       @project.scenarios.clearProperties if @property.nil?
       @property = Scenario.new(@project, @val[1], @val[2], @property)
     })
+    arg(1, 'id', 'The ID of the scenario')
+    arg(2, 'name', 'The name of the scenario')
   end
 
   def rule_scenarioId
@@ -1126,6 +1237,19 @@ module TjpSyntaxRules
   def rule_timezone
     newRule('timezone')
     newPattern(%w( _timezone $STRING ))
+    doc('timezone', <<'EOT'
+Sets the default timezone of the project. All times that have no time
+zones specified will be assumed to be in this timezone. The value must
+be a string just like those used for the TZ environment variable. Most
+Linux systems have a command line utility called tzselect to lookup
+possible values.
+
+The project start and end time are not affected by this setting. You
+have to explicitly state the timezone for those dates or the system
+defaults are assumed.
+EOT
+        )
+    arg(1, 'zone', 'Time zone to use. E. g. Europe/Berlin')
   end
 
   def rule_vacationName
@@ -1193,7 +1317,7 @@ module TjpSyntaxRules
 
       weekdays
     })
-    doc(0, 'weekday', 'Weekday (sun - sat)')
+    arg(0, 'weekday', 'Weekday (sun - sat)')
   end
 
   def rule_weekDayIntervalEnd
@@ -1202,7 +1326,7 @@ module TjpSyntaxRules
     newPattern([ '_ - ', '!weekday' ], Proc.new {
       @val[1]
     })
-    doc(1, 'end weekday', 'Weekday (sun - sat). It is included in the interval.')
+    arg(1, 'end weekday', 'Weekday (sun - sat). It is included in the interval.')
   end
 
   def rule_workingDuration
