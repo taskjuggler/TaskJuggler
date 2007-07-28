@@ -13,7 +13,7 @@
 class KeywordDocumentation
 
   attr_reader :keyword
-  attr_accessor :contexts
+  attr_accessor :contexts, :scenarioSpecific
 
   def initialize(rule, pattern, syntax, docs, optAttrPatterns)
     @rule = rule
@@ -41,9 +41,12 @@ class KeywordDocumentation
         next
       end
       if (kwd = keywords[pattern.keyword]).nil?
-        puts "Keyword #{keyword} has undocumented optional attribute #{token[0]}"
+        puts "Keyword #{keyword} has undocumented optional attribute " +
+             "#{token[0]}"
       else
         @optionalAttributes << kwd
+        kwd.contexts << self
+        kwd.scenarioSpecific = true if scenarioSpecific
       end
     end
   end
@@ -75,9 +78,9 @@ class KeywordDocumentation
         typeSpec = doc.syntax
         typeSpec[0] = '['
         typeSpec[-1] = ']'
+        indent = doc.name.length + doc.syntax.length + 3
         argStr += "#{doc.name} #{doc.syntax}: " +
-                  "#{format(doc.name.length + doc.syntax.length + 3,
-                  doc.text, textW - doc.name.length - 2)}\n\n"
+                  "#{format(indent, doc.text, textW - indent)}\n\n"
       end
       str += format(tagW, argStr, textW)
     end
@@ -109,6 +112,7 @@ class KeywordDocumentation
           attrStr += ', '
         end
         attrStr += attr.keyword
+        attrStr += ' (SC)' if attr.scenarioSpecific
       end
       str += format(tagW, attrStr, textW)
       str += "\n"

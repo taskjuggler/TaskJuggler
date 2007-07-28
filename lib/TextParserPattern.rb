@@ -92,28 +92,38 @@ class TextParserPattern
   end
 
   def to_syntax_r(stack, docs, rules, skip)
+    # If we find ourself on the stack we hit a recursive pattern. This is used
+    # in repetitions.
     if stack[self]
       return '[, ... ]'
     end
 
+    # "Push" us on the stack.
     stack[self] = true
 
     str = ''
     first = true
+    # Analyze the tokens of the pattern skipping the first 'skip' tokens.
     skip.upto(@tokens.length - 1) do |i|
       token = @tokens[i]
+      # If the first token is a _{ the pattern describes optional attributes.
+      # They are represented by a standard idiom.
       if first
         first = false
         return '{ <attributes> }' if token == '_{'
       else
+        # Separate the syntax elemens by a whitespace.
         str << ' '
       end
 
       typeId = token[0]
       token = token.slice(1, token.length - 1)
       if @args[i]
+        # In case we have a token that is a documented argument, the syntax
+        # for that token is the argument name.
         str << "<#{@args[i].name}>"
         docs << @args[i]
+        # The actual syntax is stored with the argument documentation.
         if @args[i].syntax.nil?
           case typeId
           when ?$
@@ -121,20 +131,25 @@ class TextParserPattern
           when ?!
             @args[i].syntax = "See #{token} for more details. "
           else
-            @args[i].syntax = ''
+            @args[i].syntax = 'Probably an error'
           end
         end
       else
+        # Undocumented tokens are recursively expanded.
         case typeId
         when ?_
+          # Litterals are shown as such.
           str << token
         when ?$
+          # Variables are enclosed by angle brackets.
           str << '<' + token + '>'
         when ?!
+          # References are followed recursively.
           str << rules[token].to_syntax(stack, docs, rules, 0)
         end
       end
     end
+    # Remove us from the "stack" again.
     stack.delete(self)
     str
   end

@@ -132,6 +132,7 @@ module TjpSyntaxRules
     newRule('extendAttributes')
     optional
     repeatable
+
     newPattern(%w( _date !extendId  $STRING !extendOptionsBody ), Proc.new {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(DateAttribute, nil)
@@ -146,6 +147,13 @@ module TjpSyntaxRules
           }))
       end
     })
+    doc('extend:date', <<'EOT'
+Exte the property with a new attribute of type date.
+EOT
+       )
+    arg(2, 'name', 'The name of the new attribute. It is used as header ' +
+                   'in report columns and the like.')
+
     newPattern(%w( _reference $STRING !extendOptionsBody ), Proc.new {
       # Extend the propertySet definition and parser rules
       reference = ReferenceAttribute.new
@@ -162,6 +170,14 @@ module TjpSyntaxRules
           }))
       end
     })
+    doc('extend:reference', <<'EOT'
+Extend the property with a new attribute of type reference. A reference is a
+URL and an optional text that will be shown instead of the URL if needed.
+EOT
+       )
+    arg(2, 'name', 'The name of the new attribute. It is used as header ' +
+                   'in report columns and the like.')
+
     newPattern(%w( _text !extendId $STRING !extendOptionsBody ), Proc.new {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(StringAttribute, nil)
@@ -176,6 +192,14 @@ module TjpSyntaxRules
           }))
       end
     })
+    doc('extend:text', <<'EOT'
+Extend the property with a new attribute of type text. A text is a character
+sequence enclosed in single or double quotes.
+EOT
+       )
+    arg(2, 'name', 'The name of the new attribute. It is used as header ' +
+                   'in report columns and the like.')
+
   end
 
   def rule_extendBody
@@ -191,14 +215,28 @@ module TjpSyntaxRules
       end
       @val[0]
     })
+    arg(0, 'id', 'The ID of the new attribute. It can be used like the ' +
+                 'built-in IDs.')
   end
 
   def rule_extendOptions
     newRule('extendOptions')
     optional
     repeatable
+
     singlePattern('_inherit')
+    doc('extend:inherit', <<'EOT'
+If the this attribute is used, the property extension will be inherited by
+child properties from their parent property.
+EOT
+       )
+
     singlePattern('_scenariospecific')
+    doc('extend:scenariospecific', <<'EOT'
+If this attribute is used, the property extension is scenario specific. A
+different value can be set for each scenario.
+EOT
+       )
   end
 
   def rule_extendOptionsBody
@@ -269,7 +307,7 @@ EOT
         Interval.new(@val[0], @val[0] + endSpec)
       end
     })
-    arg(1, 'start date', 'The start date of the interval')
+    arg(0, 'start date', 'The start date of the interval')
   end
 
   def rule_intervalDuration
@@ -284,7 +322,7 @@ EOT
                      ]
       (@val[0] * convFactors[@val[1]]).to_i
     })
-    arg(1, 'duration', 'The duration of the interval')
+    arg(0, 'duration', 'The duration of the interval')
   end
 
   def rule_intervalEnd
@@ -292,7 +330,7 @@ EOT
     newPattern([ '_ - ', '$DATE' ], Proc.new {
       [ 0, @val[1] ]
     })
-    arg(2, 'end date', 'The end date of the interval')
+    arg(1, 'end date', 'The end date of the interval')
 
     newPattern(%w( _+ !intervalDuration ), Proc.new {
       [ 1, @val[1] ]
@@ -480,17 +518,28 @@ EOT
     newPattern(%w( _dailyworkinghours !number ), Proc.new {
       @project['dailyworkinghours'] = @val[1]
     })
-    doc('dailyworkinghours',
-        'Set the average number of working hours per day. This is used as ' +
-        'the base to convert working hours into working days. This affects ' +
-        'for example the length task attribute. The default value is 8 hours ' +
-        'and should work for most Western countries. The value you specify ' +
-        'should match the settings you specified for workinghours.')
+    doc('dailyworkinghours', <<'EOT'
+Set the average number of working hours per day. This is used as
+the base to convert working hours into working days. This affects
+for example the length task attribute. The default value is 8 hours
+and should work for most Western countries. The value you specify
+should match the settings you specified for workinghours.
+EOT
+       )
     arg(1, 'hours', 'Average number of working hours per working day')
 
     newPattern(%w( _extend !extendProperty !extendBody ), Proc.new {
       updateParserTables
     })
+    doc('extend', <<'EOT'
+Often it is desirable to collect more information in the project file than is
+necessary for task scheduling and resource allocation. To add such information
+to tasks, resources or accounts the user can extend these properties with
+user-defined attributes. The new attributes can be text or reference
+attributes. Optionally the user can specify if the attribute value should be
+inherited from the enclosing property.
+EOT
+       )
 
     newPattern(%w( !include ))
 
@@ -499,10 +548,12 @@ EOT
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
                                   @scanner.sourceFileInfo))
     })
-    doc('now',
-        'Specify the date that TaskJuggler uses for calculation as current' +
-        'date. If no value is specified, the current value of the system ' +
-        'clock is used.')
+    doc('now', <<'EOT'
+Specify the date that TaskJuggler uses for calculation as current
+date. If no value is specified, the current value of the system
+clock is used.
+EOT
+       )
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
@@ -600,10 +651,12 @@ EOT
     newPattern(%w( !projectHeader !projectBody ), Proc.new {
       @val[0]
     })
-    doc('project',
-        'The project property is mandatory and should be the first property ' +
-        'in a project file. It is used to capture basic attributes such as ' +
-        'the project id, name and the expected time frame.')
+    doc('project', <<'EOT'
+The project property is mandatory and should be the first property
+in a project file. It is used to capture basic attributes such as
+the project id, name and the expected time frame.
+EOT
+       )
   end
 
   def rule_projectHeader
@@ -637,9 +690,19 @@ EOT
     newPattern(%w( _sloppy ), Proc.new {
       @property['strict', @scenarioIdx] = false
     })
+    doc('projection:sloppy', <<'EOT'
+In sloppy mode tasks with no bookings will be filled from the original start.
+EOT
+       )
+
     newPattern(%w( _strict ), Proc.new {
       @property['strict', @scenarioIdx] = true
     })
+    doc('projection:strict', <<'EOT'
+In strict mode all tasks will be filled starting with the current date. No
+bookings will be added prior to the current date.
+EOT
+       )
   end
 
   def rule_properties
@@ -870,15 +933,39 @@ EOT
     newPattern(%w( !scenarioHeader !scenarioBody ), Proc.new {
       @property = @property.parent
     })
+    doc('scenario', <<'EOT'
+Specifies the different project scenarios. A scenario that is nested into
+another one inherits all inheritable values from the enclosing scenario. There
+can only be one top-level scenario. It is usually called plan scenario. By
+default this scenario is pre-defined but can be overwritten with any other
+scenario. In this documenation each attribute is listed as scenario specific
+or not. A scenario specific attribute can be overwritten in a child scenario
+thereby creating a new, slightly different variant of the parent scenario.
+This can be helpful to do plan/actual comparisons if what-if-anlysises.
+
+By using bookings and enabling the projection mode you can capture the
+progress of your project and constantly get updated project plans for the
+future work.
+EOT
+       )
   end
 
   def rule_scenarioAttributes
     newRule('scenarioAttributes')
     optional
     repeatable
+
     newPattern(%w( _projection !projection ), Proc.new {
       @property.set('projection', true)
     })
+    doc('projection', <<'EOT'
+Enables the projection mode for the scenario. All tasks will be scheduled
+taking the manual bookings into account. The tasks will be extended by
+scheduling new bookings starting with the current date until the specified
+effort, length or duration has been reached.
+EOT
+       )
+
     newPattern(%w( !scenario ))
   end
 
@@ -983,9 +1070,18 @@ EOT
 
   def rule_task
     newRule('task')
+
     newPattern(%w( !taskHeader !taskBody ), Proc.new {
       @property = @property.parent
     })
+    doc('task', <<'EOT'
+Tasks are the central elements of a project plan. Use a task to specify the
+various steps and phases of the project. Depending on the attributes of that
+task, a task can be a container task, a milestone or a regular leaf task. The
+latter may have resources assigned. By specifying dependencies the user can
+force a certain sequence of tasks.
+EOT
+       )
   end
 
   def rule_taskAttributes
@@ -1096,6 +1192,8 @@ EOT
       @property.inheritAttributes
       @scenarioIdx = 0
     })
+    arg(1, 'id', 'The ID of the task')
+    arg(2, 'name', 'The name of the task')
   end
 
   def rule_taskId
@@ -1137,12 +1235,28 @@ EOT
 
   def rule_taskScenarioAttributes
     newRule('taskScenarioAttributes')
+
     newPattern(%w( _allocate !resourceAllocations ), Proc.new {
       # Don't use << operator here so the 'provided' flag gets set properly.
       @property['allocate', @scenarioIdx] =
         @property['allocate', @scenarioIdx] + @val[1]
     })
+    doc('allocate', <<'EOT'
+Specify which resources should be allocated to the task. The optional
+attributes provide numerous ways to control which resource is used and when
+exactly it will be assigned to the task. Shifts and limits can be used to
+restrict the allocation to certain time intervals or to limit them to a
+certain maximum per time period.
+EOT
+       )
+
     newPattern(%w( _booking !taskBooking ))
+    doc('task:booking', <<'EOT'
+Bookings can be used to report already completed work by specifying the exact
+time intervals a certain resource has worked on this task.
+EOT
+       )
+
     newPattern(%w( _complete $FLOAT ), Proc.new {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",
@@ -1150,62 +1264,100 @@ EOT
       end
       @property['complete', @scenarioIdx] = @val[1]
     })
+    doc('complete', <<'EOT'
+Specifies what percentage of the task is already completed. This can be useful
+for project tracking. Reports with calendar elements may show the completed
+part of the task in a different color. The completion percentage has no impact
+on the scheduler. It's meant for documentation purposes only.
+Tasks may not have subtasks if this attribute is used.
+EOT
+        )
+    arg(1, 'percent', 'The percent value. It must be between 0 and 100.')
+
     newPattern(%w( _depends !taskDepList ), Proc.new {
       @property['depends', @scenarioIdx] =
         @property['depends', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = true
     })
+    doc('depends', <<'EOT'
+Specifies that the task cannot start before the task with the specified IDs
+have been finished. If multiple IDs are specified, they must be separated by
+commas. IDs must be either global or relative. A relative ID starts with a
+number of '!'. Each '!' moves the scope to the parent task. Global IDs do not
+contain '!', but have IDs separated by dots.
+
+Each task ID can have optional attributes enclosed in braces.
+
+By using the 'depends' attribute, the scheduling policy is automatically set
+to asap. If both depends and precedes are used, the last policy counts.
+EOT
+        )
+
     newPattern(%w( _duration !calendarDuration ), Proc.new {
       @property['duration', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _effort !workingDuration ), Proc.new {
       if @val[1] <= 0.0
         error('effort_zero', "Effort value must be larger than 0", @property)
       end
       @property['effort', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _end !valDate ), Proc.new {
       @property['end', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = false
     })
+
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
+
     newPattern(%w( _length !workingDuration ), Proc.new {
       @property['length', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _maxend !valDate ), Proc.new {
       @property['maxend', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _maxstart !valDate ), Proc.new {
       @property['maxstart', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _minend !valDate ), Proc.new {
       @property['minend', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _minstart !valDate ), Proc.new {
       @property['minstart', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _milestone ), Proc.new {
       @property['milestone', @scenarioIdx] = true
     })
+
     newPattern(%w( _precedes !taskPredList ), Proc.new {
       @property['precedes', @scenarioIdx] =
         @property['precedes', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = false
     })
+
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
         error('task_priority', "Priority must have a value between 0 and 1000",
               @property)
       end
     })
+
     newPattern(%w( _responsible !resourceList ), Proc.new {
       @property['responsible', @scenarioIdx] = @val[1]
     })
+
     newPattern(%w( _scheduled ), Proc.new {
       @property['scheduled', @scenarioIdx] = true
     })
+
     newPattern(%w( _scheduling $ID ), Proc.new {
       if @val[1] == 'alap'
         @property['forward', @scenarioIdx] = false
@@ -1216,6 +1368,7 @@ EOT
               @property)
       end
     })
+
     newPattern(%w( _start !valDate), Proc.new {
       @property['start', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = true
