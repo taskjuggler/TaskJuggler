@@ -92,11 +92,15 @@ class TextParser
   end
 
   def doc(keyword, text)
-    @cr.setDoc(keyword, text)
+    @cr.setDoc(keyword, cleanUpText(text))
   end
 
   def arg(idx, name, text)
-    @cr.setArg(idx, ParserTokenDoc.new(name, text))
+    @cr.setArg(idx, ParserTokenDoc.new(name, cleanUpText(text)))
+  end
+
+  def also(seeAlso)
+    @cr.setSeeAlso(seeAlso)
   end
 
   # This function needs to be called whenever new rules or patterns have been
@@ -359,6 +363,14 @@ private
 
     puts "Finished parsing with rule #{rule.name}" if @@debug >= 10
     return result
+  end
+
+  # Remove all single line breaks but preserve paragraphs. Multi linefeeds
+  # are temporarily converted to form feeds (ASCII 0x0C).
+  def cleanUpText(text)
+    text.chomp.gsub(/[\n]{2,}/, "\0C").
+               gsub(/[\n]([^\n])/, ' \1').
+               gsub(/[\0C]/, "\n")
   end
 
 end

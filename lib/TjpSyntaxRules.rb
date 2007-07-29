@@ -19,9 +19,19 @@ module TjpSyntaxRules
     newRule('allocationAttribute')
     optional
     repeatable
+
     newPattern(%w( _alternative !resourceId !moreAlternatives ), Proc.new {
       [ 'alternative', [ @val[1] ] + @val[2] ]
     })
+    doc('alternative', <<'EOT'
+Specify which resources should be allocated to the task. The optional
+attributes provide numerous ways to control which resource is used and when
+exactly it will be assigned to the task. Shifts and limits can be used to
+restrict the allocation to certain time intervals or to limit them to a
+certain maximum per time period.
+EOT
+       )
+
     newPattern(%w( _select $ID ), Proc.new {
       modes = %w( maxloaded minloaded minallocated order random )
       if (index = modes.index(@val[1])).nil?
@@ -30,8 +40,51 @@ module TjpSyntaxRules
       end
       [ 'select', @val[1] ]
     })
+    doc('select', <<'EOT'
+The select functions controls which resource is picked from an allocation and
+it's alternatives. The selection is re-evaluated each time the resource used
+in the previous time slot becomes unavailable.
+
+Even for non-persistent allocations a change in the resource selection only
+happens if the resource used in the previous (or next for ASAP tasks) time
+slot has become unavailable.
+EOT
+       )
+    arg(1, 'mode', <<'EOT'
+The following selection modes are supported:
+
+maxloaded: Pick the available resource that has been used the most so far.
+
+minloaded: Pick the available resource that has been used the least so far.
+
+minallocated: Pick the resource that has the smallest allocation factor. The
+allocation factor is calculated from the various allocations of the resource
+across the tasks. This is the default setting.
+
+order: Pick the first available resource from the list.
+
+random: Pick a random resource from the list.
+EOT
+       )
+
     singlePattern('_persistent')
+    doc('persistent', <<'EOT'
+Specifies that once a resource is picked from the list of alternatives this
+resource is used for the whole task. This is useful when several alternative
+resources have been specified. Normally the selected resource can change after
+each break. A break is an interval of at least one timeslot where no resources
+were available.
+EOT
+       )
+
     singlePattern('_mandatory')
+    doc('mandatory', <<'EOT'
+Makes a resource allocation mandatory. This means, that for each time slot
+only then resources are allocated when all mandatory resources are available.
+So either all mandatory resources can be allocated for the time slot, or no
+resource will be allocated.
+EOT
+       )
   end
 
   def rule_allocationAttributes
@@ -50,6 +103,7 @@ module TjpSyntaxRules
     newRule('bookingAttributes')
     optional
     repeatable
+
     newPattern(%w( _overtime $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 2
         error('overtime_range',
@@ -57,6 +111,11 @@ module TjpSyntaxRules
       end
       @booking.overtime = @val[1]
     })
+    doc('booking:overtime', <<'EOT'
+This attribute enables bookings to override working hours and vacations.
+EOT
+       )
+
     newPattern(%w( _sloppy $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 2
         error('sloppy_range',
@@ -64,6 +123,13 @@ module TjpSyntaxRules
       end
       @booking.sloppy = @val[1]
     })
+    doc('booking:sloppy', <<'EOT'
+Controls how strict TaskJuggler checks booking intervals for conflicts with
+vacation and other bookings. In case the error is suppressed the booking will
+not overwrite the existing bookings. It will avoid the already assigned
+intervals during booking.
+EOT
+       )
   end
 
   def rule_bookingBody
@@ -82,6 +148,7 @@ module TjpSyntaxRules
                      ]
       (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
     })
+    arg(0, 'value', 'A floating point or integer number')
   end
 
   def rule_columnBody
@@ -828,6 +895,11 @@ EOT
     newPattern(%w( !resourceHeader !resourceBody ), Proc.new {
        @property = @property.parent
     })
+    doc('resource', <<'EOT'
+Tasks that have an effort specification need to have resources assigned to do
+the work. Use this property to define resources or group of resources.
+EOT
+       )
   end
 
   def rule_resourceAllocation
@@ -851,6 +923,14 @@ EOT
       end
       Allocation.new(candidates, selectionMode, persistant, mandatory)
     })
+    doc('allocate:resources', <<'EOT'
+The optional attributes provide numerous ways to control which resource is
+used and when exactly it will be assigned to the task. Shifts and limits can
+be used to restrict the allocation to certain time intervals or to limit them
+to a certain maximum per time period.
+EOT
+       )
+    arg(0, 'resource', 'A resource ID')
   end
 
   def rule_resourceAllocations
@@ -887,6 +967,7 @@ EOT
       @booking.sourceFileInfo = @scanner.sourceFileInfo
       @booking
     })
+    arg(0, 'id', 'Absolute ID of a defined task')
   end
 
   def rule_resourceId
@@ -905,6 +986,12 @@ EOT
       @property = Resource.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
+    arg(1, 'id', <<'EOT'
+The ID of the resource. Resources have a global name space. The ID must be
+unique within the whole project.
+EOT
+       )
+    arg(2, 'name', 'The name of the resource')
   end
 
   def rule_resourceList
@@ -916,14 +1003,45 @@ EOT
 
   def rule_resourceScenarioAttributes
     newRule('resourceScenarioAttributes')
+
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
+    doc('resource:flags', <<'EOT'
+Attach a set of flags. The flags can be used in logical expressions to filter
+properties from the reports.
+EOT
+       )
+
     newPattern(%w( _booking !resourceBooking ))
+    doc('booking', <<'EOT'
+The booking attribute can be used to report completed work. This can be part
+of the necessary effort or the whole effort. When the scenario is scheduled in
+projection mode, TaskJuggler assumes that only the work reported with bookings
+has been done up to now. It then schedules a plan for the still missing
+effort.
+
+This attribute is also used within export reports to describe the details of a
+scheduled project.
+
+The sloppy attribute can be used when you want to skip non-working time or
+other allocations automatically. If it's not given, all bookings must only
+cover working time for the resource.
+EOT
+       )
+
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
+    doc('resource:vacation', <<'EOT'
+Specify a vacation period for the resource. It can also be used to block out
+the time before a resource joint or after it left. For employees changing
+their work schedule from full-time to part-time, or vice versa, please refer
+to the 'Shift' property.
+EOT
+       )
+
     newPattern(%w( !workinghours ))
     # Other attributes will be added automatically.
   end
@@ -1091,6 +1209,12 @@ EOT
     newPattern(%w( _note $STRING ), Proc.new {
       @property.set('note', @val[1])
     })
+    doc('task:note', <<'EOT'
+Attach a note to the task. This is usually a more detailed specification of
+what the task is about.
+EOT
+       )
+
     newPattern(%w( !task ))
     newPattern(%w( !taskScenarioAttributes ))
     newPattern(%w( !scenarioId !taskScenarioAttributes ), Proc.new {
@@ -1124,24 +1248,61 @@ EOT
     newPattern(%w( !taskDepHeader !taskDepBody ), Proc.new {
       @val[0]
     })
+    doc('taskreference', <<'EOT'
+Reference to another task.
+EOT
+       )
+    arg(0, 'id', <<'EOT'
+Absolute or relative ID of a task. An absolute task ID is a string of all
+parent task IDs concatenated with dots. A relate ID starts with one or more
+bangs. Each bang moves the scope to find the task with the specified ID to the
+parent of the current task.
+EOT
+       )
   end
 
   def rule_taskDepAttributes
     newRule('taskDepAttributes')
     optional
     repeatable
+
     newPattern(%w( _gapduration !intervalDuration ), Proc.new {
       @taskDependency.gapDuration = @val[1]
     })
+    doc('gapduration', <<'EOT'
+Specifies the minimum required gap between the end of a preceding task and the
+start of this task, or the start of a following task and the end of this task.
+This is calendar time, not working time. 7d means one week.
+EOT
+       )
+
     newPattern(%w( _gaplength !workingDuration ), Proc.new {
       @taskDependency.gapLength = @val[1]
     })
+    doc('gaplength', <<'EOT'
+Specifies the minimum required gap between the end of a preceding task and the
+start of this task, or the start of a following task and the end of this task.
+This is working time, not calendar time. 7d means 7 working days, not one
+week. Whether a day is considered a working day or not depends on the defined
+working hours and global vacations.
+EOT
+       )
+
     newPattern(%w( _onend ), Proc.new {
       @taskDependency.onEnd = true
     })
+    doc('onend', <<'EOT'
+The target of the dependency is the end of the task.
+EOT
+       )
+
     newPattern(%w( _onstart ), Proc.new {
       @taskDependency.onEnd = false
     })
+    doc('onstart', <<'EOT'
+The target of the dependency is the start of the task.
+EOT
+       )
   end
 
   def rule_taskDepBody
@@ -1249,6 +1410,7 @@ restrict the allocation to certain time intervals or to limit them to a
 certain maximum per time period.
 EOT
        )
+    arg(1, 'resources', '^allocate:resources')
 
     newPattern(%w( _booking !taskBooking ))
     doc('task:booking', <<'EOT'
@@ -1280,22 +1442,28 @@ EOT
       @property['forward', @scenarioIdx] = true
     })
     doc('depends', <<'EOT'
-Specifies that the task cannot start before the task with the specified IDs
-have been finished. If multiple IDs are specified, they must be separated by
-commas. IDs must be either global or relative. A relative ID starts with a
-number of '!'. Each '!' moves the scope to the parent task. Global IDs do not
-contain '!', but have IDs separated by dots.
-
-Each task ID can have optional attributes enclosed in braces.
+Specifies that the task cannot start before the specified tasks have been
+finished.
 
 By using the 'depends' attribute, the scheduling policy is automatically set
 to asap. If both depends and precedes are used, the last policy counts.
 EOT
         )
+    arg(1, 'tasklist', '^taskreference')
 
     newPattern(%w( _duration !calendarDuration ), Proc.new {
       @property['duration', @scenarioIdx] = @val[1]
     })
+    doc('duration', <<'EOT'
+Specifies the time the task occupies the resources. This is calendar time, not
+working time. 7d means one week. If resources are specified they are allocated
+when available. Availability of resources has no impact on the duration of the
+task. It will always be the specified duration.
+
+Tasks may not have subtasks if this attribute is used.
+EOT
+       )
+    also(%w( effort length ))
 
     newPattern(%w( _effort !workingDuration ), Proc.new {
       if @val[1] <= 0.0
@@ -1303,45 +1471,142 @@ EOT
       end
       @property['effort', @scenarioIdx] = @val[1]
     })
+    doc('effort', <<'EOT'
+Specifies the effort needed to complete the task. An effort of 4d can be done
+with 2 full-time resources in 2 days. The task will not finish before the
+resources have contributed the specified effort. So the duration of the task
+will depend on the availability of the resources.
+
+WARNING: In almost all real world projects effort is not the product of time
+and resources. This is only true if the task can be partitioned without adding
+any overhead. For more information about this read "The Mythical Man-Month" by
+Frederick P. Brooks, Jr.
+
+Tasks may not have subtasks if this attribute is used.
+EOT
+       )
+    also(%w( duration length ))
 
     newPattern(%w( _end !valDate ), Proc.new {
       @property['end', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = false
     })
+    doc('end', <<'EOT'
+The end date of the task. When specified for the top-level (default) scenario
+this attributes also implicitly sets the scheduling policy of the tasks to
+alap.
+EOT
+       )
 
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
+    doc('task:flags', <<'EOT'
+Attach a set of flags. The flags can be used in logical expressions to filter
+properties from the reports.
+EOT
+       )
 
     newPattern(%w( _length !workingDuration ), Proc.new {
       @property['length', @scenarioIdx] = @val[1]
     })
+    doc('length', <<'EOT'
+Specifies the time the task occupies the resources. This is working time, not
+calendar time. 7d means 7 working days, not one week. Whether a day is
+considered a working day or not depends on the defined working hours and
+global vacations. A task with a length specification may have resource
+allocations. Resources are allocated when they are available. The availability
+has no impact on the duration of the task. A day where none of the specified
+resources is available is still considered a working day, if there is no
+global vacation or global working time defined.
+
+Tasks may not have subtasks if this attribute is used.
+EOT
+       )
+    also(%w( duration effort ))
 
     newPattern(%w( _maxend !valDate ), Proc.new {
       @property['maxend', @scenarioIdx] = @val[1]
     })
+    doc('maxend', <<'EOT'
+Specifies the maximum wanted end time of the task. The value is not used
+during scheduling, but is checked after all tasks have been scheduled. If the
+end of the task is later than the specified value, then an error is reported.
+EOT
+       )
 
     newPattern(%w( _maxstart !valDate ), Proc.new {
       @property['maxstart', @scenarioIdx] = @val[1]
     })
-
-    newPattern(%w( _minend !valDate ), Proc.new {
-      @property['minend', @scenarioIdx] = @val[1]
-    })
-
-    newPattern(%w( _minstart !valDate ), Proc.new {
-      @property['minstart', @scenarioIdx] = @val[1]
-    })
+    doc('maxstart', <<'EOT'
+Specifies the maximum wanted start time of the task. The value is not used
+during scheduling, but is checked after all tasks have been scheduled. If the
+start of the task is later than the specified value, then an error is
+reported.
+EOT
+       )
 
     newPattern(%w( _milestone ), Proc.new {
       @property['milestone', @scenarioIdx] = true
     })
+    doc('milestone', <<'EOT'
+Turns the task into a special task that has no duration. You may not specify a
+duration, length, effort or subtasks for a milestone task.
+
+A task that only has a start or an end specification and no duration
+specification or sub tasks, will be recognized as milestone automatically.
+EOT
+       )
+
+    newPattern(%w( _minend !valDate ), Proc.new {
+      @property['minend', @scenarioIdx] = @val[1]
+    })
+    doc('minend', <<'EOT'
+Specifies the minimum wanted end time of the task. The value is not used
+during scheduling, but is checked after all tasks have been scheduled. If the
+end of the task is earlier than the specified value, then an error is
+reported.
+EOT
+       )
+
+    newPattern(%w( _minstart !valDate ), Proc.new {
+      @property['minstart', @scenarioIdx] = @val[1]
+    })
+    doc('minstart', <<'EOT'
+Specifies the minimum wanted start time of the task. The value is not used
+during scheduling, but is checked after all tasks have been scheduled. If the
+start of the task is earlier than the specified value, then an error is
+reported.
+EOT
+       )
+
+    newPattern(%w( _period !interval ), Proc.new {
+      @property['start', @scenarioIdx] = @val[1].start
+      @property['end', @scenarioIdx] = @val[1].end
+    })
+    doc('period', <<'EOT'
+This property is a shortcut for setting the start and end property at the same
+time. In contrast to using these, it does not change the scheduling direction.
+EOT
+       )
 
     newPattern(%w( _precedes !taskPredList ), Proc.new {
       @property['precedes', @scenarioIdx] =
         @property['precedes', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = false
     })
+    doc('precedes', <<'EOT'
+Specifies that the tasks with the specified IDs cannot start before the task
+has been finished. If multiple IDs are specified, they must be separated by
+commas. IDs must be either global or relative. A relative ID starts with a
+number of '!'. Each '!' moves the scope to the parent task. Global IDs do not
+contain '!', but have IDs separated by dots.
+
+By using the 'precedes' attribute, the scheduling policy is automatically set
+to alap. If both depends and precedes are used within a task, the last policy
+counts.
+EOT
+       )
 
     newPattern(%w( _priority $INTEGER ), Proc.new {
       if @val[1] < 0 || @val[1] > 1000
@@ -1349,14 +1614,38 @@ EOT
               @property)
       end
     })
+    doc('priorty', <<'EOT'
+Specifies the priority of the task. A task with higher priority is more
+likely to get the requested resources. The default priority value of all tasks
+is 500. Don't confuse the priority of a tasks with the importance or urgency
+of a task. It only increases the chances that the tasks gets the requested
+resources. It does not mean that the task happens earlier, though that is
+usually the effect you will see. It also does not have any effect on tasks
+that don't have any resources assigned (e.g. milestones).
+
+This attribute is inherited by subtasks if specified prior to the definition
+of the subtask.
+EOT
+       )
+    arg(1, 'value', 'Priority value (1 - 1000)')
 
     newPattern(%w( _responsible !resourceList ), Proc.new {
       @property['responsible', @scenarioIdx] = @val[1]
     })
+    doc('responsible', <<'EOT'
+The ID of the resource that is responsible for this task. This value is for
+documentation purposes only. It's not used by the scheduler.
+EOT
+       )
 
     newPattern(%w( _scheduled ), Proc.new {
       @property['scheduled', @scenarioIdx] = true
     })
+    doc('scheduled', <<'EOT'
+This is mostly for internal use. It specifies that the task can be ignored for
+scheduling in the scenario.
+EOT
+       )
 
     newPattern(%w( _scheduling $ID ), Proc.new {
       if @val[1] == 'alap'
@@ -1368,11 +1657,50 @@ EOT
               @property)
       end
     })
+    doc('scheduling', <<'EOT'
+Specifies the scheduling policy for the task. A task can be scheduled from
+start to end (As Soon As Possible, asap) or from end to start (As Late As
+Possible, alap).
+
+A task can be scheduled from start to end (ASAP mode) when it has a hard
+(start) or soft (depends) criteria for the start time. A task can be scheduled
+from end to start (ALAP mode) when it has a hard (end) or soft (precedes)
+criteria for the end time.
+
+Some task attributes set the scheduling policy implicitly. This attribute can
+be used to explicitly set the scheduling policy of the task to a certain
+direction. To avoid it being overwritten again by an implicit attribute this
+attribute should always be the last attribute of the task.
+
+A random mixture of ASAP and ALAP tasks can have unexpected side effects on
+the scheduling of the project. It increases significantly the scheduling
+complexity and results in much longer scheduling times. Especially in projects
+with many hundreds of tasks the scheduling time of a project with a mixture of
+ASAP and ALAP times can be 2 to 10 times longer. When the projects contains
+chains of ALAP and ASAP tasks the tasks further down the dependency chain will
+be served much later than other non-chained task even when they have a much
+higher priority. This can result in situations where high priority tasks do
+not get their resources even though the parallel competing tasks have a much
+lower priority.
+
+As a general rule, try to avoid ALAP tasks whenever possible. Have a close
+eye on tasks that have been switched implicitly to ALAP mode because the
+end attribute comes after the start attribute.
+EOT
+       )
+    arg(1, 'policy', 'Possible values are asap or alap')
 
     newPattern(%w( _start !valDate), Proc.new {
       @property['start', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = true
     })
+    doc('start', <<'EOT'
+The start date of the task. When specified for the top-level (default)
+scenario this attribute also implicitly sets the scheduling policy of the task
+to asap.
+EOT
+       )
+    also(%w( end period maxstart minstart scheduling ))
     # Other attributes will be added automatically.
   end
 
@@ -1498,6 +1826,7 @@ EOT
       (@val[0] * convFactors[@val[1]] /
        @project['scheduleGranularity']).round.to_i
     })
+    arg(0, 'value', 'A floating point or integer number')
   end
 
   def rule_workinghours
@@ -1507,6 +1836,11 @@ EOT
            @property['workinghours', @scenarioIdx]
       0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
+    doc('workinghours', <<'EOT'
+The working hours specification limits the availability of resources to
+certain time slots of week days.
+EOT
+       )
   end
 
 end

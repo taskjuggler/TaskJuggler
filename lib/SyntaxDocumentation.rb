@@ -41,7 +41,7 @@ class SyntaxDocumentation
         # values.
         kwd = KeywordDocumentation.new(rule, pattern,
                 pattern.to_syntax(docs, @parser.rules), docs,
-                optionalAttributes(pattern))
+                optionalAttributes(pattern, {}))
         @keywords[pattern.keyword] = kwd
       end
     end
@@ -53,13 +53,24 @@ class SyntaxDocumentation
   end
 
   # Find optional attributes and return them hashed by the defining pattern.
-  def optionalAttributes(pattern, tokenIndex = -1)
-    # Get the terminal token for the tokenIndex-th element of the pattern.
-    token, pattern = pattern.terminalToken(@parser.rules, tokenIndex)
+  def optionalAttributes(pattern, stack)
+    # If we hit an endless recursion we won't find any attributes. So we push
+    # each pattern we process on the 'stack'. If we hit it again, we just
+    # return an empty hash.
+    return {} if stack[pattern]
+    # Push pattern onto 'stack'.
+    stack[pattern] = true
 
-    # If the terminal token is a _{ and the pattern consists of a rule
-    # reference and a _} token then this is a reference to optional attributes.
-    if token && pattern[0] == '_{' && pattern[2] == '_}'
+    # If the last token of the pattern is a reference, we recursively
+    # follow the reference to the next pattern.
+    if pattern[-1][0] == ?!
+      token = pattern[-1].slice(1, pattern[-1].length - 1)
+      rule = @parser.rules[token]
+      # Rules with multiple patterns won't lead to attributes. Just abort.
+      return {} if rule.patterns.length > 1 || !rule.patterns[0].doc.nil?
+      return optionalAttributes(rule.patterns[0], stack)
+    elsif pattern[0] == '_{' && pattern[2] == '_}'
+      # We have found an optional attribute pattern!
       return attributes(pattern[1])
     end
     {}
@@ -116,12 +127,19 @@ class SyntaxDocumentation
 
   def to_s(keyword)
     str = ''
-    @keywords.each_value do |kw|
-      if (keyword.nil? && kw.contexts.empty?) ||
-         (kw.keyword == keyword)
-        str += '-' * 75 + "\n"
-        str += kw.to_s
+    if keyword.nil? || @keywords[keyword].nil?
+      kwdStr = ''
+      @keywords.each_value do |kwd|
+        if kwd.contexts.empty? ||
+           (kwd.contexts.length == 1 && kwd.contexts[0] == kwd)
+          kwdStr += ', ' unless kwdStr.empty?
+          kwdStr += kwd.keyword
+        end
       end
+      str += "Try one of the following keywords as argument to this program:\n"
+      str += kwdStr
+    else
+      str += @keywords[keyword].to_s
     end
     str
   end

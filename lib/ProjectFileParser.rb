@@ -84,12 +84,12 @@ private
 
   def newListRule(name, listItem)
     moreName = 'more' + name[0, 1].capitalize + name[1, name.length - 1]
+    newCommaListRule(moreName, listItem)
     newRule(name)
     newPattern([ "#{listItem}",
                  "!#{moreName}" ],
       Proc.new { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
     )
-    newCommaListRule(moreName, listItem)
   end
 
   def newCommaListRule(name, listItem)

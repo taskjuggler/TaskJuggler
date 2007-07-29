@@ -10,10 +10,20 @@
 # $Id$
 #
 
+require 'Tj3Config'
 require 'TaskJuggler'
 
+AppConfig.appName = 'taskjuggler3'
+
 def showUsage
-  $stderr.puts "taskjuggler3 file.prj [ file1.tji ...]"
+  $stderr.puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+               "#{AppConfig.packageInfo}\n\n" +
+               "Copyright (c) #{AppConfig.copyright.join(', ')}" +
+               " by #{AppConfig.authors.join(', ')}\n\n" +
+               "#{AppConfig.license}\n" +
+               "For more info about #{AppConfig.packageName} see " +
+               "#{AppConfig.contact}\n\n" +
+               "#{AppConfig.appName} file.tjp [ file1.tji ...]"
 end
 
 def main

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+version=`grep "s.version =" lib/Tj3Config.rb | sed "s/.*'\(.*\)'/\1/g"`
+
+sed "s/X\.X\.X/$version/g" README.in > README
+sed "s/X\.X\.X/$version/g" Rakefile.in > Rakefile 
+
+rdoc README || exit 1
+rake pkg/TaskJuggler-${version}.gem || exit 1
+
+

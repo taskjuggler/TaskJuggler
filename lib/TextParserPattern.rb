@@ -14,12 +14,13 @@ require 'ParserTokenDoc'
 
 class TextParserPattern
 
-  attr_reader :keyword, :doc, :tokens, :function
+  attr_reader :keyword, :doc, :seeAlso, :tokens, :function
 
   def initialize(tokens, function = nil)
     # Initialize pattern doc as empty.
     @doc = nil
     @args = []
+    @seeAlso = []
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
         raise "Fatal Error: All pattern tokens must start with type " +
@@ -34,15 +35,15 @@ class TextParserPattern
 
   def setDoc(keyword, doc)
     @keyword = keyword
-    # Remove all single line breaks but preserve paragraphs. Multi linefeeds
-    # are temporarily converted to form feeds (ASCII 0x0C).
-    @doc = doc.chomp.gsub(/[\n]{2,}/, "\0C").
-                     gsub(/[\n]([^\n])/, ' \1').
-                     gsub(/[\0C]/, "\n")
+    @doc = doc
   end
 
   def setArg(idx, doc)
     @args[idx] = doc
+  end
+
+  def setSeeAlso(also)
+    @seeAlso = also
   end
 
   def [](i)
@@ -129,9 +130,10 @@ class TextParserPattern
           when ?$
             @args[i].syntax = '<' + token + '>'
           when ?!
-            @args[i].syntax = "See #{token} for more details. "
+            # In this case the argument documentation must be sufficient.
+            @args[i].syntax = ''
           else
-            @args[i].syntax = 'Probably an error'
+            @args[i].syntax = ' Probably an error '
           end
         end
       else

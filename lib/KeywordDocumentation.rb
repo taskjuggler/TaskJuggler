@@ -12,15 +12,15 @@
 
 class KeywordDocumentation
 
-  attr_reader :keyword
+  attr_reader :keyword, :pattern
   attr_accessor :contexts, :scenarioSpecific
 
-  def initialize(rule, pattern, syntax, docs, optAttrPatterns)
+  def initialize(rule, pattern, syntax, args, optAttrPatterns)
     @rule = rule
     @pattern = pattern
     @keyword = pattern.keyword
     @syntax = syntax
-    @docs = docs
+    @args = args.uniq
     # Hash that maps patterns of optional attributes to a boolean value. True
     # if the pattern is a scenario specific attribute.
     @optAttrPatterns = optAttrPatterns
@@ -28,12 +28,20 @@ class KeywordDocumentation
     # documentation of the optional attribute.
     @optionalAttributes = []
     @scenarioSpecific = false
-
     @inheritable = false
     @contexts = []
+    @seeAlso = []
   end
 
   def crossReference(keywords, rules)
+    @args.each do |arg|
+      if arg.text[0] == ?^
+        keyword = arg.text.slice(1, arg.text.length - 1)
+        raise "Unknown reference #{keyword}" if keywords[keyword].nil?
+        @optAttrPatterns[keywords[keyword].pattern] = false
+      end
+    end
+
     @optAttrPatterns.each do |pattern, scenarioSpecific|
       token = pattern.terminalToken(rules)
       if pattern.keyword.nil?
@@ -49,11 +57,13 @@ class KeywordDocumentation
         kwd.scenarioSpecific = true if scenarioSpecific
       end
     end
-  end
 
-  def addOptionalAttribute(attr)
-    @optionalAttributes << attr
-    attr.contexts << self
+    @pattern.seeAlso.sort.each do |also|
+      if keywords[also].nil?
+        raise "See also reference #{also} of #{@pattern} is unknown"
+      end
+      @seeAlso << keywords[also]
+    end
   end
 
   def to_s
@@ -70,17 +80,28 @@ class KeywordDocumentation
     str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
 
     str += "Arguments:   "
-    if @docs.empty?
+    if @args.empty?
       str += format(tagW, "none\n\n", textW)
     else
       argStr = ''
-      @docs.each do |doc|
-        typeSpec = doc.syntax
-        typeSpec[0] = '['
-        typeSpec[-1] = ']'
-        indent = doc.name.length + doc.syntax.length + 3
-        argStr += "#{doc.name} #{doc.syntax}: " +
-                  "#{format(indent, doc.text, textW - indent)}\n\n"
+      @args.each do |arg|
+        unless arg.syntax.empty?
+          typeSpec = arg.syntax
+          typeSpec[0] = '['
+          typeSpec[-1] = ']'
+          indent = arg.name.length + arg.syntax.length + 3
+          argStr += "#{arg.name} #{arg.syntax}: " +
+                    "#{format(indent, arg.text, textW - indent)}\n\n"
+        else
+          indent = arg.name.length + 2
+          text = arg.text.clone
+          if text[0] == ?^
+            keyword = text.slice(1, text.length - 1)
+            text = "Comma separated list. See #{keyword} for details."
+          end
+          argStr += "#{arg.name}: " +
+                    "#{format(indent, text, textW - indent)}\n\n"
+        end
       end
       str += format(tagW, argStr, textW)
     end
@@ -111,10 +132,23 @@ class KeywordDocumentation
         unless attrStr.empty?
           attrStr += ', '
         end
+        attrStr += '[sc:]' if attr.scenarioSpecific
         attrStr += attr.keyword
-        attrStr += ' (SC)' if attr.scenarioSpecific
       end
       str += format(tagW, attrStr, textW)
+      str += "\n"
+    end
+
+    unless @seeAlso.empty?
+      str += "See also:    "
+      alsoStr = ''
+      @seeAlso.each do |also|
+        unless alsoStr.empty?
+          alsoStr += ', '
+        end
+        alsoStr += also.keyword
+      end
+      str += format(tagW, alsoStr, textW)
       str += "\n"
     end
 

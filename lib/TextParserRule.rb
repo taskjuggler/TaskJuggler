@@ -53,6 +53,10 @@ class TextParserRule
     @patterns[-1].setArg(idx, doc)
   end
 
+  def setSeeAlso(also)
+    @patterns[-1].setSeeAlso(also)
+  end
+
   def pattern(idx)
     @patterns[idx]
   end
