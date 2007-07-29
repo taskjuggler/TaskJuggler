@@ -1257,7 +1257,7 @@ time intervals a certain resource has worked on this task.
 EOT
        )
 
-    newPattern(%w( _complete $FLOAT ), Proc.new {
+    newPattern(%w( _complete !number), Proc.new {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",
               @property)
