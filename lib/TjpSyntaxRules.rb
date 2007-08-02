@@ -166,7 +166,9 @@ EOT
     newRule('columnId')
     newPattern(%w( $ID ), Proc.new {
       if (title = @reportElement.defaultColumnTitle(@val[0])).nil?
-        error('report_column', "Unknown column #{@val[0]}")
+        error('report_column',
+              "Unknown column #{@val[0]}. " +
+              "Must be one of #{@reportElement.supportedColumns}.")
       end
       @column = TableColumnDefinition.new(@val[0], title)
     })
@@ -193,6 +195,49 @@ EOT
     newPattern(%w( _w ), Proc.new { 3 })
     newPattern(%w( _m ), Proc.new { 4 })
     newPattern(%w( _y ), Proc.new { 5 })
+  end
+
+  def rule_export
+    newRule('export')
+    newPattern(%w( !exportHeader !reportBody ))
+    doc('export', <<'EOT'
+The export report looks like a regular TaskJuggler file but contains fixed
+start and end dates for all tasks. The tasks only have start and end times,
+their description and their project id listed. No other attributes are
+exported unless they are requested using the taskattributes attribute. The
+contents also depends on the extension of the file name. If the file name ends
+with .tjp a complete project with header, resource and shift definitions is
+generated. In case it ends with .tji only the tasks and resource allocations
+are exported.
+
+If specified the resource usage for the tasks is reported as well. But only
+those allocations are listed that belong to tasks listed in the same export
+report.
+
+The export report can be used to share certain tasks or milestones with other
+projects or to save past resource allocations as immutable part for future
+scheduling runs. When an export report is included the project IDs of the
+included tasks must be declared first with the project id property.`
+EOT
+       )
+  end
+
+  def rule_exportHeader
+    newRule('exportHeader')
+    newPattern(%w( _export $STRING ), Proc.new {
+      extension = @val[1][-4, 4]
+      if extension != '.tjp' && extension != '.tji'
+        error('export_bad_extn',
+              'Export report files must have a .tjp or .tji extension.')
+      end
+      @report = export.new(@project, @val[1])
+      @reportElement = @report.element
+    })
+    arg(1, 'filename', <<'EOT'
+The name of the report file to generate. It should end with a .tjp or .tji
+extension.
+EOT
+       )
   end
 
   def rule_extendAttributes
@@ -340,6 +385,50 @@ EOT
 
   def rule_flagList
     newListRule('flagList', '!flag')
+  end
+
+  def rule_htmlResourceReport
+    newRule('htmlResourceReport')
+    newPattern(%w( !htmlResourceReportHeader !reportBody ))
+    doc('htmlresourcereport', <<'EOT'
+The report lists all resources and their respective values as a HTML page. The
+task that are the resources are allocated to can be listed as well.
+EOT
+       )
+  end
+
+  def rule_htmlResourceReportHeader
+    newRule('htmlResourceReportHeader')
+    newPattern(%w( _htmlresourcereport $STRING ), Proc.new {
+      @report = HTMLresourceReport.new(@project, @val[1])
+      @reportElement = @report.element
+    })
+    arg(1, 'filename', <<'EOT'
+The name of the report file to generate. It should end with a .html extension.
+EOT
+       )
+  end
+
+  def rule_htmlTaskReport
+    newRule('htmlTaskReport')
+    newPattern(%w( !htmlTaskReportHeader !reportBody ))
+    doc('htmltaskreport', <<'EOT'
+The report lists all tasks and their respective values as a HTML page. The
+resources that are allocated to each task can be listed as well.
+EOT
+       )
+  end
+
+  def rule_htmlTaskReportHeader
+    newRule('htmlTaskReportHeader')
+    newPattern(%w( _htmltaskreport $STRING ), Proc.new {
+      @report = HTMLTaskReport.new(@project, @val[1])
+      @reportElement = @report.element
+    })
+    arg(1, 'filename', <<'EOT'
+The name of the report file to generate. It should end with a .html extension.
+EOT
+       )
   end
 
   def rule_include
@@ -778,14 +867,16 @@ EOT
     newPattern(%w( _copyright $STRING ), Proc.new {
       @project['copyright'] = @val[1]
     })
-    newPattern(%w( !include ))
+    newPattern(%w( !export ))
     newPattern(%w( _flags !declareFlagList ), Proc.new {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
       end
     })
+    newPattern(%w( !htmlResourceReport ))
+    newPattern(%w( !htmlTaskReport ))
+    newPattern(%w( !include ))
     newPattern(%w( !macro ))
-    newPattern(%w( !report ))
     newPattern(%w( !resource ))
     newPattern(%w( _supplement !supplement ))
     newPattern(%w( !task ))
@@ -808,86 +899,267 @@ EOT
     newOptionsRule('referenceBody', 'referenceAttributes')
   end
 
-  def rule_report
-    newRule('report')
-    newPattern(%w( !reportHeader !reportBody ))
-  end
-
   def rule_reportAttributes
     newRule('reportAttributes')
     optional
     repeatable
+
     newPattern(%w( _columns !columnDef !moreColumnDef ), Proc.new {
       columns = [ @val[1] ]
       columns += @val[2] if @val[2]
       @reportElement.columns = columns
     })
+    doc('columns', <<'EOT'
+Specifies which columns shall be included in a report.
+
+All columns support macro expansion. Contrary to the normal macro expansion,
+these macros are expanded during the report generation. So the value of the
+macro is being changed after each table cell or table line. Consequently only
+build in macros can be used. To protect the macro calls against expansion
+during the initial file processing, the report macros must be prefixed with an
+additional $.
+EOT
+       )
+
     newPattern(%w( _end !valDate ), Proc.new {
       @reportElement.end = @val[1]
     })
+    doc('report:end', <<'EOT'
+Specifies the end date of the report. In task reports only tasks that start
+before this end date are listed.
+EOT
+       )
+
     newPattern(%w( _headline $STRING ), Proc.new {
       @reportElement.headline = @val[1]
     })
+    doc('headline', <<'EOT'
+Specifies the headline for a report.
+EOT
+       )
+
     newPattern(%w( _hideresource !logicalExpression ), Proc.new {
       @reportElement.hideResource = @val[1]
     })
+    doc('hideresource', <<'EOT'
+Do not include resources that match the specified logical expression. If the
+report is sorted in tree mode (default) then enclosing resources are listed
+even if the expression matches the resource.
+EOT
+       )
+
     newPattern(%w( _hidetask !logicalExpression ), Proc.new {
       @reportElement.hideTask = @val[1]
     })
+    doc('hidetask', <<'EOT'
+Do not include tasks that match the specified logical expression. If the
+report is sorted in tree mode (default) then enclosing tasks are listed even
+if the expression matches the task.
+EOT
+       )
+
     newPattern(%w( _period !valInterval), Proc.new {
       @reportElement.start = @val[1].start
       @reportElement.end = @val[1].end
     })
+    doc('report:period', <<'EOT'
+This property is a shortcut for setting the start and end property at the
+same time.
+EOT
+       )
+
     newPattern(%w( _rolluptask !logicalExpression ), Proc.new {
       @reportElement.rollupTask = @val[1]
     })
+    doc('rolluptask', <<'EOT'
+Do not show sub-tasks of tasks that match the specified logical expression.
+EOT
+       )
+
     newPattern(%w( _scenarios !scenarioIdList ), Proc.new {
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
       @reportElement.scenarios = @val[1]
     })
+    doc('scenrios', <<'EOT'
+List of scenarios that should be included in the report.
+EOT
+       )
+
     newPattern(%w( _sortresources !sortCriteria ), Proc.new {
       @reportElement.sortResources = @val[1]
     })
+    doc('sortresources', <<'EOT'
+Determines how the resources are sorted in the report. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of resources, the next criteria will be used to sort the resources in
+this group.
+EOT
+       )
+
     newPattern(%w( _sorttasks !sortCriteria ), Proc.new {
       @reportElement.sortTasks = @val[1]
     })
+    doc('sorttasks', <<'EOT'
+Determines how the tasks are sorted in the report. Multiple criteria can be
+specified as comma separated list. If one criteria is not sufficient to sort a
+group of tasks, the next criteria will be used to sort the tasks within
+this group.
+EOT
+       )
+
     newPattern(%w( _start !valDate ), Proc.new {
       @reportElement.start = @val[1]
     })
+    doc('report:start', <<'EOT'
+Specifies the start date of the report. In task reports only tasks that end
+after this end date are listed.
+EOT
+       )
+
     newPattern(%w( _taskroot !taskId), Proc.new {
       @reportElement.taskRoot = @val[1]
     })
+    doc('taskroot', <<'EOT'
+Only tasks below the specified root-level tasks are exported. The exported
+tasks will have the id of the root-level task stripped from their ID, so that
+the sub-tasks of the root-level task become top-level tasks in the exported
+file.
+EOT
+       )
+
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @reportElement.timeformat = @val[1]
     })
+    doc('report:timeformat', <<'EOT'
+Determines how time specifications in reports look like.
+EOT
+       )
+    arg(1, 'format', <<'EOT'
+Ordinary characters placed in the format string are copied without
+conversion. Conversion specifiers are introduced by a `%' character, and are
+replaced in s as follows:
+
+%a  The abbreviated weekday name according to the current locale.
+
+%A  The full weekday name according to the current locale.
+
+%b  The abbreviated month name according to the current locale.
+
+%B  The full month name according to the current locale.
+
+%c  The preferred date and time representation for the current locale.
+
+%C  The century number (year/100) as a 2-digit integer. (SU)
+
+%d  The day of the month as a decimal number (range 01 to 31).
+
+%e  Like %d, the day of the month as a decimal number, but a leading zero is
+replaced by a space. (SU)
+
+%E  Modifier: use alternative format, see below. (SU)
+
+%F  Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)
+
+%G  The ISO 8601 year with century as a decimal number. The 4-digit year
+corresponding to the ISO week number (see %V). This has the same format and
+value as %y, except that if the ISO week number belongs to the previous or next
+year, that year is used instead. (TZ)
+
+%g  Like %G, but without century, i.e., with a 2-digit year (00-99). (TZ)
+
+%h  Equivalent to %b. (SU)
+
+%H  The hour as a decimal number using a 24-hour clock (range 00 to 23).
+
+%I  The hour as a decimal number using a 12-hour clock (range 01 to 12).
+
+%j  The day of the year as a decimal number (range 001 to 366).
+
+%k  The hour (24-hour clock) as a decimal number (range 0 to 23); single digits
+are preceded by a blank. (See also %H.) (TZ)
+
+%l  The hour (12-hour clock) as a decimal number (range 1 to 12); single digits
+are preceded by a blank. (See also %I.) (TZ)
+
+%m  The month as a decimal number (range 01 to 12).
+
+%M  The minute as a decimal number (range 00 to 59).
+
+%n  A newline character. (SU)
+
+%O  Modifier: use alternative format, see below. (SU)
+
+%p  Either 'AM' or 'PM' according to the given time value, or the corresponding
+strings for the current locale. Noon is treated as `pm' and midnight as 'am'.
+
+%P  Like %p but in lowercase: 'am' or 'pm' or %a corresponding string for the
+current locale. (GNU)
+
+%r  The time in a.m. or p.m. notation. In the POSIX locale this is equivalent
+to '%I:%M:%S %p'. (SU)
+
+%R  The time in 24-hour notation (%H:%M). (SU) For a version including the
+seconds, see %T below.
+
+%s  The number of seconds since the Epoch, i.e., since 1970-01-01 00:00:00 UTC.
+(TZ)
+
+%S  The second as a decimal number (range 00 to 61).
+
+%t  A tab character. (SU)
+
+%T  The time in 24-hour notation (%H:%M:%S). (SU)
+
+%u  The day of the week as a decimal, range 1 to 7, Monday being 1. See also
+%w. (SU)
+
+%U  The week number of the current year as a decimal number, range 00 to 53,
+starting with the first Sunday as the first day of week 01. See also %V and %W.
+
+%V  The ISO 8601:1988 week number of the current year as a decimal number,
+range 01 to 53, where week 1 is the first week that has at least 4 days in the
+current year, and with Monday as the first day of the week. See also %U %and
+%W. %(SU)
+
+%w  The day of the week as a decimal, range 0 to 6, Sunday being 0. See also %u.
+
+%W  The week number of the current %year as a decimal number, range 00 to 53,
+starting with the first Monday as the first day of week 01.
+
+%x  The preferred date representation for the current locale without the time.
+
+%X  The preferred time representation for the current locale without the date.
+
+%y  The year as a decimal number without a century (range 00 to 99).
+
+%Y   The year as a decimal number including the century.
+
+%z   The time zone as hour offset from GMT. Required to emit RFC822-conformant
+dates (using "%a, %d %%b %Y %H:%M:%S %%z"). (GNU)
+
+%Z  The time zone or name or abbreviation.
+
+%+  The date and time in date(1) format. (TZ)
+
+%%  A literal '%' character.
+
+Some conversion specifiers can be modified by preceding them by the E or O
+modifier to indicate that an alternative format should be used. If the
+alternative format or specification does not exist for the current locale, the
+behavior will be as if the unmodified conversion specification were used. (SU)
+The Single Unix Specification mentions %Ec, %EC, %Ex, %%EX, %Ry, %EY, %Od, %Oe,
+%OH, %OI, %Om, %OM, %OS, %Ou, %OU, %OV, %Ow, %OW, %Oy, where the effect of the
+O modifier is to use alternative numeric symbols (say, Roman numerals), and
+that of the E modifier is to use a locale-dependent alternative representation.
+The documentation of the timeformat attribute has been taken from the man page
+of the GNU strftime function.
+EOT
+       )
   end
 
   def rule_reportBody
     newOptionsRule('reportBody', 'reportAttributes')
-  end
-
-  def rule_reportHeader
-    newRule('reportHeader')
-    newPattern(%w( !reportType $STRING ), Proc.new {
-      case @val[0]
-      when 'export'
-        @report = ExportReport.new(@project, @val[1])
-      when 'htmltaskreport'
-        @report = HTMLTaskReport.new(@project, @val[1])
-        @reportElement = @report.element
-      when 'htmlresourcereport'
-        @report = HTMLResourceReport.new(@project, @val[1])
-        @reportElement = @report.element
-      end
-    })
-  end
-
-  def rule_reportType
-    newRule('reportType')
-    singlePattern('_export')
-    singlePattern('_htmltaskreport')
-    singlePattern('_htmlresourcereport')
   end
 
   def rule_resource

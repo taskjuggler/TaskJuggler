@@ -41,7 +41,7 @@ required version.
 
 Just run as root
 
-<tt>gem install TaskJuggler-X.X.X.gem</tt> 
+<tt>gem install taskjuggler3-X.X.X.gem</tt> 
 
 to install the gem file. It will install all components of the Gem in
 the appropriate place.
@@ -55,7 +55,7 @@ TaskJuggler will not be able to find the worldmap images.
 
 Updates work just like the installation.
 
-<tt>gem update TaskJuggler-X.X.X.gem</tt>
+<tt>gem update taskjuggler3-X.X.X.gem</tt>
 
 
 = Bugs reports and other feedback
@@ -72,4 +72,6 @@ TaskJuggler is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as
 published by the Free Software Foundation.
+
+TaskJuggler is a trademark of Chris Schlaeger.
 

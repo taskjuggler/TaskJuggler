@@ -36,11 +36,11 @@ class SyntaxDocumentation
           raise "Multiple patterns have the same keyword #{pattern.keyword}"
         end
 
-        docs = []
+        argDocs = []
         # Create a new KeywordDocumentation object and fill-in all extracted
         # values.
         kwd = KeywordDocumentation.new(rule, pattern,
-                pattern.to_syntax(docs, @parser.rules), docs,
+                pattern.to_syntax(argDocs, @parser.rules), argDocs,
                 optionalAttributes(pattern, {}))
         @keywords[pattern.keyword] = kwd
       end

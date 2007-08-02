@@ -149,5 +149,9 @@ class ReportElement
     name
   end
 
+  def supportedColumns
+    @propertiesById.keys
+  end
+
 end
 
