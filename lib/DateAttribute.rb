@@ -14,5 +14,9 @@ class DateAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
   end
+
+  def DateAttribute::tjpId
+    'date'
+  end
 end
 

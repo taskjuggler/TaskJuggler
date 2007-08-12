@@ -79,13 +79,34 @@ class Project
     ]
     attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 
+    @resources = PropertySet.new(self, true)
+    attrs = [
+      # ID           Name            Type               Inher. Scen.  Default
+      [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute, false, true, 0.0 ],
+      [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
+      [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
+      [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
+      [ 'effort', 'Total Effort',    FixnumAttribute,   false, true, 0 ],
+      [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
+      [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
+      [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
+      [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
+      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
+      [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
+      [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
+        @attributes['workinghours'] ]
+    ]
+    attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
+
     @tasks = PropertySet.new(self, false)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
-      [ 'bookings',  'Bookings',     BookingListAttribute, false, true, [] ],
+      [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
       [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
@@ -116,26 +137,6 @@ class Project
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
     ]
     attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
-
-    @resources = PropertySet.new(self, true)
-    attrs = [
-      # ID           Name            Type               Inher. Scen.  Default
-      [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute, false, true, 0.0 ],
-      [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
-      [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
-      [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
-      [ 'effort', 'Total Effort',    FixnumAttribute,   false, true, 0 ],
-      [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
-      [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
-      [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
-      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
-      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
-      [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
-      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
-      [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-        @attributes['workinghours'] ]
-    ]
-    attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
 
     Scenario.new(self, 'plan', 'Plan Scenario', nil)
 

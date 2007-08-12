@@ -52,7 +52,7 @@ class ResourceScenario < ScenarioData
     return false if !force && !available?(sbIdx)
 
     #puts "Booking resource #{@property.fullId} at " +
-    #     "#{@project.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
+    #     "#{idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
     # Track the total allocated slots for this resource and all parent
     # resources.
@@ -79,7 +79,7 @@ class ResourceScenario < ScenarioData
       if @scoreboard[sbIdx].is_a?(Task)
         error('booking_conflict',
               "Resource #{@property.fullId} has multiple conflicting " +
-              "bookings for #{@project.idxToDate(sbIdx)}. The conflicting " +
+              "bookings for #{idxToDate(sbIdx)}. The conflicting " +
               "tasks are #{@scoreboard[sbIdx].fullId} and " +
               "#{booking.task.fullId}.", true, booking.sourceFileInfo)
       end
@@ -87,12 +87,12 @@ class ResourceScenario < ScenarioData
         if @scoreboard[sbIdx] == 1 && booking.sloppy == 0
           error('booking_no_duty',
                 "Resource #{@property.fullId} has no duty at " +
-                "#{@project.idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+                "#{idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
         end
         if @scoreboard[sbIdx] == 2 && booking.sloppy <= 1
           error('booking_on_vacation',
                 "Resource #{@property.fullId} is on vacation at " +
-                "#{@project.idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+                "#{idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
         end
         return false
       end
@@ -182,6 +182,49 @@ class ResourceScenario < ScenarioData
     return allocatedSub(startIdx, endIdx, task)
   end
 
+  # Iterate over the scoreboard and turn its content into a set of Bookings.
+  def getBookings
+    bookings = {}
+    lastTask = nil
+    bookingStart = nil
+
+    # To speedup the collection we start with the first booked slot and end
+    # with the last booked slot.
+    startIdx = @firstBookedSlot
+    endIdx = @lastBookedSlot
+
+    # In case the index markers are still uninitialized, we have no bookings.
+    return [] if startIdx.nil? || endIdx.nil?
+
+    startIdx.upto(endIdx) do |idx|
+      task = @scoreboard[idx]
+      # Now we watch for task changes.
+      if task != lastTask || (lastTask == nil && task.is_a?(Task)) ||
+         (task.is_a?(Task) && idx == endIdx)
+        unless lastTask.nil?
+          # If we don't have a Booking for the task yet, we create one.
+          if bookings[lastTask].nil?
+            bookings[lastTask] = Booking.new(lastTask, @property, [])
+          end
+
+          # Make sure the index is correct even for the last task block.
+          idx += 1 if idx == endIdx
+          # Append the new interval to the Booking.
+          bookings[lastTask].intervals << Interval.new(idxToDate(bookingStart),
+                                                       idxToDate(idx))
+        end
+        # Get ready for the next task booking interval
+        if task.is_a?(Task)
+          lastTask = task
+          bookingStart = idx
+        else
+          lastTask = bookingStart = nil
+        end
+      end
+    end
+    bookings
+  end
+
 private
 
   def initScoreboard
@@ -190,7 +233,7 @@ private
 
     # Change all work time slots to nil (available) again.
     0.upto(@project.scoreboardSize) do |i|
-      ivStart = @property.project.idxToDate(i)
+      ivStart = idxToDate(i)
       iv = Interval.new(ivStart, ivStart +
                         @property.project['scheduleGranularity'])
       @scoreboard[i] = nil if onShift?(iv)
@@ -213,6 +256,10 @@ private
          @scoreboard[i] = 2
       end
     end
+  end
+
+  def idxToDate(sbIdx)
+    @project.idxToDate(sbIdx)
   end
 
   # Count the booked slots between the start and end index. If _task_ is not

@@ -17,6 +17,10 @@ class TaskListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def TaskListAttribute::tjpId
+    'tasklist'
+  end
+
   def to_s
     out = []
     @value.each { |t, onEnd| out << t.fullId }

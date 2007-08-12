@@ -14,6 +14,10 @@ class ReferenceAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
   end
+
+  def ReferenceAttribute::tjpId
+    'reference'
+  end
 end
 
 

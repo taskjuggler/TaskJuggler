@@ -860,7 +860,7 @@ class TaskScenario < ScenarioData
   end
 
   def addBooking(booking)
-    @property['bookings', @scenarioIdx] = a('bookings') + [ booking ]
+    @property['booking', @scenarioIdx] = a('booking') + [ booking ]
   end
 
   def markAsRunaway
@@ -896,7 +896,7 @@ class TaskScenario < ScenarioData
 private
 
   def bookBookings
-    a('bookings').each do |booking|
+    a('booking').each do |booking|
       unless booking.resource.leaf?
         error('booking_resource_not_leaf',
               "Booked resources may not be group resources", true,

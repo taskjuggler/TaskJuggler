@@ -15,6 +15,10 @@ class DurationAttribute < AttributeBase
     super(property, type)
   end
 
+  def DurationAttribute::tjpId
+    'duration'
+  end
+
   def to_tjp
     @type.id + ' ' + @value.to_s + 'h'
   end

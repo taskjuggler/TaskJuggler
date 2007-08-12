@@ -160,6 +160,17 @@ EOT
     newPattern(%w( !columnId !columnBody ), Proc.new {
       @val[0]
     })
+    doc('reportcolumn', <<'EOT'
+Specifies the id and other information about the report column. Optional
+attributes include formating options as well as replacement of column title or
+cell content.
+EOT
+       )
+    arg(0, 'id', <<'EOT'
+The id of the column. Most attributes are available as well as all user
+defined attributes.
+EOT
+        )
   end
 
   def rule_columnId
@@ -181,6 +192,11 @@ EOT
     newPattern(%w( _title $STRING ), Proc.new {
       @column.title = @val[1]
     })
+    doc('columntitle', <<'EOT'
+Specifies an alternative title for a report column.
+EOT
+       )
+    arg(1, 'text', 'The new column title.')
   end
 
   def rule_declareFlagList
@@ -199,7 +215,7 @@ EOT
 
   def rule_export
     newRule('export')
-    newPattern(%w( !exportHeader !reportBody ))
+    newPattern(%w( !exportHeader !exportBody ))
     doc('export', <<'EOT'
 The export report looks like a regular TaskJuggler file but contains fixed
 start and end dates for all tasks. The tasks only have start and end times,
@@ -230,14 +246,30 @@ EOT
         error('export_bad_extn',
               'Export report files must have a .tjp or .tji extension.')
       end
-      @report = export.new(@project, @val[1])
+      @report = ExportReport.new(@project, @val[1])
       @reportElement = @report.element
     })
     arg(1, 'filename', <<'EOT'
-The name of the report file to generate. It should end with a .tjp or .tji
+The name of the report file to generate. It must end with a .tjp or .tji
 extension.
 EOT
        )
+  end
+
+  def rule_exportAttributes
+    newRule('exportAttributes')
+    optional
+    repeatable
+
+    newPattern(%w( !hideresource ))
+    newPattern(%w( !hidetask ))
+    newPattern(%w( !reportEnd ))
+    newPattern(%w( !reportPeriod ))
+    newPattern(%w( !reportStart ))
+  end
+
+  def rule_exportBody
+    newOptionsRule('exportBody', 'exportAttributes')
   end
 
   def rule_extendAttributes
@@ -385,6 +417,32 @@ EOT
 
   def rule_flagList
     newListRule('flagList', '!flag')
+  end
+
+  def rule_hideresource
+    newRule('hideresource')
+    newPattern(%w( _hideresource !logicalExpression ), Proc.new {
+      @reportElement.hideResource = @val[1]
+    })
+    doc('hideresource', <<'EOT'
+Do not include resources that match the specified logical expression. If the
+report is sorted in tree mode (default) then enclosing resources are listed
+even if the expression matches the resource.
+EOT
+       )
+  end
+
+  def rule_hidetask
+    newRule('hidetask')
+    newPattern(%w( _hidetask !logicalExpression ), Proc.new {
+      @reportElement.hideTask = @val[1]
+    })
+    doc('hidetask', <<'EOT'
+Do not include tasks that match the specified logical expression. If the
+report is sorted in tree mode (default) then enclosing tasks are listed even
+if the expression matches the task.
+EOT
+       )
   end
 
   def rule_htmlResourceReport
@@ -921,14 +979,7 @@ additional $.
 EOT
        )
 
-    newPattern(%w( _end !valDate ), Proc.new {
-      @reportElement.end = @val[1]
-    })
-    doc('report:end', <<'EOT'
-Specifies the end date of the report. In task reports only tasks that start
-before this end date are listed.
-EOT
-       )
+    newPattern(%w( !reportEnd ))
 
     newPattern(%w( _headline $STRING ), Proc.new {
       @reportElement.headline = @val[1]
@@ -938,25 +989,9 @@ Specifies the headline for a report.
 EOT
        )
 
-    newPattern(%w( _hideresource !logicalExpression ), Proc.new {
-      @reportElement.hideResource = @val[1]
-    })
-    doc('hideresource', <<'EOT'
-Do not include resources that match the specified logical expression. If the
-report is sorted in tree mode (default) then enclosing resources are listed
-even if the expression matches the resource.
-EOT
-       )
+    newPattern(%w( !hideresource ))
 
-    newPattern(%w( _hidetask !logicalExpression ), Proc.new {
-      @reportElement.hideTask = @val[1]
-    })
-    doc('hidetask', <<'EOT'
-Do not include tasks that match the specified logical expression. If the
-report is sorted in tree mode (default) then enclosing tasks are listed even
-if the expression matches the task.
-EOT
-       )
+    newPattern(%w( !hidetask ))
 
     newPattern(%w( _period !valInterval), Proc.new {
       @reportElement.start = @val[1].start
@@ -1008,14 +1043,7 @@ this group.
 EOT
        )
 
-    newPattern(%w( _start !valDate ), Proc.new {
-      @reportElement.start = @val[1]
-    })
-    doc('report:start', <<'EOT'
-Specifies the start date of the report. In task reports only tasks that end
-after this end date are listed.
-EOT
-       )
+    newPattern(%w( !reportStart ))
 
     newPattern(%w( _taskroot !taskId), Proc.new {
       @reportElement.taskRoot = @val[1]
@@ -1160,6 +1188,43 @@ EOT
 
   def rule_reportBody
     newOptionsRule('reportBody', 'reportAttributes')
+  end
+
+  def rule_report_end
+    newRule('reportEnd')
+    newPattern(%w( _end !valDate ), Proc.new {
+      @reportElement.end = @val[1]
+    })
+    doc('report:end', <<'EOT'
+Specifies the end date of the report. In task reports only tasks that start
+before this end date are listed.
+EOT
+       )
+  end
+
+  def rule_reportPeriod
+    newRule('reportPeriod')
+    newPattern(%w( _period !interval ), Proc.new {
+      @property['start', @scenarioIdx] = @val[1].start
+      @property['end', @scenarioIdx] = @val[1].end
+    })
+    doc('period', <<'EOT'
+This property is a shortcut for setting the start and end property at the same
+time. In contrast to using these, it does not change the scheduling direction.
+EOT
+       )
+  end
+
+  def rule_reportStart
+    newRule('reportStart')
+    newPattern(%w( _start !valDate ), Proc.new {
+      @reportElement.start = @val[1]
+    })
+    doc('report:start', <<'EOT'
+Specifies the start date of the report. In task reports only tasks that end
+after this end date are listed.
+EOT
+       )
   end
 
   def rule_resource
@@ -1852,15 +1917,7 @@ reported.
 EOT
        )
 
-    newPattern(%w( _period !interval ), Proc.new {
-      @property['start', @scenarioIdx] = @val[1].start
-      @property['end', @scenarioIdx] = @val[1].end
-    })
-    doc('period', <<'EOT'
-This property is a shortcut for setting the start and end property at the same
-time. In contrast to using these, it does not change the scheduling direction.
-EOT
-       )
+    newPattern(%w( !reportPeriod ))
 
     newPattern(%w( _precedes !taskPredList ), Proc.new {
       @property['precedes', @scenarioIdx] =

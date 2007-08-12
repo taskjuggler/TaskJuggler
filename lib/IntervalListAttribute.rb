@@ -17,6 +17,10 @@ class IntervalListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def IntervalListAttribute::tjpId
+    'intervallist'
+  end
+
   def to_s
     out = []
     @value.each { |i| out << i.to_s }

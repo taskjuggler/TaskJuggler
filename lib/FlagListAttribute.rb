@@ -19,15 +19,17 @@ class FlagListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def FlagListAttribute::tjpId
+    'flaglist'
+  end
+
   def to_s
     @value.join(', ')
   end
 
   def to_tjp
-    "flags #{@value.join(', ')}\n"
+    "flags #{@value.join(', ')}"
   end
 
 end
-
-
 

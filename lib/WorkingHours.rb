@@ -132,8 +132,8 @@ class WorkingHours
         next
       end
       @days[day].each do |iv|
-        str += "#{iv[0] / 3600}:#{iv[0] % 3600} - " +
-               "#{iv[1] / 3600}:#{iv[1] % 3600}   "
+        str += "#{iv[0] / 3600}:#{iv[0] % 3600 == 0 ? '00' : iv[0] % 3600} - " +
+               "#{iv[1] / 3600}:#{iv[1] % 3600 == 0 ? '00' : iv[1] % 3600}"
       end
       str += "\n" if day < 6
     end

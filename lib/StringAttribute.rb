@@ -15,5 +15,8 @@ class StringAttribute < AttributeBase
     super(property, type)
   end
 
+  def StringAttribute::tjpId
+    'text'
+  end
 end
 

@@ -15,5 +15,8 @@ class FixnumAttribute < AttributeBase
     super(property, type)
   end
 
+  def FixnumAttribute::tjpId
+    'integer'
+  end
 end
 

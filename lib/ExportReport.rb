@@ -14,30 +14,52 @@ require 'ReportBase'
 
 class ExportReport < ReportBase
 
+  attr_reader :element
+
   def initialize(project, name)
     super(project, name)
-    @supportedTaskAttrs = %w( complete depends flags maxend maxstart minend
-                              minstart note priority responsible )
-    @taskAttrs = @supportedTaskAttrs
+
+    # This report only has one element.
+    @element = ReportElement.new(self)
+
+    @supportedTaskAttrs = %w( booking complete depends flags maxend
+                              maxstart minend minstart note priority
+                              responsible )
+    @supportedResourceAttrs = %w( vacation workinghours )
+    @taskAttrs = %w( all )
+    @resourceAttrs = %w( all )
     @scenarios = [ 0 ]
   end
 
   def generate
+    @resourceList = PropertyList.new(@project.resources)
+    @resourceList.setSorting([ ['seqno', true, -1 ] ])
+    @taskList = PropertyList.new(@project.tasks)
+    @taskList.setSorting([ ['seqno', true, -1 ] ])
+
+    getBookings
+
     openFile
 
     generateProjectProperty
+    generateFlagDeclaration
+    generateResourceList
     generateTaskList
     generateTaskAttributes
+    generateResourceAttributes
 
     closeFile
   end
 
+private
+
   def generateProjectProperty
     @file << "project #{@project['id']} \"#{@project['name']}\" " +
              "\"#{@project['version']}\" #{@project['start']} - " +
-             "#{@project['end']} {"
+             "#{@project['end']} {\n"
+    generateCustomAttributeDeclarations('resource', @project.resources)
     generateCustomAttributeDeclarations('task', @project.tasks)
-    @file << "}\n"
+    @file << "}\n\n"
   end
 
   def generateCustomAttributeDeclarations(tag, propertySet)
@@ -50,31 +72,66 @@ class ExportReport < ReportBase
     # Return if there are no user defined attributes.
     return if customAttributes == 0
 
-   # This hash maps attributes types to the labels in the extned definition.
-    attrTags = {
-      DateAttribute => 'date',
-      ReferenceAttribute => 'reference',
-      StringAttribute => 'text'
-    }
-    # Generate definitions for each user defined attribute.
+    # Generate definitions for each user defined attribute that is in the
+    # taskAttributes list.
     @file << '  extend ' + tag + "{\n"
       propertySet.eachAttributeDefinition do |ad|
-        next unless ad.userDefined
+        next unless ad.userDefined && @taskAttrs.include?(ad.id)
 
-        @file << "    #{attrTags[ad.objClass]} #{ad.id} \"#{ad.name}\"\n"
+        @file << "    #{ad.objClass.tjpId} #{ad.id} \"#{ad.name}\"\n"
       end
     @file << "  }\n"
   end
 
-  def generateTaskList
-    taskList = PropertyList.new(@project.tasks)
-    taskList.setSorting([ ['seqno', true, -1 ] ])
+  def generateFlagDeclaration
+    flags = []
 
+    properties = @resourceList + @taskList
+
+    properties.each do |property|
+      @scenarios.each do |scenarioIdx|
+        property['flags', scenarioIdx].each do |flag|
+          flags << flag unless flags.include?(flag)
+        end
+      end
+    end
+    flags.sort
+    unless flags.empty?
+      @file << "flags #{flags.join(', ')}\n\n"
+    end
+  end
+
+  def generateResourceList
+    # The resource definitions are generated recursively. So we only need to
+    # start it for the top-level resources.
+    @resourceList.each do |resource|
+      if resource.parent.nil?
+        generateResource(resource, 0)
+      end
+    end
+    @file << "\n"
+  end
+
+  def generateResource(resource, indent)
+    @file << ' ' * indent + "resource #{resource.id} \"#{resource.name}\" {\n"
+
+    # Call this function recursively for all children that are included in the
+    # resource list as well.
+    resource.children.each do |subresource|
+      if @resourceList.include?(subresource)
+        generateresource(subresource, indent + 2)
+      end
+    end
+
+    @file << ' ' * indent + "}\n"
+  end
+
+  def generateTaskList
     # The task definitions are generated recursively. So we only need to start
     # it for the top-level tasks.
-    taskList.each do |task|
+    @taskList.each do |task|
       if task.parent.nil?
-        generateTask(taskList, task, 0)
+        generateTask(task, 0)
       end
     end
   end
@@ -83,7 +140,7 @@ class ExportReport < ReportBase
   # attributes that have to be passed on the the nested tasks at creation
   # time. All other attributes are declared in subsequent supplement
   # statements.
-  def generateTask(taskList, task, indent)
+  def generateTask(task, indent)
     @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
 
     if @taskAttrs.include?('depends') || @taskAttrs.include?('all')
@@ -96,8 +153,8 @@ class ExportReport < ReportBase
     # Call this function recursively for all children that are included in the
     # task list as well.
     task.children.each do |subtask|
-      if taskList.include?(subtask)
-        generateTask(taskList, subtask, indent + 2)
+      if @taskList.include?(subtask)
+        generateTask(subtask, indent + 2)
       end
     end
 
@@ -105,7 +162,7 @@ class ExportReport < ReportBase
     # report or whether this is a leaf task for the report.
     isLeafTask = true
     task.children.each do |subtask|
-      if taskList.include?(subtask)
+      if @taskList.include?(subtask)
         isLeafTask = false
         break
       end
@@ -114,20 +171,19 @@ class ExportReport < ReportBase
     # For leaf tasks we put some attributes right here.
     if isLeafTask
       @scenarios.each do |scenarioIdx|
-        generateScAttribute(scenarioIdx, 'start', task['start', scenarioIdx],
-                            indent + 2)
+        generateAttribute(task, 'start', indent + 2, scenarioIdx)
         unless task['milestone', scenarioIdx]
-          generateScAttribute(scenarioIdx, 'end', task['end', scenarioIdx],
-                              indent + 2)
+          generateAttribute(task, 'end', indent + 2, scenarioIdx)
         end
         if task['scheduled', scenarioIdx]
-          generateScAttribute(scenarioIdx, 'scheduled', nil, indent + 2)
+          generateAttributeText('scheduled', indent + 2, scenarioIdx)
         end
-        generateScAttribute(scenarioIdx, 'scheduling',
-                            task['forward', scenarioIdx] ? 'asap' : 'alap',
-                            indent + 2)
+        generateAttributeText('scheduling ' +
+                              (task['forward', scenarioIdx] ?
+                               'asap' : 'alap'),
+                              indent + 2, scenarioIdx)
         if task['milestone', scenarioIdx]
-          generateScAttribute(scenarioIdx, 'milestone', nil, indent + 2)
+          generateAttributeText('milestone', indent + 2, scenarioIdx)
         end
       end
     end
@@ -137,7 +193,7 @@ class ExportReport < ReportBase
 
   # Generate 'depends' or 'precedes' attributes for a task.
   def generateTaskDependency(scenarioIdx, task, tag, indent)
-    return unless @taskAttrs.include?('depends') || !taskAttrs.include?('all')
+    return unless @taskAttrs.include?('depends') || !@taskAttrs.include?('all')
 
     taskDeps = task[tag, scenarioIdx]
     unless taskDeps.empty?
@@ -155,69 +211,139 @@ class ExportReport < ReportBase
     end
   end
 
-  # Generate a list of task supplement statements that include the rest of the
-  # attributes.
-  def generateTaskAttributes
-    taskList = PropertyList.new(@project.tasks)
-    taskList.setSorting([ ['seqno', true, -1 ] ])
+  # Generate a list of resource supplement statements that include the rest of
+  # the attributes.
+  def generateResourceAttributes
+    @resourceList.each do |resource|
+      @file << "supplement resource #{resource.fullId} {\n"
+      @project.resources.eachAttributeDefinition do |attrDef|
+        id = attrDef.id
+        attr = resource.getAttr(id)
+        next if (!@supportedResourceAttrs.include?(id) &&
+                 ! attrDef.userDefined) ||
+                (!@resourceAttrs.include?('all') &&
+                 !@resourceAttrs.include?(id))
 
-    flags = []
-    taskList.each do |task|
-      @scenarios.each do |scenarioIdx|
-        task['flags', scenarioIdx].each do |flag|
-          flags << flag unless flags.include?(flag)
+        if attrDef.scenarioSpecific
+          @scenarios.each do |scenarioIdx|
+            generateAttribute(resource, id, 2, scenarioIdx)
+          end
+        else
+          generateAttribute(resource, id, 2)
         end
       end
-    end
-    flags.sort
-    unless flags.empty?
-      @file << "flags #{flags.join(', ')}\n"
-    end
 
-    taskList.each do |task|
-      @file << "supplement task #{task.fullId} {\n"
-      @supportedTaskAttrs.each do |attr|
-        next unless @taskAttrs.include?('all') || @taskAttrs.include?(attr)
-
-        prefix = "  "
-        @scenarios.each do |scenarioIdx|
-          if (scenSpec = @project.tasks.scenarioSpecific?(attr))
-            prefix += "#{@project.scenario(scenarioIdx).id}:"
-          end
-
-          # Some attributes need special treatment.
-          case attr
-          when 'depends'
-            next     # already taken care of
-          else
-            # The rest can be generated with a generic routine.
-            unless task[attr, scenarioIdx].nil? ||
-                   (task[attr, scenarioIdx].is_a?(Array) &&
-                    task[attr, scenarioIdx].empty?)
-              if scenSpec
-                @file << prefix + "#{task.getAttr(attr, scenarioIdx).to_tjp}\n"
-              else
-                @file << prefix + "#{task.getAttr(attr).to_tjp}\n"
-              end
-            end
-          end
-
-          break unless scenSpec
-        end
-      end
       @file << "}\n"
     end
   end
 
-#def generateAttribute(attr)
-#    @file << "  #{attr.to_tjp}\n" if attr.provided
-#  end
+  # Generate a list of task supplement statements that include the rest of the
+  # attributes.
+  def generateTaskAttributes
+    @taskList.each do |task|
+      @file << "supplement task #{task.fullId} {\n"
+      @project.tasks.eachAttributeDefinition do |attrDef|
+        id = attrDef.id
+        attr = task.getAttr(id)
+        next if (!@supportedTaskAttrs.include?(id) &&
+                 ! attrDef.userDefined) ||
+                (!@taskAttrs.include?('all') && !@taskAttrs.include?(id))
 
-  def generateScAttribute(scenarioIdx, name, value, indent)
-    @file << ' ' * indent +
-             "#{@project.scenario(scenarioIdx).id}:#{name}"
-    @file << " #{value}" if value
-    @file << "\n"
+        if attrDef.scenarioSpecific
+          @scenarios.each do |scenarioIdx|
+            # Some attributes need special treatment.
+            case id
+            when 'depends'
+              next     # already taken care of
+            when 'booking'
+              generateBooking(task, 2, scenarioIdx)
+            else
+              generateAttribute(task, id, 2, scenarioIdx)
+            end
+          end
+        else
+          generateAttribute(task, id, 2)
+        end
+      end
+
+      @file << "}\n"
+    end
+  end
+
+  def generateAttribute(property, attrId, indent, scenarioIdx = nil)
+    if scenarioIdx.nil?
+      return if property.getAttr(attrId).nil?
+    else
+      return if property[attrId, scenarioIdx].nil?
+    end
+
+    generateAttributeText(property.getAttr(attrId, scenarioIdx).to_tjp,
+                          indent, scenarioIdx)
+  end
+
+  def generateAttributeText(text, indent, scenarioIdx)
+    @file << ' ' * indent
+    tag = ''
+    unless scenarioIdx.nil?
+      tag = @project.scenario(scenarioIdx).id
+      @file << "#{tag}:"
+    end
+    @file << "#{indentBlock(text, indent + tag.length + 2)}\n"
+  end
+
+  # Get the booking data for all resources that should be included in the
+  # report.
+  def getBookings
+    @bookings = {}
+    if @taskAttrs.include?('booking') ||
+       @taskAttrs.include?('all')
+      @scenarios.each do |scenarioIdx|
+        @bookings[scenarioIdx] = {}
+        @resourceList.each do |resource|
+          # Get the bookings for this resource hashed by task.
+          bookings = resource.getBookings(scenarioIdx)
+          next if bookings.nil?
+
+          # Now convert/add them to a tripple-stage hash by scenarioIdx, task
+          # and then resource.
+          bookings.each do |task, booking|
+            if !@bookings[scenarioIdx].include?(task)
+              @bookings[scenarioIdx][task] = {}
+            end
+            @bookings[scenarioIdx][task][resource] = booking
+          end
+        end
+      end
+    end
+  end
+
+  def generateBooking(task, indent, scenarioIdx)
+    return unless @bookings[scenarioIdx].include?(task)
+
+    @bookings[scenarioIdx][task].each_value do |booking|
+      generateAttributeText('booking ' + booking.to_tjp, indent, scenarioIdx)
+    end
+  end
+
+  # This utility function is used to indent multi-line attributes. All
+  # attributes should be filtered through this function. Attributes that
+  # contain line breaks will be indented properly. In addition to the
+  # indentation specified by _indent_ all but the first line will be indented
+  # after the first word of the first line. The text may not end with a line
+  # break.
+  def indentBlock(text, indent)
+    out = ''
+    firstSpace = 0
+    0.upto(text.length - 1) do |i|
+      if firstSpace == 0 && text[i] == ?\ # There must be a space after ?
+        firstSpace = i
+      end
+      out << text[i]
+      if text[i] == ?\n
+        out += ' ' * (indent + firstSpace)
+      end
+    end
+    out
   end
 
 end

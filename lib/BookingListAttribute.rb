@@ -19,12 +19,16 @@ class BookingListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def BookingListAttribute::tjpId
+    'bookinglist'
+  end
+
   def to_s
     @value.join(', ')
   end
 
   def to_tjp
-    "flags #{@value.join(', ')}\n"
+    raise "Don't call this method. This needs to be a special case."
   end
 
 end

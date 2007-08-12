@@ -19,6 +19,10 @@ class LogicalAttribute < LogicalOperation
     super(attribute)
   end
 
+  def LogicalAttribute::tjpId
+    'logical'
+  end
+
   def eval(expr)
     expr.property[@operand1, @scenarioIdx]
   end

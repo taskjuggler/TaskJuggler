@@ -24,5 +24,19 @@ class Booking
     @sloppy = 0
   end
 
+  def to_tjp
+    out = "#{@resource.fullId} "
+    first = true
+    @intervals.each do |iv|
+      if first
+        first = false
+      else
+        out += ",\n"
+      end
+      out += "#{iv.start} + #{(iv.end - iv.start) / 3600}h"
+    end
+    out += ' { overtime 2 }'
+  end
+
 end
 

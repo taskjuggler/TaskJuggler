@@ -17,6 +17,10 @@ class BooleanAttribute < AttributeBase
     super(property, type)
   end
 
+  def BooleanAttribute::tjpId
+    'boolean'
+  end
+
   def to_s
     @value ? 'true' : 'false'
   end

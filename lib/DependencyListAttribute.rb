@@ -17,6 +17,10 @@ class DependencyListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def DependencyListAttribute::tjpId
+    'dependencylist'
+  end
+
   def to_s
     out = []
     @value.each { |t| out << t.task.fullId if t.task }

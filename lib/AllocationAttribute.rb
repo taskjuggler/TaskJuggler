@@ -20,6 +20,10 @@ class AllocationAttribute < AttributeBase
     @value = Array.new
   end
 
+  def AllocationAttribute::tjpId
+    'allocation'
+  end
+
   def to_tjp
     out = []
     @value.each do |allocation|

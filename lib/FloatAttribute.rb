@@ -15,6 +15,10 @@ class FloatAttribute < AttributeBase
     super(property, type)
   end
 
+  def FloatAttribute::tjpId
+    'float'
+  end
+
   def to_tjp
     id + ' ' + @value.to_s
   end

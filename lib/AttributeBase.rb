@@ -78,6 +78,14 @@ class AttributeBase
     @value
   end
 
+  def nil?
+    if @value.is_a?(Array)
+      @value.empty?
+    else
+      @value.nil?
+    end
+  end
+
   def to_s
     @value.to_s
   end

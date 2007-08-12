@@ -17,6 +17,10 @@ class ResourceListAttribute < AttributeBase
     @value = Array.new
   end
 
+  def ResourceListAttribute::tjpId
+    'resourcelist'
+  end
+
   def to_s
     out = []
     @value.each { |r| out << r.fullId }
