@@ -66,6 +66,7 @@ private
         end
         column.cell2.text = t.send(name2Func).to_s
         column.cell2.fontFactor = 0.5
+        column.cell2.width = 20
         unless @project.isWorkingTime(iv)
           column.cell2.category = 'tabhead_offduty'
         end

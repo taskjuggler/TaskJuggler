@@ -22,8 +22,8 @@ class ReportTableColumn
     @table = table
     @table.addColumn(self)
     @descr = descr
-    @cell1 = ReportTableCell.new(nil, title)
-    @cell2 = ReportTableCell.new(nil, '')
+    @cell1 = ReportTableCell.new(nil, title, true)
+    @cell2 = ReportTableCell.new(nil, '', true)
   end
 
   def setOut(out)

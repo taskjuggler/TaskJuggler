@@ -16,12 +16,13 @@ class ReportTableCell
 
   attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :indent,
-                :fontFactor, :bold, :rows, :columns
+                :fontFactor, :bold, :width, :rows, :columns
 
-  def initialize(line, text = '')
+  def initialize(line, text = '', headerCell = false)
     @line = line
     @line.addCell(self) if line
 
+    @headerCell = headerCell
     @text = text
     @category = nil
     @hidden = false
@@ -32,6 +33,7 @@ class ReportTableCell
     @indent = false
     @fontFactor = 1.0;
     @bold = false
+    @width = nil
     @rows = 1
     @columns = 1
   end
@@ -69,15 +71,18 @@ class ReportTableCell
     attribs += "rowspan=\"#{@rows}\" " if @rows > 1
     attribs += "colspan=\"#{@columns}\" " if @columns > 1
 
-    @out << " " * indent + "<td "
+    cellTypeChar = @headerCell ? 'h' : 'd'
+    @out << " " * indent + "<t#{cellTypeChar} "
     if @category
       @out << "class=\"#{category}\" "
     else
       @out << "class=\"tabcell\" "
     end
-    @out << "#{attribs} style=\"#{style}\">"
+    @out << "#{attribs}style=\"#{style}\">"
+    @out << "<div style=\"width: #{@width}px\">" if @width
     @out << htmlFilter(@text)
-    @out << "</td>\n"
+    @out << "</div>" if @width
+    @out << "</t#{cellTypeChar}>\n"
   end
 
 end

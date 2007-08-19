@@ -10,6 +10,8 @@
 # $Id$
 #
 
+require 'Tj3Config.rb'
+
 module HTMLUtils
 
   def htmlFilter(text)
@@ -28,7 +30,7 @@ module HTMLUtils
   end
 
   def generateHeader
-    @file << <<END_OF_TEXT
+    @file << <<'EOT'
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
  "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -38,9 +40,23 @@ module HTMLUtils
   <style type="text/css">
     .tabback { background-color:#9a9a9a }
     .tabfront { background-color:#d4dde6 }
-    .tabhead { background-color:#c2d8ff; font-size:110%; font-weight:bold;
-               text-align:center }
-    .tabhead_offduty { background-color:#dde375 }
+    .tabhead {
+      background-color:#7a7a7a;
+      color:#ffffff;
+      font-size:110%;
+      font-weight:bold;
+      text-align:center;
+    }
+    .tabhead_offduty {
+      background-color:#dde375;
+      color:#000000;
+    }
+    .tabfooter {
+      background-color:#9a9a9a;
+      color:#ffffff;
+      font-size:50%;
+      text-align:center;
+    }
     .taskcell1 { background-color:#ebf2ff }
     .taskcell2 { background-color:#d9dfeb }
     .resourcecell1 { background-color:#fff2eb }
@@ -62,30 +78,30 @@ module HTMLUtils
 <body>
 <table summary="Outer table" cellspacing="2" border="0" cellpadding="0"
        align="center" class="tabback">
-END_OF_TEXT
+EOT
     if @element.headline
-      @file << <<END_OF_TEXT
+      @file << <<'EOT'
   <thead>
     <tr><td>
       <table summary="headline" cellspacing="1" border="0" cellpadding="0"
              align="center" width="100%">
         <tr><td align="center" style="font-size: 130%" class="tabfront">
-END_OF_TEXT
+EOT
 
     @file << "<p>" << htmlFilter(@element.headline) << "</p>\n"
 
-        @file << <<END_OF_TEXT
+        @file << <<'EOT'
         </td></tr>
       </table>
     </td></tr>
   </thead>
-END_OF_TEXT
+EOT
     end
 
-    @file << <<END_OF_TEXT
+    @file << <<'EOT'
   <tbody>
     <tr><td>
-END_OF_TEXT
+EOT
 
   end
 
@@ -94,29 +110,31 @@ END_OF_TEXT
 
     generateLegend
 
-    @file << <<END_OF_TEXT
+    @file << <<'EOT'
     </td></tr>
-    <tr><td align="center" style="font-size:50%">
-END_OF_TEXT
+    <tr><td class="tabfooter">
+EOT
 
     @file << htmlFilter(@project['copyright']) + " - " if @project['copyright']
-    @file << "Version " + htmlFilter(@project['version']) + " - " +
+    @file << "Project: #{htmlFilter(@project['name'])} " +
+             "Version: #{htmlFilter(@project['version'])} - " +
              "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} with " +
-             "<a href=\"http://www.taskjuggler.org\">TaskJuggler</a> "
+             "<a href=\"#{AppConfig.contact}\">#{AppConfig.packageName}</a> " +
+             " v#{AppConfig.version}"
 
-    @file << <<END_OF_TEXT
+    @file << <<'EOT'
     </td></tr>
   </tbody>
 </table>
 </body></html>
-END_OF_TEXT
+EOT
 
   end
 
 private
 
   def generateLegend
-    @file << <<END_OF_TEXT
+    @file << <<'EOT'
 <table summary="Legend" width="100%" align="center" border="0" cellpadding="2"
        cellspacing="1">
   <thead>
@@ -171,7 +189,7 @@ private
   <tr><td colspan="8"></td></tr>
   </tbody>
 </table>
-END_OF_TEXT
+EOT
 
   end
 
