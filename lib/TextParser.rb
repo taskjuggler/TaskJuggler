@@ -231,7 +231,7 @@ private
   # _rule_. It recursively calls this function whenever the syntax description
   # contains the reference to another rule.
   def parseRule(rule)
-    puts "Parsing with rule #{rule.name}" if @@debug >= 10
+    $stderr.puts "Parsing with rule #{rule.name}" if @@debug >= 10
     result = rule.repeatable ? [] : nil
     # Rules can be marked 'repeatable'. This flag will be set to true after
     # the first iternation has been completed.
@@ -241,7 +241,7 @@ private
       # which pattern of the rule needs to be processed.
       begin
         token = nextToken
-        puts "  Token: #{token[0]}/#{token[1]}" if @@debug >= 20
+        $stderr.puts "  Token: #{token[0]}/#{token[1]}" if @@debug >= 20
       rescue TjException
         error('parse_rule1', $!.message)
       end
@@ -286,7 +286,9 @@ private
                  "Expecting #{@@expectedTokens[0]}"))
         end
         returnToken(token)
-        puts "Finished parsing with rule #{rule.name} (*)" if @@debug >= 10
+        if @@debug >= 10
+          $stderr.puts "Finished parsing with rule #{rule.name} (*)"
+        end
         return result
       end
 
@@ -368,7 +370,7 @@ private
       repeatMode = true
     end
 
-    puts "Finished parsing with rule #{rule.name}" if @@debug >= 10
+    $stderr.puts "Finished parsing with rule #{rule.name}" if @@debug >= 10
     return result
   end
 

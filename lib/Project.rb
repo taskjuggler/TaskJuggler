@@ -373,6 +373,7 @@ protected
       task.calcPathCriticalness(scIdx)
     end
 
+    # This is used to debugging only
     if false
       resources.each do |resource|
         puts resource

@@ -20,7 +20,7 @@ class KeywordDocumentation
     @pattern = pattern
     @keyword = pattern.keyword
     @syntax = syntax
-    @args = args.uniq
+    @args = args
     # Hash that maps patterns of optional attributes to a boolean value. True
     # if the pattern is a scenario specific attribute.
     @optAttrPatterns = optAttrPatterns
@@ -33,7 +33,11 @@ class KeywordDocumentation
     @seeAlso = []
   end
 
+  # Post process the class member to set cross references to other
+  # KeywordDocumentation items.
   def crossReference(keywords, rules)
+    # Some arguments are references to other patterns. The current keyword is
+    # added as context to such the keyword of such patterns.
     @args.each do |arg|
       unless arg.pattern.nil?
         kwd = keywords[arg.pattern.keyword]
@@ -41,15 +45,17 @@ class KeywordDocumentation
       end
     end
 
+    # Optional attributes are treated similarly. In addition we add them to
+    # the @optionalAttributes list of this keyword.
     @optAttrPatterns.each do |pattern, scenarioSpecific|
       token = pattern.terminalToken(rules)
       if pattern.keyword.nil?
-        puts "Pattern #{pattern} has no keyword defined"
+        $stderr.puts "Pattern #{pattern} has no keyword defined"
         next
       end
       if (kwd = keywords[pattern.keyword]).nil?
-        puts "Keyword #{keyword} has undocumented optional attribute " +
-             "#{token[0]}"
+        stderr.puts "Keyword #{keyword} has undocumented optional attribute " +
+                    "#{token[0]}"
       else
         @optionalAttributes << kwd
         kwd.contexts << self unless kwd.contexts.include?(self)
@@ -57,6 +63,7 @@ class KeywordDocumentation
       end
     end
 
+    # Resolve the seeAlso patterns to keyword references.
     @pattern.seeAlso.sort.each do |also|
       if keywords[also].nil?
         raise "See also reference #{also} of #{@pattern} is unknown"
@@ -65,6 +72,8 @@ class KeywordDocumentation
     end
   end
 
+  # Return the complete documentation of this keyword as formatted text
+  # string.
   def to_s
     tagW = 13
     textW = 79 - tagW
@@ -84,20 +93,16 @@ class KeywordDocumentation
     else
       argStr = ''
       @args.each do |arg|
-        if arg.name.nil?
-          indent = arg.syntax.length + 2
-          argStr += "#{arg.syntax}: " +
-                    "#{format(indent, arg.text, textW - indent)}\n\n"
-        elsif !arg.syntax.empty?
-          typeSpec = arg.syntax
-          typeSpec[0] = '['
-          typeSpec[-1] = ']'
-          indent = arg.name.length + arg.syntax.length + 3
-          argStr += "#{arg.name} #{arg.syntax}: " +
-                    "#{format(indent, arg.text, textW - indent)}\n\n"
-        else
+        if arg.typeSpec.nil?
           indent = arg.name.length + 2
           argStr += "#{arg.name}: " +
+                    "#{format(indent, arg.text, textW - indent)}\n\n"
+        else
+          typeSpec = arg.typeSpec
+          typeSpec[0] = '['
+          typeSpec[-1] = ']'
+          indent = arg.name.length + typeSpec.size + 3
+          argStr += "#{arg.name} #{typeSpec}: " +
                     "#{format(indent, arg.text, textW - indent)}\n\n"
         end
       end
@@ -155,6 +160,8 @@ class KeywordDocumentation
     str
   end
 
+  # Utility function that is used to format the str String as a block of the
+  # specified width. The left side is indented with indent white spaces.
   def format(indent, str, width)
     out = ''
     width - indent

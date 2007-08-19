@@ -1,0 +1,8 @@
+project test "Test" "1.0" 2007-08-19 +2m 
+
+task t "T" {
+  start 2007-08-19
+# MARK: error 6 effort_zero
+	effort 0d
+}
+

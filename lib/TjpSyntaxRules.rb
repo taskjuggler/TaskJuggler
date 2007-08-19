@@ -162,17 +162,12 @@ EOT
     newPattern(%w( !columnId !columnBody ), Proc.new {
       @val[0]
     })
-    arg(0, 'columnID', 'Specifies the content of the column.')
   end
 
   def rule_columnId
     newRule('columnId')
     newPattern(%w( !reportableAttributes ), Proc.new {
-      if (title = @reportElement.defaultColumnTitle(@val[0])).nil?
-        error('report_column',
-              "Unknown column #{@val[0]}. " +
-              "Must be one of #{@reportElement.supportedColumns}.")
-      end
+      title = @reportElement.defaultColumnTitle(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })
     doc('columnid', <<'EOT'
@@ -398,7 +393,7 @@ EOT
 
   def rule_extendProperty
     newRule('extendProperty')
-    newPattern(%w( $ID ), Proc.new {
+    newPattern(%w( !extendPropertyId ), Proc.new {
       case @val[0]
       when 'task'
         @ruleToExtend = @rules['taskAttributes']
@@ -408,11 +403,16 @@ EOT
         @ruleToExtend = @rules['resourceAttributes']
         @ruleToExtendWithScenario = @rules['resourceScenarioAttributes']
         @propertySet = @project.resources
-      else
-        error('extend_prop', "Extendable property expected: task or resource")
       end
     })
   end
+
+  def rule_extendPropertyId
+    newRule('extendPropertyId')
+    singlePattern('_task')
+    singlePattern('_resource')
+  end
+
 
   def rule_flag
     newRule('flag')
@@ -591,7 +591,13 @@ EOT
       LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
     })
     doc('logicalexpression', <<'EOT'
-Logical expressions are cool!
+A logical expression consists of logical operations, such as '&' for and, '|'
+for or, '~' for not, '>' for greater than, '<' for less than, '=' for equal,
+'>=' for greater than or equal and '<=' for less than or equal to operate on
+INTEGER values or symbols. Flag names and certain functions are supported as
+symbols as well. The expression is evaluated from left to right. '~' has a
+higher precedence than other operators. Use parentheses to avoid ambiguous
+operations.
 EOT
        )
   end
@@ -651,13 +657,16 @@ EOT
       operation.operator = '~'
       operation
     })
+
     newPattern(%w( $ABSOLUTE_ID ), Proc.new {
       if @val[0].count('.') > 1
-        error "Attributes must be specified as <scenarioID>.<attribute>"
+        error('operand_attribute',
+              'Attributes must be specified as <scenarioID>.<attribute>')
       end
       scenario, attribute = @val[0].split('.')
       if (scenarioIdx = @project.scenarioIdx(scenario)).nil?
-        error "Unknown scenario ID #{scenario}"
+        error('operand_unkn_scen',
+              "Unknown scenario ID #{scenario}")
       end
       LogicalAttribute.new(attribute, scenarioIdx)
     })
@@ -667,7 +676,7 @@ EOT
     newPattern(%w( $ID !argumentList ), Proc.new {
       if @val[1].nil?
         unless @project['flags'].include?(@val[0])
-          error "Undeclared flag #{@val[0]}"
+          error('operand_unkn_flag', "Undeclared flag #{@val[0]}")
         end
         operation = LogicalFlag.new(@val[0])
       else
@@ -692,19 +701,63 @@ EOT
       end
       operation
     })
+    arg(0, 'operand', <<'EOT'
+An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ charater or it can be another operation enclosed in braces.
+EOT
+        )
+
   end
 
   def rule_operatorAndOperand
     newRule('operatorAndOperand')
     optional
-    operandPattern("|")
-    operandPattern("&")
-    operandPattern(">")
-    operandPattern("<")
-    operandPattern("=")
-    operandPattern(">=")
-    operandPattern("<=")
+    newPattern(%w( !operator !operand), Proc.new{
+      [ @val[0], @val[1] ]
+    })
+    arg(1, 'operand', <<'EOT'
+An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ charater or it can be another operation enclosed in braces.
+EOT
+        )
   end
+
+  def rule_operator
+    newRule('operator')
+
+    singlePattern('_|')
+    descr('The \'or\' operator')
+
+    singlePattern('_&')
+    descr('The \'and\' operator')
+
+    singlePattern('_>')
+    descr('The \'greater than\' operator')
+
+    singlePattern('_<')
+    descr('The \'smaller than\' operator')
+
+    singlePattern('_=')
+    descr('The \'equal\' operator')
+
+    singlePattern('_>=')
+    descr('The \'greater-or-equal\' operator')
+
+    singlePattern('_<=')
+    descr('The \'smaller-or-equal\' operator')
+  end
+
+  def rule_period
+    newRule('period')
+    newPattern(%w( _period !valInterval), Proc.new {
+      @property['start', @scenarioIdx] = @val[1].start
+      @property['end', @scenarioIdx] = @val[1].end
+    })
+    doc('period', <<'EOT'
+This property is a shortcut for setting the start and end property at the same
+time. In contrast to using these, it does not change the scheduling direction. The full period must be within the report time frame.
+EOT
+       )
+  end
+
 
   def rule_project
     newRule('project')
@@ -762,9 +815,10 @@ EOT
 Often it is desirable to collect more information in the project file than is
 necessary for task scheduling and resource allocation. To add such information
 to tasks, resources or accounts the user can extend these properties with
-user-defined attributes. The new attributes can be text or reference
-attributes. Optionally the user can specify if the attribute value should be
-inherited from the enclosing property.
+user-defined attributes. The new attributes can be of various types such as
+text, date or reference to capture various types of data. Optionally the user
+can specify if the attribute value should be inherited from the enclosing
+property.
 EOT
        )
 
@@ -1006,15 +1060,7 @@ EOT
 
     newPattern(%w( !hidetask ))
 
-    newPattern(%w( _period !valInterval), Proc.new {
-      @reportElement.start = @val[1].start
-      @reportElement.end = @val[1].end
-    })
-    doc('report.period', <<'EOT'
-This property is a shortcut for setting the start and end property at the
-same time.
-EOT
-       )
+    newPattern(%w( !reportPeriod ))
 
     newPattern(%w( _rolluptask !logicalExpression ), Proc.new {
       @reportElement.rollupTask = @val[1]
@@ -1315,12 +1361,12 @@ EOT
   def rule_reportPeriod
     newRule('reportPeriod')
     newPattern(%w( _period !interval ), Proc.new {
-      @property['start', @scenarioIdx] = @val[1].start
-      @property['end', @scenarioIdx] = @val[1].end
+      @reportElement.start = @val[1].start
+      @reportElement.end = @val[1].end
     })
-    doc('period', <<'EOT'
-This property is a shortcut for setting the start and end property at the same
-time. In contrast to using these, it does not change the scheduling direction.
+    doc('report.period', <<'EOT'
+This property is a shortcut for setting the start and end property at the
+same time.
 EOT
        )
   end
@@ -1425,6 +1471,7 @@ EOT
       end
       resource
     })
+    arg(0, 'resource', 'The ID of a defined resource')
   end
 
   def rule_resourceHeader
@@ -1568,10 +1615,16 @@ EOT
     newRule('scenarioIdx')
     newPattern(%w( $ID ), Proc.new {
       if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario', "Unknown scenario #{@val[1]}")
+        error('unknown_scenario_idx', "Unknown scenario #{@val[1]}")
       end
       scenarioIdx
     })
+  end
+
+  def rule_schedulingDirection
+    newRule('schedulingDirection')
+    singlePattern('_alap')
+    singlePattern('_asap')
   end
 
   def rule_sortCriteria
@@ -1589,11 +1642,12 @@ EOT
         attribute = args[0]
       when 3
         if (scenario = @project.scenarioIdx(args[0])).nil?
-          error "Unknown scenario #{args[0]} in sorting criterium"
+          error('sort_unknown_scen',
+                "Unknown scenario #{args[0]} in sorting criterium")
         end
         attribute = args[1]
         if args[2] != 'up' && args[2] != 'down'
-          error "Sorting direction must be 'up' or 'down'"
+          error('sort_direction', "Sorting direction must be 'up' or 'down'")
         end
         direction = args[2] == 'up'
       else
@@ -1808,7 +1862,7 @@ EOT
     newRule('taskId')
     newPattern(%w( !taskIdUnverifd ), Proc.new {
       if (task = @project.task(@val[0])).nil?
-        error "Unknown task #{@val[0]}"
+        error('unknown_task', "Unknown task #{@val[0]}")
       end
       task
     })
@@ -2025,7 +2079,7 @@ reported.
 EOT
        )
 
-    newPattern(%w( !reportPeriod ))
+    newPattern(%w( !period ))
 
     newPattern(%w( _precedes !taskPredList ), Proc.new {
       @property['precedes', @scenarioIdx] =
@@ -2084,14 +2138,11 @@ scheduling in the scenario.
 EOT
        )
 
-    newPattern(%w( _scheduling $ID ), Proc.new {
+    newPattern(%w( _scheduling !schedulingDirection ), Proc.new {
       if @val[1] == 'alap'
         @property['forward', @scenarioIdx] = false
       elsif @val[1] == 'asap'
         @property['forward', @scenarioIdx] = true
-      else
-        error('task_scheduling', "Scheduling must be 'asap' or 'alap'",
-              @property)
       end
     })
     doc('scheduling', <<'EOT'
@@ -2174,6 +2225,7 @@ EOT
     newRule('vacationName')
     optional
     newPattern(%w( $STRING )) # We just throw the name away
+    arg(0, 'name', 'An optional name for the vacation')
   end
 
   def rule_valDate
@@ -2203,7 +2255,7 @@ EOT
               "Start date #{iv.start} must be within the project time frame")
       end
       if iv.end <= @project['start'] || iv.end > @project['end']
-        error('interval_end_in_rage',
+        error('interval_end_in_range',
               "End date #{iv.end} must be within the project time frame")
       end
       iv
@@ -2244,7 +2296,8 @@ EOT
     newPattern([ '_ - ', '!weekday' ], Proc.new {
       @val[1]
     })
-    arg(1, 'end weekday', 'Weekday (sun - sat). It is included in the interval.')
+    arg(1, 'end weekday',
+        'Weekday (sun - sat). It is included in the interval.')
   end
 
   def rule_workingDuration

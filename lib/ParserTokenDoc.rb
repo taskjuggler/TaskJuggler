@@ -11,16 +11,17 @@
 #
 
 # Utility class to store a name and a textual description of the meaning of a
-# token used by the parser syntax tree.
+# token used by the parser syntax tree. A specification of the variable type
+# and a reference to a specific pattern are optional.
 class ParserTokenDoc
 
-  attr_reader :name, :text
-  attr_accessor :syntax, :pattern
+  attr_reader :text
+  attr_accessor :name, :typeSpec, :pattern
 
-  def initialize(name, text, syntax = nil)
+  def initialize(name, text)
     @name = name
+    @typeSpec = typeSpec
     @text = text
-    @syntax = syntax
     @pattern = nil
   end
 

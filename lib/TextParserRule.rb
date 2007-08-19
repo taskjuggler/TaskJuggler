@@ -22,7 +22,7 @@
 # the parsed file.
 class TextParserRule
 
-  attr_reader :name, :patterns, :optional, :repeatable
+  attr_reader :name, :patterns, :optional, :repeatable, :keyword, :doc
   attr_accessor :transitions
 
   def initialize(name)
@@ -31,6 +31,8 @@ class TextParserRule
     @repeatable = false
     @optional = false
     @transitions = []
+    @keyword = nil
+    @doc = nil
   end
 
   def addPattern(pattern)
@@ -46,14 +48,17 @@ class TextParserRule
   end
 
   def setDoc(keyword, doc)
+    raise 'No pattern defined yet' if @patterns.empty?
     @patterns[-1].setDoc(keyword, doc)
   end
 
   def setArg(idx, doc)
+    raise 'No pattern defined yet' if @patterns.empty?
     @patterns[-1].setArg(idx, doc)
   end
 
   def setSeeAlso(also)
+    raise 'No pattern defined yet' if @patterns.empty?
     @patterns[-1].setSeeAlso(also)
   end
 

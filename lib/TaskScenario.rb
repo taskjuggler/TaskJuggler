@@ -248,6 +248,7 @@ class TaskScenario < ScenarioData
       end
       error('loop_end', "Aborting")
     end
+    # Used for debugging only
     if false
       pathText = ''
       path.each { |t, e| pathText += "#{t.fullId}(#{e ? 'end' : 'start'}) -> " }

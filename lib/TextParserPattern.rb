@@ -158,32 +158,24 @@ class TextParserPattern
       token = token.slice(1, token.length - 1)
 
       if @args[i]
-        # In case we have a token that is a documented argument, the syntax
-        # for that token is the argument name. Or, if the name is nil, it's
-        # just the token.
+        # The argument is documented in the syntax definition. We copy the
+        # entry as we need to modify it.
+        argDoc = @args[i].clone
+
+        # A documented argument without a name is a terminal token. We use the
+        # terminal symbol as name.
         if @args[i].name.nil?
-          str << "<#{token}>"
+          str << "#{token}"
+          argDoc.name = token
         else
           str << "<#{@args[i].name}>"
         end
-
-        argDoc = @args[i].clone
         addArgDoc(argDocs, argDoc)
 
-        # The actual syntax is stored with the argument documentation.
-        if argDoc.syntax.nil?
-          case typeId
-          when ?$
-            argDoc.syntax = '<' + token + '>'
-          when ?!
-            # In this case the argument documentation must be sufficient.
-            argDoc.syntax = ''
-          else
-            # For terminal symbol documenation we use the
-            # arg(0, nil, 'Some text') version of arg. The terminal symbol is
-            # then stored in the syntax variable.
-            argDoc.syntax = token
-          end
+        # Documented arguments don't have the type set yet. Use the token
+        # value for that.
+        if typeId == ?$
+          argDoc.typeSpec = "<#{token}>"
         end
       else
         # Undocumented tokens are recursively expanded.
@@ -199,10 +191,10 @@ class TextParserPattern
              !rules[token].patterns[0].doc.nil?
             # The argument pattern contains a reference to another documented
             # pattern.
-            keyword = rules[token].patterns[0].keyword
             str << "<#{keyword}>"
+            keyword = rules[token].patterns[0].keyword
             argDoc = ParserTokenDoc.new(keyword,
-                                        "See #{keyword} for more info.", '')
+                                        "See #{keyword} for more info.")
             argDoc.pattern = rules[token].patterns[0]
             addArgDoc(argDocs, argDoc)
           else
@@ -224,6 +216,7 @@ class TextParserPattern
 private
 
   def addArgDoc(argDocs, argDoc)
+    raise 'Error' if argDoc.name.nil?
     argDocs.each do |ad|
       return if ad.name == argDoc.name
     end

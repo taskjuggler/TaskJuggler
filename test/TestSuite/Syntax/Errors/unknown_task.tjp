@@ -1,0 +1,10 @@
+project test "Test" "1.0" 2007-08-19 +2m 
+
+task t "T" {
+  start 2007-08-19
+}
+
+htmltaskreport "report.html" {
+# MARK: error 9 unknown_task
+	taskroot foo
+}

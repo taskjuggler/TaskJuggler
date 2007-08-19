@@ -1,0 +1,12 @@
+project test "Test" "1.0" 2007-08-19 +2m 
+
+resource tux "Tux" {
+# MARK: error 5 time_interval 
+	workinghours mon 10:00 - 9:00
+}
+
+task t "T" {
+  start 2007-08-19
+}
+
+
