@@ -79,6 +79,14 @@ private
     @propertySet.addAttributeType(AttributeDefinition.new(
       @val[1], @val[2], type, inherit, scenarioSpecific, default, true))
 
+    # Add the new user-defined attribute as reportable attribute to the parser
+    # rule.
+    oldCurrentRule = @cr
+    @cr = @rules['reportableAttributes']
+    singlePattern('_' + @val[1])
+    descr(@val[2])
+    @cr = oldCurrentRule
+
     scenarioSpecific
   end
 

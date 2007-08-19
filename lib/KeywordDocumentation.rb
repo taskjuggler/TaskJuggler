@@ -35,10 +35,9 @@ class KeywordDocumentation
 
   def crossReference(keywords, rules)
     @args.each do |arg|
-      if arg.text[0] == ?^
-        keyword = arg.text.slice(1, arg.text.length - 1)
-        raise "Unknown reference #{keyword}" if keywords[keyword].nil?
-        @optAttrPatterns[keywords[keyword].pattern] = false
+      unless arg.pattern.nil?
+        kwd = keywords[arg.pattern.keyword]
+        kwd.contexts << self unless kwd.contexts.include?(self)
       end
     end
 
@@ -53,7 +52,7 @@ class KeywordDocumentation
              "#{token[0]}"
       else
         @optionalAttributes << kwd
-        kwd.contexts << self
+        kwd.contexts << self unless kwd.contexts.include?(self)
         kwd.scenarioSpecific = true if scenarioSpecific
       end
     end
@@ -85,7 +84,11 @@ class KeywordDocumentation
     else
       argStr = ''
       @args.each do |arg|
-        unless arg.syntax.empty?
+        if arg.name.nil?
+          indent = arg.syntax.length + 2
+          argStr += "#{arg.syntax}: " +
+                    "#{format(indent, arg.text, textW - indent)}\n\n"
+        elsif !arg.syntax.empty?
           typeSpec = arg.syntax
           typeSpec[0] = '['
           typeSpec[-1] = ']'
@@ -94,13 +97,8 @@ class KeywordDocumentation
                     "#{format(indent, arg.text, textW - indent)}\n\n"
         else
           indent = arg.name.length + 2
-          text = arg.text.clone
-          if text[0] == ?^
-            keyword = text.slice(1, text.length - 1)
-            text = "Comma separated list. See #{keyword} for details."
-          end
           argStr += "#{arg.name}: " +
-                    "#{format(indent, text, textW - indent)}\n\n"
+                    "#{format(indent, arg.text, textW - indent)}\n\n"
         end
       end
       str += format(tagW, argStr, textW)

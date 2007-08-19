@@ -32,12 +32,7 @@ certain maximum per time period.
 EOT
        )
 
-    newPattern(%w( _select $ID ), Proc.new {
-      modes = %w( maxloaded minloaded minallocated order random )
-      if (index = modes.index(@val[1])).nil?
-        error('alloc_select_mode',
-              "Selection mode must be one of #{modes.join(', ')}", @property)
-      end
+    newPattern(%w( _select !allocationSelectionMode ), Proc.new {
       [ 'select', @val[1] ]
     })
     doc('select', <<'EOT'
@@ -48,22 +43,6 @@ in the previous time slot becomes unavailable.
 Even for non-persistent allocations a change in the resource selection only
 happens if the resource used in the previous (or next for ASAP tasks) time
 slot has become unavailable.
-EOT
-       )
-    arg(1, 'mode', <<'EOT'
-The following selection modes are supported:
-
-maxloaded: Pick the available resource that has been used the most so far.
-
-minloaded: Pick the available resource that has been used the least so far.
-
-minallocated: Pick the resource that has the smallest allocation factor. The
-allocation factor is calculated from the various allocations of the resource
-across the tasks. This is the default setting.
-
-order: Pick the first available resource from the list.
-
-random: Pick a random resource from the list.
 EOT
        )
 
@@ -91,6 +70,29 @@ EOT
     newOptionsRule('allocationAttributes', 'allocationAttribute')
   end
 
+  def rule_allocationSelectionMode
+    newRule('allocationSelectionMode')
+    singlePattern('_maxloaded')
+    descr('Pick the available resource that has been used the most so far.')
+
+    singlePattern('_minloaded')
+    descr('Pick the available resource that has been used the least so far.')
+
+    singlePattern('_minallocated')
+    descr(<<'EOT'
+Pick the resource that has the smallest allocation factor. The
+allocation factor is calculated from the various allocations of the resource
+across the tasks. This is the default setting.)
+EOT
+         )
+
+    singlePattern('_order')
+    descr('Pick the first available resource from the list.')
+
+    singlePattern('_random')
+    descr('Pick a random resource from the list.')
+  end
+
   def rule_argumentList
     newRule('argumentList')
     optional
@@ -111,7 +113,7 @@ EOT
       end
       @booking.overtime = @val[1]
     })
-    doc('booking:overtime', <<'EOT'
+    doc('booking.overtime', <<'EOT'
 This attribute enables bookings to override working hours and vacations.
 EOT
        )
@@ -123,7 +125,7 @@ EOT
       end
       @booking.sloppy = @val[1]
     })
-    doc('booking:sloppy', <<'EOT'
+    doc('booking.sloppy', <<'EOT'
 Controls how strict TaskJuggler checks booking intervals for conflicts with
 vacation and other bookings. In case the error is suppressed the booking will
 not overwrite the existing bookings. It will avoid the already assigned
@@ -160,16 +162,12 @@ EOT
     newPattern(%w( !columnId !columnBody ), Proc.new {
       @val[0]
     })
-    arg(0, 'id', <<'EOT'
-The id of the column. Most attributes are available as well as all user
-defined attributes.
-EOT
-        )
+    arg(0, 'columnID', 'Specifies the content of the column.')
   end
 
   def rule_columnId
     newRule('columnId')
-    newPattern(%w( $ID ), Proc.new {
+    newPattern(%w( !reportableAttributes ), Proc.new {
       if (title = @reportElement.defaultColumnTitle(@val[0])).nil?
         error('report_column',
               "Unknown column #{@val[0]}. " +
@@ -177,6 +175,11 @@ EOT
       end
       @column = TableColumnDefinition.new(@val[0], title)
     })
+    doc('columnid', <<'EOT'
+In addition to the listed IDs all user defined attributes can be used as
+column IDs.
+EOT
+       )
   end
 
   def rule_columnOptions
@@ -199,12 +202,24 @@ EOT
 
   def rule_durationUnit
     newRule('durationUnit')
+
     newPattern(%w( _min ), Proc.new { 0 })
+    descr('minutes')
+
     newPattern(%w( _h ), Proc.new { 1 })
+    descr('hours')
+
     newPattern(%w( _d ), Proc.new { 2 })
+    descr('days')
+
     newPattern(%w( _w ), Proc.new { 3 })
+    descr('weeks')
+
     newPattern(%w( _m ), Proc.new { 4 })
+    descr('months')
+
     newPattern(%w( _y ), Proc.new { 5 })
+    descr('years')
   end
 
   def rule_export
@@ -285,8 +300,8 @@ EOT
           }))
       end
     })
-    doc('extend:date', <<'EOT'
-Exte the property with a new attribute of type date.
+    doc('extend.date', <<'EOT'
+Extend the property with a new attribute of type date.
 EOT
        )
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
@@ -308,7 +323,7 @@ EOT
           }))
       end
     })
-    doc('extend:reference', <<'EOT'
+    doc('extend.reference', <<'EOT'
 Extend the property with a new attribute of type reference. A reference is a
 URL and an optional text that will be shown instead of the URL if needed.
 EOT
@@ -330,7 +345,7 @@ EOT
           }))
       end
     })
-    doc('extend:text', <<'EOT'
+    doc('extend.text', <<'EOT'
 Extend the property with a new attribute of type text. A text is a character
 sequence enclosed in single or double quotes.
 EOT
@@ -363,14 +378,14 @@ EOT
     repeatable
 
     singlePattern('_inherit')
-    doc('extend:inherit', <<'EOT'
+    doc('extend.inherit', <<'EOT'
 If the this attribute is used, the property extension will be inherited by
 child properties from their parent property.
 EOT
        )
 
     singlePattern('_scenariospecific')
-    doc('extend:scenariospecific', <<'EOT'
+    doc('extend.scenariospecific', <<'EOT'
 If this attribute is used, the property extension is scenario specific. A
 different value can be set for each scenario.
 EOT
@@ -575,6 +590,10 @@ EOT
     newPattern(%w( !operation ), Proc.new {
       LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
     })
+    doc('logicalexpression', <<'EOT'
+Logical expressions are cool!
+EOT
+       )
   end
 
   def rule_macro
@@ -898,7 +917,7 @@ EOT
     newPattern(%w( _sloppy ), Proc.new {
       @property['strict', @scenarioIdx] = false
     })
-    doc('projection:sloppy', <<'EOT'
+    doc('projection.sloppy', <<'EOT'
 In sloppy mode tasks with no bookings will be filled from the original start.
 EOT
        )
@@ -906,7 +925,7 @@ EOT
     newPattern(%w( _strict ), Proc.new {
       @property['strict', @scenarioIdx] = true
     })
-    doc('projection:strict', <<'EOT'
+    doc('projection.strict', <<'EOT'
 In strict mode all tasks will be filled starting with the current date. No
 bookings will be added prior to the current date.
 EOT
@@ -991,7 +1010,7 @@ EOT
       @reportElement.start = @val[1].start
       @reportElement.end = @val[1].end
     })
-    doc('report:period', <<'EOT'
+    doc('report.period', <<'EOT'
 This property is a shortcut for setting the start and end property at the
 same time.
 EOT
@@ -1053,7 +1072,7 @@ EOT
     newPattern(%w( _timeformat $STRING ), Proc.new {
       @reportElement.timeformat = @val[1]
     })
-    doc('report:timeformat', <<'EOT'
+    doc('report.timeformat', <<'EOT'
 Determines how time specifications in reports look like.
 EOT
        )
@@ -1180,6 +1199,103 @@ EOT
        )
   end
 
+  def rule_reportableAttributes
+    newRule('reportableAttributes')
+
+    singlePattern('_complete')
+    descr('The completion degree of a task')
+
+    singlePattern('_criticalness')
+    descr('A measure for how much effort the resource is allocated for, or' +
+          'how strained the allocated resources of a task are')
+
+    singlePattern('_daily')
+    descr('A group of columns with one column for each day')
+
+    singlePattern('_duration')
+    descr('The duration of a task')
+
+    singlePattern('_duties')
+    descr('List of tasks that the resource is allocated to')
+
+    singlePattern('_efficiency')
+    descr('Measure for how efficient a resource can perform tasks')
+
+    singlePattern('_effort')
+    descr('The total allocated effort')
+
+    singlePattern('_email')
+    descr('The email address of a resource')
+
+    singlePattern('_end')
+    descr('The end date of a task')
+
+    singlePattern('_flags')
+    descr('List of attached flags')
+
+    singlePattern('_fte')
+    descr('The Full-Time-Equivalent of a resource or group')
+
+    singlePattern('_headcount')
+    descr('The headcount number of the resource or group')
+
+    singlePattern('_hourly')
+    descr('A group of columns with one column for each hour')
+
+    singlePattern('_index')
+    descr('The index of the item based on the nesting hierachy')
+
+    singlePattern('_maxend')
+    descr('The latest allowed end of a task')
+
+    singlePattern('_maxstart')
+    descr('The lastest allowed start of a task')
+
+    singlePattern('_minend')
+    descr('The earliest allowed end of a task')
+
+    singlePattern('_minstart')
+    descr('The earliest allowed start of a task')
+
+    singlePattern('_monthly')
+    descr('A group of columns with one column for each month')
+
+    singlePattern('_no')
+    descr('The index in the report')
+
+    singlePattern('_name')
+    descr('The name or description of the item')
+
+    singlePattern('_pathcriticalness')
+    descr('The criticalness of the task with respect to all the paths that ' +
+          'it is a part of.')
+
+    singlePattern('_priority')
+    descr('The priority of a task')
+
+    singlePattern('_quarterly')
+    descr('A group of columns with one column for each quarter')
+
+    singlePattern('_responsible')
+    descr('The responsible people for this task')
+
+    singlePattern('_seqno')
+    descr('The index of the item based on the declaration order')
+
+    singlePattern('_start')
+    descr('The start date of the task')
+
+    singlePattern('_wbs')
+    descr('The hierarchical or work breakdown structure index')
+
+    singlePattern('_weekly')
+    descr('A group of columns with one column for each week')
+
+    singlePattern('_yearly')
+    descr('A group of columns with one column for each year')
+
+  end
+
   def rule_reportBody
     newOptionsRule('reportBody', 'reportAttributes')
   end
@@ -1189,7 +1305,7 @@ EOT
     newPattern(%w( _end !valDate ), Proc.new {
       @reportElement.end = @val[1]
     })
-    doc('report:end', <<'EOT'
+    doc('report.end', <<'EOT'
 Specifies the end date of the report. In task reports only tasks that start
 before this end date are listed.
 EOT
@@ -1214,7 +1330,7 @@ EOT
     newPattern(%w( _start !valDate ), Proc.new {
       @reportElement.start = @val[1]
     })
-    doc('report:start', <<'EOT'
+    doc('report.start', <<'EOT'
 Specifies the start date of the report. In task reports only tasks that end
 after this end date are listed.
 EOT
@@ -1254,7 +1370,7 @@ EOT
       end
       Allocation.new(candidates, selectionMode, persistant, mandatory)
     })
-    doc('allocate:resources', <<'EOT'
+    doc('allocate.resources', <<'EOT'
 The optional attributes provide numerous ways to control which resource is
 used and when exactly it will be assigned to the task. Shifts and limits can
 be used to restrict the allocation to certain time intervals or to limit them
@@ -1338,7 +1454,7 @@ EOT
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
-    doc('resource:flags', <<'EOT'
+    doc('resource.flags', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
 EOT
@@ -1365,7 +1481,7 @@ EOT
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
-    doc('resource:vacation', <<'EOT'
+    doc('resource.vacation', <<'EOT'
 Specify a vacation period for the resource. It can also be used to block out
 the time before a resource joint or after it left. For employees changing
 their work schedule from full-time to part-time, or vice versa, please refer
@@ -1540,7 +1656,7 @@ EOT
     newPattern(%w( _note $STRING ), Proc.new {
       @property.set('note', @val[1])
     })
-    doc('task:note', <<'EOT'
+    doc('task.note', <<'EOT'
 Attach a note to the task. This is usually a more detailed specification of
 what the task is about.
 EOT
@@ -1741,10 +1857,9 @@ restrict the allocation to certain time intervals or to limit them to a
 certain maximum per time period.
 EOT
        )
-    arg(1, 'resources', '^allocate:resources')
 
     newPattern(%w( _booking !taskBooking ))
-    doc('task:booking', <<'EOT'
+    doc('task.booking', <<'EOT'
 Bookings can be used to report already completed work by specifying the exact
 time intervals a certain resource has worked on this task.
 EOT
@@ -1780,7 +1895,6 @@ By using the 'depends' attribute, the scheduling policy is automatically set
 to asap. If both depends and precedes are used, the last policy counts.
 EOT
         )
-    arg(1, 'tasklist', '^taskreference')
 
     newPattern(%w( _duration !calendarDuration ), Proc.new {
       @property['duration', @scenarioIdx] = @val[1]
@@ -1832,7 +1946,7 @@ EOT
     newPattern(%w( _flags !flagList ), Proc.new {
       @property['flags', @scenarioIdx] += @val[1]
     })
-    doc('task:flags', <<'EOT'
+    doc('task.flags', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
 EOT

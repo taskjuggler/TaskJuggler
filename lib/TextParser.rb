@@ -99,6 +99,13 @@ class TextParser
     @cr.setArg(idx, ParserTokenDoc.new(name, cleanUpText(text)))
   end
 
+  def descr(text)
+    if @cr.patterns[-1].length != 1 || @cr.patterns[-1][0][0] != ?_
+      raise('descr() may only be used for patterns with terminal tokens.')
+    end
+    arg(0, nil, text)
+  end
+
   def also(seeAlso)
     @cr.setSeeAlso(seeAlso)
   end

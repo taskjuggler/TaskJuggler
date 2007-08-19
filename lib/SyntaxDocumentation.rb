@@ -59,9 +59,7 @@ class SyntaxDocumentation
     # return an empty hash.
     return {} if stack[pattern]
 
-    # If we hit a pattern that is documented, we ignore it. It will be taken
-    # care of separately. The starting pattern is always documented, so we can
-    # ignore it.
+    # If we hit a pattern that is documented, we ignore it.
     return {} if !stack.empty? && pattern.doc
 
     # Push pattern onto 'stack'.
@@ -78,9 +76,8 @@ class SyntaxDocumentation
       if token[0] == ?!
         token = token.slice(1, token.length - 1)
         rule = @parser.rules[token]
-        # Rules with multiple patterns or documented patterns won't lead to
-        # attributes.
-        next if rule.patterns.length > 1 || !rule.patterns[0].doc.nil?
+        # Rules with multiple patterns won't lead to attributes.
+        next if rule.patterns.length > 1
 
         attrs = optionalAttributes(rule.patterns[0], stack)
         return attrs unless attrs.empty?
@@ -138,9 +135,15 @@ class SyntaxDocumentation
     end
   end
 
+  # Generate a documentation for the keyword or an error message. The result
+  # is always a non-empty multi-line string.
   def to_s(keyword)
     str = ''
     if keyword.nil? || @keywords[keyword].nil?
+      unless keyword.nil?
+        str += "ERROR: #{keyword} is not a known keyword.\n\n"
+      end
+      # Create list of top-level keywords.
       kwdStr = ''
       @keywords.each_value do |kwd|
         if kwd.contexts.empty? ||
@@ -152,6 +155,7 @@ class SyntaxDocumentation
       str += "Try one of the following keywords as argument to this program:\n"
       str += kwdStr
     else
+      # Generate the documentation text for the requested keyword
       str += @keywords[keyword].to_s
     end
     str

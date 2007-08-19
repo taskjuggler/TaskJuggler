@@ -15,12 +15,13 @@
 class ParserTokenDoc
 
   attr_reader :name, :text
-  attr_accessor :syntax
+  attr_accessor :syntax, :pattern
 
-  def initialize(name, text)
+  def initialize(name, text, syntax = nil)
     @name = name
     @text = text
-    @syntax = nil
+    @syntax = syntax
+    @pattern = nil
   end
 
 end

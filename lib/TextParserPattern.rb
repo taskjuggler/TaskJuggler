@@ -12,15 +12,41 @@
 
 require 'ParserTokenDoc'
 
+# This class models the most crutial elements of a syntax description - the
+# pattern. A TextParserPattern primarily consists of a set of tokens. Tokens
+# are Strings where the first character determines the type of the token.
+# There are 3 known type.
+#
+# Terminal token: The terminal token is prefixed by an underscore. Terminal
+# tokens are terminal symbols of the syntax tree. They just represent
+# themselves.
+#
+# Variable token: The variable token describes values of a certain class such
+# as strings or numbers. The token is prefixed by a dollar sign and the text
+# of the token specifies the variable type. See ProjectFileParser for a
+# complete list of variable types.
+#
+# Reference token: The reference token specifies a reference to another parser
+# rule. The token is prefixed by a bang and the text matches the name of the
+# rule. See TextParserRule for details.
+#
+# In addition to the pure syntax tree information the pattern also holds
+# documentary information about the pattern.
 class TextParserPattern
 
   attr_reader :keyword, :doc, :seeAlso, :tokens, :function
 
   def initialize(tokens, function = nil)
+    # A unique name for the pattern that is used in the documentation.
+    @keyword = nil
     # Initialize pattern doc as empty.
     @doc = nil
+    # A list of ParserTokenDoc elements that describe the meaning of variable
+    # tokens. The order of the tokens and entries in the Array must correlate.
     @args = []
+    # A list of references to other patterns that are related to this pattern.
     @seeAlso = []
+
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
         raise "Fatal Error: All pattern tokens must start with type " +
@@ -33,35 +59,43 @@ class TextParserPattern
     @function = function
   end
 
+  # Set the keyword and documentation text for the pattern.
   def setDoc(keyword, doc)
     @keyword = keyword
     @doc = doc
   end
 
+  # Set the documentation text and for the idx-th variable.
   def setArg(idx, doc)
     @args[idx] = doc
   end
 
+  # Set the references to related patterns.
   def setSeeAlso(also)
     @seeAlso = also
   end
 
+  # Conveniance function to access individual tokens by index.
   def [](i)
     @tokens[i]
   end
 
+  # Iterator for tokens.
   def each
     @tokens.each { |tok| yield tok }
   end
 
+  # Returns true of the pattern is empty.
   def empty?
     @tokens.empty?
   end
 
+  # Returns the number of tokens in the pattern.
   def length
     @tokens.length
   end
 
+  # Returns true if the i-th token is a terminal symbol.
   def terminalSymbol?(i)
     @tokens[i][0] == ?$ || @tokens[i][0] == ?_
   end
@@ -88,11 +122,14 @@ class TextParserPattern
     nil
   end
 
-  def to_syntax(docs, rules, skip = 0)
-    to_syntax_r({}, docs, rules, skip)
+  # Returns a string that expresses the elements of the pattern in an EBNF
+  # like fashion. The resolution of the pattern is done recursively. This is
+  # just the wrapper function that sets up the stack.
+  def to_syntax(argDocs, rules, skip = 0)
+    to_syntax_r({}, argDocs, rules, skip)
   end
 
-  def to_syntax_r(stack, docs, rules, skip)
+  def to_syntax_r(stack, argDocs, rules, skip)
     # If we find ourself on the stack we hit a recursive pattern. This is used
     # in repetitions.
     if stack[self]
@@ -119,35 +156,59 @@ class TextParserPattern
 
       typeId = token[0]
       token = token.slice(1, token.length - 1)
+
       if @args[i]
         # In case we have a token that is a documented argument, the syntax
-        # for that token is the argument name.
-        str << "<#{@args[i].name}>"
-        docs << @args[i]
+        # for that token is the argument name. Or, if the name is nil, it's
+        # just the token.
+        if @args[i].name.nil?
+          str << "<#{token}>"
+        else
+          str << "<#{@args[i].name}>"
+        end
+
+        argDoc = @args[i].clone
+        addArgDoc(argDocs, argDoc)
+
         # The actual syntax is stored with the argument documentation.
-        if @args[i].syntax.nil?
+        if argDoc.syntax.nil?
           case typeId
           when ?$
-            @args[i].syntax = '<' + token + '>'
+            argDoc.syntax = '<' + token + '>'
           when ?!
             # In this case the argument documentation must be sufficient.
-            @args[i].syntax = ''
+            argDoc.syntax = ''
           else
-            @args[i].syntax = ' Probably an error '
+            # For terminal symbol documenation we use the
+            # arg(0, nil, 'Some text') version of arg. The terminal symbol is
+            # then stored in the syntax variable.
+            argDoc.syntax = token
           end
         end
       else
         # Undocumented tokens are recursively expanded.
         case typeId
         when ?_
-          # Litterals are shown as such.
+          # Literals are shown as such.
           str << token
         when ?$
           # Variables are enclosed by angle brackets.
           str << '<' + token + '>'
         when ?!
-          # References are followed recursively.
-          str << rules[token].to_syntax(stack, docs, rules, 0)
+          if rules[token].patterns.length == 1 &&
+             !rules[token].patterns[0].doc.nil?
+            # The argument pattern contains a reference to another documented
+            # pattern.
+            keyword = rules[token].patterns[0].keyword
+            str << "<#{keyword}>"
+            argDoc = ParserTokenDoc.new(keyword,
+                                        "See #{keyword} for more info.", '')
+            argDoc.pattern = rules[token].patterns[0]
+            addArgDoc(argDocs, argDoc)
+          else
+            # References are followed recursively.
+            str << rules[token].to_syntax(stack, argDocs, rules, 0)
+          end
         end
       end
     end
@@ -158,6 +219,15 @@ class TextParserPattern
 
   def to_s
     @tokens.join(' ')
+  end
+
+private
+
+  def addArgDoc(argDocs, argDoc)
+    argDocs.each do |ad|
+      return if ad.name == argDoc.name
+    end
+    argDocs << argDoc
   end
 
 end

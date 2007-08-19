@@ -22,7 +22,7 @@ class TextScanner
 
   # File records are entries on the parser stack. For each nested file the
   # scanner puts an entry on the stack while the files are scanned. With this
-  # stack the scanner an resume the processing of the enclosing file once the
+  # stack the scanner can resume the processing of the enclosing file once the
   # included files has been completely processed.
   class FileRecord
 
