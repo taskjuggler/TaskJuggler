@@ -58,20 +58,33 @@ class SyntaxDocumentation
     # each pattern we process on the 'stack'. If we hit it again, we just
     # return an empty hash.
     return {} if stack[pattern]
+
+    # If we hit a pattern that is documented, we ignore it. It will be taken
+    # care of separately. The starting pattern is always documented, so we can
+    # ignore it.
+    return {} if !stack.empty? && pattern.doc
+
     # Push pattern onto 'stack'.
     stack[pattern] = true
 
-    # If the last token of the pattern is a reference, we recursively
-    # follow the reference to the next pattern.
-    if pattern[-1][0] == ?!
-      token = pattern[-1].slice(1, pattern[-1].length - 1)
-      rule = @parser.rules[token]
-      # Rules with multiple patterns won't lead to attributes. Just abort.
-      return {} if rule.patterns.length > 1 || !rule.patterns[0].doc.nil?
-      return optionalAttributes(rule.patterns[0], stack)
-    elsif pattern[0] == '_{' && pattern[2] == '_}'
+    if pattern[0] == '_{' && pattern[2] == '_}'
       # We have found an optional attribute pattern!
       return attributes(pattern[1])
+    end
+
+    # If a token of the pattern is a reference, we recursively
+    # follow the reference to the next pattern.
+    pattern.each do |token|
+      if token[0] == ?!
+        token = token.slice(1, token.length - 1)
+        rule = @parser.rules[token]
+        # Rules with multiple patterns or documented patterns won't lead to
+        # attributes.
+        next if rule.patterns.length > 1 || !rule.patterns[0].doc.nil?
+
+        attrs = optionalAttributes(rule.patterns[0], stack)
+        return attrs unless attrs.empty?
+      end
     end
     {}
   end

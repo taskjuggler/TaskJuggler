@@ -160,12 +160,6 @@ EOT
     newPattern(%w( !columnId !columnBody ), Proc.new {
       @val[0]
     })
-    doc('reportcolumn', <<'EOT'
-Specifies the id and other information about the report column. Optional
-attributes include formating options as well as replacement of column title or
-cell content.
-EOT
-       )
     arg(0, 'id', <<'EOT'
 The id of the column. Most attributes are available as well as all user
 defined attributes.
