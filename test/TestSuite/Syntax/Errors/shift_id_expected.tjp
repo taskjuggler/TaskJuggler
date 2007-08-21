@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2007-08-20 +2m 
+
+resource r "R" {
+# MARK: error 5 shift_id_expected 
+	shifts foo 2007-08-20 +2d
+}
+

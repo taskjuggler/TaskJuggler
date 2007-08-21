@@ -101,8 +101,12 @@ class ResourceScenario < ScenarioData
     book(sbIdx, booking.task, true)
   end
 
-  def onShift?(iv)
-    a('workinghours').onShift?(iv)
+  def onShift?(date)
+    if a('shifts').overlaps?(date)
+      a('shifts').onShift?(date)
+    else
+      a('workinghours').onShift?(date)
+    end
   end
 
   # Returns the load of the resource (and its children) weighted by their
@@ -233,10 +237,7 @@ private
 
     # Change all work time slots to nil (available) again.
     0.upto(@project.scoreboardSize) do |i|
-      ivStart = idxToDate(i)
-      iv = Interval.new(ivStart, ivStart +
-                        @property.project['scheduleGranularity'])
-      @scoreboard[i] = nil if onShift?(iv)
+      @scoreboard[i] = nil if onShift?(idxToDate(i))
     end
 
     # Mark all resource specific vacation slots as such (2)
@@ -246,6 +247,10 @@ private
       startIdx.upto(endIdx) do |i|
          @scoreboard[i] = 2
       end
+    end
+    # Mark the vacations from all the shifts the resource is assigned to.
+    0.upto(@project.scoreboardSize) do |i|
+      @scoreboard[i] = 2 if a('shifts').onVacation?(idxToDate(i))
     end
 
     # Mark all global vacation slots as such (2)

@@ -190,14 +190,16 @@ class PropertyTreeNode
     !@children.empty?
   end
 
+  # Register a new attribute with the PropertyTreeNode and create the
+  # instances for each scenario.
   def declareAttribute(attributeType)
     if attributeType.scenarioSpecific
       0.upto(@project.scenarioCount - 1) do |i|
-        attribute = attributeType.objClass.new(attributeType, self)
+        attribute = newAttribute(attributeType)
         @scenarioAttributes[i][attribute.id] = attribute
       end
     else
-      attribute = attributeType.objClass.new(attributeType, self)
+      attribute = newAttribute(attributeType)
       @attributes[attribute.id] = attribute
     end
   end
@@ -300,6 +302,16 @@ class PropertyTreeNode
   end
 
 private
+
+  def newAttribute(attributeType)
+    attribute = attributeType.objClass.new(attributeType, self)
+    # If the attribute requires a pointer to the project, we'll hand it over.
+    if attribute.public_methods.include?('setProject')
+      attribute.setProject(@project)
+    end
+
+    attribute
+  end
 
   def indent(tag, str)
     tag + str.gsub(/\n/, "\n#{' ' * tag.length}") + "\n"

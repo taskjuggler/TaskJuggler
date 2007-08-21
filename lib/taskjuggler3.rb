@@ -9,7 +9,6 @@
 #
 # $Id$
 #
-
 require 'Tj3Config'
 require 'TaskJuggler'
 

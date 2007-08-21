@@ -406,20 +406,20 @@ private
       cell.alignment = 1
       if task['milestone', scenarioIdx]
         # Milestones are shown as diamonds '<>'
-        if cellIv.contains(task['start', scenarioIdx].nil? ?
-                           @project['start'] : task['start', scenarioIdx])
+        if cellIv.contains?(task['start', scenarioIdx].nil? ?
+                            @project['start'] : task['start', scenarioIdx])
           cell.text = '<>'
           cell.bold = true
         end
       else
         # Container tasks are shown as 'v----v'
         # Normal tasks are shown as '[======]'
-        if cellIv.contains(task['start', scenarioIdx].nil? ?
-                           @project['start'] : task['start', scenarioIdx])
+        if cellIv.contains?(task['start', scenarioIdx].nil? ?
+                            @project['start'] : task['start', scenarioIdx])
           cell.text = (task.container? ? 'v-' : '[=') + cell.text
         end
-        if cellIv.contains((task['end', scenarioIdx].nil? ?
-                            @project['end'] : task['end', scenarioIdx]) - 1)
+        if cellIv.contains?((task['end', scenarioIdx].nil? ?
+                             @project['end'] : task['end', scenarioIdx]) - 1)
           cell.text += (task.container? ? '-v': '=]')
         end
         if cell.text == '' && taskIv.overlaps?(cellIv)

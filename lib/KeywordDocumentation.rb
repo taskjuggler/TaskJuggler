@@ -93,7 +93,7 @@ class KeywordDocumentation
     else
       argStr = ''
       @args.each do |arg|
-        if arg.typeSpec.nil?
+        if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
           indent = arg.name.length + 2
           argStr += "#{arg.name}: " +
                     "#{format(indent, arg.text, textW - indent)}\n\n"

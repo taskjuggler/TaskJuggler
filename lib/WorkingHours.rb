@@ -59,36 +59,26 @@ class WorkingHours
     @days[dayOfWeek]
   end
 
-  # Return true if the whole interval is covered by working hour interval.
-  # The interval may not span across a day boundary.
-  def onShift?(interval)
+  # Return true if _date_ is within the defined working hours.
+  def onShift?(date)
     oldTimezone = nil
     # Set environment variable TZ to appropriate time zone
     if @timezone
       oldTimezone = ENV['tz']
       ENV['tz'] = @timezone
     end
-    # TODO: Add support for different time zones
-    dow = interval.start.wday
-    localStart = interval.start.clone
-    localStart.localtime
-    intervalStart = localStart.secondsOfDay
-    localEnd = interval.end.clone
-    localEnd.localtime
-    intervalEnd = localEnd.secondsOfDay
+    dow = date.wday
+    localDate = date.clone
+    localDate.localtime
+    secondsOfDay = localDate.secondsOfDay
 
     # Restore environment
     if oldTimezone
       ENV['tz'] = oldTimezone
     end
 
-    # Make sure we represent the end as 24:00 and not 0:00
-    intervalEnd = 60 * 60 * 24 if intervalEnd == 0
-    if $DEBUG && intervalEnd < intervalStart
-      raise "Can't operate accross day boundaries"
-    end
     @days[dow].each do |iv|
-      return true if iv[0] <= intervalStart && intervalEnd <= iv[1]
+      return true if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
     end
 
     false

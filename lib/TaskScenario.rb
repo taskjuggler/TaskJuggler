@@ -757,14 +757,13 @@ class TaskScenario < ScenarioData
     end
 
     # TODO: Handle shifts
-    iv = Interval.new(date, date + slotDuration)
     sbIdx = @project.dateToIdx(date)
 
     # We first have to make sure that if there are mandatory resources
     # that these are all available for the time slot.
     @property['allocate', @scenarioIdx].each do |allocation|
       if allocation.mandatory
-        return unless allocation.onShift?(iv)
+        return unless allocation.onShift?(date)
 
         # For mandatory allocations with alternatives at least one of the
         # alternatives must be available.
@@ -789,6 +788,7 @@ class TaskScenario < ScenarioData
       end
     end
 
+    iv = Interval.new(date, date + slotDuration)
     @property['allocate', @scenarioIdx].each do |allocation|
       # TODO: Handle shifts
       # TODO: Handle limits

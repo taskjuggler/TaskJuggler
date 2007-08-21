@@ -46,20 +46,22 @@ class Interval
     @end - @start
   end
 
-  def contains(arg)
+  def contains?(arg)
     if arg.class == TjTime
       return @start <= arg && arg < @end
-    elsif arg.class == Interval
-      return @start <= arg.start && arg.end <= @end
     else
-      raise "Unsupported argument"
+      return @start <= arg.start && arg.end <= @end
     end
   end
 
   # Check whether the Interval _iv_ overlaps with this interval.
-  def overlaps?(iv)
-    (@start <= iv.start && iv.start < @end) ||
-    (iv.start <= @start && @start < iv.end)
+  def overlaps?(arg)
+    if arg.class == TjTime
+      return @start <= arg && arg < @end
+    else
+      return (@start <= arg.start && arg.start < @end) ||
+             (arg.start <= @start && @start < arg.end)
+    end
   end
 
   def combine(iv)

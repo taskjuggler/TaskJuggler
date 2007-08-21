@@ -1,0 +1,15 @@
+project test "Test" "1.0" 2007-08-20 +2m 
+
+shift a "A" {
+	workinghours mon - fri off
+}
+shift b "B" {
+	workinghours mon - fri 10:00 - 18:00
+}
+
+resource r "R" {
+	shifts a 2007-08-20 +2w
+# MARK: error 13 shift_assignment_overlap 
+	shifts b 2007-09-01 +2w
+}
+

@@ -77,6 +77,14 @@ class TjTime
     @time <=> t.time
   end
 
+  def upto(endDate, step = 1)
+    t = @time
+    while t < endDate.time
+      yield(TjTime.new(t))
+      t += step
+    end
+  end
+
   def beginOfHour
     t = @time.localtime.to_a
     t[0, 2] = Array.new(2, 0)

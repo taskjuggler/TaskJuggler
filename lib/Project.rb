@@ -25,6 +25,7 @@ require 'FixnumAttribute'
 require 'IntervalListAttribute'
 require 'ReferenceAttribute'
 require 'StringAttribute'
+require 'ShiftAssignmentsAttribute'
 require 'TaskListAttribute'
 require 'ResourceListAttribute'
 require 'WorkingHoursAttribute'
@@ -32,11 +33,13 @@ require 'RealFormat'
 require 'PropertyList'
 require 'TaskDependency'
 require 'Scenario'
+require 'Shift'
 require 'Task'
 require 'Resource'
 require 'ExportReport'
 require 'HTMLTaskReport'
 require 'HTMLResourceReport'
+require 'ShiftAssignments'
 require 'WorkingHours'
 require 'ProjectFileParser'
 
@@ -79,6 +82,16 @@ class Project
     ]
     attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 
+    @shifts = PropertySet.new(self, true)
+    attrs = [
+      # ID           Name            Type               Inher. Scen.  Default
+      [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
+      [ 'vacations', 'Vacations',    IntervalListAttribute, true, true, [] ],
+      [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
+        @attributes['workinghours'] ]
+    ]
+    attrs.each { |a| @shifts.addAttributeType(AttributeDefinition.new(*a)) }
+
     @resources = PropertySet.new(self, true)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
@@ -92,6 +105,8 @@ class Project
       [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
       [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
+        nil ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
@@ -192,6 +207,10 @@ class Project
     end
   end
 
+  def shift(id)
+    @shifts[id]
+  end
+
   def task(id)
     @tasks[id]
   end
@@ -254,6 +273,10 @@ class Project
 
   def addScenario(scenario)
     @scenarios.addProperty(scenario)
+  end
+
+  def addShift(shift)
+    @shifts.addProperty(shift)
   end
 
   def addTask(task)

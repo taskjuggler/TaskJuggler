@@ -1003,6 +1003,7 @@ EOT
     newPattern(%w( !include ))
     newPattern(%w( !macro ))
     newPattern(%w( !resource ))
+    newPattern(%w( !shift ))
     newPattern(%w( _supplement !supplement ))
     newPattern(%w( !task ))
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
@@ -1467,7 +1468,7 @@ EOT
     newRule('resourceId')
     newPattern(%w( $ID ), Proc.new {
       if (resource = @project.resource(@val[0])).nil?
-        error('resource_id_expct', "Resource ID expected")
+        error('resource_id_expected', "#{@val[0]} is not a defined resource.")
       end
       resource
     })
@@ -1523,6 +1524,8 @@ other allocations automatically. If it's not given, all bookings must only
 cover working time for the resource.
 EOT
        )
+
+    newPattern(%w( _shifts !shiftAssignments ))
 
     newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
       @property['vacations', @scenarioIdx] =
@@ -1627,12 +1630,117 @@ EOT
     singlePattern('_asap')
   end
 
+  def rule_shift
+    newRule('shift')
+    newPattern(%w( !shiftHeader !shiftBody ), Proc.new {
+      @property = @property.parent
+    })
+    doc('shift', <<'EOT'
+A shift combines several workhours related settings in a reusable entity. Besides the weekly working hours it can also hold information such as vacations and a timezone.
+EOT
+       )
+  end
+
+  def rule_shiftAssignment
+    newRule('shiftAssignment')
+    newPattern(%w( !shiftId !interval ), Proc.new {
+      if !@property['shifts', @scenarioIdx].
+         addAssignment(ShiftAssignment.new(@scenarioIdx, @val[0], @val[1]))
+        error('shift_assignment_overlap', 'Shifts may not overlap each other.')
+      end
+    })
+  end
+
+  def rule_shiftAssignments
+    newListRule('shiftAssignments', '!shiftAssignment')
+  end
+
+  def rule_shiftAttributes
+    newRule('shiftAttributes')
+    optional
+    repeatable
+
+    newPattern(%w( !shift ))
+    newPattern(%w( !shiftScenarioAttributes ))
+    newPattern(%w( !scenarioId !shiftScenarioAttributes ), Proc.new {
+      @scenarioIdx = 0
+    })
+  end
+
+  def rule_shiftBody
+    newOptionsRule('shiftBody', 'shiftAttributes')
+  end
+
+  def rule_shiftHeader
+    newRule('shiftHeader')
+    newPattern(%w( _shift $ID $STRING ), Proc.new {
+      @property = Shift.new(@project, @val[1], @val[2], @property)
+    })
+    arg(1, 'id', 'The ID of the shift')
+    arg(2, 'name', 'The name of the shift')
+  end
+
+  def rule_shiftId
+    newRule('shiftId')
+    newPattern(%w( $ID ), Proc.new {
+      if (shift = @project.shift(@val[0])).nil?
+        error('shift_id_expected', "#{@val[0]} is not a defined shift.")
+      end
+      shift
+    })
+    arg(0, 'shift', 'The ID of a defined shift')
+  end
+
+  def rule_shiftScenarioAttributes
+    newRule('shiftScenarioAttributes')
+
+    newPattern(%w( _timezone $STRING ), Proc.new {
+      @property['timezone', @scenarioIdx] = @val[1]
+    })
+    doc('shift.timezone', <<'EOT'
+Sets the timezone of the shift. All information of the shift is interpreted relative to this time zone.
+EOT
+        )
+    arg(1, 'zone', <<'EOT'
+Time zone to use. E. g. 'Europe/Berlin' or 'America/Denver'. Don't use the 3
+letter acronyms.  Linux systems have a command line utility called tzselect to
+lookup possible values.
+EOT
+       )
+
+    newPattern(%w( _vacation !vacationName !intervals ), Proc.new {
+      @property['vacations', @scenarioIdx] =
+        @property['vacations', @scenarioIdx ] + @val[2]
+    })
+    doc('shift.vacation', <<'EOT'
+Specify a vacation period associated with this shift.
+EOT
+       )
+
+    newPattern(%w( !workinghours ))
+  end
+
   def rule_sortCriteria
-    newListRule('sortCriteria', '!sortCriterium')
+    newCommaListRule('moreSortCriteria', '!sortNonTree')
+    newRule('sortCriteria')
+    newPattern([ "!sortCriterium",
+                 "!moreSortCriteria" ],
+      Proc.new { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
+    )
   end
 
   def rule_sortCriterium
     newRule('sortCriterium')
+    newPattern(%w( !sortTree ), Proc.new {
+      [ @val[0] ]
+    })
+    newPattern(%w( !sortNonTree ), Proc.new {
+      [ @val[0] ]
+    })
+  end
+
+  def rule_sortNonTree
+    newRule('sortNonTree')
     newPattern(%w( $ABSOLUTE_ID ), Proc.new {
       args = @val[0].split('.')
       case args.length
@@ -1657,6 +1765,18 @@ EOT
       end
       [ attribute, direction, scenario ]
     })
+    arg(0, 'criteria', <<'EOT'
+The soring criteria must consist of a property attribute ID. See 'columnid'
+for a complete list of available attributes. The ID must be suffixed by '.up'
+or '.down' to determine the sorting direction. Optionally the ID may be
+prefixed with a scenario ID and a dot to determine the scenario that should be
+used for sorting. So, possible values are 'plan.start.up' or 'priority.down'.
+EOT
+         )
+  end
+
+  def rule_sortTree
+    newRule('sortTree')
     newPattern(%w( $ID ), Proc.new {
       if @val[0] != 'tree'
         error('sorting_crit_exptd2',
@@ -1665,6 +1785,8 @@ EOT
       end
       [ 'tree', true, -1 ]
     })
+    arg(0, 'tree',
+        'Use \'tree\' as first criteria to keep the breakdown structure.')
   end
 
   def rule_supplement
@@ -1749,15 +1871,8 @@ EOT
     newPattern(%w( !taskDepHeader !taskDepBody ), Proc.new {
       @val[0]
     })
-    doc('taskreference', <<'EOT'
+    doc('dependency', <<'EOT'
 Reference to another task.
-EOT
-       )
-    arg(0, 'id', <<'EOT'
-Absolute or relative ID of a task. An absolute task ID is a string of all
-parent task IDs concatenated with dots. A relate ID starts with one or more
-bangs. Each bang moves the scope to find the task with the specified ID to the
-parent of the current task.
 EOT
        )
   end
@@ -1820,7 +1935,16 @@ EOT
   def rule_taskDepId
     newRule('taskDepId')
     singlePattern('$ABSOLUTE_ID')
+    descr(<<'EOT'
+A reference using the full qualified ID of a task. The IDs of all enclosing
+parent tasks must be prepended to the task ID and separated with a dot, e.g. '
++ 'proj.plan.doc
+EOT
+         )
+
     singlePattern('$ID')
+    descr('Just the ID of the task without and parent IDs.')
+
     newPattern(%w( $RELATIVE_ID ), Proc.new {
       task = @property
       id = @val[0]
@@ -1837,6 +1961,13 @@ EOT
         id
       end
     })
+    descr(<<'EOT'
+A relative task ID always starts with one or more exclamation marks and is
+followed by a task ID. Each exclamation mark lifts the scope where the ID is
+looked for to the enclosing task. The ID may contain some of the parent IDs
+separated by dots, e. g. !!plan.doc.
+EOT
+         )
   end
 
   def rule_taskDepList
@@ -2176,7 +2307,6 @@ eye on tasks that have been switched implicitly to ALAP mode because the
 end attribute comes after the start attribute.
 EOT
        )
-    arg(1, 'policy', 'Possible values are asap or alap')
 
     newPattern(%w( _start !valDate), Proc.new {
       @property['start', @scenarioIdx] = @val[1]
@@ -2205,11 +2335,13 @@ EOT
 
   def rule_timezone
     newRule('timezone')
-    newPattern(%w( _timezone $STRING ))
+    newPattern(%w( _timezone $STRING ), Proc.new{
+      # TODO
+    })
     doc('timezone', <<'EOT'
 Sets the default timezone of the project. All times that have no time
-zones specified will be assumed to be in this timezone. The value must
-be a string just like those used for the TZ environment variable. Most
+zones specified will be assumed to be in this timezone. The value must be a
+string just like those used for the TZ environment variable. Most
 Linux systems have a command line utility called tzselect to lookup
 possible values.
 
@@ -2218,7 +2350,11 @@ have to explicitly state the timezone for those dates or the system
 defaults are assumed.
 EOT
         )
-    arg(1, 'zone', 'Time zone to use. E. g. Europe/Berlin')
+    arg(1, 'zone', <<'EOT'
+Time zone to use. E. g. 'Europe/Berlin' or 'America/Denver'. Don't use the 3
+letter acronyms.
+EOT
+       )
   end
 
   def rule_vacationName
