@@ -18,9 +18,24 @@ class ShiftAssignment
 
   attr_accessor :interval
 
-  def initialize(scenarioIdx, shift, interval)
-    @shiftScenario = shift.scenario(scenarioIdx)
+  def initialize(shiftScenario, interval)
+    @shiftScenario = shiftScenario
     @interval = interval
+  end
+
+  # Return a deep copy of self.
+  def copy
+    ShiftAssignment.new(@shiftScenario, Interval.new(@interval))
+  end
+
+  # Return true if the _iv_ interval overlaps with the assignment interval.
+  def overlaps?(iv)
+    @interval.overlaps?(iv)
+  end
+
+  # Check if date is withing the assignment period.
+  def assigned?(date)
+    @interval.start <= date && date < @interval.end
   end
 
   # Returns true if the shift has working hours defined for the _date_.
@@ -39,9 +54,21 @@ end
 # assignments must not overlap.
 class ShiftAssignments
 
-  def initialize
+  attr_reader :project, :assignments
+
+  def initialize(sa = nil)
     @assignments = []
-    @project = nil
+    if sa
+      @project = sa.project
+      sa.assignments.each do |assignment|
+        @assignments << assignment.copy
+      end
+      @scoreboard = Scoreboard.new(@project['start'], @project['end'],
+                                   @project['scheduleGranularity'])
+    else
+      @project = nil
+      @scoreboard = nil
+    end
   end
 
   # Some operations require access to the whole project.
@@ -57,8 +84,8 @@ class ShiftAssignments
     # 1: on shift
     # 2: Off-hour slot
     # 3: Vacation slot
-    @scoreboard = Scoreboard.new(project['start'], project['end'],
-                                 project['scheduleGranularity'])
+    @scoreboard = Scoreboard.new(@project['start'], @project['end'],
+                                 @project['scheduleGranularity'])
   end
 
   # Add a new assignment to the list. In case there was no overlap the
@@ -72,67 +99,64 @@ class ShiftAssignments
     true
   end
 
-  # Returns true if any of the defined shift periods overlaps with the date or
-  # interval specified by _arg_.
-  def overlaps?(arg)
-    @assignments.each do |sa|
-      return true if sa.interval.overlaps?(arg)
-    end
-    false
-  end
-
-  # Returns true if any of the defined shift periods contains the date or
-  # interval given by _arg_ and the if shift has working hours defined for
-  # that _arg_.
-  def onShift?(arg)
-    if arg.class == Interval
-      arg.start.upto(arg.end, @scoreboard.resolution) do |date|
-        determineSlot(date) if @scoreboard.get(date).nil?
-        return false if @scoreboard.get(date) != 1
-      end
-    else
-      # arg should be a date
-      determineSlot(arg) if @scoreboard.get(arg).nil?
-      return @scoreboard.get(arg) == 1
-    end
-    true
-  end
-
-  # Returns true if any of the defined shift periods contains the date or
-  # interval given by _arg_ and if the shift has a vacation defined for the
-  # _arg_.
-  def onVacation?(arg)
-    if arg.class == Interval
-      arg.start.upto(arg.end, @scoreboard.resolution) do |date|
-        determineSlot(date) if @scoreboard.get(date).nil?
-      end
-    else
-      # arg should be a date
-      determineSlot(arg) if @scoreboard.get(arg).nil?
-      return @scoreboard.get(arg) == 3
-    end
-  end
-
-private
-
-  # Determine the onShift and onVacation status for the date and store it in
-  # the scoreboard cache.
-  def determineSlot(date)
+  # This function returns the entry in the scoreboard that corresponds to
+  # _date_. If the slot has not yet been determined, it's calculated first.
+  def getSbSlot(date)
     idx = @scoreboard.dateToIdx(date)
+    # Check if we have a value already for this slot.
+    return @scoreboard[idx] unless @scoreboard[idx].nil?
+
+    # If not, compute it.
     @assignments.each do |sa|
+      next unless sa.assigned?(date)
+
       if sa.onVacation?(date)
         # On vacation
-        @scoreboard[idx] = 3
+        return @scoreboard[idx] = 3
       elsif sa.onShift?(date)
         # On shift
-        @scoreboard[idx] = 1
+        return @scoreboard[idx] = 1
       else
         # Off hour
-        @scoreboard[idx] = 2
+        return @scoreboard[idx] = 2
       end
     end
     # No assignment for slot
     @scoreboard[idx] = 0
+  end
+
+  # Returns true if any of the defined shift periods overlaps with the date or
+  # interval specified by _date_.
+  def assigned?(date)
+    getSbSlot(date) > 0
+  end
+
+  # Returns true if any of the defined shift periods contains the
+  # _date_ and the shift has working hours defined for that _date_.
+  def onShift?(date)
+    getSbSlot(date) == 1
+  end
+
+  # Returns true if any of the defined shift periods contains the _date_ and
+  # the shift has a vacation defined or all off hours defined for that _date_.
+  def timeOff?(date)
+    getSbSlot(date) >= 2
+  end
+
+  # Returns true if any of the defined shift periods contains the _date_ and
+  # if the shift has a vacation defined for the _date_.
+  def onVacation?(date)
+    getSbSlot(date) == 3
+  end
+
+private
+
+  # Returns true if the intverval overlaps with any of the assignment periods.
+  def overlaps?(iv)
+    @assignments.each do |sa|
+      return true if sa.overlaps?(iv)
+    end
+    false
   end
 
 end

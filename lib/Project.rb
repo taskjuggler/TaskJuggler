@@ -85,10 +85,13 @@ class Project
     @shifts = PropertySet.new(self, true)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
+      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
+      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations', 'Vacations',    IntervalListAttribute, true, true, [] ],
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
       [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-        @attributes['workinghours'] ]
+        nil ]
     ]
     attrs.each { |a| @shifts.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -107,11 +110,12 @@ class Project
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
         nil ],
+      [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
       [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
       [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-        @attributes['workinghours'] ]
+        nil ]
     ]
     attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -220,6 +224,8 @@ class Project
   end
 
   def schedule
+    @shifts.inheritAttributesFromScenario
+    @shifts.index
     @resources.inheritAttributesFromScenario
     @resources.index
     @tasks.inheritAttributesFromScenario
@@ -318,8 +324,8 @@ class Project
   end
 
   def scoreboardSize
-    (@attributes['end'] - @attributes['start']) /
-    @attributes['scheduleGranularity']
+    ((@attributes['end'] - @attributes['start']) /
+     @attributes['scheduleGranularity']).to_i
   end
 
   def idxToDate(idx)

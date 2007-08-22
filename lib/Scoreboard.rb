@@ -26,7 +26,7 @@ class Scoreboard
     @startDate = startDate
     @endDate = endDate
     @resolution = resolution
-    @size = (endDate - startDate) / resolution
+    @size = ((endDate - startDate) / resolution).to_i
     @sb = Array.new(@size, initVal)
   end
 

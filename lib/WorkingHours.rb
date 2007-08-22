@@ -19,6 +19,7 @@ require 'Interval'
 class WorkingHours
 
   attr_reader :days
+  attr_writer :timezone
 
   def initialize(wh = nil, tz = nil)
     # One entry for every day of the week. Sunday === 0.
@@ -33,7 +34,11 @@ class WorkingHours
       end
     else
       0.upto(6) do |day|
-        setWorkingHours(day, wh.days[day].clone)
+        hours = []
+        wh.days[day].each do |hrs|
+          hours << hrs.clone
+        end
+        setWorkingHours(day, hours)
       end
     end
     @timezone = tz
@@ -61,21 +66,14 @@ class WorkingHours
 
   # Return true if _date_ is within the defined working hours.
   def onShift?(date)
-    oldTimezone = nil
-    # Set environment variable TZ to appropriate time zone
-    if @timezone
-      oldTimezone = ENV['tz']
-      ENV['tz'] = @timezone
-    end
-    dow = date.wday
-    localDate = date.clone
-    localDate.localtime
-    secondsOfDay = localDate.secondsOfDay
+    # The date is in UTC. The weekday needs to be calculated according to the
+    # timezone of the project.
+    projectDate = toLocaltime(date)
+    dow = projectDate.wday
 
-    # Restore environment
-    if oldTimezone
-      ENV['tz'] = oldTimezone
-    end
+    # The working hours need to be put into the proper time zone.
+    localDate = toLocaltime(date, @timezone)
+    secondsOfDay = localDate.secondsOfDay
 
     @days[dow].each do |iv|
       return true if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
@@ -84,8 +82,8 @@ class WorkingHours
     false
   end
 
-  # Return true if we have no working interval defined for the whole period
-  # specified by _interval_.
+  # This function does not belong here! It should be handled via the
+  # ShiftAssignment.
   def timeOff?(interval)
     t = interval.start.midnight
     while t < interval.end
@@ -105,12 +103,14 @@ class WorkingHours
     true
   end
 
+  # Probably should be put into ShiftAssignment as well.
   def dayOff?(date)
-    # TODO: Add support for different time zones
-    dow = interval.start.wday
+    projectDate = toLocaltime(date)
+    dow = projectDate.wday
     @days[dow].empty?
   end
 
+  # Returns the time interval settings for each day in a human readable form.
   def to_s
     dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )
     str = ''
@@ -128,6 +128,30 @@ class WorkingHours
       str += "\n" if day < 6
     end
     str
+  end
+
+private
+
+  # Convert a UTC date into the corresponding date in the local time zone.
+  # This is either the current system setting or the time zone specified by
+  # _tz_.
+  def toLocaltime(date, tz = nil)
+    oldTimezone = nil
+    # Set environment variable TZ to appropriate time zone
+    if @tz
+      oldTimezone = ENV['tz']
+      ENV['tz'] = @timezone
+    end
+
+    localDate = date.clone
+    localDate.localtime
+
+    # Restore environment
+    if oldTimezone
+      ENV['tz'] = oldTimezone
+    end
+
+    localDate
   end
 
 end

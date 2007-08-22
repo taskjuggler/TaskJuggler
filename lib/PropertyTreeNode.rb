@@ -101,7 +101,6 @@ class PropertyTreeNode
         scenario = @project.scenario(scenarioIdx)
         next if scenario.parent.nil?
         parentScenarioIdx = scenario.parent.sequenceNo - 1
-
         # We copy only provided or inherited values from parent scenario when
         # we don't have a provided or inherited value in this scenario.
         if (provided(attrDef.id, parentScenarioIdx) ||

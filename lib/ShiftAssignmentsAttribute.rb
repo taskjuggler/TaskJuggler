@@ -20,6 +20,10 @@ class ShiftAssignmentsAttribute < AttributeBase
     @value = ShiftAssignments.new
   end
 
+  def initValue(arg)
+    ShiftAssignments.new
+  end
+
   def setProject(project)
     @value.setProject(project)
   end

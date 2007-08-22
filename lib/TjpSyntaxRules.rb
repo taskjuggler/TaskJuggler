@@ -1645,9 +1645,12 @@ EOT
     newRule('shiftAssignment')
     newPattern(%w( !shiftId !interval ), Proc.new {
       if !@property['shifts', @scenarioIdx].
-         addAssignment(ShiftAssignment.new(@scenarioIdx, @val[0], @val[1]))
+         addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
+                                           @val[1]))
         error('shift_assignment_overlap', 'Shifts may not overlap each other.')
       end
+      # Set same value again to set the 'provided' state for the attribute.
+      @property['shifts', @scenarioIdx] = @property['shifts', @scenarioIdx]
     })
   end
 
@@ -1675,6 +1678,9 @@ EOT
     newRule('shiftHeader')
     newPattern(%w( _shift $ID $STRING ), Proc.new {
       @property = Shift.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.inheritAttributes
+      @scenarioIdx = 0
     })
     arg(1, 'id', 'The ID of the shift')
     arg(2, 'name', 'The name of the shift')
@@ -1698,7 +1704,7 @@ EOT
       @property['timezone', @scenarioIdx] = @val[1]
     })
     doc('shift.timezone', <<'EOT'
-Sets the timezone of the shift. All information of the shift is interpreted relative to this time zone.
+Sets the timezone of the shift. The working hours of the shift are assumed to be within the specified time zone. The timezone does not effect the vaction interval. The latter is assumed to be within the project time zone.
 EOT
         )
     arg(1, 'zone', <<'EOT'
@@ -2460,11 +2466,12 @@ EOT
     newPattern(%w( _workinghours !listOfDays !listOfTimes), Proc.new {
       wh = @property.nil? ? @project['workinghours'] :
            @property['workinghours', @scenarioIdx]
+      wh.timezone = @property.nil? ? @project['timezone'] :
+                    @property['timezone', @scenarioIdx]
       0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
     doc('workinghours', <<'EOT'
-The working hours specification limits the availability of resources to
-certain time slots of week days.
+The working hours specification limits the availability of resources or the activity on a task to certain time slots of week days.
 EOT
        )
   end

@@ -10,9 +10,15 @@
 # $Id$
 #
 
+require 'WorkingHours'
+
 class WorkingHoursAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
+  end
+
+  def initValue(arg)
+    WorkingHours.new
   end
 
   def WorkingHoursAttribute::tjpId

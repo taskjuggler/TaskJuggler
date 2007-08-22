@@ -29,7 +29,11 @@ class AttributeBase
     @property = property
     @inherited = false
     @provided = false
-    @value = @type.default
+    if methods.include?('initValue')
+      @value = initValue(@type.default)
+    else
+      @value = @type.default
+    end
     @@mode = 0
   end
 
@@ -41,6 +45,8 @@ class AttributeBase
     if value.is_a?(Fixnum) || value.is_a?(Float) ||
        value.is_a?(TrueClass) || value.is_a?(FalseClass)
       @value = value
+    elsif value.is_a?(ShiftAssignments)
+      @value = ShiftAssignments.new(value)
     elsif value.is_a?(String) || value.is_a?(TjTime)
       @value = value.clone
     elsif value.is_a?(WorkingHours)

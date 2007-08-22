@@ -101,14 +101,6 @@ class ResourceScenario < ScenarioData
     book(sbIdx, booking.task, true)
   end
 
-  def onShift?(date)
-    if a('shifts').overlaps?(date)
-      a('shifts').onShift?(date)
-    else
-      a('workinghours').onShift?(date)
-    end
-  end
-
   # Returns the load of the resource (and its children) weighted by their
   # efficiency.
   def getEffectiveLoad(startIdx, endIdx, task)
@@ -234,6 +226,8 @@ private
   def initScoreboard
     # Create scoreboard and mark all slots as unavailable
     @scoreboard = Array.new(@project.scoreboardSize, 1)
+    # We need this frequently and can savely cache it here.
+    @shifts = a('shifts')
 
     # Change all work time slots to nil (available) again.
     0.upto(@project.scoreboardSize) do |i|
@@ -250,13 +244,13 @@ private
     end
     # Mark the vacations from all the shifts the resource is assigned to.
     0.upto(@project.scoreboardSize) do |i|
-      @scoreboard[i] = 2 if a('shifts').onVacation?(idxToDate(i))
+      @scoreboard[i] = 2 if @shifts.onVacation?(idxToDate(i))
     end
 
     # Mark all global vacation slots as such (2)
     @project['vacations'].each do |vacation|
-      startIdx = @project.dateToIdx(vacation.start)
-      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx = @project.dateToIdx(vacation.start, true)
+      endIdx = @project.dateToIdx(vacation.end, true) - 1
       startIdx.upto(endIdx) do |i|
          @scoreboard[i] = 2
       end
@@ -265,6 +259,20 @@ private
 
   def idxToDate(sbIdx)
     @project.idxToDate(sbIdx)
+  end
+
+  def onShift?(date)
+    # The more redable but slower form would be:
+    # if @shifts.assigned?(date)
+    #   return @shifts.onShift?(date)
+    # else
+    #   a('workinghours').onShift?(date)
+    # end
+    if (v = @shifts.getSbSlot(date)) > 0
+      v == 1
+    else
+      a('workinghours').onShift?(date)
+    end
   end
 
   # Count the booked slots between the start and end index. If _task_ is not
