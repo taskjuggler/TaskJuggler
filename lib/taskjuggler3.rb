@@ -39,9 +39,8 @@ def main
   if !tj.schedule || !tj.generateReports
     exit 1
   end
-
-  exit 0
 end
 
 main()
+exit 0
 

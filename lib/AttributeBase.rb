@@ -29,7 +29,7 @@ class AttributeBase
     @property = property
     @inherited = false
     @provided = false
-    if methods.include?('initValue')
+    if respond_to?('initValue')
       @value = initValue(@type.default)
     else
       @value = @type.default

@@ -305,7 +305,7 @@ private
   def newAttribute(attributeType)
     attribute = attributeType.objClass.new(attributeType, self)
     # If the attribute requires a pointer to the project, we'll hand it over.
-    if attribute.public_methods.include?('setProject')
+    if attribute.respond_to?('setProject')
       attribute.setProject(@project)
     end
 
