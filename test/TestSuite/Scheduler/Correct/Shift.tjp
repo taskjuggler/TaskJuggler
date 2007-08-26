@@ -5,11 +5,13 @@ macro Fixend [ minend ${1} maxend ${1} ]
 shift odd_days "Odd Days" {
   workinghours mon, wed, fri 10:00 - 16:00
   workinghours tue, thu, sat, sun off
+  vacation 2007-09-03
 }
 
 shift even_days "Even Days" {
   workinghours mon, wed, fri off
   workinghours tue, thu, sat, sun 10:00 - 16:00
+  vacation 2007-09-04
 	shift even_no_we "Even Days, no weekend" {
     workinghours sat, sun off
 	}
@@ -44,6 +46,8 @@ resource team "Team" {
     vacation 2007-09-05
     shifts thu_vac 2007-09-01 +7d
   }
+
+  resource work1 "Worker 1"
 }
 
 resource default "Default Worker"
@@ -54,19 +58,19 @@ task prj "Project" {
   task mdf "MDF Task" {
     effort 4w
     allocate mdf
-    ${Fixend "2007-09-28-18:00"}
+    ${Fixend "2007-10-01-16:00"}
   }
   
   task ttss "TTSS Task" {
     effort 5w
     allocate ttss
-    ${Fixend "2007-10-04-14:00"}
+    ${Fixend "2007-10-05-11:00"}
   }
 
   task tt "TT Task" {
     effort 4w
     allocate tt
-    ${Fixend "2007-10-02-14:00"}
+    ${Fixend "2007-10-03-11:00"}
   }
 
   task default "Default Task" {
@@ -81,6 +85,15 @@ task prj "Project" {
     allocate wed_vac
     ${Fixend "2007-09-07-18:00"}
   }
+
+  task work1 "Task with shift morning" {
+    start ${projectstart}
+    allocate work1
+    effort 1w
+    shifts morning 2007-09-01 +4w
+    ${Fixend "2007-09-20-10:00"}
+  }
+    
 }
   
 htmltaskreport "Shift.html" {

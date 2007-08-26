@@ -191,8 +191,8 @@ class TextParserPattern
              !rules[token].patterns[0].doc.nil?
             # The argument pattern contains a reference to another documented
             # pattern.
-            str << "<#{keyword}>"
             keyword = rules[token].patterns[0].keyword
+            str << "<#{keyword}>"
             argDoc = ParserTokenDoc.new(keyword,
                                         "See #{keyword} for more info.")
             argDoc.pattern = rules[token].patterns[0]

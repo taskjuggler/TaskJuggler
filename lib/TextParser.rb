@@ -378,9 +378,9 @@ private
   # Remove all single line breaks but preserve paragraphs. Multi linefeeds
   # are temporarily converted to form feeds (ASCII 0x0C).
   def cleanUpText(text)
-    text.chomp.gsub(/[\n]{2,}/, "\0C").
+    text.chomp.gsub(/[\n]{2,}/, "\x0C").
                gsub(/[\n]([^\n])/, ' \1').
-               gsub(/[\0C]/, "\n")
+               gsub(/[\x0C]/, "\n")
   end
 
 end

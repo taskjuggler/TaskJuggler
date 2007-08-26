@@ -52,6 +52,10 @@ class TjTime
     end
   end
 
+  def %(val)
+    @time.to_i % val
+  end
+
   def <(t)
     @time < t.time
   end

@@ -191,6 +191,26 @@ EOT
     arg(1, 'text', 'The new column title.')
   end
 
+  def rule_date
+    newRule('date')
+    newPattern(%w( $DATE ), lambda {
+      resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
+      if @val[0] % resolution != 0
+        error('misaligned_date',
+              "The date must be aligned to the timing resolution (" +
+              "#{resolution / 60} min) of the project.")
+      end
+      @val[0]
+    })
+    doc('date', <<'EOT'
+A DATE is an ISO-compliant date in the format
+YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]. Hour, minutes, seconds, and the TIMEZONE
+are optional. If not specified, the values are set to 0. TIMEZONE must be an
+offset to GMT or UTC, specified as +HHMM or -HHMM.
+EOT
+       )
+  end
+
   def rule_declareFlagList
     newListRule('declareFlagList', '$ID')
   end
@@ -285,12 +305,12 @@ EOT
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(DateAttribute, nil)
         @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
-          [ '_' + @val[1], '$DATE' ], lambda {
+          [ '_' + @val[1], '!date' ], lambda {
             @property[@val[0], @scenarioIdx] = @val[1]
           }))
       else
         @ruleToExtend.addPattern(TextParserPattern.new(
-          [ '_' + @val[1], '$DATE' ], lambda {
+          [ '_' + @val[1], '!date' ], lambda {
             @property.set(@val[0], @val[1])
           }))
       end
@@ -521,7 +541,7 @@ EOT
 
   def rule_intervalOrDate
     newRule('intervalOrDate')
-    newPattern(%w( $DATE !intervalOptionalEnd ), lambda {
+    newPattern(%w( !date !intervalOptionalEnd ), lambda {
       if @val[1]
         mode = @val[1][0]
         endSpec = @val[1][1]
@@ -534,12 +554,23 @@ EOT
         Interval.new(@val[0], @val[0].sameTimeNextDay)
       end
     })
-    arg(0, 'start date', 'The start date of the interval')
+    doc('interval3', <<'EOT'
+There are three ways to specify a date interval. The first is the most
+obvious. A date interval consists of a start and end DATE. Watch out for end
+dates without a time specification! Dates specifications are 0 expanded. An
+end date without a time is expanded to midnight that day. So the day of the
+end date is not included in the interval! The start and end dates must be separated by a hyphen character.
+
+In the second form, the end date is omitted. A 24 hour interval is assumed.
+
+The third form specifies the start date and an interval duration. The duration must be prefixed by a plus character.
+EOT
+       )
   end
 
   def rule_interval
     newRule('interval')
-    newPattern(%w( $DATE !intervalEnd ), lambda {
+    newPattern(%w( !date !intervalEnd ), lambda {
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
@@ -548,12 +579,22 @@ EOT
         Interval.new(@val[0], @val[0] + endSpec)
       end
     })
-    arg(0, 'start date', 'The start date of the interval')
+    doc('interval2', <<'EOT'
+There are to ways to specify a date interval. The first is the most
+obvious. A date interval consists of a start and end DATE. Watch out for end
+dates without a time specification! Dates specifications are 0 expanded. An
+end date without a time is expanded to midnight that day. So the day of the
+end date is not included in the interval! The start and end dates must be separated by a hyphen character.
+
+In the second form specifies the start date and an interval duration. The
+duration must be prefixed by a plus character.
+EOT
+       )
   end
 
   def rule_intervalDuration
     newRule('intervalDuration')
-    newPattern(%w( $INTEGER !durationUnit ), lambda {
+    newPattern(%w( !number !durationUnit ), lambda {
       convFactors = [ 60, # minutes
                       60 * 60, # hours
                       60 * 60 * 24, # days
@@ -561,17 +602,19 @@ EOT
                       60 * 60 * 24 * 30.4167, # months
                       60 * 60 * 24 * 365 # years
                      ]
-      (@val[0] * convFactors[@val[1]]).to_i
+      duration = @val[0] * convFactors[@val[1]]
+      resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
+      # Make sure the interval aligns with the timing resolution.
+      (duration / resolution).to_i * resolution
     })
     arg(0, 'duration', 'The duration of the interval')
   end
 
   def rule_intervalEnd
     newRule('intervalEnd')
-    newPattern([ '_ - ', '$DATE' ], lambda {
+    newPattern([ '_ - ', '!date' ], lambda {
       [ 0, @val[1] ]
     })
-    arg(1, 'end date', 'The end date of the interval')
 
     newPattern(%w( _+ !intervalDuration ), lambda {
       [ 1, @val[1] ]
@@ -581,10 +624,9 @@ EOT
   def rule_intervalOptionalEnd
     newRule('intervalOptionalEnd')
     optional
-    newPattern([ '_ - ', '$DATE' ], lambda {
+    newPattern([ '_ - ', '!date' ], lambda {
       [ 0, @val[1] ]
     })
-    arg(1, 'end date', 'The end date of the interval')
 
     newPattern(%w( _+ !intervalDuration ), lambda {
       [ 1, @val[1] ]
@@ -594,6 +636,13 @@ EOT
   def rule_intervals
     newListRule('intervals', '!intervalOrDate')
   end
+
+  def rule_intervalsOptional
+    newRule('intervalsOptional')
+    optional
+    singlePattern('!intervals')
+  end
+
 
   def rule_listOfDays
     newRule('listOfDays')
@@ -701,7 +750,7 @@ EOT
       end
       LogicalAttribute.new(attribute, scenarioIdx)
     })
-    newPattern(%w( $DATE ), lambda {
+    newPattern(%w( !date ), lambda {
       LogicalOperation.new(@val[0])
     })
     newPattern(%w( $ID !argumentList ), lambda {
@@ -776,20 +825,6 @@ EOT
     descr('The \'smaller-or-equal\' operator')
   end
 
-  def rule_period
-    newRule('period')
-    newPattern(%w( _period !valInterval), lambda {
-      @property['start', @scenarioIdx] = @val[1].start
-      @property['end', @scenarioIdx] = @val[1].end
-    })
-    doc('period', <<'EOT'
-This property is a shortcut for setting the start and end property at the same
-time. In contrast to using these, it does not change the scheduling direction. The full period must be within the report time frame.
-EOT
-       )
-  end
-
-
   def rule_project
     newRule('project')
     newPattern(%w( !projectDeclaration !properties ), lambda {
@@ -855,7 +890,7 @@ EOT
 
     newPattern(%w( !include ))
 
-    newPattern(%w( _now $DATE ), lambda {
+    newPattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
                                   @scanner.sourceFileInfo))
@@ -891,23 +926,19 @@ EOT
         'just the hour and minutes.')
     arg(1, 'format', 'strftime like format string')
 
-    newPattern(%w( _timeformat $STRING ), lambda {
-      @project['timeformat'] = @val[1]
-    })
-    doc('timeformat',
-        'Determines how time specifications in reports look like.')
-    arg(1, 'format', 'strftime like format string')
+    singlePattern('!timeformat')
 
     newPattern(%w( !timezone ), lambda {
       @project['timezone'] = @val[1]
     })
 
     newPattern(%w( _timingresolution $INTEGER _min ), lambda {
-      error('min_timing_res',
-            'Timing resolution must be at least 5 min.') if @val[1] < 5
-      error('max_timing_res',
-            'Timing resolution must be 1 hour or less.') if @val[1] > 60
-      @project['scheduleGranularity'] = @val[1]
+      goodValues = [ 5, 10, 15, 20, 30, 60 ]
+      unless goodValues.include?(@val[1])
+        error('bad_timing_res',
+              "Timing resolution must be one of #{goodValues.join(', ')} min.")
+      end
+      @project['scheduleGranularity'] = @val[1] * 60
     })
     doc('timingresolution', <<'EOT'
 Sets the minimum timing resolution. The smaller the value, the longer the
@@ -922,8 +953,6 @@ The timing resolution should be set prior to any value that represents a time
 value like now or workinghours.
 EOT
         )
-    arg(1, 'resolution', 'The minimum interval that the scheduler uses to ' +
-        'align tasks')
 
     newPattern(%w( _weekstartsmonday ), lambda {
       @project['weekstartsmonday'] = true
@@ -1147,134 +1176,7 @@ file.
 EOT
        )
 
-    newPattern(%w( _timeformat $STRING ), lambda {
-      @reportElement.timeformat = @val[1]
-    })
-    doc('report.timeformat', <<'EOT'
-Determines how time specifications in reports look like.
-EOT
-       )
-    arg(1, 'format', <<'EOT'
-Ordinary characters placed in the format string are copied without
-conversion. Conversion specifiers are introduced by a `%' character, and are
-replaced in s as follows:
-
-%a  The abbreviated weekday name according to the current locale.
-
-%A  The full weekday name according to the current locale.
-
-%b  The abbreviated month name according to the current locale.
-
-%B  The full month name according to the current locale.
-
-%c  The preferred date and time representation for the current locale.
-
-%C  The century number (year/100) as a 2-digit integer. (SU)
-
-%d  The day of the month as a decimal number (range 01 to 31).
-
-%e  Like %d, the day of the month as a decimal number, but a leading zero is
-replaced by a space. (SU)
-
-%E  Modifier: use alternative format, see below. (SU)
-
-%F  Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)
-
-%G  The ISO 8601 year with century as a decimal number. The 4-digit year
-corresponding to the ISO week number (see %V). This has the same format and
-value as %y, except that if the ISO week number belongs to the previous or next
-year, that year is used instead. (TZ)
-
-%g  Like %G, but without century, i.e., with a 2-digit year (00-99). (TZ)
-
-%h  Equivalent to %b. (SU)
-
-%H  The hour as a decimal number using a 24-hour clock (range 00 to 23).
-
-%I  The hour as a decimal number using a 12-hour clock (range 01 to 12).
-
-%j  The day of the year as a decimal number (range 001 to 366).
-
-%k  The hour (24-hour clock) as a decimal number (range 0 to 23); single digits
-are preceded by a blank. (See also %H.) (TZ)
-
-%l  The hour (12-hour clock) as a decimal number (range 1 to 12); single digits
-are preceded by a blank. (See also %I.) (TZ)
-
-%m  The month as a decimal number (range 01 to 12).
-
-%M  The minute as a decimal number (range 00 to 59).
-
-%n  A newline character. (SU)
-
-%O  Modifier: use alternative format, see below. (SU)
-
-%p  Either 'AM' or 'PM' according to the given time value, or the corresponding
-strings for the current locale. Noon is treated as `pm' and midnight as 'am'.
-
-%P  Like %p but in lowercase: 'am' or 'pm' or %a corresponding string for the
-current locale. (GNU)
-
-%r  The time in a.m. or p.m. notation. In the POSIX locale this is equivalent
-to '%I:%M:%S %p'. (SU)
-
-%R  The time in 24-hour notation (%H:%M). (SU) For a version including the
-seconds, see %T below.
-
-%s  The number of seconds since the Epoch, i.e., since 1970-01-01 00:00:00 UTC.
-(TZ)
-
-%S  The second as a decimal number (range 00 to 61).
-
-%t  A tab character. (SU)
-
-%T  The time in 24-hour notation (%H:%M:%S). (SU)
-
-%u  The day of the week as a decimal, range 1 to 7, Monday being 1. See also
-%w. (SU)
-
-%U  The week number of the current year as a decimal number, range 00 to 53,
-starting with the first Sunday as the first day of week 01. See also %V and %W.
-
-%V  The ISO 8601:1988 week number of the current year as a decimal number,
-range 01 to 53, where week 1 is the first week that has at least 4 days in the
-current year, and with Monday as the first day of the week. See also %U %and
-%W. %(SU)
-
-%w  The day of the week as a decimal, range 0 to 6, Sunday being 0. See also %u.
-
-%W  The week number of the current %year as a decimal number, range 00 to 53,
-starting with the first Monday as the first day of week 01.
-
-%x  The preferred date representation for the current locale without the time.
-
-%X  The preferred time representation for the current locale without the date.
-
-%y  The year as a decimal number without a century (range 00 to 99).
-
-%Y   The year as a decimal number including the century.
-
-%z   The time zone as hour offset from GMT. Required to emit RFC822-conformant
-dates (using "%a, %d %%b %Y %H:%M:%S %%z"). (GNU)
-
-%Z  The time zone or name or abbreviation.
-
-%+  The date and time in date(1) format. (TZ)
-
-%%  A literal '%' character.
-
-Some conversion specifiers can be modified by preceding them by the E or O
-modifier to indicate that an alternative format should be used. If the
-alternative format or specification does not exist for the current locale, the
-behavior will be as if the unmodified conversion specification were used. (SU)
-The Single Unix Specification mentions %Ec, %EC, %Ex, %%EX, %Ry, %EY, %Od, %Oe,
-%OH, %OI, %Om, %OM, %OS, %Ou, %OU, %OV, %Ow, %OW, %Oy, where the effect of the
-O modifier is to use alternative numeric symbols (say, Roman numerals), and
-that of the E modifier is to use a locale-dependent alternative representation.
-The documentation of the timeformat attribute has been taken from the man page
-of the GNU strftime function.
-EOT
-       )
+    singlePattern('!timeformat')
   end
 
   def rule_reportableAttributes
@@ -1681,14 +1583,19 @@ EOT
 
   def rule_shiftAssignment
     newRule('shiftAssignment')
-    newPattern(%w( !shiftId !intervals ), lambda {
+    newPattern(%w( !shiftId !intervalsOptional ), lambda {
       # Make sure we have a ShiftAssignment for the property.
       if @property['shifts', @scenarioIdx].nil?
         @property['shifts', @scenarioIdx] = ShiftAssignments.new
         @property['shifts', @scenarioIdx].setProject(@project)
       end
 
-      @val[1].each do |interval|
+      if @val[1].nil?
+        intervals = [ Interval.new(@project['start'], @project['end']) ]
+      else
+        intervals = @val[1]
+      end
+      intervals.each do |interval|
         if !@property['shifts', @scenarioIdx].
           addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
                                             interval))
@@ -1769,7 +1676,7 @@ lookup possible values.
 EOT
        )
 
-    newPattern(%w( _vacation !vacationName !intervals ), lambda {
+    newPattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
@@ -2066,6 +1973,19 @@ EOT
     singlePattern('$ID')
   end
 
+  def rule_taskPeriod
+    newRule('taskPeriod')
+    newPattern(%w( _period !valInterval), lambda {
+      @property['start', @scenarioIdx] = @val[1].start
+      @property['end', @scenarioIdx] = @val[1].end
+    })
+    doc('task.period', <<'EOT'
+This property is a shortcut for setting the start and end property at the same
+time. In contrast to using these, it does not change the scheduling direction.
+EOT
+       )
+  end
+
   def rule_taskPred
     newRule('taskPred')
     newPattern(%w( !taskPredHeader !taskDepBody ), lambda {
@@ -2271,7 +2191,7 @@ reported.
 EOT
        )
 
-    newPattern(%w( !period ))
+    newPattern(%w( !taskPeriod ))
 
     newPattern(%w( _precedes !taskPredList ), lambda {
       @property['precedes', @scenarioIdx] =
@@ -2374,7 +2294,7 @@ EOT
 Limits the working time for this task to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
 If one or more shifts have been assigned to a task, no work is done outside of
-the assigned intervals and the workinghours defined by the shifts.
+the assigned intervals and the workinghours defined by the shifts. In case no interval is specified the whole project period is assumed.
 EOT
         )
 
@@ -2388,8 +2308,141 @@ scenario this attribute also implicitly sets the scheduling policy of the task
 to asap.
 EOT
        )
-    also(%w( end period maxstart minstart scheduling ))
+    also(%w( end task.period maxstart minstart scheduling ))
     # Other attributes will be added automatically.
+  end
+
+  def rule_timeformat
+    newRule('timeformat')
+    newPattern(%w( _timeformat $STRING ), lambda {
+      @val[1]
+    })
+    doc('timeformat', <<'EOT'
+Determines how time specifications in reports look like.
+EOT
+       )
+    arg(1, 'format', <<'EOT'
+Ordinary characters placed in the format string are copied without
+conversion. Conversion specifiers are introduced by a `%' character, and are
+replaced in s as follows:
+
+%a  The abbreviated weekday name according to the current locale.
+
+%A  The full weekday name according to the current locale.
+
+%b  The abbreviated month name according to the current locale.
+
+%B  The full month name according to the current locale.
+
+%c  The preferred date and time representation for the current locale.
+
+%C  The century number (year/100) as a 2-digit integer. (SU)
+
+%d  The day of the month as a decimal number (range 01 to 31).
+
+%e  Like %d, the day of the month as a decimal number, but a leading zero is
+replaced by a space. (SU)
+
+%E  Modifier: use alternative format, see below. (SU)
+
+%F  Equivalent to %Y-%m-%d (the ISO 8601 date format). (C99)
+
+%G  The ISO 8601 year with century as a decimal number. The 4-digit year
+corresponding to the ISO week number (see %V). This has the same format and
+value as %y, except that if the ISO week number belongs to the previous or next
+year, that year is used instead. (TZ)
+
+%g  Like %G, but without century, i.e., with a 2-digit year (00-99). (TZ)
+
+%h  Equivalent to %b. (SU)
+
+%H  The hour as a decimal number using a 24-hour clock (range 00 to 23).
+
+%I  The hour as a decimal number using a 12-hour clock (range 01 to 12).
+
+%j  The day of the year as a decimal number (range 001 to 366).
+
+%k  The hour (24-hour clock) as a decimal number (range 0 to 23); single digits
+are preceded by a blank. (See also %H.) (TZ)
+
+%l  The hour (12-hour clock) as a decimal number (range 1 to 12); single digits
+are preceded by a blank. (See also %I.) (TZ)
+
+%m  The month as a decimal number (range 01 to 12).
+
+%M  The minute as a decimal number (range 00 to 59).
+
+%n  A newline character. (SU)
+
+%O  Modifier: use alternative format, see below. (SU)
+
+%p  Either 'AM' or 'PM' according to the given time value, or the corresponding
+strings for the current locale. Noon is treated as `pm' and midnight as 'am'.
+
+%P  Like %p but in lowercase: 'am' or 'pm' or %a corresponding string for the
+current locale. (GNU)
+
+%r  The time in a.m. or p.m. notation. In the POSIX locale this is equivalent
+to '%I:%M:%S %p'. (SU)
+
+%R  The time in 24-hour notation (%H:%M). (SU) For a version including the
+seconds, see %T below.
+
+%s  The number of seconds since the Epoch, i.e., since 1970-01-01 00:00:00 UTC.
+(TZ)
+
+%S  The second as a decimal number (range 00 to 61).
+
+%t  A tab character. (SU)
+
+%T  The time in 24-hour notation (%H:%M:%S). (SU)
+
+%u  The day of the week as a decimal, range 1 to 7, Monday being 1. See also
+%w. (SU)
+
+%U  The week number of the current year as a decimal number, range 00 to 53,
+starting with the first Sunday as the first day of week 01. See also %V and %W.
+
+%V  The ISO 8601:1988 week number of the current year as a decimal number,
+range 01 to 53, where week 1 is the first week that has at least 4 days in the
+current year, and with Monday as the first day of the week. See also %U %and
+%W. %(SU)
+
+%w  The day of the week as a decimal, range 0 to 6, Sunday being 0. See also %u.
+
+%W  The week number of the current %year as a decimal number, range 00 to 53,
+starting with the first Monday as the first day of week 01.
+
+%x  The preferred date representation for the current locale without the time.
+
+%X  The preferred time representation for the current locale without the date.
+
+%y  The year as a decimal number without a century (range 00 to 99).
+
+%Y   The year as a decimal number including the century.
+
+%z   The time zone as hour offset from GMT. Required to emit RFC822-conformant
+dates (using "%a, %d %%b %Y %H:%M:%S %%z"). (GNU)
+
+%Z  The time zone or name or abbreviation.
+
+%+  The date and time in date(1) format. (TZ)
+
+%%  A literal '%' character.
+
+Some conversion specifiers can be modified by preceding them by the E or O
+modifier to indicate that an alternative format should be used. If the
+alternative format or specification does not exist for the current locale, the
+behavior will be as if the unmodified conversion specification were used. (SU)
+The Single Unix Specification mentions %Ec, %EC, %Ex, %%EX, %Ry, %EY, %Od, %Oe,
+%OH, %OI, %Om, %OM, %OS, %Ou, %OU, %OV, %Ow, %OW, %Oy, where the effect of the
+O modifier is to use alternative numeric symbols (say, Roman numerals), and
+that of the E modifier is to use a locale-dependent alternative representation.
+The documentation of the timeformat attribute has been taken from the man page
+of the GNU strftime function.
+EOT
+       )
+
   end
 
   def rule_timeInterval
@@ -2436,7 +2489,7 @@ EOT
 
   def rule_valDate
     newRule('valDate')
-    newPattern(%w( $DATE ), lambda {
+    newPattern(%w( !date ), lambda {
       if @val[0] < @project['start'] || @val[0] > @project['end']
         error('date_in_range', "Date must be within the project time frame " +
               "#{@project['start']} +  - #{@project['end']}")
@@ -2447,7 +2500,7 @@ EOT
 
   def rule_valInterval
     newRule('valInterval')
-    newPattern(%w( $DATE !intervalEnd ), lambda {
+    newPattern(%w( !date !intervalEnd ), lambda {
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
@@ -2466,6 +2519,19 @@ EOT
       end
       iv
     })
+    doc('interval1', <<'EOT'
+There are to ways to specify a date interval. The start and end date must lie within the specified project period.
+
+The first is the most obvious. A date interval consists of a start and end
+DATE. Watch out for end dates without a time specification! Dates
+specifications are 0 expanded. An end date without a time is expanded to
+midnight that day. So the day of the end date is not included in the interval!
+The start and end dates must be separated by a hyphen character.
+
+In the second form specifies the start date and an interval duration. The
+duration must be prefixed by a plus character.
+EOT
+       )
   end
 
   def rule_weekday

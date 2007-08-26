@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2007-08-26 +1w {
+  timingresolution 20 min
+}
+
+# MARK: error 6 misaligned_date
+vacation "Day off" 2007-08-27-18:15
+
