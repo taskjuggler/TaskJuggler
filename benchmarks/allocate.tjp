@@ -1,0 +1,30 @@
+project test "Allocation Performance Test" "1.0" 2007-08-25 +3m
+
+macro r_and_t [
+  resource r${1} "Resource ${1}"
+  task t${1} "Task ${1}" {
+    period ${projectstart} - ${projectend}
+    allocate r${1}
+  }
+]
+
+macro r_and_t_10 [
+  ${r_and_t "${1}0"}
+  ${r_and_t "${1}1"}
+  ${r_and_t "${1}2"}
+  ${r_and_t "${1}3"}
+  ${r_and_t "${1}4"}
+  ${r_and_t "${1}5"}
+  ${r_and_t "${1}6"}
+  ${r_and_t "${1}7"}
+  ${r_and_t "${1}8"}
+  ${r_and_t "${1}9"}
+]
+
+${r_and_t_10 "0"}
+${r_and_t_10 "1"}
+${r_and_t_10 "2"}
+${r_and_t_10 "3"}
+${r_and_t_10 "4"}
+${r_and_t_10 "5"}
+

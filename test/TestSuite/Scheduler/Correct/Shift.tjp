@@ -3,57 +3,87 @@ project test "Test" "1.0" 2007-08-22 +2m
 macro Fixend [ minend ${1} maxend ${1} ]
 
 shift odd_days "Odd Days" {
-        workinghours mon, wed, fri 10:00 - 16:00
-        workinghours tue, thu, sat, sun off
+  workinghours mon, wed, fri 10:00 - 16:00
+  workinghours tue, thu, sat, sun off
 }
 
 shift even_days "Even Days" {
-        workinghours mon, wed, fri off
-        workinghours tue, thu, sat, sun 10:00 - 16:00
+  workinghours mon, wed, fri off
+  workinghours tue, thu, sat, sun 10:00 - 16:00
+	shift even_no_we "Even Days, no weekend" {
+    workinghours sat, sun off
+	}
 }
 
 shift morning "Morning" {
-        workinghours mon - sun 8:00 - 12:00
+  workinghours mon - sun 8:00 - 12:00
+}
+
+shift thu_vac "Vacation on Thursday" {
+  vacation 2007-09-06
+  replace
 }
 
 resource team "Team" {
-        vacation 2007-08-22 +3d
+  vacation 2007-08-22 +3d
   shifts morning 2007-08-23 +5d
 
   resource mdf "MDF Worker" {
-          shifts odd_days 2007-09-01 +2w
+    shifts odd_days 2007-09-01 +2w
   }
 
   resource ttss "TTSS Worker" {
-          shifts even_days 2007-09-01 +2w
+    shifts even_days 2007-09-01 +2w
+  }
+
+  resource tt "TT Worker" {
+    shifts even_no_we 2007-09-01 +2w
+  }
+
+  resource wed_vac "Vacation on Wednesday" {
+    vacation 2007-09-05
+    shifts thu_vac 2007-09-01 +7d
   }
 }
 
 resource default "Default Worker"
 
 task prj "Project" {
-        start 2007-08-22
+  start 2007-08-22
 
-  task t1 "MDF Task" {
-                effort 4w
-                allocate mdf
+  task mdf "MDF Task" {
+    effort 4w
+    allocate mdf
     ${Fixend "2007-09-28-18:00"}
   }
   
-  task t2 "TTSS Task" {
-                effort 5w
-                allocate ttss
-                ${Fixend "2007-10-04-14:00"}
+  task ttss "TTSS Task" {
+    effort 5w
+    allocate ttss
+    ${Fixend "2007-10-04-14:00"}
   }
 
-        task t3 "Default Task" {
-                effort 7w
-                allocate default
-                ${Fixend "2007-10-09-18:00"}
-        }
+  task tt "TT Task" {
+    effort 4w
+    allocate tt
+    ${Fixend "2007-10-02-14:00"}
+  }
+
+  task default "Default Task" {
+    effort 7w
+    allocate default
+    ${Fixend "2007-10-09-18:00"}
+  }
+
+  task vac_test "Vacation on Thursday" {
+    start 2007-09-01
+    effort 4d
+    allocate wed_vac
+    ${Fixend "2007-09-07-18:00"}
+  }
 }
   
 htmltaskreport "Shift.html" {
-        columns name, start, end, daily
+  columns name, start, end, daily
 }
   

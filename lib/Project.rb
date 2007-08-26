@@ -86,6 +86,7 @@ class Project
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'replace',   'Replace',      BooleanAttribute,  true,  true,  false ],
       [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
       [ 'vacations', 'Vacations',    IntervalListAttribute, true, true, [] ],
@@ -149,6 +150,8 @@ class Project
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
+      [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
+        nil ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
       [ 'startpreds', 'Start Preds.', TaskListAttribute, false, true, [] ],
       [ 'startsuccs', 'Start Succs.', TaskListAttribute, false, true, [] ],

@@ -51,13 +51,13 @@ class MacroParser < TextParser
       # macro call is replaced by an empty string.
       unless @scanner.macroDefined?(@val[2])
         if @val[1].nil?
-          error('undef_macro', "Macro #{name} is undefined", sourceFileInfo)
+          error('undef_macro', "Macro #{@val[2]} is undefined")
         end
         return nil
       end
       @scanner.expandMacro([ @val[2] ] + @val[3])
     })
-    newPattern(%w( _( $ID _) ), Proc.new {
+    newPattern(%w( _( $ID _) ), lambda {
       ENV[@val[0]]
     })
   end
@@ -65,7 +65,7 @@ class MacroParser < TextParser
   def rule_relax
     newRule('relax')
     optional
-    newPattern(%w( _? ), Proc.new {
+    newPattern(%w( _? ), lambda {
       true
     })
   end

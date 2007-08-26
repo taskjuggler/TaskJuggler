@@ -16,7 +16,7 @@ class TaskScenario < ScenarioData
 
   attr_reader :isRunAway
 
-  def initialize(task, scenarioIdx)
+  def initialize(task, scenarioIdx, attributes)
     super
   end
 
@@ -113,7 +113,7 @@ class TaskScenario < ScenarioData
       @errors += 1 unless task.postScheduleCheck(@scenarioIdx)
     end
 
-    # There is no point the check the parent if the child(s) have errors.
+    # There is no point to check the parent if the child(s) have errors.
     return false if @errors > 0
 
     # Same for runaway tasks. They have already been reported.
@@ -459,6 +459,10 @@ class TaskScenario < ScenarioData
       calcDirCriticalness(true)
   end
 
+  # Return the date of the next slot this task wants to have scheduled. This
+  # must either be the first slot ever or it must be directly adjecent to the
+  # previous slot. If this task has not yet been scheduled at all, @lastSlot
+  # is still nil. Otherwise it contains the date of the last scheduled slot.
   def nextSlot(slotDuration)
     return nil if a('scheduled')
 
@@ -469,21 +473,22 @@ class TaskScenario < ScenarioData
     end
   end
 
+  # Check if the task is ready to be scheduled. For this it needs to have at
+  # least one specified end date and a duration criteria or the other end
+  # date.
   def readyForScheduling?
     return false if a('scheduled')
 
     if a('forward')
       if !a('start').nil? &&
          (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
-          a('milestone')) &&
-         a('end').nil?
+          a('milestone') || !a('end').nil?)
         return true
       end
     else
       if !a('end').nil? &&
          (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
-          a('milestone')) &&
-         a('start').nil?
+          a('milestone') || !a('start').nil?)
         return true
       end
     end
@@ -562,7 +567,7 @@ class TaskScenario < ScenarioData
       # Depending on the scheduling direction we can mark the task as
       # scheduled once we have reached the other end.
       if (a('forward') && slot + slotDuration >= a('end')) ||
-         (!a('forward') && slot < a('start'))
+         (!a('forward') && slot <= a('start'))
          @property['scheduled', @scenarioIdx] = true
          return true
       end
@@ -756,7 +761,10 @@ class TaskScenario < ScenarioData
       return
     end
 
-    # TODO: Handle shifts
+    # If the task has shifts to limit the allocations, we check that we are
+    # within a shift interval. If not, abort the booking.
+    return if !a('shifts').nil? && !a('shifts').onShift?(date)
+
     sbIdx = @project.dateToIdx(date)
 
     # We first have to make sure that if there are mandatory resources

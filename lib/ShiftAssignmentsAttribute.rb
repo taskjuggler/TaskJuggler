@@ -16,12 +16,6 @@ class ShiftAssignmentsAttribute < AttributeBase
 
   def initialize(property, type)
     super(property, type)
-
-    @value = ShiftAssignments.new
-  end
-
-  def initValue(arg)
-    ShiftAssignments.new
   end
 
   def setProject(project)

@@ -264,8 +264,10 @@ private
 
   def skipComment
     # Read all characters until line or file end is found
+    @ignoreMacros = true
     while (c = nextChar(true)) && c != ?\n
     end
+    @ignoreMacros = false
     returnChar(c)
   end
 
@@ -276,10 +278,12 @@ private
       return
     end
 
+    @ignoreMacros = true
     begin
       while (c = nextChar(false)) != ?*
       end
     end until (c = nextChar(false)) == ?/
+    @ignoreMacros = false
   end
 
   def readBlanks(c)

@@ -40,6 +40,12 @@ class ShiftAssignment
     @interval.overlaps?(iv)
   end
 
+  # Returns true if the shift is active and requests to replace global
+  # vacation settings.
+  def replace?(date)
+    @interval.start <= date && date < @interval.end && @shiftScenario.replace?
+  end
+
   # Check if date is withing the assignment period.
   def assigned?(date)
     @interval.start <= date && date < @interval.end
@@ -55,6 +61,10 @@ class ShiftAssignment
     @shiftScenario.onVacation?(date)
   end
 
+  # Primarily used for debugging
+  def to_s
+    "#{@shiftScenario.property.id} #{interval}"
+  end
 end
 
 # This class manages a list of ShiftAssignment elements. The intervals of the
@@ -105,6 +115,7 @@ class ShiftAssignments
   # Some operations require access to the whole project.
   def setProject(project)
     @project = project
+    @scoreboard = newScoreboard
   end
 
   # Add a new assignment to the list. In case there was no overlap the
@@ -129,15 +140,18 @@ class ShiftAssignments
     @assignments.each do |sa|
       next unless sa.assigned?(date)
 
+      # Set the 8th bit if the shift replaces global vacations.
+      replace = sa.replace?(date) ? (1 << 8) : 0
+
       if sa.onVacation?(date)
         # On vacation
-        return @scoreboard[idx] = 3
+        return @scoreboard[idx] = 3 | replace
       elsif sa.onShift?(date)
         # On shift
-        return @scoreboard[idx] = 1
+        return @scoreboard[idx] = 1 | replace
       else
         # Off hour
-        return @scoreboard[idx] = 2
+        return @scoreboard[idx] = 2 | replace
       end
     end
     # No assignment for slot
@@ -153,30 +167,48 @@ class ShiftAssignments
   # Returns true if any of the defined shift periods contains the
   # _date_ and the shift has working hours defined for that _date_.
   def onShift?(date)
-    getSbSlot(date) == 1
+    (getSbSlot(date) & 0xFF) == 1
   end
 
   # Returns true if any of the defined shift periods contains the _date_ and
   # the shift has a vacation defined or all off hours defined for that _date_.
   def timeOff?(date)
-    getSbSlot(date) >= 2
+    (getSbSlot(date) & 0xFF) >= 2
   end
 
   # Returns true if any of the defined shift periods contains the _date_ and
   # if the shift has a vacation defined for the _date_.
   def onVacation?(date)
-    getSbSlot(date) == 3
+    (getSbSlot(date) & 0xFF) == 3
   end
 
   # Returns true of two ShiftAssignments object have the same assignment
   # pattern.
   def ==(shiftAssignments)
-    return false if @assignments.size != shiftAssignments.assignments.size
+    return false if @assignments.size != shiftAssignments.assignments.size ||
+                    @project != shiftAssignments.project
 
     0.upto(@assignments.size - 1) do |i|
       return false if @assignments[i] != shiftAssignments.assignments[i]
     end
     true
+  end
+
+  # This function is primarily used for debugging purposes.
+  def to_s
+    return '' if @assignments.empty?
+
+    out = "shifts "
+    first = true
+    @assignments.each do |sa|
+      if first
+        first = false
+      else
+        out += ', '
+      end
+      out += sa.to_s
+    end
+    out
   end
 
 private
@@ -185,19 +217,17 @@ private
   # existing one in case we already have one for the same assigment patterns.
   def newScoreboard
     @@scoreboards.each do |sbRecord|
-      assignmentObjectIDs = sbRecord[0]
-      scoreboard = sbRecord[1]
-      assignmentObjectIDs.each do |id|
-        # We have to store the object_id, not the reference. If we'd store a
-        # reference, the GC will never destroy it.
-        sa = _id2ref(id)
-        if sa == self
-          # Register the ShiftAssignments object as a user of an existing
-          # scoreboard.
-          assignmentObjectIDs << object_id
-          # Return a reference to the existing scoreboard.
-          return scoreboard
-        end
+      # We only have to look at the first ShiftAssignment for a comparison.
+      # The others should match as well.
+      id = sbRecord[0][0]
+      # We have to store the object_id, not the reference. If we'd store a
+      # reference, the GC will never destroy it.
+      if self == _id2ref(id)
+        # Register the ShiftAssignments object as a user of an existing
+        # scoreboard.
+        sbRecord[0] << object_id
+        # Return a reference to the existing scoreboard.
+        return sbRecord[1]
       end
     end
     # We have not found a matching scoreboard, so we have to create a new one.
@@ -235,9 +265,10 @@ private
         end
       end
     end
+    undefine_finalizer(self)
   end
 
-  # Returns true if the intverval overlaps with any of the assignment periods.
+  # Returns true if the interval overlaps with any of the assignment periods.
   def overlaps?(iv)
     @assignments.each do |sa|
       return true if sa.overlaps?(iv)

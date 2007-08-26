@@ -21,7 +21,7 @@ class Resource < PropertyTreeNode
 
     @data = Array.new(@project.scenarioCount, nil)
     0.upto(@project.scenarioCount) do |i|
-      @data[i] = ResourceScenario.new(self, i)
+      @data[i] = ResourceScenario.new(self, i, @scenarioAttributes[i])
     end
   end
 

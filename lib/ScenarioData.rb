@@ -15,14 +15,17 @@ require 'Message'
 
 class ScenarioData
 
-  def initialize(property, idx)
+  attr_reader :property
+
+  def initialize(property, idx, attributes)
     @property = property
     @project = property.project
     @scenarioIdx = idx
+    @attributes = attributes
   end
 
   def a(attributeName)
-    @property[attributeName, @scenarioIdx]
+    @attributes[attributeName].value
   end
 
   def error(id, text, abort = true, sourceFileInfo = nil)

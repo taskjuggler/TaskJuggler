@@ -57,12 +57,13 @@ private
     @file << "project #{@project['id']} \"#{@project['name']}\" " +
              "\"#{@project['version']}\" #{@project['start']} - " +
              "#{@project['end']} {\n"
-    generateCustomAttributeDeclarations('resource', @project.resources)
-    generateCustomAttributeDeclarations('task', @project.tasks)
+    generateCustomAttributeDeclarations('resource', @project.resources,
+                                        @resourceAttrs)
+    generateCustomAttributeDeclarations('task', @project.tasks, @taskAttrs)
     @file << "}\n\n"
   end
 
-  def generateCustomAttributeDeclarations(tag, propertySet)
+  def generateCustomAttributeDeclarations(tag, propertySet, attributes)
     # First we search the attribute definitions for any user defined
     # attributes and count them.
     customAttributes = 0
@@ -76,7 +77,8 @@ private
     # taskAttributes list.
     @file << '  extend ' + tag + "{\n"
       propertySet.eachAttributeDefinition do |ad|
-        next unless ad.userDefined && @taskAttrs.include?(ad.id)
+        next unless ad.userDefined &&
+                    (attributes.include?(ad.id) || attributes.include?('all'))
 
         @file << "    #{ad.objClass.tjpId} #{ad.id} \"#{ad.name}\"\n"
       end
@@ -119,7 +121,7 @@ private
     # resource list as well.
     resource.children.each do |subresource|
       if @resourceList.include?(subresource)
-        generateresource(subresource, indent + 2)
+        generateResource(subresource, indent + 2)
       end
     end
 

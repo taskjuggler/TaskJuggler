@@ -14,9 +14,16 @@ require 'ScenarioData'
 
 class ResourceScenario < ScenarioData
 
-  def initialize(resource, scenarioIdx)
+  def initialize(resource, scenarioIdx, attributes)
     super
+
+    # The scoreboard entries are either nil, a number or a task reference. nil
+    # means the slot is unassigned. The task reference means assigned to this
+    # task. The numbers have the following values:
+    # 1: Off hour
+    # 2: Vacation
     @scoreboard = nil
+
     @firstBookedSlot = nil
     @lastBookedSlot = nil
   end
@@ -45,14 +52,14 @@ class ResourceScenario < ScenarioData
   end
 
   def booked?(sbIdx)
-    !(@scoreboard[sbIdx].nil? || @scoreboard[sbIdx].class == Fixnum)
+    @scoreboard[sbIdx].is_a?(Task)
   end
 
   def book(sbIdx, task, force = false)
     return false if !force && !available?(sbIdx)
 
     #puts "Booking resource #{@property.fullId} at " +
-    #     "#{idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
+    #     "#{@scoreboard.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
     @scoreboard[sbIdx] = task
     # Track the total allocated slots for this resource and all parent
     # resources.
@@ -76,10 +83,10 @@ class ResourceScenario < ScenarioData
 
   def bookBooking(sbIdx, booking)
     unless @scoreboard[sbIdx].nil?
-      if @scoreboard[sbIdx].is_a?(Task)
+      if booked?(sbIdx)
         error('booking_conflict',
               "Resource #{@property.fullId} has multiple conflicting " +
-              "bookings for #{idxToDate(sbIdx)}. The conflicting " +
+              "bookings for #{@scoreboard.idxToDate(sbIdx)}. The conflicting " +
               "tasks are #{@scoreboard[sbIdx].fullId} and " +
               "#{booking.task.fullId}.", true, booking.sourceFileInfo)
       end
@@ -87,12 +94,14 @@ class ResourceScenario < ScenarioData
         if @scoreboard[sbIdx] == 1 && booking.sloppy == 0
           error('booking_no_duty',
                 "Resource #{@property.fullId} has no duty at " +
-                "#{idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+                "#{@scoreboard.idxToDate(sbIdx)}.", true,
+                booking.sourceFileInfo)
         end
         if @scoreboard[sbIdx] == 2 && booking.sloppy <= 1
           error('booking_on_vacation',
                 "Resource #{@property.fullId} is on vacation at " +
-                "#{idxToDate(sbIdx)}.", true, booking.sourceFileInfo)
+                "#{@scoreboard.idxToDate(sbIdx)}.", true,
+                booking.sourceFileInfo)
         end
         return false
       end
@@ -166,8 +175,8 @@ class ResourceScenario < ScenarioData
   # the period specified with the Interval _iv_. If task is not nil
   # only allocations to this tasks are respected.
   def allocated?(iv, task = nil)
-    startIdx = @project.dateToIdx(iv.start, true)
-    endIdx = @project.dateToIdx(iv.end, true)
+    startIdx = @scoreboard.dateToIdx(iv.start, true)
+    endIdx = @scoreboard.dateToIdx(iv.end, true)
 
     startIdx = @firstBookedSlot if @firstBookedSlot &&
                                    startIdx < @firstBookedSlot
@@ -206,8 +215,9 @@ class ResourceScenario < ScenarioData
           # Make sure the index is correct even for the last task block.
           idx += 1 if idx == endIdx
           # Append the new interval to the Booking.
-          bookings[lastTask].intervals << Interval.new(idxToDate(bookingStart),
-                                                       idxToDate(idx))
+          bookings[lastTask].intervals <<
+            Interval.new(@scoreboard.idxToDate(bookingStart),
+                         @scoreboard.idxToDate(idx))
         end
         # Get ready for the next task booking interval
         if task.is_a?(Task)
@@ -225,41 +235,59 @@ private
 
   def initScoreboard
     # Create scoreboard and mark all slots as unavailable
-    @scoreboard = Array.new(@project.scoreboardSize, 1)
-    # We need this frequently and can savely cache it here.
+    @scoreboard = Scoreboard.new(@project['start'], @project['end'],
+                                 @project['scheduleGranularity'], 1)
+
+    # We'll need this frequently and can savely cache it here.
     @shifts = a('shifts')
 
     # Change all work time slots to nil (available) again.
-    0.upto(@project.scoreboardSize) do |i|
-      @scoreboard[i] = nil if onShift?(idxToDate(i))
+    0.upto(@project.scoreboardSize - 1) do |i|
+      @scoreboard[i] = nil if onShift?(@scoreboard.idxToDate(i))
     end
 
     # Mark all resource specific vacation slots as such (2)
     a('vacations').each do |vacation|
-      startIdx = @project.dateToIdx(vacation.start)
-      endIdx = @project.dateToIdx(vacation.end) - 1
+      startIdx = @scoreboard.dateToIdx(vacation.start)
+      endIdx = @scoreboard.dateToIdx(vacation.end) - 1
       startIdx.upto(endIdx) do |i|
          @scoreboard[i] = 2
       end
-    end
-    # Mark the vacations from all the shifts the resource is assigned to.
-    0.upto(@project.scoreboardSize) do |i|
-      @scoreboard[i] = 2 if @shifts.onVacation?(idxToDate(i))
     end
 
     # Mark all global vacation slots as such (2)
     @project['vacations'].each do |vacation|
-      startIdx = @project.dateToIdx(vacation.start, true)
-      endIdx = @project.dateToIdx(vacation.end, true) - 1
+      startIdx = @scoreboard.dateToIdx(vacation.start, true)
+      endIdx = @scoreboard.dateToIdx(vacation.end, true) - 1
       startIdx.upto(endIdx) do |i|
          @scoreboard[i] = 2
       end
     end
+
+    unless @shifts.nil?
+      # Mark the vacations from all the shifts the resource is assigned to.
+      0.upto(@project.scoreboardSize - 1) do |i|
+        v = @shifts.getSbSlot(@scoreboard.idxToDate(i))
+        # Check if the vacation replacement bit is set. In that case we copy the
+        # while interval over to the resource scoreboard overriding any global
+        # vacations.
+        if (v & (1 << 8)) > 0
+          # The ShiftAssignments scoreboard and the ResourceScenario scoreboard
+          # unfortunately can't use the same values for a certain meaning. So,
+          # we have to use a map to translate the values.
+          map = [ nil, nil, 1, 2 ]
+          @scoreboard[i] = map[v & 0xFF]
+        elsif (v & 0xFF) == 3
+          # 3 in ShiftAssignments means 2 in ResourceScenario (on vacation)
+          @scoreboard[i] = 2
+        end
+      end
+    end
   end
 
-  def idxToDate(sbIdx)
-    @project.idxToDate(sbIdx)
-  end
+  #def idxToDate(sbIdx)
+  #  @scoreboard.idxToDate(sbIdx)
+  #end
 
   def onShift?(date)
     # The more redable but slower form would be:
@@ -268,7 +296,7 @@ private
     # else
     #   a('workinghours').onShift?(date)
     # end
-    if (v = @shifts.getSbSlot(date)) > 0
+    if !@shifts.nil? && (v = (@shifts.getSbSlot(date) & 0xFF)) > 0
       v == 1
     else
       a('workinghours').onShift?(date)

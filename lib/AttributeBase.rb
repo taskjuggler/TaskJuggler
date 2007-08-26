@@ -22,7 +22,7 @@
 # Attributes that are of an inheritable type will be copied from a parent
 # property.
 class AttributeBase
-  attr_reader :property, :type, :provided, :inherited
+  attr_reader :property, :type, :provided, :inherited, :value
 
   def initialize(type, property)
     @type = type

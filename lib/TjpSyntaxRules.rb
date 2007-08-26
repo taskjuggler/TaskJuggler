@@ -519,6 +519,24 @@ EOT
        )
   end
 
+  def rule_intervalOrDate
+    newRule('intervalOrDate')
+    newPattern(%w( $DATE !intervalOptionalEnd ), lambda {
+      if @val[1]
+        mode = @val[1][0]
+        endSpec = @val[1][1]
+        if mode == 0
+          Interval.new(@val[0], endSpec)
+        else
+          Interval.new(@val[0], @val[0] + endSpec)
+        end
+      else
+        Interval.new(@val[0], @val[0].sameTimeNextDay)
+      end
+    })
+    arg(0, 'start date', 'The start date of the interval')
+  end
+
   def rule_interval
     newRule('interval')
     newPattern(%w( $DATE !intervalEnd ), lambda {
@@ -560,8 +578,21 @@ EOT
     })
   end
 
+  def rule_intervalOptionalEnd
+    newRule('intervalOptionalEnd')
+    optional
+    newPattern([ '_ - ', '$DATE' ], lambda {
+      [ 0, @val[1] ]
+    })
+    arg(1, 'end date', 'The end date of the interval')
+
+    newPattern(%w( _+ !intervalDuration ), lambda {
+      [ 1, @val[1] ]
+    })
+  end
+
   def rule_intervals
-    newListRule('intervals', '!interval')
+    newListRule('intervals', '!intervalOrDate')
   end
 
   def rule_listOfDays
@@ -1526,6 +1557,13 @@ EOT
        )
 
     newPattern(%w( _shifts !shiftAssignments ))
+    doc('resource.shifts', <<'EOT'
+Limits the working time of a resource to a defined shift during the specified
+interval. Multiple shifts can be defined, but shift intervals may not overlap.
+Outside of the defined shift intervals the resource uses its normal working
+hours and vacations.
+EOT
+        )
 
     newPattern(%w( _vacation !vacationName !intervals ), lambda {
       @property['vacations', @scenarioIdx] =
@@ -1643,11 +1681,20 @@ EOT
 
   def rule_shiftAssignment
     newRule('shiftAssignment')
-    newPattern(%w( !shiftId !interval ), lambda {
-      if !@property['shifts', @scenarioIdx].
-         addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
-                                           @val[1]))
-        error('shift_assignment_overlap', 'Shifts may not overlap each other.')
+    newPattern(%w( !shiftId !intervals ), lambda {
+      # Make sure we have a ShiftAssignment for the property.
+      if @property['shifts', @scenarioIdx].nil?
+        @property['shifts', @scenarioIdx] = ShiftAssignments.new
+        @property['shifts', @scenarioIdx].setProject(@project)
+      end
+
+      @val[1].each do |interval|
+        if !@property['shifts', @scenarioIdx].
+          addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
+                                            interval))
+          error('shift_assignment_overlap',
+                'Shifts may not overlap each other.')
+        end
       end
       # Set same value again to set the 'provided' state for the attribute.
       @property['shifts', @scenarioIdx] = @property['shifts', @scenarioIdx]
@@ -1699,6 +1746,14 @@ EOT
 
   def rule_shiftScenarioAttributes
     newRule('shiftScenarioAttributes')
+
+    newPattern(%w( _replace ), lambda {
+      @property['replace', @scenarioIdx] = true
+    })
+    doc('replace', <<'EOT'
+Use this attribute if the vacation definition for the shift should replace the vacation settings of a resource. This is only effective for shifts that are assigned to resources directly. It is not effective for shifts that are assigned to tasks or allocations.
+EOT
+       )
 
     newPattern(%w( _timezone $STRING ), lambda {
       @property['timezone', @scenarioIdx] = @val[1]
@@ -2313,6 +2368,15 @@ eye on tasks that have been switched implicitly to ALAP mode because the
 end attribute comes after the start attribute.
 EOT
        )
+
+    newPattern(%w( _shifts !shiftAssignments ))
+    doc('task.shifts', <<'EOT'
+Limits the working time for this task to a defined shift during the specified
+interval. Multiple shifts can be defined, but shift intervals may not overlap.
+If one or more shifts have been assigned to a task, no work is done outside of
+the assigned intervals and the workinghours defined by the shifts.
+EOT
+        )
 
     newPattern(%w( _start !valDate), lambda {
       @property['start', @scenarioIdx] = @val[1]

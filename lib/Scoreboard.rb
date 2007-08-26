@@ -41,7 +41,7 @@ class Scoreboard
     if forceIntoProject
       return @startDate if kdx < 0
       return @endDate if @size - 1 if idx >= @size
-    elsif endif idx < 0 || idx >= @size
+    elsif idx < 0 || idx >= @size
       raise "Index #{idx} is out of scoreboard range (#{size - 1})"
     end
     @startDate + idx * @resolution
@@ -58,6 +58,13 @@ class Scoreboard
             "(#{@startDate} - #{@endDate})"
     end
     ((date - @startDate) / @resolution).to_i
+  end
+
+  # Iterate over all scoreboard entries.
+  def each
+    @sb.each do |entry|
+      yield entry
+    end
   end
 
   # Get the value at index _idx_.

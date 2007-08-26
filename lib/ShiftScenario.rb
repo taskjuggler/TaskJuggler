@@ -15,13 +15,17 @@ require 'ScenarioData'
 # This class handles the scenario specific features of a Shift object.
 class ShiftScenario < ScenarioData
 
-  def initialize(resource, scenarioIdx)
+  def initialize(resource, scenarioIdx, attributes)
     super
   end
 
   # Returns true if the shift has working time defined for the _date_.
   def onShift?(date)
     a('workinghours').onShift?(date)
+  end
+
+  def replace?
+    a('replace')
   end
 
   # Returns true if the shift has a vacation defined for the _date_.

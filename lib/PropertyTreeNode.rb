@@ -42,7 +42,7 @@ class PropertyTreeNode
   end
 
   def inheritAttributes
-    # These attributes are inherited from the global context
+    # These attributes are being inherited from the global context.
     whitelist = %w( priority projectid rate vacation workinghours )
 
     # Inherit non-scenario-specific values
@@ -305,7 +305,7 @@ private
   def newAttribute(attributeType)
     attribute = attributeType.objClass.new(attributeType, self)
     # If the attribute requires a pointer to the project, we'll hand it over.
-    if attribute.respond_to?('setProject')
+    if !attribute.value.nil? && attribute.respond_to?('setProject')
       attribute.setProject(@project)
     end
 
