@@ -15,13 +15,39 @@
 # necessary but make the file more readable and receptable to syntax folding.
 module TjpSyntaxRules
 
-  def rule_allocationAttribute
-    newRule('allocationAttribute')
+  def rule_allocate
+    newRule('allocate')
+    newPattern(%w( _allocate !allocations ), lambda {
+      # Don't use << operator here so the 'provided' flag gets set properly.
+      @property['allocate', @scenarioIdx] =
+        @property['allocate', @scenarioIdx] + @val[1]
+    })
+    doc('allocate', <<'EOT'
+Specify which resources should be allocated to the task. The optional
+attributes provide numerous ways to control which resource is used and when
+exactly it will be assigned to the task. Shifts and limits can be used to
+restrict the allocation to certain time intervals or to limit them to a
+certain maximum per time period.
+EOT
+       )
+  end
+
+  def rule_allocation
+    newRule('allocation')
+    newPattern(%w( !allocationHeader !allocationBody ), lambda {
+      @val[0]
+    })
+  end
+
+  def rule_allocationAttributes
+    newRule('allocationAttributes')
     optional
     repeatable
 
     newPattern(%w( _alternative !resourceId !moreAlternatives ), lambda {
-      [ 'alternative', [ @val[1] ] + @val[2] ]
+      ([ @val[1] ] + @val[2]).each do |candidate|
+        @allocate.addCandidate(candidate)
+      end
     })
     doc('alternative', <<'EOT'
 Specify which resources should be allocated to the task. The optional
@@ -33,7 +59,7 @@ EOT
        )
 
     newPattern(%w( _select !allocationSelectionMode ), lambda {
-      [ 'select', @val[1] ]
+      @allocate.setSelectionMode(@val[1])
     })
     doc('select', <<'EOT'
 The select functions controls which resource is picked from an allocation and
@@ -46,7 +72,9 @@ slot has become unavailable.
 EOT
        )
 
-    singlePattern('_persistent')
+    newPattern(%w( _persistent ), lambda {
+      @allocate.persistent = true
+    })
     doc('persistent', <<'EOT'
 Specifies that once a resource is picked from the list of alternatives this
 resource is used for the whole task. This is useful when several alternative
@@ -56,7 +84,9 @@ were available.
 EOT
        )
 
-    singlePattern('_mandatory')
+    newPattern(%w( _mandatory ), lambda {
+      @allocate.mandatory = true
+    })
     doc('mandatory', <<'EOT'
 Makes a resource allocation mandatory. This means, that for each time slot
 only then resources are allocated when all mandatory resources are available.
@@ -66,8 +96,19 @@ EOT
        )
   end
 
-  def rule_allocationAttributes
-    newOptionsRule('allocationAttributes', 'allocationAttribute')
+  def rule_allocationBody
+    newOptionsRule('allocationBody', 'allocationAttributes')
+  end
+
+  def rule_allocationHeader
+    newRule('allocationHeader')
+    newPattern(%w( !resourceId ), lambda {
+      @allocate = Allocation.new([ @val[0] ])
+    })
+  end
+
+  def rule_allocations
+    newListRule('allocations', '!allocation')
   end
 
   def rule_allocationSelectionMode
@@ -91,6 +132,31 @@ EOT
 
     singlePattern('_random')
     descr('Pick a random resource from the list.')
+  end
+
+  def rule_allocationShiftAssignment
+    newRule('allocationShiftAssignment')
+    newPattern(%w( !shiftId !intervalsOptional ), lambda {
+      # Make sure we have a ShiftAssignment for the allocation.
+      if @allocate.shift.nil?
+        @allocate.shift = ShiftAssignments.new
+        @allocate.shift.setProject(@project)
+      end
+
+      if @val[1].nil?
+        intervals = [ Interval.new(@project['start'], @project['end']) ]
+      else
+        intervals = @val[1]
+      end
+      intervals.each do |interval|
+        if !@allocate.shift.
+          addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
+                                            interval))
+          error('shift_assignment_overlap',
+                'Shifts may not overlap each other.')
+        end
+      end
+    })
   end
 
   def rule_argumentList
@@ -641,6 +707,13 @@ EOT
     newRule('intervalsOptional')
     optional
     singlePattern('!intervals')
+  end
+
+  def rule_limits
+    newRule('limits')
+    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+      @val[0]
+    })
   end
 
   def rule_limitsAttributes
@@ -1392,41 +1465,6 @@ EOT
        )
   end
 
-  def rule_resourceAllocation
-    newRule('resourceAllocation')
-    newPattern(%w( !resourceId !allocationAttributes ), lambda {
-      candidates = [ @val[0] ]
-      selectionMode = 1 # Defaults to min. allocation probability
-      mandatory = false
-      persistant = false
-      if @val[1]
-        @val[1].each do |attribute|
-          case attribute[0]
-          when 'alternative'
-            candidates += attribute[1]
-          when 'persistant'
-            persistant = true
-          when 'mandatory'
-            mandatory = true
-          end
-        end
-      end
-      Allocation.new(candidates, selectionMode, persistant, mandatory)
-    })
-    doc('allocate.resources', <<'EOT'
-The optional attributes provide numerous ways to control which resource is
-used and when exactly it will be assigned to the task. Shifts and limits can
-be used to restrict the allocation to certain time intervals or to limit them
-to a certain maximum per time period.
-EOT
-       )
-    arg(0, 'resource', 'A resource ID')
-  end
-
-  def rule_resourceAllocations
-    newListRule('resourceAllocations', '!resourceAllocation')
-  end
-
   def rule_resourceAttributes
     newRule('resourceAttributes')
     repeatable
@@ -1521,7 +1559,7 @@ cover working time for the resource.
 EOT
        )
 
-    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+    newPattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
     doc('resource.limits', <<'EOT'
@@ -2081,19 +2119,7 @@ EOT
   def rule_taskScenarioAttributes
     newRule('taskScenarioAttributes')
 
-    newPattern(%w( _allocate !resourceAllocations ), lambda {
-      # Don't use << operator here so the 'provided' flag gets set properly.
-      @property['allocate', @scenarioIdx] =
-        @property['allocate', @scenarioIdx] + @val[1]
-    })
-    doc('allocate', <<'EOT'
-Specify which resources should be allocated to the task. The optional
-attributes provide numerous ways to control which resource is used and when
-exactly it will be assigned to the task. Shifts and limits can be used to
-restrict the allocation to certain time intervals or to limit them to a
-certain maximum per time period.
-EOT
-       )
+    newPattern(%w( !allocate ))
 
     newPattern(%w( _booking !taskBooking ))
     doc('task.booking', <<'EOT'
@@ -2207,7 +2233,7 @@ EOT
        )
     also(%w( duration effort ))
 
-    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+    newPattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
     doc('task.limits', <<'EOT'
@@ -2631,9 +2657,12 @@ EOT
       if @val[1].nil?
         weekdays[@val[0]] = true
       else
-        first = @val[0]
-        last = @val[1]
-        first.upto(last + 7) { |i| weekdays[i % 7] = true }
+        d = @val[0]
+        loop do
+          weekdays[d] = true
+          break if d == @val[1]
+          d = (d + 1) % 7
+        end
       end
 
       weekdays

@@ -202,6 +202,8 @@ class ResourceScenario < ScenarioData
 
   # Iterate over the scoreboard and turn its content into a set of Bookings.
   def getBookings
+    return {} unless @property.leaf?
+
     bookings = {}
     lastTask = nil
     bookingStart = nil
@@ -222,7 +224,7 @@ class ResourceScenario < ScenarioData
         unless lastTask.nil?
           # If we don't have a Booking for the task yet, we create one.
           if bookings[lastTask].nil?
-            bookings[lastTask] = Booking.new(lastTask, @property, [])
+            bookings[lastTask] = Booking.new(@property, lastTask, [])
           end
 
           # Make sure the index is correct even for the last task block.
@@ -261,8 +263,8 @@ private
 
     # Mark all resource specific vacation slots as such (2)
     a('vacations').each do |vacation|
-      startIdx = @scoreboard.dateToIdx(vacation.start)
-      endIdx = @scoreboard.dateToIdx(vacation.end) - 1
+      startIdx = @scoreboard.dateToIdx(vacation.start, true)
+      endIdx = @scoreboard.dateToIdx(vacation.end, true) - 1
       startIdx.upto(endIdx) do |i|
          @scoreboard[i] = 2
       end

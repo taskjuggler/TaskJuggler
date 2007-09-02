@@ -26,7 +26,7 @@ class WorkingHoursAttribute < AttributeBase
   end
 
   def to_tjp
-    dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )
+    dayNames = %w( sun mon tue wed thu fri sat )
     str = 'workinghours '
     0.upto(6) do |day|
       str += "#{dayNames[day]} "
@@ -36,11 +36,17 @@ class WorkingHoursAttribute < AttributeBase
         str += ",\n" if day < 6
         next
       end
+      first = true
       whs.each do |iv|
+        if first
+          first = false
+        else
+          str += ', '
+        end
         str += "#{iv[0] / 3600}:#{iv[0] % 3600 == 0 ? '00' : iv[0] % 3600} - " +
                "#{iv[1] / 3600}:#{iv[1] % 3600 == 0 ? '00' : iv[1] % 3600}"
       end
-      str += ",\n" if day < 6
+      str += "\n" if day < 6
     end
     str
   end

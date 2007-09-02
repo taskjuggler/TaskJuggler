@@ -22,7 +22,7 @@ require 'PropertyTreeNode'
 # task.
 class PropertySet
 
-  attr_reader :project, :topLevelItems
+  attr_reader :project, :topLevelItems, :flatNamespace
 
   def initialize(project, flatNamespace)
     if $DEBUG && project.nil?

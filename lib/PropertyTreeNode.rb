@@ -123,6 +123,19 @@ class PropertyTreeNode
     res
   end
 
+  # Return a list of all leaf nodes of this node.
+  def allLeafs
+    if leaf?
+      res = [ self ]
+    else
+      res = []
+      @children.each do |c|
+        res += c.allLeafs
+      end
+    end
+    res
+  end
+
   def eachAttribute
     @attributes.each do |attr|
       yield attr
@@ -137,9 +150,11 @@ class PropertyTreeNode
 
   def fullId
     res = @id
-    t = self
-    until (t = t.parent).nil?
-      res = t.id + "." + res
+    unless @propertySet.flatNamespace
+      t = self
+      until (t = t.parent).nil?
+        res = t.id + "." + res
+      end
     end
     res
   end

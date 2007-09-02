@@ -129,7 +129,7 @@ class Project
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
-      [ 'complete',  'Completed',    FloatAttribute,    false, true,  0.0 ],
+      [ 'complete',  'Completed',    FloatAttribute,    false, true,  nil ],
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
       [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],

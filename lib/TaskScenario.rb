@@ -65,6 +65,12 @@ class TaskScenario < ScenarioData
       task = task.parent
     end
 
+    # Collect the mandatory allocations.
+    @mandatories = []
+    a('allocate').each do |allocation|
+      @mandatories << allocation if allocation.mandatory
+    end
+
     bookBookings
   end
 
@@ -415,7 +421,7 @@ class TaskScenario < ScenarioData
     resources = []
     a('allocate').each do |allocation|
       allocation.candidates.each do |candidate|
-        candidate.all.each do |resource|
+        candidate.allLeafs.each do |resource|
           resources << resource unless resources.include?(resource)
         end
       end
@@ -444,7 +450,7 @@ class TaskScenario < ScenarioData
     resources = []
     a('allocate').each do |allocation|
       allocation.candidates.each do |candidate|
-        candidate.all.each do |resource|
+        candidate.allLeafs.each do |resource|
           resources << resource unless resources.include?(resource)
         end
       end
@@ -790,69 +796,48 @@ class TaskScenario < ScenarioData
 
     # We first have to make sure that if there are mandatory resources
     # that these are all available for the time slot.
-    @property['allocate', @scenarioIdx].each do |allocation|
-      if allocation.mandatory
-        return unless allocation.onShift?(date)
+    @mandatories.each do |allocation|
+      return unless allocation.onShift?(date)
 
-        # For mandatory allocations with alternatives at least one of the
-        # alternatives must be available.
-        found = false
-        allocation.candidates(scenarioIdx).each do |candidate|
-          # When a resource group is marked mandatory, all members of the
-          # group must be available.
-          allAvailable = true
-          candidate.all.each do |resource|
-            if !resource.available?(@scenarioIdx, sbIdx)
-              allAvailable = false
-              break
-            end
-          end
-          if allAvailable
-            found = true
+      # For mandatory allocations with alternatives at least one of the
+      # alternatives must be available.
+      found = false
+      allocation.candidates(@scenarioIdx).each do |candidate|
+        # When a resource group is marked mandatory, all members of the
+        # group must be available.
+        allAvailable = true
+        candidate.allLeafs.each do |resource|
+          if !resource.available?(@scenarioIdx, sbIdx)
+            allAvailable = false
             break
           end
         end
-
-        return unless found
+        if allAvailable
+          found = true
+          break
+        end
       end
+
+      # At least one mandatory resource is not available. We cannot continue.
+      return unless found
     end
 
     iv = Interval.new(date, date + slotDuration)
-    @property['allocate', @scenarioIdx].each do |allocation|
-      # For persistent resources we capture the time slot where we
-      # could not allocate it first. This is used during debug mode to
-      # report contention intervals.
-      if allocation.persistent && !allocation.lockedResource.nil
-        if !bookResource(allocation.lockedResource, sbIdx, date)
-          # The resource could not be allocated.
-          if allocation.lockedResource.booked?(sbIdx) &&
-            allocation.conflictStart.nil?
-            # Store starting time slot
-            allocation.conflictStart = date
-          end
-        elsif !allocation.conflictStart.nil
-          # Reset starting time slot
-          allocation.conflictStart = nil
-        end
+    a('allocate').each do |allocation|
+      next unless allocation.onShift?(date)
+
+      # In case we have a persistent allocation we need to check if there is
+      # already a locked resource and use it.
+      if allocation.persistent && !allocation.lockedResource.nil?
+        bookResource(allocation.lockedResource, sbIdx, date)
       else
-        found = false
-        busy = false
-        # Create a list of candidates in the proper order and assign
-        # the first one available.
+        # If not, we create a list of candidates in the proper order and
+        # assign the first one available.
         allocation.candidates(@scenarioIdx).each do |candidate|
           if bookResource(candidate, sbIdx, date)
             allocation.lockedResource = candidate
-            found = true
             break
-          elsif candidate.booked?(@scenarioIdx, sbIdx)
-            busy = true
           end
-        end
-        # Set of reset the conflict start time slot.
-        if found
-          allocation.conflictStart = nil
-        elsif busy && allocation.conflictStart.nil?
-          allocation.conflictStart = date
         end
       end
     end
@@ -860,7 +845,7 @@ class TaskScenario < ScenarioData
 
   def bookResource(resource, sbIdx, date)
     booked = false
-    resource.all.each do |r|
+    resource.allLeafs.each do |r|
       if r.book(@scenarioIdx, sbIdx, @property)
 
         if a('assignedresources').empty?
