@@ -22,6 +22,9 @@ class ResourceScenario < ScenarioData
     # task. The numbers have the following values:
     # 1: Off hour
     # 2: Vacation
+    # The scoreboard is only created when needed to save memory for projects
+    # which read-in the coporate employee database but only need a small
+    # subset.
     @scoreboard = nil
 
     @firstBookedSlot = nil
@@ -47,10 +50,19 @@ class ResourceScenario < ScenarioData
                                               a('alloctdeffort') / freeSlots
   end
 
+  # Returns true if the resource is available at the time specified by
+  # _sbIdx_.
   def available?(sbIdx)
-    @scoreboard[sbIdx].nil?
+    return false unless @scoreboard[sbIdx].nil?
+
+    limits = a('limits')
+    return false if limits && !limits.checkUpper(@scoreboard.idxToDate(sbIdx))
+
+    true
   end
 
+  # Return true if the resource is booked for a tasks at the time specified by
+  # _sbIdx_.
   def booked?(sbIdx)
     @scoreboard[sbIdx].is_a?(Task)
   end
@@ -68,6 +80,7 @@ class ResourceScenario < ScenarioData
       t['effort', @scenarioIdx] += 1
       t = t.parent
     end
+    a('limits').inc(@scoreboard.idxToDate(sbIdx)) if a('limits')
 
     # Make sure the task is in the list of duties.
     @property['duties', @scenarioIdx] << task unless a('duties').include?(task)

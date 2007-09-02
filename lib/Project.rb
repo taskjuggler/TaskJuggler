@@ -23,6 +23,7 @@ require 'FlagListAttribute'
 require 'FloatAttribute'
 require 'FixnumAttribute'
 require 'IntervalListAttribute'
+require 'LimitsAttribute'
 require 'ReferenceAttribute'
 require 'StringAttribute'
 require 'ShiftAssignmentsAttribute'
@@ -109,7 +110,8 @@ class Project
       [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
       [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
-      [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
+      [ 'limits',    'Limits',       LimitsAttribute,   true,  true, nil ],
+      [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute, true, true,
         nil ],
       [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
@@ -127,18 +129,19 @@ class Project
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
-      [ 'complete',  'Completed',    FloatAttribute,    false, true, 0.0 ],
-      [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
-      [ 'depends',   '-', DependencyListAttribute, true,  true,  [] ],
+      [ 'complete',  'Completed',    FloatAttribute,    false, true,  0.0 ],
+      [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
+      [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
-      [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true, [] ],
-      [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true, [] ],
+      [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true,  [] ],
+      [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true,  [] ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
       [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
       [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
+      [ 'limits',    'Limits',       LimitsAttribute,   false, true,  nil ],
       [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],
       [ 'maxstart',  'Max. Start',   DateAttribute,     true,  true,  nil ],
       [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
@@ -146,7 +149,7 @@ class Project
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
       [ 'note',      'Note',         StringAttribute,   false, false, nil ],
       [ 'pathcriticalness', 'Path Criticalness', FloatAttribute, false, true, 0.0 ],
-      [ 'precedes',  '-',   DependencyListAttribute, true,  true,  [] ],
+      [ 'precedes',  '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
       [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],

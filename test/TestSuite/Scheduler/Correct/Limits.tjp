@@ -1,0 +1,63 @@
+project test "Test" "1.0" 2007-08-29 +6m
+
+macro Fixend [
+  minend ${1}
+  maxend ${1}
+]
+
+resource a "A"
+resource b "B"
+resource c "C"
+resource d "D"
+resource e "E"
+resource f "F"
+
+task tasks "Tasks" {
+  start ${projectstart}
+  task t1 "40h with 4h daily limit" {
+    effort 40h
+    allocate a
+    limits { dailymax 4h }
+    ${Fixend "2007-09-11-14:00"}
+  }
+  task t2 "30d with 3d weekly limit" {
+    effort 30d
+    allocate b
+    limits { weeklymax 3d }
+    ${Fixend "2007-10-31-18:00"}
+  }
+  task t3 "45d with 15d monthly limit" {
+    effort 45d
+    allocate c
+    limits { monthlymax 15d }
+    ${Fixend "2007-11-15-18:00"}
+  }
+  task t4 "7h/day 4d/week 15d/months" {
+    effort 50d
+    allocate d
+    limits { dailymax 7h weeklymax 4d monthlymax 15d }
+    ${Fixend "2007-12-04-15:00"}
+  }
+}
+
+task nested "Nested Tasks (20h/week limit)" {
+  start ${projectstart}
+  limits { weeklymax 20h }
+  task a "Task A" {
+    allocate e
+    effort 30d
+    ${Fixend "2008-01-22-10:00"}
+  }
+  task b "Task B (7h/day limit)" {
+    effort 30d
+    allocate f
+    priority 600
+    limits { dailymax 7h }
+    ${Fixend "2008-02-06-16:00"}
+  }
+}
+
+htmltaskreport "Limits.html" {
+  columns no, name, start, end, effort, daily
+}
+

@@ -54,6 +54,17 @@ class TaskScenario < ScenarioData
       @property['end', @scenarioIdx] = nil
     end
 
+    # Collect the limits if this task and all parent tasks into a single
+    # Array.
+    @limits = []
+    task = @property
+    until task.nil?
+      if task['limits', @scenarioIdx]
+        @limits << task['limits', @scenarioIdx]
+      end
+      task = task.parent
+    end
+
     bookBookings
   end
 
@@ -409,6 +420,8 @@ class TaskScenario < ScenarioData
         end
       end
     end
+    return if resources.empty?
+
     avgEffort = a('effort') / resources.length
     resources.each do |resource|
       resource['alloctdeffort', @scenarioIdx] += avgEffort
@@ -420,6 +433,7 @@ class TaskScenario < ScenarioData
     # recalculate the criticalnesses, we have to clear the cached values.
     @maxForwardCriticalness = nil
     @maxBackwardCriticalness = nil
+    @property['criticalness', @scenarioIdx] = 0.0
 
     return if a('effort') <= 0
 
@@ -435,6 +449,7 @@ class TaskScenario < ScenarioData
         end
       end
     end
+    return if resources.empty?
 
     criticalness = 0.0
     resources.each do |resource|
@@ -765,6 +780,12 @@ class TaskScenario < ScenarioData
     # within a shift interval. If not, abort the booking.
     return if !a('shifts').nil? && !a('shifts').onShift?(date)
 
+    # If the task has allocation limits we need to make sure that none of them
+    # is already exceeded.
+    @limits.each do |limit|
+      return if !limit.checkUpper(date)
+    end
+
     sbIdx = @project.dateToIdx(date)
 
     # We first have to make sure that if there are mandatory resources
@@ -798,14 +819,11 @@ class TaskScenario < ScenarioData
 
     iv = Interval.new(date, date + slotDuration)
     @property['allocate', @scenarioIdx].each do |allocation|
-      # TODO: Handle shifts
-      # TODO: Handle limits
-
       # For persistent resources we capture the time slot where we
       # could not allocate it first. This is used during debug mode to
       # report contention intervals.
       if allocation.persistent && !allocation.lockedResource.nil
-        if !bookResource(allocation.lockedResource, iv)
+        if !bookResource(allocation.lockedResource, sbIdx, date)
           # The resource could not be allocated.
           if allocation.lockedResource.booked?(sbIdx) &&
             allocation.conflictStart.nil?
@@ -822,7 +840,7 @@ class TaskScenario < ScenarioData
         # Create a list of candidates in the proper order and assign
         # the first one available.
         allocation.candidates(@scenarioIdx).each do |candidate|
-          if bookResource(candidate, sbIdx)
+          if bookResource(candidate, sbIdx, date)
             allocation.lockedResource = candidate
             found = true
             break
@@ -840,7 +858,7 @@ class TaskScenario < ScenarioData
     end
   end
 
-  def bookResource(resource, sbIdx)
+  def bookResource(resource, sbIdx, date)
     booked = false
     resource.all.each do |r|
       if r.book(@scenarioIdx, sbIdx, @property)
@@ -857,6 +875,11 @@ class TaskScenario < ScenarioData
         @tentativeEnd = @project.idxToDate(sbIdx + 1)
 
         @doneEffort += r['efficiency', @scenarioIdx]
+        # Limits do not take efficiency into account. Limits are usage limits,
+        # not effort limits.
+        @limits.each do |limit|
+          limit.inc(date)
+        end
 
         unless a('assignedresources').include?(r)
           @property['assignedresources', @scenarioIdx] << r

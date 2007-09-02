@@ -643,6 +643,69 @@ EOT
     singlePattern('!intervals')
   end
 
+  def rule_limitsAttributes
+    newRule('limitsAttributes')
+    optional
+    repeatable
+
+    newPattern(%w( _dailymax !workingDuration ), lambda {
+      @limits.setUpper('daily', @val[1])
+    })
+    doc('dailymax', 'Maximum amount of effort for any single day.')
+
+    newPattern(%w( _dailymin !workingDuration ), lambda {
+      @limits.setLower('daily', @val[1])
+    })
+    doc('dailymin', <<'EOT'
+Minimum required effort for any single day. This value cannot be guaranteed by
+the scheduler. It is only checked after the schedule is complete. In case the
+minium required amount has not been reached, a warning will be generated.
+EOT
+       )
+
+    newPattern(%w( _monthlymax !workingDuration ), lambda {
+      @limits.setUpper('monthly', @val[1])
+    })
+    doc('monthlymax', 'Maximum amount of effort for any single month.')
+
+    newPattern(%w( _monthlymin !workingDuration ), lambda {
+      @limits.setLower('monthly', @val[1])
+    })
+    doc('monthlymin', <<'EOT'
+Minimum required effort for any single month. This value cannot be guaranteed by
+the scheduler. It is only checked after the schedule is complete. In case the
+minium required amount has not been reached, a warning will be generated.
+EOT
+       )
+    newPattern(%w( _weeklymax !workingDuration ), lambda {
+      @limits.setUpper('weekly', @val[1])
+    })
+    doc('weeklymax', 'Maximum amount of effort for any single week.')
+
+    newPattern(%w( _weeklymin !workingDuration ), lambda {
+      @limits.setLower('weekly', @val[1])
+    })
+    doc('weeklymin', <<'EOT'
+Minimum required effort for any single week. This value cannot be guaranteed by
+the scheduler. It is only checked after the schedule is complete. In case the
+minium required amount has not been reached, a warning will be generated.
+EOT
+       )
+
+  end
+
+  def rule_limitsBody
+    newOptionsRule('limitsBody', 'limitsAttributes')
+  end
+
+  def rule_limitsHeader
+    newRule('limitsHeader')
+    newPattern(%w( _limits ), lambda {
+      @limits = Limits.new
+      @limits.setProject(@project)
+      @limits
+    })
+  end
 
   def rule_listOfDays
     newRule('listOfDays')
@@ -1458,6 +1521,14 @@ cover working time for the resource.
 EOT
        )
 
+    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+      @property['limits', @scenarioIdx] = @val[0]
+    })
+    doc('resource.limits', <<'EOT'
+Set per-interval usage limits for the resource.
+EOT
+       )
+
     newPattern(%w( _shifts !shiftAssignments ))
     doc('resource.shifts', <<'EOT'
 Limits the working time of a resource to a defined shift during the specified
@@ -2135,6 +2206,14 @@ Tasks may not have subtasks if this attribute is used.
 EOT
        )
     also(%w( duration effort ))
+
+    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+      @property['limits', @scenarioIdx] = @val[0]
+    })
+    doc('task.limits', <<'EOT'
+Set per-interval allocation limits for the task. This setting affects all allocations for this task.
+EOT
+       )
 
     newPattern(%w( _maxend !valDate ), lambda {
       @property['maxend', @scenarioIdx] = @val[1]

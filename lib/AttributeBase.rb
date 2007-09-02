@@ -45,6 +45,8 @@ class AttributeBase
     if value.is_a?(Fixnum) || value.is_a?(Float) ||
        value.is_a?(TrueClass) || value.is_a?(FalseClass)
       @value = value
+    elsif value.is_a?(Limits)
+      @value = Limits.new(value)
     elsif value.is_a?(ShiftAssignments)
       @value = ShiftAssignments.new(value)
     elsif value.is_a?(String) || value.is_a?(TjTime)

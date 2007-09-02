@@ -20,13 +20,13 @@ class Scoreboard
   attr_reader :startDate, :endDate, :resolution, :size
 
   # Create the scoreboard based on the the given _startDate_, _endDate_ and
-  # timing _resolution_. Optionally you can provide an initial value for the
-  # scoreboard cells.
+  # timing _resolution_. The resolution must be specified in seconds.
+  # Optionally you can provide an initial value for the scoreboard cells.
   def initialize(startDate, endDate, resolution, initVal = nil)
     @startDate = startDate
     @endDate = endDate
     @resolution = resolution
-    @size = ((endDate - startDate) / resolution).to_i
+    @size = ((endDate - startDate) / resolution).ceil + 1
     @sb = Array.new(@size, initVal)
   end
 
