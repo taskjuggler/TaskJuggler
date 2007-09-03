@@ -27,11 +27,12 @@ require 'TextParserStackElement'
 # _returnToken()_. It also needs to set the array _variables_ to declare all
 # variables ($SOMENAME) that the scanner may deliver.
 #
-# To describe the syntax the functions TextParser#newRule,
-# TextParser#newPattern, TextParser#optional and
-# TextParser#repeatable can be used. When the rule set is changed during
+# To describe the syntax the functions TextParser#pattern, TextParser#optional
+# and TextParser#repeatable can be used. When the rule set is changed during
 # parsing, TextParser#updateParserTables must be called to make the changes
-# effective.
+# effective. The parser can also document the syntax automatically. To
+# document a pattern, the functions TextParser#doc, TextParser#descr,
+# TextParser#also and TextParser#arg can be used.
 #
 # To start parsing the input the function TextParser#parse needs to be called
 # with the name of the start rule.
@@ -49,13 +50,18 @@ class TextParser
   # Call all functions that start with 'rule_' to initialize the rules.
   def initRules
     methods.each do |m|
-      send(m) if m[0, 5] == 'rule_'
+      if m[0, 5] == 'rule_'
+        # Create a new rule with the suffix of the function name as name.
+        newRule(m[5..-1])
+        # Call the function.
+        send(m)
+      end
     end
   end
 
   # Add a new rule to the rule set. _name_ must be a unique identifier. The
   # function also sets the class variable @cr to the new rule. Subsequent
-  # calls to TextParser#newPattern, TextParser#optional or
+  # calls to TextParser#pattern, TextParser#optional or
   # TextParser#repeatable will then implicitely operate on the most recently
   # added rule.
   def newRule(name)
@@ -75,7 +81,7 @@ class TextParser
   #
   # _func_ is a Proc object that is called whenever the parser has completed
   # the processing of this rule.
-  def newPattern(tokens, func = nil)
+  def pattern(tokens, func = nil)
     @cr.addPattern(TextParserPattern.new(tokens, func))
   end
 
@@ -132,7 +138,7 @@ class TextParser
       result = parseRule(@rules[ruleName])
 
       if enforceEndOfFile && nextToken != [ false, false ]
-        error('syntax_error', 'Syntax error')
+        error('eof_expected', 'End of file expected')
       end
     rescue TjException
       return nil

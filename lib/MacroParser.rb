@@ -36,17 +36,15 @@ class MacroParser < TextParser
   end
 
   def rule_macroArguments
-    newRule('macroArguments')
     optional
     repeatable
-    newPattern(%w( $STRING ), Proc.new {
+    pattern(%w( $STRING ), Proc.new {
       @val[0]
     })
   end
 
   def rule_macroCall
-    newRule('macroCall')
-    newPattern(%w( _{ !relax $ID !macroArguments _} ), Proc.new {
+    pattern(%w( _{ !relax $ID !macroArguments _} ), Proc.new {
       # When the ID is prefixed by a '?' the macro may be undefined and the
       # macro call is replaced by an empty string.
       unless @scanner.macroDefined?(@val[2])
@@ -57,15 +55,14 @@ class MacroParser < TextParser
       end
       @scanner.expandMacro([ @val[2] ] + @val[3])
     })
-    newPattern(%w( _( $ID _) ), lambda {
+    pattern(%w( _( $ID _) ), lambda {
       ENV[@val[0]]
     })
   end
 
   def rule_relax
-    newRule('relax')
     optional
-    newPattern(%w( _? ), lambda {
+    pattern(%w( _? ), lambda {
       true
     })
   end

@@ -184,7 +184,7 @@ class TextScanner
       @messageHandler.send(message)
     end
 
-    raise TjException.new, 'Syntax error'
+    raise TjException.new, 'Syntax error during parse'
   end
 
 private

@@ -16,8 +16,7 @@
 module TjpSyntaxRules
 
   def rule_allocate
-    newRule('allocate')
-    newPattern(%w( _allocate !allocations ), lambda {
+    pattern(%w( _allocate !allocations ), lambda {
       # Don't use << operator here so the 'provided' flag gets set properly.
       @property['allocate', @scenarioIdx] =
         @property['allocate', @scenarioIdx] + @val[1]
@@ -33,18 +32,16 @@ EOT
   end
 
   def rule_allocation
-    newRule('allocation')
-    newPattern(%w( !allocationHeader !allocationBody ), lambda {
+    pattern(%w( !allocationHeader !allocationBody ), lambda {
       @val[0]
     })
   end
 
   def rule_allocationAttributes
-    newRule('allocationAttributes')
     optional
     repeatable
 
-    newPattern(%w( _alternative !resourceId !moreAlternatives ), lambda {
+    pattern(%w( _alternative !resourceId !moreAlternatives ), lambda {
       ([ @val[1] ] + @val[2]).each do |candidate|
         @allocate.addCandidate(candidate)
       end
@@ -58,7 +55,7 @@ certain maximum per time period.
 EOT
        )
 
-    newPattern(%w( _select !allocationSelectionMode ), lambda {
+    pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])
     })
     doc('select', <<'EOT'
@@ -72,7 +69,7 @@ slot has become unavailable.
 EOT
        )
 
-    newPattern(%w( _persistent ), lambda {
+    pattern(%w( _persistent ), lambda {
       @allocate.persistent = true
     })
     doc('persistent', <<'EOT'
@@ -84,7 +81,7 @@ were available.
 EOT
        )
 
-    newPattern(%w( _mandatory ), lambda {
+    pattern(%w( _mandatory ), lambda {
       @allocate.mandatory = true
     })
     doc('mandatory', <<'EOT'
@@ -97,22 +94,20 @@ EOT
   end
 
   def rule_allocationBody
-    newOptionsRule('allocationBody', 'allocationAttributes')
+    optionsRule('allocationAttributes')
   end
 
   def rule_allocationHeader
-    newRule('allocationHeader')
-    newPattern(%w( !resourceId ), lambda {
+    pattern(%w( !resourceId ), lambda {
       @allocate = Allocation.new([ @val[0] ])
     })
   end
 
   def rule_allocations
-    newListRule('allocations', '!allocation')
+    listRule('moreAllocations', '!allocation')
   end
 
   def rule_allocationSelectionMode
-    newRule('allocationSelectionMode')
     singlePattern('_maxloaded')
     descr('Pick the available resource that has been used the most so far.')
 
@@ -135,8 +130,7 @@ EOT
   end
 
   def rule_allocationShiftAssignment
-    newRule('allocationShiftAssignment')
-    newPattern(%w( !shiftId !intervalsOptional ), lambda {
+    pattern(%w( !shiftId !intervalsOptional ), lambda {
       # Make sure we have a ShiftAssignment for the allocation.
       if @allocate.shift.nil?
         @allocate.shift = ShiftAssignments.new
@@ -160,19 +154,17 @@ EOT
   end
 
   def rule_argumentList
-    newRule('argumentList')
     optional
-    newPattern(%w( _( !operation !moreArguments _) ), lambda {
+    pattern(%w( _( !operation !moreArguments _) ), lambda {
       [ @val[0] ] + @val[1].nil? ? [] : @val[1]
     })
   end
 
   def rule_bookingAttributes
-    newRule('bookingAttributes')
     optional
     repeatable
 
-    newPattern(%w( _overtime $INTEGER ), lambda {
+    pattern(%w( _overtime $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 2
         error('overtime_range',
               "Overtime value #{@val[1]} out of range (0 - 2).", @property)
@@ -184,7 +176,7 @@ This attribute enables bookings to override working hours and vacations.
 EOT
        )
 
-    newPattern(%w( _sloppy $INTEGER ), lambda {
+    pattern(%w( _sloppy $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 2
         error('sloppy_range',
               "Sloppyness value #{@val[1]} out of range (0 - 2).", @property)
@@ -201,12 +193,11 @@ EOT
   end
 
   def rule_bookingBody
-    newOptionsRule('bookingBody', 'bookingAttributes')
+    optionsRule('bookingAttributes')
   end
 
   def rule_calendarDuration
-    newRule('calendarDuration')
-    newPattern(%w( !number !durationUnit ), lambda {
+    pattern(%w( !number !durationUnit ), lambda {
       convFactors = [ 60, # minutes
                       60 * 60, # hours
                       60 * 60 * 24, # days
@@ -220,19 +211,17 @@ EOT
   end
 
   def rule_columnBody
-    newOptionsRule('columnBody', 'columnOptions')
+    optionsRule('columnOptions')
   end
 
   def rule_columnDef
-    newRule('columnDef')
-    newPattern(%w( !columnId !columnBody ), lambda {
+    pattern(%w( !columnId !columnBody ), lambda {
       @val[0]
     })
   end
 
   def rule_columnId
-    newRule('columnId')
-    newPattern(%w( !reportableAttributes ), lambda {
+    pattern(%w( !reportableAttributes ), lambda {
       title = @reportElement.defaultColumnTitle(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })
@@ -244,10 +233,9 @@ EOT
   end
 
   def rule_columnOptions
-    newRule('columnOptions')
     optional
     repeatable
-    newPattern(%w( _title $STRING ), lambda {
+    pattern(%w( _title $STRING ), lambda {
       @column.title = @val[1]
     })
     doc('columntitle', <<'EOT'
@@ -258,8 +246,7 @@ EOT
   end
 
   def rule_date
-    newRule('date')
-    newPattern(%w( $DATE ), lambda {
+    pattern(%w( $DATE ), lambda {
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
       if @val[0] % resolution != 0
         error('misaligned_date',
@@ -278,34 +265,31 @@ EOT
   end
 
   def rule_declareFlagList
-    newListRule('declareFlagList', '$ID')
+    listRule('moreDeclareFlagList', '$ID')
   end
 
   def rule_durationUnit
-    newRule('durationUnit')
-
-    newPattern(%w( _min ), lambda { 0 })
+    pattern(%w( _min ), lambda { 0 })
     descr('minutes')
 
-    newPattern(%w( _h ), lambda { 1 })
+    pattern(%w( _h ), lambda { 1 })
     descr('hours')
 
-    newPattern(%w( _d ), lambda { 2 })
+    pattern(%w( _d ), lambda { 2 })
     descr('days')
 
-    newPattern(%w( _w ), lambda { 3 })
+    pattern(%w( _w ), lambda { 3 })
     descr('weeks')
 
-    newPattern(%w( _m ), lambda { 4 })
+    pattern(%w( _m ), lambda { 4 })
     descr('months')
 
-    newPattern(%w( _y ), lambda { 5 })
+    pattern(%w( _y ), lambda { 5 })
     descr('years')
   end
 
   def rule_export
-    newRule('export')
-    newPattern(%w( !exportHeader !exportBody ))
+    pattern(%w( !exportHeader !exportBody ))
     doc('export', <<'EOT'
 The export report looks like a regular TaskJuggler file but contains fixed
 start and end dates for all tasks. The tasks only have start and end times,
@@ -329,8 +313,7 @@ EOT
   end
 
   def rule_exportHeader
-    newRule('exportHeader')
-    newPattern(%w( _export $STRING ), lambda {
+    pattern(%w( _export $STRING ), lambda {
       extension = @val[1][-4, 4]
       if extension != '.tjp' && extension != '.tji'
         error('export_bad_extn',
@@ -347,27 +330,25 @@ EOT
   end
 
   def rule_exportAttributes
-    newRule('exportAttributes')
     optional
     repeatable
 
-    newPattern(%w( !hideresource ))
-    newPattern(%w( !hidetask ))
-    newPattern(%w( !reportEnd ))
-    newPattern(%w( !reportPeriod ))
-    newPattern(%w( !reportStart ))
+    pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
+    pattern(%w( !reportEnd ))
+    pattern(%w( !reportPeriod ))
+    pattern(%w( !reportStart ))
   end
 
   def rule_exportBody
-    newOptionsRule('exportBody', 'exportAttributes')
+    optionsRule('exportAttributes')
   end
 
   def rule_extendAttributes
-    newRule('extendAttributes')
     optional
     repeatable
 
-    newPattern(%w( _date !extendId  $STRING !extendOptionsBody ), lambda {
+    pattern(%w( _date !extendId  $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(DateAttribute, nil)
         @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
@@ -388,7 +369,7 @@ EOT
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
                    'in report columns and the like.')
 
-    newPattern(%w( _reference $STRING !extendOptionsBody ), lambda {
+    pattern(%w( _reference $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       reference = ReferenceAttribute.new
       reference.set([ @val[1], @val[2].nil? ? nil : @val[2][0] ])
@@ -412,7 +393,7 @@ EOT
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
                    'in report columns and the like.')
 
-    newPattern(%w( _text !extendId $STRING !extendOptionsBody ), lambda {
+    pattern(%w( _text !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(StringAttribute, nil)
         @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
@@ -437,12 +418,11 @@ EOT
   end
 
   def rule_extendBody
-    newOptionsRule('extendBody', 'extendAttributes')
+    optionsRule('extendAttributes')
   end
 
   def rule_extendId
-    newRule('extendId')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       unless (?A..?Z) === @val[0][0]
         error('extend_id_cap',
               "User defined attributes IDs must start with a capital letter")
@@ -454,7 +434,6 @@ EOT
   end
 
   def rule_extendOptions
-    newRule('extendOptions')
     optional
     repeatable
 
@@ -474,12 +453,11 @@ EOT
   end
 
   def rule_extendOptionsBody
-    newOptionsRule('extendOptionsBody', 'extendOptions')
+    optionsRule('extendOptions')
   end
 
   def rule_extendProperty
-    newRule('extendProperty')
-    newPattern(%w( !extendPropertyId ), lambda {
+    pattern(%w( !extendPropertyId ), lambda {
       case @val[0]
       when 'task'
         @ruleToExtend = @rules['taskAttributes']
@@ -494,15 +472,13 @@ EOT
   end
 
   def rule_extendPropertyId
-    newRule('extendPropertyId')
     singlePattern('_task')
     singlePattern('_resource')
   end
 
 
   def rule_flag
-    newRule('flag')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       unless @project['flags'].include?(@val[0])
         error('undecl_flag', "Undeclared flag #{@val[0]}")
       end
@@ -511,12 +487,11 @@ EOT
   end
 
   def rule_flagList
-    newListRule('flagList', '!flag')
+    listRule('moreFlagList', '!flag')
   end
 
   def rule_hideresource
-    newRule('hideresource')
-    newPattern(%w( _hideresource !logicalExpression ), lambda {
+    pattern(%w( _hideresource !logicalExpression ), lambda {
       @reportElement.hideResource = @val[1]
     })
     doc('hideresource', <<'EOT'
@@ -528,8 +503,7 @@ EOT
   end
 
   def rule_hidetask
-    newRule('hidetask')
-    newPattern(%w( _hidetask !logicalExpression ), lambda {
+    pattern(%w( _hidetask !logicalExpression ), lambda {
       @reportElement.hideTask = @val[1]
     })
     doc('hidetask', <<'EOT'
@@ -541,8 +515,7 @@ EOT
   end
 
   def rule_htmlResourceReport
-    newRule('htmlResourceReport')
-    newPattern(%w( !htmlResourceReportHeader !reportBody ))
+    pattern(%w( !htmlResourceReportHeader !reportBody ))
     doc('htmlresourcereport', <<'EOT'
 The report lists all resources and their respective values as a HTML page. The
 task that are the resources are allocated to can be listed as well.
@@ -551,8 +524,7 @@ EOT
   end
 
   def rule_htmlResourceReportHeader
-    newRule('htmlResourceReportHeader')
-    newPattern(%w( _htmlresourcereport $STRING ), lambda {
+    pattern(%w( _htmlresourcereport $STRING ), lambda {
       @report = HTMLresourceReport.new(@project, @val[1])
       @reportElement = @report.element
     })
@@ -563,8 +535,7 @@ EOT
   end
 
   def rule_htmlTaskReport
-    newRule('htmlTaskReport')
-    newPattern(%w( !htmlTaskReportHeader !reportBody ))
+    pattern(%w( !htmlTaskReportHeader !reportBody ))
     doc('htmltaskreport', <<'EOT'
 The report lists all tasks and their respective values as a HTML page. The
 resources that are allocated to each task can be listed as well.
@@ -573,8 +544,7 @@ EOT
   end
 
   def rule_htmlTaskReportHeader
-    newRule('htmlTaskReportHeader')
-    newPattern(%w( _htmltaskreport $STRING ), lambda {
+    pattern(%w( _htmltaskreport $STRING ), lambda {
       @report = HTMLTaskReport.new(@project, @val[1])
       @reportElement = @report.element
     })
@@ -585,8 +555,7 @@ EOT
   end
 
   def rule_include
-    newRule('include')
-    newPattern(%w( _include $STRING ), lambda {
+    pattern(%w( _include $STRING ), lambda {
       @scanner.include(@val[1])
     })
     doc('include', <<'EOT'
@@ -606,8 +575,7 @@ EOT
   end
 
   def rule_intervalOrDate
-    newRule('intervalOrDate')
-    newPattern(%w( !date !intervalOptionalEnd ), lambda {
+    pattern(%w( !date !intervalOptionalEnd ), lambda {
       if @val[1]
         mode = @val[1][0]
         endSpec = @val[1][1]
@@ -635,8 +603,7 @@ EOT
   end
 
   def rule_interval
-    newRule('interval')
-    newPattern(%w( !date !intervalEnd ), lambda {
+    pattern(%w( !date !intervalEnd ), lambda {
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
@@ -659,8 +626,7 @@ EOT
   end
 
   def rule_intervalDuration
-    newRule('intervalDuration')
-    newPattern(%w( !number !durationUnit ), lambda {
+    pattern(%w( !number !durationUnit ), lambda {
       convFactors = [ 60, # minutes
                       60 * 60, # hours
                       60 * 60 * 24, # days
@@ -677,56 +643,51 @@ EOT
   end
 
   def rule_intervalEnd
-    newRule('intervalEnd')
-    newPattern([ '_ - ', '!date' ], lambda {
+    pattern([ '_ - ', '!date' ], lambda {
       [ 0, @val[1] ]
     })
 
-    newPattern(%w( _+ !intervalDuration ), lambda {
+    pattern(%w( _+ !intervalDuration ), lambda {
       [ 1, @val[1] ]
     })
   end
 
   def rule_intervalOptionalEnd
-    newRule('intervalOptionalEnd')
     optional
-    newPattern([ '_ - ', '!date' ], lambda {
+    pattern([ '_ - ', '!date' ], lambda {
       [ 0, @val[1] ]
     })
 
-    newPattern(%w( _+ !intervalDuration ), lambda {
+    pattern(%w( _+ !intervalDuration ), lambda {
       [ 1, @val[1] ]
     })
   end
 
   def rule_intervals
-    newListRule('intervals', '!intervalOrDate')
+    listRule('moreIntervals', '!intervalOrDate')
   end
 
   def rule_intervalsOptional
-    newRule('intervalsOptional')
     optional
     singlePattern('!intervals')
   end
 
   def rule_limits
-    newRule('limits')
-    newPattern(%w( !limitsHeader !limitsBody ), lambda {
+    pattern(%w( !limitsHeader !limitsBody ), lambda {
       @val[0]
     })
   end
 
   def rule_limitsAttributes
-    newRule('limitsAttributes')
     optional
     repeatable
 
-    newPattern(%w( _dailymax !workingDuration ), lambda {
+    pattern(%w( _dailymax !workingDuration ), lambda {
       @limits.setUpper('daily', @val[1])
     })
     doc('dailymax', 'Maximum amount of effort for any single day.')
 
-    newPattern(%w( _dailymin !workingDuration ), lambda {
+    pattern(%w( _dailymin !workingDuration ), lambda {
       @limits.setLower('daily', @val[1])
     })
     doc('dailymin', <<'EOT'
@@ -736,12 +697,12 @@ minium required amount has not been reached, a warning will be generated.
 EOT
        )
 
-    newPattern(%w( _monthlymax !workingDuration ), lambda {
+    pattern(%w( _monthlymax !workingDuration ), lambda {
       @limits.setUpper('monthly', @val[1])
     })
     doc('monthlymax', 'Maximum amount of effort for any single month.')
 
-    newPattern(%w( _monthlymin !workingDuration ), lambda {
+    pattern(%w( _monthlymin !workingDuration ), lambda {
       @limits.setLower('monthly', @val[1])
     })
     doc('monthlymin', <<'EOT'
@@ -750,12 +711,12 @@ the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT
        )
-    newPattern(%w( _weeklymax !workingDuration ), lambda {
+    pattern(%w( _weeklymax !workingDuration ), lambda {
       @limits.setUpper('weekly', @val[1])
     })
     doc('weeklymax', 'Maximum amount of effort for any single week.')
 
-    newPattern(%w( _weeklymin !workingDuration ), lambda {
+    pattern(%w( _weeklymin !workingDuration ), lambda {
       @limits.setLower('weekly', @val[1])
     })
     doc('weeklymin', <<'EOT'
@@ -768,12 +729,11 @@ EOT
   end
 
   def rule_limitsBody
-    newOptionsRule('limitsBody', 'limitsAttributes')
+    optionsRule('limitsAttributes')
   end
 
   def rule_limitsHeader
-    newRule('limitsHeader')
-    newPattern(%w( _limits ), lambda {
+    pattern(%w( _limits ), lambda {
       @limits = Limits.new
       @limits.setProject(@project)
       @limits
@@ -781,8 +741,7 @@ EOT
   end
 
   def rule_listOfDays
-    newRule('listOfDays')
-    newPattern(%w( !weekDayInterval !moreListOfDays), lambda {
+    pattern(%w( !weekDayInterval !moreListOfDays), lambda {
       weekDays = Array.new(7, false)
       ([ @val[0] ] + @val[1]).each do |dayList|
         0.upto(6) { |i| weekDays[i] = true if dayList[i] }
@@ -792,18 +751,16 @@ EOT
   end
 
   def rule_listOfTimes
-    newRule('listOfTimes')
-    newPattern(%w( _off ), lambda {
+    pattern(%w( _off ), lambda {
       [ ]
     })
-    newPattern(%w( !timeInterval !moreTimeIntervals ), lambda {
+    pattern(%w( !timeInterval !moreTimeIntervals ), lambda {
       [ @val[0] ] + @val[1]
     })
   end
 
   def rule_logicalExpression
-    newRule('logicalExpression')
-    newPattern(%w( !operation ), lambda {
+    pattern(%w( !operation ), lambda {
       LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
     })
     doc('logicalexpression', <<'EOT'
@@ -819,62 +776,63 @@ EOT
   end
 
   def rule_macro
-    newRule('macro')
-    newPattern(%w( _macro $ID $MACRO ), lambda {
+    pattern(%w( _macro $ID $MACRO ), lambda {
       @scanner.addMacro(Macro.new(@val[1], @val[2], @scanner.sourceFileInfo))
     })
   end
 
   def rule_moreAlternatives
-    newCommaListRule('moreAlternatives', '!resourceId')
+    commaListRule('!resourceId')
   end
 
   def rule_moreArguments
-    newCommaListRule('moreArguments', '!operation')
+    commaListRule('!operation')
   end
 
   def rule_moreColumnDef
-    newCommaListRule('moreColumnDef', '!columnDef')
+    commaListRule('!columnDef')
   end
 
   def rule_moreDepTasks
-    newCommaListRule('moreDepTasks', '!taskDep')
+    commaListRule('!taskDep')
   end
 
   def rule_moreListOfDays
-    newCommaListRule('moreListOfDays', '!weekDayInterval')
+    commaListRule('!weekDayInterval')
   end
 
   def rule_moreResources
-    newCommaListRule('moreResources', '!resourceList')
+    commaListRule('!resourceList')
   end
 
-  def rule_morePrevTasks
-    newCommaListRule('morePredTasks', '!taskPredList')
+  def rule_morePredTasks
+    commaListRule('!taskPredList')
+  end
+
+  def rule_moreSortCriteria
+    commaListRule('!sortNonTree')
   end
 
   def rule_moreTimeIntervals
-    newCommaListRule('moreTimeIntervals', '!timeInterval')
+    commaListRule('!timeInterval')
   end
 
   def rule_number
-    newRule('number')
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')
   end
 
   def rule_operand
-    newRule('operand')
-    newPattern(%w( _( !operation _) ), lambda {
+    pattern(%w( _( !operation _) ), lambda {
       @val[1]
     })
-    newPattern(%w( _~ !operand ), lambda {
+    pattern(%w( _~ !operand ), lambda {
       operation = LogicalOperation.new(@val[1])
       operation.operator = '~'
       operation
     })
 
-    newPattern(%w( $ABSOLUTE_ID ), lambda {
+    pattern(%w( $ABSOLUTE_ID ), lambda {
       if @val[0].count('.') > 1
         error('operand_attribute',
               'Attributes must be specified as <scenarioID>.<attribute>')
@@ -886,10 +844,10 @@ EOT
       end
       LogicalAttribute.new(attribute, scenarioIdx)
     })
-    newPattern(%w( !date ), lambda {
+    pattern(%w( !date ), lambda {
       LogicalOperation.new(@val[0])
     })
-    newPattern(%w( $ID !argumentList ), lambda {
+    pattern(%w( $ID !argumentList ), lambda {
       if @val[1].nil?
         unless @project['flags'].include?(@val[0])
           error('operand_unkn_flag', "Undeclared flag #{@val[0]}")
@@ -899,17 +857,16 @@ EOT
         # TODO: add support for old functions
       end
     })
-    newPattern(%w( $INTEGER ), lambda {
+    pattern(%w( $INTEGER ), lambda {
       LogicalOperation.new(@val[0])
     })
-    newPattern(%w( $STRING ), lambda {
+    pattern(%w( $STRING ), lambda {
       LogicalOperation.new(@val[0])
     })
   end
 
   def rule_operation
-    newRule('operation')
-    newPattern(%w( !operand !operatorAndOperand ), lambda {
+    pattern(%w( !operand !operatorAndOperand ), lambda {
       operation = LogicalOperation.new(@val[0])
       unless @val[1].nil?
         operation.operator = @val[1][0]
@@ -925,9 +882,8 @@ EOT
   end
 
   def rule_operatorAndOperand
-    newRule('operatorAndOperand')
     optional
-    newPattern(%w( !operator !operand), lambda{
+    pattern(%w( !operator !operand), lambda{
       [ @val[0], @val[1] ]
     })
     arg(1, 'operand', <<'EOT'
@@ -937,8 +893,6 @@ EOT
   end
 
   def rule_operator
-    newRule('operator')
-
     singlePattern('_|')
     descr('The \'or\' operator')
 
@@ -962,23 +916,21 @@ EOT
   end
 
   def rule_project
-    newRule('project')
-    newPattern(%w( !projectDeclaration !properties ), lambda {
+    pattern(%w( !projectDeclaration !properties ), lambda {
       @val[0]
     })
-    newPattern(%w( !macro ))
+    pattern(%w( !macro ))
   end
 
   def rule_projectBody
-    newOptionsRule('projectBody', 'projectBodyAttributes')
+    optionsRule('projectBodyAttributes')
   end
 
   def rule_projectBodyAttributes
-    newRule('projectBodyAttributes')
     repeatable
     optional
 
-    newPattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
+    pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
         lambda {
       @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
     })
@@ -991,13 +943,13 @@ EOT
     arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
     arg(5, 'fractiondigits', 'Number of fraction digits to show')
 
-    newPattern(%w( _currency $STRING ), lambda {
+    pattern(%w( _currency $STRING ), lambda {
       @project['currency'] = @val[1]
     })
     doc('currency', 'The default currency unit.')
     arg(1, 'symbol', 'Currency symbol')
 
-    newPattern(%w( _dailyworkinghours !number ), lambda {
+    pattern(%w( _dailyworkinghours !number ), lambda {
       @project['dailyworkinghours'] = @val[1]
     })
     doc('dailyworkinghours', <<'EOT'
@@ -1010,7 +962,7 @@ EOT
        )
     arg(1, 'hours', 'Average number of working hours per working day')
 
-    newPattern(%w( _extend !extendProperty !extendBody ), lambda {
+    pattern(%w( _extend !extendProperty !extendBody ), lambda {
       updateParserTables
     })
     doc('extend', <<'EOT'
@@ -1024,9 +976,9 @@ property.
 EOT
        )
 
-    newPattern(%w( !include ))
+    pattern(%w( !include ))
 
-    newPattern(%w( _now !date ), lambda {
+    pattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
                                   @scanner.sourceFileInfo))
@@ -1040,7 +992,7 @@ EOT
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
-    newPattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
+    pattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
         lambda {
       @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
     })
@@ -1053,8 +1005,8 @@ EOT
     arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
     arg(5, 'fractiondigits', 'Number of fraction digits to show')
 
-    newPattern(%w( !scenario ))
-    newPattern(%w( _shorttimeformat $STRING ), lambda {
+    pattern(%w( !scenario ))
+    pattern(%w( _shorttimeformat $STRING ), lambda {
       @project['shorttimeformat'] = @val[1]
     })
     doc('shorttimeformat',
@@ -1064,11 +1016,11 @@ EOT
 
     singlePattern('!timeformat')
 
-    newPattern(%w( !timezone ), lambda {
+    pattern(%w( !timezone ), lambda {
       @project['timezone'] = @val[1]
     })
 
-    newPattern(%w( _timingresolution $INTEGER _min ), lambda {
+    pattern(%w( _timingresolution $INTEGER _min ), lambda {
       goodValues = [ 5, 10, 15, 20, 30, 60 ]
       unless goodValues.include?(@val[1])
         error('bad_timing_res',
@@ -1090,21 +1042,21 @@ value like now or workinghours.
 EOT
         )
 
-    newPattern(%w( _weekstartsmonday ), lambda {
+    pattern(%w( _weekstartsmonday ), lambda {
       @project['weekstartsmonday'] = true
     })
     doc('weekstartsmonday',
         'Specify that you want to base all week calculation on weeks ' +
         'starting on Monday. This is common in many European countries.')
 
-    newPattern(%w( _weekstartssunday ), lambda {
+    pattern(%w( _weekstartssunday ), lambda {
       @project['weekstartsmonday'] = false
     })
     doc('weekstartssunday',
         'Specify that you want to base all week calculation on weeks ' +
         'starting on Sunday. This is common in the United States of America.')
 
-    newPattern(%w( _yearlyworkingdays !number ), lambda {
+    pattern(%w( _yearlyworkingdays !number ), lambda {
       @project['yearlyworkingdays'] = @val[1]
     })
     doc('yearlyworkingdays', <<'EOT'
@@ -1124,8 +1076,7 @@ EOT
   end
 
   def rule_projectDeclaration
-    newRule('projectDeclaration')
-    newPattern(%w( !projectHeader !projectBody ), lambda {
+    pattern(%w( !projectHeader !projectBody ), lambda {
       @val[0]
     })
     doc('project', <<'EOT'
@@ -1137,8 +1088,7 @@ EOT
   end
 
   def rule_projectHeader
-    newRule('projectHeader')
-    newPattern(%w( _project $ID $STRING $STRING !interval ), lambda {
+    pattern(%w( _project $ID $STRING $STRING !interval ), lambda {
       @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
       @project['start'] = @val[4].start
       @scanner.addMacro(Macro.new('projectstart', @project['start'].to_s,
@@ -1157,14 +1107,13 @@ EOT
   end
 
   def rule_projection
-    newOptionsRule('projection', 'projectionAttributes')
+    optionsRule('projectionAttributes')
   end
 
   def rule_projectionAttributes
-    newRule('projectionAttributes')
     optional
     repeatable
-    newPattern(%w( _sloppy ), lambda {
+    pattern(%w( _sloppy ), lambda {
       @property['strict', @scenarioIdx] = false
     })
     doc('projection.sloppy', <<'EOT'
@@ -1172,7 +1121,7 @@ In sloppy mode tasks with no bookings will be filled from the original start.
 EOT
        )
 
-    newPattern(%w( _strict ), lambda {
+    pattern(%w( _strict ), lambda {
       @property['strict', @scenarioIdx] = true
     })
     doc('projection.strict', <<'EOT'
@@ -1183,50 +1132,47 @@ EOT
   end
 
   def rule_properties
-    newRule('properties')
     repeatable
-    newPattern(%w( _copyright $STRING ), lambda {
+    pattern(%w( _copyright $STRING ), lambda {
       @project['copyright'] = @val[1]
     })
-    newPattern(%w( !export ))
-    newPattern(%w( _flags !declareFlagList ), lambda {
+    pattern(%w( !export ))
+    pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
       end
     })
-    newPattern(%w( !htmlResourceReport ))
-    newPattern(%w( !htmlTaskReport ))
-    newPattern(%w( !include ))
-    newPattern(%w( !macro ))
-    newPattern(%w( !resource ))
-    newPattern(%w( !shift ))
-    newPattern(%w( _supplement !supplement ))
-    newPattern(%w( !task ))
-    newPattern(%w( _vacation !vacationName !intervals ), lambda {
+    pattern(%w( !htmlResourceReport ))
+    pattern(%w( !htmlTaskReport ))
+    pattern(%w( !include ))
+    pattern(%w( !macro ))
+    pattern(%w( !resource ))
+    pattern(%w( !shift ))
+    pattern(%w( _supplement !supplement ))
+    pattern(%w( !task ))
+    pattern(%w( _vacation !vacationName !intervals ), lambda {
       @project['vacations'] = @project['vacations'] + @val[2]
     })
-    newPattern(%w( !workinghours ))
+    pattern(%w( !workinghours ))
   end
 
   def rule_referenceAttributes
-    newRule('referenceAttributes')
     optional
     repeatable
-    newPattern(%w( _label $STRING ), lambda {
+    pattern(%w( _label $STRING ), lambda {
       @val[1]
     })
   end
 
   def rule_referenceBody
-    newOptionsRule('referenceBody', 'referenceAttributes')
+    optionsRule('referenceAttributes')
   end
 
   def rule_reportAttributes
-    newRule('reportAttributes')
     optional
     repeatable
 
-    newPattern(%w( _columns !columnDef !moreColumnDef ), lambda {
+    pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
       columns += @val[2] if @val[2]
       @reportElement.columns = columns
@@ -1243,9 +1189,9 @@ additional $.
 EOT
        )
 
-    newPattern(%w( !reportEnd ))
+    pattern(%w( !reportEnd ))
 
-    newPattern(%w( _headline $STRING ), lambda {
+    pattern(%w( _headline $STRING ), lambda {
       @reportElement.headline = @val[1]
     })
     doc('headline', <<'EOT'
@@ -1253,13 +1199,13 @@ Specifies the headline for a report.
 EOT
        )
 
-    newPattern(%w( !hideresource ))
+    pattern(%w( !hideresource ))
 
-    newPattern(%w( !hidetask ))
+    pattern(%w( !hidetask ))
 
-    newPattern(%w( !reportPeriod ))
+    pattern(%w( !reportPeriod ))
 
-    newPattern(%w( _rolluptask !logicalExpression ), lambda {
+    pattern(%w( _rolluptask !logicalExpression ), lambda {
       @reportElement.rollupTask = @val[1]
     })
     doc('rolluptask', <<'EOT'
@@ -1267,7 +1213,7 @@ Do not show sub-tasks of tasks that match the specified logical expression.
 EOT
        )
 
-    newPattern(%w( _scenarios !scenarioIdList ), lambda {
+    pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
       @reportElement.scenarios = @val[1]
@@ -1277,7 +1223,7 @@ List of scenarios that should be included in the report.
 EOT
        )
 
-    newPattern(%w( _sortresources !sortCriteria ), lambda {
+    pattern(%w( _sortresources !sortCriteria ), lambda {
       @reportElement.sortResources = @val[1]
     })
     doc('sortresources', <<'EOT'
@@ -1288,7 +1234,7 @@ this group.
 EOT
        )
 
-    newPattern(%w( _sorttasks !sortCriteria ), lambda {
+    pattern(%w( _sorttasks !sortCriteria ), lambda {
       @reportElement.sortTasks = @val[1]
     })
     doc('sorttasks', <<'EOT'
@@ -1299,9 +1245,9 @@ this group.
 EOT
        )
 
-    newPattern(%w( !reportStart ))
+    pattern(%w( !reportStart ))
 
-    newPattern(%w( _taskroot !taskId), lambda {
+    pattern(%w( _taskroot !taskId), lambda {
       @reportElement.taskRoot = @val[1]
     })
     doc('taskroot', <<'EOT'
@@ -1316,8 +1262,6 @@ EOT
   end
 
   def rule_reportableAttributes
-    newRule('reportableAttributes')
-
     singlePattern('_complete')
     descr('The completion degree of a task')
 
@@ -1413,12 +1357,11 @@ EOT
   end
 
   def rule_reportBody
-    newOptionsRule('reportBody', 'reportAttributes')
+    optionsRule('reportAttributes')
   end
 
-  def rule_report_end
-    newRule('reportEnd')
-    newPattern(%w( _end !valDate ), lambda {
+  def rule_reportEnd
+    pattern(%w( _end !valDate ), lambda {
       @reportElement.end = @val[1]
     })
     doc('report.end', <<'EOT'
@@ -1429,8 +1372,7 @@ EOT
   end
 
   def rule_reportPeriod
-    newRule('reportPeriod')
-    newPattern(%w( _period !interval ), lambda {
+    pattern(%w( _period !interval ), lambda {
       @reportElement.start = @val[1].start
       @reportElement.end = @val[1].end
     })
@@ -1442,8 +1384,7 @@ EOT
   end
 
   def rule_reportStart
-    newRule('reportStart')
-    newPattern(%w( _start !valDate ), lambda {
+    pattern(%w( _start !valDate ), lambda {
       @reportElement.start = @val[1]
     })
     doc('report.start', <<'EOT'
@@ -1454,8 +1395,7 @@ EOT
   end
 
   def rule_resource
-    newRule('resource')
-    newPattern(%w( !resourceHeader !resourceBody ), lambda {
+    pattern(%w( !resourceHeader !resourceBody ), lambda {
        @property = @property.parent
     })
     doc('resource', <<'EOT'
@@ -1466,31 +1406,28 @@ EOT
   end
 
   def rule_resourceAttributes
-    newRule('resourceAttributes')
     repeatable
     optional
-    newPattern(%w( !resource ))
-    newPattern(%w( !resourceScenarioAttributes ))
-    newPattern(%w( !scenarioId !resourceScenarioAttributes ), lambda {
+    pattern(%w( !resource ))
+    pattern(%w( !resourceScenarioAttributes ))
+    pattern(%w( !scenarioId !resourceScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
     # Other attributes will be added automatically.
   end
 
   def rule_resourceBody
-    newOptionsRule('resourceBody', 'resourceAttributes')
+    optionsRule('resourceAttributes')
   end
 
   def rule_resourceBooking
-    newRule('resourceBooking')
-    newPattern(%w( !resourceBookingHeader !bookingBody ), lambda {
+    pattern(%w( !resourceBookingHeader !bookingBody ), lambda {
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
 
   def rule_resourceBookingHeader
-    newRule('resourceBookingHeader')
-    newPattern(%w( !taskId !intervals ), lambda {
+    pattern(%w( !taskId !intervals ), lambda {
       @booking = Booking.new(@property, @val[0], @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
       @booking
@@ -1499,8 +1436,7 @@ EOT
   end
 
   def rule_resourceId
-    newRule('resourceId')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       if (resource = @project.resource(@val[0])).nil?
         error('resource_id_expected', "#{@val[0]} is not a defined resource.")
       end
@@ -1510,8 +1446,7 @@ EOT
   end
 
   def rule_resourceHeader
-    newRule('resourceHeader')
-    newPattern(%w( _resource $ID $STRING ), lambda {
+    pattern(%w( _resource $ID $STRING ), lambda {
       @property = Resource.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
@@ -1524,16 +1459,13 @@ EOT
   end
 
   def rule_resourceList
-    newRule('resourceList')
-    newPattern(%w( !resourceId !moreResources ), lambda {
+    pattern(%w( !resourceId !moreResources ), lambda {
       [ @val[0] ] + @val[1]
     })
   end
 
   def rule_resourceScenarioAttributes
-    newRule('resourceScenarioAttributes')
-
-    newPattern(%w( _flags !flagList ), lambda {
+    pattern(%w( _flags !flagList ), lambda {
       @property['flags', @scenarioIdx] += @val[1]
     })
     doc('resource.flags', <<'EOT'
@@ -1542,7 +1474,7 @@ properties from the reports.
 EOT
        )
 
-    newPattern(%w( _booking !resourceBooking ))
+    pattern(%w( _booking !resourceBooking ))
     doc('booking', <<'EOT'
 The booking attribute can be used to report completed work. This can be part
 of the necessary effort or the whole effort. When the scenario is scheduled in
@@ -1559,7 +1491,7 @@ cover working time for the resource.
 EOT
        )
 
-    newPattern(%w( !limits ), lambda {
+    pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
     doc('resource.limits', <<'EOT'
@@ -1567,7 +1499,7 @@ Set per-interval usage limits for the resource.
 EOT
        )
 
-    newPattern(%w( _shifts !shiftAssignments ))
+    pattern(%w( _shifts !shiftAssignments ))
     doc('resource.shifts', <<'EOT'
 Limits the working time of a resource to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
@@ -1576,7 +1508,7 @@ hours and vacations.
 EOT
         )
 
-    newPattern(%w( _vacation !vacationName !intervals ), lambda {
+    pattern(%w( _vacation !vacationName !intervals ), lambda {
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
@@ -1588,13 +1520,12 @@ to the 'Shift' property.
 EOT
        )
 
-    newPattern(%w( !workinghours ))
+    pattern(%w( !workinghours ))
     # Other attributes will be added automatically.
   end
 
   def rule_scenario
-    newRule('scenario')
-    newPattern(%w( !scenarioHeader !scenarioBody ), lambda {
+    pattern(%w( !scenarioHeader !scenarioBody ), lambda {
       @property = @property.parent
     })
     doc('scenario', <<'EOT'
@@ -1615,11 +1546,10 @@ EOT
   end
 
   def rule_scenarioAttributes
-    newRule('scenarioAttributes')
     optional
     repeatable
 
-    newPattern(%w( _projection !projection ), lambda {
+    pattern(%w( _projection !projection ), lambda {
       @property.set('projection', true)
     })
     doc('projection', <<'EOT'
@@ -1630,17 +1560,16 @@ effort, length or duration has been reached.
 EOT
        )
 
-    newPattern(%w( !scenario ))
+    pattern(%w( !scenario ))
   end
 
   def rule_scenarioBody
-    newOptionsRule('scenarioBody', 'scenarioAttributes')
+    optionsRule('scenarioAttributes')
   end
 
   def rule_scenarioHeader
-    newRule('scenarioHeader')
 
-    newPattern(%w( _scenario $ID $STRING ), lambda {
+    pattern(%w( _scenario $ID $STRING ), lambda {
       # If this is the top-level scenario, we must delete the default scenario
       # first.
       @project.scenarios.clearProperties if @property.nil?
@@ -1651,8 +1580,7 @@ EOT
   end
 
   def rule_scenarioId
-    newRule('scenarioId')
-    newPattern(%w( $ID_WITH_COLON ), lambda {
+    pattern(%w( $ID_WITH_COLON ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
         error('unknown_scenario_id', "Unknown scenario: @val[0]")
       end
@@ -1660,12 +1588,11 @@ EOT
   end
 
   def rule_scenarioIdList
-    newListRule('scenarioIdList', '!scenarioIdx')
+    listRule('moreScnarioIdList', '!scenarioIdx')
   end
 
   def rule_scenarioIdx
-    newRule('scenarioIdx')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
         error('unknown_scenario_idx', "Unknown scenario #{@val[1]}")
       end
@@ -1674,14 +1601,12 @@ EOT
   end
 
   def rule_schedulingDirection
-    newRule('schedulingDirection')
     singlePattern('_alap')
     singlePattern('_asap')
   end
 
   def rule_shift
-    newRule('shift')
-    newPattern(%w( !shiftHeader !shiftBody ), lambda {
+    pattern(%w( !shiftHeader !shiftBody ), lambda {
       @property = @property.parent
     })
     doc('shift', <<'EOT'
@@ -1691,8 +1616,7 @@ EOT
   end
 
   def rule_shiftAssignment
-    newRule('shiftAssignment')
-    newPattern(%w( !shiftId !intervalsOptional ), lambda {
+    pattern(%w( !shiftId !intervalsOptional ), lambda {
       # Make sure we have a ShiftAssignment for the property.
       if @property['shifts', @scenarioIdx].nil?
         @property['shifts', @scenarioIdx] = ShiftAssignments.new
@@ -1718,28 +1642,26 @@ EOT
   end
 
   def rule_shiftAssignments
-    newListRule('shiftAssignments', '!shiftAssignment')
+    listRule('moreShiftAssignments', '!shiftAssignment')
   end
 
   def rule_shiftAttributes
-    newRule('shiftAttributes')
     optional
     repeatable
 
-    newPattern(%w( !shift ))
-    newPattern(%w( !shiftScenarioAttributes ))
-    newPattern(%w( !scenarioId !shiftScenarioAttributes ), lambda {
+    pattern(%w( !shift ))
+    pattern(%w( !shiftScenarioAttributes ))
+    pattern(%w( !scenarioId !shiftScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
   end
 
   def rule_shiftBody
-    newOptionsRule('shiftBody', 'shiftAttributes')
+    optionsRule('shiftAttributes')
   end
 
   def rule_shiftHeader
-    newRule('shiftHeader')
-    newPattern(%w( _shift $ID $STRING ), lambda {
+    pattern(%w( _shift $ID $STRING ), lambda {
       @property = Shift.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
@@ -1750,8 +1672,7 @@ EOT
   end
 
   def rule_shiftId
-    newRule('shiftId')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       if (shift = @project.shift(@val[0])).nil?
         error('shift_id_expected', "#{@val[0]} is not a defined shift.")
       end
@@ -1761,9 +1682,7 @@ EOT
   end
 
   def rule_shiftScenarioAttributes
-    newRule('shiftScenarioAttributes')
-
-    newPattern(%w( _replace ), lambda {
+    pattern(%w( _replace ), lambda {
       @property['replace', @scenarioIdx] = true
     })
     doc('replace', <<'EOT'
@@ -1771,7 +1690,7 @@ Use this attribute if the vacation definition for the shift should replace the v
 EOT
        )
 
-    newPattern(%w( _timezone $STRING ), lambda {
+    pattern(%w( _timezone $STRING ), lambda {
       @property['timezone', @scenarioIdx] = @val[1]
     })
     doc('shift.timezone', <<'EOT'
@@ -1785,7 +1704,7 @@ lookup possible values.
 EOT
        )
 
-    newPattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
+    pattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
@@ -1794,31 +1713,27 @@ Specify a vacation period associated with this shift.
 EOT
        )
 
-    newPattern(%w( !workinghours ))
+    pattern(%w( !workinghours ))
   end
 
   def rule_sortCriteria
-    newCommaListRule('moreSortCriteria', '!sortNonTree')
-    newRule('sortCriteria')
-    newPattern([ "!sortCriterium",
+    pattern([ "!sortCriterium",
                  "!moreSortCriteria" ],
       lambda { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
     )
   end
 
   def rule_sortCriterium
-    newRule('sortCriterium')
-    newPattern(%w( !sortTree ), lambda {
+    pattern(%w( !sortTree ), lambda {
       [ @val[0] ]
     })
-    newPattern(%w( !sortNonTree ), lambda {
+    pattern(%w( !sortNonTree ), lambda {
       [ @val[0] ]
     })
   end
 
   def rule_sortNonTree
-    newRule('sortNonTree')
-    newPattern(%w( $ABSOLUTE_ID ), lambda {
+    pattern(%w( $ABSOLUTE_ID ), lambda {
       args = @val[0].split('.')
       case args.length
       when 2
@@ -1853,8 +1768,7 @@ EOT
   end
 
   def rule_sortTree
-    newRule('sortTree')
-    newPattern(%w( $ID ), lambda {
+    pattern(%w( $ID ), lambda {
       if @val[0] != 'tree'
         error('sorting_crit_exptd2',
               "Sorting criterium expected (e.g. tree, start.up or " +
@@ -1867,29 +1781,24 @@ EOT
   end
 
   def rule_supplement
-    newRule('supplement')
-    newPattern(%w( !supplementResource !resourceBody ))
-    newPattern(%w( !supplementTask !taskBody ))
+    pattern(%w( !supplementResource !resourceBody ))
+    pattern(%w( !supplementTask !taskBody ))
   end
 
   def rule_supplementResource
-    newRule('supplementResource')
-    newPattern(%w( _resource !resourceId ), lambda {
+    pattern(%w( _resource !resourceId ), lambda {
       @property = @val[1]
     })
   end
 
   def rule_supplementTask
-    newRule('supplementTask')
-    newPattern(%w( _task !taskId ), lambda {
+    pattern(%w( _task !taskId ), lambda {
       @property = @val[1]
     })
   end
 
   def rule_task
-    newRule('task')
-
-    newPattern(%w( !taskHeader !taskBody ), lambda {
+    pattern(%w( !taskHeader !taskBody ), lambda {
       @property = @property.parent
     })
     doc('task', <<'EOT'
@@ -1903,10 +1812,9 @@ EOT
   end
 
   def rule_taskAttributes
-    newRule('taskAttributes')
     repeatable
     optional
-    newPattern(%w( _note $STRING ), lambda {
+    pattern(%w( _note $STRING ), lambda {
       @property.set('note', @val[1])
     })
     doc('task.note', <<'EOT'
@@ -1915,28 +1823,26 @@ what the task is about.
 EOT
        )
 
-    newPattern(%w( !task ))
-    newPattern(%w( !taskScenarioAttributes ))
-    newPattern(%w( !scenarioId !taskScenarioAttributes ), lambda {
+    pattern(%w( !task ))
+    pattern(%w( !taskScenarioAttributes ))
+    pattern(%w( !scenarioId !taskScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
     # Other attributes will be added automatically.
   end
 
   def rule_taskBody
-    newOptionsRule('taskBody', 'taskAttributes')
+    optionsRule('taskAttributes')
   end
 
   def rule_taskBooking
-    newRule('taskBooking')
-    newPattern(%w( !taskBookingHeader !bookingBody ), lambda {
+    pattern(%w( !taskBookingHeader !bookingBody ), lambda {
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
 
   def rule_taskBookingHeader
-    newRule('taskBookingHeader')
-    newPattern(%w( !resourceId !intervals ), lambda {
+    pattern(%w( !resourceId !intervals ), lambda {
       @booking = Booking.new(@val[0], @property, @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
       @booking
@@ -1944,8 +1850,7 @@ EOT
   end
 
   def rule_taskDep
-    newRule('taskDep')
-    newPattern(%w( !taskDepHeader !taskDepBody ), lambda {
+    pattern(%w( !taskDepHeader !taskDepBody ), lambda {
       @val[0]
     })
     doc('dependency', <<'EOT'
@@ -1955,11 +1860,10 @@ EOT
   end
 
   def rule_taskDepAttributes
-    newRule('taskDepAttributes')
     optional
     repeatable
 
-    newPattern(%w( _gapduration !intervalDuration ), lambda {
+    pattern(%w( _gapduration !intervalDuration ), lambda {
       @taskDependency.gapDuration = @val[1]
     })
     doc('gapduration', <<'EOT'
@@ -1969,7 +1873,7 @@ This is calendar time, not working time. 7d means one week.
 EOT
        )
 
-    newPattern(%w( _gaplength !workingDuration ), lambda {
+    pattern(%w( _gaplength !workingDuration ), lambda {
       @taskDependency.gapLength = @val[1]
     })
     doc('gaplength', <<'EOT'
@@ -1981,7 +1885,7 @@ working hours and global vacations.
 EOT
        )
 
-    newPattern(%w( _onend ), lambda {
+    pattern(%w( _onend ), lambda {
       @taskDependency.onEnd = true
     })
     doc('onend', <<'EOT'
@@ -1989,7 +1893,7 @@ The target of the dependency is the end of the task.
 EOT
        )
 
-    newPattern(%w( _onstart ), lambda {
+    pattern(%w( _onstart ), lambda {
       @taskDependency.onEnd = false
     })
     doc('onstart', <<'EOT'
@@ -1999,18 +1903,16 @@ EOT
   end
 
   def rule_taskDepBody
-    newOptionsRule('taskDepBody', 'taskDepAttributes')
+    optionsRule('taskDepAttributes')
   end
 
   def rule_taskDepHeader
-    newRule('taskDepHeader')
-    newPattern(%w( !taskDepId ), lambda {
+    pattern(%w( !taskDepId ), lambda {
       @taskDependency = TaskDependency.new(@val[0], true)
     })
   end
 
   def rule_taskDepId
-    newRule('taskDepId')
     singlePattern('$ABSOLUTE_ID')
     descr(<<'EOT'
 A reference using the full qualified ID of a task. The IDs of all enclosing
@@ -2022,7 +1924,7 @@ EOT
     singlePattern('$ID')
     descr('Just the ID of the task without and parent IDs.')
 
-    newPattern(%w( $RELATIVE_ID ), lambda {
+    pattern(%w( $RELATIVE_ID ), lambda {
       task = @property
       id = @val[0]
       while task && id[0] == ?!
@@ -2048,15 +1950,13 @@ EOT
   end
 
   def rule_taskDepList
-    newRule('taskDepList')
-    newPattern(%w( !taskDep !moreDepTasks ), lambda {
+    pattern(%w( !taskDep !moreDepTasks ), lambda {
       [ @val[0] ] + @val[1]
     })
   end
 
   def rule_taskHeader
-    newRule('taskHeader')
-    newPattern(%w( _task $ID $STRING ), lambda {
+    pattern(%w( _task $ID $STRING ), lambda {
       @property = Task.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
@@ -2067,8 +1967,7 @@ EOT
   end
 
   def rule_taskId
-    newRule('taskId')
-    newPattern(%w( !taskIdUnverifd ), lambda {
+    pattern(%w( !taskIdUnverifd ), lambda {
       if (task = @project.task(@val[0])).nil?
         error('unknown_task', "Unknown task #{@val[0]}")
       end
@@ -2077,14 +1976,12 @@ EOT
   end
 
   def rule_taskIdUnverifd
-    newRule('taskIdUnverifd')
     singlePattern('$ABSOLUTE_ID')
     singlePattern('$ID')
   end
 
   def rule_taskPeriod
-    newRule('taskPeriod')
-    newPattern(%w( _period !valInterval), lambda {
+    pattern(%w( _period !valInterval), lambda {
       @property['start', @scenarioIdx] = @val[1].start
       @property['end', @scenarioIdx] = @val[1].end
     })
@@ -2096,39 +1993,35 @@ EOT
   end
 
   def rule_taskPred
-    newRule('taskPred')
-    newPattern(%w( !taskPredHeader !taskDepBody ), lambda {
+    pattern(%w( !taskPredHeader !taskDepBody ), lambda {
       @val[0]
     })
   end
 
   def rule_taskPredHeader
-    newRule('taskPredHeader')
-    newPattern(%w( !taskDepId ), lambda {
+    pattern(%w( !taskDepId ), lambda {
       @taskDependency = TaskDependency.new(@val[0], false)
     })
   end
 
   def rule_taskPredList
-    newRule('taskPredList')
-    newPattern(%w( !taskPred !morePredTasks ), lambda {
+    pattern(%w( !taskPred !morePredTasks ), lambda {
       [ @val[0] ] + @val[1]
     })
   end
 
   def rule_taskScenarioAttributes
-    newRule('taskScenarioAttributes')
 
-    newPattern(%w( !allocate ))
+    pattern(%w( !allocate ))
 
-    newPattern(%w( _booking !taskBooking ))
+    pattern(%w( _booking !taskBooking ))
     doc('task.booking', <<'EOT'
 Bookings can be used to report already completed work by specifying the exact
 time intervals a certain resource has worked on this task.
 EOT
        )
 
-    newPattern(%w( _complete !number), lambda {
+    pattern(%w( _complete !number), lambda {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",
               @property)
@@ -2145,7 +2038,7 @@ EOT
         )
     arg(1, 'percent', 'The percent value. It must be between 0 and 100.')
 
-    newPattern(%w( _depends !taskDepList ), lambda {
+    pattern(%w( _depends !taskDepList ), lambda {
       @property['depends', @scenarioIdx] =
         @property['depends', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = true
@@ -2159,7 +2052,7 @@ to asap. If both depends and precedes are used, the last policy counts.
 EOT
         )
 
-    newPattern(%w( _duration !calendarDuration ), lambda {
+    pattern(%w( _duration !calendarDuration ), lambda {
       @property['duration', @scenarioIdx] = @val[1]
     })
     doc('duration', <<'EOT'
@@ -2173,7 +2066,7 @@ EOT
        )
     also(%w( effort length ))
 
-    newPattern(%w( _effort !workingDuration ), lambda {
+    pattern(%w( _effort !workingDuration ), lambda {
       if @val[1] <= 0.0
         error('effort_zero', "Effort value must be larger than 0", @property)
       end
@@ -2195,7 +2088,7 @@ EOT
        )
     also(%w( duration length ))
 
-    newPattern(%w( _end !valDate ), lambda {
+    pattern(%w( _end !valDate ), lambda {
       @property['end', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = false
     })
@@ -2206,7 +2099,7 @@ alap.
 EOT
        )
 
-    newPattern(%w( _flags !flagList ), lambda {
+    pattern(%w( _flags !flagList ), lambda {
       @property['flags', @scenarioIdx] += @val[1]
     })
     doc('task.flags', <<'EOT'
@@ -2215,7 +2108,7 @@ properties from the reports.
 EOT
        )
 
-    newPattern(%w( _length !workingDuration ), lambda {
+    pattern(%w( _length !workingDuration ), lambda {
       @property['length', @scenarioIdx] = @val[1]
     })
     doc('length', <<'EOT'
@@ -2233,7 +2126,7 @@ EOT
        )
     also(%w( duration effort ))
 
-    newPattern(%w( !limits ), lambda {
+    pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
     doc('task.limits', <<'EOT'
@@ -2241,7 +2134,7 @@ Set per-interval allocation limits for the task. This setting affects all alloca
 EOT
        )
 
-    newPattern(%w( _maxend !valDate ), lambda {
+    pattern(%w( _maxend !valDate ), lambda {
       @property['maxend', @scenarioIdx] = @val[1]
     })
     doc('maxend', <<'EOT'
@@ -2251,7 +2144,7 @@ end of the task is later than the specified value, then an error is reported.
 EOT
        )
 
-    newPattern(%w( _maxstart !valDate ), lambda {
+    pattern(%w( _maxstart !valDate ), lambda {
       @property['maxstart', @scenarioIdx] = @val[1]
     })
     doc('maxstart', <<'EOT'
@@ -2262,7 +2155,7 @@ reported.
 EOT
        )
 
-    newPattern(%w( _milestone ), lambda {
+    pattern(%w( _milestone ), lambda {
       @property['milestone', @scenarioIdx] = true
     })
     doc('milestone', <<'EOT'
@@ -2274,7 +2167,7 @@ specification or sub tasks, will be recognized as milestone automatically.
 EOT
        )
 
-    newPattern(%w( _minend !valDate ), lambda {
+    pattern(%w( _minend !valDate ), lambda {
       @property['minend', @scenarioIdx] = @val[1]
     })
     doc('minend', <<'EOT'
@@ -2285,7 +2178,7 @@ reported.
 EOT
        )
 
-    newPattern(%w( _minstart !valDate ), lambda {
+    pattern(%w( _minstart !valDate ), lambda {
       @property['minstart', @scenarioIdx] = @val[1]
     })
     doc('minstart', <<'EOT'
@@ -2296,9 +2189,9 @@ reported.
 EOT
        )
 
-    newPattern(%w( !taskPeriod ))
+    pattern(%w( !taskPeriod ))
 
-    newPattern(%w( _precedes !taskPredList ), lambda {
+    pattern(%w( _precedes !taskPredList ), lambda {
       @property['precedes', @scenarioIdx] =
         @property['precedes', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = false
@@ -2316,7 +2209,7 @@ counts.
 EOT
        )
 
-    newPattern(%w( _priority $INTEGER ), lambda {
+    pattern(%w( _priority $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 1000
         error('task_priority', "Priority must have a value between 0 and 1000",
               @property)
@@ -2337,7 +2230,7 @@ EOT
        )
     arg(1, 'value', 'Priority value (1 - 1000)')
 
-    newPattern(%w( _responsible !resourceList ), lambda {
+    pattern(%w( _responsible !resourceList ), lambda {
       @property['responsible', @scenarioIdx] = @val[1]
     })
     doc('responsible', <<'EOT'
@@ -2346,7 +2239,7 @@ documentation purposes only. It's not used by the scheduler.
 EOT
        )
 
-    newPattern(%w( _scheduled ), lambda {
+    pattern(%w( _scheduled ), lambda {
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'
@@ -2355,7 +2248,7 @@ scheduling in the scenario.
 EOT
        )
 
-    newPattern(%w( _scheduling !schedulingDirection ), lambda {
+    pattern(%w( _scheduling !schedulingDirection ), lambda {
       if @val[1] == 'alap'
         @property['forward', @scenarioIdx] = false
       elsif @val[1] == 'asap'
@@ -2394,7 +2287,7 @@ end attribute comes after the start attribute.
 EOT
        )
 
-    newPattern(%w( _shifts !shiftAssignments ))
+    pattern(%w( _shifts !shiftAssignments ))
     doc('task.shifts', <<'EOT'
 Limits the working time for this task to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
@@ -2403,7 +2296,7 @@ the assigned intervals and the workinghours defined by the shifts. In case no in
 EOT
         )
 
-    newPattern(%w( _start !valDate), lambda {
+    pattern(%w( _start !valDate), lambda {
       @property['start', @scenarioIdx] = @val[1]
       @property['forward', @scenarioIdx] = true
     })
@@ -2418,8 +2311,7 @@ EOT
   end
 
   def rule_timeformat
-    newRule('timeformat')
-    newPattern(%w( _timeformat $STRING ), lambda {
+    pattern(%w( _timeformat $STRING ), lambda {
       @val[1]
     })
     doc('timeformat', <<'EOT'
@@ -2551,8 +2443,7 @@ EOT
   end
 
   def rule_timeInterval
-    newRule('timeInterval')
-    newPattern([ '$TIME', '_ - ', '$TIME' ], lambda {
+    pattern([ '$TIME', '_ - ', '$TIME' ], lambda {
       if @val[0] >= @val[2]
         error('time_interval',
               "End time of interval must be larger than start time")
@@ -2562,8 +2453,7 @@ EOT
   end
 
   def rule_timezone
-    newRule('timezone')
-    newPattern(%w( _timezone $STRING ), lambda{
+    pattern(%w( _timezone $STRING ), lambda{
       # TODO
     })
     doc('timezone', <<'EOT'
@@ -2586,15 +2476,13 @@ EOT
   end
 
   def rule_vacationName
-    newRule('vacationName')
     optional
-    newPattern(%w( $STRING )) # We just throw the name away
+    pattern(%w( $STRING )) # We just throw the name away
     arg(0, 'name', 'An optional name for the vacation')
   end
 
   def rule_valDate
-    newRule('valDate')
-    newPattern(%w( !date ), lambda {
+    pattern(%w( !date ), lambda {
       if @val[0] < @project['start'] || @val[0] > @project['end']
         error('date_in_range', "Date must be within the project time frame " +
               "#{@project['start']} +  - #{@project['end']}")
@@ -2604,8 +2492,7 @@ EOT
   end
 
   def rule_valInterval
-    newRule('valInterval')
-    newPattern(%w( !date !intervalEnd ), lambda {
+    pattern(%w( !date !intervalEnd ), lambda {
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
@@ -2640,19 +2527,17 @@ EOT
   end
 
   def rule_weekday
-    newRule('weekday')
-    newPattern(%w( _sun ), lambda { 0 })
-    newPattern(%w( _mon ), lambda { 1 })
-    newPattern(%w( _tue ), lambda { 2 })
-    newPattern(%w( _wed ), lambda { 3 })
-    newPattern(%w( _thu ), lambda { 4 })
-    newPattern(%w( _fri ), lambda { 5 })
-    newPattern(%w( _sat ), lambda { 6 })
+    pattern(%w( _sun ), lambda { 0 })
+    pattern(%w( _mon ), lambda { 1 })
+    pattern(%w( _tue ), lambda { 2 })
+    pattern(%w( _wed ), lambda { 3 })
+    pattern(%w( _thu ), lambda { 4 })
+    pattern(%w( _fri ), lambda { 5 })
+    pattern(%w( _sat ), lambda { 6 })
   end
 
   def rule_weekDayInterval
-    newRule('weekDayInterval')
-    newPattern(%w( !weekday !weekDayIntervalEnd ), lambda {
+    pattern(%w( !weekday !weekDayIntervalEnd ), lambda {
       weekdays = Array.new(7, false)
       if @val[1].nil?
         weekdays[@val[0]] = true
@@ -2671,9 +2556,8 @@ EOT
   end
 
   def rule_weekDayIntervalEnd
-    newRule('weekDayIntervalEnd')
     optional
-    newPattern([ '_ - ', '!weekday' ], lambda {
+    pattern([ '_ - ', '!weekday' ], lambda {
       @val[1]
     })
     arg(1, 'end weekday',
@@ -2681,8 +2565,7 @@ EOT
   end
 
   def rule_workingDuration
-    newRule('workingDuration')
-    newPattern(%w( !number !durationUnit ), lambda {
+    pattern(%w( !number !durationUnit ), lambda {
       convFactors = [ 60, # minutes
                       60 * 60, # hours
                       60 * 60 * @project['dailyworkinghours'], # days
@@ -2700,8 +2583,7 @@ EOT
   end
 
   def rule_workinghours
-    newRule('workinghours')
-    newPattern(%w( _workinghours !listOfDays !listOfTimes), lambda {
+    pattern(%w( _workinghours !listOfDays !listOfTimes), lambda {
       wh = @property.nil? ? @project['workinghours'] :
            @property['workinghours', @scenarioIdx]
       wh.timezone = @property.nil? ? @project['timezone'] :
