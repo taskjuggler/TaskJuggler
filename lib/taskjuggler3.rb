@@ -12,6 +12,7 @@
 require 'Tj3Config'
 require 'TaskJuggler'
 
+# Name of the application suite
 AppConfig.appName = 'taskjuggler3'
 
 def showUsage
