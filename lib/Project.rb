@@ -46,7 +46,8 @@ require 'ProjectFileParser'
 
 # This class implements objects that hold all project properties. Project
 # generally consist of resources, tasks and a number of other optional
-# properties.
+# properties. Tasks, Resources, Accounts and Shifts are all build on the same
+# storage class.
 class Project
 
   attr_reader :tasks, :resources, :scenarios, :messageHandler
