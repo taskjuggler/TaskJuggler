@@ -44,6 +44,7 @@ require 'ShiftAssignments'
 require 'WorkingHours'
 require 'ProjectFileParser'
 
+# This class implements objects that hold all project properties.
 class Project
 
   attr_reader :tasks, :resources, :scenarios, :messageHandler
