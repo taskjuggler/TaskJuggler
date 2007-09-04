@@ -27,7 +27,9 @@ class Limit
     @lower = lower
     @upper = upper
 
-    # Reset the counter for all intervals.
+    # To avoid multiple resets of untouched scoreboards we keep this dirty
+    # flag. It's set whenever a counter is increased.
+    @dirty = true
     reset
   end
 
@@ -39,15 +41,19 @@ class Limit
   # This function can be used to reset the counter for a specific period
   # specified by _date_ or to reset all counters.
   def reset(date = nil)
+    return unless @dirty
+
     if date.nil?
       @scoreboard = Scoreboard.new(@startDate, @endDate, @period, 0)
     else
       @scoreboard.set(date, 0)
     end
+    @dirty = false
   end
 
   # Increase the counter for a specific period specified by _date_.
   def inc(date)
+    @dirty = true
     @scoreboard.set(date, @scoreboard.get(date) + 1)
   end
 
@@ -109,9 +115,11 @@ class Limits
   # contructor.
   def initialize(limits = nil)
     if limits.nil?
+      # Normal initialization
       @limits = {}
       @project = nil
     else
+      # Deep copy content from other instance.
       @limits = {}
       limits.limits.each do |name, limit|
         @limits[name] = limit.copy
@@ -127,6 +135,11 @@ class Limits
       raise "Cannot change project after limits have been set!" if limit
     end
     @project = project
+  end
+
+  # Reset all counter for all limits.
+  def reset
+    @limits.each_value { |limit| limit.reset }
   end
 
   # Call this function to create or change an upper limit. The limit must be

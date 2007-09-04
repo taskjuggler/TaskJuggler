@@ -58,6 +58,8 @@ class TaskScenario < ScenarioData
     # Array.
     @limits = []
     task = @property
+    # Reset the counters of all limits of this task.
+    task['limits', @scenarioIdx].reset if task['limits', @scenarioIdx]
     until task.nil?
       if task['limits', @scenarioIdx]
         @limits << task['limits', @scenarioIdx]
