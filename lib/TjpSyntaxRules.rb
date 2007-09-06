@@ -1,5 +1,5 @@
 #
-# TjpSyntaxRules - TaskJuggler
+# TjpSyntaxRules.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -7,8 +7,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
+
 
 # This module contains the rule definition for the TJP syntax. Every rule is
 # put in a function who's name must start with rule_. The functions are not

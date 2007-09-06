@@ -1,5 +1,5 @@
 #
-# PropertyList.rb - TaskJuggler
+# PropertyList.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -7,8 +7,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
+
 
 # The PropertyList is a utility class that can be used to hold a list of
 # properties. It's derived from an Array, so it can hold the properties in a

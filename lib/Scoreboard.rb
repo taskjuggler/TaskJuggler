@@ -1,5 +1,5 @@
 #
-# Scoreboard.rb - TaskJuggler
+# Scoreboard.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -7,8 +7,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
+
 
 # Scoreboard objects are instrumental during the scheduling process. The
 # project time span is divided into discrete time slots by the scheduling

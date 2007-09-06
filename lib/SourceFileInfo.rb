@@ -1,5 +1,5 @@
 #
-# SourceFileInfo.rb - TaskJuggler
+# SourceFileInfo.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -7,8 +7,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
+
 
 # Simple class that holds the info about a source file reference.
 class SourceFileInfo

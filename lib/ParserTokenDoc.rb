@@ -1,5 +1,5 @@
 #
-# ParserTokenDoc.rb - TaskJuggler
+# ParserTokenDoc.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -7,8 +7,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
+
 
 # Utility class to store a name and a textual description of the meaning of a
 # token used by the parser syntax tree. A specification of the variable type
