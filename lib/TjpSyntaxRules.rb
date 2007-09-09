@@ -1399,7 +1399,7 @@ EOT
     })
     doc('resource', <<'EOT'
 Tasks that have an effort specification need to have resources assigned to do
-the work. Use this property to define resources or group of resources.
+the work. Use this property to define resources and groups of resources.
 EOT
        )
   end
@@ -1915,8 +1915,8 @@ EOT
     singlePattern('$ABSOLUTE_ID')
     descr(<<'EOT'
 A reference using the full qualified ID of a task. The IDs of all enclosing
-parent tasks must be prepended to the task ID and separated with a dot, e.g. '
-+ 'proj.plan.doc
+parent tasks must be prepended to the task ID and separated with a dot, e.g.
+proj.plan.doc.
 EOT
          )
 

@@ -14,9 +14,15 @@ require 'KeywordDocumentation'
 require 'ProjectFileParser'
 
 # This class can traverse the syntax rules of the ProjectFileParser and extract
-# all documented keywords including their arguments and relations.
+# all documented keywords including their arguments and relations. All this
+# work in done in the contructor. The other noticable function is to_s to get
+# the documentation for a keyword as textual string.
 class SyntaxDocumentation
 
+  # The constructor is the most important function of this class. It creates a
+  # parser object and then traverses all rules and extracts the documented
+  # patterns. In a second pass the extracted KeywordDocumentation objects are
+  # then cross referenced to capture their relationships.
   def initialize
     @messageHandler = MessageHandler.new(true)
     @parser = ProjectFileParser.new(@messageHandler)
@@ -51,6 +57,35 @@ class SyntaxDocumentation
     end
   end
 
+  # Return a sorted Array with all keywords.
+  def all
+    @keywords.keys.sort
+  end
+
+  # Generate a documentation for the keyword or an error message. The result
+  # is a multi-line plain text String for known keywords. In case of an error
+  # the result is empty but an error message will be send to $stderr.
+  def to_s(keyword)
+    if checkKeyword(keyword)
+      @keywords[keyword].to_s
+    else
+      ''
+    end
+  end
+
+  # Generate a documentation for the keyword or an error message. The result
+  # is a XML String for known keywords. In case of an error the result is
+  # empty but an error message will be send to $stderr.
+  def to_html(keyword)
+    if checkKeyword(keyword)
+      @keywords[keyword].to_html
+    else
+      ''
+    end
+  end
+
+private
+
   # Find optional attributes and return them hashed by the defining pattern.
   def optionalAttributes(pattern, stack)
     # If we hit an endless recursion we won't find any attributes. So we push
@@ -66,7 +101,7 @@ class SyntaxDocumentation
 
     if pattern[0] == '_{' && pattern[2] == '_}'
       # We have found an optional attribute pattern!
-      return attributes(pattern[1])
+      return attributes(pattern[1], false)
     end
 
     # If a token of the pattern is a reference, we recursively
@@ -89,7 +124,7 @@ class SyntaxDocumentation
   # the terminal token of each first token of each pattern of the specified
   # rule. The patterns are returned as a hash. For each pattern the hashed
   # boolean value specifies whether the attribute is scenario specific or not.
-  def attributes(token)
+  def attributes(token, scenarioSpecific)
     raise "Token #{token} must reference a rule" if token[0] != ?!
     token = token.slice(1, token.length - 1)
     # Find the matching rule.
@@ -100,20 +135,20 @@ class SyntaxDocumentation
       if pattern[0][0] == ?_
         # If it's a terminal symbol, we found what we are looking for. We add
         # it to the attrs hash and mark it as non scenario specific.
-        attrs[pattern] = false
+        attrs[pattern] = scenarioSpecific
       elsif pattern[0] == '!scenarioId'
         # A reference to the !scenarioId rule marks the next token of the
         # pattern as a reference to a rule with all scenario specific
         # attributes.
-        markScenarioSpecific(attrs, pattern[1])
+        attrs.merge!(attributes(pattern[1], true))
       elsif pattern[0][0] == ?!
         # In case we have a reference to another rule, we just follow the
         # reference. If the pattern is documented we don't have to follow the
         # reference. We can use the pattern instead.
         if pattern.doc.nil?
-          attrs.merge!(attributes(pattern[0]))
+          attrs.merge!(attributes(pattern[0], scenarioSpecific))
         else
-          attrs[pattern] = false
+          attrs[pattern] = scenarioSpecific
         end
       else
         raise "Hit unknown token #{token}"
@@ -122,25 +157,10 @@ class SyntaxDocumentation
     attrs
   end
 
-  def markScenarioSpecific(attrs, token)
-    token = token.slice(1, token.length - 1)
-    rule = @parser.rules[token]
-    rule.patterns.each do |pattern|
-      if pattern[0][0] == ?_
-        attrs[pattern] = true
-      elsif pattern[0][0] == ?!
-        markScenarioSpecific(attrs, pattern[0])
-      end
-    end
-  end
-
-  # Generate a documentation for the keyword or an error message. The result
-  # is always a non-empty multi-line string.
-  def to_s(keyword)
-    str = ''
+  def checkKeyword(keyword)
     if keyword.nil? || @keywords[keyword].nil?
       unless keyword.nil?
-        str += "ERROR: #{keyword} is not a known keyword.\n\n"
+        $stderr.puts "ERROR: #{keyword} is not a known keyword.\n\n"
       end
       # Create list of top-level keywords.
       kwdStr = ''
@@ -151,13 +171,13 @@ class SyntaxDocumentation
           kwdStr += kwd.keyword
         end
       end
-      str += "Try one of the following keywords as argument to this program:\n"
-      str += kwdStr
-    else
-      # Generate the documentation text for the requested keyword
-      str += @keywords[keyword].to_s
+      $stderr.puts "Try one of the following keywords as argument to this " +
+                   "program:\n"
+      $stderr.puts "#{kwdStr}"
+      return false
     end
-    str
+
+    true
   end
 
 end

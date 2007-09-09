@@ -8,20 +8,36 @@
 # published by the Free Software Foundation.
 #
 
+require 'XMLFile'
 
+# The textual TaskJuggler Project description consists of many keywords. The
+# parser has built-in support to document the meaning and usage of these
+# keywords. Most keywords are unique, but there can be exceptions. To resolve
+# ambiguoties the keywords can be prefixed by a scope. The scope is usually
+# a keyword that describes the context that the ambiguous keyword is used in.
+# This class stores the keyword, the corresponding TextParserPattern and the
+# context that the keyword is used in. It also stores information such as the
+# list of optional attributes (keywords used in the context of the current
+# keyword) and whether the keyword is scenario specific or not.
 class KeywordDocumentation
 
   attr_reader :keyword, :pattern
   attr_accessor :contexts, :scenarioSpecific
 
+  # Construct a new KeywordDocumentation object. _rule_ is the TextParserRule
+  # and _pattern_ is the corresponding TextParserPattern. _syntax_ is an
+  # expanded syntax representation of the _pattern_. _args_ is a
+  # Array of ParserTokenDoc that describe the arguments of the _pattern_.
+  # _optAttrPatterns_ is an Array with references to TextParserPatterns that
+  # are optional attributes to this keyword.
   def initialize(rule, pattern, syntax, args, optAttrPatterns)
     @rule = rule
     @pattern = pattern
     @keyword = pattern.keyword
     @syntax = syntax
     @args = args
-    # Hash that maps patterns of optional attributes to a boolean value. True
-    # if the pattern is a scenario specific attribute.
+    # Hash that maps patterns of optional attributes to a boolean value. It is
+    # true if the pattern is a scenario specific attribute.
     @optAttrPatterns = optAttrPatterns
     # The above hash is later converted into a list that points to the keyword
     # documentation of the optional attribute.
@@ -36,9 +52,9 @@ class KeywordDocumentation
   # KeywordDocumentation items.
   def crossReference(keywords, rules)
     # Some arguments are references to other patterns. The current keyword is
-    # added as context to such the keyword of such patterns.
+    # added as context to such patterns.
     @args.each do |arg|
-      unless arg.pattern.nil?
+      if arg.pattern && checkReference(arg.pattern)
         kwd = keywords[arg.pattern.keyword]
         kwd.contexts << self unless kwd.contexts.include?(self)
       end
@@ -47,14 +63,12 @@ class KeywordDocumentation
     # Optional attributes are treated similarly. In addition we add them to
     # the @optionalAttributes list of this keyword.
     @optAttrPatterns.each do |pattern, scenarioSpecific|
-      token = pattern.terminalToken(rules)
-      if pattern.keyword.nil?
-        $stderr.puts "Pattern #{pattern} has no keyword defined"
-        next
-      end
+      next unless checkReference(pattern)
+
       if (kwd = keywords[pattern.keyword]).nil?
-        stderr.puts "Keyword #{keyword} has undocumented optional attribute " +
-                    "#{token[0]}"
+        token = pattern.terminalToken(rules)
+        $stderr.puts "Keyword #{keyword} has undocumented optional attribute " +
+                     "#{token[0]}"
       else
         @optionalAttributes << kwd
         kwd.contexts << self unless kwd.contexts.include?(self)
@@ -79,8 +93,8 @@ class KeywordDocumentation
 
     # Top line with multiple elements
     str = "Keyword:     #{@keyword}     " +
-          "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}     " +
-          "Inheriable: #{@inheritable ? 'Yes' : 'No'}\n\n"
+          "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
+          "Inheritable: #{@inheritable ? 'Yes' : 'No'}\n\n"
 
     str += "Purpose:     #{format(tagW, @pattern.doc, textW)}\n\n"
 
@@ -159,6 +173,165 @@ class KeywordDocumentation
     str
   end
 
+  # Return a String that represents the keyword documentation in an XML
+  # formatted form.
+  def to_html
+    xml = XMLFile.new
+    xml << XMLBlob.new(nil, '<?xml version="1.0" encoding="iso-8859-1"?>')
+    xml << XMLBlob.new(nil, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 ' +
+      'Transitional//EN"' +
+      '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">')
+    html = XMLElement.new(nil, 'html',
+      'xmlns' => 'http://www.w3.org/1999/xhtml', 'xml:lang' => 'en',
+      'lang' => 'en')
+    xml << html
+    head = XMLElement.new(html, 'head')
+    XMLText.new(head, "#{keyword}", 'title')
+    style = XMLElement.new(head, 'style', 'type' => 'text/css')
+    XMLBlob.new(style, <<'EOT'
+.table {
+  background-color:ABABAB;
+  width:90%;
+  margin-left:5%;
+  margin-right:5%;
+}
+.tag {
+  background-color:E0E0F0;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:5px;
+  padding-bottom:5px;
+  font-weight:bold;
+}
+.descr {
+  background-color:E0E0E0;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:5px;
+  padding-bottom:5px;
+}
+EOT
+               )
+    body = XMLElement.new(html, 'body')
+    p = XMLElement.new(body, 'p')
+    tab = XMLElement.new(p, 'table', 'align' => 'center', 'class' => 'table')
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Keyword', 'td', 'class' => 'tag',
+                'style' => 'width:15%')
+    XMLText.new(tr, @keyword, 'td', 'class' => 'descr', 'style' => 'width:35%')
+    XMLText.new(tr, 'Scenario Specific', 'td', 'class' => 'tag',
+                'style' => 'width:20%')
+    XMLText.new(tr, "#{@scenarioSpecific ? 'Yes' : 'No'}", 'td',
+                'class' => 'descr', 'style' => 'width:10%')
+    XMLText.new(tr, 'Inheritable', 'td', 'class' => 'tag',
+                'style' => 'width:15%')
+    XMLText.new(tr, "#{@inheritable ? 'Yes' : 'No'}", 'td',
+                'class' => 'descr', 'style' => 'width:5%')
+
+    p = XMLElement.new(body, 'p')
+    tab = XMLElement.new(p, 'table', 'align' => 'center', 'class' => 'table')
+    colgroup = XMLElement.new(tab, 'colgroup')
+    XMLElement.new(colgroup, 'col', 'width' => '15%')
+    XMLElement.new(colgroup, 'col', 'width' => '85%')
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Purpose', 'td', 'class' => 'tag')
+    XMLText.new(tr, "#{@pattern.doc}", 'td', 'class' => 'descr')
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Syntax', 'td', 'class' => 'tag')
+    td = XMLElement.new(tr, 'td', 'class' => 'descr')
+    XMLText.new(td, "#{@syntax}", 'code')
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Arguments', 'td', 'class' => 'tag')
+    if @args.empty?
+      XMLText.new(tr, 'none', 'td', 'class' => 'descr')
+    else
+      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      tab1 = XMLElement.new(td, 'table', 'width' => '100%')
+      @args.each do |arg|
+        tr1 = XMLElement.new(tab1, 'tr')
+        if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
+          XMLText.new(tr1, "#{arg.name}", 'td', 'width' => '30%')
+        else
+          typeSpec = arg.typeSpec
+          typeSpec[0] = '['
+          typeSpec[-1] = ']'
+          XMLText.new(tr1, "#{arg.name} #{typeSpec}", 'td', 'width' => '30%')
+        end
+        XMLText.new(tr1, "#{arg.text}", 'td')
+      end
+    end
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Context', 'td', 'class' => 'tag')
+    if @contexts.empty?
+      XMLText.new(tr, 'Global scope', 'td', 'class' => 'descr')
+    else
+      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      first = true
+      @contexts.each do |context|
+        if first
+          first = false
+        else
+          XMLText.new(td, ', ')
+        end
+        keywordHTMLRef(td, context.keyword)
+      end
+    end
+
+    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+    XMLText.new(tr, 'Attributes', 'td', 'class' => 'tag')
+    if @optionalAttributes.empty?
+      XMLText.new(tr, 'none', 'td', 'class' => 'descr')
+    else
+      @optionalAttributes.sort! do |a, b|
+        a.keyword <=> b.keyword
+      end
+      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      first = true
+      @optionalAttributes.each do |attr|
+        if first
+          first = false
+        else
+          XMLText.new(td, ', ')
+        end
+        XMLText.new(td, '[sc:]') if attr.scenarioSpecific
+        keywordHTMLRef(td, attr.keyword)
+      end
+    end
+
+    unless @seeAlso.empty?
+      tr = XMLElement.new(tab, 'tr', 'align' => 'left')
+      XMLText.new(tr, 'See also', 'td', 'class' => 'tag')
+      first = true
+      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      @seeAlso.each do |also|
+        if first
+          first = false
+        else
+          XMLText.new(td, ', ')
+        end
+        keywordHTMLRef(td, also.keyword)
+      end
+    end
+
+    xml.to_s
+  end
+
+private
+
+  def checkReference(pattern)
+    if pattern.keyword.nil?
+      $stderr.puts "Pattern #{pattern} is undocumented but referenced by " +
+                   "#{@keyword}."
+      false
+    end
+    true
+  end
+
   # Utility function that is used to format the str String as a block of the
   # specified _width_. The left side is indented with _indent_ white spaces.
   def format(indent, str, width)
@@ -227,6 +400,10 @@ class KeywordDocumentation
       out += indentBuf
     end
     out += word
+  end
+
+  def keywordHTMLRef(parent, keyword)
+    XMLText.new(parent, keyword, 'a', 'href' => "#{keyword}.html")
   end
 
 end

@@ -14,7 +14,7 @@ require 'ParserTokenDoc'
 # This class models the most crutial elements of a syntax description - the
 # pattern. A TextParserPattern primarily consists of a set of tokens. Tokens
 # are Strings where the first character determines the type of the token.
-# There are 3 known type.
+# There are 3 known types.
 #
 # Terminal token: The terminal token is prefixed by an underscore. Terminal
 # tokens are terminal symbols of the syntax tree. They just represent
@@ -48,7 +48,7 @@ class TextParserPattern
 
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
-        raise "Fatal Error: All pattern tokens must start with type " +
+        raise "Fatal Error: All pattern tokens must start with a type " +
               "identifier [!$_]: #{tokens.join(', ')}"
       end
       # Initialize pattern argument descriptions as empty.

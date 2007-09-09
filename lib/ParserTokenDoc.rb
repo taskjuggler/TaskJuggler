@@ -17,10 +17,12 @@ class ParserTokenDoc
   attr_reader :text
   attr_accessor :name, :typeSpec, :pattern
 
+  # Construct a ParserTokenDoc object. _name_ and _text_ are Strings that
+  # hold the name and textual description of the parser token.
   def initialize(name, text)
     @name = name
-    @typeSpec = typeSpec
     @text = text
+    @typeSpec = nil
     @pattern = nil
   end
 

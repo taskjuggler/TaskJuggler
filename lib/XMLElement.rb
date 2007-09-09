@@ -32,21 +32,29 @@ class XMLElement
 
   # Return the element and all sub elements as properly formatted XML.
   def to_s(indent = 0)
-    out = ''
-    out << ' ' * indent
-    out << '<' + name
+    out = '<' + @name
     @attributes.each do |attrName, attrValue|
-      out << ' ' + attrName '="' + quoteAttr(attrValue) + '"'
+      out << ' ' + attrName + '="' + quoteAttr(attrValue) + '"'
     end
-    if @childen.empty?
+    if @children.empty?
       out << '/>'
     else
-      out << ">\n"
+      out << '>'
       @children.each do |child|
+        if @children.size > 1 && !child.is_a?(XMLText)
+          out << "\n" + indentation(indent + 1)
+        end
         out << child.to_s(indent + 1)
       end
-      out << '</' + @name + ">\n"
+      out << "\n" + indentation(indent) if @children.size > 1
+      out << '</' + @name + '>'
     end
+  end
+
+protected
+
+  def indentation(indent)
+    ' ' * indent
   end
 
 private
@@ -70,14 +78,20 @@ end
 # This is a specialized XMLElement to represent a simple text.
 class XMLText < XMLElement
 
-  def initialize(parent, text)
+  def initialize(parent, text, name = nil, attributes = {})
+    # In case the caller requests a named element, we inject another
+    # XMLElement between the XMLText and the parent. This makes creating named
+    # text elements with only one String somewhat more convenient.
+    if name
+      parent = XMLElement.new(parent, name, attributes)
+    end
     super(parent, nil, {})
     @text = text
   end
 
-  def to_s
+  def to_s(indent)
     out = ''
-    text.each_byte do |c|
+    @text.each_byte do |c|
       case c
       when ?<
         out << '&lt;'
@@ -93,7 +107,7 @@ class XMLText < XMLElement
 
 end
 
-# THis is a specialized XMLElement to represent a comment.
+# This is a specialized XMLElement to represent a comment.
 class XMLComment < XMLElement
 
   def initialize(parent, text = '')
@@ -101,9 +115,21 @@ class XMLComment < XMLElement
     @text = text
   end
 
-  def to_s
-    '<!-- ' + text + "-->\n"
+  def to_s(indent)
+    '<!-- ' + text + '-->'
   end
 
 end
 
+class XMLBlob < XMLElement
+
+  def initialize(parent, blob = '')
+    super(parent, nil, {})
+    @blob = blob
+  end
+
+  def to_s(indent)
+    @blob
+  end
+
+end
