@@ -14,20 +14,17 @@
 class XMLElement
 
   # Construct a new XML element and include it in an existing XMLElement tree.
-  # If _parent_ is not nil, the new XMLElement is added as child to the
-  # parent.
-  def initialize(parent, name, attributes = {})
-    @parent = parent
-    @parent.addElement(self) if @parent
-
+  def initialize(name, attributes = {})
+    raise "ERROR" unless name.nil? || name.is_a?(String)
     @name = name
     @attributes = attributes
     @children = []
   end
 
   # Add a new child to the element.
-  def addElement(element)
+  def <<(element)
     @children << element
+    self
   end
 
   # Return the element and all sub elements as properly formatted XML.
@@ -78,14 +75,8 @@ end
 # This is a specialized XMLElement to represent a simple text.
 class XMLText < XMLElement
 
-  def initialize(parent, text, name = nil, attributes = {})
-    # In case the caller requests a named element, we inject another
-    # XMLElement between the XMLText and the parent. This makes creating named
-    # text elements with only one String somewhat more convenient.
-    if name
-      parent = XMLElement.new(parent, name, attributes)
-    end
-    super(parent, nil, {})
+  def initialize(text)
+    super(nil, {})
     @text = text
   end
 
@@ -97,6 +88,8 @@ class XMLText < XMLElement
         out << '&lt;'
       when ?>
         out << '&gt;'
+      when ?&
+        out << '&amp;'
       else
         out << c
       end
@@ -107,24 +100,38 @@ class XMLText < XMLElement
 
 end
 
-# This is a specialized XMLElement to represent a comment.
-class XMLComment < XMLElement
+# This is a convenience class that allows the creation of an XMLText nested
+# into an XMLElement. The _name_ and _attributes_ belong to the XMLElement,
+# the text to the XMLText.
+class XMLNamedText < XMLElement
 
-  def initialize(parent, text = '')
-    super(parent, nil, {})
-    @text = text
-  end
-
-  def to_s(indent)
-    '<!-- ' + text + '-->'
+  def initialize(text, name, attributes = {})
+    super(name, attributes)
+    self << XMLText.new(text)
   end
 
 end
 
+# This is a specialized XMLElement to represent a comment.
+class XMLComment < XMLElement
+
+  def initialize(text = '')
+    super(nil, {})
+    @text = text
+  end
+
+  def to_s(indent)
+    '<!-- ' + @text + '-->'
+  end
+
+end
+
+# This is a specialized XMLElement to represent XML blobs. The content is not
+# interpreted and must be valid XML in the content it is added.
 class XMLBlob < XMLElement
 
-  def initialize(parent, blob = '')
-    super(parent, nil, {})
+  def initialize(blob = '')
+    super(nil, {})
     @blob = blob
   end
 

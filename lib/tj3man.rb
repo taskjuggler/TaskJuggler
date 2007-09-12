@@ -16,11 +16,12 @@ AppConfig.appName = 'tj3man'
 
 class Arguments
 
-  attr_reader :outputFormat, :keywords
+  attr_reader :outputFormat, :keywords, :directory
 
   def initialize(argv)
     @outputFormat = :text
     @keywords = nil
+    @directory = nil
 
     opts = OptionParser.new
     opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
@@ -43,6 +44,11 @@ class Arguments
         @outputFormat = :html
       end
     end
+    opts.on('-d', '--directory String',
+            'Generate output as files into this directory.') do |dir|
+      dir << ?/ unless dir[-1] == ?/
+      @directory = dir
+    end
     opts.on_tail('-h', '--help', 'Show this message.') do
       puts opts
       exit
@@ -64,9 +70,18 @@ def main
   if keywords.empty?
     keywords = man.all
   end
+
+  if args.outputFormat == :html
+    if args.directory
+      man.generateHTMLindex(args.directory)
+      man.generateHTMLnavbar(args.directory, keywords)
+      man.generateHTMLintro(args.directory)
+    end
+  end
+
   keywords.each do |keyword|
     if args.outputFormat == :html
-      puts man.to_html(keyword)
+      man.generateHTMLreference(args.directory, keyword)
     else
       puts man.to_s(keyword)
     end

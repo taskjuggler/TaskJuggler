@@ -12,10 +12,11 @@
 require 'MessageHandler'
 require 'KeywordDocumentation'
 require 'ProjectFileParser'
+require 'HTMLDocument'
 
 # This class can traverse the syntax rules of the ProjectFileParser and extract
 # all documented keywords including their arguments and relations. All this
-# work in done in the contructor. The other noticable function is to_s to get
+# work in done in the contructor. The other noticeable function is to_s to get
 # the documentation for a keyword as textual string.
 class SyntaxDocumentation
 
@@ -76,12 +77,101 @@ class SyntaxDocumentation
   # Generate a documentation for the keyword or an error message. The result
   # is a XML String for known keywords. In case of an error the result is
   # empty but an error message will be send to $stderr.
-  def to_html(keyword)
+  def generateHTMLreference(directory, keyword)
     if checkKeyword(keyword)
-      @keywords[keyword].to_html
+      @keywords[keyword].generateHTML(directory)
     else
       ''
     end
+  end
+
+  # Generate the top-level file for the HTML reference manual.
+  def generateHTMLindex(directory)
+    html = HTMLDocument.new(:frameset)
+    html << (head = XMLElement.new('head'))
+    head << (e = XMLNamedText.new('TaskJuggler Syntax Reference', 'title'))
+    head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
+                           'content' => 'text/html; charset=iso-8859-1')
+
+    html << (frameset = XMLElement.new('frameset', 'cols' => '15%, 85%'))
+    frameset << (navFrames = XMLElement.new('frameset', 'rows' => '15%, 85%'))
+    navFrames << XMLElement.new('frame', 'src' => 'alphabet.html',
+                                'name' => 'alphabet')
+    navFrames << XMLElement.new('frame', 'src' => 'navbar.html',
+                                'name' => 'navigator')
+    frameset << XMLElement.new('frame', 'src' => 'intro.html',
+                               'name' => 'display')
+
+    html.write(directory + 'index.html')
+  end
+
+  # Generate 2 files names navbar.html and alphabet.html. They are used to
+  # support navigating through the syntax reference.
+  def generateHTMLnavbar(directory, keywords)
+    html = HTMLDocument.new
+    html << (head = XMLElement.new('head'))
+    head << XMLNamedText.new('TaskJuggler Syntax Reference Navigator', 'title')
+    head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
+                           'content' => 'text/html; charset=iso-8859-1')
+    head << XMLElement.new('base', 'target' => 'display')
+    html << (body = XMLElement.new('body'))
+
+    body << XMLNamedText.new('Intro', 'a', 'href' => 'intro.html')
+    body << XMLElement.new('br')
+
+    normalizedKeywords = {}
+    keywords.each do |keyword|
+      kwTokens = keyword.split('.')
+      if kwTokens.size == 1
+        normalizedKeywords[keyword] = keyword
+      else
+        normalizedKeywords["#{kwTokens[1]} (#{kwTokens[0]})"] = keyword
+      end
+    end
+    letter = nil
+    letters = []
+    normalizedKeywords.keys.sort!.each do |normalized|
+      if normalized[0, 1] != letter
+        letter = normalized[0, 1]
+        letters << letter
+        body << (h = XMLElement.new('h3'))
+        h << XMLNamedText.new(letter.upcase, 'a', 'name' => letter)
+      end
+      keyword = normalizedKeywords[normalized]
+      body << XMLNamedText.new("#{normalized}", 'a',
+                               'href' => "#{keyword}.html")
+      body << XMLElement.new('br')
+    end
+
+    html.write(directory + 'navbar.html')
+
+    html = HTMLDocument.new
+    html << (head = XMLElement.new('head'))
+    head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
+                           'content' => 'text/html; charset=iso-8859-1')
+    head << XMLElement.new('base', 'target' => 'navigator')
+    html << (body = XMLElement.new('body'))
+
+    body << (h3 = XMLElement.new('h3'))
+    letters.each do |letter|
+      h3 << XMLNamedText.new(letter.upcase, 'a',
+                             'href' => "navbar.html##{letter}")
+    end
+    html.write(directory + 'alphabet.html')
+  end
+
+  def generateHTMLintro(directory)
+    html = HTMLDocument.new
+    html << (head = XMLElement.new('head'))
+    html << (body = XMLElement.new('body'))
+    body << (div = XMLElement.new('div', 'align' => 'center',
+                                  'style' => 'margin-top:20%'))
+    div << XMLNamedText.new('The TaskJuggler3 Reference Manual', 'h1')
+    div << XMLNamedText.new('Copyright (c) 2006, 2007 by Chris Schlaeger', 'h3')
+    div << XMLText.new('This manual covers TaskJuggler3 version ' +
+                       "#{AppConfig.version}.")
+
+    html.write(directory + 'intro.html')
   end
 
 private

@@ -8,7 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'XMLFile'
+require 'HTMLDocument'
 
 # The textual TaskJuggler Project description consists of many keywords. The
 # parser has built-in support to document the meaning and usage of these
@@ -175,28 +175,20 @@ class KeywordDocumentation
 
   # Return a String that represents the keyword documentation in an XML
   # formatted form.
-  def to_html
-    xml = XMLFile.new
-    xml << XMLBlob.new(nil, '<?xml version="1.0" encoding="iso-8859-1"?>')
-    xml << XMLBlob.new(nil, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 ' +
-      'Transitional//EN"' +
-      '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">')
-    html = XMLElement.new(nil, 'html',
-      'xmlns' => 'http://www.w3.org/1999/xhtml', 'xml:lang' => 'en',
-      'lang' => 'en')
-    xml << html
-    head = XMLElement.new(html, 'head')
-    XMLText.new(head, "#{keyword}", 'title')
-    style = XMLElement.new(head, 'style', 'type' => 'text/css')
-    XMLBlob.new(style, <<'EOT'
+  def generateHTML(directory)
+    html = XMLDocument.new
+    html << (head = XMLElement.new('head'))
+    head << XMLNamedText.new("#{keyword}", 'title')
+    head << (style = XMLElement.new('style', 'type' => 'text/css'))
+    style << XMLBlob.new(<<'EOT'
 .table {
-  background-color:ABABAB;
+  background-color:#ABABAB;
   width:90%;
   margin-left:5%;
   margin-right:5%;
 }
 .tag {
-  background-color:E0E0F0;
+  background-color:#E0E0F0;
   padding-left:8px;
   padding-right:8px;
   padding-top:5px;
@@ -204,7 +196,7 @@ class KeywordDocumentation
   font-weight:bold;
 }
 .descr {
-  background-color:E0E0E0;
+  background-color:#F0F0F0;
   padding-left:8px;
   padding-right:8px;
   padding-top:5px;
@@ -212,113 +204,128 @@ class KeywordDocumentation
 }
 EOT
                )
-    body = XMLElement.new(html, 'body')
-    p = XMLElement.new(body, 'p')
-    tab = XMLElement.new(p, 'table', 'align' => 'center', 'class' => 'table')
+    html << (body = XMLElement.new('body'))
+    body << (headline = XMLNamedText.new(
+      'The TaskJuggler3 Syntax Reference Manual', 'h3', 'align' => 'center'))
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Keyword', 'td', 'class' => 'tag',
-                'style' => 'width:15%')
-    XMLText.new(tr, @keyword, 'td', 'class' => 'descr', 'style' => 'width:35%')
-    XMLText.new(tr, 'Scenario Specific', 'td', 'class' => 'tag',
-                'style' => 'width:20%')
-    XMLText.new(tr, "#{@scenarioSpecific ? 'Yes' : 'No'}", 'td',
-                'class' => 'descr', 'style' => 'width:10%')
-    XMLText.new(tr, 'Inheritable', 'td', 'class' => 'tag',
-                'style' => 'width:15%')
-    XMLText.new(tr, "#{@inheritable ? 'Yes' : 'No'}", 'td',
-                'class' => 'descr', 'style' => 'width:5%')
+    body << (p = XMLElement.new('p'))
+    p << (tab = XMLElement.new('table', 'align' => 'center',
+                               'class' => 'table'))
 
-    p = XMLElement.new(body, 'p')
-    tab = XMLElement.new(p, 'table', 'align' => 'center', 'class' => 'table')
-    colgroup = XMLElement.new(tab, 'colgroup')
-    XMLElement.new(colgroup, 'col', 'width' => '15%')
-    XMLElement.new(colgroup, 'col', 'width' => '85%')
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Keyword', 'td', 'class' => 'tag',
+                          'style' => 'width:15%')
+    tr << XMLNamedText.new(@keyword, 'td', 'class' => 'descr',
+                           'style' => 'width:35%')
+    tr << XMLNamedText.new('Scenario Specific', 'td', 'class' => 'tag',
+                           'style' => 'width:20%')
+    tr << XMLNamedText.new("#{@scenarioSpecific ? 'Yes' : 'No'}", 'td',
+                           'class' => 'descr', 'style' => 'width:10%')
+    tr << XMLNamedText.new('Inheritable', 'td', 'class' => 'tag',
+                           'style' => 'width:15%')
+    tr << XMLNamedText.new("#{@inheritable ? 'Yes' : 'No'}", 'td',
+                           'class' => 'descr', 'style' => 'width:5%')
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Purpose', 'td', 'class' => 'tag')
-    XMLText.new(tr, "#{@pattern.doc}", 'td', 'class' => 'descr')
+    body << (p = XMLElement.new('p'))
+    p << (tab = XMLElement.new('table', 'align' => 'center',
+                               'class' => 'table'))
+    tab << (colgroup = XMLElement.new('colgroup'))
+    colgroup << XMLElement.new('col', 'width' => '15%')
+    colgroup << XMLElement.new('col', 'width' => '85%')
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Syntax', 'td', 'class' => 'tag')
-    td = XMLElement.new(tr, 'td', 'class' => 'descr')
-    XMLText.new(td, "#{@syntax}", 'code')
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Purpose', 'td', 'class' => 'tag')
+    tr << XMLNamedText.new("#{@pattern.doc}", 'td', 'class' => 'descr')
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Arguments', 'td', 'class' => 'tag')
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
+    tr << (td = XMLElement.new('td', 'class' => 'descr'))
+    td << XMLNamedText.new("#{@syntax}", 'code')
+
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Arguments', 'td', 'class' => 'tag')
     if @args.empty?
-      XMLText.new(tr, 'none', 'td', 'class' => 'descr')
+      tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
     else
-      td = XMLElement.new(tr, 'td', 'class' => 'descr')
-      tab1 = XMLElement.new(td, 'table', 'width' => '100%')
+      tr << (td = XMLElement.new('td', 'class' => 'descr'))
+      td << (tab1 = XMLElement.new('table', 'width' => '100%'))
       @args.each do |arg|
-        tr1 = XMLElement.new(tab1, 'tr')
+        tab1 << (tr1 = XMLElement.new('tr'))
         if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
-          XMLText.new(tr1, "#{arg.name}", 'td', 'width' => '30%')
+          tr1 << XMLNamedText.new("#{arg.name}", 'td', 'width' => '30%')
         else
           typeSpec = arg.typeSpec
           typeSpec[0] = '['
           typeSpec[-1] = ']'
-          XMLText.new(tr1, "#{arg.name} #{typeSpec}", 'td', 'width' => '30%')
+          tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
+                                  'width' => '30%')
         end
-        XMLText.new(tr1, "#{arg.text}", 'td')
+        tr1 << XMLNamedText.new("#{arg.text}", 'td')
       end
     end
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Context', 'td', 'class' => 'tag')
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Context', 'td', 'class' => 'tag')
     if @contexts.empty?
-      XMLText.new(tr, 'Global scope', 'td', 'class' => 'descr')
+      tr << XMLNamedText.new('Global scope', 'td', 'class' => 'descr')
     else
-      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      tr << (td = XMLElement.new('td', 'class' => 'descr'))
       first = true
       @contexts.each do |context|
         if first
           first = false
         else
-          XMLText.new(td, ', ')
+          td << XMLText.new(', ')
         end
         keywordHTMLRef(td, context.keyword)
       end
     end
 
-    tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-    XMLText.new(tr, 'Attributes', 'td', 'class' => 'tag')
+    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+    tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag')
     if @optionalAttributes.empty?
-      XMLText.new(tr, 'none', 'td', 'class' => 'descr')
+      tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
     else
       @optionalAttributes.sort! do |a, b|
         a.keyword <=> b.keyword
       end
-      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      tr << (td = XMLElement.new('td', 'class' => 'descr'))
       first = true
       @optionalAttributes.each do |attr|
         if first
           first = false
         else
-          XMLText.new(td, ', ')
+          td << XMLText.new(', ')
         end
-        XMLText.new(td, '[sc:]') if attr.scenarioSpecific
+        td << XMLText.new('[sc:]') if attr.scenarioSpecific
         keywordHTMLRef(td, attr.keyword)
       end
     end
 
     unless @seeAlso.empty?
-      tr = XMLElement.new(tab, 'tr', 'align' => 'left')
-      XMLText.new(tr, 'See also', 'td', 'class' => 'tag')
+      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+      tr << XMLNamedText.new('See also', 'td', 'class' => 'tag')
       first = true
-      td = XMLElement.new(tr, 'td', 'class' => 'descr')
+      tr << (td = XMLElement.new('td', 'class' => 'descr'))
       @seeAlso.each do |also|
         if first
           first = false
         else
-          XMLText.new(td, ', ')
+          td << XMLText.new(', ')
         end
         keywordHTMLRef(td, also.keyword)
       end
     end
 
-    xml.to_s
+    body << (div = XMLElement.new('div', 'align' => 'center'))
+    div << XMLNamedText.new('TaskJuggler', 'a', 'href' => AppConfig.contact)
+    div << XMLText.new(' is a trademark of Chris Schlaeger.')
+
+    if directory
+      html.write(directory + "#{keyword}.html")
+    else
+      puts html.to_s
+    end
   end
 
 private
@@ -403,7 +410,7 @@ private
   end
 
   def keywordHTMLRef(parent, keyword)
-    XMLText.new(parent, keyword, 'a', 'href' => "#{keyword}.html")
+    parent << XMLNamedText.new(keyword, 'a', 'href' => "#{keyword}.html")
   end
 
 end

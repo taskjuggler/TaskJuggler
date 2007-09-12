@@ -1852,10 +1852,6 @@ EOT
     pattern(%w( !taskDepHeader !taskDepBody ), lambda {
       @val[0]
     })
-    doc('dependency', <<'EOT'
-Reference to another task.
-EOT
-       )
   end
 
   def rule_taskDepAttributes
