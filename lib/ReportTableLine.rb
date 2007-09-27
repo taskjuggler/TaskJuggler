@@ -46,10 +46,10 @@ class ReportTableLine
     @cells << cell
   end
 
-  def to_html(indent)
-    @out << " " * indent + "<tr class=\"tabline1\">\n"
-    @cells.each { |cell| cell.to_html(indent + 2) }
-    @out << " " * indent + "</tr>\n"
+  def to_html
+    tr = XMLElement.new('tr', 'class' => 'tabline1')
+    @cells.each { |cell| tr << cell.to_html }
+    tr
   end
 
 end

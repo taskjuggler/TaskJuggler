@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'ReportTableColumn'
 require 'ReportTableLine'
 
@@ -26,14 +25,6 @@ class ReportTable
     @maxIndent = 0
   end
 
-  # Use this function to set the output stream. It can be any type that
-  # supports << for strings.
-  def setOut(out)
-    @out = out
-    @columns.each { |col| col.setOut(out) }
-    @lines.each { |line| line.setOut(out) }
-  end
-
   # This function should only be called by the ReportTableColumn constructor.
   def addColumn(col)
     @columns << col
@@ -44,30 +35,27 @@ class ReportTable
     @lines << line
   end
 
-  # Output the table as textual HTML table.
-  def to_html(indent)
+  # Output the table as HTML.
+  def to_html
     determineMaxIndents
 
-    @out << " " * indent + "<table align=\"center\" cellspacing=\"1\" " +
-            "cellpadding=\"2\" class=\"tab\">\n"
+    table = XMLElement.new('table', 'align' => 'center',
+                           'cellspacing' => '1', 'cellpadding' => '2',
+                           'class' => 'tab')
+    table << (thead = XMLElement.new('thead'))
+    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
 
-    @out << " " * (indent + 2) + "<thead>\n"
+    @columns.each { |col| tr << col.to_html(1) }
 
-    @out << " " * (indent + 4) + "<tr class=\"tabhead\">\n"
-    @columns.each { |col| col.to_html(indent + 6, 1) }
-    @out << " " * (indent + 4) + "</tr>\n"
+    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
 
-    @out << " " * (indent + 4) + "<tr class=\"tabhead\">\n"
-    @columns.each { |col| col.to_html(indent + 6, 2) }
-    @out << " " * (indent + 4) + "</tr>\n"
+    @columns.each { |col| tr << col.to_html(2) }
 
-    @out << " " * (indent + 2) + "</thead>\n"
+    table << (tbody = XMLElement.new('tbody'))
 
-    @out << " " * (indent + 2) + "<tbody>\n"
-    @lines.each { |line| line.to_html(indent + 4) }
-    @out << " " * (indent + 2) + "</tbody>\n"
+    @lines.each { |line| tbody << line.to_html }
 
-    @out << " " * indent + "</table>\n"
+    table
   end
 
 private

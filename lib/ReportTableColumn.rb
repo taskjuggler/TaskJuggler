@@ -8,12 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-
-require 'HTMLUtils'
-
 class ReportTableColumn
-
-  include HTMLUtils
 
   attr_reader :descr, :cell1, :cell2
 
@@ -25,16 +20,11 @@ class ReportTableColumn
     @cell2 = ReportTableCell.new(nil, '', true)
   end
 
-  def setOut(out)
-    @cell1.setOut(out)
-    @cell2.setOut(out)
-  end
-
-  def to_html(indent, row)
+  def to_html(row)
     if row == 1
-      @cell1.to_html(indent)
+      @cell1.to_html
     else
-      @cell2.to_html(indent)
+      @cell2.to_html
     end
   end
 

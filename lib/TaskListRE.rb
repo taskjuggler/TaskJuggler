@@ -1,5 +1,5 @@
 #
-# TaskReport.rb - The TaskJuggler3 Project Management Software
+# TaskListRE.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -9,36 +9,31 @@
 #
 
 
-require 'GenericReportElement'
+require 'ReportTableElement'
 require 'ReportTable'
-require 'ReportUtils'
 
-class TaskReport < GenericReportElement
-
-  include ReportUtils
+class TaskListRE < ReportTableElement
 
   def initialize(reportElement)
     super
     @table = ReportTable.new
   end
 
-  def generate
-    @descr.columns.each do |columnDescr|
+  def generateIntermediateFormat
+    @columns.each do |columnDescr|
       generateHeaderCell(columnDescr)
     end
 
     taskList = PropertyList.new(@project.tasks)
-    taskList = filterTaskList(taskList, nil, @descr.hideTask, @descr.rollupTask)
-    taskList.setSorting(@descr.sortTasks)
+    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
+    taskList.setSorting(@sortTasks)
 
     resourceList = PropertyList.new(@project.resources)
-    resourceList = filterResourceList(resourceList, nil, @descr.hideResource,
-        @descr.rollupResource)
-    resourceList.setSorting(@descr.sortResources)
+    resourceList = filterResourceList(resourceList, nil, @hideResource,
+        @rollupResource)
+    resourceList.setSorting(@sortResources)
 
     generateTaskList(taskList, resourceList, nil, nil)
-
-    @table
   end
 
 end

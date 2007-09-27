@@ -8,10 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-
 class ReportTableCell
-
-  include HTMLUtils
 
   attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :indent,
@@ -44,12 +41,8 @@ class ReportTableCell
     @category == c.category
   end
 
-  def setOut(out)
-    @out = out
-  end
-
-  def to_html(indent)
-    return if @hidden
+  def to_html
+    return nil if @hidden
 
     # Determine cell style
     aligns = %w( left center right)
@@ -65,23 +58,22 @@ class ReportTableCell
     style += 'font-weight:bold; ' if @bold
     style += "font-size: #{@fontFactor * 100.0}%; " if fontFactor != 1.0
 
+    attribs = { 'style' => style }
     # Determine cell attributes
-    attribs = ""
-    attribs += "rowspan=\"#{@rows}\" " if @rows > 1
-    attribs += "colspan=\"#{@columns}\" " if @columns > 1
+    attribs['rowspan'] = "#{@rows}" if @rows > 1
+    attribs['colspan'] = "#{@columns}" if @columns > 1
+    attribs['class'] = @category ? @category : 'tabcell'
 
     cellTypeChar = @headerCell ? 'h' : 'd'
-    @out << " " * indent + "<t#{cellTypeChar} "
-    if @category
-      @out << "class=\"#{category}\" "
+    cell = XMLElement.new("t#{cellTypeChar}", attribs)
+    if @width
+      cell << (div = XMLElement.new('div', 'style' => "width: #{@width}px"))
+      div << XMLText.new(@text)
     else
-      @out << "class=\"tabcell\" "
+      cell << XMLText.new(@text)
     end
-    @out << "#{attribs}style=\"#{style}\">"
-    @out << "<div style=\"width: #{@width}px\">" if @width
-    @out << htmlFilter(@text)
-    @out << "</div>" if @width
-    @out << "</t#{cellTypeChar}>\n"
+
+    cell
   end
 
 end

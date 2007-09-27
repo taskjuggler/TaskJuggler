@@ -9,11 +9,11 @@
 #
 
 
-require 'ReportBase'
+require 'Report'
 require 'ResourceReport'
 require 'ReportTable'
 
-class HTMLResourceReport < ReportBase
+class HTMLResourceReport < Report
 
   include HTMLUtils
 

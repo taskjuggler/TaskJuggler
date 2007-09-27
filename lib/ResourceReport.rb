@@ -9,11 +9,11 @@
 #
 
 
-require 'GenericReportElement'
+require 'ReportElementBase'
 require 'ReportTable'
 require 'ReportUtils'
 
-class ResourceReport < GenericReportElement
+class ResourceReport < ReportElementBase
 
   include ReportUtils
 

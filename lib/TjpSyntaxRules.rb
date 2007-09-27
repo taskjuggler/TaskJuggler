@@ -513,6 +513,16 @@ EOT
        )
   end
 
+  def rule_htmlFileName
+    pattern(%w( $STRING ), lambda {
+      unless @val[0][-5,5] == '.html'
+        error('no_html_suffix',
+              "Report name must have .html suffix: #{@val[0]}")
+      end
+      @val[0]
+    })
+  end
+
   def rule_htmlResourceReport
     pattern(%w( !htmlResourceReportHeader !reportBody ))
     doc('htmlresourcereport', <<'EOT'
@@ -543,9 +553,21 @@ EOT
   end
 
   def rule_htmlTaskReportHeader
-    pattern(%w( _htmltaskreport $STRING ), lambda {
-      @report = HTMLTaskReport.new(@project, @val[1])
-      @reportElement = @report.element
+    pattern(%w( _htmltaskreport !htmlFileName ), lambda {
+      # Strip '.html' suffix from file name
+      name = @val[1][0..-6]
+      @report = Report.new(@project, name)
+      @report.addFormat(:html)
+      @reportElement = TaskListRE.new(@report)
+      # Set the default columns for this report.
+      %w( seqno name start end ).each do |col|
+        @reportElement.columns << TableColumnDefinition.new(
+            col, @reportElement.defaultColumnTitle(col))
+      end
+      @reportElement.hideResource =
+        LogicalExpression.new(LogicalOperation.new(1))
+      @reportElement.sortTasks = [ [ 'start', true, 0 ],
+                                   [ 'seqno', true, -1 ] ]
     })
     arg(1, 'filename', <<'EOT'
 The name of the report file to generate. It should end with a .html extension.

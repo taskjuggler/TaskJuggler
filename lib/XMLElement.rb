@@ -21,9 +21,19 @@ class XMLElement
     @children = []
   end
 
-  # Add a new child to the element.
-  def <<(element)
-    @children << element
+  # Add a new child or a set of new childs to the element.
+  def <<(arg)
+    # If the argument is an array, we have to insert each element
+    # individually.
+    if arg.is_a?(XMLElement)
+      @children << arg
+    elsif arg.is_a?(Array)
+      @children += arg
+    elsif arg.nil?
+      # do nothing
+    else
+      raise 'Elements must be of type XMLElement'
+    end
     self
   end
 

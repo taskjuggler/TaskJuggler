@@ -9,9 +9,9 @@
 #
 
 
-require 'ReportBase'
+require 'Report'
 
-class ExportReport < ReportBase
+class ExportReport < Report
 
   attr_reader :element
 

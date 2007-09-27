@@ -176,7 +176,7 @@ class KeywordDocumentation
   # Return a String that represents the keyword documentation in an XML
   # formatted form.
   def generateHTML(directory)
-    html = XMLDocument.new
+    html = HTMLDocument.new(:transitional)
     html << (head = XMLElement.new('head'))
     head << XMLNamedText.new("#{keyword}", 'title')
     head << (style = XMLElement.new('style', 'type' => 'text/css'))
