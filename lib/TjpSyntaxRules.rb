@@ -314,12 +314,18 @@ EOT
   def rule_exportHeader
     pattern(%w( _export $STRING ), lambda {
       extension = @val[1][-4, 4]
-      if extension != '.tjp' && extension != '.tji'
+      if extension == '.tjp'
+        mainFile = true
+      elsif extension == '.tji'
+        mainFile = false
+      else
         error('export_bad_extn',
               'Export report files must have a .tjp or .tji extension.')
       end
-      @report = ExportReport.new(@project, @val[1])
-      @reportElement = @report.element
+      # File name without extension.
+      name = @val[1][0..-5]
+      @report = Report.new(@project, name, :export)
+      @reportElement = TjpExportRE.new(@report, mainFile)
     })
     arg(1, 'filename', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -533,9 +539,11 @@ EOT
   end
 
   def rule_htmlResourceReportHeader
-    pattern(%w( _htmlresourcereport $STRING ), lambda {
-      @report = HTMLresourceReport.new(@project, @val[1])
-      @reportElement = @report.element
+    pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
+      # Strip '.html' suffix from file name
+      name = @val[1][0..-6]
+      @report = Report.new(@project, name, :html)
+      @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
 The name of the report file to generate. It should end with a .html extension.
@@ -556,18 +564,8 @@ EOT
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
       # Strip '.html' suffix from file name
       name = @val[1][0..-6]
-      @report = Report.new(@project, name)
-      @report.addFormat(:html)
+      @report = Report.new(@project, name, :html)
       @reportElement = TaskListRE.new(@report)
-      # Set the default columns for this report.
-      %w( seqno name start end ).each do |col|
-        @reportElement.columns << TableColumnDefinition.new(
-            col, @reportElement.defaultColumnTitle(col))
-      end
-      @reportElement.hideResource =
-        LogicalExpression.new(LogicalOperation.new(1))
-      @reportElement.sortTasks = [ [ 'start', true, 0 ],
-                                   [ 'seqno', true, -1 ] ]
     })
     arg(1, 'filename', <<'EOT'
 The name of the report file to generate. It should end with a .html extension.

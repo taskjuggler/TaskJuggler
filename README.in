@@ -1,14 +1,26 @@
-= About TaskJuggler
+= About TaskJuggler[http://www.taskjuggler.org]
 
-TaskJuggler is an Open Source project management software. This Ruby
-implementation is a prototype for what could be the next generation
-of TaskJuggler. If you are looking for a stable software to manage
-your projects, use the 2.x series releases.
+TaskJuggler[http://www.taskjuggler.org] is an Open Source project
+management software. This Ruby implementation is a prototype for what
+could be the next generation of TaskJuggler. If you are looking for a
+stable software to manage your projects, use the 2.x series releases.
 
+
+= Copyright and License
+
+TaskJuggler[http://www.taskjuggler.org] is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of {version 2 of the GNU General Public
+License}[http://www.gnu.org/licenses/old-licenses/gpl-2.0.html] as
+published by the Free Software Foundation. You accept the terms of
+this license by distributing or using this software.
+
+TaskJuggler[http://www.taskjuggler.org] is a trademark of Chris Schlaeger.
 
 = Installation
 
-TaskJuggler is written in Ruby[http://www.ruby-lang.org]. It uses the
+TaskJuggler[http://www.taskjuggler.org] is written in Ruby[http://www.ruby-lang.org]. It uses the
 standard Ruby mechanism for distribution. The format is called {Ruby
 Gems}[http://docs.rubygems.org]. Alternatively, you can install from a
 tarball using setup.rb.
@@ -18,20 +30,22 @@ This is a prototype. Consider it being alpha quality at best!
 == Requirements 
 
 Ruby applications are platform independent. There is no need to
-compile anything. But TaskJuggler has a very small set of
+compile anything. But TaskJuggler[http://www.taskjuggler.org] has a very small set of
 dependencies that you have to take care of first. Most Linux version
 already have them included. Just have sure you have the minimum
 required version.
 
-[*Ruby*] TaskJuggler is written in Ruby. You need a Ruby runtime
-         environment to run it. This can be downloaded from
-         RubyForge[http://rubyforge.org]. Most Linux distributions usually have
-         Ruby already included. TaskJuggler currently needs at least version
-         1.8.4. Older version have been reported to show frequent crashes due
-         to what seems to be bugs in the networking libraries.
+[*Ruby*] TaskJuggler[http://www.taskjuggler.org] is written in Ruby.
+	 You need a Ruby runtime environment to run it. This can be
+	 downloaded from RubyForge[http://rubyforge.org]. Most Linux
+	 distributions usually have Ruby already included.
+	 TaskJuggler[http://www.taskjuggler.org] currently needs at
+	 least version 1.8.4. Older version have been reported to show
+	 frequent crashes due to what seems to be bugs in the
+	 networking libraries.
 
 [*RubyGems*] This is only needed when you don't want to use the
-             +setup.rb+ method. Most distros have RubyGems included,
+	     +setup.rb+ method. Most distros have RubyGems included,
 	     so it's only listed for completeness. See
 	     here[http://docs.rubygems.org] how to get and install it.
 
@@ -49,7 +63,7 @@ the appropriate place.
 See here[http://i.loveruby.net/en/projects/setup/doc/usage.html] for
 instructions on how to install the tarball. If you use a non-standard
 prefix or datadir you need to add the path to AppConfig.rb. Otherwise
-TaskJuggler will not be able to find the worldmap images.
+TaskJuggler[http://www.taskjuggler.org] will not be able to find the worldmap images.
 
 == Update from previous versions
 
@@ -58,20 +72,16 @@ Updates work just like the installation.
 <tt>gem update taskjuggler3-X.X.X.gem</tt>
 
 
-= Bugs reports and other feedback
+= Bugs reports, sending patches and other feedback
 
-This Ruby implementation of TaskJuggler is just a prototype. Feedback
-is welcome, but don't expect any kind of support. It is not meant to
-work!
+This Ruby implementation of TaskJuggler[http://www.taskjuggler.org] is
+just a prototype. Feedback is welcome, but don't expect any kind of
+support. It is not meant to work right now! Please post a message on
+the {TaskJuggler Forum}[http://www.taskjuggler.org/FUDforum2/] to get
+in contact with the developers or other users.
 
-
-= Copyright and License
-
-TaskJuggler is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of version 2 of the GNU General Public License as
-published by the Free Software Foundation.
-
-TaskJuggler is a trademark of Chris Schlaeger.
+We want to track all changes by author. Therefore we only accept
+patches in Git[http://www.kernel.org/pub/software/scm/git/docs/]
+format. Patches should only be made against the latest development
+version.
 

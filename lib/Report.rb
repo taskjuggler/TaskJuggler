@@ -12,22 +12,27 @@
 require 'ReportElement'
 require 'HTMLDocument'
 require 'TaskListRE'
+require 'ResourceListRE'
+require 'TjpExportRE'
 
+# The Report class holds the fundamental description and functionality to turn
+# the scheduled project into a user readable form. A report consists of one or
+# more ReportElement objects and some attributes that are global to all
+# elements.
 class Report
 
   attr_reader :project, :start, :end
 
-  def initialize(project, name)
+  # Create a new report object.
+  def initialize(project, name, format)
     @project = project
     @project.addReport(self)
     @name = name
-    @outputFormats = []
-    @file = nil
+    @outputFormats = [ format ]
     @start = @project['start']
     @end = @project['end']
 
     @elements = []
-    @elementsIF = []
   end
 
   # Add new ouput format request.
@@ -35,6 +40,9 @@ class Report
     @outputFormats << format
   end
 
+  # The generate function is where the action happens in this class. The
+  # report defined by all the class attributes and report elements is
+  # generated according the the requested output format(s).
   def generate
     # Most output format can be generated from a common intermediate
     # representation of the elements. We generate that IR first.
@@ -57,14 +65,6 @@ class Report
     end
   end
 
-  def openFile
-    @file = File.new(@name, "w")
-  end
-
-  def closeFile
-    @file.close
-  end
-
   # This function should only be called within the library. It's not a user
   # callable function.
   def addElement(element)
@@ -80,8 +80,8 @@ private
     head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
     head << (style = XMLElement.new('style', 'type' => 'text/css'))
     style << XMLBlob.new(<<'EOT'
-  .tabback { background-color:#9a9a9a }
-  .tabfront { background-color:#d4dde6 }
+  .tabback { background-color:#9a9a9a; }
+  .tabfront { background-color:#d4dde6; }
   .tabhead {
     background-color:#7a7a7a;
     color:#ffffff;
@@ -99,22 +99,22 @@ private
     font-size:50%;
     text-align:center;
   }
-  .taskcell1 { background-color:#ebf2ff }
-  .taskcell2 { background-color:#d9dfeb }
-  .resourcecell1 { background-color:#fff2eb }
-  .resourcecell2 { background-color:#ebdfd9 }
-  .busy1 { background-color:#ff3b3b }
-  .busy2 { background-color:#eb4545 }
-  .loaded1 { background-color:#ff9b9b }
-  .loaded2 { background-color:#eb8f8f }
-  .free1 { background-color:#a5ffb4 }
-  .free2 { background-color:#98eba6 }
-  .offduty1 { background-color:#f3f990 }
-  .offduty2 { background-color:#dde375 }
-  .done1 { background-color:#abbeae }
-  .done2 { background-color:#99aa9c }
-  .todo1 { background-color:#beabab }
-  .todo2 { background-color:#aa9999 }
+  .taskcell1 { background-color:#ebf2ff; white-space:nowrap; }
+  .taskcell2 { background-color:#d9dfeb; white-space:nowrap; }
+  .resourcecell1 { background-color:#fff2eb; white-space:nowrap; }
+  .resourcecell2 { background-color:#ebdfd9; white-space:nowrap; }
+  .busy1 { background-color:#ff3b3b; white-space:nowrap; }
+  .busy2 { background-color:#eb4545; white-space:nowrap; }
+  .loaded1 { background-color:#ff9b9b; white-space:nowrap; }
+  .loaded2 { background-color:#eb8f8f; white-space:nowrap; }
+  .free1 { background-color:#a5ffb4; white-space:nowrap; }
+  .free2 { background-color:#98eba6; white-space:nowrap; }
+  .offduty1 { background-color:#f3f990; white-space:nowrap; }
+  .offduty2 { background-color:#dde375; white-space:nowrap; }
+  .done1 { background-color:#abbeae; white-space:nowrap; }
+  .done2 { background-color:#99aa9c; white-space:nowrap; }
+  .todo1 { background-color:#beabab; white-space:nowrap; }
+  .todo2 { background-color:#aa9999; white-space:nowrap; }
 EOT
                         )
     html << (body = XMLElement.new('body'))
@@ -128,12 +128,13 @@ EOT
 
   # Generate a CSV version of the report.
   def generateCSV
-
+    # TODO
   end
 
   # Generate an export report
   def generateExport
-
+    f = File.new(@name + '.tjp', 'w')
+    f.puts "#{@elements[0].to_tjp}"
   end
 
 end

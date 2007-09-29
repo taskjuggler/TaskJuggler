@@ -17,5 +17,10 @@ class StringAttribute < AttributeBase
   def StringAttribute::tjpId
     'text'
   end
+
+  def to_tjp
+    "#{@type.id} \"#{@value}\""
+  end
+
 end
 

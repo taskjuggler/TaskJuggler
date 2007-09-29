@@ -1,5 +1,5 @@
 #
-# TaskListRE.rb - The TaskJuggler3 Project Management Software
+# ResourceListRE.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -13,28 +13,29 @@ require 'ReportTable'
 require 'TableColumnDefinition'
 require 'LogicalExpression'
 
-# This specialization of ReportTableElement implements a task listing. It
-# generates a list of tasks that can optionally have the allocated resources
-# nested underneath each task line.
-class TaskListRE < ReportTableElement
+# This specialization of ReportTableElement implements a resource listing. It
+# generates a list of resources that can optionally have the assigned tasks
+# nested underneath each resource line.
+class ResourceListRE < ReportTableElement
 
   # Create a new object and set some default values.
   def initialize(report)
     super
     # Set the default columns for this report.
-    %w( wbs name start end ).each do |col|
+    %w( no name ).each do |col|
       @columns << TableColumnDefinition.new(col, defaultColumnTitle(col))
     end
-    # Show all tasks, sorted by tree, start-up, seqno-up.
-    @hideTask =
+    # Show all resources, sorted by tree and id-up.
+    @hideResource =
       LogicalExpression.new(LogicalOperation.new(0))
-    @sortTasks = [ [ 'tree', true, -1 ],
+    @sortResources = [ [ 'tree', true, 0 ],
+                       [ 'id', true, -1 ] ]
+    # Hide all resources, but set sorting to tree, start-up, seqno-up.
+    @hideTask =
+      LogicalExpression.new(LogicalOperation.new(1))
+    @sortTasks = [ [ 'tree', true, 0 ],
                    [ 'start', true, 0 ],
                    [ 'seqno', true, -1 ] ]
-    # Show no resources, but set sorting to id-up.
-    @hideResource =
-      LogicalExpression.new(LogicalOperation.new(1))
-    @sortResources = [ [ 'id', true, -1 ] ]
 
     @table = ReportTable.new
   end
@@ -46,19 +47,19 @@ class TaskListRE < ReportTableElement
       generateHeaderCell(columnDescr)
     end
 
-    # Prepare the task list.
-    taskList = PropertyList.new(@project.tasks)
-    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
-    taskList.setSorting(@sortTasks)
-
     # Prepare the resource list.
     resourceList = PropertyList.new(@project.resources)
     resourceList = filterResourceList(resourceList, nil, @hideResource,
         @rollupResource)
     resourceList.setSorting(@sortResources)
 
+    # Prepare the task list.
+    taskList = PropertyList.new(@project.tasks)
+    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
+    taskList.setSorting(@sortTasks)
+
     # Generate the list.
-    generateTaskList(taskList, resourceList, nil, nil)
+    generateResourceList(resourceList, taskList, nil, nil)
   end
 
 end

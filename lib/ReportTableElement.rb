@@ -17,21 +17,28 @@ class ReportTableElement < ReportElement
   def initialize(report)
     super
 
+    # Reference to the intermediate representation.
     @table = nil
   end
 
+  # This is an abstract member that all sub classes must re-implement. It may
+  # or may not do something though.
   def generateIntermediateFormat
     raise 'This function must be overriden by derived classes.'
   end
 
+  # Turn the ReportTableElement into an equivalent HTML element tree.
   def to_html
+    # Outer table that holds several sub-tables.
     table = XMLElement.new('table', 'summary' => 'Outer table',
                            'cellspacing' => '2', 'border' => '0',
                            'cellpadding' => '0', 'align' => 'center',
                            'class' => 'tabback')
-    table << (thead = XMLElement.new('thead'))
-    thead << (tr = XMLElement.new('tr'))
+
+    # The headline is put in a sub-table to appear bigger.
     if @headline
+      table << (thead = XMLElement.new('thead'))
+      thead << (tr = XMLElement.new('tr'))
       tr << (td = XMLElement.new('td'))
       td << (table1 = XMLElement.new('table', 'summary' => 'headline',
                                      'cellspacing' => '1', 'border' => '0',
@@ -43,13 +50,19 @@ class ReportTableElement < ReportElement
                                    'class' => 'tabfront'))
       td1 << XMLNamedText.new(@headline, 'p')
     end
+
+    # Now generate the actual table with the data.
     table << (tbody = XMLElement.new('tbody'))
     tbody << (tr = XMLElement.new('tr'))
     tr << (td = XMLElement.new('td'))
     td << @table.to_html
 
-    # generateLegend
+    # A sub-table with the legend.
+    tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:70%'))
+    tr << (td = XMLElement.new('td'))
+    td << generateLegend
 
+    # The footer with some administrative information.
     tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:70%'))
     tr << (td = XMLElement.new('td', 'class' => 'tabfooter'))
     td << XMLText.new(@project['copyright'] + " - ") if @project['copyright']
@@ -518,34 +531,8 @@ protected
 
 private
 
-  def generateFooter
-    @file << "    </td></tr>\n    <tr><td style=\"font-size:70%\">\n"
-
-    generateLegend
-
-    @file << <<'EOT'
-    </td></tr>
-    <tr><td class="tabfooter">
-EOT
-
-    @file << htmlFilter(@project['copyright']) + " - " if @project['copyright']
-    @file << "Project: #{htmlFilter(@project['name'])} " +
-             "Version: #{htmlFilter(@project['version'])} - " +
-             "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} with " +
-             "<a href=\"#{AppConfig.contact}\">#{AppConfig.packageName}</a> " +
-             " v#{AppConfig.version}"
-
-    @file << <<'EOT'
-    </td></tr>
-  </tbody>
-</table>
-</body></html>
-EOT
-
-  end
-
   def generateLegend
-    @file << <<'EOT'
+    table = XMLBlob.new(<<'EOT'
 <table summary="Legend" width="100%" align="center" border="0" cellpadding="2"
        cellspacing="1">
   <thead>
@@ -601,7 +588,8 @@ EOT
   </tbody>
 </table>
 EOT
-
+        )
+    table
   end
 end
 

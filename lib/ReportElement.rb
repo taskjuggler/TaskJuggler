@@ -13,8 +13,11 @@ require 'Report'
 require 'TableColumnDefinition'
 require 'LogicalExpression'
 
-# A report can be composed of multiple report elements. Each element consists
-# of a table and a few optional items like a heading and caption around it.
+# A report can be composed of multiple report elements. The ReportElement
+# class is the base class for all types of report elements. It holds a number
+# of attributes that may or may not be used by the derived classes to modify
+# the output or filter the displayed data. The class also provides functions
+# that are used by many reports.
 class ReportElement
 
   attr_accessor :headline, :columns, :start, :end, :scenarios,
@@ -141,37 +144,6 @@ class ReportElement
     list
   end
 
-  def standardFilterOps(list, hideExpr, rollupExpr)
-    # Remove all properties that the user wants to have hidden.
-    if hideExpr
-      list.delete_if do |property|
-        hideExpr.eval(property)
-      end
-    end
-
-    # Remove all children of properties that the user has rolled-up.
-    if rollupExpr
-      list.delete_if do |property|
-        parent = property.parent
-        while (parent)
-          return true if rollupExpr(t)
-          parent = parent.parent
-        end
-        false
-      end
-    end
-
-    # Re-add parents in tree mode
-    if list.treeMode?
-      list.each do |property|
-        parent = property
-        while (parent = parent.parent)
-          list << parent unless list.include?(parent)
-        end
-      end
-    end
-  end
-
   # This is the default attribute value to text converter. It is used
   # whenever we need no special treatment.
   def cellText(property, scenarioIdx, colId)
@@ -207,6 +179,8 @@ class ReportElement
     end
   end
 
+  # This function returns true if the values for the _colId_ column need to be
+  # calculated.
   def calculated?(colId)
     if @propertiesById.has_key?(colId)
       return @propertiesById[colId][4]
@@ -214,12 +188,18 @@ class ReportElement
     return false
   end
 
+  # Returns the default column title for the columns _id_.
   def defaultColumnTitle(id)
+    # Return an empty string for some special columns that don't have a fixed
+    # title.
     specials = %w( hourly daily weekly monthly quarterly yearly)
     return '' if specials.include?(id)
 
+    # Return the title for build-in hardwired columns.
     return @propertiesById[id][0] if @propertiesById.include?(id)
 
+    # Otherwise we have to see if the column id is a task or resource
+    # attribute and return it's value.
     (name = @project.tasks.attributeName(id)).nil? &&
     (name = @project.resources.attributeName(id)).nil?
     name
@@ -227,6 +207,41 @@ class ReportElement
 
   def supportedColumns
     @propertiesById.keys
+  end
+
+private
+
+  # This function implements the generic filtering functionality for all kinds
+  # of lists.
+  def standardFilterOps(list, hideExpr, rollupExpr)
+    # Remove all properties that the user wants to have hidden.
+    if hideExpr
+      list.delete_if do |property|
+        hideExpr.eval(property)
+      end
+    end
+
+    # Remove all children of properties that the user has rolled-up.
+    if rollupExpr
+      list.delete_if do |property|
+        parent = property.parent
+        while (parent)
+          return true if rollupExpr(t)
+          parent = parent.parent
+        end
+        false
+      end
+    end
+
+    # Re-add parents in tree mode
+    if list.treeMode?
+      list.each do |property|
+        parent = property
+        while (parent = parent.parent)
+          list << parent unless list.include?(parent)
+        end
+      end
+    end
   end
 
 end

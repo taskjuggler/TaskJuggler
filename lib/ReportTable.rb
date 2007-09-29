@@ -41,6 +41,7 @@ class ReportTable
 
     table = XMLElement.new('table', 'align' => 'center',
                            'cellspacing' => '1', 'cellpadding' => '2',
+                           'width' => '100%',
                            'class' => 'tab')
     table << (thead = XMLElement.new('thead'))
     thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))

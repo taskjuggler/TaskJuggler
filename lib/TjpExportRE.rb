@@ -1,5 +1,5 @@
 #
-# ExportReport.rb - The TaskJuggler3 Project Management Software
+# TjpExportRE.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -8,18 +8,18 @@
 # published by the Free Software Foundation.
 #
 
+require 'ReportElement'
 
-require 'Report'
+# This specialization of ReportTableElement implements an export of the
+# project data in the TJP syntax format.
+class TjpExportRE < ReportElement
 
-class ExportReport < Report
+  # Create a new object and set some default values.
+  def initialize(report, mainFile)
+    super(report)
 
-  attr_reader :element
-
-  def initialize(project, name)
-    super(project, name)
-
-    # This report only has one element.
-    @element = ReportElement.new(self)
+    # Indicates whether this is a full .tjp file or just an .tji include file.
+    @mainFile = mainFile
 
     @supportedTaskAttrs = %w( booking complete depends flags maxend
                               maxstart minend minstart note priority
@@ -28,26 +28,45 @@ class ExportReport < Report
     @taskAttrs = %w( all )
     @resourceAttrs = %w( all )
     @scenarios = [ 0 ]
+
+    # Show all tasks, sorted by seqno-up.
+    @hideTask =
+      LogicalExpression.new(LogicalOperation.new(0))
+    @sortTasks = [ [ 'seqno', true, -1 ] ]
+    # Show all resources, sorted by seqno-up.
+    @hideResource =
+      LogicalExpression.new(LogicalOperation.new(0))
+    @sortResources = [ [ 'seqno', true, -1 ] ]
   end
 
-  def generate
+  # There is nothing to do here.
+  def generateIntermediateFormat
+  end
+
+  # Return the project data in TJP syntax format.
+  def to_tjp
+    # Prepare the resource list.
     @resourceList = PropertyList.new(@project.resources)
-    @resourceList.setSorting([ ['seqno', true, -1 ] ])
+    @resourceList = filterResourceList(@resourceList, nil, @hideResource,
+        @rollupResource)
+    @resourceList.setSorting(@sortResources)
+    # Prepare the task list.
     @taskList = PropertyList.new(@project.tasks)
-    @taskList.setSorting([ ['seqno', true, -1 ] ])
+    @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
+    @taskList.setSorting(@sortTasks)
 
     getBookings
 
-    openFile
+    @file = ''
 
-    generateProjectProperty
+    generateProjectProperty if @mainFile
     generateFlagDeclaration
     generateResourceList
     generateTaskList
     generateTaskAttributes
     generateResourceAttributes
 
-    closeFile
+    @file
   end
 
 private
@@ -114,7 +133,9 @@ private
   end
 
   def generateResource(resource, indent)
-    @file << ' ' * indent + "resource #{resource.id} \"#{resource.name}\" {\n"
+    @file << ' ' * indent + "resource #{resource.id} \"#{resource.name}\""
+    @file << ' {' unless resource.children.empty?
+    @file << "\n"
 
     # Call this function recursively for all children that are included in the
     # resource list as well.
@@ -124,7 +145,7 @@ private
       end
     end
 
-    @file << ' ' * indent + "}\n"
+    @file << ' ' * indent + "}\n" unless resource.children.empty?
   end
 
   def generateTaskList
