@@ -21,7 +21,10 @@ require 'TjpExportRE'
 # elements.
 class Report
 
-  attr_reader :project, :start, :end
+  attr_reader :project
+  attr_accessor :currencyformat, :end, :numberformat, :resourceroot,
+                :shorttimeformat, :start, :taskroot, :timeformat, :timezone,
+                :weekstartsmonday
 
   # Create a new report object.
   def initialize(project, name, format)
@@ -29,8 +32,18 @@ class Report
     @project.addReport(self)
     @name = name
     @outputFormats = [ format ]
-    @start = @project['start']
+
+    # The following attributes determine the content and look of the report.
+    @currencyformat = @project['currencyformat']
     @end = @project['end']
+    @numberformat = @project['numberformat']
+    @resourceroot = nil
+    @shorttimeformat = @project['shorttimeformat']
+    @start = @project['start']
+    @taskroot = nil
+    @timeformat = @project['timeformat']
+    @timezone = @project['timezone']
+    @weekstartsmonday = @project['weekstartsmonday']
 
     @elements = []
   end

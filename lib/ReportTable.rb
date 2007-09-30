@@ -19,6 +19,7 @@ class ReportTable
 
   attr_reader :maxIndent
 
+  # Create a new ReportTable object.
   def initialize
     @columns = []
     @lines = []
@@ -44,16 +45,17 @@ class ReportTable
                            'width' => '100%',
                            'class' => 'tab')
     table << (thead = XMLElement.new('thead'))
-    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
 
+    # Generate the 1st table header line.
+    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
     @columns.each { |col| tr << col.to_html(1) }
 
+    # Generate the 2nd table header line.
     thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
-
     @columns.each { |col| tr << col.to_html(2) }
 
+    # Generate the rest of the table.
     table << (tbody = XMLElement.new('tbody'))
-
     @lines.each { |line| tbody << line.to_html }
 
     table
@@ -61,6 +63,9 @@ class ReportTable
 
 private
 
+  # Some columns need to be indented when the data is sorted in tree mode.
+  # This function determines the largest needed indentation of all lines. The
+  # result is stored in the _@maxIndent_ variable.
   def determineMaxIndents
     @maxIndent = 0
     @lines.each do |line|

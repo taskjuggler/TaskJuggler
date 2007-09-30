@@ -142,10 +142,13 @@ protected
   def generateTaskList(taskList, resourceList, resource, parentLine)
     lineDict = { }
     no = 0
+    lineNo = parentLine ? parentLine.lineNo : 0
+    subLineNo = parentLine ? parentLine.subLineNo : 0
+    # Init the variable to get a larger scope
+    line = nil
     taskList.each do |task|
-      even = true
-      line = nil
       no += 1
+      lineNo += 1
       @scenarios.each do |scenarioIdx|
         # Generate line for each task
         line = ReportTableLine.new(@table, task,
@@ -153,9 +156,9 @@ protected
             parentLine : lineDict[task.parent])
         lineDict[task] = line
 
-        line.even = even
-        even = !even
         line.no = no unless resource
+        line.lineNo = lineNo
+        line.subLineNo = subLineNo += 1
         setFontAndIndent(line, @taskRoot, taskList.treeMode?)
 
         @columns.each do |column|
@@ -167,27 +170,31 @@ protected
         assignedResourceList = filterResourceList(resourceList, task,
             @hideResource, @hideTask)
         assignedResourceList.setSorting(@sortResources)
-        generateResourceList(assignedResourceList, nil, task, line)
+        lineNo = generateResourceList(assignedResourceList, nil, task, line)
       end
     end
+    lineNo
   end
 
   def generateResourceList(resourceList, taskList, task, parentLine)
     lineDict = { }
     no = 0
+    lineNo = parentLine ? parentLine.lineNo : 0
+    subLineNo = parentLine ? parentLine.subLineNo : 0
+    # Init the variable to get a larger scope
+    line = nil
     resourceList.each do |resource|
-      even = true
-      line = nil
       no += 1
+      lineNo += 1
       @scenarios.each do |scenarioIdx|
         line = ReportTableLine.new(@table, resource,
             resource.parent.nil? || !resourceList.treeMode? ?
             parentLine : lineDict[resource.parent])
         lineDict[resource] = line
 
-        line.even = even
-        even = !even
         line.no = no unless task
+        line.lineNo = lineNo
+        line.subLineNo = subLineNo += 1
         setFontAndIndent(line, @resourceRoot, resourceList.treeMode?)
 
         @columns.each do |column|
@@ -199,9 +206,10 @@ protected
         assignedTaskList = filterTaskList(taskList, resource,
             @hideTask, @hideResource)
         assignedTaskList.setSorting(@sortTasks)
-        generateTaskList(assignedTaskList, nil, resource, line)
+        lineNo = generateTaskList(assignedTaskList, nil, resource, line)
       end
     end
+    lineNo
   end
 
   def generateTableCell(line, property, column, scenarioIdx)
@@ -284,8 +292,15 @@ protected
 
     cellFontFactor = line.fontFactor
     # When we list multiple scenarios we reduce the font size by 25%.
-    # Calculated values are always scenario specific.
-    cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
+    if scenarioSpecific?(column.id)
+      cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
+    else
+      if scenarioIdx != @scenarios.first
+        cell.hidden = true
+        return false
+      end
+      cell.rows = @scenarios.length
+    end
 
     setStandardCellAttributes(cell, column, nil, line, cellFontFactor)
 
@@ -298,6 +313,8 @@ protected
       workLoad = property.getEffectiveLoad(scenarioIdx, startIdx, endIdx, nil)
       cell.text = @numberFormat.format(workLoad) + 'd'
       cell.bold = true if property.container?
+    when 'line'
+      cell.text = line.lineNo.to_s
     when 'no'
       cell.text = line.no.to_s
     else
@@ -355,7 +372,7 @@ protected
       else
         cell.category = 'taskcell'
       end
-      cell.category += line.even ? '1' : '2'
+      cell.category += line.property.get('index') % 2  == 1 ? '1' : '2'
 
       tryCellMerging(cell, line, firstCell)
 
@@ -412,7 +429,7 @@ protected
       else
         cell.category = 'resourcecell'
       end
-      cell.category += line.even ? '1' : '2'
+      cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
 
       tryCellMerging(cell, line, firstCell)
 
@@ -439,9 +456,11 @@ protected
 
     # Set background color
     if line.property.is_a?(Task)
-      cell.category = line.even ? 'taskcell1' : 'taskcell2'
+      cell.category = line.property.get('index') % 2 == 1 ?
+        'taskcell1' : 'taskcell2'
     else
-      cell.category = line.even ? 'resourcecell1' : 'resourcecell2'
+      cell.category = line.property.get('index') % 2 == 1 ?
+        'resourcecell1' : 'resourcecell2'
     end
   end
 

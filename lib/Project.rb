@@ -87,7 +87,7 @@ class Project
     @shifts = PropertySet.new(self, true)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
-      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
       [ 'replace',   'Replace',      BooleanAttribute,  true,  true,  false ],
       [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
@@ -110,7 +110,7 @@ class Project
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
       [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
-      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
       [ 'limits',    'Limits',       LimitsAttribute,   true,  true, nil ],
       [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute, true, true,
         nil ],
@@ -140,7 +140,7 @@ class Project
       [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true,  [] ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
       [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
-      [ 'index',     'No',           FixnumAttribute,   false, false, -1 ],
+      [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
       [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
       [ 'limits',    'Limits',       LimitsAttribute,   false, true,  nil ],
       [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],

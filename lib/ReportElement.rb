@@ -33,30 +33,36 @@ class ReportElement
     @report.addElement(self)
     @project = report.project
 
-    @headline = nil
+    # The following attributes affect the report content and look.
     @columns = []
-    @start = @report.start
+    @currencyformat = @report.currencyformat
     @end = @report.end
-    @scenarios = [ 0 ]
-    @taskRoot = nil
-    @resourceRoot = nil
-    @timeFormat = @project['timeformat']
-    @numberFormat = @project['numberformat']
-    @weekStartsMonday = @project['weekstartsmonday']
-    @hideTask = nil
-    @rollupTask = nil
+    @ganttBars = true
+    @headline = nil
     @hideResource = nil
+    @hideTask = nil
+    @numberFormat = @report.numberformat
+    @resourceroot = @report.resourceroot
     @rollupResource = nil
-    @sortTasks = [[ 'seqno', true, -1 ]]
+    @rollupTask = nil
+    @scenarios = [ 0 ]
+    @shorttimeformat = @report.shorttimeformat
     @sortResources = [[ 'seqno', true, -1 ]]
-    @ganttBars = true;
+    @sortTasks = [[ 'seqno', true, -1 ]]
+    @start = @report.start
+    @taskRoot = nil
+    @taskroot = @report.taskroot
+    @timeFormat = @report.timeformat
+    @timezone = @report.timezone
+    @weekStartsMonday = @report.weekstartsmonday
 
     @propertiesById = {
-      # ID               Header    Indent  Align FontFac. Calced.
-      'effort'      => [ 'Effort', true,   2,    1.0,     true ],
-      'id'          => [ 'Id',     false,  0,    1.0,     false ],
-      'name'        => [ 'Name',   true,   0,    1.0,     false ],
-      'no'          => [ 'No.',    false,  2,    1.0,     true ]
+      # ID               Header      Indent  Align FontFac. Calced. Scen Spec.
+      'effort'      => [ 'Effort',   true,   2,    1.0,     true,   true],
+      'id'          => [ 'Id',       false,  0,    1.0,     false,  false ],
+      'line'        => [ 'Line No.', false,  2,    1.0,     true,   false ],
+      'name'        => [ 'Name',     true,   0,    1.0,     false,  false ],
+      'no'          => [ 'No.',      false,  2,    1.0,     true,   false ]
     }
     @propertiesByType = {
       # Type                  Indent  Align FontFac.
@@ -188,6 +194,15 @@ class ReportElement
     return false
   end
 
+  # This functions returns true if the values for the _col_id_ column are
+  # scenario specific.
+  def scenarioSpecific?(colId)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][5]
+    end
+    return false
+  end
+
   # Returns the default column title for the columns _id_.
   def defaultColumnTitle(id)
     # Return an empty string for some special columns that don't have a fixed
@@ -226,7 +241,7 @@ private
       list.delete_if do |property|
         parent = property.parent
         while (parent)
-          return true if rollupExpr(t)
+          return true if rollupExpr.eval(parent)
           parent = parent.parent
         end
         false

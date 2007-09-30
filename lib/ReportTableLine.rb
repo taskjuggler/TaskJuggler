@@ -14,7 +14,7 @@ require 'ReportTableCell'
 class ReportTableLine
 
   attr_reader :table, :property, :parentLine
-  attr_accessor :indentation, :fontFactor, :even, :no
+  attr_accessor :indentation, :fontFactor, :no, :lineNo, :subLineNo
 
   def initialize(table, property, parentLine)
     @table = table
@@ -25,8 +25,13 @@ class ReportTableLine
     @cells = []
     @indentation = 0
     @fontFactor = 1.0
-    @even = true
+    # Counter that counts primary and nested lines separately. It restarts
+    # with 0 for each new nested line set. Scenario lines don't count.
     @no = nil
+    # Counter that counts the primary lines. Scenario lines don't count.
+    @lineNo = nil
+    # Counter that counts all lines.
+    @subLineNo = nil
   end
 
   def last(count = 0)

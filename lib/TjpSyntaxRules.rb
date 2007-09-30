@@ -1075,6 +1075,7 @@ EOT
         'Specify that you want to base all week calculation on weeks ' +
         'starting on Sunday. This is common in the United States of America.')
 
+    pattern(%w( !workinghours ))
     pattern(%w( _yearlyworkingdays !number ), lambda {
       @project['yearlyworkingdays'] = @val[1]
     })
@@ -1172,7 +1173,6 @@ EOT
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       @project['vacations'] = @project['vacations'] + @val[2]
     })
-    pattern(%w( !workinghours ))
   end
 
   def rule_referenceAttributes
@@ -1324,6 +1324,9 @@ EOT
     singlePattern('_index')
     descr('The index of the item based on the nesting hierachy')
 
+    singlePattern('_line')
+    descr('The line number in the report')
+
     singlePattern('_maxend')
     descr('The latest allowed end of a task')
 
@@ -1340,7 +1343,7 @@ EOT
     descr('A group of columns with one column for each month')
 
     singlePattern('_no')
-    descr('The index in the report')
+    descr('The object line number in the report')
 
     singlePattern('_name')
     descr('The name or description of the item')
