@@ -12,7 +12,7 @@ class ReportTableCell
 
   attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :indent,
-                :fontFactor, :bold, :width, :rows, :columns
+                :fontFactor, :bold, :width, :rows, :columns, :special
 
   def initialize(line, text = '', headerCell = false)
     @line = line
@@ -32,6 +32,8 @@ class ReportTableCell
     @width = nil
     @rows = 1
     @columns = 1
+    # Ignore everything and use this reference to generate the output.
+    @special = nil
   end
 
   def ==(c)
@@ -43,6 +45,7 @@ class ReportTableCell
 
   def to_html
     return nil if @hidden
+    return @special.to_html if @special
 
     # Determine cell style
     aligns = %w( left center right)

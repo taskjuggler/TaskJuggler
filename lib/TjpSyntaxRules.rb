@@ -1281,6 +1281,9 @@ EOT
   end
 
   def rule_reportableAttributes
+    singlePattern('_chart')
+    descr('A Gantt chart')
+
     singlePattern('_complete')
     descr('The completion degree of a task')
 

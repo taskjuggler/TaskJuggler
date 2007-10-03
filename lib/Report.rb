@@ -96,6 +96,7 @@ private
   .tabback { background-color:#9a9a9a; }
   .tabfront { background-color:#d4dde6; }
   .tabhead {
+    white-space:nowrap;
     background-color:#7a7a7a;
     color:#ffffff;
     font-size:110%;
@@ -103,10 +104,12 @@ private
     text-align:center;
   }
   .tabhead_offduty {
+    white-space:nowrap;
     background-color:#dde375;
     color:#000000;
   }
   .tabfooter {
+    white-space:nowrap;
     background-color:#9a9a9a;
     color:#ffffff;
     font-size:50%;

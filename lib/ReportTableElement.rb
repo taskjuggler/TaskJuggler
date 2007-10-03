@@ -8,10 +8,12 @@
 # published by the Free Software Foundation.
 #
 
+require 'GanttChart'
 
 # This is base class for all types of tabular report elements. All tabular
-# report elements are converted to an abstract intermediate form first, before
-# the are turned into the requested output format.
+# report elements are converted to an abstract (output independent)
+# intermediate form first, before the are turned into the requested output
+# format.
 class ReportTableElement < ReportElement
 
   def initialize(report)
@@ -19,6 +21,7 @@ class ReportTableElement < ReportElement
 
     # Reference to the intermediate representation.
     @table = nil
+    @gantt = nil
   end
 
   # This is an abstract member that all sub classes must re-implement. It may
@@ -81,6 +84,14 @@ protected
 
   def generateHeaderCell(columnDescr)
     case columnDescr.id
+    when 'chart'
+      column = ReportTableColumn.new(@table, columnDescr, '')
+      if @gantt.nil?
+        @gantt = GanttChart.new
+        @gantt.generateByResolution(@start, @end, 18, :week)
+      end
+      column.cell1.special = @gantt.header
+      column.cell2.hidden = true
     when 'hourly'
       genCalChartHeader(columnDescr, @start.midnight, :sameTimeNextHour,
                         :weekdayAndDate, :hour)
@@ -103,39 +114,6 @@ protected
       column = ReportTableColumn.new(@table, columnDescr, columnDescr.title)
       column.cell1.rows = 2
       column.cell2.hidden = true
-    end
-  end
-
-  def genCalChartHeader(columnDescr, t, sameTimeNextFunc, name1Func, name2Func)
-    currentInterval = ""
-    while t < @end
-      cellsInInterval = 0
-      currentInterval = t.send(name1Func) if name1Func
-      firstColumn = nil
-      while t < @end &&
-                (name1Func.nil? || t.send(name1Func) == currentInterval)
-        # call TjTime::sameTimeNext... function
-        nextT = t.send(sameTimeNextFunc)
-        iv = Interval.new(t, nextT)
-        column = ReportTableColumn.new(@table, columnDescr, '')
-        if firstColumn.nil?
-          firstColumn = column
-          column.cell1.text = currentInterval.to_s
-          column.cell1.fontFactor = 0.6
-        else
-          column.cell1.hidden = true
-        end
-        column.cell2.text = t.send(name2Func).to_s
-        column.cell2.fontFactor = 0.5
-        column.cell2.width = 20
-        unless @project.isWorkingTime(iv)
-          column.cell2.category = 'tabhead_offduty'
-        end
-        cellsInInterval += 1
-
-        t = nextT
-      end
-      firstColumn.cell1.columns = cellsInInterval
     end
   end
 
@@ -212,8 +190,48 @@ protected
     lineNo
   end
 
+private
+
+  def genCalChartHeader(columnDescr, t, sameTimeNextFunc, name1Func, name2Func)
+    currentInterval = ""
+    while t < @end
+      cellsInInterval = 0
+      currentInterval = t.send(name1Func) if name1Func
+      firstColumn = nil
+      while t < @end &&
+                (name1Func.nil? || t.send(name1Func) == currentInterval)
+        # call TjTime::sameTimeNext... function
+        nextT = t.send(sameTimeNextFunc)
+        iv = Interval.new(t, nextT)
+        column = ReportTableColumn.new(@table, columnDescr, '')
+        if firstColumn.nil?
+          firstColumn = column
+          column.cell1.text = currentInterval.to_s
+          column.cell1.fontFactor = 0.6
+        else
+          column.cell1.hidden = true
+        end
+        column.cell2.text = t.send(name2Func).to_s
+        column.cell2.fontFactor = 0.5
+        column.cell2.width = 20
+        unless @project.isWorkingTime(iv)
+          column.cell2.category = 'tabhead_offduty'
+        end
+        cellsInInterval += 1
+
+        t = nextT
+      end
+      firstColumn.cell1.columns = cellsInInterval
+    end
+  end
+
   def generateTableCell(line, property, column, scenarioIdx)
     case column.id
+    when 'chart'
+      cell = ReportTableCell.new(line)
+      cell.special = GanttBar.new(@gantt, property, nil, scenarioIdx,
+                                  line.lineNo, 20)
+      return true
     when 'hourly'
       start = @start.midnight
       sameTimeNextFunc = :sameTimeNextHour
@@ -252,6 +270,9 @@ protected
     true
   end
 
+  # Generate a ReportTableCell filled the value of an attribute of the
+  # property that line is for. It returns true if the cell exists, false for a
+  # hidden cell.
   def genStandardCell(scenarioIdx, line, column)
     property = line.property
     # Create a new cell

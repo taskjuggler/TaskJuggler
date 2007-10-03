@@ -207,7 +207,7 @@ class ReportElement
   def defaultColumnTitle(id)
     # Return an empty string for some special columns that don't have a fixed
     # title.
-    specials = %w( hourly daily weekly monthly quarterly yearly)
+    specials = %w( chart hourly daily weekly monthly quarterly yearly)
     return '' if specials.include?(id)
 
     # Return the title for build-in hardwired columns.

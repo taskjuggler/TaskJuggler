@@ -209,6 +209,31 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  def hoursTo(date)
+    t1, t2 = order(date)
+    ((t2 - t1) / 3600).ceil
+  end
+
+  def daysTo(date)
+    countIntervals(date, :sameTimeNextDay)
+  end
+
+  def weeksTo(date)
+    countIntervals(date, :sameTimeNextWeek)
+  end
+
+  def monthsTo(date)
+    countIntervals(date, :sameTimeNextMonth)
+  end
+
+  def quartersTo(date)
+    countIntervals(date, :sameTimeNextQuarter)
+  end
+
+  def yearsTo(date)
+    countIntervals(date, :sameTimeNextYear)
+  end
+
   def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
     return "unknown" if @time.nil?
     # Always report values in local timezone
@@ -227,12 +252,43 @@ class TjTime
     "Q#{(@time.mon / 3) + 1}"
   end
 
+  def week(weekStartsMonday)
+    @time.strftime(weekStartsMonday ? '%W' : '%U')
+  end
+
+  def monthAndYear
+    @time.strftime('%b %Y')
+  end
+
   def weekdayAndDate
     @time.strftime('%A %Y-%m-%d')
   end
 
   def method_missing(func, *args)
     @time.method(func).call(*args)
+  end
+
+private
+
+  def order(date)
+    if date.time < @time
+      t1 = date
+      t2 = self
+    else
+      t1 = self
+      t2 = date
+    end
+    [ t1, t2 ]
+  end
+
+  def countIntervals(date, stepFunc)
+    i = 0
+    t1, t2 = order(date)
+    while t1 < t2
+      t1 = t1.send(stepFunc)
+      i += 1
+    end
+    i
   end
 
 end

@@ -13,12 +13,16 @@
 # trees can be constructed with the class constructor and converted into XML.
 class XMLElement
 
+  attr_writer :mayNotBeEmpty
+
   # Construct a new XML element and include it in an existing XMLElement tree.
   def initialize(name, attributes = {})
     raise "ERROR" unless name.nil? || name.is_a?(String)
     @name = name
     @attributes = attributes
     @children = []
+    # This can be set to true if <name /> is illegal for this element.
+    @mayNotBeEmpty = false
   end
 
   # Add a new child or a set of new childs to the element.
@@ -43,7 +47,7 @@ class XMLElement
     @attributes.each do |attrName, attrValue|
       out << ' ' + attrName + '="' + quoteAttr(attrValue) + '"'
     end
-    if @children.empty?
+    if @children.empty? && !@mayNotBeEmpty
       out << '/>'
     else
       out << '>'
