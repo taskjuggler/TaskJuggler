@@ -131,6 +131,15 @@ private
   .done2 { background-color:#99aa9c; white-space:nowrap; }
   .todo1 { background-color:#beabab; white-space:nowrap; }
   .todo2 { background-color:#aa9999; white-space:nowrap; }
+  .containerbar { background-color:#09090a; }
+  .taskbarframe { background-color:#09090a; }
+  .taskbar { background-color:#2f57ea; }
+  .progressbar { background-color:#36363f; }
+  .milestone { background-color:#09090a; }
+  .loadstackframe { background-color:#452a2a; }
+  .free { background-color:#a5ffb4; }
+  .busy { background-color:#ff9b9b; }
+  .assigned { background-color:#ff3b3b; }
 EOT
                         )
     html << (body = XMLElement.new('body'))

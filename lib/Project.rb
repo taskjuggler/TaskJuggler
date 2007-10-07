@@ -130,7 +130,7 @@ class Project
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
-      [ 'complete',  'Completed',    FloatAttribute,    false, true,  nil ],
+      [ 'complete',  'Completion',   FloatAttribute,    false, true,  nil ],
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
       [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
@@ -362,10 +362,10 @@ protected
     tasks = PropertyList.new(@tasks)
 
     resources.each do |resource|
-      resource.prepareScenario(scIdx)
+      resource.prepareScheduling(scIdx)
     end
     tasks.each do |task|
-      task.prepareScenario(scIdx)
+      task.prepareScheduling(scIdx)
     end
 
     tasks.each do |task|
@@ -421,6 +421,10 @@ protected
   end
 
   def finishScenario(scIdx)
+    @tasks.each do |task|
+      task.finishScheduling(scIdx)
+    end
+
     @tasks.each do |task|
       task.postScheduleCheck(scIdx) if task.parent.nil?
     end

@@ -13,13 +13,13 @@ require 'ReportTableCell'
 
 class ReportTableLine
 
-  attr_reader :table, :property, :parentLine
+  attr_reader :table, :property, :scopeLine
   attr_accessor :indentation, :fontFactor, :no, :lineNo, :subLineNo
 
-  def initialize(table, property, parentLine)
+  def initialize(table, property, scopeLine)
     @table = table
     @property = property
-    @parentLine = parentLine
+    @scopeLine = scopeLine
 
     @table.addLine(self)
     @cells = []

@@ -19,7 +19,7 @@ class TaskScenario < ScenarioData
     super
   end
 
-  def prepareScenario
+  def prepareScheduling
     @property['startpreds', @scenarioIdx] = []
     @property['startsuccs', @scenarioIdx] =[]
     @property['endpreds', @scenarioIdx] = []
@@ -125,6 +125,16 @@ class TaskScenario < ScenarioData
     # TODO: Fixme
   end
 
+  # When the actual scheduling process has been completed, this function must
+  # be called to do some more housekeeping. It computes some derived data
+  # based on the just scheduled values.
+  def finishScheduling
+    calcCompletion
+  end
+
+  # This function is not essential but does perform a large number of
+  # consistency checks. It should be called after the scheduling run has been
+  # finished.
   def postScheduleCheck
     @errors = 0
     @property.children.each do |task|
@@ -888,7 +898,7 @@ class TaskScenario < ScenarioData
     @isRunAway = true
   end
 
-  def getEffectiveLoad(startIdx, endIdx, resource)
+  def getEffectiveWork(startIdx, endIdx, resource)
     return 0.0 if a('milestone')
 
     workLoad = 0.0
@@ -1118,6 +1128,35 @@ private
       @maxForwardCriticalness = maxCriticalness
     else
       @maxBackwardCriticalness = maxCriticalness
+    end
+  end
+
+  # Calculate the current completion degree for tasks that have no user
+  # specified completion value.
+  def calcCompletion
+    # If the user provided a completion degree we are not touching it.
+    if property.provided('complete')
+      return
+    end
+
+    if a('milestone')
+      #TODO
+    elsif @property.container?
+      #TODO
+    else
+      # Normal leaf task
+      if a('end') <= @project['now']
+        # The task has ended already. It's 100% complete.
+        completion = 100.0
+      elsif @project['now'] <= a('start')
+        # The task has not started yet. Its' 0% complete.
+        completion = 0.0
+      else
+        # The task is in progress. Calculate the current completion degree.
+        completion = ((@project['now'] - a('start')) /
+                      (a('end') - a('start'))) * 100.0
+      end
+      @property['complete', @scenarioIdx] = completion
     end
   end
 

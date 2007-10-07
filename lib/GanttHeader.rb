@@ -11,49 +11,39 @@
 require 'GanttHeaderScaleItem'
 
 # This class stores output format independent information to describe a
-# GanttChart header.
+# GanttChart header. A Gantt chart header consists of 2 lines. The top line
+# holds the large scale (e. g. the year or month and year) and the lower line
+# holds the small scale (e. g. week or day).
 class GanttHeader
 
+  attr_reader :gridLines, :cellStartDates
+
+  # Create a GanttHeader object and generate the scales for the header.
   def initialize(chart)
     @chart = chart
 
     @largeScale = []
     @smallScale = []
 
+    # Positions where chart should be marked with vertical lines that match
+    # the large scale.
+    @gridLines = []
+    # The x coordinates and width of the cells created by the small scale. The
+    # values are stored as [ x, w ].
+    @cellStartDates = []
+
     generate
   end
 
-  def generate
-    h = 19
-    case @chart.scale
-    when :hour
-      genHeaderScale(@largeScale, 0, h, :sameTimeNextDay, :weekdayAndDate)
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextHour, :hour)
-    when :day
-      genHeaderScale(@largeScale, 0, h, :sameTimeNextMonth, :shortMonthName)
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextDay, :day)
-    when :week
-      genHeaderScale(@largeScale, 0, h, :sameTimeNextMonth, :monthAndYear)
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextWeek, :week)
-    when :month
-      genHeaderScale(@largeScale, 0, h, :sameTimeNextYear, :year)
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextMonth, :month)
-    when :quarter
-      genHeaderScale(@largeScale, 0, h, :sameTimeNextYear, :year)
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextQuarter, :quarter)
-    when :year
-      genHeaderScale(@smallScale, h + 1, h, :sameTimeNextYear, :year)
-    else
-      raise "Unknown scale: #{@chart.scale}"
-    end
-  end
-
+  # Convert the header into an HTML format.
   def to_html
     th = XMLElement.new('th', 'rowspan' => '2', 'style' => 'padding:0px;')
     th << (div = XMLElement.new('div', 'class' => 'tabback',
       'style' => "margin:0px; padding:0px; " +
                  "position:relative; overflow:hidden; " +
-                 "width:#{@chart.width.to_i}px; height:39px; font-size:10px"))
+                 "width:#{@chart.width.to_i}px; " +
+                 "height:#{@chart.headerHeight.to_i}px; " +
+                 "font-size:#{(@chart.headerHeight / 3.5).to_i}px; "))
     @largeScale.each { |s| div << s.to_html }
     @smallScale.each { |s| div << s.to_html }
     th
@@ -61,18 +51,75 @@ class GanttHeader
 
 private
 
-  def genHeaderScale(scale, y, h, sameTimeNextFunc, nameFunc)
-    t = @chart.start
+  # Call genHeaderScale with the right set of parameters (depending on the
+  # selected scale) for the lower and upper header line.
+  def generate
+    # The 2 header lines are separated by a 1 pixel boundary.
+    h = ((@chart.headerHeight - 1) / 2).to_i
+    case @chart.scale['name']
+    when 'hour'
+      genHeaderScale(@largeScale, 0, h, :midnight, :sameTimeNextDay,
+                     :weekdayAndDate)
+      genHeaderScale(@smallScale, h + 1, h, :beginOfHour, :sameTimeNextHour,
+                     :hour)
+    when 'day'
+      genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,
+                     :shortMonthName)
+      genHeaderScale(@smallScale, h + 1, h, :midnight, :sameTimeNextDay, :day)
+    when 'week'
+      genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,
+                     :monthAndYear)
+      genHeaderScale(@smallScale, h + 1, h, :beginOfWeek, :sameTimeNextWeek,
+                     :week)
+    when 'month'
+      genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear, :year)
+      genHeaderScale(@smallScale, h + 1, h, :beginOfMonth, :sameTimeNextMonth,
+                     :shortMonthName)
+    when 'quarter'
+      genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear, :year)
+      genHeaderScale(@smallScale, h + 1, h, :beginOfQuarter,
+                     :sameTimeNextQuarter, :quarterName)
+    when 'year'
+      genHeaderScale(@smallScale, h + 1, h, :beginOfYear, :sameTimeNextYear,
+                     :year)
+    else
+      raise "Unknown scale: #{@chart.scale['name']}"
+    end
+  end
+
+  # Generate the actual scale cells.
+  def genHeaderScale(scale, y, h, beginOfFunc, sameTimeNextFunc, nameFunc)
+    # The beginOfWeek function needs a parameter, so we have to handle it as a
+    # special case.
+    if beginOfFunc == :beginOfWeek
+      t = @chart.start.send(beginOfFunc, @chart.weekStartsMonday)
+    else
+      t = @chart.start.send(beginOfFunc)
+    end
+
+    # Now we iterate of the report period in steps defined by
+    # sameTimeNextFunc. For each time slot we generate GanttHeaderScaleItem
+    # object and append it to the scale.
     while t < @chart.end
       nextT = t.send(sameTimeNextFunc)
-      w = @chart.dateToX(nextT).to_i - (x = @chart.dateToX(t).to_i) - 1
-      if nameFunc == :week
-        scale << GanttHeaderScaleItem.new(t.send(nameFunc, true), x, y, w, h)
+      # Determine the end of the cell. We keep 1 pixel for the boundary.
+      w = (xR = @chart.dateToX(nextT).to_i - 1) - (x = @chart.dateToX(t).to_i)
+      # We collect the positions of the large grid scale marks for later use
+      # in the chart.
+      if scale == @largeScale
+        @gridLines << xR
       else
-        scale << GanttHeaderScaleItem.new(t.send(nameFunc), x, y, w, h)
+        @cellStartDates << t
       end
+      # Again, nameFunc needs special handling for the week case due to the
+      # extra parameter.
+      name = nameFunc == :week ? t.send(nameFunc, @chart.weekStartsMonday) :
+                                 t.send(nameFunc)
+      scale << GanttHeaderScaleItem.new(name, x, y, w, h)
       t = nextT
     end
+    # Add the end date of the last cell when generating the small scale.
+    @cellStartDates << t if scale == @smallScale
   end
 
 end

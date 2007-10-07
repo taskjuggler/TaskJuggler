@@ -87,8 +87,8 @@ protected
     when 'chart'
       column = ReportTableColumn.new(@table, columnDescr, '')
       if @gantt.nil?
-        @gantt = GanttChart.new
-        @gantt.generateByResolution(@start, @end, 18, :week)
+        @gantt = GanttChart.new(@weekStartsMonday)
+        @gantt.generateByScale(@start, @end, columnDescr.scale)
       end
       column.cell1.special = @gantt.header
       column.cell2.hidden = true
@@ -117,11 +117,11 @@ protected
     end
   end
 
-  def generateTaskList(taskList, resourceList, resource, parentLine)
+  def generateTaskList(taskList, resourceList, resource, scopeLine)
     lineDict = { }
     no = 0
-    lineNo = parentLine ? parentLine.lineNo : 0
-    subLineNo = parentLine ? parentLine.subLineNo : 0
+    lineNo = scopeLine ? scopeLine.lineNo : 0
+    subLineNo = scopeLine ? scopeLine.subLineNo : 0
     # Init the variable to get a larger scope
     line = nil
     taskList.each do |task|
@@ -131,7 +131,7 @@ protected
         # Generate line for each task
         line = ReportTableLine.new(@table, task,
             task.parent.nil? || !taskList.treeMode? ?
-            parentLine : lineDict[task.parent])
+            scopeLine : lineDict[task.parent])
         lineDict[task] = line
 
         line.no = no unless resource
@@ -154,11 +154,11 @@ protected
     lineNo
   end
 
-  def generateResourceList(resourceList, taskList, task, parentLine)
+  def generateResourceList(resourceList, taskList, task, scopeLine)
     lineDict = { }
     no = 0
-    lineNo = parentLine ? parentLine.lineNo : 0
-    subLineNo = parentLine ? parentLine.subLineNo : 0
+    lineNo = scopeLine ? scopeLine.lineNo : 0
+    subLineNo = scopeLine ? scopeLine.subLineNo : 0
     # Init the variable to get a larger scope
     line = nil
     resourceList.each do |resource|
@@ -167,7 +167,7 @@ protected
       @scenarios.each do |scenarioIdx|
         line = ReportTableLine.new(@table, resource,
             resource.parent.nil? || !resourceList.treeMode? ?
-            parentLine : lineDict[resource.parent])
+            scopeLine : lineDict[resource.parent])
         lineDict[resource] = line
 
         line.no = no unless task
@@ -229,8 +229,10 @@ private
     case column.id
     when 'chart'
       cell = ReportTableCell.new(line)
-      cell.special = GanttBar.new(@gantt, property, nil, scenarioIdx,
-                                  line.lineNo, 20)
+      cell.special = GanttLine.new(@gantt, property,
+                                   line.scopeLine ?
+                                   line.scopeLine.property : nil,
+                                   scenarioIdx, line.lineNo, 20)
       return true
     when 'hourly'
       start = @start.midnight
@@ -325,13 +327,13 @@ private
 
     setStandardCellAttributes(cell, column, nil, line, cellFontFactor)
 
-    startIdx = @project.dateToIdx(@start)
-    endIdx = @project.dateToIdx(@end) - 1
+    startIdx = @project.dateToIdx(@start, true)
+    endIdx = @project.dateToIdx(@end, true) - 1
     iv = Interval.new(@start, @end)
 
     case column.id
     when 'effort'
-      workLoad = property.getEffectiveLoad(scenarioIdx, startIdx, endIdx, nil)
+      workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
       cell.text = @numberFormat.format(workLoad) + 'd'
       cell.bold = true if property.container?
     when 'line'
@@ -345,8 +347,8 @@ private
 
   def genCalChartTaskCell(scenarioIdx, line, columnDescr, t, sameTimeNextFunc)
     task = line.property
-    if line.parentLine && line.parentLine.property.is_a?(Resource)
-      resource = line.parentLine.property
+    if line.scopeLine && line.scopeLine.property.is_a?(Resource)
+      resource = line.scopeLine.property
     else
       resource = nil
     end
@@ -374,13 +376,11 @@ private
         cell.alignment = 2
         startIdx = @project.dateToIdx(t, true)
         endIdx = @project.dateToIdx(nextT, true) - 1
-        workLoad = task.getEffectiveLoad(scenarioIdx, startIdx, endIdx,
+        workLoad = task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
                                          resource)
         if workLoad > 0.0
           cell.text = @numberFormat.format(workLoad)
         end
-        # Add ASCII-art Gantt bars
-        addGanttBars(cell, cellIv, task, taskIv, scenarioIdx)
       else
         raise "Unknown column content #{column.content}"
       end
@@ -405,8 +405,8 @@ private
   def genCalChartResourceCell(scenarioIdx, line, columnDescr, t,
                               sameTimeNextFunc)
     resource = line.property
-    if line.parentLine && line.parentLine.property.is_a?(Task)
-      task = line.parentLine.property
+    if line.scopeLine && line.scopeLine.property.is_a?(Task)
+      task = line.scopeLine.property
     else
       task = nil
     end
@@ -425,8 +425,8 @@ private
       nextT = t.send(sameTimeNextFunc)
       startIdx = @project.dateToIdx(t, true)
       endIdx = @project.dateToIdx(nextT, true) - 1
-      workLoad = resource.getEffectiveLoad(scenarioIdx, startIdx, endIdx, task)
-      freeLoad = resource.getEffectiveFreeLoad(scenarioIdx, startIdx, endIdx)
+      workLoad = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx, task)
+      freeLoad = resource.getEffectiveFreeWork(scenarioIdx, startIdx, endIdx)
       case columnDescr.content
       when 'empty'
       when 'load'
@@ -488,46 +488,15 @@ private
   # Determine the font size and indentation for this line.
   def setFontAndIndent(line, propertyRoot, treeMode)
     property = line.property
-    parentLine = line.parentLine
+    scopeLine = line.scopeLine
     level = property.level - (propertyRoot ? propertyRoot.level : 0)
-    line.indentation = parentLine ? parentLine.indentation + 1 : 0
+    line.indentation = scopeLine ? scopeLine.indentation + 1 : 0
 
     if treeMode
       # Each level reduces the font-size by another 5%.
       line.fontFactor = 0.1 + 0.95 ** line.indentation
     else
-      line.fontFactor = 0.95 ** (parentLine ? parentLine.indentation : 0)
-    end
-  end
-
-  # Decorate the cell with ASCII art Gantt bars.
-  def addGanttBars(cell, cellIv, task, taskIv, scenarioIdx)
-    if @ganttBars
-      # We always center the cells when they contain Gantt bars.
-      cell.alignment = 1
-      if task['milestone', scenarioIdx]
-        # Milestones are shown as diamonds '<>'
-        if cellIv.contains?(task['start', scenarioIdx].nil? ?
-                            @project['start'] : task['start', scenarioIdx])
-          cell.text = '<>'
-          cell.bold = true
-        end
-      else
-        # Container tasks are shown as 'v----v'
-        # Normal tasks are shown as '[======]'
-        if cellIv.contains?(task['start', scenarioIdx].nil? ?
-                            @project['start'] : task['start', scenarioIdx])
-          cell.text = (task.container? ? 'v-' : '[=') + cell.text
-        end
-        if cellIv.contains?((task['end', scenarioIdx].nil? ?
-                             @project['end'] : task['end', scenarioIdx]) - 1)
-          cell.text += (task.container? ? '-v': '=]')
-        end
-        if cell.text == '' && taskIv.overlaps?(cellIv)
-          cell.text = task.container? ? '--' : '=='
-        end
-      end
-      cell.bold = true if task.container?
+      line.fontFactor = 0.95 ** (scopeLine ? scopeLine.indentation : 0)
     end
   end
 

@@ -209,6 +209,27 @@ EOT
     arg(0, 'value', 'A floating point or integer number')
   end
 
+  def rule_chartScale
+    singlePattern('_hour')
+    descr('Set chart resolution to 1 hour.')
+
+    singlePattern('_day')
+    descr('Set chart resolution to 1 day.')
+
+    singlePattern('_week')
+    descr('Set chart resolution to 1 week.')
+
+    singlePattern('_month')
+    descr('Set chart resolution to 1 month.')
+
+    singlePattern('_quarter')
+    descr('Set chart resolution to 1 quarter.')
+
+    singlePattern('_year')
+    descr('Set chart resolution to 1 year.')
+  end
+
+
   def rule_columnBody
     optionsRule('columnOptions')
   end
@@ -234,6 +255,13 @@ EOT
   def rule_columnOptions
     optional
     repeatable
+    pattern(%w( _scale !chartScale ), lambda {
+      @column.scale = @val[1]
+    })
+    doc('columnscale', <<'EOT'
+Specifies the scale that should be used for a chart column. This value is ignored for all other columns.
+EOT
+       )
     pattern(%w( _title $STRING ), lambda {
       @column.title = @val[1]
     })
@@ -1386,7 +1414,7 @@ EOT
   end
 
   def rule_reportEnd
-    pattern(%w( _end !valDate ), lambda {
+    pattern(%w( _end !date ), lambda {
       @reportElement.end = @val[1]
     })
     doc('report.end', <<'EOT'
@@ -1409,7 +1437,7 @@ EOT
   end
 
   def rule_reportStart
-    pattern(%w( _start !valDate ), lambda {
+    pattern(%w( _start !date ), lambda {
       @reportElement.start = @val[1]
     })
     doc('report.start', <<'EOT'

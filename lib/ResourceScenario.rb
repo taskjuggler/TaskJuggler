@@ -30,7 +30,9 @@ class ResourceScenario < ScenarioData
     @lastBookedSlot = nil
   end
 
-  def prepareScenario
+  # This method must be called at the beginning of each scheduling run. It
+  # initializes variables used during the scheduling process.
+  def prepareScheduling
     @property['effort', @scenarioIdx] = 0
     initScoreboard
   end
@@ -122,43 +124,55 @@ class ResourceScenario < ScenarioData
     book(sbIdx, booking.task, true)
   end
 
-  # Returns the load of the resource (and its children) weighted by their
+  # Returns the work of the resource (and its children) weighted by their
   # efficiency.
-  def getEffectiveLoad(startIdx, endIdx, task)
-    load = 0.0
+  def getEffectiveWork(startIdx, endIdx, task = nil)
+    # Convert the interval dates to indexes if needed.
+    startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+    endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
+    work = 0.0
     if @property.container?
       @property.children.each do |resource|
-        load += resource.getEffectiveLoad(@scenarioIdx, startIdx, endIdx, task)
+        work += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx, task)
       end
     else
-      load = @project.convertToDailyLoad(
+      work = @project.convertToDailyLoad(
                getAllocatedSlots(startIdx, endIdx, task) *
                @project['scheduleGranularity']) * a('efficiency')
     end
-    load
+    work
   end
 
-  # Returns the allocated load of the resource (and its children).
-  def getAllocatedLoad(startIdx, endIdx, task)
-    load = 0.0
+  # Returns the allocated work of the resource (and its children).
+  def getAllocatedWork(startIdx, endIdx, task = nil)
+    # Convert the interval dates to indexes if needed.
+    startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+    endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
+    work = 0.0
     if @property.container?
       @property.children.each do |resource|
-        load += resource.getAllocatedLoad(@scenarioIdx, startIdx, endIdx, task)
+        work += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
       end
     else
-      load = @project.convertToDailyLoad(
+      work = @project.convertToDailyLoad(
                getAllocatedSlots(startIdx, endIdx, task) *
                @project['scheduleGranularity'])
     end
-    load
+    work
   end
 
   # Returns the allocated accumulated time of this resource and its children.
-  def getAllocatedTime(startIdx, endIdx, task)
+  def getAllocatedTime(startIdx, endIdx, task = nil)
+    # Convert the interval dates to indexes if needed.
+    startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+    endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
     time = 0
     if @property.container?
       @property.children.each do |resource|
-        time += resource.getAllocatedLoad(@scenarioIdx, startIdx, endIdx, task)
+        time += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
       end
     else
       time = @project.convertToDailyLoad(
@@ -167,20 +181,24 @@ class ResourceScenario < ScenarioData
     time
   end
 
-  # Return the unallocated load of the resource and its children wheighted by
+  # Return the unallocated work of the resource and its children wheighted by
   # their efficiency.
-  def getEffectiveFreeLoad(startIdx, endIdx)
-    load = 0.0
+  def getEffectiveFreeWork(startIdx, endIdx)
+    # Convert the interval dates to indexes if needed.
+    startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+    endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
+    work = 0.0
     if @property.container?
       @property.children.each do |resource|
-        load += resource.getEffectiveFreeLoad(@scenarioIdx, startIdx, endIdx)
+        work += resource.getEffectiveFreeWork(@scenarioIdx, startIdx, endIdx)
       end
     else
-      load = @project.convertToDailyLoad(
+      work = @project.convertToDailyLoad(
                getFreeSlots(startIdx, endIdx) *
                @project['scheduleGranularity']) * a('efficiency')
     end
-    load
+    work
   end
 
   # Returns true if the resource or any of its children is allocated during

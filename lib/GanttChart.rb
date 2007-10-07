@@ -9,60 +9,89 @@
 #
 
 require 'GanttHeader'
-require 'GanttBar'
+require 'GanttLine'
 
-# This class represents an abstrace (output format independent) Gantt chart.
+# This class represents an abstract (output format independent) Gantt chart.
 # It provides generator functions that can transform the abstract form into
 # formats such as HTML or SVG.
+# The appearance of the chart depend on 3 variable: the report period,
+# the geometrical width and the scale. The report period is always provided by
+# the user. In addition the width _or_ the scale can be provided. The
+# non-provided value will then be calculated. So after the object has been
+# created, the user must call generateByWidth or generateByResolution.
 class GanttChart
 
-  attr_reader :start, :end, :header, :width, :scale, :scales
+  attr_reader :start, :end, :weekStartsMonday, :header, :width,
+              :scale, :scales, :headerHeight
 
-  def initialize
+  # Create the GanttChart object, but don't do much right now. We still need
+  # more information about the chart before we can actually generate it.
+  def initialize(weekStartsMonday)
     @start = nil
     @end = nil
 
-    @scales = [ :hour, :day, :week, :month, :quarter, :year ]
-    @scale = @scales[1]
-    @width = 300
+    @scales = [
+      { 'name' => 'hour', 'stepSize' => 20, 'stepsToFunc' => :hoursTo },
+      { 'name' => 'day', 'stepSize' => 20, 'stepsToFunc' => :daysTo },
+      { 'name' => 'week', 'stepSize' => 20, 'stepsToFunc' => :weeksTo },
+      { 'name' => 'month', 'stepSize' => 35, 'stepsToFunc' => :monthsTo },
+      { 'name' => 'quarter', 'stepSize' => 28, 'stepsToFunc' => :quartersTo },
+      { 'name' => 'year', 'stepSize' => 20, 'stepsToFunc' => :yearsTo }
+    ]
+    @scale = nil
+    @width = 0
+    @headerHeight = 39
+    @weekStartsMonday = weekStartsMonday
 
     @header = nil
     @bars = []
   end
 
-  def generateByWidth(periodStart, periodEnd, minStep, width)
+  def generateByWidth(periodStart, periodEnd, width)
     @start = periodStart
     @end = periodEnd
-    @step = minStep
     @width = width
+    # TODO
   end
 
-  def generateByResolution(periodStart, periodEnd, minStep, scale)
+  # Generate the actual chart data based on the report interval specified by
+  # _periodStart_ and _periodEnd_ as well as the name of the requested scale
+  # to be used. This function (or generateByWidth) must be called before any
+  # GanttLine objects are created for this chart.
+  def generateByScale(periodStart, periodEnd, scaleName)
     @start = periodStart
     @end = periodEnd
-    @step = minStep
-    @scale = scale
-    case scale
-    when :hour
-      steps = @start.hoursTo(@end)
-    when :day
-      steps = @start.daysTo(@end)
-    when :week
-      steps = @start.weeksTo(@end)
-    when :month
-      steps = @start.monthsTo(@end)
-    when :quarter
-      steps = @start.quartersTo(@end)
-    when :year
-      steps = @start.yearsTo(@end)
-    end
-    @width = @step * steps
+    @scale = scaleByName(scaleName)
+    @stepSize = @scale['stepSize']
+    steps = @start.send(@scale['stepsToFunc'], @end)
+    @width = @stepSize * steps
 
     @header = GanttHeader.new(self)
   end
 
+  # Utility function that convers a date to the corresponding X-position in
+  # the Gantt chart.
   def dateToX(date)
     (@width / (@end - @start)) * (date - @start)
   end
 
+  # This is not a user callable function. It's only meant for use within the
+  # library.
+  def addBar(bar)
+    if @scale.nil?
+      raise "generateByScale or generateByWidth must be called first"
+    end
+    @bars << bar
+  end
+
+private
+
+  # Find the scale with the name _name_ and return a reference to the scale.
+  # If nothing is round an exception is raised.
+  def scaleByName(name)
+    @scales.each do |scale|
+      return scale if scale['name'] == name
+    end
+    raise "Unknown scale #{name}"
+  end
 end

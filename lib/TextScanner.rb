@@ -66,7 +66,7 @@ class TextScanner
     begin
       @fileStack << (@cf = FileRecord.new(fileName))
     rescue
-      raise TjException.new, "Cannot open include file #{fileName}"
+      error('bad_include', "Cannot open include file #{fileName}")
     end
   end
 
