@@ -137,11 +137,16 @@ class GanttLoadStack
     # Convert the values to chart Y coordinates and store them in yLevels.
     sum = 0
     values.each { |v| sum += v }
-    @yLevels = []
-    values.each do |v|
-      # We leave 1 pixel to the top and bottom of the line and need 1 pixel
-      # for the frame.
-      @yLevels << (@line.height - 4) * v / sum
+    # If the sum is 0, all yLevels values must be 0 as well.
+    if sum == 0
+      @yLevels = Array.new(values.length, 0)
+    else
+      @yLevels = []
+      values.each do |v|
+        # We leave 1 pixel to the top and bottom of the line and need 1 pixel
+        # for the frame.
+        @yLevels << (@line.height - 4) * v / sum
+      end
     end
   end
 
@@ -155,6 +160,7 @@ class GanttLoadStack
     yPos = 2
     # Than draw the slighly narrower bars as a pile ontop of it.
     (@yLevels.length - 1).downto(0) do |i|
+      next if @yLevels[i] <= 0.0
       html << @line.rectToHTML(@x + 1, yPos.to_i, @w - 2,
                                (yPos + @yLevels[i]).to_i - yPos.to_i,
                                @categories[i])

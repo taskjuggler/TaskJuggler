@@ -76,28 +76,30 @@ private
     @content = []
 
     if @property.is_a?(Task)
-      # Set the background color
-      @category = @property.get('index') % 2 == 1 ?
-        'taskcell1' : 'taskcell2'
-      xStart = @chart.dateToX(@property['start', @scenarioIdx])
-      xEnd = @chart.dateToX(@property['end', @scenarioIdx])
-      if @property['milestone', @scenarioIdx]
-        @content << GanttMilestone.new(self, xStart)
-      elsif @property.container?
-        @content << GanttContainer.new(self, xStart, xEnd)
-      else
-        @content << GanttTaskBar.new(self, xStart, xEnd)
-      end
+      generateTask
     else
-      # Set the alternating background color
-      @category = @property.get('index') % 2 == 1 ?
-        'resourcecell1' : 'resourcecell2'
-      # The cellStartDate Array contains the end of the final cell as last
-      # element. We need to use a shift mechanism to start and end
-      # dates/positions properly.
+      generateResource
+    end
+  end
+
+  # Generate abstract form of a task line. The task can be a primary line or
+  # appear in the scope of a resource.
+  def generateTask
+    # Set the background color
+    @category = @property.get('index') % 2 == 1 ?
+      'taskcell1' : 'taskcell2'
+
+    taskStart = @property['start', @scenarioIdx]
+    taskEnd = @property['end', @scenarioIdx]
+
+    if @scopeProperty
+      # The task is nested into a resource. We show the work the resource is
+      # doing for this task relative to the work the resource is doing for
+      # all tasks.
       x = nil
       startDate = endDate = nil
-      categories = [ 'busy', 'free' ]
+      categories = [ 'busy', @category ]
+
       @chart.header.cellStartDates.each do |date|
         if x.nil?
           x = @chart.dateToX(endDate = date).to_i
@@ -106,37 +108,128 @@ private
           w = xNew - x
           startDate = endDate
           endDate = date
-          if @scopeProperty
-            # If we have a scope limiting task, we only want to generate load
-            # stacks that overlap with the task interval.
-            taskStart = @scopeProperty['start', @scenarioIdx]
-            taskEnd = @scopeProperty['end', @scenarioIdx]
-            next if endDate <= taskStart || taskEnd <= startDate
-            if startDate < taskStart && endDate > taskStart
-              # Make sure the left edge of the first stack aligns with the
-              # start of the scope task.
-              startDate = taskStart
-              x = @chart.dateToX(startDate)
-              w = xNew - x
-            elsif startDate < taskEnd && endDate > taskEnd
-              # Make sure the right edge of the last stack aligns with the end
-              # of the scope task.
-              endDate = taskEnd
-              w = @chart.dateToX(endDate) - x
-            end
+
+          # If we have a scope limiting task, we only want to generate load
+          # stacks that overlap with the task interval.
+          next if endDate <= taskStart || taskEnd <= startDate
+          if startDate < taskStart && endDate > taskStart
+            # Make sure the left edge of the first stack aligns with the
+            # start of the scope task.
+            startDate = taskStart
+            x = @chart.dateToX(startDate)
+            w = xNew - x + 1
+          elsif startDate < taskEnd && endDate > taskEnd
+            # Make sure the right edge of the last stack aligns with the end
+            # of the scope task.
+            endDate = taskEnd
+            w = @chart.dateToX(endDate) - x
           end
 
+          overallWork = @scopeProperty.getEffectiveWork(@scenarioIdx,
+                                                        startDate, endDate) +
+                        @scopeProperty.getEffectiveFreeWork(@scenarioIdx,
+                                                            startDate,
+                                                            endDate)
+          workThisTask = @property.getEffectiveWork(@scenarioIdx,
+                                                    startDate, endDate,
+                                                    @scopeProperty)
+          # If all values are 0 we make sure we show an empty frame.
+          if overallWork == 0 && workThisTask == 0
+            values = [ 0, 1 ]
+          else
+            values = [ workThisTask, overallWork - workThisTask ]
+          end
+          @content << GanttLoadStack.new(self, x + 1, w - 2, values,
+                                         categories)
+
+          x = xNew
+        end
+      end
+    else
+      # The task is not nested into a resource. We show the classical Gantt
+      # bars for the task.
+      xStart = @chart.dateToX(taskStart)
+      xEnd = @chart.dateToX(taskEnd)
+      if @property['milestone', @scenarioIdx]
+        @content << GanttMilestone.new(self, xStart)
+      elsif @property.container?
+        @content << GanttContainer.new(self, xStart, xEnd)
+      else
+        @content << GanttTaskBar.new(self, xStart, xEnd)
+      end
+    end
+
+  end
+
+  # Generate abstract form of a resource line. The resource can be a primary
+  # line or appear in the scope of a task.
+  def generateResource
+    # Set the alternating background color
+    @category = @property.get('index') % 2 == 1 ?
+      'resourcecell1' : 'resourcecell2'
+    # The cellStartDate Array contains the end of the final cell as last
+    # element. We need to use a shift mechanism to start and end
+    # dates/positions properly.
+    x = nil
+    startDate = endDate = nil
+
+    # For unnested resource lines we show the assigned work and the
+    # available work. For resources in a task scope we show the work
+    # allocated to this task, the work allocated to other tasks and the free
+    # work.
+    if @scopeProperty
+      categories = [ 'assigned', 'busy', 'free' ]
+      taskStart = @scopeProperty['start', @scenarioIdx]
+      taskEnd = @scopeProperty['end', @scenarioIdx]
+    else
+      categories = [ 'busy', 'free' ]
+    end
+
+    @chart.header.cellStartDates.each do |date|
+      if x.nil?
+        x = @chart.dateToX(endDate = date).to_i
+      else
+        xNew = @chart.dateToX(date).to_i
+        w = xNew - x
+        startDate = endDate
+        endDate = date
+        if @scopeProperty
+          # If we have a scope limiting task, we only want to generate load
+          # stacks that overlap with the task interval.
+          next if endDate <= taskStart || taskEnd <= startDate
+          if startDate < taskStart && endDate > taskStart
+            # Make sure the left edge of the first stack aligns with the
+            # start of the scope task.
+            startDate = taskStart
+            x = @chart.dateToX(startDate)
+            w = xNew - x + 1
+          elsif startDate < taskEnd && endDate > taskEnd
+            # Make sure the right edge of the last stack aligns with the end
+            # of the scope task.
+            endDate = taskEnd
+            w = @chart.dateToX(endDate) - x
+          end
+          taskWork = @property.getEffectiveWork(@scenarioIdx,
+                                                startDate, endDate,
+                                                @scopeProperty)
+          overallWork = @property.getEffectiveWork(@scenarioIdx,
+                                                   startDate, endDate)
+          freeWork = @property.getEffectiveFreeWork(@scenarioIdx,
+                                                   startDate, endDate)
+          values = [ taskWork, overallWork - taskWork, freeWork ]
+        else
           values = []
           values << @property.getEffectiveWork(@scenarioIdx,
                                                startDate, endDate)
           values << @property.getEffectiveFreeWork(@scenarioIdx,
                                                    startDate, endDate)
-          @content << GanttLoadStack.new(self, x + 1, w - 2, values, categories)
-
-          x = xNew
         end
+        @content << GanttLoadStack.new(self, x + 1, w - 2, values, categories)
+
+        x = xNew
       end
     end
+
   end
 
 end

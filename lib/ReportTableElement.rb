@@ -129,9 +129,7 @@ protected
       lineNo += 1
       @scenarios.each do |scenarioIdx|
         # Generate line for each task
-        line = ReportTableLine.new(@table, task,
-            task.parent.nil? || !taskList.treeMode? ?
-            scopeLine : lineDict[task.parent])
+        line = ReportTableLine.new(@table, task, scopeLine)
         lineDict[task] = line
 
         line.no = no unless resource
@@ -165,9 +163,7 @@ protected
       no += 1
       lineNo += 1
       @scenarios.each do |scenarioIdx|
-        line = ReportTableLine.new(@table, resource,
-            resource.parent.nil? || !resourceList.treeMode? ?
-            scopeLine : lineDict[resource.parent])
+        line = ReportTableLine.new(@table, resource, scopeLine)
         lineDict[resource] = line
 
         line.no = no unless task
