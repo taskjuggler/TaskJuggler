@@ -22,7 +22,7 @@ require 'HTMLDocument'
 class KeywordDocumentation
 
   attr_reader :keyword, :pattern
-  attr_accessor :contexts, :scenarioSpecific
+  attr_accessor :contexts, :scenarioSpecific, :predecessor, :successor
 
   # Construct a new KeywordDocumentation object. _rule_ is the TextParserRule
   # and _pattern_ is the corresponding TextParserPattern. _syntax_ is an
@@ -46,6 +46,10 @@ class KeywordDocumentation
     @inheritable = false
     @contexts = []
     @seeAlso = []
+    # The following are references to the neighboring keyword in an
+    # alphabetically sorted list.
+    @predecessor = nil
+    @successor = nil
   end
 
   # Post process the class member to set cross references to other
@@ -206,7 +210,34 @@ EOT
                )
     html << (body = XMLElement.new('body'))
     body << (headline = XMLNamedText.new(
-      'The TaskJuggler3 Syntax Reference Manual', 'h3', 'align' => 'center'))
+      "The #{AppConfig.packageName} Syntax Reference Manual", 'h2',
+      'align' => 'center'))
+    body << XMLElement.new('hr')
+
+    # Navigation bar
+    if @predecessor || @successor
+      body << (tab = XMLElement.new('table',
+        'style' => 'width:90%; margin-left:5%; margin-right:5%'))
+      tab << (tr = XMLElement.new('tr'))
+      if @predecessor
+        tr << (td = XMLElement.new('td', 'style' => 'text-align:left'))
+        td << XMLText.new('<< ')
+        td << XMLNamedText.new("#{@predecessor.keyword}", 'a',
+                               'href' => "#{@predecessor.keyword}.html")
+        td << XMLText.new(' <<')
+      end
+      tr << (td = XMLElement.new('td', 'style' => 'text-align:center'))
+      td << XMLNamedText.new('Intro', 'a', 'href' => 'Intro.html')
+      if @successor
+        tr << (td = XMLElement.new('td', 'style' => 'text-align:right'))
+        td << XMLText.new('>> ')
+        td << XMLNamedText.new("#{@successor.keyword}", 'a',
+                               'href' => "#{@successor.keyword}.html")
+        td << XMLText.new(' >>')
+      end
+      body << XMLElement.new('hr')
+    end
+    body << XMLElement.new('br')
 
     body << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
@@ -317,7 +348,12 @@ EOT
       end
     end
 
-    body << (div = XMLElement.new('div', 'align' => 'center'))
+    body << XMLElement.new('br')
+    body << XMLElement.new('hr')
+    body << (div = XMLElement.new('div', 'align' => 'center',
+                                  'style' => 'font-size:10px;'))
+    div << XMLText.new("Copyright (c) #{AppConfig.copyright.join(', ')} by " +
+                       "#{AppConfig.authors.join(', ')}.")
     div << XMLNamedText.new('TaskJuggler', 'a', 'href' => AppConfig.contact)
     div << XMLText.new(' is a trademark of Chris Schlaeger.')
 

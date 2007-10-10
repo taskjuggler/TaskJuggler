@@ -11,6 +11,12 @@
 
 require 'rbconfig'
 
+# This class provides central management of configuration data to an
+# application. It stores the version number, the name of the application and
+# the suite it belongs to. It also holds copyright and license information.
+# These infos have to be set in the main module of the application right after
+# launch. Then, all other modules can retrieve them from the global instance
+# as needed.
 class AppConfig
 
   def initialize

@@ -12,10 +12,10 @@
 require 'AppConfig'
 
 AppConfig.version = '0.0.1'
-AppConfig.packageName = 'TaskJuggler3'
+AppConfig.packageName = 'TaskJuggler III'
 AppConfig.packageInfo = 'A Project Mangement Software'
 AppConfig.copyright = [ (2006..2007).to_a ]
-AppConfig.authors = [ 'Chris Schlaeger <cs@kde.org>' ]
+AppConfig.authors = [ 'Chris Schlaeger <cs(a)kde.org>' ]
 AppConfig.contact = 'http://www.taskjuggler.org'
 AppConfig.license = <<'EOT'
 This program is free software; you can redistribute it and/or modify it under
