@@ -86,4 +86,45 @@ class Scoreboard
     @sb[dateToIdx(date)] = value
   end
 
+  # Return a list of intervals that describe a contiguous part of the
+  # scoreboard that contains only the values listed in _targets_. The
+  # intervals must be within the interval described by _iv_ and must be at
+  # least _minDuration_ long. The return value is an Array of [ start, end ]
+  # TjTime values.
+  def collectTimeOffIntervals(iv, minDuration, targets)
+    # Determine the start and stop index for the scoreboard search.
+    startIdx = dateToIdx(iv.start, true)
+    endIdx = dateToIdx(iv.end, true)
+
+    # Convert the minDuration into number of slots.
+    minDuration /= @resolution
+    minDuration = 1 if minDuration <= 0
+
+    # This is collects the resulting intervals.
+    intervals = []
+    # The duration counter for the currently analyzed interval and the start
+    # index.
+    duration = start = 0
+
+    startIdx.upto(endIdx) do |idx|
+      # Check whether the scoreboard slot matches any of the target values.
+      if targets.include?(@sb[idx])
+        # If so, save the start position if this is the first slot and start
+        # counting the matching slots.
+        start = idx if start == 0
+        duration += 1
+      else
+        # If we don't have a match, check if we've just finished a matching
+        # interval.
+        if duration > 0
+          if duration >= minDuration
+            intervals << [ idxToDate(start), idxToDate(idx) ]
+          end
+          duration = start = 0
+        end
+      end
+    end
+    intervals
+  end
+
 end

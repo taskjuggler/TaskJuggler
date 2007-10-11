@@ -921,6 +921,16 @@ class TaskScenario < ScenarioData
     workLoad
   end
 
+  # Return a list of intervals that lay within _iv_ and are at least
+  # minDuration long and contain no working time.
+  def collectTimeOffIntervals(iv, minDuration)
+    if a('shifts')
+      a('shifts').collectTimeOffIntervals(iv, minDuration)
+    else
+      []
+    end
+  end
+
 private
 
   def bookBookings

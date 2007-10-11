@@ -263,6 +263,13 @@ class ResourceScenario < ScenarioData
     bookings
   end
 
+  # Return a list of scoreboard intervals that are at least _minDuration_ long
+  # and contain only 1 and 2. These values determine off-hours of the
+  # resource. The result is an Array of [ start, end ] TjTime values.
+  def collectTimeOffIntervals(iv, minDuration)
+    @scoreboard.collectTimeOffIntervals(iv, minDuration, [ 1, 2 ])
+  end
+
 private
 
   def initScoreboard

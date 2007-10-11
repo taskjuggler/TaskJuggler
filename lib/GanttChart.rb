@@ -31,12 +31,18 @@ class GanttChart
     @end = nil
 
     @scales = [
-      { 'name' => 'hour', 'stepSize' => 20, 'stepsToFunc' => :hoursTo },
-      { 'name' => 'day', 'stepSize' => 20, 'stepsToFunc' => :daysTo },
-      { 'name' => 'week', 'stepSize' => 20, 'stepsToFunc' => :weeksTo },
-      { 'name' => 'month', 'stepSize' => 35, 'stepsToFunc' => :monthsTo },
-      { 'name' => 'quarter', 'stepSize' => 28, 'stepsToFunc' => :quartersTo },
-      { 'name' => 'year', 'stepSize' => 20, 'stepsToFunc' => :yearsTo }
+      { 'name' => 'hour', 'stepSize' => 20, 'stepsToFunc' => :hoursTo,
+        'minTimeOff' => 5 * 60 },
+      { 'name' => 'day', 'stepSize' => 20, 'stepsToFunc' => :daysTo,
+        'minTimeOff' => 6 * 60 * 60 },
+      { 'name' => 'week', 'stepSize' => 20, 'stepsToFunc' => :weeksTo,
+        'minTimeOff' => 24 * 60 * 60 },
+      { 'name' => 'month', 'stepSize' => 35, 'stepsToFunc' => :monthsTo,
+        'minTimeOff' => 5 * 24 * 60 * 60 },
+      { 'name' => 'quarter', 'stepSize' => 28, 'stepsToFunc' => :quartersTo,
+        'minTimeOff' => -1 },
+      { 'name' => 'year', 'stepSize' => 20, 'stepsToFunc' => :yearsTo,
+        'minTimeOff' => -1 }
     ]
     @scale = nil
     @width = 0

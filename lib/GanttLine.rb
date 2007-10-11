@@ -30,6 +30,7 @@ class GanttLine
     @scenarioIdx = scenarioIdx
     @y = y
     @height = height
+    @timeOffZones = []
 
     generate
   end
@@ -43,6 +44,10 @@ class GanttLine
                  "position:relative; overflow:hidden; " +
                  "width:#{@chart.width.to_i}px; height:#{@height}px; " +
                  "font-size:10px;"))
+    @timeOffZones.each do |zone|
+      div << rectToHTML(zone[0], 0, zone[1], @height, 'offduty1')
+    end
+
     @chart.header.gridLines.each do |line|
       div << rectToHTML(line, 0, 1, @height, 'tabback')
     end
@@ -74,6 +79,8 @@ private
   def generate
     # This Array holds the GanttLineObjects.
     @content = []
+
+    generateTimeOffZones
 
     if @property.is_a?(Task)
       generateTask
@@ -230,6 +237,18 @@ private
       end
     end
 
+  end
+
+  def generateTimeOffZones
+    iv = Interval.new(@chart.start, @chart.end)
+    return if (minTimeOff = @chart.scale['minTimeOff']) <= 0
+
+    @timeOffZones = @property.collectTimeOffIntervals(@scenarioIdx, iv,
+                                                      minTimeOff)
+    @timeOffZones.each do |zone|
+      zone[0] = @chart.dateToX(zone[0])
+      zone[1] = @chart.dateToX(zone[1]) - zone[0]
+    end
   end
 
 end

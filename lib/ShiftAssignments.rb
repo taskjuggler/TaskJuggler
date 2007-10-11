@@ -181,6 +181,15 @@ class ShiftAssignments
     (getSbSlot(date) & 0xFF) == 3
   end
 
+  # Return a list of intervals that lay within _iv_ and are at least
+  # minDuration long and contain no working time. In this class the scoreboard
+  # values 2 and 3 mark time off. Additionally the 8-th but may be set as
+  # well.
+  def collectTimeOffIntervals(iv, minDuration)
+    @scoreboard.collectTimeOffIntervals(iv, minDuration,
+                                        [ 2, 3, (1 << 8) | 2, (1 << 8) | 3 ])
+  end
+
   # Returns true of two ShiftAssignments object have the same assignment
   # pattern.
   def ==(shiftAssignments)
