@@ -219,17 +219,20 @@ EOT
       body << (tab = XMLElement.new('table',
         'style' => 'width:90%; margin-left:5%; margin-right:5%'))
       tab << (tr = XMLElement.new('tr'))
+      tr << (td = XMLElement.new('td',
+        'style' => 'text-align:left; width:35%;'))
       if @predecessor
-        tr << (td = XMLElement.new('td', 'style' => 'text-align:left'))
         td << XMLText.new('<< ')
         td << XMLNamedText.new("#{@predecessor.keyword}", 'a',
                                'href' => "#{@predecessor.keyword}.html")
         td << XMLText.new(' <<')
       end
-      tr << (td = XMLElement.new('td', 'style' => 'text-align:center'))
+      tr << (td = XMLElement.new('td',
+        'style' => 'text-align:center; width:30%;'))
       td << XMLNamedText.new('Intro', 'a', 'href' => 'Intro.html')
+      tr << (td = XMLElement.new('td',
+        'style' => 'text-align:right; width:35%;'))
       if @successor
-        tr << (td = XMLElement.new('td', 'style' => 'text-align:right'))
         td << XMLText.new('>> ')
         td << XMLNamedText.new("#{@successor.keyword}", 'a',
                                'href' => "#{@successor.keyword}.html")

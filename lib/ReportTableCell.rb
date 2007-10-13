@@ -67,8 +67,7 @@ class ReportTableCell
     attribs['colspan'] = "#{@columns}" if @columns > 1
     attribs['class'] = @category ? @category : 'tabcell'
 
-    cellTypeChar = @headerCell ? 'h' : 'd'
-    cell = XMLElement.new("t#{cellTypeChar}", attribs)
+    cell = XMLElement.new('td', attribs)
     if @width
       cell << (div = XMLElement.new('div', 'style' => "width: #{@width}px"))
       div << XMLText.new(@text)

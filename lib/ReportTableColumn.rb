@@ -10,14 +10,17 @@
 
 class ReportTableColumn
 
-  attr_reader :descr, :cell1, :cell2
+  attr_reader :definition, :cell1, :cell2
+  attr_accessor :scrollbar
 
-  def initialize(table, descr, title)
+  def initialize(table, definition, title)
     @table = table
     @table.addColumn(self)
-    @descr = descr
+    definition.column = self
+    @definition = definition
     @cell1 = ReportTableCell.new(nil, title, true)
     @cell2 = ReportTableCell.new(nil, '', true)
+    @scrollbar = false
   end
 
   def to_html(row)

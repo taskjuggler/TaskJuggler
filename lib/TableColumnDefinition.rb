@@ -12,13 +12,18 @@
 class TableColumnDefinition
 
   attr_reader :id
-  attr_accessor :title, :scale, :content
+  attr_accessor :title, :scale, :width, :content, :column
 
   def initialize(id, title)
     @id = id
     @title = title
     @content = 'load'
     @scale = 'week'
+    @width = nil
+
+    # Reference to the ReportTableColumn object that was created based on this
+    # definition.
+    @column = nil
   end
 
 end

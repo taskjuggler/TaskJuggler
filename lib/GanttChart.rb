@@ -22,15 +22,25 @@ require 'GanttLine'
 class GanttChart
 
   attr_reader :start, :end, :weekStartsMonday, :header, :width,
-              :scale, :scales, :headerHeight
+              :scale, :scales
+  attr_writer :viewWidth
 
   # Create the GanttChart object, but don't do much right now. We still need
   # more information about the chart before we can actually generate it.
   def initialize(weekStartsMonday)
+    # The start and end dates of the reported interval.
     @start = nil
     @end = nil
 
-    @scales = [
+    # This defines the possible horizontal scales that the Gantt chart can
+    # have. The scales differ in their resolution and the amount of detail
+    # that is displayed. A scale is defined by its name. The _name_ must be
+    # unique and can be used to select the scale. The _stepSize_ defines the
+    # width of a scale step in pixels. The _stepsToFunc_ is a TjTime method
+    # that determines the number of steps between 2 dates. _minTimeOff_
+    # defines the minimum required length of an time-off interval that is
+    # displayed in this scale.
+    @@scales = [
       { 'name' => 'hour', 'stepSize' => 20, 'stepsToFunc' => :hoursTo,
         'minTimeOff' => 5 * 60 },
       { 'name' => 'day', 'stepSize' => 20, 'stepsToFunc' => :daysTo,
@@ -44,12 +54,21 @@ class GanttChart
       { 'name' => 'year', 'stepSize' => 20, 'stepsToFunc' => :yearsTo,
         'minTimeOff' => -1 }
     ]
+    # This points to one of the scales above and marks the current scale.
     @scale = nil
+    # The height of the chart (without the header)
+    @height = 0
+    # The width of the chart in pixels.
     @width = 0
-    @headerHeight = 39
+    # The width of the view that the chart is presented in. If it's nil, the
+    # view will be adapted to the width of the chart.
+    @viewWidth = nil
+    # True of the week starts on a Monday.
     @weekStartsMonday = weekStartsMonday
 
+    # Reference to the GanttHeader object that models the chart header.
     @header = nil
+    # The GanttLine objects that model the lines of the chart.
     @bars = []
   end
 
@@ -75,6 +94,31 @@ class GanttChart
     @header = GanttHeader.new(self)
   end
 
+  def to_html
+    calculatePositions
+
+    td = XMLElement.new('td',
+      'rowspan' => "#{2 + @bars.length + (hasScrollbar? ? 1 : 0)}",
+      'style' => 'padding:0px; vertical-align:top;')
+    td << (scrollDiv = XMLElement.new('div',
+      'style' => 'position:relative; ' +
+                 "overflow:auto; " +
+                 "width:#{hasScrollbar? ? @viewWidth : @width}px; " +
+                 "height:#{@height + (hasScrollbar? ? 18 : 0)}px;"))
+    scrollDiv << (div = XMLElement.new('div',
+      'style' => "margin:0px; padding:0px; " +
+                 "position:absolute; " +
+                 "top:0px; left:0px; " +
+                 "width:#{@width.to_i}px; " +
+                 "height:#{@height}px; " +
+                 "font-size:10px;"))
+    div << @header.to_html
+    @bars.each do |bar|
+      div << bar.to_html
+    end
+    td
+  end
+
   # Utility function that convers a date to the corresponding X-position in
   # the Gantt chart.
   def dateToX(date)
@@ -83,11 +127,15 @@ class GanttChart
 
   # This is not a user callable function. It's only meant for use within the
   # library.
-  def addBar(bar)
+  def addLine(line)
     if @scale.nil?
       raise "generateByScale or generateByWidth must be called first"
     end
-    @bars << bar
+    @bars << line
+  end
+
+  def hasScrollbar?
+    @viewWidth && @viewWidth < @width
   end
 
 private
@@ -95,9 +143,16 @@ private
   # Find the scale with the name _name_ and return a reference to the scale.
   # If nothing is round an exception is raised.
   def scaleByName(name)
-    @scales.each do |scale|
+    @@scales.each do |scale|
       return scale if scale['name'] == name
     end
     raise "Unknown scale #{name}"
   end
+
+  def calculatePositions
+    @bars.each do |line|
+      @height = line.y + line.height if line.y + line.height > @height
+    end
+  end
+
 end

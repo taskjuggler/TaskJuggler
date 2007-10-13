@@ -17,8 +17,16 @@ class XMLElement
 
   # Construct a new XML element and include it in an existing XMLElement tree.
   def initialize(name, attributes = {})
-    raise "ERROR" unless name.nil? || name.is_a?(String)
+    if (name.nil? && attributes.length > 0) ||
+       (!name.nil? && !name.is_a?(String))
+      raise "Name must be nil or a String "
+    end
     @name = name
+    attributes.each do |n, v|
+      if n.nil? || v.nil?
+        raise "Attribute name (#{n}) or value (#{v}) may not be nil"
+      end
+    end
     @attributes = attributes
     @children = []
     # This can be set to true if <name /> is illegal for this element.

@@ -17,13 +17,17 @@ require 'ReportTableLine'
 # appropriate format.
 class ReportTable
 
-  attr_reader :maxIndent
+  attr_reader :maxIndent, :headerLineHeight
+  attr_writer :hasScrollbars
 
   # Create a new ReportTable object.
   def initialize
+    # The height if the header lines in screen pixels.
+    @headerLineHeight = 19
     @columns = []
     @lines = []
     @maxIndent = 0
+    @hasScrollbars = false
   end
 
   # This function should only be called by the ReportTableColumn constructor.
@@ -36,6 +40,11 @@ class ReportTable
     @lines << line
   end
 
+  # Return the number of registered lines for this table.
+  def lines
+    @lines.length
+  end
+
   # Output the table as HTML.
   def to_html
     determineMaxIndents
@@ -44,19 +53,31 @@ class ReportTable
                            'cellspacing' => '1', 'cellpadding' => '2',
                            'width' => '100%',
                            'class' => 'tab')
-    table << (thead = XMLElement.new('thead'))
+    table << (tbody = XMLElement.new('tbody'))
 
     # Generate the 1st table header line.
-    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
+    tbody << (tr = XMLElement.new('tr', 'class' => 'tabhead',
+                                  'style' => "height:#{@headerLineHeight}px;"))
     @columns.each { |col| tr << col.to_html(1) }
 
     # Generate the 2nd table header line.
-    thead << (tr = XMLElement.new('tr', 'class' => 'tabhead'))
+    tbody << (tr = XMLElement.new('tr', 'class' => 'tabhead',
+                                  'style' => "height:#{@headerLineHeight}px;"))
     @columns.each { |col| tr << col.to_html(2) }
 
     # Generate the rest of the table.
-    table << (tbody = XMLElement.new('tbody'))
     @lines.each { |line| tbody << line.to_html }
+
+    # In case we have columns with scrollbars, we generate an extra line with
+    # cells for all columns that don't have a scrollbar.
+    if @hasScrollbars
+      tbody << (tr = XMLElement.new('tr'))
+      @columns.each do |column|
+        unless column.scrollbar
+          tr << XMLElement.new('td')
+        end
+      end
+    end
 
     table
   end

@@ -18,17 +18,18 @@ require 'GanttLineObjects'
 # resource they are represented as load stacks.
 class GanttLine
 
-  attr_reader :height, :property, :scenarioIdx
+  attr_reader :y, :height, :property, :scenarioIdx
 
   # Create a GanttLine object and generate the abstract representation.
   def initialize(chart, property, scopeProperty, scenarioIdx, y, height)
     @chart = chart
-    @chart.addBar(self)
+    @chart.addLine(self)
 
+    @category = nil
     @property = property
     @scopeProperty = scopeProperty
     @scenarioIdx = scenarioIdx
-    @y = y
+    @y = y + chart.header.height + 1
     @height = height
     @timeOffZones = []
 
@@ -37,13 +38,12 @@ class GanttLine
 
   # Convert the abstract representation of the GanttLine into HTML elements.
   def to_html
-    td = XMLElement.new('td', 'class' => @category,
-                       'style' => 'padding:0px')
-    td << (div = XMLElement.new('div',
-      'style' => "margin:0px; padding:0px; " +
-                 "position:relative; overflow:hidden; " +
-                 "width:#{@chart.width.to_i}px; height:#{@height}px; " +
-                 "font-size:10px;"))
+    div = XMLElement.new('div', 'class' => @category,
+                         'style' => "margin:0px; padding:0px; " +
+                         "position:absolute; overflow:hidden; " +
+                         "left:0px; top:#{@y}px; " +
+                         "width:#{@chart.width.to_i}px; height:#{@height}px; " +
+                         "font-size:10px;")
     @timeOffZones.each do |zone|
       div << rectToHTML(zone[0], 0, zone[1], @height, 'offduty1')
     end
@@ -56,7 +56,7 @@ class GanttLine
       div << c.to_html
     end
 
-    td
+    div
   end
 
   # Draw a filled rectable at position _x_ and _y_ with the dimension _w_ and

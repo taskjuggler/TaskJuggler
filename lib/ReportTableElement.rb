@@ -19,6 +19,8 @@ class ReportTableElement < ReportElement
   def initialize(report)
     super
 
+    @headerLineHeight = 19
+
     # Reference to the intermediate representation.
     @table = nil
     @gantt = nil
@@ -82,36 +84,36 @@ class ReportTableElement < ReportElement
 
 protected
 
-  def generateHeaderCell(columnDescr)
-    case columnDescr.id
+  def generateHeaderCell(columnDef)
+    case columnDef.id
     when 'chart'
-      column = ReportTableColumn.new(@table, columnDescr, '')
-      if @gantt.nil?
-        @gantt = GanttChart.new(@weekStartsMonday)
-        @gantt.generateByScale(@start, @end, columnDescr.scale)
-      end
-      column.cell1.special = @gantt.header
+      column = ReportTableColumn.new(@table, columnDef, '')
+      gantt = GanttChart.new(@weekStartsMonday)
+      gantt.generateByScale(@start, @end, columnDef.scale)
+      gantt.header.height = @table.headerLineHeight * 2 + 1
+      gantt.viewWidth = columnDef.width
+      column.cell1.special = gantt
       column.cell2.hidden = true
     when 'hourly'
-      genCalChartHeader(columnDescr, @start.midnight, :sameTimeNextHour,
+      genCalChartHeader(columnDef, @start.midnight, :sameTimeNextHour,
                         :weekdayAndDate, :hour)
     when 'daily'
-      genCalChartHeader(columnDescr, @start.midnight, :sameTimeNextDay,
+      genCalChartHeader(columnDef, @start.midnight, :sameTimeNextDay,
                         :shortMonthName, :day)
     when 'weekly'
-      genCalChartHeader(columnDescr, @start.beginOfWeek(@weekStartsMonday),
+      genCalChartHeader(columnDef, @start.beginOfWeek(@weekStartsMonday),
                         :sameTimeNextWeek, :shortMonthName, :day)
     when 'monthly'
-      genCalChartHeader(columnDescr, @start.beginOfMonth, :sameTimeNextMonth,
+      genCalChartHeader(columnDef, @start.beginOfMonth, :sameTimeNextMonth,
                         :year, :shortMonthName)
     when 'quarterly'
-      genCalChartHeader(columnDescr, @start.beginOfQuarter,
+      genCalChartHeader(columnDef, @start.beginOfQuarter,
                         :sameTimeNextQuarter, :year, :quarterName)
     when 'yearly'
-      genCalChartHeader(columnDescr, @start.beginOfYear, :sameTimeNextYear,
+      genCalChartHeader(columnDef, @start.beginOfYear, :sameTimeNextYear,
                         nil, :year)
     else
-      column = ReportTableColumn.new(@table, columnDescr, columnDescr.title)
+      column = ReportTableColumn.new(@table, columnDef, columnDef.title)
       column.cell1.rows = 2
       column.cell2.hidden = true
     end
@@ -121,7 +123,6 @@ protected
     lineDict = { }
     no = 0
     lineNo = scopeLine ? scopeLine.lineNo : 0
-    subLineNo = scopeLine ? scopeLine.subLineNo : 0
     # Init the variable to get a larger scope
     line = nil
     taskList.each do |task|
@@ -134,11 +135,11 @@ protected
 
         line.no = no unless resource
         line.lineNo = lineNo
-        line.subLineNo = subLineNo += 1
+        line.subLineNo = @table.lines
         setFontAndIndent(line, @taskRoot, taskList.treeMode?)
 
-        @columns.each do |column|
-          next unless generateTableCell(line, task, column, scenarioIdx)
+        @columns.each do |columnDef|
+          next unless generateTableCell(line, task, columnDef, scenarioIdx)
         end
       end
 
@@ -156,7 +157,6 @@ protected
     lineDict = { }
     no = 0
     lineNo = scopeLine ? scopeLine.lineNo : 0
-    subLineNo = scopeLine ? scopeLine.subLineNo : 0
     # Init the variable to get a larger scope
     line = nil
     resourceList.each do |resource|
@@ -168,7 +168,7 @@ protected
 
         line.no = no unless task
         line.lineNo = lineNo
-        line.subLineNo = subLineNo += 1
+        line.subLineNo = @table.lines
         setFontAndIndent(line, @resourceRoot, resourceList.treeMode?)
 
         @columns.each do |column|
@@ -188,7 +188,7 @@ protected
 
 private
 
-  def genCalChartHeader(columnDescr, t, sameTimeNextFunc, name1Func, name2Func)
+  def genCalChartHeader(columnDef, t, sameTimeNextFunc, name1Func, name2Func)
     currentInterval = ""
     while t < @end
       cellsInInterval = 0
@@ -199,7 +199,7 @@ private
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
         iv = Interval.new(t, nextT)
-        column = ReportTableColumn.new(@table, columnDescr, '')
+        column = ReportTableColumn.new(@table, columnDef, '')
         if firstColumn.nil?
           firstColumn = column
           column.cell1.text = currentInterval.to_s
@@ -221,14 +221,17 @@ private
     end
   end
 
-  def generateTableCell(line, property, column, scenarioIdx)
-    case column.id
+  def generateTableCell(line, property, columnDef, scenarioIdx)
+    case columnDef.id
     when 'chart'
       cell = ReportTableCell.new(line)
-      cell.special = GanttLine.new(@gantt, property,
-                                   line.scopeLine ?
-                                   line.scopeLine.property : nil,
-                                   scenarioIdx, line.lineNo, 20)
+      cell.hidden = true
+      chart = columnDef.column.cell1.special
+      GanttLine.new(chart, property,
+                    line.scopeLine ? line.scopeLine.property : nil,
+                    scenarioIdx, (line.subLineNo - 1) * (line.height + 1),
+                    line.height)
+      @table.hasScrollbars = true if chart.hasScrollbar?
       return true
     when 'hourly'
       start = @start.midnight
@@ -249,18 +252,18 @@ private
       start = @start.beginOfYear
       sameTimeNextFunc = :sameTimeNextYear
     else
-      if calculated?(column.id)
-        genCalculatedCell(scenarioIdx, line, column, property)
+      if calculated?(columnDef.id)
+        genCalculatedCell(scenarioIdx, line, columnDef, property)
         return true
       else
-        return genStandardCell(scenarioIdx, line, column)
+        return genStandardCell(scenarioIdx, line, columnDef)
       end
     end
 
     if property.is_a?(Task)
-      genCalChartTaskCell(scenarioIdx, line, column, start, sameTimeNextFunc)
+      genCalChartTaskCell(scenarioIdx, line, columnDef, start, sameTimeNextFunc)
     elsif property.is_a?(Resource)
-      genCalChartResourceCell(scenarioIdx, line, column, start,
+      genCalChartResourceCell(scenarioIdx, line, columnDef, start,
                               sameTimeNextFunc)
     else
       raise "Unknown property type #{property.class}"
@@ -271,11 +274,11 @@ private
   # Generate a ReportTableCell filled the value of an attribute of the
   # property that line is for. It returns true if the cell exists, false for a
   # hidden cell.
-  def genStandardCell(scenarioIdx, line, column)
+  def genStandardCell(scenarioIdx, line, columnDef)
     property = line.property
     # Create a new cell
     cell = ReportTableCell.new(line, cellText(property, scenarioIdx,
-                                              column.id))
+                                              columnDef.id))
 
     # Determine if this is a multi-row cell
     cellFontFactor = line.fontFactor
@@ -288,7 +291,7 @@ private
       raise "Unknown property type #{property.class}"
     end
 
-    if properties.scenarioSpecific?(column.id)
+    if properties.scenarioSpecific?(columnDef.id)
       # When we list multiple scenarios we reduce the font size by 25%.
       cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
     else
@@ -299,19 +302,19 @@ private
       cell.rows = @scenarios.length
     end
 
-    setStandardCellAttributes(cell, column,
-                              properties.attributeType(column.id), line,
+    setStandardCellAttributes(cell, columnDef,
+                              properties.attributeType(columnDef.id), line,
                               cellFontFactor)
     true
   end
 
-  def genCalculatedCell(scenarioIdx, line, column, property)
+  def genCalculatedCell(scenarioIdx, line, columnDef, property)
     # Create a new cell
     cell = ReportTableCell.new(line)
 
     cellFontFactor = line.fontFactor
     # When we list multiple scenarios we reduce the font size by 25%.
-    if scenarioSpecific?(column.id)
+    if scenarioSpecific?(columnDef.id)
       cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
     else
       if scenarioIdx != @scenarios.first
@@ -321,13 +324,13 @@ private
       cell.rows = @scenarios.length
     end
 
-    setStandardCellAttributes(cell, column, nil, line, cellFontFactor)
+    setStandardCellAttributes(cell, columnDef, nil, line, cellFontFactor)
 
     startIdx = @project.dateToIdx(@start, true)
     endIdx = @project.dateToIdx(@end, true) - 1
     iv = Interval.new(@start, @end)
 
-    case column.id
+    case columnDef.id
     when 'effort'
       workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
       cell.text = @numberFormat.format(workLoad) + 'd'
@@ -337,11 +340,11 @@ private
     when 'no'
       cell.text = line.no.to_s
     else
-      raise "Unsupported column #{column.id}"
+      raise "Unsupported column #{columnDef.id}"
     end
   end
 
-  def genCalChartTaskCell(scenarioIdx, line, columnDescr, t, sameTimeNextFunc)
+  def genCalChartTaskCell(scenarioIdx, line, columnDef, t, sameTimeNextFunc)
     task = line.property
     if line.scopeLine && line.scopeLine.property.is_a?(Resource)
       resource = line.scopeLine.property
@@ -366,7 +369,7 @@ private
       # call TjTime::sameTimeNext... function
       nextT = t.send(sameTimeNextFunc)
       cellIv = Interval.new(t, nextT)
-      case columnDescr.content
+      case columnDef.content
       when 'empty'
       when 'load'
         cell.alignment = 2
@@ -398,7 +401,7 @@ private
     end
   end
 
-  def genCalChartResourceCell(scenarioIdx, line, columnDescr, t,
+  def genCalChartResourceCell(scenarioIdx, line, columnDef, t,
                               sameTimeNextFunc)
     resource = line.property
     if line.scopeLine && line.scopeLine.property.is_a?(Task)
@@ -423,7 +426,7 @@ private
       endIdx = @project.dateToIdx(nextT, true) - 1
       workLoad = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx, task)
       freeLoad = resource.getEffectiveFreeWork(scenarioIdx, startIdx, endIdx)
-      case columnDescr.content
+      case columnDef.content
       when 'empty'
       when 'load'
         cell.alignment = 2
@@ -455,21 +458,21 @@ private
     end
   end
 
-  def setStandardCellAttributes(cell, column, attributeType, line,
+  def setStandardCellAttributes(cell, columnDef, attributeType, line,
                                 cellFontFactor)
     # Determine whether it should be indented
-    if indent(column.id, attributeType)
+    if indent(columnDef.id, attributeType)
       cell.indent = line.indentation
     end
 
-    # Apply column specific font-size factor.
-    cellFontFactor *= fontFactor(column.id,
-                                 @project.tasks.attributeType(column.id))
+    # Apply columnDef specific font-size factor.
+    cellFontFactor *= fontFactor(columnDef.id,
+                                 @project.tasks.attributeType(columnDef.id))
     cell.fontFactor = cellFontFactor
 
     # Determine the cell alignment
-    cell.alignment = alignment(column.id,
-                               @project.tasks.attributeType(column.id))
+    cell.alignment = alignment(columnDef.id,
+                               @project.tasks.attributeType(columnDef.id))
 
     # Set background color
     if line.property.is_a?(Task)

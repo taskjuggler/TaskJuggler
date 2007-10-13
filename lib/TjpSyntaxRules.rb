@@ -255,21 +255,34 @@ EOT
   def rule_columnOptions
     optional
     repeatable
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })
-    doc('columnscale', <<'EOT'
+    doc('column.scale', <<'EOT'
 Specifies the scale that should be used for a chart column. This value is ignored for all other columns.
 EOT
        )
+
     pattern(%w( _title $STRING ), lambda {
       @column.title = @val[1]
     })
-    doc('columntitle', <<'EOT'
+    doc('column.title', <<'EOT'
 Specifies an alternative title for a report column.
 EOT
        )
     arg(1, 'text', 'The new column title.')
+
+    pattern(%w( _width !number ), lambda {
+      @column.width = @val[1]
+    })
+    doc('column.width', <<'EOT'
+Specifies the width of the column in screen pixels. If the content of the
+column does not fit into this width, it will be cut off. In some cases a
+scrollbar is added or a popup window is shown when the mouse is moved over the
+column. The latter is only supported in interactive output formats.
+EOT
+       )
   end
 
   def rule_date

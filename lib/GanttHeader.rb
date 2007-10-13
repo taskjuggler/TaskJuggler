@@ -17,6 +17,7 @@ require 'GanttHeaderScaleItem'
 class GanttHeader
 
   attr_reader :gridLines, :cellStartDates
+  attr_accessor :height
 
   # Create a GanttHeader object and generate the scales for the header.
   def initialize(chart)
@@ -31,22 +32,23 @@ class GanttHeader
     # The x coordinates and width of the cells created by the small scale. The
     # values are stored as [ x, w ].
     @cellStartDates = []
+    # The height of the header in pixels.
+    @height = 39
 
     generate
   end
 
   # Convert the header into an HTML format.
   def to_html
-    th = XMLElement.new('th', 'rowspan' => '2', 'style' => 'padding:0px;')
-    th << (div = XMLElement.new('div', 'class' => 'tabback',
-      'style' => "margin:0px; padding:0px; " +
-                 "position:relative; overflow:hidden; " +
-                 "width:#{@chart.width.to_i}px; " +
-                 "height:#{@chart.headerHeight.to_i}px; " +
-                 "font-size:#{(@chart.headerHeight / 3.5).to_i}px; "))
+    div = XMLElement.new('div', 'class' => 'tabback',
+                         'style' => "margin:0px; padding:0px; " +
+                         "position:relative; overflow:hidden; " +
+                         "width:#{@chart.width.to_i}px; " +
+                         "height:#{@height.to_i}px; " +
+                         "font-size:#{(@height / 3.5).to_i}px; ")
     @largeScale.each { |s| div << s.to_html }
     @smallScale.each { |s| div << s.to_html }
-    th
+    div
   end
 
 private
@@ -55,7 +57,7 @@ private
   # selected scale) for the lower and upper header line.
   def generate
     # The 2 header lines are separated by a 1 pixel boundary.
-    h = ((@chart.headerHeight - 1) / 2).to_i
+    h = ((@height - 1) / 2).to_i
     case @chart.scale['name']
     when 'hour'
       genHeaderScale(@largeScale, 0, h, :midnight, :sameTimeNextDay,
