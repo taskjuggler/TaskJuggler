@@ -10,6 +10,7 @@
 
 require 'GanttHeader'
 require 'GanttLine'
+require 'HTMLGraphics'
 
 # This class represents an abstract (output format independent) Gantt chart.
 # It provides generator functions that can transform the abstract form into
@@ -20,6 +21,8 @@ require 'GanttLine'
 # non-provided value will then be calculated. So after the object has been
 # created, the user must call generateByWidth or generateByResolution.
 class GanttChart
+
+  include HTMLGraphics
 
   attr_reader :start, :end, :weekStartsMonday, :header, :width,
               :scale, :scales
@@ -69,8 +72,32 @@ class GanttChart
     # Reference to the GanttHeader object that models the chart header.
     @header = nil
     # The GanttLine objects that model the lines of the chart.
-    @bars = []
+    @lines = []
+    # This dictionary stores primary task lines indexed by their task. To
+    # handle multiple scenarios, the dictionary stored the lines in an Array.
+    # This is used to generate dependency arrows.
+    @tasks = {}
+    # This is a list of the dependency lines. Each entry is an Array of [x, y]
+    # coordinate pairs.
+    @depArrows = []
+    # This is the list of arrow heads used for the dependency arrows. It
+    # contains an Array of [ x, y ] coordinates that mark the tip of the
+    # arrow.
+    @arrowHeads = []
   end
+
+  # Add a primary tasks line to the dictonary. _task_ is a reference to the
+  # Task object and _line_ is the corresponding primary ReportTableLine.
+  def addTask(task, line)
+    if @tasks.include?(task)
+      # Append the line to the existing lines.
+      @tasks[task] << line
+    else
+      # Add a new Array for this tasks and store the first line.
+      @tasks[task] = [ line ]
+    end
+  end
+
 
   def generateByWidth(periodStart, periodEnd, width)
     @start = periodStart
@@ -94,12 +121,23 @@ class GanttChart
     @header = GanttHeader.new(self)
   end
 
+  # Convert the chart into an HTML representation.
   def to_html
-    calculatePositions
+    completeChart
 
+    # The chart is rendered into a cell that extends over the full height of
+    # the table. No other cells for this column will be generated. In case
+    # there is a scrollbar, the table will have an extra line to hold the
+    # scrollbar.
     td = XMLElement.new('td',
-      'rowspan' => "#{2 + @bars.length + (hasScrollbar? ? 1 : 0)}",
+      'rowspan' => "#{2 + @lines.length + (hasScrollbar? ? 1 : 0)}",
       'style' => 'padding:0px; vertical-align:top;')
+    # Now we generate two 'div's nested into each other. The first div is the
+    # view. It may contain a scrollbar if the second div is wider than the
+    # first one. In case we need a scrollbar The outer div is 18 pixels
+    # heigher to hold the scrollbar. Unfortunately this must be a hardcoded
+    # value even though the height of the scrollbar varies from system to
+    # system. This value should be good enough for most systems.
     td << (scrollDiv = XMLElement.new('div',
       'style' => 'position:relative; ' +
                  "overflow:auto; " +
@@ -112,10 +150,31 @@ class GanttChart
                  "width:#{@width.to_i}px; " +
                  "height:#{@height}px; " +
                  "font-size:10px;"))
+    # Add the header.
     div << @header.to_html
-    @bars.each do |bar|
-      div << bar.to_html
+    # These are the lines of the chart.
+    @lines.each do |line|
+      div << line.to_html
     end
+
+    # Render the dependency lines.
+    @depArrows.each do |arrow|
+      xx = yy = nil
+      arrow.each do |x, y|
+        if xx
+          div << lineToHTML(xx, yy, x, y, 'depline')
+        end
+        xx = x
+        yy = y
+      end
+    end
+    # And the corresponsing arrow heads.
+    @arrowHeads.each do |x, y|
+      0.upto(5) do |i|
+        div << lineToHTML(x - i, y - i, x - i, y + i, 'depline')
+      end
+    end
+
     td
   end
 
@@ -131,9 +190,10 @@ class GanttChart
     if @scale.nil?
       raise "generateByScale or generateByWidth must be called first"
     end
-    @bars << line
+    @lines << line
   end
 
+  # Returns true if the chart includes a scrollbar.
   def hasScrollbar?
     @viewWidth && @viewWidth < @width
   end
@@ -149,10 +209,64 @@ private
     raise "Unknown scale #{name}"
   end
 
-  def calculatePositions
-    @bars.each do |line|
+  # Calculate the overall height of the chart and generate dependency arrows.
+  def completeChart
+    @lines.each do |line|
       @height = line.y + line.height if line.y + line.height > @height
+    end
+
+    @tasks.each do |task, lines|
+      generateDepArrow(task, lines)
     end
   end
 
+  # Generate an output format independent description of the dependency lines
+  # for a specific tasks. _lines_ is a list of GanttLines that the tasks is
+  # displayed on.
+  def generateDepArrow(task, lines)
+    # Since we need the line and the index we use an index iterator.
+    0.upto(lines.length - 1) do |lineIndex|
+      line = lines[lineIndex]
+      scenarioIdx = line.scenarioIdx
+
+      # Generate the dependencies on the start of the task.
+      startX, startY = line.getTask.startDepLineStart
+      task['startsuccs', scenarioIdx].each do |t, onEnd|
+        endX, endY = @tasks[t][lineIndex].getTask.send(
+          onEnd ? :endDepLineEnd : :startDepLineEnd)
+        routeArrow(startX, startY, endX, endY)
+      end
+
+      # Generate the dependencies on the end of the task.
+      startX, startY = line.getTask.endDepLineStart
+      task['endsuccs', scenarioIdx].each do |t, onEnd|
+        endX, endY = @tasks[t][lineIndex].getTask.send(
+          onEnd ? :endDepLineEnd : :startDepLineEnd)
+        routeArrow(startX, startY, endX, endY)
+      end
+    end
+  end
+
+  # Route the dependency lines from the start to the end point.
+  def routeArrow(startX, startY, endX, endY)
+    # TODO: This is a _very_ simple algorithm.
+    gap = 10
+    points = [ [ startX, startY ] ]
+    points << [ startX + gap, startY ]
+    halfY = (startY + (endY - startY) / 2).to_i
+    points << [ startX + gap, halfY ]
+    points << [ endX - gap, halfY ]
+    points << [ endX - gap, endY ]
+    points << [ endX, endY ]
+    @depArrows << points
+
+    # It's enough to have only a single arrow drawn at the end point even if
+    # it's the destination of multiple lines.
+    @arrowHeads.each do |x, y|
+      return if x == endX && y == endY
+    end
+    @arrowHeads << [ endX, endY ]
+  end
+
 end
+

@@ -9,7 +9,11 @@
 #
 
 require 'XMLDocument'
-require 'GanttLineObjects'
+require 'GanttTaskBar'
+require 'GanttMilestone'
+require 'GanttContainer'
+require 'GanttLoadStack'
+require 'HTMLGraphics'
 
 # This class models the abstract (output independent) form of a line of a
 # Gantt chart. Each line represents a property. Depending on the type of
@@ -18,19 +22,33 @@ require 'GanttLineObjects'
 # resource they are represented as load stacks.
 class GanttLine
 
+  include HTMLGraphics
+
   attr_reader :y, :height, :property, :scenarioIdx
 
   # Create a GanttLine object and generate the abstract representation.
   def initialize(chart, property, scopeProperty, scenarioIdx, y, height)
+    # A reference to the chart that the line belongs to.
     @chart = chart
+    # Register the line with the chart.
     @chart.addLine(self)
 
+    # The category determines the background color of the line.
     @category = nil
+    # The property that is displayed in this line.
     @property = property
+    # In case this line lists the property in the scope of another property,
+    # this is a reference to the line of the enclosing property. Otherwise it
+    # is nil.
     @scopeProperty = scopeProperty
+    # The scenario index.
     @scenarioIdx = scenarioIdx
+    # The y coordinate of the topmost pixel of this line.
     @y = y + chart.header.height + 1
+    # The height of the line in screen pixels.
     @height = height
+    # The x coordinates of the time-off zones. It's an Array of [ startX, endX
+    # ] touples.
     @timeOffZones = []
 
     generate
@@ -38,20 +56,26 @@ class GanttLine
 
   # Convert the abstract representation of the GanttLine into HTML elements.
   def to_html
+    # The whole line is put in a 'div' section. All coordinates relative to
+    # the top-left corner of this div. Elements that extend over the
+    # boundaries of this div are cut off.
     div = XMLElement.new('div', 'class' => @category,
                          'style' => "margin:0px; padding:0px; " +
                          "position:absolute; overflow:hidden; " +
                          "left:0px; top:#{@y}px; " +
                          "width:#{@chart.width.to_i}px; height:#{@height}px; " +
                          "font-size:10px;")
+    # Render time-off zones.
     @timeOffZones.each do |zone|
       div << rectToHTML(zone[0], 0, zone[1], @height, 'offduty1')
     end
 
+    # Render grid lines. The grid lines are determined by the large scale.
     @chart.header.gridLines.each do |line|
       div << rectToHTML(line, 0, 1, @height, 'tabback')
     end
 
+    # Now render the content as HTML elements.
     @content.each do |c|
       div << c.to_html
     end
@@ -59,17 +83,14 @@ class GanttLine
     div
   end
 
-  # Draw a filled rectable at position _x_ and _y_ with the dimension _w_ and
-  # _h_ into another HTML element. The color is determined by the class
-  # _category_.
-  def rectToHTML(x, y, w, h, category)
-    style = "position:absolute; " +
-            "left:#{x.to_i}px; top:#{y.to_i}px; " +
-            "width:#{w.to_i}px; height:#{h.to_i}px;"
-    div = XMLElement.new('div', 'class' => category, 'style' => style)
-    div.mayNotBeEmpty = true
-
-    div
+  # This function only works for primary task lines. It returns the generated
+  # intermediate object for that line.
+  def getTask
+    if @content.length == 1
+      @content[0]
+    else
+      nil
+    end
   end
 
 private
@@ -157,12 +178,15 @@ private
       # bars for the task.
       xStart = @chart.dateToX(taskStart)
       xEnd = @chart.dateToX(taskEnd)
+      @chart.addTask(@property, self)
       if @property['milestone', @scenarioIdx]
-        @content << GanttMilestone.new(self, xStart)
+        @content << GanttMilestone.new(@property, @height, xStart, @y)
       elsif @property.container?
-        @content << GanttContainer.new(self, xStart, xEnd)
+        @content << GanttContainer.new(@property, @scenarioIdx, @height,
+                                       xStart, xEnd, @y)
       else
-        @content << GanttTaskBar.new(self, xStart, xEnd)
+        @content << GanttTaskBar.new(@property, @scenarioIdx, @height,
+                                     xStart, xEnd, @y)
       end
     end
 
@@ -239,12 +263,19 @@ private
 
   end
 
+  # Generate the data structures that mark the time-off periods of a task or
+  # resource int the chart. Depending on the resolution, the only periods with
+  # a duration above the threshold are shown.
   def generateTimeOffZones
     iv = Interval.new(@chart.start, @chart.end)
+    # Don't show any zones if the threshold for this scale is 0 or smaller.
     return if (minTimeOff = @chart.scale['minTimeOff']) <= 0
 
+    # Get the time-off intervals.
     @timeOffZones = @property.collectTimeOffIntervals(@scenarioIdx, iv,
                                                       minTimeOff)
+    # Convert the start/end dates to X coordinates of the chart. When
+    # finished, the zones in @timeOffZones are [ startX, endX ] touples.
     @timeOffZones.each do |zone|
       zone[0] = @chart.dateToX(zone[0])
       zone[1] = @chart.dateToX(zone[1]) - zone[0]

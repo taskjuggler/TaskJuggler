@@ -26,14 +26,12 @@ class TaskListRE < ReportTableElement
       @columns << TableColumnDefinition.new(col, defaultColumnTitle(col))
     end
     # Show all tasks, sorted by tree, start-up, seqno-up.
-    @hideTask =
-      LogicalExpression.new(LogicalOperation.new(0))
+    @hideTask = LogicalExpression.new(LogicalOperation.new(0))
     @sortTasks = [ [ 'tree', true, -1 ],
                    [ 'start', true, 0 ],
                    [ 'seqno', true, -1 ] ]
     # Show no resources, but set sorting to id-up.
-    @hideResource =
-      LogicalExpression.new(LogicalOperation.new(1))
+    @hideResource = LogicalExpression.new(LogicalOperation.new(1))
     @sortResources = [ [ 'id', true, -1 ] ]
 
     @table = ReportTable.new
@@ -58,7 +56,7 @@ class TaskListRE < ReportTableElement
     resourceList.setSorting(@sortResources)
 
     # Generate the list.
-    generateTaskList(taskList, resourceList, nil, nil)
+    generateTaskList(taskList, resourceList, nil)
   end
 
 end

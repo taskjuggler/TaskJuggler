@@ -16,14 +16,12 @@ require 'GanttChart'
 # format.
 class ReportTableElement < ReportElement
 
+  # Generate a new ReportTableElement object.
   def initialize(report)
     super
 
-    @headerLineHeight = 19
-
     # Reference to the intermediate representation.
     @table = nil
-    @gantt = nil
   end
 
   # This is an abstract member that all sub classes must re-implement. It may
@@ -84,14 +82,24 @@ class ReportTableElement < ReportElement
 
 protected
 
+  # Generates cells for the table header. _columnDef_ is the
+  # TableColumnDefinition object that describes the column. Based on the id of
+  # the column different actions need to be taken to generate the header text.
   def generateHeaderCell(columnDef)
     case columnDef.id
     when 'chart'
-      column = ReportTableColumn.new(@table, columnDef, '')
+      # For the 'chart' column we generate a GanttChart object. The sizes are
+      # set so that the lines of the Gantt chart line up with the lines of the
+      # table.
       gantt = GanttChart.new(@weekStartsMonday)
       gantt.generateByScale(@start, @end, columnDef.scale)
+      # The header consists of 2 lines separated by a 1 pixel boundary.
       gantt.header.height = @table.headerLineHeight * 2 + 1
+      # The maximum width of the chart. In case it needs more space, a
+      # scrollbar is shown or the chart gets truncated depending on the output
+      # format.
       gantt.viewWidth = columnDef.width
+      column = ReportTableColumn.new(@table, columnDef, '')
       column.cell1.special = gantt
       column.cell2.hidden = true
     when 'hourly'
@@ -113,15 +121,24 @@ protected
       genCalChartHeader(columnDef, @start.beginOfYear, :sameTimeNextYear,
                         nil, :year)
     else
+      # This is the most common case. It does not need any special treatment.
+      # We just set the pre-defined or user-defined column title in the first
+      # row of the header. The 2nd row is not visible.
       column = ReportTableColumn.new(@table, columnDef, columnDef.title)
       column.cell1.rows = 2
       column.cell2.hidden = true
     end
   end
 
-  def generateTaskList(taskList, resourceList, resource, scopeLine)
-    lineDict = { }
+  # Generate a ReportTableLine for each of the tasks in _taskList_. In case
+  # _resourceList_ is not nil, it also generates the nested resource lines for
+  # each resource that is assigned to the particular task. If _scopeLine_
+  # is defined, the generated task lines will be within the scope this resource
+  # line.
+  def generateTaskList(taskList, resourceList, scopeLine)
+    # The primary line counter. Is not used for enclosed lines.
     no = 0
+    # The scope line counter. It's reset for each new scope.
     lineNo = scopeLine ? scopeLine.lineNo : 0
     # Init the variable to get a larger scope
     line = nil
@@ -129,33 +146,41 @@ protected
       no += 1
       lineNo += 1
       @scenarios.each do |scenarioIdx|
-        # Generate line for each task
+        # Generate line for each task.
         line = ReportTableLine.new(@table, task, scopeLine)
-        lineDict[task] = line
 
-        line.no = no unless resource
+        line.no = no unless scopeLine
         line.lineNo = lineNo
         line.subLineNo = @table.lines
         setFontAndIndent(line, @taskRoot, taskList.treeMode?)
 
+        # Generate a cell for each column in this line.
         @columns.each do |columnDef|
           next unless generateTableCell(line, task, columnDef, scenarioIdx)
         end
       end
 
       if resourceList
+        # If we have a resourceList we generate nested lines for each of the
+        # resources that are assigned to this task and pass the user-defined
+        # filter.
         assignedResourceList = filterResourceList(resourceList, task,
             @hideResource, @hideTask)
         assignedResourceList.setSorting(@sortResources)
-        lineNo = generateResourceList(assignedResourceList, nil, task, line)
+        lineNo = generateResourceList(assignedResourceList, nil, line)
       end
     end
     lineNo
   end
 
-  def generateResourceList(resourceList, taskList, task, scopeLine)
-    lineDict = { }
+  # Generate a ReportTableLine for each of the resources in _resourceList_. In
+  # case _taskList_ is not nil, it also generates the nested task lines for
+  # each task that the resource is assigned to. If _scopeLine_ is defined, the
+  # generated resource lines will be within the scope this task line.
+  def generateResourceList(resourceList, taskList, scopeLine)
+    # The primary line counter. Is not used for enclosed lines.
     no = 0
+    # The scope line counter. It's reset for each new scope.
     lineNo = scopeLine ? scopeLine.lineNo : 0
     # Init the variable to get a larger scope
     line = nil
@@ -163,24 +188,28 @@ protected
       no += 1
       lineNo += 1
       @scenarios.each do |scenarioIdx|
+        # Generate line for each resource.
         line = ReportTableLine.new(@table, resource, scopeLine)
-        lineDict[resource] = line
 
-        line.no = no unless task
+        line.no = no unless scopeLine
         line.lineNo = lineNo
         line.subLineNo = @table.lines
         setFontAndIndent(line, @resourceRoot, resourceList.treeMode?)
 
+        # Generate a cell for each column in this line.
         @columns.each do |column|
           next unless generateTableCell(line, resource, column, scenarioIdx)
         end
       end
 
       if taskList
+        # If we have a taskList we generate nested lines for each of the
+        # tasks that the resource is assigned to and pass the user-defined
+        # filter.
         assignedTaskList = filterTaskList(taskList, resource,
             @hideTask, @hideResource)
         assignedTaskList.setSorting(@sortTasks)
-        lineNo = generateTaskList(assignedTaskList, nil, resource, line)
+        lineNo = generateTaskList(assignedTaskList, nil, line)
       end
     end
     lineNo
@@ -540,7 +569,8 @@ private
 private
 
   def generateLegend
-    table = XMLBlob.new(<<'EOT'
+    table = []
+    table << XMLBlob.new(<<'EOT'
 <table summary="Legend" width="100%" align="center" border="0" cellpadding="2"
        cellspacing="1">
   <thead>
@@ -559,7 +589,16 @@ private
     <tr class="tabfront">
 <!--    <td class="tabback"></td> -->
     <td width="23%">Container Task</td>
-    <td width="10%" align="center"><b>v--------v</b></td>
+    <td width="10%" align="center">
+EOT
+        )
+    container = GanttContainer.new(nil, 0, 15, 5, 35, 0)
+    table << (div = XMLElement.new('div',
+      'style' => 'position:relative; width:40px; height:15px;'))
+    div << container.to_html
+
+    table << XMLBlob.new(<<'EOT'
+    </td>
     <td class="tabback"></td>
     <td width="23%">Completed Work</td>
     <td width="10%" class="done1"></td>
@@ -571,7 +610,16 @@ private
   <tr class="tabfront">
 <!--    <td class="tabback"></td> -->
     <td>Normal Task</td>
-    <td align="center">[======]</td>
+    <td align="center">
+EOT
+        )
+    taskBar = GanttTaskBar.new(nil, 0, 15, 5, 35, 0)
+    table << (div = XMLElement.new('div',
+      'style' => 'position:relative; width:40px; height:15px;'))
+    div << taskBar.to_html
+
+    table << XMLBlob.new(<<'EOT'
+    </td>
     <td class="tabback"></td>
     <td>Incomplete Work</td>
     <td class="todo1"></td>
@@ -583,7 +631,15 @@ private
   <tr class="tabfront">
 <!--    <td class="tabback"></td> -->
     <td>Milestone</td>
-    <td align="center"><b>&lt;&gt;</b></td>
+    <td align="center">
+EOT
+        )
+    milestone = GanttMilestone.new(nil, 15, 10, 0)
+    table << (div = XMLElement.new('div',
+      'style' => 'position:relative; width:20px; height:15px;'))
+    div << milestone.to_html
+    table << XMLBlob.new(<<'EOT'
+    </td>
     <td class="tabback"></td>
     <td>Vacation</td>
     <td class="offduty1"></td>

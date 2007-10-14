@@ -140,6 +140,7 @@ private
   .free { background-color:#a5ffb4; }
   .busy { background-color:#ff9b9b; }
   .assigned { background-color:#ff3b3b; }
+  .depline { background-color:#000000; }
 EOT
                         )
     html << (body = XMLElement.new('body'))

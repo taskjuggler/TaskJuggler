@@ -1365,6 +1365,9 @@ EOT
     singlePattern('_hourly')
     descr('A group of columns with one column for each hour')
 
+    singlePattern('_id')
+    descr('The id of the item')
+
     singlePattern('_index')
     descr('The index of the item based on the nesting hierachy')
 
@@ -1391,6 +1394,9 @@ EOT
 
     singlePattern('_name')
     descr('The name or description of the item')
+
+    singlePattern('_note')
+    descr('The note attached to a task')
 
     singlePattern('_pathcriticalness')
     descr('The criticalness of the task with respect to all the paths that ' +
