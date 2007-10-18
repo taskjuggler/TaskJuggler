@@ -93,6 +93,13 @@ class GanttLine
     end
   end
 
+  # Register the areas that dependency lines should not cross.
+  def addBlockedZones(router)
+    @content.each do |c|
+      c.addBlockedZones(router)
+    end
+  end
+
 private
 
   # Create the data objects that represent the abstract form of this
@@ -283,3 +290,4 @@ private
   end
 
 end
+

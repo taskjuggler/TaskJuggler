@@ -20,7 +20,8 @@ require 'LogicalExpression'
 # that are used by many reports.
 class ReportElement
 
-  attr_accessor :headline, :columns, :start, :end, :scenarios,
+  attr_reader :start, :end, :userDefinedPeriod
+  attr_accessor :headline, :columns, :scenarios,
                 :taskRoot, :resourceRoot,
                 :timeFormat, :numberFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
@@ -54,6 +55,7 @@ class ReportElement
     @taskroot = @report.taskroot
     @timeFormat = @report.timeformat
     @timezone = @report.timezone
+    @userDefinedPeriod = @report.userDefinedPeriod
     @weekStartsMonday = @report.weekstartsmonday
 
     @propertiesById = {
@@ -69,6 +71,18 @@ class ReportElement
       StringAttribute    => [ false,  0,    1.0 ],
       FloatAttribute     => [ false,  2,    1.0 ]
     }
+  end
+
+  # Set the start _date_ of the report period and mark it as user defined.
+  def start=(date)
+    @start = date
+    @userDefinedPeriod = true
+  end
+
+  # Set the end _date_ of the report period and mark it as user defined.
+  def end=(date)
+    @end = date
+    @userDefinedPeriod = true
   end
 
   # Take the complete task list and remove all tasks that are matching the
@@ -222,6 +236,27 @@ class ReportElement
 
   def supportedColumns
     @propertiesById.keys
+  end
+protected
+
+  # In case the user has not specified the report period, we try to fit all
+  # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
+  # list of scenario indexes.
+  def adjustReportPeriod(tasks, scenarios)
+    return if tasks.empty?
+
+    @start = @end = nil
+    scenarios.each do |scenarioIdx|
+      tasks.each do |task|
+        date = task['start', scenarioIdx]
+        @start = date if @start.nil? || date < @start
+        date = task['end', scenarioIdx]
+        @end = date if @end.nil? || date > @end
+      end
+    end
+    padding = ((@end - @start) * 0.05).to_i
+    @start -= padding
+    @end += padding
   end
 
 private

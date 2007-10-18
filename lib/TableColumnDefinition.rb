@@ -18,9 +18,9 @@ class TableColumnDefinition
     @id = id
     @title = title
     @content = 'load'
-    @scale = 'week'
+    @scale = 'day'
     # The default maximum width of columns.
-    @width = 350
+    @width = 450
 
     # Reference to the ReportTableColumn object that was created based on this
     # definition.

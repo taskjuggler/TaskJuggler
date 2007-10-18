@@ -47,6 +47,11 @@ class GanttLoadStack
     end
   end
 
+  def addBlockedZones(router)
+    # Horizontal block
+    router.addZone(@x - 2, @y, @w + 4, @lineHeight, true, false)
+  end
+
   # Convert the abstact representation of the GanttLoadStack into HTML
   # elements.
   def to_html

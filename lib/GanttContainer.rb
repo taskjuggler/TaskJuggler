@@ -53,6 +53,21 @@ class GanttContainer
     [ @end, @y + @lineHeight / 2 ]
   end
 
+  def addBlockedZones(router)
+    height = (@lineHeight / 2) - @@size
+    # Horizontal block
+    router.addZone(@start - @@size, @y + (@lineHeight / 2) - @@size - 2,
+                   @end - @start + 1 + 2 * @@size, 2 * @@size + 5, true, false)
+    # Block for arrowhead.
+    router.addZone(@start - @@size - 9, @y + (@lineHeight / 2) - 7, 10, 15,
+                   true, true)
+    # Vertical block for end cap
+    router.addZone(@start - @@size - 2, @y, 2 * @@size + 5, @lineHeight,
+                   false, true)
+    router.addZone(@end - @@size - 2, @y, 2 * @@size + 5, @lineHeight,
+                   false, true)
+  end
+
   # Convert the abstact representation of the GanttContainer into HTML
   # elements.
   def to_html

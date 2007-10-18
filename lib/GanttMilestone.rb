@@ -51,6 +51,14 @@ class GanttMilestone
     [ @x + @@size, @y + @lineHeight / 2 ]
   end
 
+  def addBlockedZones(router)
+    router.addZone(@x - @@size - 2, @y + (@lineHeight / 2) - @@size,
+                   2 * @@size + 5, 2 * @@size + 5, true, true)
+    # Block for arrowhead.
+    router.addZone(@x - @@size - 9, @y + (@lineHeight / 2) - 7, 10, 15,
+                   true, true)
+  end
+
   # Convert the abstact representation of the GanttMilestone into HTML
   # elements.
   def to_html

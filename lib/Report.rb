@@ -21,9 +21,9 @@ require 'TjpExportRE'
 # elements.
 class Report
 
-  attr_reader :project
-  attr_accessor :currencyformat, :end, :numberformat, :resourceroot,
-                :shorttimeformat, :start, :taskroot, :timeformat, :timezone,
+  attr_reader :project, :start, :end, :userDefinedPeriod
+  attr_accessor :currencyformat, :numberformat, :resourceroot,
+                :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
 
   # Create a new report object.
@@ -43,9 +43,22 @@ class Report
     @taskroot = nil
     @timeformat = @project['timeformat']
     @timezone = @project['timezone']
+    @userDefinedPeriod = false
     @weekstartsmonday = @project['weekstartsmonday']
 
     @elements = []
+  end
+
+  # Set the start _date_ of the report period and mark it as user defined.
+  def start=(date)
+    @start = date
+    @userDefinedPeriod = true
+  end
+
+  # Set the end _date_ of the report period and mark it as user defined.
+  def end=(date)
+    @end = date
+    @userDefinedPeriod = true
   end
 
   # Add new ouput format request.
@@ -93,6 +106,17 @@ private
     head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
     head << (style = XMLElement.new('style', 'type' => 'text/css'))
     style << XMLBlob.new(<<'EOT'
+  body {
+    font-family:Bitstream Vera Sans, Tahoma, sans-serif;
+    font-size:12px;
+  }
+  h1, h2, table, tr, td, div, span {
+    font-family: Bitstream Vera Sans, Tahoma, sans-serif;
+  }
+  td, div { white-space:nowrap; }
+  h1 { font-size:16px; }
+  h2 { font-size:14px; }
+
   .tabback { background-color:#9a9a9a; }
   .tabfront { background-color:#d4dde6; }
   .tabhead {
@@ -141,6 +165,7 @@ private
   .busy { background-color:#ff9b9b; }
   .assigned { background-color:#ff3b3b; }
   .depline { background-color:#000000; }
+  .white { background-color:#FFFFFF; }
 EOT
                         )
     html << (body = XMLElement.new('body'))

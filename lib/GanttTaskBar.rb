@@ -52,6 +52,18 @@ class GanttTaskBar
     [ @end - 1, @y + @lineHeight / 2 ]
   end
 
+  def addBlockedZones(router)
+    # Horizontal block for whole bar.
+    router.addZone(@start, @y + (@lineHeight / 2) - @@size - 1,
+                   @end - @start + 1, 2 * @@size + 3, true, false)
+    # Block for arrowhead.
+    router.addZone(@start - 9, @y + (@lineHeight / 2) - 7, 10, 15, true, true)
+    # Vertical block for end cap
+    router.addZone(@start - 2, @y, 5, @lineHeight,
+                   false, true)
+    router.addZone(@end - 2, @y, 5, @lineHeight, false, true)
+  end
+
   # Convert the abstact representation of the GanttTaskBar into HTML
   # elements.
   def to_html

@@ -49,7 +49,7 @@ class ReportTableElement < ReportElement
                                      'align' => 'center', 'width' => '100%'))
       table1 << (tr1 = XMLElement.new('tr'))
       tr1 << (td1 = XMLElement.new('td', 'align' => 'center',
-                                   'style' => 'font-size: 130%',
+                                   'style' => 'font-size:16px',
                                    'class' => 'tabfront'))
       td1 << XMLNamedText.new(@headline, 'p')
     end
@@ -61,12 +61,12 @@ class ReportTableElement < ReportElement
     td << @table.to_html
 
     # A sub-table with the legend.
-    tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:70%'))
+    tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
     tr << (td = XMLElement.new('td'))
     td << generateLegend
 
     # The footer with some administrative information.
-    tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:70%'))
+    tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:9px'))
     tr << (td = XMLElement.new('td', 'class' => 'tabfooter'))
     td << XMLText.new(@project['copyright'] + " - ") if @project['copyright']
     td << XMLText.new("Project: #{@project['name']} " +
@@ -522,9 +522,9 @@ private
 
     if treeMode
       # Each level reduces the font-size by another 5%.
-      line.fontFactor = 0.1 + 0.95 ** line.indentation
+      #line.fontFactor = 0.1 + 0.95 ** line.indentation
     else
-      line.fontFactor = 0.95 ** (scopeLine ? scopeLine.indentation : 0)
+      #line.fontFactor = 0.95 ** (scopeLine ? scopeLine.indentation : 0)
     end
   end
 

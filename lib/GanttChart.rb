@@ -10,6 +10,7 @@
 
 require 'GanttHeader'
 require 'GanttLine'
+require 'GanttRouter'
 require 'HTMLGraphics'
 
 # This class represents an abstract (output format independent) Gantt chart.
@@ -73,6 +74,8 @@ class GanttChart
     @header = nil
     # The GanttLine objects that model the lines of the chart.
     @lines = []
+    # The router for dependency lines.
+    @router = nil
     # This dictionary stores primary task lines indexed by their task. To
     # handle multiple scenarios, the dictionary stored the lines in an Array.
     # This is used to generate dependency arrows.
@@ -157,6 +160,8 @@ class GanttChart
       div << line.to_html
     end
 
+    #div << @router.to_html
+
     # Render the dependency lines.
     @depArrows.each do |arrow|
       xx = yy = nil
@@ -215,6 +220,12 @@ private
       @height = line.y + line.height if line.y + line.height > @height
     end
 
+    @router = GanttRouter.new(@width, @height)
+
+    @lines.each do |line|
+      line.addBlockedZones(@router)
+    end
+
     @tasks.each do |task, lines|
       generateDepArrow(task, lines)
     end
@@ -249,16 +260,7 @@ private
 
   # Route the dependency lines from the start to the end point.
   def routeArrow(startX, startY, endX, endY)
-    # TODO: This is a _very_ simple algorithm.
-    gap = 10
-    points = [ [ startX, startY ] ]
-    points << [ startX + gap, startY ]
-    halfY = (startY + (endY - startY) / 2).to_i
-    points << [ startX + gap, halfY ]
-    points << [ endX - gap, halfY ]
-    points << [ endX - gap, endY ]
-    points << [ endX, endY ]
-    @depArrows << points
+    @depArrows << @router.route([startX, startY], [endX, endY])
 
     # It's enough to have only a single arrow drawn at the end point even if
     # it's the destination of multiple lines.
