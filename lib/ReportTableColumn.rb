@@ -19,6 +19,7 @@ class ReportTableColumn
     definition.column = self
     @definition = definition
     @cell1 = ReportTableCell.new(nil, title, true)
+    @cell1.padding = 5
     @cell2 = ReportTableCell.new(nil, '', true)
     @scrollbar = false
   end

@@ -11,7 +11,7 @@
 class ReportTableCell
 
   attr_reader :line
-  attr_accessor :text, :category, :hidden, :alignment, :indent,
+  attr_accessor :text, :category, :hidden, :alignment, :padding, :indent,
                 :fontFactor, :bold, :width, :rows, :columns, :special
 
   def initialize(line, text = '', headerCell = false)
@@ -25,6 +25,8 @@ class ReportTableCell
     # How to horizontally align the cell
     # 0 : left, 1 center, 2 right
     @alignment = 0
+    # Horizontal padding between frame and cell content
+    @padding = 3
     # Whether or not to indent the cell
     @indent = false
     @fontFactor = 1.0;
@@ -51,12 +53,16 @@ class ReportTableCell
     aligns = %w( left center right)
     style = "text-align:#{aligns[@alignment]}; "
     if @indent && @alignment != 1 # center
-      style += 'padding-'
       if @alignment == 0 # left
-        style += "left:#{2 + @indent * 8}px; "
+        style += "padding-left:#{@padding + @indent * 8}px; " +
+                 "padding-right:#{@padding}px; "
       elsif @alignment == 2 # right
-        style += "right:#{2 + (@line.table.maxIndent - @indent) * 8}px; "
+        style += "padding-left:#{@padding}px; " +
+                 "padding-right:#{@padding +
+                                  (@line.table.maxIndent - @indent) * 8}px; "
       end
+    else
+      style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
     end
     style += 'font-weight:bold; ' if @bold
     style += "font-size: #{@fontFactor * 100.0}%; " if fontFactor != 1.0

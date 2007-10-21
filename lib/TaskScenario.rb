@@ -116,6 +116,12 @@ class TaskScenario < ScenarioData
       !hasDurationSpec && (hasStartSpec ^ hasEndSpec)
   end
 
+  # Return true of this Task has a dependency [ _target_, _onEnd ] in the
+  # dependency category _depType_.
+  def hasDependency?(depType, target, onEnd)
+    a(depType).include?([target, onEnd])
+  end
+
   def propagateInitialValues
     propagateDate(a('start'), false) if a('start')
     propagateDate(a('end'), true) if a('end')

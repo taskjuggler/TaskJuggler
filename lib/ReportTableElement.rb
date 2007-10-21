@@ -9,6 +9,7 @@
 #
 
 require 'GanttChart'
+require 'ReportTableLegend'
 
 # This is base class for all types of tabular report elements. All tabular
 # report elements are converted to an abstract (output independent)
@@ -22,6 +23,8 @@ class ReportTableElement < ReportElement
 
     # Reference to the intermediate representation.
     @table = nil
+
+    @legend = ReportTableLegend.new
   end
 
   # This is an abstract member that all sub classes must re-implement. It may
@@ -63,7 +66,7 @@ class ReportTableElement < ReportElement
     # A sub-table with the legend.
     tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
     tr << (td = XMLElement.new('td'))
-    td << generateLegend
+    td << @legend.to_html
 
     # The footer with some administrative information.
     tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:9px'))
@@ -91,7 +94,7 @@ protected
       # For the 'chart' column we generate a GanttChart object. The sizes are
       # set so that the lines of the Gantt chart line up with the lines of the
       # table.
-      gantt = GanttChart.new(@weekStartsMonday)
+      gantt = GanttChart.new(@now, @weekStartsMonday)
       gantt.generateByScale(@start, @end, columnDef.scale)
       # The header consists of 2 lines separated by a 1 pixel boundary.
       gantt.header.height = @table.headerLineHeight * 2 + 1
@@ -566,94 +569,5 @@ private
     end
   end
 
-private
-
-  def generateLegend
-    table = []
-    table << XMLBlob.new(<<'EOT'
-<table summary="Legend" width="100%" align="center" border="0" cellpadding="2"
-       cellspacing="1">
-  <thead>
-    <tr><td colspan="8"></td></tr>
-    <tr class="tabfront">
-<!--      <td class="tabback"></td> -->
-      <td align="center" width="33%" colspan="2"><b>Gantt Symbols</b></td>
-      <td class="tabback"></td>
-      <td align="center" width="33%" colspan="2"><b>Task Colors</b></td>
-      <td class="tabback"></td>
-      <td align="center" width="33%" colspan="2"><b>Resource Colors</b></td>
-<!--      <td class="tabback"></td> -->
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td width="23%">Container Task</td>
-    <td width="10%" align="center">
-EOT
-        )
-    container = GanttContainer.new(nil, 0, 15, 5, 35, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:40px; height:15px;'))
-    div << container.to_html
-
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td width="23%">Completed Work</td>
-    <td width="10%" class="done1"></td>
-    <td class="tabback"></td>
-    <td width="23%">Free</td>
-    <td width="10%" class="free1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td>Normal Task</td>
-    <td align="center">
-EOT
-        )
-    taskBar = GanttTaskBar.new(nil, 0, 15, 5, 35, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:40px; height:15px;'))
-    div << taskBar.to_html
-
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td>Incomplete Work</td>
-    <td class="todo1"></td>
-    <td class="tabback"></td>
-    <td>Partially Loaded</td>
-    <td class="loaded1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td>Milestone</td>
-    <td align="center">
-EOT
-        )
-    milestone = GanttMilestone.new(nil, 15, 10, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:20px; height:15px;'))
-    div << milestone.to_html
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td>Vacation</td>
-    <td class="offduty1"></td>
-    <td class="tabback"></td>
-    <td>Fully Loaded</td>
-    <td class="busy1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr><td colspan="8"></td></tr>
-  </tbody>
-</table>
-EOT
-        )
-    table
-  end
 end
 

@@ -23,7 +23,7 @@ class ReportElement
   attr_reader :start, :end, :userDefinedPeriod
   attr_accessor :headline, :columns, :scenarios,
                 :taskRoot, :resourceRoot,
-                :timeFormat, :numberFormat, :weekStartsMonday,
+                :timeFormat, :now, :numberFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
                 :ganttBars,
@@ -42,6 +42,7 @@ class ReportElement
     @headline = nil
     @hideResource = nil
     @hideTask = nil
+    @now = @report.now
     @numberFormat = @report.numberformat
     @resourceroot = @report.resourceroot
     @rollupResource = nil

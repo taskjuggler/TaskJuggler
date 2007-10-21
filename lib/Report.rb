@@ -22,7 +22,7 @@ require 'TjpExportRE'
 class Report
 
   attr_reader :project, :start, :end, :userDefinedPeriod
-  attr_accessor :currencyformat, :numberformat, :resourceroot,
+  attr_accessor :currencyformat, :now, :numberformat, :resourceroot,
                 :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
 
@@ -36,6 +36,7 @@ class Report
     # The following attributes determine the content and look of the report.
     @currencyformat = @project['currencyformat']
     @end = @project['end']
+    @now = @project['now']
     @numberformat = @project['numberformat']
     @resourceroot = nil
     @shorttimeformat = @project['shorttimeformat']
@@ -165,6 +166,7 @@ private
   .busy { background-color:#ff9b9b; }
   .assigned { background-color:#ff3b3b; }
   .depline { background-color:#000000; }
+  .nowline { background-color:#EE0000; }
   .white { background-color:#FFFFFF; }
 EOT
                         )

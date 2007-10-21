@@ -25,16 +25,17 @@ class GanttChart
 
   include HTMLGraphics
 
-  attr_reader :start, :end, :weekStartsMonday, :header, :width,
+  attr_reader :start, :end, :now, :weekStartsMonday, :header, :width,
               :scale, :scales
   attr_writer :viewWidth
 
   # Create the GanttChart object, but don't do much right now. We still need
   # more information about the chart before we can actually generate it.
-  def initialize(weekStartsMonday)
+  def initialize(now, weekStartsMonday)
     # The start and end dates of the reported interval.
     @start = nil
     @end = nil
+    @now = now
 
     # This defines the possible horizontal scales that the Gantt chart can
     # have. The scales differ in their resolution and the amount of detail
@@ -160,6 +161,7 @@ class GanttChart
       div << line.to_html
     end
 
+    # This is used for debugging and testing only.
     #div << @router.to_html
 
     # Render the dependency lines.
@@ -232,8 +234,9 @@ private
   end
 
   # Generate an output format independent description of the dependency lines
-  # for a specific tasks. _lines_ is a list of GanttLines that the tasks is
-  # displayed on.
+  # for a specific _task_. _lines_ is a list of GanttLines that the tasks are
+  # displayed on. Reports with multiple scenarios have multiple lines per
+  # task.
   def generateDepArrow(task, lines)
     # Since we need the line and the index we use an index iterator.
     0.upto(lines.length - 1) do |lineIndex|
@@ -243,6 +246,9 @@ private
       # Generate the dependencies on the start of the task.
       startX, startY = line.getTask.startDepLineStart
       task['startsuccs', scenarioIdx].each do |t, onEnd|
+        # Skip inherited dependencies.
+        next if t.parent &&
+                task.hasDependency?(scenarioIdx, 'startsuccs', t.parent, onEnd)
         endX, endY = @tasks[t][lineIndex].getTask.send(
           onEnd ? :endDepLineEnd : :startDepLineEnd)
         routeArrow(startX, startY, endX, endY)
@@ -251,6 +257,9 @@ private
       # Generate the dependencies on the end of the task.
       startX, startY = line.getTask.endDepLineStart
       task['endsuccs', scenarioIdx].each do |t, onEnd|
+        # Skip inherited dependencies.
+        next if t.parent &&
+                task.hasDependency?(scenarioIdx, 'endsuccs', t.parent, onEnd)
         endX, endY = @tasks[t][lineIndex].getTask.send(
           onEnd ? :endDepLineEnd : :startDepLineEnd)
         routeArrow(startX, startY, endX, endY)

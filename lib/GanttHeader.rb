@@ -16,7 +16,7 @@ require 'GanttHeaderScaleItem'
 # holds the small scale (e. g. week or day).
 class GanttHeader
 
-  attr_reader :gridLines, :cellStartDates
+  attr_reader :gridLines, :nowLineX, :cellStartDates
   attr_accessor :height
 
   # Create a GanttHeader object and generate the scales for the header.
@@ -29,6 +29,10 @@ class GanttHeader
     # Positions where chart should be marked with vertical lines that match
     # the large scale.
     @gridLines = []
+
+    # X coordinate of the "now" line. nil if "now" is off-chart.
+    @nowLineX = nil
+
     # The x coordinates and width of the cells created by the small scale. The
     # values are stored as [ x, w ].
     @cellStartDates = []
@@ -87,6 +91,9 @@ private
     else
       raise "Unknown scale: #{@chart.scale['name']}"
     end
+
+    nlx = @chart.dateToX(@chart.now)
+    @nowLineX = nlx if nlx
   end
 
   # Generate the actual scale cells.

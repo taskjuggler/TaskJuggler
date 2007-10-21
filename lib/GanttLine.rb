@@ -75,6 +75,11 @@ class GanttLine
       div << rectToHTML(line, 0, 1, @height, 'tabback')
     end
 
+    # Render the 'now' line
+    if @chart.header.nowLineX
+      div << rectToHTML(@chart.header.nowLineX, 0, 1, @height, 'nowline')
+    end
+
     # Now render the content as HTML elements.
     @content.each do |c|
       div << c.to_html
