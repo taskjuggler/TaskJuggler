@@ -22,7 +22,7 @@ require 'TjpExportRE'
 class Report
 
   attr_reader :project, :start, :end, :userDefinedPeriod
-  attr_accessor :currencyformat, :now, :numberformat, :resourceroot,
+  attr_accessor :currencyformat, :loadUnit, :now, :numberformat, :resourceroot,
                 :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
 
@@ -35,6 +35,7 @@ class Report
 
     # The following attributes determine the content and look of the report.
     @currencyformat = @project['currencyformat']
+    @loadUnit = @project['loadunit']
     @end = @project['end']
     @now = @project['now']
     @numberformat = @project['numberformat']
@@ -86,6 +87,8 @@ class Report
         generateCSV
       when :export
         generateExport
+      when :gui
+        # TODO: Find a way to hook up the GUI here.
       else
         raise 'Unknown report output format.'
       end
@@ -168,6 +171,7 @@ private
   .depline { background-color:#000000; }
   .nowline { background-color:#EE0000; }
   .white { background-color:#FFFFFF; }
+  .legendback { background-color:#d4dde6; }
 EOT
                         )
     html << (body = XMLElement.new('body'))

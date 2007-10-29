@@ -65,7 +65,8 @@ class ReportTableElement < ReportElement
 
     # A sub-table with the legend.
     tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
-    tr << (td = XMLElement.new('td'))
+    tr << (td = XMLElement.new('td', 'style' =>
+                               'padding-left:1px; padding-right:1px;'))
     td << @legend.to_html
 
     # The footer with some administrative information.
@@ -365,7 +366,7 @@ private
     case columnDef.id
     when 'effort'
       workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
-      cell.text = @numberFormat.format(workLoad) + 'd'
+      cell.text = scaleLoad(workLoad)
       cell.bold = true if property.container?
     when 'line'
       cell.text = line.lineNo.to_s
@@ -410,7 +411,7 @@ private
         workLoad = task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
                                          resource)
         if workLoad > 0.0
-          cell.text = @numberFormat.format(workLoad)
+          cell.text = scaleLoad(workLoad)
         end
       else
         raise "Unknown column content #{column.content}"

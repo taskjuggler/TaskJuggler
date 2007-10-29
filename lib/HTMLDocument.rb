@@ -21,7 +21,7 @@ class HTMLDocument < XMLDocument
   def initialize(docType = :transitional)
     super()
 
-    @elements << XMLBlob.new('<?xml version="1.0" encoding="iso-8859-1"?>')
+    @elements << XMLBlob.new('<?xml version="1.0" encoding="utf8"?>')
     case docType
     when :strict
       dtdRef = 'Strict'

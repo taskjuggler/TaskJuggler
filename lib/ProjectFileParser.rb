@@ -111,9 +111,9 @@ private
   end
 
   def listRule(name, listItem)
-    pattern([ "#{listItem}", "!#{name}" ],
-      Proc.new { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
-    )
+    pattern([ "#{listItem}", "!#{name}" ], lambda {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
+    })
     newRule(name)
     commaListRule(listItem)
   end
@@ -121,26 +121,26 @@ private
   def commaListRule(listItem)
     optional
     repeatable
-    pattern([ '_,', "#{listItem}" ], Proc.new {
+    pattern([ '_,', "#{listItem}" ], lambda {
       @val[1]
     })
   end
 
   def optionsRule(attributes)
     optional
-    pattern([ '_{', "!#{attributes}", '_}' ], Proc.new {
+    pattern([ '_{', "!#{attributes}", '_}' ], lambda {
       @val[1]
     })
   end
 
   def singlePattern(item)
-    pattern([ item ], Proc.new {
+    pattern([ item ], lambda {
       @val[0]
     })
   end
 
   def operandPattern(operand)
-    pattern([ "_#{operand}", "!operand" ], Proc.new {
+    pattern([ "_#{operand}", "!operand" ], lambda {
       [ @val[0], @val[1] ]
     })
   end

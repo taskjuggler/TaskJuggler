@@ -18,7 +18,7 @@ class TableColumnDefinition
     @id = id
     @title = title
     @content = 'load'
-    @scale = 'day'
+    @scale = 'week'
     # The default maximum width of columns.
     @width = 450
 

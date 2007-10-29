@@ -23,7 +23,7 @@ class ReportElement
   attr_reader :start, :end, :userDefinedPeriod
   attr_accessor :headline, :columns, :scenarios,
                 :taskRoot, :resourceRoot,
-                :timeFormat, :now, :numberFormat, :weekStartsMonday,
+                :timeFormat, :loadUnit, :now, :numberFormat, :weekStartsMonday,
                 :hideTask, :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
                 :ganttBars,
@@ -42,6 +42,7 @@ class ReportElement
     @headline = nil
     @hideResource = nil
     @hideTask = nil
+    @loadUnit = @report.loadUnit
     @now = @report.now
     @numberFormat = @report.numberformat
     @resourceroot = @report.resourceroot
@@ -238,6 +239,7 @@ class ReportElement
   def supportedColumns
     @propertiesById.keys
   end
+
 protected
 
   # In case the user has not specified the report period, we try to fit all
@@ -258,6 +260,26 @@ protected
     padding = ((@end - @start) * 0.05).to_i
     @start -= padding
     @end += padding
+  end
+
+  # Convert a duration to the format specified by @loadUnit.  _work_ is the
+  # effort in man days. The return value is the converted value with optional
+  # unit as a String.
+  def scaleDuration(value)
+    scaleValue(value, [ 24 * 60, 24, 1, 1 / 7, 1 / 30.42, 1 / 365 ])
+  end
+
+  # Convert a load or effort value to the format specified by @loadUnit.
+  # _work_ is the effort in man days. The return value is the converted value
+  # with optional unit as a String.
+  def scaleLoad(value)
+    project = @report.project
+    scaleValue(value, [ project.dailyWorkingHours * 60,
+                        project.dailyWorkingHours,
+                        1,
+                        1 / project.weeklyWorkingDays,
+                        1 / project.monthlyWorkingDays,
+                        1 / project.yearlyWorkingDays ])
   end
 
 private
@@ -293,6 +315,67 @@ private
         end
       end
     end
+  end
+
+  # This function converts number to strings that may include a unit. The
+  # unit is determined by @loadUnit. In the automatic modes, the shortest
+  # possible result is shown and the unit is always appended. _value_ is the
+  # value to convert. _factors_ determines the conversion factors for the
+  # different units.
+  def scaleValue(value, factors)
+    if @loadUnit == :shortAuto || :longAuto
+      # We try all possible units and store the resulting strings here.
+      options = []
+      # For each of the units we can define a maximum value that the value
+      # should not exceed. A maximum of 0 means no limit.
+      max = [ 60, 48, 0, 8, 24, 0 ]
+
+      i = 0
+      shortest = nil
+      factors.each do |factor|
+        scaledValue = value * factor
+        str = @numberFormat.format(scaledValue)
+        # We ignore results that are 0 or exceed the maximum. To ensure that
+        # we have at least one result the unscaled value is always taken.
+        if (factor != 1.0 && scaledValue == 0) ||
+           (max[i] != 0 && scaledValue > max[i])
+          options << nil
+        else
+          options << str
+        end
+        i += 1
+      end
+
+      # Default to days in case they are all the same.
+      shortest = 2
+      # Find the shortest option.
+      0.upto(5) do |i|
+        shortest = i if options[i] &&
+                        options[i].length < options[shortest].length
+      end
+
+      str = options[shortest]
+      if @loadUnit == :longAuto
+        # For the long units we handle singular and plural properly. For
+        # English we just need to append an 's', but this code will work for
+        # other languages as well.
+        units = []
+        if str == "1"
+          units = %w( minute hour day week month year )
+        else
+          units = %w( minutes hours days weeks months years )
+        end
+        str += ' ' + units[shortest]
+      else
+        str += %w( min h d w m y )[shortest]
+      end
+    else
+      # For fixed units we just need to do the conversion. No unit is
+      # included.
+      units = [ :minutes, :hours, :days, :weeks, :months, :years ]
+      str = @numberFormat.format(value * factors[units.index(@loadUnit)])
+    end
+    str
   end
 
 end

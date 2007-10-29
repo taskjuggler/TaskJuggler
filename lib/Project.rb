@@ -61,13 +61,14 @@ class Project
       'dailyworkinghours' => 8.0,
       'end' => nil,
       'flags' => [],
+      'loadunit' => :shortAuto,
       'now' => TjTime.now,
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
       'scheduleGranularity' => 3600,
       'shorttimeformat' => "%H:%M",
       'start' => nil,
-      'timeformat' => "%Y-%m-%d %H:%M",
+      'timeformat' => "%Y-%m-%d",
       'timezone' => nil,
       'vacations' => [],
       'weekstartsmonday' => true,
@@ -189,6 +190,22 @@ class Project
 
   def scenarioCount
     @scenarios.items
+  end
+
+  def dailyWorkingHours
+    @attributes['dailyworkinghours']
+  end
+
+  def weeklyWorkingDays
+    @attributes['yearlyworkingdays'] / 52.1429
+  end
+
+  def monthlyWorkingDays
+    @attributes['yearlyworkingdays'] / 12
+  end
+
+  def yearlyWorkingDays
+    @attributes['yearlyworkingdays']
   end
 
   def scenario(arg)

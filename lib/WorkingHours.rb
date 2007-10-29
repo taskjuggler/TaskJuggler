@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'Interval'
 
 # Class to store the working hours for each day of the week. The working hours

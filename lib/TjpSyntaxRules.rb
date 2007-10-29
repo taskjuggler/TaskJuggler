@@ -1208,7 +1208,9 @@ EOT
     pattern(%w( !include ))
     pattern(%w( !macro ))
     pattern(%w( !resource ))
+    pattern(%w( !resourceReport ))
     pattern(%w( !shift ))
+    pattern(%w( !taskReport ))
     pattern(%w( _supplement !supplement ))
     pattern(%w( !task ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
@@ -1262,6 +1264,15 @@ EOT
     pattern(%w( !hideresource ))
 
     pattern(%w( !hidetask ))
+
+    pattern(%w( _loadunit $ID ), lambda {
+      # TODO
+      #@reportElement.loadUnit = ...
+    })
+    doc('loadunit', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
 
     pattern(%w( !reportPeriod ))
 
@@ -1328,6 +1339,11 @@ EOT
     singlePattern('_complete')
     descr('The completion degree of a task')
 
+    pattern([ '_completed' ], lambda {
+      'complete'
+    })
+    descr('Deprecated alias for complete')
+
     singlePattern('_criticalness')
     descr('A measure for how much effort the resource is allocated for, or' +
           'how strained the allocated resources of a task are')
@@ -1361,6 +1377,11 @@ EOT
 
     singlePattern('_headcount')
     descr('The headcount number of the resource or group')
+
+    pattern([ '_hierarchindex' ], lambda {
+      'wbs'
+    })
+    descr('Deprecated alias for wbs')
 
     singlePattern('_hourly')
     descr('A group of columns with one column for each hour')
@@ -1535,6 +1556,27 @@ EOT
       [ @val[0] ] + @val[1]
     })
   end
+
+  def rule_resourceReport
+    pattern(%w( !resourceReportHeader !reportBody ))
+    doc('resourcereport', <<'EOT'
+The report lists all resources and their respective values in the GUI. The
+task that are the resources are allocated to can be listed as well. In the commandline version this report is ignored.
+EOT
+       )
+  end
+
+  def rule_resourceReportHeader
+    pattern(%w( _resourcereport $STRING ), lambda {
+      @report = Report.new(@project, @val[1], :gui)
+      @reportElement = ResourceListRE.new(@report)
+    })
+    arg(1, 'filename', <<'EOT'
+The name of the report.
+EOT
+       )
+  end
+
 
   def rule_resourceScenarioAttributes
     pattern(%w( _flags !flagList ), lambda {
@@ -1789,18 +1831,17 @@ EOT
   end
 
   def rule_sortCriteria
-    pattern([ "!sortCriterium",
-                 "!moreSortCriteria" ],
-      lambda { [ @val[0] ] + (@val[1].nil? ? [] : @val[1]) }
-    )
+    pattern([ "!sortCriterium", "!moreSortCriteria" ], lambda {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
+    })
   end
 
   def rule_sortCriterium
     pattern(%w( !sortTree ), lambda {
-      [ @val[0] ]
+      @val[0]
     })
     pattern(%w( !sortNonTree ), lambda {
-      [ @val[0] ]
+      @val[0]
     })
   end
 
@@ -2076,6 +2117,27 @@ EOT
     pattern(%w( !taskPred !morePredTasks ), lambda {
       [ @val[0] ] + @val[1]
     })
+  end
+
+  def rule_taskReport
+    pattern(%w( !taskReportHeader !reportBody ))
+    doc('taskreport', <<'EOT'
+The report lists all tasks and their respective values in the GUI. The
+resources that are allocated to each task can be listed as well. In the
+commandline version it is simply ignored.
+EOT
+       )
+  end
+
+  def rule_taskReportHeader
+    pattern(%w( _taskreport $STRING ), lambda {
+      @report = Report.new(@project, @val[1], :gui)
+      @reportElement = TaskListRE.new(@report)
+    })
+    arg(1, 'filename', <<'EOT'
+The name of the report.
+EOT
+       )
   end
 
   def rule_taskScenarioAttributes

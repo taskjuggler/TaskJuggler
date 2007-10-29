@@ -10,93 +10,59 @@
 
 class ReportTableLegend
 
+  attr_accessor :showLegend, :showGanttItems
+
   def initialize
+    @showLegend = true
+    @showGanttItems = true
+    @items = []
   end
 
   def to_html
-    table = XMLElement.new('table', 'width' => '100%', 'border' => '0',
-                           'cellpadding' => '2', 'cellspacing' => '1')
-    table << XMLBlob.new(<<'EOT'
-  <thead>
-    <tr><td colspan="8"></td></tr>
-    <tr class="tabfront">
-<!--      <td class="tabback"></td> -->
-      <td align="center" width="33%" colspan="2"><b>Gantt Symbols</b></td>
-      <td class="tabback"></td>
-      <td align="center" width="33%" colspan="2"><b>Task Colors</b></td>
-      <td class="tabback"></td>
-      <td align="center" width="33%" colspan="2"><b>Resource Colors</b></td>
-<!--      <td class="tabback"></td> -->
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td width="23%">Container Task</td>
-    <td width="10%" align="center">
-EOT
-        )
-    container = GanttContainer.new(nil, 0, 15, 5, 35, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:40px; height:15px;'))
-    div << container.to_html
+    table = XMLElement.new('table', 'class' => 'legendback',
+                           'style' => 'width:100%', 'border' => '0',
+                           'cellspacing' => '1', 'align' => 'center')
+    table << (tbody = XMLElement.new('thead'))
+    tbody << (tr = XMLElement.new('tr'))
 
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td width="23%">Completed Work</td>
-    <td width="10%" class="done1"></td>
-    <td class="tabback"></td>
-    <td width="23%">Free</td>
-    <td width="10%" class="free1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td>Normal Task</td>
-    <td align="center">
-EOT
-        )
-    taskBar = GanttTaskBar.new(nil, 0, 15, 5, 35, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:40px; height:15px;'))
-    div << taskBar.to_html
+    # Empty line to create some distance.
+    tr << XMLElement.new('td', 'colspan' => '8', 'style' => 'height:5px')
+    if @showGanttItems
+      tbody << (tr = XMLElement.new('tr'))
 
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td>Incomplete Work</td>
-    <td class="todo1"></td>
-    <td class="tabback"></td>
-    <td>Partially Loaded</td>
-    <td class="loaded1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr class="tabfront">
-<!--    <td class="tabback"></td> -->
-    <td>Milestone</td>
-    <td align="center">
-EOT
-        )
-    milestone = GanttMilestone.new(nil, 15, 10, 0)
-    table << (div = XMLElement.new('div',
-      'style' => 'position:relative; width:20px; height:15px;'))
-    div << milestone.to_html
-    table << XMLBlob.new(<<'EOT'
-    </td>
-    <td class="tabback"></td>
-    <td>Vacation</td>
-    <td class="offduty1"></td>
-    <td class="tabback"></td>
-    <td>Fully Loaded</td>
-    <td class="busy1"></td>
-<!--    <td class="tabback"></td> -->
-  </tr>
-  <tr><td colspan="8"></td></tr>
-  </tbody>
-EOT
-        )
+      tr << ganttItemToHTML(GanttContainer.new(nil, 0, 15, 5, 35, 0),
+                            'Container Task', 40)
+      tr << spacerToHTML(8)
+      tr << ganttItemToHTML(GanttTaskBar.new(nil, 0, 15, 5, 35, 0),
+                            'Normal Task', 40)
+      tr << spacerToHTML
+      tr << ganttItemToHTML(GanttMilestone.new(nil, 15, 10, 0),
+                            'Milestone', 20)
+    end
+
+    # Empty line to create some distance.
+    tbody << (tr = XMLElement.new('tr'))
+    tr << XMLElement.new('td', 'colspan' => '8', 'style' => 'height:5px')
+
     table
+  end
+
+private
+
+  def ganttItemToHTML(item, name, width)
+    tr = []
+    tr << (td = XMLElement.new('td', 'style' => 'width:19%; ' +
+                               'padding-left:10px; '))
+    td << XMLText.new(name)
+    tr << (td = XMLElement.new('td', 'style' => 'width:8%'))
+    td << (div = XMLElement.new('div',
+        'style' => "position:relative; width:#{width}px; height:15px;"))
+    div << item.to_html
+    tr
+  end
+
+  def spacerToHTML(width = 9)
+    XMLElement.new('td', 'style' => "width:#{width}%")
   end
 
 end

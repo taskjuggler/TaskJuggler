@@ -22,7 +22,7 @@ class TaskListRE < ReportTableElement
   def initialize(report)
     super
     # Set the default columns for this report.
-    %w( wbs name start end ).each do |col|
+    %w( wbs name start end effort chart ).each do |col|
       @columns << TableColumnDefinition.new(col, defaultColumnTitle(col))
     end
     # Show all tasks, sorted by tree, start-up, seqno-up.
