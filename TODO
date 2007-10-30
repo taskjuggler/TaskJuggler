@@ -1,0 +1,39 @@
+= Todo list for TaskJuggler III
+
+This is a possibly still incomplete list of things that still could
+or should be done for TaskJuggler III.
+
+== Missing features for 2.x compatibility
+
+* Add 'Account' property.
+
+* Missing reports: htmlaccountreport, htmlstatusreport, htmlcalendar,
+  xmlreport
+
+* Critical path detection after scheduling.
+
+* Most dynamic report columns are still missing.
+
+* Legacy sorting modes.
+
+* Function support for logical expressions.
+
+== New features
+
+* Hammock tasks
+
+* Delta reports that show only the differences between 2 arbitrary
+  scenarios.
+
+= Discontinued 2.x features
+
+TaskJuggler III should be mostly compatible with 2.x. Existing
+projects should be usable with TaskJuggler III with no to minimal
+effort. Nevertheless we will use the transition to TaskJuggler III as
+an opportunity to drop some things that have been badly designed or
+are of too little use to justify the porting efforts.
+
+* XML file reading.
+
+
+

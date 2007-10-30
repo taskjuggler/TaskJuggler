@@ -313,6 +313,9 @@ private
     cell = ReportTableCell.new(line, cellText(property, scenarioIdx,
                                               columnDef.id))
 
+    # Cells for containers should be using bold font face.
+    cell.bold = true if property.container?
+
     # Determine if this is a multi-row cell
     cellFontFactor = line.fontFactor
 
@@ -344,6 +347,9 @@ private
   def genCalculatedCell(scenarioIdx, line, columnDef, property)
     # Create a new cell
     cell = ReportTableCell.new(line)
+
+    # Cells for containers should be using bold font face.
+    cell.bold = true if property.container?
 
     cellFontFactor = line.fontFactor
     # When we list multiple scenarios we reduce the font size by 25%.
@@ -397,6 +403,10 @@ private
     while t < @end
       # Create a new cell
       cell = ReportTableCell.new(line)
+
+      # Cells for containers should be using bold font face.
+      cell.bold = true if property.container?
+
       cell.fontFactor = cellFontFactor
 
       # call TjTime::sameTimeNext... function
@@ -451,6 +461,10 @@ private
     while t < @end
       # Create a new cell
       cell = ReportTableCell.new(line)
+
+      # Cells for containers should be using bold font face.
+      cell.bold = true if property.container?
+
       cell.fontFactor = cellFontFactor
 
       # call TjTime::sameTimeNext... function
@@ -522,14 +536,8 @@ private
     property = line.property
     scopeLine = line.scopeLine
     level = property.level - (propertyRoot ? propertyRoot.level : 0)
-    line.indentation = scopeLine ? scopeLine.indentation + 1 : 0
-
-    if treeMode
-      # Each level reduces the font-size by another 5%.
-      #line.fontFactor = 0.1 + 0.95 ** line.indentation
-    else
-      #line.fontFactor = 0.95 ** (scopeLine ? scopeLine.indentation : 0)
-    end
+    level += scopeLine.indentation + 1 if scopeLine
+    line.indentation = level if treeMode
   end
 
   # Try to merge equal cells without text to multi-column cells.
