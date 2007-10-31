@@ -28,7 +28,7 @@ class PropertyTreeNode
     @children = Array.new
     if (@parent)
       @parent.addChild(self)
-      @levelSeqNo = parent.children.length + 1
+      @levelSeqNo = parent.children.length
     else
       @levelSeqNo = @propertySet.topLevelItems + 1
     end

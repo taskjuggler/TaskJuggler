@@ -7,6 +7,8 @@ or should be done for TaskJuggler III.
 
 * Add 'Account' property.
 
+* Complete TaskScenario.preScheduleCheck().
+
 * Missing reports: htmlaccountreport, htmlstatusreport, htmlweeklycalendar,
   htmlmonthlycalendar, xmlreport, all csv-reports
 

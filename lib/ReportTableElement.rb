@@ -370,10 +370,13 @@ private
     iv = Interval.new(@start, @end)
 
     case columnDef.id
+    when 'duration'
+      if property.is_a?(Task)
+        cell.text = scaleLoad(property.duration(scenarioIdx))
+      end
     when 'effort'
       workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
       cell.text = scaleLoad(workLoad)
-      cell.bold = true if property.container?
     when 'line'
       cell.text = line.lineNo.to_s
     when 'no'

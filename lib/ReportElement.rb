@@ -62,6 +62,7 @@ class ReportElement
 
     @propertiesById = {
       # ID               Header      Indent  Align FontFac. Calced. Scen Spec.
+      'duration'    => [ 'Duration', true,   2,    1.0,     true,   true],
       'effort'      => [ 'Effort',   true,   2,    1.0,     true,   true],
       'id'          => [ 'Id',       false,  0,    1.0,     false,  false ],
       'line'        => [ 'Line No.', false,  2,    1.0,     true,   false ],

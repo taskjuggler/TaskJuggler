@@ -128,6 +128,26 @@ class TaskScenario < ScenarioData
   end
 
   def preScheduleCheck
+    durationSpecs = 0
+    durationSpecs += 1 if a('effort') > 0.0
+    durationSpecs += 1 if a('length') > 0.0
+    durationSpecs += 1 if a('duration') > 0.0
+    durationSpecs += 1 if a('milestone')
+
+    if @property.container?
+      if durationSpecs > 0
+        error('container_duration',
+              "Container tasks may not have a duration or be marked as " +
+              "milestones.")
+      end
+    else
+      if durationSpecs > 1
+        error('multiple_durations',
+              "Tasks may only have either a duration, length or effort or " +
+              "be a milestone.")
+      end
+    end
+
     # TODO: Fixme
   end
 
@@ -902,6 +922,10 @@ class TaskScenario < ScenarioData
                      "time frame")
 
     @isRunAway = true
+  end
+
+  def duration
+    (a('end') - a('start')) / (60 * 60 * 24)
   end
 
   def getEffectiveWork(startIdx, endIdx, resource = nil)

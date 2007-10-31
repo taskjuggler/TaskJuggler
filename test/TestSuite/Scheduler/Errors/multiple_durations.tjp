@@ -1,0 +1,8 @@
+project test "Test" "1.0" 2007-10-31 +1m
+
+task t "T" {
+# MARK: error 3 multiple_durations 
+  effort 1d
+  length 2d
+}
+
