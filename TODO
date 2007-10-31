@@ -7,8 +7,15 @@ or should be done for TaskJuggler III.
 
 * Add 'Account' property.
 
-* Missing reports: htmlaccountreport, htmlstatusreport, htmlcalendar,
-  xmlreport
+* Missing reports: htmlaccountreport, htmlstatusreport, htmlweeklycalendar,
+  htmlmonthlycalendar, xmlreport, all csv-reports
+
+* Export reports still have less content than 2.x version.
+
+* Column attributes like celltext, cellurl, hidecelltext,
+  hidecellurl, subtitle, subtitleurl, titleurl
+
+* Macro expansion for report cells.
 
 * Critical path detection after scheduling.
 
@@ -18,12 +25,20 @@ or should be done for TaskJuggler III.
 
 * Function support for logical expressions.
 
+* More unit tests for core classes.
+
+* Lots more test cases for the test suite.
+
 == New features
 
 * Hammock tasks
 
 * Delta reports that show only the differences between 2 arbitrary
   scenarios.
+
+* SVG reports
+
+* Pert charts
 
 = Discontinued 2.x features
 
@@ -33,7 +48,8 @@ effort. Nevertheless we will use the transition to TaskJuggler III as
 an opportunity to drop some things that have been badly designed or
 are of too little use to justify the porting efforts.
 
+There is currently no plan to port the TaskJuggler 2.x GUI due to
+lack of time/resources. Help in this area will be greatly appretiated.
+
 * XML file reading.
-
-
 

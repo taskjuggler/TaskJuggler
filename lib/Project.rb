@@ -61,7 +61,7 @@ class Project
       'dailyworkinghours' => 8.0,
       'end' => nil,
       'flags' => [],
-      'loadunit' => :shortAuto,
+      'loadunit' => :shortauto,
       'now' => TjTime.now,
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
