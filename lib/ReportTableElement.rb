@@ -405,7 +405,7 @@ private
       cell = ReportTableCell.new(line)
 
       # Cells for containers should be using bold font face.
-      cell.bold = true if property.container?
+      cell.bold = true if task.container?
 
       cell.fontFactor = cellFontFactor
 
