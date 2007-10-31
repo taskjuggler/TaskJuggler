@@ -142,7 +142,7 @@ private
   def toLocaltime(date, tz = nil)
     oldTimezone = nil
     # Set environment variable TZ to appropriate time zone
-    if @tz
+    if @timezone
       oldTimezone = ENV['tz']
       ENV['tz'] = @timezone
     end

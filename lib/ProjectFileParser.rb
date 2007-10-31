@@ -45,7 +45,7 @@ class ProjectFileParser < TextParser
       error('file_open', $!.message)
     end
 
-    @property = nil
+    @project = @property = nil
     @scenarioIdx = 0
   end
 

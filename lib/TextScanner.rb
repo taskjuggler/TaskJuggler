@@ -55,6 +55,7 @@ class TextScanner
       raise TjException.new, "Cannot open file #{@masterFile}"
     end
     @tokenBuffer = nil
+    @pos = nil
   end
 
   def close
@@ -94,8 +95,7 @@ class TextScanner
     # If we have a pushed-back token, return that first.
     unless @tokenBuffer.nil?
       res = @tokenBuffer
-      @tokenBuffer = nil
-      @pos = nil
+      @tokenBuffer = @pos = nil
       return res
     end
 

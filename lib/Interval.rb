@@ -41,10 +41,6 @@ class Interval
     end
   end
 
-  def ==(iv)
-    return @start == iv.start && @end == iv.end
-  end
-
   def duration
     @end - @start
   end
