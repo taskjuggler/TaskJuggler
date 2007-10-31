@@ -323,7 +323,7 @@ private
   # value to convert. _factors_ determines the conversion factors for the
   # different units.
   def scaleValue(value, factors)
-    if @loadUnit == :shortAuto || :longAuto
+    if @loadUnit == :shortauto || @loadUnit == :longauto
       # We try all possible units and store the resulting strings here.
       options = []
       # For each of the units we can define a maximum value that the value
@@ -355,7 +355,7 @@ private
       end
 
       str = options[shortest]
-      if @loadUnit == :longAuto
+      if @loadUnit == :longauto
         # For the long units we handle singular and plural properly. For
         # English we just need to append an 's', but this code will work for
         # other languages as well.
