@@ -15,6 +15,9 @@ class TjTime
 
   attr_reader :time
 
+  # The constructor is overloaded and accepts 2 kinds of arguments. If _t_ is
+  # a Time object this is just copied to the @time variable. Or else it is
+  # interpreted as seconds after Epoch.
   def initialize(t)
     if t.class == Time
       @time = t
@@ -23,26 +26,37 @@ class TjTime
     end
   end
 
+  # Returns the current UTC time as Time object.
   def TjTime.now
     TjTime.new(Time.now.gmtime)
   end
 
+  # Creates a time based on given values, interpreted as UTC. See Time.gm()
+  # for details.
   def TjTime.gm(*args)
     TjTime.new(Time.gm(*args))
   end
 
+  # Creates a time based on given values, interpreted as local time. The
+  # result is stored as UTC time, though. See Time.local() for details.
   def TjTime.local(*args)
     TjTime.new(Time.local(*args).gmtime)
   end
 
+  # Returns the total number of seconds of the day. The time is assumed to be
+  # in the time zone specified by _tz_.
   def secondsOfDay(tz = nil)
+    # TODO: Add timezone support
     (@time.to_i + @time.gmt_offset) % (60 * 60 * 24)
   end
 
+  # Add _secs_ number of seconds to the time.
   def +(secs)
     TjTime.new(@time + secs)
   end
 
+  # Substract _arg_ number of seconds or return the number of seconds between
+  # _arg_ and this time.
   def -(arg)
     if arg.is_a?(TjTime)
       @time - arg.time
@@ -51,35 +65,44 @@ class TjTime
     end
   end
 
+  # Convert the time to seconds since Epoch and return the module of _val_.
   def %(val)
     @time.to_i % val
   end
 
+  # Return true if time is smaller than _t_.
   def <(t)
     @time < t.time
   end
 
+  # Return true if time is smaller or equal than _t_.
   def <=(t)
     @time <= t.time
   end
 
+  # Return true if time is larger than _t_.
   def >(t)
     @time > t.time
   end
 
+  # Return true if time is larger or equal than _t_.
   def >=(t)
     @time >= t.time
   end
 
+  # Return true if time and _t_ are identical.
   def ==(t)
     return false if t.nil?
     @time == t.time
   end
 
+  # Coparison operator for time with another time _t_.
   def <=>(t)
     @time <=> t.time
   end
 
+  # Iterator that executes the block until time has reached _endDate_
+  # increasing time by _step_ on each iteration.
   def upto(endDate, step = 1)
     t = @time
     while t < endDate.time
@@ -88,6 +111,7 @@ class TjTime
     end
   end
 
+  # Normalize time to the beginning of the current hour.
   def beginOfHour
     t = @time.localtime.to_a
     t[0, 2] = Array.new(2, 0)
@@ -96,6 +120,7 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Normalize time to the beginning of the current day.
   def midnight
     t = @time.localtime.to_a
     t[0, 3] = Array.new(3, 0)
@@ -104,15 +129,22 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Normalize time to the beginning of the current week. _startMonday_
+  # determines whether the week should start on Monday or Sunday.
   def beginOfWeek(startMonday)
     t = @time.to_a
-    t[0, 3] = Array.new(3, 0)
-    t[3] -= t[6] - (startMonday ? 1 : 0)
+    # Set time to noon, 12:00:00
+    t[0, 3] = [ 0, 0, 12 ]
+    weekday = t[6]
     t.slice!(6, 4)
     t.reverse!
-    TjTime.new(Time.local(*t))
+    # Substract the number of days determined by the weekday t[6] and set time
+    # to midnight of that day.
+    (TjTime.new(Time.local(*t)) -
+     (weekday - (startMonday ? 1 : 0)) * 60 * 60 * 24).midnight
   end
 
+  # Normalize time to the beginning of the current month.
   def beginOfMonth
     t = @time.localtime.to_a
     t[0, 3] = Array.new(3, 0)
@@ -122,6 +154,7 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Normalize time to the beginning of the current quarter.
   def beginOfQuarter
     t = @time.localtime.to_a
     t[0, 3] = Array.new(3, 0)
@@ -132,6 +165,7 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Normalize time to the beginning of the current year.
   def beginOfYear
     t = @time.localtime.to_a
     t[0, 3] = Array.new(3, 0)
@@ -141,14 +175,18 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Return a new time that is _hours_ later than time.
   def hoursLater(hours)
     TjTime.new(@time + hours * 3600)
   end
 
+  # Return a new time that is 1 hour later than time.
   def sameTimeNextHour
     hoursLater(1)
   end
 
+  # Return a new time that is 1 day later than time but at the same time of
+  # day.
   def sameTimeNextDay
     delta = [ 0, -1, 1 ]
     localT1 = @time.localtime.to_a
@@ -160,6 +198,8 @@ class TjTime
     raise "Algorithm is broken for #{@time}"
   end
 
+  # Return a new time that is 1 week later than time but at the same time of
+  # day.
   def sameTimeNextWeek
     delta = [ 0, -1, 1 ]
     localT1 = @time.localtime.to_a
@@ -171,6 +211,8 @@ class TjTime
     raise "Algorithm is broken for #{@time}"
   end
 
+  # Return a new time that is 1 month later than time but at the same time of
+  # day.
   def sameTimeNextMonth
     switch_delta = [ 31, 30, 29, 28 ]
     dst_delta = [ 0, -1, 1 ]
@@ -190,6 +232,8 @@ class TjTime
     raise "Algorithm is broken for #{@time}"
   end
 
+  # Return a new time that is 1 quarter later than time but at the same time of
+  # day.
   def sameTimeNextQuarter
     t = @time.localtime.to_a
     if (t[4] += 3) > 12
@@ -201,6 +245,8 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Return a new time that is 1 year later than time but at the same time of
+  # day.
   def sameTimeNextYear
     t = @time.localtime.to_a
     t[5] += 1
@@ -209,61 +255,83 @@ class TjTime
     TjTime.new(Time.local(*t))
   end
 
+  # Return the number of hours between this time and _date_. The result is
+  # always rounded up.
   def hoursTo(date)
     t1, t2 = order(date)
     ((t2 - t1) / 3600).ceil
   end
 
+  # Return the number of days between this time and _date_. The result is
+  # always rounded up.
   def daysTo(date)
     countIntervals(date, :sameTimeNextDay)
   end
 
+  # Return the number of weeks between this time and _date_. The result is
+  # always rounded up.
   def weeksTo(date)
     countIntervals(date, :sameTimeNextWeek)
   end
 
+  # Return the number of months between this time and _date_. The result is
+  # always rounded up.
   def monthsTo(date)
     countIntervals(date, :sameTimeNextMonth)
   end
 
+  # Return the number of quarters between this time and _date_. The result is
+  # always rounded up.
   def quartersTo(date)
     countIntervals(date, :sameTimeNextQuarter)
   end
 
+  # Return the number of years between this time and _date_. The result is
+  # always rounded up.
   def yearsTo(date)
     countIntervals(date, :sameTimeNextYear)
   end
 
+  # This function is just a wrapper around Time.strftime(). In case @time is
+  # nil, it returns 'unkown'.
   def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
-    return "unknown" if @time.nil?
+    return 'unknown' if @time.nil?
     # Always report values in local timezone
     @time.clone.localtime.strftime(format)
   end
 
+  # Return the seconds since Epoch.
   def to_i
     @time.to_i
   end
 
+  # Return the abbreviated month name.
   def shortMonthName
     @time.strftime('%b')
   end
 
+  # Return the number of the quarter prefixed by a 'Q'.
   def quarterName
     "Q#{(@time.mon / 3) + 1}"
   end
 
+  # Return the week number. _weekStartsMonday_ specifies wheter the counting
+  # should be for weeks starting Mondays or Sundays.
   def week(weekStartsMonday)
     @time.strftime(weekStartsMonday ? '%W' : '%U')
   end
 
+  # Return the abbreviated month name and the full year. E. g. 'Feb 1972'.
   def monthAndYear
     @time.strftime('%b %Y')
   end
 
+  # Return the abbreviated weekday and the full date. E. g. 'Sat 2007-11-03'.
   def weekdayAndDate
     @time.strftime('%A %Y-%m-%d')
   end
 
+  # Pass any unknown function directoy to the @time variable.
   def method_missing(func, *args)
     @time.method(func).call(*args)
   end
