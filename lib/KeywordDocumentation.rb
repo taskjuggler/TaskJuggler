@@ -229,7 +229,7 @@ EOT
       end
       tr << (td = XMLElement.new('td',
         'style' => 'text-align:center; width:30%;'))
-      td << XMLNamedText.new('Intro', 'a', 'href' => 'Intro.html')
+      td << XMLNamedText.new('Intro', 'a', 'href' => 'intro.html')
       tr << (td = XMLElement.new('td',
         'style' => 'text-align:right; width:35%;'))
       if @successor
