@@ -320,7 +320,7 @@ private
   # This is just an internal sanity check that is not needed for normal
   # operation. It checks that all the line segments are valid and stored in
   # ascending order.
-  def checkLines(lines)
+  def checkLines(lines) # :nodoc:
     lines.each do |line|
       v = nil
       line.each do |segment|

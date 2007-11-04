@@ -193,7 +193,7 @@ class GanttChart
 
   # This is not a user callable function. It's only meant for use within the
   # library.
-  def addLine(line)
+  def addLine(line) #:nodoc:
     if @scale.nil?
       raise "generateByScale or generateByWidth must be called first"
     end

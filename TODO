@@ -27,6 +27,8 @@ or should be done for TaskJuggler III.
 
 * Function support for logical expressions.
 
+* Limits for resource allocations.
+
 * More unit tests for core classes.
 
 * Lots more test cases for the test suite.

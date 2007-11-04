@@ -16,7 +16,7 @@ class ReportTableColumn
   def initialize(table, definition, title)
     @table = table
     @table.addColumn(self)
-    definition.column = self
+    definition.column = self if definition
     @definition = definition
     @cell1 = ReportTableCell.new(nil, title, true)
     @cell1.padding = 5

@@ -44,11 +44,15 @@ require 'ProjectFileParser'
 # This class implements objects that hold all project properties. Project
 # generally consist of resources, tasks and a number of other optional
 # properties. Tasks, Resources, Accounts and Shifts are all build on the same
-# storage class.
+# underlying storage class PropertyTreeNode.
 class Project
 
   attr_reader :tasks, :resources, :scenarios, :messageHandler
 
+  # Create a project with the specified _id_, _name_ and _version_.
+  # _messageHandler_ is a MessageHandler reference that is used to handle all
+  # error and warning messages that might occur during processing. The
+  # constructor will set default values for all project attributes.
   def initialize(id, name, version, messageHandler)
     @messageHandler = messageHandler
     @attributes = {
@@ -248,12 +252,11 @@ class Project
   end
 
   def schedule
-    @shifts.inheritAttributesFromScenario
-    @shifts.index
-    @resources.inheritAttributesFromScenario
-    @resources.index
-    @tasks.inheritAttributesFromScenario
-    @tasks.index
+    [ @shifts, @resources, @tasks ].each do |p|
+      p.inheritAttributesFromScenario
+      # Set all index counters to their proper values.
+      p.index
+    end
 
     begin
       @scenarios.each do |sc|
@@ -301,23 +304,23 @@ class Project
   # functions will be usable or present in future releases.
   ####################################################################
 
-  def addScenario(scenario)
+  def addScenario(scenario) # :nodoc:
     @scenarios.addProperty(scenario)
   end
 
-  def addShift(shift)
+  def addShift(shift) # :nodoc:
     @shifts.addProperty(shift)
   end
 
-  def addTask(task)
+  def addTask(task) # :nodoc:
     @tasks.addProperty(task)
   end
 
-  def addResource(resource)
+  def addResource(resource) # :nodoc:
     @resources.addProperty(resource)
   end
 
-  def addReport(report)
+  def addReport(report) # :nodoc:
     @reports.push(report)
   end
 
@@ -426,7 +429,7 @@ protected
       task.calcPathCriticalness(scIdx)
     end
 
-    # This is used to debugging only
+    # This is used for debugging only
     if false
       resources.each do |resource|
         puts resource

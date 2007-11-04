@@ -24,10 +24,16 @@ class ReportTable
   def initialize
     # The height if the header lines in screen pixels.
     @headerLineHeight = 19
+    # Array of ReportTableColumn objects.
     @columns = []
+    # Array of ReportTableLine objects.
     @lines = []
     @maxIndent = 0
+    # This variable is set to true if any of the columns needs a horizontal
+    # scrollbar.
     @hasScrollbars = false
+    # This variable is set to true if the table is nested into another table.
+    @nested = false
   end
 
   # This function should only be called by the ReportTableColumn constructor.
@@ -49,10 +55,15 @@ class ReportTable
   def to_html
     determineMaxIndents
 
-    table = XMLElement.new('table', 'align' => 'center',
-                           'cellspacing' => '1', 'cellpadding' => '2',
-                           'width' => '100%',
-                           'class' => 'tab')
+    attributes = {
+      'align' => 'center', 'cellspacing' => '1', 'cellpadding' => '2',
+      'width' => '100%', 'class' => 'tabback'
+    }
+    # Nested tables should not have a cellpadding around the outer cells. The
+    # simplest way to achive this is to overlap the cellpadding of this table
+    # with the cellpadding of the outer table. They both have the same color.
+    attributes['style'] = 'margin:-1px' if @nested
+    table = XMLElement.new('table', attributes)
     table << (tbody = XMLElement.new('tbody'))
 
     # Generate the 1st table header line.

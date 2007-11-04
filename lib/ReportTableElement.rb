@@ -10,6 +10,7 @@
 
 require 'GanttChart'
 require 'ReportTableLegend'
+require 'ColumnTable'
 
 # This is base class for all types of tabular report elements. All tabular
 # report elements are converted to an abstract (output independent)
@@ -222,6 +223,15 @@ protected
 private
 
   def genCalChartHeader(columnDef, t, sameTimeNextFunc, name1Func, name2Func)
+    tableColumn = ReportTableColumn.new(@table, columnDef, '')
+    # Embedded tables have unpredictable width. So we always need to make room
+    # for a potential scrollbar.
+    @table.hasScrollbars = tableColumn.scrollbar = true
+    # Create the table that is embedded in this column.
+    tableColumn.cell1.special = table = ColumnTable.new
+    tableColumn.cell2.hidden = true
+    table.maxWidth = columnDef.width
+
     currentInterval = ""
     while t < @end
       cellsInInterval = 0
@@ -232,7 +242,7 @@ private
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
         iv = Interval.new(t, nextT)
-        column = ReportTableColumn.new(@table, columnDef, '')
+        column = ReportTableColumn.new(table, nil, '')
         if firstColumn.nil?
           firstColumn = column
           column.cell1.text = currentInterval.to_s
@@ -293,10 +303,15 @@ private
       end
     end
 
+    # For embedded column tables we need to create a new line.
+    tcLine = ReportTableLine.new(columnDef.column.cell1.special,
+                                 line.property, line.scopeLine)
+
     if property.is_a?(Task)
-      genCalChartTaskCell(scenarioIdx, line, columnDef, start, sameTimeNextFunc)
+      genCalChartTaskCell(scenarioIdx, tcLine, columnDef, start,
+                          sameTimeNextFunc)
     elsif property.is_a?(Resource)
-      genCalChartResourceCell(scenarioIdx, line, columnDef, start,
+      genCalChartResourceCell(scenarioIdx, tcLine, columnDef, start,
                               sameTimeNextFunc)
     else
       raise "Unknown property type #{property.class}"

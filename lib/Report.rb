@@ -97,7 +97,7 @@ class Report
 
   # This function should only be called within the library. It's not a user
   # callable function.
-  def addElement(element)
+  def addElement(element) # :nodoc:
     @elements << element
   end
 
