@@ -67,6 +67,7 @@ class PropertySet
     @attributeDefinitions[attributeType.id] = attributeType
   end
 
+  # Iterate over all attribute definitions.
   def eachAttributeDefinition
     @attributeDefinitions.each do |key, value|
       yield(value)
@@ -133,33 +134,46 @@ class PropertySet
     end
   end
 
+  # Add the new PropertyTreeNode object _property_ to the set. The set is
+  # indexed by ID. In case an object with the same ID already exists in the
+  # set it will be overwritten.
   def addProperty(property)
+    # The PropertySet defines the set of attribute that each PropertyTreeNode
+    # in this set has. Create these attributes with their default values.
     @attributeDefinitions.each do |id, attributeType|
       property.declareAttribute(attributeType)
     end
 
+    # The PropertyTreeNode objects are indexed by ID or hierachical ID
+    # depending on the name space setting of this set.
     if @flatNamespace
       @properties[property.id] = property
     else
       @properties[property.fullId] = property
     end
+
+    # Increase the counter for top-level items if this property is one.
     @topLevelItems += 1 unless property.parent
   end
 
+  # Return the PropertyTreeNode object with ID _id_ from the set or nil if not
+  # present.
   def [](id)
     @properties[id]
   end
 
+  # Update the WBS and tree indicies.
   def index
-    digits = Math.log10(maxDepth).to_i + 1
-
     each do |p|
       wbsIdcs = p.getWBSIndicies
       tree = ""
       wbs = ""
       first = true
       wbsIdcs.each do |idx|
-        tree += idx.to_s.rjust(digits, '0')
+        # Prefix the level index with zeros so that we always have a 5 digit
+        # long String. 5 digits should be large enough for all real-world
+        # projects.
+        tree += idx.to_s.rjust(5, '0')
         if first
           first = false
         else
@@ -172,6 +186,8 @@ class PropertySet
     end
   end
 
+  # Return the maximum used number of breakdown levels. A flat list has a
+  # maxDepth of 1. A list with one sub level has a maxDepth of 2 and so on.
   def maxDepth
     md = 0
     each do |p|
@@ -180,16 +196,19 @@ class PropertySet
     md + 1
   end
 
+  # Return the number of PropertyTreeNode objects in this set.
   def items
     @properties.length
   end
 
+  # Iterator over all PropertyTreeNode objects in this set.
   def each
     @properties.each do |key, value|
       yield(value)
     end
   end
 
+  # Return the set of PropertyTreeNode objects as flat Array.
   def to_ary
     @properties.values
   end

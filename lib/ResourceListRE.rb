@@ -27,11 +27,11 @@ class ResourceListRE < ReportTableElement
     end
     # Show all resources, sorted by tree and id-up.
     @hideResource = LogicalExpression.new(LogicalOperation.new(0))
-    @sortResources = [ [ 'tree', true, 0 ],
+    @sortResources = [ [ 'tree', true, -1 ],
                        [ 'id', true, -1 ] ]
     # Hide all resources, but set sorting to tree, start-up, seqno-up.
     @hideTask = LogicalExpression.new(LogicalOperation.new(1))
-    @sortTasks = [ [ 'tree', true, 0 ],
+    @sortTasks = [ [ 'tree', true, -1 ],
                    [ 'start', true, 0 ],
                    [ 'seqno', true, -1 ] ]
 

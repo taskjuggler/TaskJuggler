@@ -8,7 +8,14 @@
 # published by the Free Software Foundation.
 #
 
-
+# This class is the base object for all Project properties. A Project property
+# is a e. g. a Task, a Resource or other objects. Such properties can be
+# arranged in tree form by assigning child properties to an existing property.
+# The parent object needs to exist at object creation time. The
+# PropertyTreeNode class holds all data and methods that are common to the
+# different types of properties. Each property can have a set of predifined
+# attributes. The PropertySet class holds collections of the same
+# PropertyTreeNode objects and the defined attributes.
 class PropertyTreeNode
 
   attr_reader :id, :name, :parent, :project, :sequenceNo, :levelSeqNo,
