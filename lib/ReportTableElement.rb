@@ -226,7 +226,7 @@ private
     tableColumn = ReportTableColumn.new(@table, columnDef, '')
     # Embedded tables have unpredictable width. So we always need to make room
     # for a potential scrollbar.
-    @table.hasScrollbars = tableColumn.scrollbar = true
+    tableColumn.scrollbar = true
     # Create the table that is embedded in this column.
     tableColumn.cell1.special = table = ColumnTable.new
     tableColumn.cell2.hidden = true
@@ -274,7 +274,6 @@ private
                     line.scopeLine ? line.scopeLine.property : nil,
                     scenarioIdx, (line.subLineNo - 1) * (line.height + 1),
                     line.height)
-      @table.hasScrollbars = true if chart.hasScrollbar?
       return true
     when 'hourly'
       start = @start.midnight

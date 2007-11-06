@@ -44,8 +44,8 @@ class GanttRouter
     # Clip the input rectangle to fit within the handled area of this router.
     x = clip(x.to_i, @width - 1)
     y = clip(y.to_i, @height - 1)
-    w = clip(w.to_i, @width - x - 1)
-    h = clip(h.to_i, @height - y - 1)
+    w = clip(w.to_i, @width - x)
+    h = clip(h.to_i, @height - y)
 
     # We can ignore empty zones.
     return if w == 0 || h == 0
@@ -56,13 +56,11 @@ class GanttRouter
       y.upto(y + h - 1) do |i|
         addSegment(@hLines[i], [ x, x + w - 1 ])
       end
-      checkLines(@hLines)
     end
     if vert
       x.upto(x + w - 1) do |i|
         addSegment(@vLines[i], [ y, y + h - 1 ])
       end
-      checkLines(@vLines)
     end
   end
 
@@ -88,7 +86,7 @@ class GanttRouter
       #                   2----X end Point
       #                    |gap|
       #
-      xSeg = placeLine([ startPoint[1], endPoint[1] - startPoint[1] + 1],
+      xSeg = placeLine([ startPoint[1], endPoint[1] ],
                        false, startPoint[0] + gap, 1)
       if xSeg && xSeg < endPoint[0] - gap
         addLineTo(points, xSeg, startPoint[1])  # Point 1
@@ -259,6 +257,15 @@ private
         u = p - 1
       end
     end
+    # TODO: This code uses a simple linear search to double check the above
+    # binary search. It can be removed once we know the above code always
+    # works properly.
+    line.each do |segment|
+      if overlaps?(probeSegment, segment)
+        raise "Binary search failed to find collision"
+      end
+    end
+
     false
   end
 
@@ -272,29 +279,30 @@ private
   def placeLine(segment, horizontal, start, delta)
     raise "delta may not be 0" if delta == 0
     # Start must be an integer and lie within the routing area.
-    start = start.to_i
-    start = 0 if start < 0
+    pos = start.to_i
+    pos = 0 if pos < 0
     max = (horizontal ? @height: @width) - 1
-    start = max if start > max
+    pos = max if pos > max
 
     # Make sure that the segment coordinates are in ascending order.
     segment.sort!
     lines = horizontal ? @hLines : @vLines
     # TODO: Remove this check once the code becomes stable.
     checkLines(lines)
-    while collision?(lines[start], segment)
-      start += delta
+    while collision?(lines[pos], segment)
+      pos += delta
       # Check if we have exceded the chart area towards top/left.
       if delta < 0
-        if start < 0
+        if pos < 0
           break
         end
       else
         # And towards right/bottom.
-        break if start >= (horizontal ? @height : @width)
+        break if pos >= (horizontal ? @height : @width)
       end
     end
-    start
+    doubleCheckLine(horizontal ? @hLines : @vLines, pos, segment)
+    pos
   end
 
   # This function adds another waypoint to an existing line. In addition it
@@ -306,12 +314,15 @@ private
 
     x1, y1 = points[-1]
     points << [ x2, y2 ]
+
     if x1 == x2
       # vertical line
+      return if x1 < 0 || x1 >= @width
       x, y, w, h = justify(x1 - 2, y1, 5, y2 - y1 + 1)
       addZone(x, y, w, h, false, true)
     else
       # horizontal line
+      return if y1 < 0 || x1 >= @height
       x, y, w, h = justify(x1, y1 - 2, x2 - x1 + 1, 5)
       addZone(x, y, w, h, true, false)
     end
@@ -320,7 +331,7 @@ private
   # This is just an internal sanity check that is not needed for normal
   # operation. It checks that all the line segments are valid and stored in
   # ascending order.
-  def checkLines(lines) # :nodoc:
+  def checkLines(lines)
     lines.each do |line|
       v = nil
       line.each do |segment|
@@ -331,6 +342,20 @@ private
           raise "Segment sequence error" if v >= segment[0]
         end
         v = segment[1]
+      end
+    end
+  end
+
+  # Internal function that is only used for testing. It raises an exception if
+  # the placed line at _pos_ and [ _lineSegment_[0], _lineSegment_[1] ]
+  # overlaps with a segment of _lines_.
+  def doubleCheckLine(lines, pos, lineSegment)
+    return if pos < 0 || lines[pos].nil?
+    lines[pos].each do |segment|
+      if overlaps?(lineSegment, segment)
+        raise "Internal router failure for #{lines == @vLines ? 'v' : 'h'}" +
+              "Line #{pos}: [#{lineSegment.join(', ')}] overlaps with " +
+              "[#{segment.join(', ')}]."
       end
     end
   end

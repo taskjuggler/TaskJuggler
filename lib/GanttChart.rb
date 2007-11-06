@@ -228,6 +228,8 @@ private
       line.addBlockedZones(@router)
     end
 
+    @router.addZone(@header.nowLineX - 1, 0, 3, @height - 1, false, true)
+
     @tasks.each do |task, lines|
       generateDepArrow(task, lines)
     end

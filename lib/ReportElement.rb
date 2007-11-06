@@ -258,7 +258,7 @@ protected
         @end = date if @end.nil? || date > @end
       end
     end
-    padding = ((@end - @start) * 0.05).to_i
+    padding = ((@end - @start) * 0.10).to_i
     @start -= padding
     @end += padding
   end

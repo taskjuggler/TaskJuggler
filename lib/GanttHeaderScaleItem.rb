@@ -25,8 +25,8 @@ class GanttHeaderScaleItem
   def to_html
     div = XMLElement.new('div', 'class' => 'tabhead',
       'style' => "position:absolute; left:#{@x}px; top:#{@y}px; " +
-      "width:#{@width}px; height:#{@height}px;")
-    div << (div1 = XMLElement.new('div', 'style' => 'padding:2px'))
+      "width:#{@width}px; height:#{@height}px; ")
+    div << (div1 = XMLElement.new('div', 'style' => 'padding:3px; '))
     div1 << XMLText.new("#{label}")
 
     div

@@ -62,7 +62,7 @@ class ReportTableLine
 
   # Return this line as a set of XMLElement that represent the line in HTML.
   def to_html
-    tr = XMLElement.new('tr', 'class' => 'tabline1',
+    tr = XMLElement.new('tr', 'class' => 'tabline',
       'style' => "height:#{@height}px;")
     @cells.each { |cell| tr << cell.to_html }
     tr

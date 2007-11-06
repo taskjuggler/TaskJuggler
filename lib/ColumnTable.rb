@@ -20,7 +20,6 @@ class ColumnTable < ReportTable
   def initialize
     super
     @maxWidth = nil
-    @nested = true
   end
 
   def to_html
@@ -30,26 +29,19 @@ class ColumnTable < ReportTable
       height += line.height + 1
     end
 
-    td = XMLElement.new('td',
-      'rowspan' => "#{2 + @lines.length}",
+    # Since we don't know the resulting width of the column, we need to always
+    # add an extra space for the scrollbar.
+    td = XMLElement.new('td', 'rowspan' => "#{2 + @lines.length + 1}",
       'style' => 'padding:0px; vertical-align:top;')
-    # Now we generate two 'div's nested into each other. The first div is the
-    # view. It may contain a scrollbar if the second div is wider than the
-    # first one. In case we need a scrollbar The outer div is 18 pixels
-    # heigher to hold the scrollbar. Unfortunately this must be a hardcoded
-    # value even though the height of the scrollbar varies from system to
-    # system. This value should be good enough for most systems.
+    # Now we generate a 'div' that will contain the nested table. It has a
+    # height that fits all lines but has a maximum width. In case the embedded
+    # table is larger, a scrollbar will appear. We assume that the scrollbar
+    # has a height of 18 pixels or less.
     td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
       'style' => 'position:relative; overflow:auto; ' +
                  "max-width:#{@maxWidth}px; " +
+                 'margin-top:-1px; margin-bottom:-1px; ' +
                  "height:#{height + 18}px;"))
-    #scrollDiv << (div = XMLElement.new('div',
-    #  'style' => "margin:0px; padding:0px; " +
-    #             "position:absolute; " +
-    #             "top:0px; left:0px; " +
-    #             "width:#{@width.to_i}px; " +
-    #             "height:#{@height}px; " +
-    #             "font-size:10px;"))
 
     scrollDiv << super
     td

@@ -41,7 +41,8 @@ class ReportTableCell
   def ==(c)
     @text == c.text &&
     @alignment == c.alignment &&
-    @indent == c.indent
+    @padding == c.padding &&
+    @indent == c.indent &&
     @category == c.category
   end
 

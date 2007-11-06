@@ -49,7 +49,7 @@ class GanttHeader
                          "position:relative; overflow:hidden; " +
                          "width:#{@chart.width.to_i}px; " +
                          "height:#{@height.to_i}px; " +
-                         "font-size:#{(@height / 3.5).to_i}px; ")
+                         "font-size:#{(@height / 4).to_i}px; ")
     @largeScale.each { |s| div << s.to_html }
     @smallScale.each { |s| div << s.to_html }
     div
