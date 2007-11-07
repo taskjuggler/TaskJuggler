@@ -128,7 +128,6 @@ private
     background-color:#7a7a7a;
     color:#ffffff;
     font-size:110%;
-    font-weight:bold;
     text-align:center;
   }
   .tabhead_offduty {

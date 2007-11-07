@@ -21,6 +21,7 @@ class ReportTableColumn
     @cell1 = ReportTableCell.new(nil, title, true)
     @cell1.padding = 5
     @cell2 = ReportTableCell.new(nil, '', true)
+    @cell1.bold = @cell2.bold = true
     @scrollbar = false
   end
 
