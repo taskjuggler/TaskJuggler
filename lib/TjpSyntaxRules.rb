@@ -1901,6 +1901,11 @@ EOT
               "Sorting criterium expected (e.g. tree, start.up or " +
               "plan.end.down).")
       end
+      if attribute == 'wbs'
+        error('sorting_wbs',
+              "Sorting by wbs is not supported. Please use 'tree' " +
+              '(without appended .up or .down) instead.')
+      end
       [ attribute, direction, scenario ]
     })
     arg(0, 'criteria', <<'EOT'
