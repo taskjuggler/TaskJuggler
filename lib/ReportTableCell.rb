@@ -8,12 +8,21 @@
 # published by the Free Software Foundation.
 #
 
+# This class models the output format independent version of a cell in a
+# ReportTableElement. It belongs to a certain ReportTableLine and
+# ReportTableColumn. Normally a cell contains text on a colored background.
+# By help of the @special variable it can alternatively contain any object the
+# provides the necessary output methods such as to_html.
 class ReportTableCell
 
   attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :padding, :indent,
-                :fontFactor, :bold, :width, :rows, :columns, :special
+                :fontSize, :bold, :width, :rows, :columns, :special
 
+  # Create the ReportTableCell object and initialize the attributes to some
+  # default values. _line_ is the ReportTableLine this cell belongs to. _text_
+  # is the text that should appear in the cell. _headerCell_ is a flag that
+  # must be true only for table header cells.
   def initialize(line, text = '', headerCell = false)
     @line = line
     @line.addCell(self) if line
@@ -23,13 +32,12 @@ class ReportTableCell
     @category = nil
     @hidden = false
     # How to horizontally align the cell
-    # 0 : left, 1 center, 2 right
-    @alignment = 0
+    @alignment = :center
     # Horizontal padding between frame and cell content
     @padding = 3
     # Whether or not to indent the cell
     @indent = false
-    @fontFactor = 1.0;
+    @fontSize = nil
     @bold = false
     @width = nil
     @rows = 1
@@ -38,6 +46,9 @@ class ReportTableCell
     @special = nil
   end
 
+  # Return true if two cells are similar enough so that they can be merged in
+  # the report to a single, wider cell. _c_ is the cell to compare this cell
+  # with.
   def ==(c)
     @text == c.text &&
     @alignment == c.alignment &&
@@ -46,18 +57,20 @@ class ReportTableCell
     @category == c.category
   end
 
+  # Turn the abstract cell representation into an HTML element tree.
   def to_html
     return nil if @hidden
     return @special.to_html if @special
 
     # Determine cell style
+    alignSymbols = [ :left, :center, :right ]
     aligns = %w( left center right)
-    style = "text-align:#{aligns[@alignment]}; "
-    if @indent && @alignment != 1 # center
-      if @alignment == 0 # left
+    style = "text-align:#{aligns[alignSymbols.index(@alignment)]}; "
+    if @indent && @alignment != :center
+      if @alignment == :left
         style += "padding-left:#{@padding + @indent * 8}px; " +
                  "padding-right:#{@padding}px; "
-      elsif @alignment == 2 # right
+      elsif @alignment == :right
         style += "padding-left:#{@padding}px; " +
                  "padding-right:#{@padding +
                                   (@line.table.maxIndent - @indent) * 8}px; "
@@ -66,7 +79,7 @@ class ReportTableCell
       style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
     end
     style += 'font-weight:bold; ' if @bold
-    style += "font-size: #{@fontFactor * 100.0}%; " if fontFactor != 1.0
+    style += "font-size: #{@fontSize}px; " if fontSize
 
     attribs = { 'style' => style }
     # Determine cell attributes

@@ -127,7 +127,6 @@ private
     white-space:nowrap;
     background-color:#7a7a7a;
     color:#ffffff;
-    font-size:110%;
     text-align:center;
   }
   .tabhead_offduty {
@@ -139,7 +138,6 @@ private
     white-space:nowrap;
     background-color:#9a9a9a;
     color:#ffffff;
-    font-size:50%;
     text-align:center;
   }
   .tabline { color:#000000 }

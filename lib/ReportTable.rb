@@ -17,12 +17,14 @@ require 'ReportTableLine'
 # appropriate format.
 class ReportTable
 
-  attr_reader :maxIndent, :headerLineHeight
+  attr_reader :maxIndent, :headerLineHeight, :headerFontSize
 
   # Create a new ReportTable object.
   def initialize
     # The height if the header lines in screen pixels.
     @headerLineHeight = 19
+    # Size of the font used in the header
+    @headerFontSize = 15
     # Array of ReportTableColumn objects.
     @columns = []
     # Array of ReportTableLine objects.
@@ -58,12 +60,14 @@ class ReportTable
 
     # Generate the 1st table header line.
     tbody << (tr = XMLElement.new('tr', 'class' => 'tabhead',
-                                  'style' => "height:#{@headerLineHeight}px;"))
+                                  'style' => "height:#{@headerLineHeight}px; " +
+                                             "font-size:#{@headerFontSize}px;"))
     @columns.each { |col| tr << col.to_html(1) }
 
     # Generate the 2nd table header line.
     tbody << (tr = XMLElement.new('tr', 'class' => 'tabhead',
-                                  'style' => "height:#{@headerLineHeight}px;"))
+                                  'style' => "height:#{@headerLineHeight}px; " +
+                                             "font-size:#{@headerFontSize}px;"))
     @columns.each { |col| tr << col.to_html(2) }
 
     # Generate the rest of the table.

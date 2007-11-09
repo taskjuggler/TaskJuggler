@@ -157,7 +157,7 @@ protected
         line.no = no unless scopeLine
         line.lineNo = lineNo
         line.subLineNo = @table.lines
-        setFontAndIndent(line, @taskRoot, taskList.treeMode?)
+        setIndent(line, @taskRoot, taskList.treeMode?)
 
         # Generate a cell for each column in this line.
         @columns.each do |columnDef|
@@ -199,7 +199,7 @@ protected
         line.no = no unless scopeLine
         line.lineNo = lineNo
         line.subLineNo = @table.lines
-        setFontAndIndent(line, @resourceRoot, resourceList.treeMode?)
+        setIndent(line, @resourceRoot, resourceList.treeMode?)
 
         # Generate a cell for each column in this line.
         @columns.each do |column|
@@ -222,37 +222,53 @@ protected
 
 private
 
+  # Generate the header data for calendar tables. They consists of columns for
+  # each hour, day, week, etc. _columnDef_ is the definition of the columns.
+  # _t_ is the start time for the calendar. _sameTimeNextFunc_ is a function
+  # that is called to advance _t_ to the next table column interval.
+  # _name1Func_ and _name2Func_ are functions that return the upper and lower
+  # title of the particular column.
   def genCalChartHeader(columnDef, t, sameTimeNextFunc, name1Func, name2Func)
     tableColumn = ReportTableColumn.new(@table, columnDef, '')
+
     # Embedded tables have unpredictable width. So we always need to make room
     # for a potential scrollbar.
     tableColumn.scrollbar = true
+
     # Create the table that is embedded in this column.
     tableColumn.cell1.special = table = ColumnTable.new
     tableColumn.cell2.hidden = true
     table.maxWidth = columnDef.width
 
-    currentInterval = ""
+    # Iterate over the report interval until we hit the end date. The
+    # iteration is done with 2 nested loops. The outer loops generates the
+    # intervals for the upper (larger) scale. The inner loop generates the
+    # lower (smaller) scale.
     while t < @end
       cellsInInterval = 0
+      # Label for upper scale. The yearly calendar only has a lower scale.
       currentInterval = t.send(name1Func) if name1Func
       firstColumn = nil
-      while t < @end &&
-                (name1Func.nil? || t.send(name1Func) == currentInterval)
-        # call TjTime::sameTimeNext... function
+      # The innter loops terminates when the label for the upper scale has
+      # changed to the next scale cell.
+      while t < @end && (name1Func.nil? || t.send(name1Func) == currentInterval)
+        # call TjTime::sameTimeNext... function to get the end of the column.
         nextT = t.send(sameTimeNextFunc)
         iv = Interval.new(t, nextT)
+        # Create the new column object.
         column = ReportTableColumn.new(table, nil, '')
+        # The upper scale cells will be merged into one large cell that spans
+        # all lower scale cells that belong to this upper cell.
         if firstColumn.nil?
           firstColumn = column
           column.cell1.text = currentInterval.to_s
-          column.cell1.fontFactor = 0.6
         else
           column.cell1.hidden = true
         end
         column.cell2.text = t.send(name2Func).to_s
-        column.cell2.fontFactor = 0.5
+        # TODO: The width should be taken from some data structure.
         column.cell2.width = 20
+        # Off-duty cells will have a different color than working time cells.
         unless @project.isWorkingTime(iv)
           column.cell2.category = 'tabhead_offduty'
         end
@@ -260,21 +276,42 @@ private
 
         t = nextT
       end
+      # The the first upper scale cell how many trailing hidden cells are
+      # following.
       firstColumn.cell1.columns = cellsInInterval
     end
   end
 
+  # Generate a cell of the table. _line_ is the ReportTableLine that this cell
+  # should belong to. _property_ is the PropertyTreeNode that is reported in
+  # this _line_. _columnDef_ is the TableColumnDefinition of the column this
+  # cell should belong to. _scenarioIdx_ is the index of the scenario that is
+  # reported in this _line_.
+  #
+  # There are 4 kinds of cells. The most simple one is the standard cell. It
+  # literally reports the value of a property attribute. Calculated cells are
+  # more flexible. They contain computed values. The values are computed at
+  # cell generation time. The calendar columns consist of multiple sub
+  # columns. In such a case many cells are generated with a single call of
+  # this method. The last kind of cell is actually not a cell. It just
+  # generates the chart objects that belong to the property in this line.
   def generateTableCell(line, property, columnDef, scenarioIdx)
     case columnDef.id
     when 'chart'
+      # Generate a hidden cell. The real meat is in the actual chart object,
+      # not in this cell.
       cell = ReportTableCell.new(line)
       cell.hidden = true
+      # The GanttChart can be reached via the special variable of the column
+      # header.
       chart = columnDef.column.cell1.special
       GanttLine.new(chart, property,
                     line.scopeLine ? line.scopeLine.property : nil,
                     scenarioIdx, (line.subLineNo - 1) * (line.height + 1),
                     line.height)
       return true
+    # The calendar cells can be all generated by the same function. But we
+    # need to use different parameters.
     when 'hourly'
       start = @start.midnight
       sameTimeNextFunc = :sameTimeNextHour
@@ -302,10 +339,13 @@ private
       end
     end
 
+    # The calendar cells don't live in this ReportTable but in an embedded
+    # ReportTable that can be reached via the column header special variable.
     # For embedded column tables we need to create a new line.
     tcLine = ReportTableLine.new(columnDef.column.cell1.special,
                                  line.property, line.scopeLine)
 
+    # Depending on the property type we use different generator functions.
     if property.is_a?(Task)
       genCalChartTaskCell(scenarioIdx, tcLine, columnDef, start,
                           sameTimeNextFunc)
@@ -324,14 +364,7 @@ private
   def genStandardCell(scenarioIdx, line, columnDef)
     property = line.property
     # Create a new cell
-    cell = ReportTableCell.new(line, cellText(property, scenarioIdx,
-                                              columnDef.id))
-
-    # Cells for containers should be using bold font face.
-    cell.bold = true if property.container?
-
-    # Determine if this is a multi-row cell
-    cellFontFactor = line.fontFactor
+    cell = newCell(line, cellText(property, scenarioIdx, columnDef.id))
 
     if property.is_a?(Task)
       properties = @project.tasks
@@ -341,31 +374,34 @@ private
       raise "Unknown property type #{property.class}"
     end
 
-    if properties.scenarioSpecific?(columnDef.id)
-      # When we list multiple scenarios we reduce the font size by 25%.
-      cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
-    else
-      if scenarioIdx != @scenarios.first
-        cell.hidden = true
-        return false
+    # Check if we are dealing with multiple scenarios.
+    if @scenarios.length > 1
+      # Check if the attribute is not scenario specific
+      unless properties.scenarioSpecific?(columnDef.id)
+        if scenarioIdx == @scenarios.first
+          #  Use a somewhat bigger font.
+          cell.fontSize = 15
+        else
+          # And hide the cells for all but the first scenario.
+          cell.hidden = true
+          return false
+        end
+        cell.rows = @scenarios.length
       end
-      cell.rows = @scenarios.length
     end
 
     setStandardCellAttributes(cell, columnDef,
-                              properties.attributeType(columnDef.id), line,
-                              cellFontFactor)
+                              properties.attributeType(columnDef.id), line)
     true
   end
 
+  # Generate a ReportTableCell filled with a calculted value from the property
+  # or other sources of information. It returns true if the cell exists, false
+  # for a hidden cell.
   def genCalculatedCell(scenarioIdx, line, columnDef, property)
     # Create a new cell
-    cell = ReportTableCell.new(line)
+    cell = newCell(line)
 
-    # Cells for containers should be using bold font face.
-    cell.bold = true if property.container?
-
-    cellFontFactor = line.fontFactor
     # When we list multiple scenarios we reduce the font size by 25%.
     if scenarioSpecific?(columnDef.id)
       cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
@@ -377,7 +413,7 @@ private
       cell.rows = @scenarios.length
     end
 
-    setStandardCellAttributes(cell, columnDef, nil, line, cellFontFactor)
+    setStandardCellAttributes(cell, columnDef, nil, line)
 
     startIdx = @project.dateToIdx(@start, true)
     endIdx = @project.dateToIdx(@end, true) - 1
@@ -385,10 +421,13 @@ private
 
     case columnDef.id
     when 'duration'
+      # The duration of the task. After scheduling, it can be determined for
+      # all tasks. Also for those who did not have a 'duration' attribute.
       if property.is_a?(Task)
         cell.text = scaleLoad(property.duration(scenarioIdx))
       end
     when 'effort'
+      # The total effort for the task or resource.
       workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
       cell.text = scaleLoad(workLoad)
     when 'line'
@@ -408,9 +447,6 @@ private
       resource = nil
     end
 
-    # When we list multiple scenarios we reduce the font size by 25%.
-    cellFontFactor = line. fontFactor -
-                     (@scenarios.length > 1 ? 0.25 : 0.0)
     taskIv = Interval.new(task['start', scenarioIdx].nil? ?
                           @project['start'] : task['start', scenarioIdx],
                           task['end', scenarioIdx].nil? ?
@@ -419,12 +455,7 @@ private
     firstCell = nil
     while t < @end
       # Create a new cell
-      cell = ReportTableCell.new(line)
-
-      # Cells for containers should be using bold font face.
-      cell.bold = true if task.container?
-
-      cell.fontFactor = cellFontFactor
+      cell = newCell(line)
 
       # call TjTime::sameTimeNext... function
       nextT = t.send(sameTimeNextFunc)
@@ -432,7 +463,6 @@ private
       case columnDef.content
       when 'empty'
       when 'load'
-        cell.alignment = 2
         startIdx = @project.dateToIdx(t, true)
         endIdx = @project.dateToIdx(nextT, true) - 1
         workLoad = task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
@@ -470,19 +500,10 @@ private
       task = nil
     end
 
-    # When we list multiple scenarios we reduce the font size by 25%.
-    cellFontFactor = line.fontFactor -
-                     (@scenarios.length > 1 ? 0.25 : 0.0)
-
     firstCell = nil
     while t < @end
       # Create a new cell
-      cell = ReportTableCell.new(line)
-
-      # Cells for containers should be using bold font face.
-      cell.bold = true if resource.container?
-
-      cell.fontFactor = cellFontFactor
+      cell = newCell(line)
 
       # call TjTime::sameTimeNext... function
       nextT = t.send(sameTimeNextFunc)
@@ -493,9 +514,8 @@ private
       case columnDef.content
       when 'empty'
       when 'load'
-        cell.alignment = 2
         if workLoad > 0.0
-          cell.text = @numberFormat.format(workLoad)
+          cell.text = scaleLoad(workLoad)
         end
       else
         raise "Unknown column content #{column.content}"
@@ -522,17 +542,11 @@ private
     end
   end
 
-  def setStandardCellAttributes(cell, columnDef, attributeType, line,
-                                cellFontFactor)
+  def setStandardCellAttributes(cell, columnDef, attributeType, line)
     # Determine whether it should be indented
     if indent(columnDef.id, attributeType)
       cell.indent = line.indentation
     end
-
-    # Apply columnDef specific font-size factor.
-    cellFontFactor *= fontFactor(columnDef.id,
-                                 @project.tasks.attributeType(columnDef.id))
-    cell.fontFactor = cellFontFactor
 
     # Determine the cell alignment
     cell.alignment = alignment(columnDef.id,
@@ -548,13 +562,26 @@ private
     end
   end
 
+  # Create a new ReportTableCell object and initialize some common values.
+  def newCell(line, text = '')
+    property = line.property
+    cell = ReportTableCell.new(line, text)
+
+    # Cells for containers should be using bold font face.
+    cell.bold = true if property.container?
+
+    cell
+  end
+
   # Determine the font size and indentation for this line.
-  def setFontAndIndent(line, propertyRoot, treeMode)
+  def setIndent(line, propertyRoot, treeMode)
     property = line.property
     scopeLine = line.scopeLine
     level = property.level - (propertyRoot ? propertyRoot.level : 0)
-    level += scopeLine.indentation + 1 if scopeLine
-    line.indentation = level if treeMode
+    # We indent at least as much as the scopeline + 1, if we have a scope.
+    line.indentation = scopeLine.indentation + 1 if scopeLine
+    # In tree mode we indent according to the level.
+    line.indentation += level if treeMode
   end
 
   # Try to merge equal cells without text to multi-column cells.
@@ -562,36 +589,6 @@ private
     if cell.text == '' && firstCell && (c = line.last(1)) && c == cell
       cell.hidden = true
       c.columns += 1
-    end
-  end
-
-  def indent(colId, propertyType)
-    if @propertiesById.has_key?(colId)
-      return @propertiesById[colId][1]
-    elsif @propertiesByType.has_key?(propertyType)
-      return @propertiesByType[propertyType][0]
-    else
-      false
-    end
-  end
-
-  def alignment(colId, propertyType)
-    if @propertiesById.has_key?(colId)
-      return @propertiesById[colId][2]
-    elsif @propertiesByType.has_key?(propertyType)
-      return @propertiesByType[propertyType][1]
-    else
-      1
-    end
-  end
-
-  def fontFactor(colId, propertyType)
-    if @propertiesById.has_key?(colId)
-      return @propertiesById[colId][3]
-    elsif @propertiesByType.has_key?(propertyType)
-      return @propertiesByType[propertyType][2]
-    else
-      1.0
     end
   end
 

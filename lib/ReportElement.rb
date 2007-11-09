@@ -61,18 +61,18 @@ class ReportElement
     @weekStartsMonday = @report.weekstartsmonday
 
     @propertiesById = {
-      # ID               Header      Indent  Align FontFac. Calced. Scen Spec.
-      'duration'    => [ 'Duration', true,   2,    1.0,     true,   true],
-      'effort'      => [ 'Effort',   true,   2,    1.0,     true,   true],
-      'id'          => [ 'Id',       false,  0,    1.0,     false,  false ],
-      'line'        => [ 'Line No.', false,  2,    1.0,     true,   false ],
-      'name'        => [ 'Name',     true,   0,    1.0,     false,  false ],
-      'no'          => [ 'No.',      false,  2,    1.0,     true,   false ]
+      # ID               Header      Indent  Align   Calced. Scen Spec.
+      'duration'    => [ 'Duration', true,   :right, true,   true ],
+      'effort'      => [ 'Effort',   true,   :right, true,   true ],
+      'id'          => [ 'Id',       false,  :left,  false,  false ],
+      'line'        => [ 'Line No.', false,  :right, true,   false ],
+      'name'        => [ 'Name',     true,   :left,  false,  false ],
+      'no'          => [ 'No.',      false,  :right, true,   false ]
     }
     @propertiesByType = {
-      # Type                  Indent  Align FontFac.
-      StringAttribute    => [ false,  0,    1.0 ],
-      FloatAttribute     => [ false,  2,    1.0 ]
+      # Type                  Indent  Align
+      StringAttribute    => [ false,  :left ],
+      FloatAttribute     => [ false,  :right ]
     }
   end
 
@@ -206,7 +206,7 @@ class ReportElement
   # calculated.
   def calculated?(colId)
     if @propertiesById.has_key?(colId)
-      return @propertiesById[colId][4]
+      return @propertiesById[colId][3]
     end
     return false
   end
@@ -215,9 +215,33 @@ class ReportElement
   # scenario specific.
   def scenarioSpecific?(colId)
     if @propertiesById.has_key?(colId)
-      return @propertiesById[colId][5]
+      return @propertiesById[colId][4]
     end
     return false
+  end
+
+  # Return if the column values should be indented based on the _colId_ or the
+  # _propertyType_.
+  def indent(colId, propertyType)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][1]
+    elsif @propertiesByType.has_key?(propertyType)
+      return @propertiesByType[propertyType][0]
+    else
+      false
+    end
+  end
+
+  # Return the alignment of the column based on the _colId_ or the
+  # _propertyType_.
+  def alignment(colId, propertyType)
+    if @propertiesById.has_key?(colId)
+      return @propertiesById[colId][2]
+    elsif @propertiesByType.has_key?(propertyType)
+      return @propertiesByType[propertyType][1]
+    else
+      :center
+    end
   end
 
   # Returns the default column title for the columns _id_.

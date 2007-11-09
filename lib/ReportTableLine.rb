@@ -14,7 +14,7 @@ require 'ReportTableCell'
 class ReportTableLine
 
   attr_reader :table, :property, :scopeLine
-  attr_accessor :height, :indentation, :fontFactor, :no, :lineNo, :subLineNo
+  attr_accessor :height, :indentation, :fontSize, :no, :lineNo, :subLineNo
 
   # Create a ReportTableCell object and initialize the variables with default
   # values. _table_ is a reference to the ReportTable object this line belongs
@@ -35,7 +35,7 @@ class ReportTableLine
     # Indentation for hierachiecal columns in screen pixels.
     @indentation = 0
     # The factor used to enlarge or shrink the font size for this line.
-    @fontFactor = 1.0
+    @fontSize = 12
     # Counter that counts primary and nested lines separately. It restarts
     # with 0 for each new nested line set. Scenario lines don't count.
     @no = nil
@@ -62,8 +62,9 @@ class ReportTableLine
 
   # Return this line as a set of XMLElement that represent the line in HTML.
   def to_html
-    tr = XMLElement.new('tr', 'class' => 'tabline',
-      'style' => "height:#{@height}px;")
+    style = "height:#{@height}px; "
+    style += "font-size:#{@fontSize}px; " if @fontSize
+    tr = XMLElement.new('tr', 'class' => 'tabline', 'style' => style)
     @cells.each { |cell| tr << cell.to_html }
     tr
   end

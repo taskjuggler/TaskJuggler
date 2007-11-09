@@ -20,6 +20,7 @@ class ColumnTable < ReportTable
   def initialize
     super
     @maxWidth = nil
+    @headerFontSize = 10
   end
 
   def to_html
