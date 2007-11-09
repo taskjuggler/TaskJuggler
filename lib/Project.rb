@@ -34,6 +34,7 @@ require 'PropertyList'
 require 'TaskDependency'
 require 'Scenario'
 require 'Shift'
+require 'Account'
 require 'Task'
 require 'Resource'
 require 'Report'
@@ -69,6 +70,7 @@ class Project
       'now' => TjTime.now,
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
+      'rate' => 0.0,
       'scheduleGranularity' => 3600,
       'shorttimeformat' => "%H:%M",
       'start' => nil,
@@ -103,6 +105,15 @@ class Project
     ]
     attrs.each { |a| @shifts.addAttributeType(AttributeDefinition.new(*a)) }
 
+    @accounts = PropertySet.new(self, true)
+    attrs = [
+      # ID           Name            Type               Inher. Scen.  Default
+      [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
+      [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
+      [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
+    ]
+    attrs.each { |a| @accounts.addAttributeType(AttributeDefinition.new(*a)) }
+
     @resources = PropertySet.new(self, true)
     attrs = [
       # ID           Name            Type               Inher. Scen.  Default
@@ -117,6 +128,7 @@ class Project
       [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
       [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
       [ 'limits',    'Limits',       LimitsAttribute,   true,  true, nil ],
+      [ 'rate',      'Rate',         FloatAttribute,    true,  true, 0.0 ],
       [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute, true, true,
         nil ],
       [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
@@ -141,6 +153,7 @@ class Project
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0.0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0.0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
+      [ 'endcredit', 'End Credit',   FloatAttribute,    false, true,  0.0 ],
       [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true,  [] ],
       [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true,  [] ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
@@ -162,6 +175,7 @@ class Project
       [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
         nil ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
+      [ 'startcredit', 'Start Credit', FloatAttribute,  false, true,  0.0 ],
       [ 'startpreds', 'Start Preds.', TaskListAttribute, false, true, [] ],
       [ 'startsuccs', 'Start Succs.', TaskListAttribute, false, true, [] ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
@@ -243,6 +257,10 @@ class Project
     @shifts[id]
   end
 
+  def account(id)
+    @accounts[id]
+  end
+
   def task(id)
     @tasks[id]
   end
@@ -310,6 +328,10 @@ class Project
 
   def addShift(shift) # :nodoc:
     @shifts.addProperty(shift)
+  end
+
+  def addAccount(account) # :nodoc:
+    @accounts.addProperty(account)
   end
 
   def addTask(task) # :nodoc:

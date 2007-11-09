@@ -14,6 +14,61 @@
 # necessary but make the file more readable and receptable to syntax folding.
 module TjpSyntaxRules
 
+  def rule_account
+    pattern(%w( !accountHeader !accountBody ), lambda {
+       @property = @property.parent
+    })
+    doc('account', <<'EOT'
+Declares an account. Accounts can be used to calculate costs of tasks or the
+whole project. Account declaration may be nested, but only the top level
+accounts may have a type attribute specified. An account that has sub-accounts
+may not have a credit. sub-accounts inherit this type.
+EOT
+       )
+  end
+
+  def rule_accountAttributes
+    repeatable
+    optional
+    pattern(%w( !account))
+    pattern(%w( !accountScenarioAttributes ))
+    pattern(%w( !scenarioId !accountScenarioAttributes ), lambda {
+      @scenarioIdx = 0
+    })
+    # Other attributes will be added automatically.
+  end
+
+  def rule_accountBody
+    optionsRule('accountAttributes')
+  end
+
+  def rule_accountHeader
+    pattern(%w( _account $ID $STRING $ID ), lambda {
+      @property = Account.new(@project, @val[1], @val[2], @property)
+      @property.inheritAttributes
+    })
+    arg(1, 'id', <<'EOT'
+The ID of the account. Accounts have a global name space. The ID must be
+unique within the whole project.
+EOT
+       )
+    arg(2, 'name', 'A name or short description of the account')
+  end
+
+  def rule_accountScenarioAttributes
+    pattern(%w( _credit !valDate $STRING !number ), lambda {
+      #@property['credit', @scenarioIdx] +=
+      #  AccountCredit.new(@val[1], @val[2], @val[3])
+    })
+    doc('credit', <<'EOT'
+Book the specified amount to the account at the specified date.
+EOT
+       )
+    arg(2, 'description', 'Short description of the transaction')
+    arg(3, 'amount', 'Amount to be booked.')
+    # Other attributes will be added automatically.
+  end
+
   def rule_allocate
     pattern(%w( _allocate !allocations ), lambda {
       # Don't use << operator here so the 'provided' flag gets set properly.
@@ -1228,19 +1283,42 @@ EOT
 
   def rule_properties
     repeatable
+
+    pattern(%w( !account ))
+
     pattern(%w( _copyright $STRING ), lambda {
       @project['copyright'] = @val[1]
     })
+    doc('copyright', <<'EOT'
+Set a copyright notice for the project file and its content. This copyright notice will be added to all reports that can support it.
+EOT
+       )
+
     pattern(%w( !export ))
+
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
       end
     })
+    doc('flags', <<'EOT'
+Declare one or more flag for later use. Flags can be used to mark tasks, resources or other properties to filter them in reports.
+EOT
+       )
+
     pattern(%w( !htmlResourceReport ))
     pattern(%w( !htmlTaskReport ))
     pattern(%w( !include ))
     pattern(%w( !macro ))
+
+    pattern(%w( _rate !number ), lambda {
+      @project['rate'] = @val[1].to_f
+    })
+    doc('rate', <<'EOT'
+Set the default rate for all subsequently defined resources. The rate describes the daily cost of a resource.
+EOT
+        )
+
     pattern(%w( !resource ))
     pattern(%w( !resourceReport ))
     pattern(%w( !shift ))
@@ -1462,6 +1540,9 @@ EOT
     singlePattern('_quarterly')
     descr('A group of columns with one column for each quarter')
 
+    singlePattern('_rate')
+    descr('The daily cost of a resource.')
+
     singlePattern('_responsible')
     descr('The responsible people for this task')
 
@@ -1610,7 +1691,6 @@ EOT
        )
   end
 
-
   def rule_resourceScenarioAttributes
     pattern(%w( _flags !flagList ), lambda {
       @property['flags', @scenarioIdx] += @val[1]
@@ -1643,6 +1723,14 @@ EOT
     })
     doc('resource.limits', <<'EOT'
 Set per-interval usage limits for the resource.
+EOT
+       )
+
+    pattern(%w( _rate !number ), lambda {
+      @property['rate', @scenarioIdx] = @val[1]
+    })
+    doc('resource_rate', <<'EOT'
+The rate specifies the daily cost of the resource.
 EOT
        )
 
@@ -2180,6 +2268,14 @@ EOT
 
   def rule_taskScenarioAttributes
 
+    pattern(%w( _account $ID ), lambda {
+      # TODO
+    })
+    doc('task.account', <<'EOT'
+All amounts associated with the task will be credited to the specified account. The account must not be an account group.
+EOT
+        )
+
     pattern(%w( !allocate ))
 
     pattern(%w( _booking !taskBooking ))
@@ -2264,6 +2360,15 @@ EOT
 The end date of the task. When specified for the top-level (default) scenario
 this attributes also implicitly sets the scheduling policy of the tasks to
 alap.
+EOT
+       )
+
+    pattern(%w( _endcredit !number ), lambda {
+      @property['endcredit', @scenarioIdx] = @val[1]
+    })
+    doc('endcredit', <<'EOT'
+Specifies an amount that is credited to the account specified by the account
+property at the moment the tasks ends.
 EOT
        )
 
@@ -2354,6 +2459,15 @@ Specifies the minimum wanted start time of the task. The value is not used
 during scheduling, but is checked after all tasks have been scheduled. If the
 start of the task is earlier than the specified value, then an error is
 reported.
+EOT
+       )
+
+    pattern(%w( _startcredit !number ), lambda {
+      @property['startcredit', @scenarioIdx] = @val[1]
+    })
+    doc('startcredit', <<'EOT'
+Specifies an amount that is credited to the account specified by the account
+property at the moment the tasks starts.
 EOT
        )
 

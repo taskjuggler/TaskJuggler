@@ -402,10 +402,7 @@ private
     # Create a new cell
     cell = newCell(line)
 
-    # When we list multiple scenarios we reduce the font size by 25%.
-    if scenarioSpecific?(columnDef.id)
-      cellFontFactor -= @scenarios.length > 1 ? 0.25 : 0.0
-    else
+    unless scenarioSpecific?(columnDef.id)
       if scenarioIdx != @scenarios.first
         cell.hidden = true
         return false
@@ -573,7 +570,7 @@ private
     cell
   end
 
-  # Determine the font size and indentation for this line.
+  # Determine the indentation for this line.
   def setIndent(line, propertyRoot, treeMode)
     property = line.property
     scopeLine = line.scopeLine

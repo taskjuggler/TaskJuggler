@@ -85,7 +85,8 @@ class PropertyTreeNode
         else
           # Inherit selected values from project if top-level property
           if whitelist.index(attrDef.id)
-            if @project[attrDef.id]
+            if @project[attrDef.id] &&
+               @scenarioAttributes[scenarioIdx][attrDef.id]
               @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
                   @project[attrDef.id])
             end
