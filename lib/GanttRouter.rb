@@ -71,24 +71,27 @@ class GanttRouter
   # are no diagonal lines.
   def route(startPoint, endPoint)
     points = [ startPoint ]
-    # Minimum distance between the end of the task and the first turning
-    # point.
-    gap = 10
+    # Minimum distance between the starting point and the first turning point.
+    startGap = 5
+    # Minimum distance between the last turning point and the tip of the
+    # arrow.
+    endGap = 10
 
-    if endPoint[0] - startPoint[0] > 2 * gap + 2
+    if endPoint[0] - startPoint[0] > startGap + endGap + 2
       # If the horizontal distance between start and end point is large enough
       # we can try a direct route.
       #
-      #            |gap|  xSeg
-      # startPoint X------1
-      #                   |
-      #                   |
-      #                   2----X end Point
-      #                    |gap|
+      #                     xSeg
+      #            |startGap|
+      # startPoint X--------1
+      #                     |
+      #                     |
+      #                     2------X end Point
+      #                     |endGap|
       #
       xSeg = placeLine([ startPoint[1], endPoint[1] ],
-                       false, startPoint[0] + gap, 1)
-      if xSeg && xSeg < endPoint[0] - gap
+                       false, startPoint[0] + startGap, 1)
+      if xSeg && xSeg < endPoint[0] - endGap
         addLineTo(points, xSeg, startPoint[1])  # Point 1
         addLineTo(points, xSeg, endPoint[1])    # Point 2
         addLineTo(points, *endPoint)
@@ -99,13 +102,15 @@ class GanttRouter
     # If the simple approach above fails, the try a more complex routing
     # strategy.
     #
-    #            |gap|  x1
-    # startPoint X------1
-    #                   |
-    #     3-------------2 ySeg
+    #                     x1
+    #            |startGap|
+    # startPoint X--------1
+    #                     |
+    #     3---------------2 ySeg
     #     |
-    #     4---------X endPoint
-    #     x2    |gap|
+    #     4------X endPoint
+    #     |endGap|
+    #     x2
 
     # Place horizontal segue. We don't know the width yet, so we have to
     # assume full width. That's acceptable for horizontal lines.
@@ -114,11 +119,11 @@ class GanttRouter
     raise "Routing failed" unless ySeg
 
     # Place 1st vertical
-    x1 = placeLine([ startPoint[1], ySeg ], false, startPoint[0] + gap, 1)
+    x1 = placeLine([ startPoint[1], ySeg ], false, startPoint[0] + startGap, 1)
     raise "Routing failed" unless x1
 
     # Place 2nd vertical
-    x2 = placeLine([ ySeg, endPoint[1] ], false, endPoint[0] - gap, -1)
+    x2 = placeLine([ ySeg, endPoint[1] ], false, endPoint[0] - endGap, -1)
     raise "Routing failed" unless x2
 
     # Now add the points 1 - 4 to the list and mark the zones around them. For

@@ -17,9 +17,12 @@ class ColumnTable < ReportTable
 
   attr_writer :maxWidth
 
+  # Create a new ColumnTable object.
   def initialize
     super
     @maxWidth = nil
+    # The header will have 2 lines. So, use a smaller font. This should match
+    # the font size used for the GanttChart header.
     @headerFontSize = 10
   end
 
