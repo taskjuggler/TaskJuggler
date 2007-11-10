@@ -27,7 +27,7 @@ class GanttLoadStack
     @y = @line.y
     @w = w
     if values.length != categories.length
-      raise "Values and categories must have same number of entries!"
+      raise "Values and categories must have the same number of entries!"
     end
     @categories = categories
 
@@ -36,7 +36,7 @@ class GanttLoadStack
     values.each { |v| sum += v }
     # If the sum is 0, all yLevels values must be 0 as well.
     if sum == 0
-      @yLevels = Array.new(values.length, 0)
+      @yLevels = nil
     else
       @yLevels = []
       values.each do |v|
@@ -55,6 +55,9 @@ class GanttLoadStack
   # Convert the abstact representation of the GanttLoadStack into HTML
   # elements.
   def to_html
+    # Draw nothing if all values are 0.
+    return nil unless @yLevels
+
     html = []
     # Draw a background rectable to create a frame.
     html << @line.rectToHTML(@x, 1, @w, @lineHeight - 2,
@@ -62,7 +65,7 @@ class GanttLoadStack
     yPos = 2
     # Than draw the slighly narrower bars as a pile ontop of it.
     (@yLevels.length - 1).downto(0) do |i|
-      next if @yLevels[i] <= 0.0
+      next if @yLevels[i] <= 0
       html << @line.rectToHTML(@x + 1, yPos.to_i, @w - 2,
                                (yPos + @yLevels[i]).to_i - yPos.to_i,
                                @categories[i])

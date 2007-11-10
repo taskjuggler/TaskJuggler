@@ -153,8 +153,10 @@ private
   .free2 { background-color:#98eba6; white-space:nowrap; }
   .offduty1 { background-color:#f3f990; white-space:nowrap; }
   .offduty2 { background-color:#dde375; white-space:nowrap; }
-  .done1 { background-color:#abbeae; white-space:nowrap; }
-  .done2 { background-color:#99aa9c; white-space:nowrap; }
+  .calconttask1 { background-color:#abbeae; white-space:nowrap; }
+  .calconttask2 { background-color:#99aa9c; white-space:nowrap; }
+  .caltask1 { background-color:#2050e5; }
+  .caltask2 { background-color:#2f57ea; }
   .todo1 { background-color:#beabab; white-space:nowrap; }
   .todo2 { background-color:#aa9999; white-space:nowrap; }
   .containerbar { background-color:#09090a; }

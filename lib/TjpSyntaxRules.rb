@@ -1163,7 +1163,9 @@ EOT
         'just the hour and minutes.')
     arg(1, 'format', 'strftime like format string')
 
-    singlePattern('!timeformat')
+    pattern(%w( !timeformat ), lambda {
+      @project['timeformat'] = @val[0]
+    })
 
     pattern(%w( !timezone ), lambda {
       @project['timezone'] = @val[1]
@@ -1440,7 +1442,9 @@ file.
 EOT
        )
 
-    singlePattern('!timeformat')
+    pattern(%w( !timeformat ), lambda {
+      @reportElement.timeFormat = @val[0]
+    })
   end
 
   def rule_reportableAttributes

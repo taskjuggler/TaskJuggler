@@ -18,6 +18,8 @@ require 'ColumnTable'
 # format.
 class ReportTableElement < ReportElement
 
+  attr_reader :legend
+
   # Generate a new ReportTableElement object.
   def initialize(report)
     super
@@ -96,7 +98,7 @@ protected
       # For the 'chart' column we generate a GanttChart object. The sizes are
       # set so that the lines of the Gantt chart line up with the lines of the
       # table.
-      gantt = GanttChart.new(@now, @weekStartsMonday)
+      gantt = GanttChart.new(@now, @weekStartsMonday, self)
       gantt.generateByScale(@start, @end, columnDef.scale)
       # The header consists of 2 lines separated by a 1 pixel boundary.
       gantt.header.height = @table.headerLineHeight * 2 + 1
@@ -132,6 +134,8 @@ protected
       column = ReportTableColumn.new(@table, columnDef, columnDef.title)
       column.cell1.rows = 2
       column.cell2.hidden = true
+      # Make the 'name' column expand faster than other columns if needed.
+      column.cell1.expandable = true if columnDef.id == 'name'
     end
   end
 
@@ -397,7 +401,10 @@ private
 
   # Generate a ReportTableCell filled with a calculted value from the property
   # or other sources of information. It returns true if the cell exists, false
-  # for a hidden cell.
+  # for a hidden cell. _scenarioIdx_ is the index of the reported scenario.
+  # _line_ is the ReportTableLine of the cell. _columnDef_ is the
+  # TableColumnDefinition of the column. _property_ is the PropertyTreeNode
+  # that is reported in this cell.
   def genCalculatedCell(scenarioIdx, line, columnDef, property)
     # Create a new cell
     cell = newCell(line)
@@ -416,6 +423,8 @@ private
     endIdx = @project.dateToIdx(@end, true) - 1
     iv = Interval.new(@start, @end)
 
+    scopeProperty = line.scopeLine ? line.scopeLine.property : nil
+
     case columnDef.id
     when 'duration'
       # The duration of the task. After scheduling, it can be determined for
@@ -425,7 +434,8 @@ private
       end
     when 'effort'
       # The total effort for the task or resource.
-      workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx, nil)
+      workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx,
+                                           scopeProperty)
       cell.text = scaleLoad(workLoad)
     when 'line'
       cell.text = line.lineNo.to_s
@@ -436,14 +446,24 @@ private
     end
   end
 
+  # Generate the cells for the task lines of a calendar column. These lines do
+  # not directly belong to the @table object but to an embedded ColumnTable
+  # object. Therefor a single @table column usually has many cells on each
+  # single line. _scenarioIdx_ is the index of the scenario that is reported
+  # in this line. _line_ is the @table line. _t_ is the start date for the
+  # calendar. _sameTimeNextFunc_ is the function that will move the date to
+  # the next cell.
   def genCalChartTaskCell(scenarioIdx, line, columnDef, t, sameTimeNextFunc)
     task = line.property
+    # Find out if we have an enclosing resource scope.
     if line.scopeLine && line.scopeLine.property.is_a?(Resource)
       resource = line.scopeLine.property
     else
       resource = nil
     end
 
+    # Get the interval of the task. In case a date is invalid due to a
+    # scheduling problem, we use the full project interval.
     taskIv = Interval.new(task['start', scenarioIdx].nil? ?
                           @project['start'] : task['start', scenarioIdx],
                           task['end', scenarioIdx].nil? ?
@@ -459,11 +479,14 @@ private
       cellIv = Interval.new(t, nextT)
       case columnDef.content
       when 'empty'
+        # We only generate cells will different background colors.
       when 'load'
+        # Report the effort spent on this task during this interval.
         startIdx = @project.dateToIdx(t, true)
         endIdx = @project.dateToIdx(nextT, true) - 1
         workLoad = task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
                                          resource)
+        # To increase readability, we don't show 0.0 values.
         if workLoad > 0.0
           cell.text = scaleLoad(workLoad)
         end
@@ -473,7 +496,7 @@ private
 
       # Determine cell category (mostly the background color)
       if cellIv.overlaps?(taskIv)
-        cell.category = 'done'
+        cell.category = task.container? ? 'calconttask' : 'caltask'
       elsif !@project.isWorkingTime(cellIv)
         cell.category = 'offduty'
       else
@@ -486,13 +509,31 @@ private
       t = nextT
       firstCell = cell unless firstCell
     end
+
+    legend.addCalendarItem('Container Task', 'calconttask1')
+    legend.addCalendarItem('Task', 'caltask1')
+    legend.addCalendarItem('Off duty time', 'offduty1')
   end
 
+  # Generate the cells for the resource lines of a calendar column. These
+  # lines do not directly belong to the @table object but to an embedded
+  # ColumnTable object. Therefor a single @table column usually has many cells
+  # on each single line. _scenarioIdx_ is the index of the scenario that is
+  # reported in this line. _line_ is the @table line. _t_ is the start date
+  # for the calendar. _sameTimeNextFunc_ is the function that will move the
+  # date to the next cell.
   def genCalChartResourceCell(scenarioIdx, line, columnDef, t,
                               sameTimeNextFunc)
     resource = line.property
+    # Find out if we have an enclosing task scope.
     if line.scopeLine && line.scopeLine.property.is_a?(Task)
       task = line.scopeLine.property
+      # Get the interval of the task. In case a date is invalid due to a
+      # scheduling problem, we use the full project interval.
+      taskIv = Interval.new(task['start', scenarioIdx].nil? ?
+                            @project['start'] : task['start', scenarioIdx],
+                            task['end', scenarioIdx].nil? ?
+                            @project['end'] : task['end', scenarioIdx])
     else
       task = nil
     end
@@ -504,32 +545,61 @@ private
 
       # call TjTime::sameTimeNext... function
       nextT = t.send(sameTimeNextFunc)
+      cellIv = Interval.new(t, nextT)
       startIdx = @project.dateToIdx(t, true)
       endIdx = @project.dateToIdx(nextT, true) - 1
-      workLoad = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx, task)
+      workLoad = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx)
+      if task
+        workLoadTask = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx,
+                                                 task)
+      else
+        workLoadTask = 0.0
+      end
       freeLoad = resource.getEffectiveFreeWork(scenarioIdx, startIdx, endIdx)
       case columnDef.content
       when 'empty'
+        # We only generate cells will different background colors.
       when 'load'
-        if workLoad > 0.0
-          cell.text = scaleLoad(workLoad)
+        # Report the workload of the resource in this time interval.
+        # To increase readability, we don't show 0.0 values.
+        wLoad = task ? workLoadTask : workLoad
+        if wLoad > 0.0
+          cell.text = scaleLoad(wLoad)
         end
       else
         raise "Unknown column content #{column.content}"
       end
 
       # Determine cell category (mostly the background color)
-      if workLoad == 0.0 && freeLoad == 0.0
-        cell.category = 'offduty'
-      elsif workLoad == 0.0 && freeLoad > 0.0
-        cell.category = 'free'
-      elsif workLoad > 0.0 && freeLoad > 0.0
-        cell.category = 'loaded'
-      elsif workLoad > 0.0 && freeLoad == 0.0
-        cell.category = 'busy'
-      else
-        cell.category = 'resourcecell'
-      end
+      cell.category = if task
+                        if cellIv.overlaps?(taskIv)
+                          if workLoadTask > 0.0 && freeLoad == 0.0
+                            'busy'
+                          elsif workLoad == 0.0 && freeLoad == 0.0
+                            'offduty'
+                          else
+                            'loaded'
+                          end
+                        else
+                          if freeLoad > 0.0
+                            'free'
+                          elsif workLoad == 0.0 && freeLoad == 0.0
+                            'offduty'
+                          else
+                            'resourcecell'
+                          end
+                        end
+                      else
+                        if workLoad > 0.0 && freeLoad == 0.0
+                          'busy'
+                        elsif workLoad > 0.0 && freeLoad > 0.0
+                          'loaded'
+                        elsif workLoad == 0.0 && freeLoad > 0.0
+                          'free'
+                        else
+                          'offduty'
+                        end
+                      end
       cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
 
       tryCellMerging(cell, line, firstCell)
@@ -537,6 +607,11 @@ private
       t = nextT
       firstCell = cell unless firstCell
     end
+
+    legend.addCalendarItem('Resource is fully loaded', 'busy1')
+    legend.addCalendarItem('Resource is partially loaded', 'loaded1')
+    legend.addCalendarItem('Resource is available', 'free')
+    legend.addCalendarItem('Off duty time', 'offduty1')
   end
 
   def setStandardCellAttributes(cell, columnDef, attributeType, line)

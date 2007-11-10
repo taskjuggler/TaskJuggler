@@ -23,7 +23,7 @@
 class ReportTableColumn
 
   attr_reader :definition, :cell1, :cell2
-  attr_accessor :scrollbar
+  attr_accessor :expandable, :scrollbar
 
   # Create a new column. _table_ is a reference to the ReportTable this column
   # belongs to. _definition_ is the TableColumnDefinition of the column from

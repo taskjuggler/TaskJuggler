@@ -75,14 +75,14 @@ class GanttLine
       div << rectToHTML(line, 0, 1, @height, 'tabback')
     end
 
-    # Render the 'now' line
-    if @chart.header.nowLineX
-      div << rectToHTML(@chart.header.nowLineX, 0, 1, @height, 'nowline')
-    end
-
     # Now render the content as HTML elements.
     @content.each do |c|
       div << c.to_html
+    end
+
+    # Render the 'now' line
+    if @chart.header.nowLineX
+      div << rectToHTML(@chart.header.nowLineX, 0, 1, @height, 'nowline')
     end
 
     div
@@ -185,6 +185,9 @@ private
           x = xNew
         end
       end
+      if @chart.table
+        @chart.table.legend.addGanttItem('Resource busy with task', 'busy')
+      end
     else
       # The task is not nested into a resource. We show the classical Gantt
       # bars for the task.
@@ -200,6 +203,9 @@ private
         @content << GanttTaskBar.new(@property, @scenarioIdx, @height,
                                      xStart, xEnd, @y)
       end
+
+      # Make sure the legend includes the Gantt symbols.
+      @chart.table.legend.showGanttItems = true if @chart.table
     end
 
   end
@@ -224,8 +230,19 @@ private
       categories = [ 'assigned', 'busy', 'free' ]
       taskStart = @scopeProperty['start', @scenarioIdx]
       taskEnd = @scopeProperty['end', @scenarioIdx]
+      if @chart.table
+        @chart.table.legend.addGanttItem('Resource assigned to this task',
+                                          'assigned')
+        @chart.table.legend.addGanttItem('Resource assigned to other task',
+                                         'busy')
+        @chart.table.legend.addGanttItem('Resource available', 'free')
+      end
     else
       categories = [ 'busy', 'free' ]
+      if @chart.table
+        @chart.table.legend.addGanttItem('Resource assigned to tasks', 'busy')
+        @chart.table.legend.addGanttItem('Resource available', 'free')
+      end
     end
 
     @chart.header.cellStartDates.each do |date|

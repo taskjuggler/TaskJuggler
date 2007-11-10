@@ -26,16 +26,20 @@ class GanttChart
   include HTMLGraphics
 
   attr_reader :start, :end, :now, :weekStartsMonday, :header, :width,
-              :scale, :scales
+              :scale, :scales, :table
   attr_writer :viewWidth
 
   # Create the GanttChart object, but don't do much right now. We still need
-  # more information about the chart before we can actually generate it.
-  def initialize(now, weekStartsMonday)
+  # more information about the chart before we can actually generate it. _now_
+  # is the date that should be used as current date. _weekStartsMonday_ is
+  # true if the weeks should start on Mondays instead of Sundays. _table_ is a
+  # reference to the ReportTableElement that the chart is part of.
+  def initialize(now, weekStartsMonday, table = nil)
     # The start and end dates of the reported interval.
     @start = nil
     @end = nil
     @now = now
+    @table = table
 
     # This defines the possible horizontal scales that the Gantt chart can
     # have. The scales differ in their resolution and the amount of detail
