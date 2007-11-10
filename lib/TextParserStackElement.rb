@@ -8,18 +8,29 @@
 # published by the Free Software Foundation.
 #
 
-
+# This class models the elements of the stack that the TextParser uses to keep
+# track of its state. It stores the current TextParserRule, the current
+# pattern position and the TextScanner position at the start of processing. It
+# also store the function that must be called to store the collected values.
 class TextParserStackElement
 
-  attr_reader :val, :rule, :function
+  attr_reader :val, :rule, :function, :sourceFileInfo
 
-  def initialize(rule, function)
+  # Create a new stack element. _rule_ is the TextParserRule that triggered
+  # the creation of this element. _function_ is the function that will be
+  # called at the end to store the collected data. _sourceFileInfo_ is a
+  # SourceFileInfo reference that describes the TextScanner position when the
+  # rule was entered.
+  def initialize(rule, function, sourceFileInfo)
+    # This Array stores the collected values.
     @val = []
     @position = 0
     @rule = rule
     @function = function
+    @sourceFileInfo = sourceFileInfo
   end
 
+  # Store a collected value and move the position to the next pattern.
   def store(val)
     @val[@position] = val
     @position += 1

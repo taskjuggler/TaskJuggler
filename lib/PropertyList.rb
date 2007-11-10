@@ -46,6 +46,19 @@ class PropertyList < Array
 
   # Append a new sorting level to the existing levels.
   def addSortingCriteria(criteria, up, scIdx)
+    unless @propertySet.knownAttribute?(criteria)
+      raise TjException.new, "Unknown attribute #{criteria} used for " +
+                             'sorting criterium'
+    end
+    if scIdx == -1
+      if @propertySet.scenarioSpecific?(criteria)
+        raise TjException.new, "Attribute #{criteria} is scenario specific"
+      end
+    else
+      if !@propertySet.scenarioSpecific?(criteria)
+        raise TjException.new, "Attribute #{criteria} is not scenario specific"
+      end
+    end
     @sortingCriteria.push(criteria)
     @sortingUp.push(up)
     @scenarioIdx.push(scIdx)
@@ -59,10 +72,11 @@ class PropertyList < Array
     @sortingLevels > 0 && @sortingCriteria[0] == 'tree'
   end
 
+  # Sort the properties according to the currently defined sorting criteria.
   def sort!
     super do |a, b|
       res = 0
-      0.upto(@sortingLevels) do |i|
+      0.upto(@sortingLevels - 1) do |i|
         # If the scenario index is negative we have a non-scenario-specific
         # attribute.
         if @scenarioIdx[i] < 0
@@ -79,7 +93,7 @@ class PropertyList < Array
       end
       res
     end
-    # Update indecies.
+    # Update indexes.
     index
   end
 
@@ -92,6 +106,7 @@ class PropertyList < Array
     end
   end
 
+  # Turn the list into a String. This is only used for debugging.
   def to_s
     res = ""
     each { |i| res += "#{i.get('id')}: #{i.get('name')}\n" }

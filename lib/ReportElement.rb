@@ -61,13 +61,15 @@ class ReportElement
     @weekStartsMonday = @report.weekstartsmonday
 
     @propertiesById = {
-      # ID               Header      Indent  Align   Calced. Scen Spec.
-      'duration'    => [ 'Duration', true,   :right, true,   true ],
-      'effort'      => [ 'Effort',   true,   :right, true,   true ],
-      'id'          => [ 'Id',       false,  :left,  false,  false ],
-      'line'        => [ 'Line No.', false,  :right, true,   false ],
-      'name'        => [ 'Name',     true,   :left,  false,  false ],
-      'no'          => [ 'No.',      false,  :right, true,   false ]
+      # ID               Header        Indent  Align   Calced. Scen Spec.
+      'complete'    => [ 'Completion', false,  :right, true,   true ],
+      'duration'    => [ 'Duration',   true,   :right, true,   true ],
+      'effort'      => [ 'Effort',     true,   :right, true,   true ],
+      'id'          => [ 'Id',         false,  :left,  false,  false ],
+      'line'        => [ 'Line No.',   false,  :right, true,   false ],
+      'name'        => [ 'Name',       true,   :left,  false,  false ],
+      'no'          => [ 'No.',        false,  :right, true,   false ],
+      'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
     }
     @propertiesByType = {
       # Type                  Indent  Align
@@ -130,7 +132,7 @@ class ReportElement
       delete
     end
 
-    standardFilterOps(list, hideExpr, rollupExpr)
+    standardFilterOps(list, hideExpr, rollupExpr, resource)
 
     list
   end
@@ -162,7 +164,7 @@ class ReportElement
       end
     end
 
-    standardFilterOps(list, hideExpr, rollupExpr)
+    standardFilterOps(list, hideExpr, rollupExpr, task)
 
     list
   end
@@ -311,11 +313,11 @@ private
 
   # This function implements the generic filtering functionality for all kinds
   # of lists.
-  def standardFilterOps(list, hideExpr, rollupExpr)
+  def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty)
     # Remove all properties that the user wants to have hidden.
     if hideExpr
       list.delete_if do |property|
-        hideExpr.eval(property)
+        hideExpr.eval(property, scopeProperty)
       end
     end
 
@@ -324,7 +326,7 @@ private
       list.delete_if do |property|
         parent = property.parent
         while (parent)
-          return true if rollupExpr.eval(parent)
+          return true if rollupExpr.eval(parent, scopeProperty)
           parent = parent.parent
         end
         false

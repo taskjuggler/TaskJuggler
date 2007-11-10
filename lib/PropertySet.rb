@@ -74,6 +74,12 @@ class PropertySet
     end
   end
 
+  # Return true if there is an AttributeDefinition for _attrId_.
+  def knownAttribute?(attrId)
+    @@fixedAttributeNames.include?(attrId) ||
+    @attributeDefinitions.include?(attrId)
+  end
+
   # Return whether the attribute with _attrId_ is scenario specific or not.
   def scenarioSpecific?(attrId)
     # All hardwired attributes are not scenario specific.

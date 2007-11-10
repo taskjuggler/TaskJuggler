@@ -21,17 +21,18 @@ require 'TjpExportRE'
 # elements.
 class Report
 
-  attr_reader :project, :start, :end, :userDefinedPeriod
+  attr_reader :project, :start, :end, :userDefinedPeriod, :sourceFileInfo
   attr_accessor :currencyformat, :loadUnit, :now, :numberformat, :resourceroot,
                 :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
 
   # Create a new report object.
-  def initialize(project, name, format)
+  def initialize(project, name, format, sourceFileInfo)
     @project = project
     @project.addReport(self)
     @name = name
     @outputFormats = [ format ]
+    @sourceFileInfo = sourceFileInfo
 
     # The following attributes determine the content and look of the report.
     @currencyformat = @project['currencyformat']
@@ -72,26 +73,32 @@ class Report
   # report defined by all the class attributes and report elements is
   # generated according the the requested output format(s).
   def generate
-    # Most output format can be generated from a common intermediate
-    # representation of the elements. We generate that IR first.
-    @elements.each do |element|
-      element.generateIntermediateFormat
-    end
-
-    # Then generate the actual output format.
-    @outputFormats.each do |format|
-      case format
-      when :html
-        generateHTML
-      when :csv
-        generateCSV
-      when :export
-        generateExport
-      when :gui
-        # TODO: Find a way to hook up the GUI here.
-      else
-        raise 'Unknown report output format.'
+    begin
+      # Most output format can be generated from a common intermediate
+      # representation of the elements. We generate that IR first.
+      @elements.each do |element|
+        element.generateIntermediateFormat
       end
+
+      # Then generate the actual output format.
+      @outputFormats.each do |format|
+        case format
+        when :html
+          generateHTML
+        when :csv
+          generateCSV
+        when :export
+          generateExport
+        when :gui
+          # TODO: Find a way to hook up the GUI here.
+        else
+          raise 'Unknown report output format.'
+        end
+      end
+    rescue TjException
+      @project.messageHandler.send(Message.new('reporting_failed', 'error',
+                                               $!.message, nil, nil,
+                                               @sourceFileInfo))
     end
   end
 

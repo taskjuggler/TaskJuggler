@@ -209,7 +209,14 @@ EOT
 
   def rule_argumentList
     optional
-    pattern(%w( _( !operation !moreArguments _) ), lambda {
+    pattern(%w( _( !argumentListBody _) ), lambda {
+      @val[1].nil? ? [] : @val[1]
+    })
+  end
+
+  def rule_argumentListBody
+    optional
+    pattern(%w( !operation !moreArguments ), lambda {
       [ @val[0] ] + @val[1].nil? ? [] : @val[1]
     })
   end
@@ -420,7 +427,7 @@ EOT
       end
       # File name without extension.
       name = @val[1][0..-5]
-      @report = Report.new(@project, name, :export)
+      @report = Report.new(@project, name, :export, sourceFileInfo)
       @reportElement = TjpExportRE.new(@report, mainFile)
     })
     arg(1, 'filename', <<'EOT'
@@ -638,7 +645,7 @@ EOT
     pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
       # Strip '.html' suffix from file name
       name = @val[1][0..-6]
-      @report = Report.new(@project, name, :html)
+      @report = Report.new(@project, name, :html, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
@@ -660,7 +667,7 @@ EOT
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
       # Strip '.html' suffix from file name
       name = @val[1][0..-6]
-      @report = Report.new(@project, name, :html)
+      @report = Report.new(@project, name, :html, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
@@ -910,7 +917,7 @@ EOT
 
   def rule_logicalExpression
     pattern(%w( !operation ), lambda {
-      LogicalExpression.new(@val[0], @scanner.fileName, @scanner.lineNo)
+      LogicalExpression.new(@val[0], sourceFileInfo)
     })
     doc('logicalexpression', <<'EOT'
 A logical expression consists of logical operations, such as '&' for and, '|'
@@ -1001,9 +1008,14 @@ EOT
         unless @project['flags'].include?(@val[0])
           error('operand_unkn_flag', "Undeclared flag #{@val[0]}")
         end
-        operation = LogicalFlag.new(@val[0])
+        LogicalFlag.new(@val[0])
       else
-        # TODO: add support for old functions
+        func = LogicalFunction.new(@val[0])
+        res = func.setArgumentsAndCheck(@val[1])
+        unless res.nil?
+          error(*res)
+        end
+        func
       end
     })
     pattern(%w( $INTEGER ), lambda {
@@ -1027,7 +1039,6 @@ EOT
 An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ charater or it can be another operation enclosed in braces.
 EOT
         )
-
   end
 
   def rule_operatorAndOperand
@@ -1686,7 +1697,7 @@ EOT
 
   def rule_resourceReportHeader
     pattern(%w( _resourcereport $STRING ), lambda {
-      @report = Report.new(@project, @val[1], :gui)
+      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
@@ -1833,7 +1844,7 @@ EOT
   def rule_scenarioIdx
     pattern(%w( $ID ), lambda {
       if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_idx', "Unknown scenario #{@val[1]}")
+        error('unknown_scenario_idx', "Unknown scenario #{@val[0]}")
       end
       scenarioIdx
     })
@@ -2261,7 +2272,7 @@ EOT
 
   def rule_taskReportHeader
     pattern(%w( _taskreport $STRING ), lambda {
-      @report = Report.new(@project, @val[1], :gui)
+      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'

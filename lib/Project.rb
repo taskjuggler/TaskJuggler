@@ -309,7 +309,7 @@ class Project
     begin
       @reports.each { |report| report.generate }
     rescue TjException
-      $stderr.puts "Reporting Error: #{$!}"
+      $stderr.puts "Report Generation Error: #{$!}"
       return false
     end
 

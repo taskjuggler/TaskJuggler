@@ -8,34 +8,51 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'LogicalOperation'
 require 'LogicalAttribute'
 require 'LogicalFlag'
+require 'LogicalFunction'
 
+# A LogicalExpression is an object that describes tree of LogicalOperation
+# objects and the context that it should be evaluated in.
 class LogicalExpression
 
-  attr_accessor :defFileName, :defLineNo
-  attr_reader :property
+  attr_reader :property, :sourceFileInfo
 
-  def initialize(op, file = nil, line = -1)
+  # Create a new LogicalExpression object. _op_ must be a LogicalOperation.
+  # _sourceFileInfo_ is the file position where expression started. It may be
+  # nil if not available.
+  def initialize(op, sourceFileInfo = nil)
     @operation = op
-    @defFileName = file
-    @defLineNo = line
+    @sourceFileInfo = sourceFileInfo
 
-    @property = nil
+    @property = @scopeProperty = nil
   end
 
-  def eval(property)
+  # This function triggers the evaluation of the expression. _property_ is the
+  # PropertyTreeNode that should be used for the evaluation.
+  def eval(property, scopeProperty)
     @property = property
+    @scopeProperty = scopeProperty
     @operation.eval(self)
   end
 
-  def error(text)
-    if @defFileName.nil? || @defLineNo < 0
+  # This function is only used for debugging.
+  def to_s
+    if @sourceFileInfo.nil?
+      "#{@operation}"
+    else
+      str = "#{@sourceFileInfo} #{@operation}"
+    end
+  end
+
+  # This is an internal function. It's called by the LogicalOperation methods
+  # in case something went wrong during an evaluation.
+  def error(text) # :nodoc:
+    if @sourceFileInfo.nil?
       str = "Logical expression error: " + text
     else
-      str = "#{@defFileName}:#{@defLineNo}: Logical expression error: #{text}\n"
+      str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
     end
     $stderr.puts str
     raise TjException.new, "Syntax error"

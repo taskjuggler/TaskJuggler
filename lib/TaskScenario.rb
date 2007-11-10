@@ -1180,7 +1180,8 @@ private
     end
 
     if a('milestone')
-      #TODO
+      @property['complete', @scenarioIdx] =
+        @property['end', @scenarioIdx] <= @project['now'] ? 100.0 : 0.0
     elsif @property.container?
       #TODO
     else

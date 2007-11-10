@@ -21,4 +21,8 @@ class LogicalFlag < LogicalOperation
     expr.property['flags', 0].include?(@operand1)
   end
 
+  def to_s
+    @operand1
+  end
+
 end

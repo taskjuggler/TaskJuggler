@@ -55,7 +55,8 @@ class ReportTableElement < ReportElement
                                      'align' => 'center', 'width' => '100%'))
       table1 << (tr1 = XMLElement.new('tr'))
       tr1 << (td1 = XMLElement.new('td', 'align' => 'center',
-                                   'style' => 'font-size:16px',
+                                   'style' => 'font-size:16px; ' +
+                                              'font-weight:bold',
                                    'class' => 'tabfront'))
       td1 << XMLNamedText.new(@headline, 'p')
     end
@@ -426,6 +427,10 @@ private
     scopeProperty = line.scopeLine ? line.scopeLine.property : nil
 
     case columnDef.id
+    when 'complete'
+      if property.is_a?(Task) && property.leaf?
+        cell.text = "#{property['complete', scenarioIdx].to_i}%"
+      end
     when 'duration'
       # The duration of the task. After scheduling, it can be determined for
       # all tasks. Also for those who did not have a 'duration' attribute.
@@ -441,6 +446,9 @@ private
       cell.text = line.lineNo.to_s
     when 'no'
       cell.text = line.no.to_s
+    when 'wbs'
+      cell.text = property.get('wbs')
+      cell.indent = 2 if line.scopeLine
     else
       raise "Unsupported column #{columnDef.id}"
     end

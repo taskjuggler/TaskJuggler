@@ -146,6 +146,14 @@ class TextParser
     result
   end
 
+  # Return the SourceFileInfo of the TextScanner at the beginning of the
+  # currently processed TextParserRule. Or return nil if we don't have a
+  # current position.
+  def sourceFileInfo
+    return nil if @stack.empty?
+    @stack.last.sourceFileInfo
+  end
+
   def matchingRules(keyword)
     matches = []
     @rules.each do |name, rule|
@@ -299,7 +307,8 @@ private
       end
 
       pattern = rule.pattern(patIdx)
-      @stack << TextParserStackElement.new(rule, pattern.function)
+      @stack << TextParserStackElement.new(rule, pattern.function,
+                                           @scanner.sourceFileInfo)
 
       pattern.each do |element|
         # Separate the type and token text for pattern element.
