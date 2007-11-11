@@ -8,7 +8,7 @@ stable software to manage your projects, use the 2.x series releases.
 
 = Copyright and License
 
-TaskJuggler[http://www.taskjuggler.org] is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
+TaskJuggler is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of {version 2 of the GNU General Public
@@ -20,7 +20,8 @@ TaskJuggler[http://www.taskjuggler.org] is a trademark of Chris Schlaeger.
 
 = Installation
 
-TaskJuggler[http://www.taskjuggler.org] is written in Ruby[http://www.ruby-lang.org]. It uses the
+TaskJuggler III is written in Ruby[http://www.ruby-lang.org]. It
+should run on any platform that Ruby is available on. It uses the
 standard Ruby mechanism for distribution. The format is called {Ruby
 Gems}[http://docs.rubygems.org]. Alternatively, you can install from a
 tarball using setup.rb.
@@ -30,40 +31,36 @@ This is a prototype. Consider it being alpha quality at best!
 == Requirements 
 
 Ruby applications are platform independent. There is no need to
-compile anything. But TaskJuggler[http://www.taskjuggler.org] has a very small set of
+compile anything. But TaskJuggler has a very small set of
 dependencies that you have to take care of first. Most Linux version
 already have them included. Just have sure you have the minimum
 required version.
 
-[*Ruby*] TaskJuggler[http://www.taskjuggler.org] is written in Ruby.
-	 You need a Ruby runtime environment to run it. This can be
-	 downloaded from RubyForge[http://rubyforge.org]. Most Linux
-	 distributions usually have Ruby already included.
-	 TaskJuggler[http://www.taskjuggler.org] currently needs at
-	 least version 1.8.4. Older version have been reported to show
-	 frequent crashes due to what seems to be bugs in the
-	 networking libraries.
+[*Ruby*] TaskJuggler III is written in Ruby.  You need a Ruby runtime
+environment to run it. This can be downloaded from
+here[http://www.ruby-lang.org/en/downloads/].  Most Linux
+distributions usually have Ruby already included.
+TaskJuggler[http://www.taskjuggler.org] currently needs at least
+version 1.8.5.
 
-[*RubyGems*] This is only needed when you don't want to use the
-	     +setup.rb+ method. Most distros have RubyGems included,
-	     so it's only listed for completeness. See
-	     here[http://docs.rubygems.org] how to get and install it.
+[*RubyGems*] Most distros have RubyGems included, so it's only listed
+for completeness. See here[http://docs.rubygems.org] how to get and
+install it.
 
-[*TaskJuggler*] Get it from the {Download Page}[http://www.taskjuggler.org/download.php]
+[*TaskJuggler3*] Get it from the {Download Page}[http://www.taskjuggler.org/download.php]
 
 == Installation Process
 
-Just run as root
+If you have checked-out the git repository, you need to build the Gem
+package first.
+
+<tt>cd taskjuggler3; ./makedist</tt>
+
+To install the Gem package, just run as root the following command.
 
 <tt>gem install taskjuggler3-X.X.X.gem</tt> 
 
-to install the gem file. It will install all components of the Gem in
-the appropriate place.
-
-See here[http://i.loveruby.net/en/projects/setup/doc/usage.html] for
-instructions on how to install the tarball. If you use a non-standard
-prefix or datadir you need to add the path to AppConfig.rb. Otherwise
-TaskJuggler[http://www.taskjuggler.org] will not be able to find the worldmap images.
+It will install all components of the Gem in the appropriate place.
 
 == Update from previous versions
 
@@ -71,6 +68,13 @@ Updates work just like the installation.
 
 <tt>gem update taskjuggler3-X.X.X.gem</tt>
 
+= Using TaskJuggler III
+
+There is currently no consistent user manual available. But you can
+get along pretty well by using the {TaskJuggler 2.x
+manual}[http://www.taskjuggler.org/manual-git/index.html] and the
+TaskJuggler III {syntax
+reference}[http://www.taskjuggler.org/tj3/refman/index.html].
 
 = Bugs reports, sending patches and other feedback
 
@@ -78,10 +82,13 @@ This Ruby implementation of TaskJuggler[http://www.taskjuggler.org] is
 just a prototype. Feedback is welcome, but don't expect any kind of
 support. It is not meant to work right now! Please post a message on
 the {TaskJuggler Forum}[http://www.taskjuggler.org/FUDforum2/] to get
-in contact with the developers or other users.
+in contact with the developers or other users. Don't forget to upload
+a small sample project to illustrate the problem you are reporting.
 
 We want to track all changes by author. Therefore we only accept
 patches in Git[http://www.kernel.org/pub/software/scm/git/docs/]
 format. Patches should only be made against the latest development
-version.
+version. The TaskJuggler 2.x manual has a good description on {how to
+contribute
+patches}[http://www.taskjuggler.org/manual-git/how_to_contribute.html].
 
