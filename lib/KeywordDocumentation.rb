@@ -102,28 +102,30 @@ class KeywordDocumentation
 
     str += "Purpose:     #{format(tagW, @pattern.doc, textW)}\n\n"
 
-    str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
+    if @syntax != '[{ <attributes> }]'
+      str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
 
-    str += "Arguments:   "
-    if @args.empty?
-      str += format(tagW, "none\n\n", textW)
-    else
-      argStr = ''
-      @args.each do |arg|
-        if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
-          indent = arg.name.length + 2
-          argStr += "#{arg.name}: " +
+      str += "Arguments:   "
+      if @args.empty?
+        str += format(tagW, "none\n\n", textW)
+      else
+        argStr = ''
+        @args.each do |arg|
+          if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
+            indent = arg.name.length + 2
+            argStr += "#{arg.name}: " +
                     "#{format(indent, arg.text, textW - indent)}\n\n"
-        else
-          typeSpec = arg.typeSpec
-          typeSpec[0] = '['
-          typeSpec[-1] = ']'
-          indent = arg.name.length + typeSpec.size + 3
-          argStr += "#{arg.name} #{typeSpec}: " +
+          else
+            typeSpec = arg.typeSpec
+            typeSpec[0] = '['
+            typeSpec[-1] = ']'
+            indent = arg.name.length + typeSpec.size + 3
+            argStr += "#{arg.name} #{typeSpec}: " +
                     "#{format(indent, arg.text, textW - indent)}\n\n"
+          end
         end
+        str += format(tagW, argStr, textW)
       end
-      str += format(tagW, argStr, textW)
     end
 
     str += "Context:     "
@@ -271,30 +273,32 @@ EOT
     tr << XMLNamedText.new('Purpose', 'td', 'class' => 'tag')
     tr << XMLNamedText.new("#{@pattern.doc}", 'td', 'class' => 'descr')
 
-    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-    tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
-    tr << (td = XMLElement.new('td', 'class' => 'descr'))
-    td << XMLNamedText.new("#{@syntax}", 'code')
-
-    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-    tr << XMLNamedText.new('Arguments', 'td', 'class' => 'tag')
-    if @args.empty?
-      tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
-    else
+    if @syntax != '[{ <attributes> }]'
+      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+      tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
       tr << (td = XMLElement.new('td', 'class' => 'descr'))
-      td << (tab1 = XMLElement.new('table', 'width' => '100%'))
-      @args.each do |arg|
-        tab1 << (tr1 = XMLElement.new('tr'))
-        if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
-          tr1 << XMLNamedText.new("#{arg.name}", 'td', 'width' => '30%')
-        else
-          typeSpec = arg.typeSpec
-          typeSpec[0] = '['
-          typeSpec[-1] = ']'
-          tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
+      td << XMLNamedText.new("#{@syntax}", 'code')
+
+      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+      tr << XMLNamedText.new('Arguments', 'td', 'class' => 'tag')
+      if @args.empty?
+        tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
+      else
+        tr << (td = XMLElement.new('td', 'class' => 'descr'))
+        td << (tab1 = XMLElement.new('table', 'width' => '100%'))
+        @args.each do |arg|
+          tab1 << (tr1 = XMLElement.new('tr'))
+          if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
+            tr1 << XMLNamedText.new("#{arg.name}", 'td', 'width' => '30%')
+          else
+            typeSpec = arg.typeSpec
+            typeSpec[0] = '['
+            typeSpec[-1] = ']'
+            tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
                                   'width' => '30%')
+          end
+          tr1 << XMLNamedText.new("#{arg.text}", 'td')
         end
-        tr1 << XMLNamedText.new("#{arg.text}", 'td')
       end
     end
 

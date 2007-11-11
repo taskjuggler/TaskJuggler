@@ -169,12 +169,15 @@ class SyntaxDocumentation
     html.write(directory + 'alphabet.html')
   end
 
+  # Generate the intro page for the HTML documentation. _directory_ is the
+  # path to the directory the file should be generated in. The file will be
+  # called intro.html.
   def generateHTMLintro(directory)
     html = HTMLDocument.new
     html << (head = XMLElement.new('head'))
     html << (body = XMLElement.new('body'))
     body << (div = XMLElement.new('div', 'align' => 'center',
-                                  'style' => 'margin-top:20%'))
+                                  'style' => 'margin-top:10%'))
     div << XMLNamedText.new("The #{AppConfig.packageName} Reference Manual",
                             'h1')
     div << XMLNamedText.new("Copyright (c) #{AppConfig.copyright.join(', ')} " +
@@ -184,6 +187,38 @@ class SyntaxDocumentation
     div << XMLElement.new('br')
     div << XMLNamedText.new("This manual covers #{AppConfig.packageName} " +
                             "version #{AppConfig.version}.", 'h3')
+    body << XMLBlob.new(<<'EOT'
+<br/><hr/><br/>
+<div style="margin-left:10%; margin-right:10%">
+<p>Each TaskJuggler project consists of one or more text files. There is
+always a main project file that may include other files. The main file name
+should have a <code>.tjp</code> suffix, the included files must have a
+<code>.tji</code> suffix.</p>
+
+<p>Every project must start with a <a href="project.html">project header</a>.
+The header must then be followed by any number of <a
+href="properties.html">project properties</a>. Properties don't have to be used in a particular order, but may have interdependencies that require such an order. It is therefor recommended to define them in the following sequence.</p>
+
+<ul>
+<li><a href="macro.html">macros</a></li>
+<li><a href="flags.html">flags</a></li>
+<li><a href="account.html">accounts</a></li>
+<li><a href="shift.html">shifts</a></li>
+<li><a href="vacation.html">vacations</a></li>
+<li><a href="resource.html">resources</a></li>
+<li><a href="task.html">tasks</a></li>
+<li><a href="reports.html">reports</a></li>
+</ul>
+
+<p>To schedule a TaskJuggler project you need to process the main file with TaskJuggler. Just type the following command in a command shell.</p>
+
+<pre>taskjuggler3 yourproject.tjp</pre>
+
+<p>It will check the project for consistency and schedule all tasks. If no
+fatal error were detected, the defined reports will be generated.</p>
+</div>
+EOT
+                      )
 
     html.write(directory + 'intro.html')
   end
