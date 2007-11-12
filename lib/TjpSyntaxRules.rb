@@ -598,6 +598,34 @@ EOT
     listRule('moreFlagList', '!flag')
   end
 
+  def rule_functions
+    # This rule is not used by the parser. It's only for the documentation.
+    pattern(%w( !functionsBody ))
+    doc('functions', <<'EOT'
+The following functions are supported in logical expressions. These functions
+are evaluated in logical conditions such as hidetask or rollupresource. For
+the evaluation, implicit and explicit parameters are used. All functions may
+operate on the current property and the scope property. The scope property is
+the enclosing property in reports with nested properties. E. g. in a task
+report with nested resources, the task is the scope property and the the
+resource is the property the the function is called for the resource line. The
+explicit parameters are passed in the function call. These arguments may vary
+from function to function.
+EOT
+       )
+  end
+
+  def rule_functionsBody
+    # This rule is not used by the parser. It's only for the documentation.
+    optionsRule('functionPatterns')
+  end
+
+  def rule_functionPatterns
+    # This rule is not used by the parser. It's only for the documentation.
+    pattern(['_isLeaf', '_(', '_)' ])
+    doc('isleaf', 'The result is true if the property is not a container.')
+  end
+
   def rule_hideresource
     pattern(%w( _hideresource !logicalExpression ), lambda {
       @reportElement.hideResource = @val[1]
@@ -920,15 +948,18 @@ EOT
       LogicalExpression.new(@val[0], sourceFileInfo)
     })
     doc('logicalexpression', <<'EOT'
-A logical expression consists of logical operations, such as '&' for and, '|'
-for or, '~' for not, '>' for greater than, '<' for less than, '=' for equal,
-'>=' for greater than or equal and '<=' for less than or equal to operate on
-INTEGER values or symbols. Flag names and certain functions are supported as
-symbols as well. The expression is evaluated from left to right. '~' has a
-higher precedence than other operators. Use parentheses to avoid ambiguous
-operations.
+A logical expression is a combination of operands and mathematical operations.
+The final result of a logical expression is always true or false. Logical
+expressions are used the reduce the properties in a report to a certain
+subset. If the logical expression evaluates to true for a certain property,
+this property is hidden or rolled-up in the report.
+
+Operands can be declared flags, built-in functions, property attributes
+(specified as scenario.attribute) or another logical expression. The latter
+should be enclosed in brackets to avoid ambiguities.
 EOT
        )
+    also(%w( functions ))
   end
 
   def rule_macro
@@ -1063,7 +1094,10 @@ EOT
       operation
     })
     arg(0, 'operand', <<'EOT'
-An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ charater or it can be another operation enclosed in braces.
+An operand can consist of a date, a text string or a numerical value. It can
+also be the name of a declared flag. Finally, an operand can be a negated
+operand by prefixing a ~ charater or it can be another logical expression
+enclosed in braces.
 EOT
         )
   end

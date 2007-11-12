@@ -1,10 +1,14 @@
-= About TaskJuggler[http://www.taskjuggler.org]
+= About {TaskJuggler III}[http://www.taskjuggler.org]
 
-TaskJuggler[http://www.taskjuggler.org] is an Open Source project
-management software. This Ruby implementation is a prototype for what
-could be the next generation of TaskJuggler. If you are looking for a
-stable software to manage your projects, use the 2.x series releases.
+TaskJuggler III is an Open Source project management software. Right
+now it is just a prototype of what will become the next generation of
+TaskJuggler. If you are looking for a stable software to manage your
+projects, use the 2.x series releases.
 
+In contrast to the 2.x version TaskJuggler III should be easily
+installable and usable on non Unix/Linux systems as well. If you
+don't fear the command prompt and can handle a text editor you can
+even use it on Windows and MacOS X.
 
 = Copyright and License
 
@@ -22,9 +26,9 @@ TaskJuggler[http://www.taskjuggler.org] is a trademark of Chris Schlaeger.
 
 TaskJuggler III is written in Ruby[http://www.ruby-lang.org]. It
 should run on any platform that Ruby is available on. It uses the
-standard Ruby mechanism for distribution. The format is called {Ruby
+standard Ruby mechanism for distribution. The package format is called {Ruby
 Gems}[http://docs.rubygems.org]. Alternatively, you can install from a
-tarball using setup.rb.
+the source code using setup.rb.
 
 This is a prototype. Consider it being alpha quality at best!
 
@@ -32,22 +36,22 @@ This is a prototype. Consider it being alpha quality at best!
 
 Ruby applications are platform independent. There is no need to
 compile anything. But TaskJuggler has a very small set of
-dependencies that you have to take care of first. Most Linux version
-already have them included. Just have sure you have the minimum
-required version.
+dependencies that you have to take care of first. Please make sure you
+have the minimum required version installed.
 
 [*Ruby*] TaskJuggler III is written in Ruby.  You need a Ruby runtime
-environment to run it. This can be downloaded from
-here[http://www.ruby-lang.org/en/downloads/].  Most Linux
-distributions usually have Ruby already included.
-TaskJuggler[http://www.taskjuggler.org] currently needs at least
-version 1.8.5.
+	 environment to run it. This can be downloaded from
+	 here[http://www.ruby-lang.org/en/downloads/].  Most Linux
+	 distributions usually have Ruby already included. So does
+	 MacOS X Leopard. For Windows, there is a one-click installer
+	 available.  TaskJuggler[http://www.taskjuggler.org] currently
+	 needs at least Ruby version 1.8.5.
 
-[*RubyGems*] Most distros have RubyGems included, so it's only listed
-for completeness. See here[http://docs.rubygems.org] how to get and
-install it.
+[*RubyGems*] If it did not come with your OS or Ruby package, see
+	     here[http://docs.rubygems.org] how to get and install it.
 
-[*TaskJuggler*] Get TaskJuggler III from the {Download Page}[http://www.taskjuggler.org/download.php]
+[*TaskJuggler*] Get TaskJuggler III from the
+                {Download Page}[http://www.taskjuggler.org/download.php]
 
 == Installation Process
 
@@ -80,15 +84,16 @@ reference}[http://www.taskjuggler.org/tj3/refman/index.html].
 
 This Ruby implementation of TaskJuggler[http://www.taskjuggler.org] is
 just a prototype. Feedback is welcome, but don't expect any kind of
-support. It is not meant to work right now! Please post a message on
-the {TaskJuggler Forum}[http://www.taskjuggler.org/FUDforum2/] to get
-in contact with the developers or other users. Don't forget to upload
-a small sample project to illustrate the problem you are reporting.
+support. Certain feature are still missing or don't work properly
+yet.! Please post a message on the {TaskJuggler
+Forum}[http://www.taskjuggler.org/FUDforum2/] to get in contact with
+the developers or other users. Don't forget to upload a small sample
+project to illustrate the problem you are reporting.
 
-We want to track all changes by author. Therefore we only accept
-patches in Git[http://www.kernel.org/pub/software/scm/git/docs/]
-format. Patches should only be made against the latest development
-version. The TaskJuggler 2.x manual has a good description on {how to
-contribute
+For legal reasons, we want to track the authors of all contributions.
+Therefore we only accept patches in
+Git[http://www.kernel.org/pub/software/scm/git/docs/] format. Patches
+should only be made against the latest development version. The
+TaskJuggler 2.x manual has a good description on {how to contribute
 patches}[http://www.taskjuggler.org/manual-git/how_to_contribute.html].
 

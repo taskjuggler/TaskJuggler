@@ -211,9 +211,13 @@ class KeywordDocumentation
 EOT
                )
     html << (body = XMLElement.new('body'))
-    body << (headline = XMLNamedText.new(
+    body << (headline = XMLElement.new('div', 'align' => 'center'))
+    headline << XMLNamedText.new(
       "The #{AppConfig.packageName} Syntax Reference Manual", 'h2',
-      'align' => 'center'))
+      'align' => 'center')
+    headline << XMLNamedText.new(
+      'Project Management beyond Gantt Chart Drawing', 'em',
+      'align' => 'center')
     body << XMLElement.new('hr')
 
     # Navigation bar
