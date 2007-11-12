@@ -232,7 +232,7 @@ EOT
       end
       @booking.overtime = @val[1]
     })
-    doc('booking.overtime', <<'EOT'
+    doc('overtime.booking', <<'EOT'
 This attribute enables bookings to override working hours and vacations.
 EOT
        )
@@ -244,7 +244,7 @@ EOT
       end
       @booking.sloppy = @val[1]
     })
-    doc('booking.sloppy', <<'EOT'
+    doc('sloppy.booking', <<'EOT'
 Controls how strict TaskJuggler checks booking intervals for conflicts with
 vacation and other bookings. In case the error is suppressed the booking will
 not overwrite the existing bookings. It will avoid the already assigned
@@ -321,7 +321,7 @@ EOT
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })
-    doc('column.scale', <<'EOT'
+    doc('scale.column', <<'EOT'
 Specifies the scale that should be used for a chart column. This value is ignored for all other columns.
 EOT
        )
@@ -329,7 +329,7 @@ EOT
     pattern(%w( _title $STRING ), lambda {
       @column.title = @val[1]
     })
-    doc('column.title', <<'EOT'
+    doc('title.column', <<'EOT'
 Specifies an alternative title for a report column.
 EOT
        )
@@ -338,7 +338,7 @@ EOT
     pattern(%w( _width !number ), lambda {
       @column.width = @val[1]
     })
-    doc('column.width', <<'EOT'
+    doc('width.column', <<'EOT'
 Specifies the width of the column in screen pixels. If the content of the
 column does not fit into this width, it will be cut off. In some cases a
 scrollbar is added or a popup window is shown when the mouse is moved over the
@@ -470,7 +470,7 @@ EOT
           }))
       end
     })
-    doc('extend.date', <<'EOT'
+    doc('date.extend', <<'EOT'
 Extend the property with a new attribute of type date.
 EOT
        )
@@ -493,7 +493,7 @@ EOT
           }))
       end
     })
-    doc('extend.reference', <<'EOT'
+    doc('reference.extend', <<'EOT'
 Extend the property with a new attribute of type reference. A reference is a
 URL and an optional text that will be shown instead of the URL if needed.
 EOT
@@ -515,7 +515,7 @@ EOT
           }))
       end
     })
-    doc('extend.text', <<'EOT'
+    doc('text.extend', <<'EOT'
 Extend the property with a new attribute of type text. A text is a character
 sequence enclosed in single or double quotes.
 EOT
@@ -546,14 +546,14 @@ EOT
     repeatable
 
     singlePattern('_inherit')
-    doc('extend.inherit', <<'EOT'
+    doc('inherit.extend', <<'EOT'
 If the this attribute is used, the property extension will be inherited by
 child properties from their parent property.
 EOT
        )
 
     singlePattern('_scenariospecific')
-    doc('extend.scenariospecific', <<'EOT'
+    doc('scenariospecific.extend', <<'EOT'
 If this attribute is used, the property extension is scenario specific. A
 different value can be set for each scenario.
 EOT
@@ -1306,7 +1306,7 @@ EOT
     pattern(%w( _sloppy ), lambda {
       @property['strict', @scenarioIdx] = false
     })
-    doc('projection.sloppy', <<'EOT'
+    doc('sloppy.projection', <<'EOT'
 In sloppy mode tasks with no bookings will be filled from the original start.
 EOT
        )
@@ -1314,7 +1314,7 @@ EOT
     pattern(%w( _strict ), lambda {
       @property['strict', @scenarioIdx] = true
     })
-    doc('projection.strict', <<'EOT'
+    doc('strict.projection', <<'EOT'
 In strict mode all tasks will be filled starting with the current date. No
 bookings will be added prior to the current date.
 EOT
@@ -1326,7 +1326,7 @@ EOT
     # documentation.
     pattern(%w( !projectPropertiesBody ))
     doc('properties', <<'EOT'
-The project properties. Ever project must consists of at least one task.
+The project properties. Every project must consists of at least one task.
 EOT
        )
   end
@@ -1659,7 +1659,7 @@ EOT
     pattern(%w( _end !date ), lambda {
       @reportElement.end = @val[1]
     })
-    doc('report.end', <<'EOT'
+    doc('end.report', <<'EOT'
 Specifies the end date of the report. In task reports only tasks that start
 before this end date are listed.
 EOT
@@ -1671,7 +1671,7 @@ EOT
       @reportElement.start = @val[1].start
       @reportElement.end = @val[1].end
     })
-    doc('report.period', <<'EOT'
+    doc('period.report', <<'EOT'
 This property is a shortcut for setting the start and end property at the
 same time.
 EOT
@@ -1682,7 +1682,7 @@ EOT
     pattern(%w( _start !date ), lambda {
       @reportElement.start = @val[1]
     })
-    doc('report.start', <<'EOT'
+    doc('start.report', <<'EOT'
 Specifies the start date of the report. In task reports only tasks that end
 after this end date are listed.
 EOT
@@ -1794,7 +1794,7 @@ EOT
     pattern(%w( _flags !flagList ), lambda {
       @property['flags', @scenarioIdx] += @val[1]
     })
-    doc('resource.flags', <<'EOT'
+    doc('flags.resource', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
 EOT
@@ -1820,7 +1820,7 @@ EOT
     pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
-    doc('resource.limits', <<'EOT'
+    doc('limits.resource', <<'EOT'
 Set per-interval usage limits for the resource.
 EOT
        )
@@ -1834,7 +1834,7 @@ EOT
        )
 
     pattern(%w( _shifts !shiftAssignments ))
-    doc('resource.shifts', <<'EOT'
+    doc('shifts.resource', <<'EOT'
 Limits the working time of a resource to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
 Outside of the defined shift intervals the resource uses its normal working
@@ -1846,7 +1846,7 @@ EOT
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
-    doc('resource.vacation', <<'EOT'
+    doc('vacation.resource', <<'EOT'
 Specify a vacation period for the resource. It can also be used to block out
 the time before a resource joint or after it left. For employees changing
 their work schedule from full-time to part-time, or vice versa, please refer
@@ -2027,7 +2027,7 @@ EOT
     pattern(%w( _timezone $STRING ), lambda {
       @property['timezone', @scenarioIdx] = @val[1]
     })
-    doc('shift.timezone', <<'EOT'
+    doc('timezone.shift', <<'EOT'
 Sets the timezone of the shift. The working hours of the shift are assumed to be within the specified time zone. The timezone does not effect the vaction interval. The latter is assumed to be within the project time zone.
 EOT
         )
@@ -2042,7 +2042,7 @@ EOT
       @property['vacations', @scenarioIdx] =
         @property['vacations', @scenarioIdx ] + @val[2]
     })
-    doc('shift.vacation', <<'EOT'
+    doc('vacation.shift', <<'EOT'
 Specify a vacation period associated with this shift.
 EOT
        )
@@ -2157,7 +2157,7 @@ EOT
     pattern(%w( _note $STRING ), lambda {
       @property.set('note', @val[1])
     })
-    doc('task.note', <<'EOT'
+    doc('note.task', <<'EOT'
 Attach a note to the task. This is usually a more detailed specification of
 what the task is about.
 EOT
@@ -2321,7 +2321,7 @@ EOT
       @property['start', @scenarioIdx] = @val[1].start
       @property['end', @scenarioIdx] = @val[1].end
     })
-    doc('task.period', <<'EOT'
+    doc('period.task', <<'EOT'
 This property is a shortcut for setting the start and end property at the same
 time. In contrast to using these, it does not change the scheduling direction.
 EOT
@@ -2372,7 +2372,7 @@ EOT
     pattern(%w( _account $ID ), lambda {
       # TODO
     })
-    doc('task.account', <<'EOT'
+    doc('account.task', <<'EOT'
 All amounts associated with the task will be credited to the specified account. The account must not be an account group.
 EOT
         )
@@ -2380,7 +2380,7 @@ EOT
     pattern(%w( !allocate ))
 
     pattern(%w( _booking !taskBooking ))
-    doc('task.booking', <<'EOT'
+    doc('booking.task', <<'EOT'
 Bookings can be used to report already completed work by specifying the exact
 time intervals a certain resource has worked on this task.
 EOT
@@ -2421,9 +2421,9 @@ EOT
       @property['duration', @scenarioIdx] = @val[1]
     })
     doc('duration', <<'EOT'
-Specifies the time the task occupies the resources. This is calendar time, not
-working time. 7d means one week. If resources are specified they are allocated
-when available. Availability of resources has no impact on the duration of the
+Specifies the time the task should last. This is calendar time, not working
+time. 7d means one week. If resources are specified they are allocated when
+available. Availability of resources has no impact on the duration of the
 task. It will always be the specified duration.
 
 Tasks may not have subtasks if this attribute is used.
@@ -2476,7 +2476,7 @@ EOT
     pattern(%w( _flags !flagList ), lambda {
       @property['flags', @scenarioIdx] += @val[1]
     })
-    doc('task.flags', <<'EOT'
+    doc('flags.task', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
 EOT
@@ -2503,7 +2503,7 @@ EOT
     pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
-    doc('task.limits', <<'EOT'
+    doc('limits.task', <<'EOT'
 Set per-interval allocation limits for the task. This setting affects all allocations for this task.
 EOT
        )
@@ -2671,7 +2671,7 @@ EOT
        )
 
     pattern(%w( _shifts !shiftAssignments ))
-    doc('task.shifts', <<'EOT'
+    doc('shifts.task', <<'EOT'
 Limits the working time for this task to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
 If one or more shifts have been assigned to a task, no work is done outside of
@@ -2689,7 +2689,7 @@ scenario this attribute also implicitly sets the scheduling policy of the task
 to asap.
 EOT
        )
-    also(%w( end task.period maxstart minstart scheduling ))
+    also(%w( end period.task maxstart minstart scheduling ))
     # Other attributes will be added automatically.
   end
 

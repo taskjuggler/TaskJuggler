@@ -16,8 +16,9 @@ require 'HTMLDocument'
 
 # This class can traverse the syntax rules of the ProjectFileParser and extract
 # all documented keywords including their arguments and relations. All this
-# work in done in the contructor. The other noticeable function is to_s to get
-# the documentation for a keyword as textual string.
+# work in done in the contructor. The documentation can then be generated for
+# all found keyword or just a single one. Currently plain text output as well
+# as HTML files are supported.
 class SyntaxDocumentation
 
   # The constructor is the most important function of this class. It creates a
@@ -134,7 +135,7 @@ class SyntaxDocumentation
       if kwTokens.size == 1
         normalizedKeywords[keyword] = keyword
       else
-        normalizedKeywords["#{kwTokens[1]} (#{kwTokens[0]})"] = keyword
+        normalizedKeywords["#{kwTokens[0]} (#{kwTokens[1]})"] = keyword
       end
     end
     letter = nil
@@ -212,7 +213,7 @@ href="properties.html">project properties</a>. Properties don't have to be used 
 
 <p>To schedule a TaskJuggler project you need to process the main file with TaskJuggler. Just type the following command in a command shell.</p>
 
-<pre>taskjuggler3 yourproject.tjp</pre>
+<pre>tj3 yourproject.tjp</pre>
 
 <p>It will check the project for consistency and schedule all tasks. If no
 fatal error were detected, the defined reports will be generated.</p>

@@ -128,9 +128,9 @@ class KeywordDocumentation
       end
     end
 
-    str += "Context:     "
+    str += 'Context:     '
     if @contexts.empty?
-      str += format(tagW, "Global scope", textW)
+      str += format(tagW, 'Global scope', textW)
     else
       cxtStr = ''
       @contexts.each do |context|
@@ -305,7 +305,8 @@ EOT
     tab << (tr = XMLElement.new('tr', 'align' => 'left'))
     tr << XMLNamedText.new('Context', 'td', 'class' => 'tag')
     if @contexts.empty?
-      tr << XMLNamedText.new('Global scope', 'td', 'class' => 'descr')
+      tr << (td = XMLElement.new('td', 'class' => 'descr'))
+      td << XMLNamedText.new('Global scope', 'a', 'href' => 'intro.html')
     else
       tr << (td = XMLElement.new('td', 'class' => 'descr'))
       first = true
