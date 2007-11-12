@@ -141,7 +141,7 @@ class TextScanner
 
   def returnToken(token)
     unless @tokenBuffer.nil?
-      raise "Fatal Error: Cannot return 2 tokens in a row"
+      raise "Fatal Error: Cannot return more than 1 token in a row"
     end
     @tokenBuffer = token
     @pos = @lastPos

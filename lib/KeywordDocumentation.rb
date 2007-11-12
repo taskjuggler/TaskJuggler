@@ -9,6 +9,7 @@
 #
 
 require 'HTMLDocument'
+require 'RichText'
 
 # The textual TaskJuggler Project description consists of many keywords. The
 # parser has built-in support to document the meaning and usage of these
@@ -275,8 +276,8 @@ EOT
 
     tab << (tr = XMLElement.new('tr', 'align' => 'left'))
     tr << XMLNamedText.new('Purpose', 'td', 'class' => 'tag')
-    tr << XMLNamedText.new("#{@pattern.doc}", 'td', 'class' => 'descr')
-
+    tr << (td = XMLElement.new('td', 'class' => 'descr'))
+    td << RichText.new(@pattern.doc).to_html
     if @syntax != '[{ <attributes> }]'
       tab << (tr = XMLElement.new('tr', 'align' => 'left'))
       tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
@@ -301,7 +302,8 @@ EOT
             tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
                                   'width' => '30%')
           end
-          tr1 << XMLNamedText.new("#{arg.text}", 'td')
+          tr1 << (td = XMLElement.new('td'))
+          td << RichText.new(arg.text).to_html
         end
       end
     end
