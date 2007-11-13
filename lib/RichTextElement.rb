@@ -10,10 +10,18 @@
 
 require 'TjException'
 
+# The RichTextElement class models the nodes of the intermediate
+# representation that the RichTextParser generates. Each node can reference an
+# Array of other RichTextElement nodes, building a tree that represents the
+# syntactical structure of the parsed RichText. Each node has a certain
+# category that identifies the content of the node.
 class RichTextElement
 
   attr_writer :counter
 
+  # Create a new RichTextElement node. _category_ is the type of the node. It
+  # can be :title, :bold, etc. _arg_ is an overloaded argument. It can either
+  # be another node or an Array of RichTextElement nodes.
   def initialize(category, arg = nil)
     @category = category
     if arg
@@ -30,31 +38,20 @@ class RichTextElement
       @children = []
     end
 
+    # Certain elements such as titles and numbered bullets can be enumerated.
+    # This counter is used for this. It holds an Array of counters. One
+    # counter for each nesting level.
     @counter = nil
   end
 
-  def <<(arg)
-    # If the argument is an array, we have to insert each element
-    # individually.
-    if arg.is_a?(RichTextElement)
-      @children << arg
-    elsif arg.is_a?(Array)
-      @children += arg
-    elsif arg.nil?
-      # do nothing
-    else
-      raise TjException.new, 'Elements must be of type RichTextElement'
-    end
-    self
-  end
-
+  # Conver the intermediate representation into a plain text again. All
+  # elements that can't be represented in plain text easily will be ignored or
+  # just their value will be included.
   def to_s
     pre = ''
     post = ''
     case @category
     when :richtext
-      pre = '<rt>'
-      post = '</rt>'
     when :title1
       pre = "#{@counter[0]} "
       post = "\n\n"
@@ -67,8 +64,7 @@ class RichTextElement
     when :paragraph
       post = "\n\n"
     when :code
-      pre = '<code>'
-      post = '</code>'
+      post = "\n\n"
     when :bulletlist1
     when :bulletitem1
       pre = '* '
@@ -93,6 +89,8 @@ class RichTextElement
     when :numberitem3
       pre = "#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
       post = "\n\n"
+    when :italic
+    when :bold
     when :text
       post = ' '
     else
@@ -104,6 +102,93 @@ class RichTextElement
     pre + out + post
   end
 
+  # Convert the tree of RichTextElement nodes into an XML like text
+  # representation. This is primarily intended for unit testing. The tag names
+  # are similar to HTML tags, but this is not meant to be valid HTML.
+  def to_tagged
+    pre = ''
+    post = ''
+    case @category
+    when :richtext
+      pre = '<div>'
+      post = '</div>'
+    when :title1
+      pre = "<h1>#{@counter[0]} "
+      post = "</h1>\n\n"
+    when :title2
+      pre = "<h2>#{@counter[0]}.#{@counter[1]} "
+      post = "</h2>\n\n"
+    when :title3
+      pre = "<h3>#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      post = "</h3>\n\n"
+    when :paragraph
+      pre = '<p>'
+      post = "</p>\n\n"
+    when :code
+      pre = '<pre>'
+      post = "</pre>\n\n"
+    when :bulletlist1
+      pre = '<ul>'
+      post = '</ul>'
+    when :bulletitem1
+      pre = '<li>* '
+      post = "</li>\n"
+    when :bulletlist2
+      pre = '<ul>'
+      post = '</ul>'
+    when :bulletitem2
+      pre = '<li> * '
+      post = "</li>\n"
+    when :bulletlist3
+      pre = '<ul>'
+      post = '</ul>'
+    when :bulletitem3
+      pre = '<li>  * '
+      post = "</li>\n"
+    when :numberlist1
+      pre = '<ol>'
+      post = '</ol>'
+    when :numberitem1
+      pre = "<li>#{@counter[0]} "
+      post = "</li>\n"
+    when :numberlist2
+      pre = '<ol>'
+      post = '</ol>'
+    when :numberitem2
+      pre = "<li>#{@counter[0]}.#{@counter[1]} "
+      post = "</li>\n"
+    when :numberlist3
+      pre = '<ol>'
+      post = '</ol>'
+    when :numberitem3
+      pre = "<li>#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      post = "</li>\n"
+    when :italic
+      pre = '<i>'
+      post = '</i>'
+    when :bold
+      pre = '<b>'
+      post = '</b>'
+    when :text
+      pre = '['
+      post = '] '
+    else
+      raise TjException.new, "Unknown RichTextElement category #{@category}"
+    end
+
+    out = ''
+    @children.each do |el|
+      if el.is_a?(RichTextElement)
+        out << el.to_tagged
+      else
+        out << el
+      end
+    end
+
+    pre + out + post
+  end
+
+  # Convert the intermediate representation into HTML elements.
   def to_html
     html =
     case @category
@@ -146,6 +231,10 @@ class RichTextElement
       XMLElement.new('ol')
     when :numberitem3
       XMLElement.new('li')
+    when :italic
+      XMLElement.new('i')
+    when :bold
+      XMLElement.new('b')
     when :text
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"

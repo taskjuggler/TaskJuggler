@@ -12,30 +12,43 @@ require 'TextParser'
 require 'RichTextScanner'
 require 'RichTextSyntaxRules'
 
+# This is the parser class used by the RichText class to convert the input
+# text into an intermediate representation. Most of the actual work is done by
+# the generic TextParser class. The syntax description for the markup language
+# is provided by the RichTextSyntaxRules module. To break the input String
+# into tokens, the RichTextScanner class is used.
 class RichTextParser < TextParser
 
   include RichTextSyntaxRules
 
+  # Create the parser and initialize the rule set.
   def initialize
     super
-    @variables = %w( SPACE LINEBREAK TEXT CODE TITLE1 TITLE2 TITLE3
+    # These are the tokens that can be returned by the RichTextScanner.
+    @variables = %w( LINEBREAK WORD CODE BOLD ITALIC BOLDITALIC
+                     TITLE1 TITLE2 TITLE3 TITLE1END TITLE2END TITLE3END
                      BULLET1 BULLET2 BULLET3 NUMBER1 NUMBER2 NUMBER3 )
+    # Load the rule set into the parser.
     initRules
+    # The sections and numbered list can each nest 3 levels deep. We use these
+    # counter Arrays to generate proper 1.2.3 type labels.
     @sectionCounter = [ 0, 0, 0 ]
     @numberListCounter = [ 0, 0, 0 ]
   end
 
+  # Construct the parser and get ready to read.
   def open(text)
+    # Make sure that the last line is properly terminated with a newline.
+    # Multiple newlines at the end are simply ignored.
     @scanner = RichTextScanner.new(text + "\n\n")
   end
 
-  def close
-  end
-
+  # Get the next token from the scanner.
   def nextToken
     @scanner.nextToken
   end
 
+  # Return the last fetch token again to the scanner.
   def returnToken(token)
     @scanner.returnToken(token)
   end
