@@ -13,6 +13,7 @@ require 'Project'
 require 'TextParser'
 require 'TextScanner'
 require 'TjpSyntaxRules'
+require 'RichText'
 
 # This class specializes the TextParser class for use with TaskJuggler project
 # files (TJP Files). The primary purpose is to provide functionality that make

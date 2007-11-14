@@ -1459,6 +1459,15 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _caption $STRING ), lambda {
+      @reportElement.caption = RichText.new(@val[1])
+    })
+    doc('caption', <<'EOT'
+The caption will be embedded in the footer of the table or data segment. The
+text will be interpreted as Wiki markup (see. [RichText]).
+EOT
+       )
+
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
       columns += @val[2] if @val[2]
@@ -1473,6 +1482,15 @@ macro is being changed after each table cell or table line. Consequently only
 build in macros can be used. To protect the macro calls against expansion
 during the initial file processing, the report macros must be prefixed with an
 additional ''''$''''.
+EOT
+       )
+
+    pattern(%w( _epilog $STRING ), lambda {
+      @reportElement.epilog = RichText.new(@val[1])
+    })
+    doc('epilog', <<'EOT'
+Define a text section that is printed right after the actual report data. The
+text will be interpreted as Wiki markup (see. [RichText]).
 EOT
        )
 
@@ -1495,6 +1513,14 @@ EOT
     })
     doc('loadunit', <<'EOT'
 Determines what unit should be used to display all load values in this report.
+EOT
+       )
+
+    pattern(%w( _prolog $STRING ), lambda {
+      @reportElement.prolog = RichText.new(@val[1])
+    })
+    doc('prolog', <<'EOT'
+Define a text section that is printed right before the actual report data. The text will be interpreted as Wiki markup (see. [RichText]).
 EOT
        )
 

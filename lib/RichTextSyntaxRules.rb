@@ -26,7 +26,7 @@ module RichTextSyntaxRules
   # This is the entry node.
   def rule_richtext
     pattern(%w( !sections !blankLines ), lambda {
-      el = RichTextElement.new(:richtext, @val[0])
+      el = RichTextElement.new(@richText, :richtext, @val[0])
     })
   end
 
@@ -42,14 +42,14 @@ module RichTextSyntaxRules
       @val[0]
     })
     pattern(%w( $PRE ), lambda {
-      RichTextElement.new(:pre, @val[0])
+      RichTextElement.new(@richText, :pre, @val[0])
     })
     pattern(%w( !bulletList1 ), lambda {
-      RichTextElement.new(:bulletlist1, @val[0])
+      RichTextElement.new(@richText, :bulletlist1, @val[0])
     })
     pattern(%w( !numberList1 ), lambda {
       @numberListCounter = [ 0, 0, 0 ]
-      RichTextElement.new(:numberlist1, @val[0])
+      RichTextElement.new(@richText, :numberlist1, @val[0])
     })
   end
 
@@ -67,7 +67,7 @@ module RichTextSyntaxRules
 
   def rule_title1
     pattern(%w( $TITLE1 !text $TITLE1END ), lambda {
-      el = RichTextElement.new(:title1, @val[1])
+      el = RichTextElement.new(@richText, :title1, @val[1])
       @sectionCounter[0] += 1
       el.data = @sectionCounter.dup
       el
@@ -76,7 +76,7 @@ module RichTextSyntaxRules
 
   def rule_title2
     pattern(%w( $TITLE2 !text $TITLE2END ), lambda {
-      el = RichTextElement.new(:title2, @val[1])
+      el = RichTextElement.new(@richText, :title2, @val[1])
       @sectionCounter[1] += 1
       el.data = @sectionCounter.dup
       el
@@ -85,7 +85,7 @@ module RichTextSyntaxRules
 
   def rule_title3
     pattern(%w( $TITLE3 !text $TITLE3END ), lambda {
-      el = RichTextElement.new(:title3, @val[1])
+      el = RichTextElement.new(@richText, :title3, @val[1])
       @sectionCounter[2] += 1
       el.data = @sectionCounter.dup
       el
@@ -96,27 +96,27 @@ module RichTextSyntaxRules
     optional
     repeatable
     pattern(%w( $BULLET1 !text $LINEBREAK), lambda {
-      RichTextElement.new(:bulletitem1, @val[1])
+      RichTextElement.new(@richText, :bulletitem1, @val[1])
     })
     pattern(%w( !bulletList2 ), lambda {
-      RichTextElement.new(:bulletlist2, @val[0])
+      RichTextElement.new(@richText, :bulletlist2, @val[0])
     })
   end
 
   def rule_bulletList2
     repeatable
     pattern(%w( $BULLET2 !text $LINEBREAK), lambda {
-      RichTextElement.new(:bulletitem2, @val[1])
+      RichTextElement.new(@richText, :bulletitem2, @val[1])
     })
     pattern(%w( !bulletList3 ), lambda {
-      RichTextElement.new(:bulletlist3, @val[0])
+      RichTextElement.new(@richText, :bulletlist3, @val[0])
     })
   end
 
   def rule_bulletList3
     repeatable
     pattern(%w( $BULLET3 !text $LINEBREAK), lambda {
-      RichTextElement.new(:bulletitem3, @val[1])
+      RichTextElement.new(@richText, :bulletitem3, @val[1])
     })
   end
 
@@ -124,35 +124,35 @@ module RichTextSyntaxRules
     optional
     repeatable
     pattern(%w( $NUMBER1 !text $LINEBREAK), lambda {
-      el = RichTextElement.new(:numberitem1, @val[1])
+      el = RichTextElement.new(@richText, :numberitem1, @val[1])
       @numberListCounter[0] += 1
       el.data = @numberListCounter.dup
       el
     })
     pattern(%w( !numberList2 ), lambda {
       @numberListCounter[1, 2] = [ 0, 0 ]
-      RichTextElement.new(:numberlist2, @val[0])
+      RichTextElement.new(@richText, :numberlist2, @val[0])
     })
   end
 
   def rule_numberList2
     repeatable
     pattern(%w( $NUMBER2 !text $LINEBREAK), lambda {
-      el = RichTextElement.new(:numberitem2, @val[1])
+      el = RichTextElement.new(@richText, :numberitem2, @val[1])
       @numberListCounter[1] += 1
       el.data = @numberListCounter.dup
       el
     })
     pattern(%w( !numberList3 ), lambda {
       @numberListCounter[2] = 0
-      RichTextElement.new(:numberlist3, @val[0])
+      RichTextElement.new(@richText, :numberlist3, @val[0])
     })
   end
 
   def rule_numberList3
     repeatable
     pattern(%w( $NUMBER3 !text $LINEBREAK), lambda {
-      el = RichTextElement.new(:numberitem3, @val[1])
+      el = RichTextElement.new(@richText, :numberitem3, @val[1])
       @numberListCounter[2] += 1
       el.data = @numberListCounter.dup
       el
@@ -161,7 +161,7 @@ module RichTextSyntaxRules
 
   def rule_paragraph
     pattern(%w( !text $LINEBREAK ), lambda {
-      RichTextElement.new(:paragraph, @val[0])
+      RichTextElement.new(@richText, :paragraph, @val[0])
     })
   end
 
@@ -171,35 +171,39 @@ module RichTextSyntaxRules
       @val[0]
     })
     pattern(%w( $ITALIC !plainTextWithLinks $ITALIC ), lambda {
-      RichTextElement.new(:italic, @val[1])
+      RichTextElement.new(@richText, :italic, @val[1])
     })
     pattern(%w( $BOLD !plainTextWithLinks $BOLD ), lambda {
-      RichTextElement.new(:bold, @val[1])
+      RichTextElement.new(@richText, :bold, @val[1])
     })
     pattern(%w( $CODE !plainTextWithLinks $CODE ), lambda {
-      RichTextElement.new(:code, @val[1])
+      RichTextElement.new(@richText, :code, @val[1])
     })
     pattern(%w( $BOLDITALIC !plainTextWithLinks $BOLDITALIC ), lambda {
-      RichTextElement.new(:bold, RichTextElement.new(:italic, @val[1]))
+      RichTextElement.new(@richText,
+                          :bold, RichTextElement.new(@richText,
+                                                     :italic, @val[1]))
     })
   end
 
   def rule_plainTextWithLinks
     repeatable
     pattern(%w( $WORD ), lambda {
-      RichTextElement.new(:text, @val[0])
+      RichTextElement.new(@richText, :text, @val[0])
     })
     pattern(%w( $REF $WORD !plainText $REFEND ), lambda {
-      el = RichTextElement.new(:ref,
-                               RichTextElement.new(:text, @val[2].empty? ?
+      el = RichTextElement.new(@richText, :ref,
+                               RichTextElement.new(@richText,
+                                                   :text, @val[2].empty? ?
                                                    @val[1] :
                                                    @val[2].join(' ')))
       el.data = @val[1]
       el
     })
     pattern(%w( $HREF $WORD !plainText $HREFEND ), lambda {
-      el = RichTextElement.new(:href,
-                               RichTextElement.new(:text, @val[2].empty? ?
+      el = RichTextElement.new(@richText, :href,
+                               RichTextElement.new(@richText,
+                                                   :text, @val[2].empty? ?
                                                    @val[1] :
                                                    @val[2].join(' ')))
       el.data = @val[1]
@@ -211,7 +215,7 @@ module RichTextSyntaxRules
     repeatable
     optional
     pattern(%w( $WORD ), lambda {
-      RichTextElement.new(:text, @val[0])
+      RichTextElement.new(@richText, :text, @val[0])
     })
   end
 

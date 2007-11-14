@@ -56,14 +56,18 @@ require 'RichTextParser'
 #
 class RichText
 
+  attr_accessor :sectionNumbers
+
   # Create a rich text object by passing a String with markup elements to it.
   # _text_ must be plain text with MediaWiki compatible markup elements. In
   # case an error occurs, an exception of type TjException will be raised.
   def initialize(text)
-    parser = RichTextParser.new
+    # Set this to false to disable automatically generated section numbers.
+    @sectionNumbers = true
+    parser = RichTextParser.new(self)
     parser.open(text)
     # Parse the input text and convert it to the intermediate representation.
-    @richText = parser.parse('richtext')
+    @richText = parser.parse('richtext').cleanUp
   end
 
   # Convert the rich text to plain ASCII text. All elements that can't be

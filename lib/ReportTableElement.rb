@@ -38,11 +38,22 @@ class ReportTableElement < ReportElement
 
   # Turn the ReportTableElement into an equivalent HTML element tree.
   def to_html
+    html = []
+
+    if @prolog
+      html << (div = XMLElement.new('div',
+        'style' => 'margin: 35px 5% 25px 5%; '))
+      @prolog.sectionNumbers = false
+      div << @prolog.to_html
+    end
+
     # Outer table that holds several sub-tables.
-    table = XMLElement.new('table', 'summary' => 'Outer table',
-                           'cellspacing' => '2', 'border' => '0',
-                           'cellpadding' => '0', 'align' => 'center',
-                           'class' => 'tabback')
+    html << (div = XMLElement.new('div', 'style' => 'width:90% ; ' +
+                                         'margin-left:5%; margin-right:5%'))
+    div << (table = XMLElement.new('table', 'summary' => 'Report Table',
+                                   'cellspacing' => '2', 'border' => '0',
+                                   'cellpadding' => '0', 'align' => 'center',
+                                   'class' => 'tabback'))
 
     # The headline is put in a sub-table to appear bigger.
     if @headline
@@ -67,6 +78,16 @@ class ReportTableElement < ReportElement
     tr << (td = XMLElement.new('td'))
     td << @table.to_html
 
+    # Embedd the caption as RichText into the table footer.
+    if @caption
+      tbody << (tr = XMLElement.new('tr'))
+      tr << (td = XMLElement.new('td', 'class' => 'tabback'))
+      td << (div = XMLElement.new('div', 'class' => 'caption',
+                                  'style' => 'margin:1px'))
+      @caption.sectionNumbers = false
+      div << @caption.to_html
+    end
+
     # A sub-table with the legend.
     tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
     tr << (td = XMLElement.new('td', 'style' =>
@@ -85,7 +106,14 @@ class ReportTableElement < ReportElement
                            'href' => "#{AppConfig.contact}")
     td << XMLText.new(" v#{AppConfig.version}")
 
-    table
+    if @epilog
+      html << (div = XMLElement.new('div',
+        'style' => 'margin: 25px 5% 35px 5%; '))
+      @epilog.sectionNumbers = false
+      div << @epilog.to_html
+    end
+
+    html
   end
 
 protected

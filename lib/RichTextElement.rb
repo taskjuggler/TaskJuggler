@@ -17,12 +17,15 @@ require 'TjException'
 # category that identifies the content of the node.
 class RichTextElement
 
+  attr_reader :category, :children
   attr_writer :data
 
-  # Create a new RichTextElement node. _category_ is the type of the node. It
-  # can be :title, :bold, etc. _arg_ is an overloaded argument. It can either
-  # be another node or an Array of RichTextElement nodes.
-  def initialize(category, arg = nil)
+  # Create a new RichTextElement node. _rt_ is the RichText object this
+  # element belongs to. _category_ is the type of the node. It can be :title,
+  # :bold, etc. _arg_ is an overloaded argument. It can either be another node
+  # or an Array of RichTextElement nodes.
+  def initialize(rt, category, arg = nil)
+    @richText = rt
     @category = category
     if arg
       if arg.is_a?(Array)
@@ -42,6 +45,16 @@ class RichTextElement
     # require additional data. This variable is used for this. It can hold an
     # Array of counters or a link label.
     @data = nil
+  end
+
+  # Remove a paragraph node from the richtext node if it is the only node in
+  # richtext. The paragraph children will become richtext children.
+  def cleanUp
+    if @category == :richtext && @children.length == 1 &&
+       @children[0].category == :paragraph
+       @children = @children[0].children
+    end
+    self
   end
 
   # Conver the intermediate representation into a plain text again. All
@@ -100,9 +113,7 @@ class RichTextElement
       raise TjException.new, "Unknown RichTextElement category #{@category}"
     end
 
-    out = @children.join('')
-
-    pre + out + post
+    pre + @children.join(' ') + post
   end
 
   # Convert the tree of RichTextElement nodes into an XML like text
@@ -215,14 +226,23 @@ class RichTextElement
     when :richtext
       XMLElement.new('div')
     when :title1
-      pre = "#{@data[0]} "
-      XMLElement.new('h1')
+      el = XMLElement.new('h1')
+      if @richText.sectionNumbers
+        el << XMLText.new("#{@data[0]} ")
+      end
+      el
     when :title2
-      pre = "#{@data[0]}.#{@data[1]} "
-      XMLElement.new('h2')
+      el = XMLElement.new('h2')
+      if @richText.sectionNumbers
+        el << XMLText.new("#{@data[0]}.#{@data[1]} ")
+      end
+      el
     when :title3
-      pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
-      XMLElement.new('h3')
+      el = XMLElement.new('h3')
+      if @richText.sectionNumbers
+        el << XMLText.new("#{@data[0]}.#{@data[1]}.#{@data[2]} ")
+      end
+      el
     when :paragraph
       XMLElement.new('p')
     when :pre

@@ -21,10 +21,10 @@ require 'LogicalExpression'
 class ReportElement
 
   attr_reader :start, :end, :userDefinedPeriod
-  attr_accessor :headline, :columns, :scenarios,
+  attr_accessor :caption, :epilog, :headline, :columns, :scenarios,
                 :taskRoot, :resourceRoot,
                 :timeFormat, :loadUnit, :now, :numberFormat, :weekStartsMonday,
-                :hideTask, :rollupTask, :hideResource, :rollupResource,
+                :hideTask, :prolog, :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
                 :ganttBars,
                 :propertiesById, :propertiesByType
@@ -35,9 +35,11 @@ class ReportElement
     @project = report.project
 
     # The following attributes affect the report content and look.
+    @caption = nil
     @columns = []
     @currencyformat = @report.currencyformat
     @end = @report.end
+    @epilog = nil
     @ganttBars = true
     @headline = nil
     @hideResource = nil
@@ -45,6 +47,7 @@ class ReportElement
     @loadUnit = @report.loadUnit
     @now = @report.now
     @numberFormat = @report.numberformat
+    @prolog = nil
     @resourceroot = @report.resourceroot
     @rollupResource = nil
     @rollupTask = nil

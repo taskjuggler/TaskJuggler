@@ -119,14 +119,18 @@ private
     style << XMLBlob.new(<<'EOT'
   body {
     font-family:Bitstream Vera Sans, Tahoma, sans-serif;
-    font-size:12px;
+    font-size:15px;
   }
   h1, h2, table, tr, td, div, span {
     font-family: Bitstream Vera Sans, Tahoma, sans-serif;
   }
+  table {
+    font-size:13px;
+  }
   td, div { white-space:nowrap; }
-  h1 { font-size:16px; }
-  h2 { font-size:14px; }
+  h1 { font-size:22px; }
+  h2 { font-size:18px; }
+  h3 { font-size:16px; }
 
   .tabback { background-color:#9a9a9a; }
   .tabfront { background-color:#d4dde6; }
@@ -179,6 +183,12 @@ private
   .nowline { background-color:#EE0000; }
   .white { background-color:#FFFFFF; }
   .legendback { background-color:#d4dde6; }
+  .caption {
+     padding: 5px 13px 5px 13px;
+     background-color:#ebf2ff;
+     white-space:normal;
+     font-size:13px
+  }
 EOT
                         )
     html << (body = XMLElement.new('body'))

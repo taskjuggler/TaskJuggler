@@ -21,9 +21,11 @@ class RichTextParser < TextParser
 
   include RichTextSyntaxRules
 
-  # Create the parser and initialize the rule set.
-  def initialize
-    super
+  # Create the parser and initialize the rule set. _rt_ is the RichText object
+  # the resulting tree of RichTextElement objects should belong to.
+  def initialize(rt)
+    super()
+    @richText = rt
     # These are the tokens that can be returned by the RichTextScanner.
     @variables = %w( LINEBREAK WORD BOLD ITALIC CODE BOLDITALIC PRE
                      HREF HREFEND REF REFEND

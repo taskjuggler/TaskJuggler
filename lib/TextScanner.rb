@@ -115,6 +115,9 @@ class TextScanner
       when ?0..?9
         token = readNumber(c)
         break
+      when ?'
+        token = readString(c)
+        break
       when ?"
         token = readString(c)
         break
@@ -436,9 +439,16 @@ private
               delta * ((utcHour * 3600) + utcMin * 60) ]
   end
 
-  def readString(c)
+  def readString(terminator)
     token = ""
-    while (c = nextChar) && c != ?"
+    while (c = nextChar) && c != terminator
+      if c == ?\\
+        # Terminators can be used as regular characters when prefixed by a \.
+        if (c = nextChar) && c != terminator
+          # \ followed by non-terminator. Just add both.
+          token << ?\
+        end
+      end
       token << c
     end
 
