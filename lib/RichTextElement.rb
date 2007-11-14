@@ -17,7 +17,7 @@ require 'TjException'
 # category that identifies the content of the node.
 class RichTextElement
 
-  attr_writer :counter
+  attr_writer :data
 
   # Create a new RichTextElement node. _category_ is the type of the node. It
   # can be :title, :bold, etc. _arg_ is an overloaded argument. It can either
@@ -38,10 +38,10 @@ class RichTextElement
       @children = []
     end
 
-    # Certain elements such as titles and numbered bullets can be enumerated.
-    # This counter is used for this. It holds an Array of counters. One
-    # counter for each nesting level.
-    @counter = nil
+    # Certain elements such as titles,references and numbered bullets can be
+    # require additional data. This variable is used for this. It can hold an
+    # Array of counters or a link label.
+    @data = nil
   end
 
   # Conver the intermediate representation into a plain text again. All
@@ -53,18 +53,18 @@ class RichTextElement
     case @category
     when :richtext
     when :title1
-      pre = "#{@counter[0]} "
+      pre = "#{@data[0]} "
       post = "\n\n"
     when :title2
-      pre = "#{@counter[0]}.#{@counter[1]} "
+      pre = "#{@data[0]}.#{@data[1]} "
       post = "\n\n"
     when :title3
-      pre = "#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "\n\n"
     when :paragraph
       post = "\n\n"
-    when :code
-      post = "\n\n"
+    when :pre
+      post = "\n"
     when :bulletlist1
     when :bulletitem1
       pre = '* '
@@ -79,18 +79,21 @@ class RichTextElement
       post = "\n\n"
     when :numberlist1
     when :numberitem1
-      pre = "#{@counter[0]} "
+      pre = "#{@data[0]} "
       post = "\n\n"
     when :numberlist2
     when :numberitem2
-      pre = "#{@counter[0]}.#{@counter[1]} "
+      pre = "#{@data[0]}.#{@data[1]} "
       post = "\n\n"
     when :numberlist3
     when :numberitem3
-      pre = "#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "\n\n"
+    when :ref
+    when :href
     when :italic
     when :bold
+    when :code
     when :text
       post = ' '
     else
@@ -113,18 +116,18 @@ class RichTextElement
       pre = '<div>'
       post = '</div>'
     when :title1
-      pre = "<h1>#{@counter[0]} "
+      pre = "<h1>#{@data[0]} "
       post = "</h1>\n\n"
     when :title2
-      pre = "<h2>#{@counter[0]}.#{@counter[1]} "
+      pre = "<h2>#{@data[0]}.#{@data[1]} "
       post = "</h2>\n\n"
     when :title3
-      pre = "<h3>#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      pre = "<h3>#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "</h3>\n\n"
     when :paragraph
       pre = '<p>'
       post = "</p>\n\n"
-    when :code
+    when :pre
       pre = '<pre>'
       post = "</pre>\n\n"
     when :bulletlist1
@@ -149,26 +152,43 @@ class RichTextElement
       pre = '<ol>'
       post = '</ol>'
     when :numberitem1
-      pre = "<li>#{@counter[0]} "
+      pre = "<li>#{@data[0]} "
       post = "</li>\n"
     when :numberlist2
       pre = '<ol>'
       post = '</ol>'
     when :numberitem2
-      pre = "<li>#{@counter[0]}.#{@counter[1]} "
+      pre = "<li>#{@data[0]}.#{@data[1]} "
       post = "</li>\n"
     when :numberlist3
       pre = '<ol>'
       post = '</ol>'
     when :numberitem3
-      pre = "<li>#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      pre = "<li>#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "</li>\n"
+    when :ref
+      if @data
+        pre = "<ref data=\"#{@data}\">"
+      else
+        pre = '<ref>'
+      end
+      post = '</ref>'
+    when :href
+      if @data
+        pre = "<a href=\"#{@data}\">"
+      else
+        pre = '<a>'
+      end
+      post = '</a>'
     when :italic
       pre = '<i>'
       post = '</i>'
     when :bold
       pre = '<b>'
       post = '</b>'
+    when :code
+      pre = '<code>'
+      post = '</code>'
     when :text
       pre = '['
       post = '] '
@@ -195,17 +215,17 @@ class RichTextElement
     when :richtext
       XMLElement.new('div')
     when :title1
-      pre = "#{@counter[0]} "
+      pre = "#{@data[0]} "
       XMLElement.new('h1')
     when :title2
-      pre = "#{@counter[0]}.#{@counter[1]} "
+      pre = "#{@data[0]}.#{@data[1]} "
       XMLElement.new('h2')
     when :title3
-      pre = "#{@counter[0]}.#{@counter[1]}.#{@counter[2]} "
+      pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
       XMLElement.new('h3')
     when :paragraph
       XMLElement.new('p')
-    when :code
+    when :pre
       XMLElement.new('pre')
     when :bulletlist1
       XMLElement.new('ul')
@@ -231,10 +251,24 @@ class RichTextElement
       XMLElement.new('ol')
     when :numberitem3
       XMLElement.new('li')
+    when :ref
+      if @data
+        XMLElement.new('a', 'href' => "#{@data}.html")
+      else
+        XMLElement.new('a')
+      end
+    when :href
+      if @data
+        XMLElement.new('a', 'href' => @data)
+      else
+        XMLElement.new('a')
+      end
     when :italic
       XMLElement.new('i')
     when :bold
       XMLElement.new('b')
+    when :code
+      XMLElement.new('code')
     when :text
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"

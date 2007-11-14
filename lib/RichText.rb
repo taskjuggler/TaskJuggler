@@ -13,6 +13,47 @@ require 'RichTextParser'
 
 # This class can process a string that contains text with MediaWiki type
 # markups and convert this into plain strings or HTML elements.
+#
+# This class supports the following mark-ups:
+#
+# The following markups are block commands and must start at the beginning of
+# the line.
+#
+# == Headline 1 ==
+# === Headline 2 ===
+# ==== Headline 3 ====
+#
+# * Bullet 1
+# ** Bullet 2
+# *** Bullet 3
+#
+# # Enumeration Level 1
+# ## Enumeration Level 2
+# ### Enumeration Level 3
+#
+#  Preformatted text start with
+#  a single space at the start of the
+#  the line.
+#
+#
+# The following are in-line mark-ups and can occur within any text block
+#
+# This is an ''italic'' word.
+# This is a '''bold''' word.
+# This is a ''''monospaced'''' word.
+# This is a '''''italic and bold''''' word.
+#
+# Linebreaks are ignored if not followed by a blank line.
+#
+# [http://www.taskjuggler.org] A web link
+# [http://www.taskjuggler.org The TaskJuggler Web Site] another link
+#
+# [[item]] site internal internal reference (in HTML .html gets appended
+#                                            automatically)
+# [[item An item]] another internal reference
+#
+# <nowiki> ... </nowiki> Disable markup interpretation for portion of text.
+#
 class RichText
 
   # Create a rich text object by passing a String with markup elements to it.

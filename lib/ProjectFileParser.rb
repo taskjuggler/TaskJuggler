@@ -19,10 +19,15 @@ require 'TjpSyntaxRules'
 # it more comfortable to define the TaskJuggler syntax in a form that is human
 # creatable but also powerful enough to define the data structures the parser
 # needs to understand the syntax.
+#
+# By adding some additional information to the syntax rules, we can also
+# generate the complete reference manual from this rule set.
 class ProjectFileParser < TextParser
 
   include TjpSyntaxRules
 
+  # Create the parser object. _messageHandler_ is a TjMessageHandler that is
+  # used for error reporting.
   def initialize(messageHandler)
     super()
 
@@ -83,6 +88,13 @@ private
     day
   end
 
+  # The TaskJuggler syntax can be extended by the user when the properties are
+  # extended with user-defined attributes. These attribute definition
+  # introduce keywords that have to be processed like the build-in keywords.
+  # The parser therefor needs to adapt on the fly to the new syntax. By
+  # calling this function, a TaskJuggler property can be extended with a new
+  # attribute. @propertySet determines what property should be extended.
+  # _type_ is the attribute type, _default_ is the default value.
   def extendPropertySetDefinition(type, default)
     inherit = false
     scenarioSpecific = false
@@ -110,6 +122,10 @@ private
     scenarioSpecific
   end
 
+  # The following functions are mostly conveniance functions to simplify the
+  # syntax tree definition. The *Rule functions may only be used in _rule
+  # functions. And only one function call per _rule function is allowed.
+
   def listRule(name, listItem)
     pattern([ "#{listItem}", "!#{name}" ], lambda {
       [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
@@ -126,6 +142,8 @@ private
     })
   end
 
+  # Create pattern that turns the rule into the definition for optional
+  # attributes. _attributes_ is the rule that lists these attributes.
   def optionsRule(attributes)
     optional
     pattern([ '_{', "!#{attributes}", '_}' ], lambda {
@@ -133,16 +151,40 @@ private
     })
   end
 
+  # Create a pattern with just a single _item_. The pattern returns the value
+  # of that item.
   def singlePattern(item)
     pattern([ item ], lambda {
       @val[0]
     })
   end
 
-  def operandPattern(operand)
-    pattern([ "_#{operand}", "!operand" ], lambda {
-      [ @val[0], @val[1] ]
-    })
+  # Add documentation for the current pattern of the currently processed rule.
+  def doc(keyword, text)
+    @cr.setDoc(keyword, text)
+  end
+
+  # Add documentation for patterns that only consists of a single terminal
+  # token.
+  def descr(text)
+    if @cr.patterns[-1].length != 1 ||
+       (@cr.patterns[-1][0][0] != ?_ && @cr.patterns[-1][0][0] != ?$)
+      raise('descr() may only be used for patterns with terminal tokens.')
+    end
+    arg(0, nil, text)
+  end
+
+  # Add documentation for the arguments with index _idx_ of the current
+  # pattern of the currently processed rule. _name_ is that should be used for
+  # this variable. _text_ is the documentation text.
+  def arg(idx, name, text)
+    @cr.setArg(idx, ParserTokenDoc.new(name, text))
+  end
+
+  # Add a reference to another pattern. This information is only used to
+  # generate the documentation for the patterns of this rule.
+  def also(seeAlso)
+    @cr.setSeeAlso(seeAlso)
   end
 
 end

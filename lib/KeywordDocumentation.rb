@@ -101,7 +101,8 @@ class KeywordDocumentation
           "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
           "Inheritable: #{@inheritable ? 'Yes' : 'No'}\n\n"
 
-    str += "Purpose:     #{format(tagW, @pattern.doc, textW)}\n\n"
+    str += "Purpose:     #{format(tagW, RichText.new(@pattern.doc).to_s,
+                                  textW)}"
 
     if @syntax != '[{ <attributes> }]'
       str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
@@ -115,14 +116,16 @@ class KeywordDocumentation
           if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
             indent = arg.name.length + 2
             argStr += "#{arg.name}: " +
-                    "#{format(indent, arg.text, textW - indent)}\n\n"
+                    "#{format(indent, RichText.new(arg.text).to_s,
+                              textW - indent)}\n"
           else
             typeSpec = arg.typeSpec
             typeSpec[0] = '['
             typeSpec[-1] = ']'
             indent = arg.name.length + typeSpec.size + 3
             argStr += "#{arg.name} #{typeSpec}: " +
-                    "#{format(indent, arg.text, textW - indent)}\n\n"
+                    "#{format(indent, RichText.new(arg.text).to_s,
+                              textW - indent)}\n"
           end
         end
         str += format(tagW, argStr, textW)
@@ -188,6 +191,22 @@ class KeywordDocumentation
     head << XMLNamedText.new("#{keyword}", 'title')
     head << (style = XMLElement.new('style', 'type' => 'text/css'))
     style << XMLBlob.new(<<'EOT'
+pre {
+  font-size:16px;
+  font-family: Courier;
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:0px;
+  padding-bottom:0px;
+}
+p {
+  margin-top:8px;
+  margin-bottom:8px;
+}
+code {
+  font-size:16px;
+  font-family: Courier;
+}
 .table {
   background-color:#ABABAB;
   width:90%;
@@ -196,14 +215,16 @@ class KeywordDocumentation
 }
 .tag {
   background-color:#E0E0F0;
+  font-size:16px;
+  font-weight:bold;
   padding-left:8px;
   padding-right:8px;
   padding-top:5px;
   padding-bottom:5px;
-  font-weight:bold;
 }
 .descr {
   background-color:#F0F0F0;
+  font-size:16px;
   padding-left:8px;
   padding-right:8px;
   padding-top:5px;
@@ -302,7 +323,8 @@ EOT
             tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
                                   'width' => '30%')
           end
-          tr1 << (td = XMLElement.new('td'))
+          tr1 << (td = XMLElement.new('td',
+            'style' => 'margin-top:2px; margin-bottom:2px;'))
           td << RichText.new(arg.text).to_html
         end
       end
@@ -425,10 +447,11 @@ private
         # indentation in a buffer as we don't know if more words will be
         # following. We don't want to generate an indentation after the last
         # line break.
-        out += word + "\n"
+        out += indentBuf + word + "\n"
         indentBuf = ' ' * indent
         word = ''
         linePos = 0
+        firstWord = true
       elsif str[i] == ?\s
         # We have finished processing a word of the input string.
         unless indentBuf.empty?

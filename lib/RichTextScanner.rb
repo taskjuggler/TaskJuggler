@@ -31,6 +31,9 @@ class RichTextScanner
     # This is the position of the start of the currently processed line. It's
     # only used for error reporting.
     @lineStart = 0
+    # Most of the wiki markup interpretation can be turned on/off by using
+    # <nowiki>...</nowiki> in the text. This flag keeps this state.
+    @wikiEnabled = true
   end
 
   # This is a wrapper for nextToken only used for debugging.
@@ -52,7 +55,7 @@ class RichTextScanner
     # Some characters have only a special meaning at the start of the line.
     # When the last token pushed the cursor into a new line, this flag is set
     # to true.
-    if @beginOfLine
+    if @beginOfLine && @wikiEnabled
       # Reset the flag again.
       @beginOfLine = false
 
@@ -93,7 +96,7 @@ class RichTextScanner
         returnChar(level + 1)
       when 32
         # Lines that start with a space are treated as verbatim text.
-        return [ "CODE", readCode ] if (c = peek) && c != '\n'
+        return [ "PRE", readCode ] if (c = peek) && c != '\n'
       else
         # If the character is not a known control character we push it back
         # and treat it as normal text further down.
@@ -105,6 +108,7 @@ class RichTextScanner
     # case we detect a sequence that has not the right number of characters,
     # we push them back and start over with this flag set to true.
     ignoreInlineMarkup = false
+
     loop do
       c = nextChar
       if c.nil?
@@ -115,7 +119,7 @@ class RichTextScanner
         # otherwise they are ignored.
         readSequence(32, ?\t)
         next
-      elsif c == ?' && !ignoreInlineMarkup
+      elsif c == ?' && !ignoreInlineMarkup && @wikiEnabled
         # Sequence of 2 ' means italic, 3 ' means bold, 5 ' means italic and
         # bold. Anything else is just normal text.
         level = readSequenceMax(?', 5)
@@ -123,6 +127,8 @@ class RichTextScanner
           return [ 'ITALIC', "'" * level ]
         elsif level == 3
           return [ 'BOLD', "'" * level ]
+        elsif level == 4
+          return [ 'CODE', "'" * level ]
         elsif level == 5
           return [ 'BOLDITALIC', "'" * level ]
         else
@@ -133,7 +139,7 @@ class RichTextScanner
           ignoreInlineMarkup = true
           next
         end
-      elsif c == ?= && !ignoreInlineMarkup
+      elsif c == ?= && !ignoreInlineMarkup && @wikiEnabled
         level = readSequenceMax(?=, 4)
         if level > 1
           return [ "TITLE#{level - 1}END", '=' * level ]
@@ -145,6 +151,12 @@ class RichTextScanner
           ignoreInlineMarkup = true
           next
         end
+      elsif c == ?[ && @wikiEnabled
+        level = readSequenceMax(?[, 2)
+        return [ level == 1 ? 'HREF' : 'REF', '[' * level ]
+      elsif c == ?] && @wikiEnabled
+        level = readSequenceMax(?], 2)
+        return [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
       elsif c == ?\n
         # Newlines are pretty important as they can terminate blocks and turn
         # the next character into the start of a control sequence. Save the
@@ -166,6 +178,20 @@ class RichTextScanner
           returnChar
           next
         end
+      elsif c == ?<
+        if peekMatch('nowiki>')
+          # Turn most wiki markup interpretation off.
+          @pos += 'nowiki>'.length
+          @wikiEnabled = false
+          next
+        elsif peekMatch('/nowiki')
+          # Turn most wiki markup interpretation on.
+          @pos += '/nowiki>'.length
+          @wikiEnabled = true
+          next
+        else
+          returnChar
+        end
       else
         # Reset this flag again.
         ignoreInlineMarkup = false
@@ -173,8 +199,15 @@ class RichTextScanner
         str << c
         # Now we can collect characters of a word until we hit a whitespace.
         while (c = nextChar) && ![ 32, ?\n, ?\t ].include?(c)
-          # Or at least to ' characters in a row.
-          break if c == ?' && peek == ?'
+          if @wikiEnabled
+            # Or at least to ' characters in a row.
+            break if c == ?' && peek == ?'
+            # Or a ] or <
+            break if [ ?], ?< ].include?(c)
+          else
+            # Make sure we find the </nowiki> tag even within a word.
+            break if c == ?<
+          end
           str << c
         end
         # Return the character that indicated the word end.
@@ -206,7 +239,7 @@ class RichTextScanner
   # The parser uses this function to report any errors during parsing.
   def error(id, text, foo)
     puts "Synatx error #{id}: #{text}"
-    puts "#{@text[@lineStart, @pos - @lineStart + 10]}"
+    puts "#{@text[@lineStart, @pos - @lineStart]}"
   end
 
 private
@@ -234,6 +267,12 @@ private
   def peek(lookAhead = 1)
     return nil if (@pos + lookAhead - 1) >= @textLength
     @text[@pos + lookAhead - 1]
+  end
+
+  # Return true if the next characters match exactly the character sequence in
+  # word.
+  def peekMatch(word)
+    return @text[@pos, word.length] == word
   end
 
   # Read a sequence of characters that are all contained in the _chars_ Array.

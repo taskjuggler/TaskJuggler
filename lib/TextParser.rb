@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'TextParserPattern'
 require 'TextParserRule'
 require 'TextParserStackElement'
@@ -38,16 +37,42 @@ require 'TjException'
 # with the name of the start rule.
 class TextParser
 
+  # Utility class so that we can distinguish Array results from the Array
+  # containing the results of a repeatable rule.
+  class TextParserResultArray < Array
+
+    def initialize
+      super
+    end
+
+    # If there is a repeatable rule that contains another repeatable loop, the
+    # result of the inner rule is an Array that gets put into another Array by
+    # the outer rule. In this case, the inner Array can be merged with the
+    # outer Array.
+    def <<(arg)
+      if arg.is_a?(TextParserResultArray)
+        self.concat(arg)
+      else
+        super
+      end
+    end
+
+  end
+
   attr_reader :rules
 
+  # Create a new TextParser object.
   def initialize
     @rules = { }
+    # Array to hold the token types that the scanner can return.
     @variables = []
+    # The currently processed rule.
     @cr = nil
+    # If set to a value larger than 0 debug output will be generated.
     @@debug = 0
   end
 
-  # Call all functions that start with 'rule_' to initialize the rules.
+  # Call all methods that start with 'rule_' to initialize the rules.
   def initRules
     methods.each do |m|
       if m[0, 5] == 'rule_'
@@ -95,26 +120,6 @@ class TextParser
   # elements.
   def repeatable
     @cr.setRepeatable
-  end
-
-  def doc(keyword, text)
-    @cr.setDoc(keyword, text)
-  end
-
-  def arg(idx, name, text)
-    @cr.setArg(idx, ParserTokenDoc.new(name, text))
-  end
-
-  def descr(text)
-    if @cr.patterns[-1].length != 1 ||
-       (@cr.patterns[-1][0][0] != ?_ && @cr.patterns[-1][0][0] != ?$)
-      raise('descr() may only be used for patterns with terminal tokens.')
-    end
-    arg(0, nil, text)
-  end
-
-  def also(seeAlso)
-    @cr.setSeeAlso(seeAlso)
   end
 
   # This function needs to be called whenever new rules or patterns have been
@@ -248,7 +253,7 @@ private
   # contains the reference to another rule.
   def parseRule(rule)
     $stderr.puts "Parsing with rule #{rule.name}" if @@debug >= 10
-    result = rule.repeatable ? [] : nil
+    result = rule.repeatable ? TextParserResultArray.new : nil
     # Rules can be marked 'repeatable'. This flag will be set to true after
     # the first iternation has been completed.
     repeatMode = false
@@ -342,7 +347,8 @@ private
             # If the element requires a keyword the token must match this
             # keyword.
             if elToken != token[1]
-              text = "#{elToken} expected"
+              text = "#{elToken} expected but found " +
+                     "[#{token[0]}, '#{token[1]}']"
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end
@@ -352,7 +358,8 @@ private
           else
             # The token must match the expected variable type.
             if token[0] != elToken
-              text = "#{elToken} expected"
+              text = "#{elToken} expected but found " +
+                     "[#{token[0]}, '#{token[1]}']"
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end
@@ -390,14 +397,6 @@ private
 
     $stderr.puts "Finished parsing with rule #{rule.name}" if @@debug >= 10
     return result
-  end
-
-  # Remove all single line breaks but preserve paragraphs. Multi linefeeds
-  # are temporarily converted to form feeds (ASCII 0x0C).
-  def cleanUpText(text)
-    text.chomp.gsub(/[\n]{2,}/, "\x0C").
-               gsub(/[\n]([^\n])/, ' \1').
-               gsub(/[\x0C]/, "\n")
   end
 
 end

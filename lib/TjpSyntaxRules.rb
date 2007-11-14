@@ -359,9 +359,10 @@ EOT
     })
     doc('date', <<'EOT'
 A DATE is an ISO-compliant date in the format
-YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]. Hour, minutes, seconds, and the TIMEZONE
-are optional. If not specified, the values are set to 0. TIMEZONE must be an
-offset to GMT or UTC, specified as +HHMM or -HHMM.
+''''<nowiki>YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]</nowiki>''''. Hour, minutes,
+seconds, and the ''''TIMEZONE'''' are optional. If not specified, the values
+are set to 0.  ''''TIMEZONE'''' must be an offset to GMT or UTC, specified as
+''''+HHMM'''' or ''''-HHMM''''.
 EOT
        )
   end
@@ -969,28 +970,34 @@ EOT
     doc('macro', <<'EOT'
 Defines a text fragment that can later be inserted by using the specified ID.
 To insert the text fragment anywhere in the text you need to write ${ID}.The
-body is not optional. It must be enclosed in [ ]. Macros can be declared like
-this:
+body is not optional. It must be enclosed in square brackets. Macros can be
+declared like this:
 
  macro FOO [ This text ]
 
-If later ${FOO} is found in the project file, it is expanded to ' This text '.
-Macros may have arguments. Arguments are special macros with numbers as names.
-The number specifies the index of the argument.
+If later ''''${FOO}'''' is found in the project file, it is expanded to
+''''This text''''.
+
+Macros may have arguments. Arguments are accessed with special macros with
+numbers as names.  The number specifies the index of the argument.
 
  macro FOO [ This ${1} text ]
 
-will expand to 'This stupid text' if called as ${FOO "stupid"}. Macros may
-call other macros.
+will expand to ''''This stupid text'''' if called as ''''${FOO "stupid"}''''.
+Macros may call other macros.
 
-Macro IDs should have at least one uppercase letter as all lowercase letter
-IDs are reserved for built-in macros.
+User defined macro IDs must have at least one uppercase letter as all
+lowercase letter IDs are reserved for built-in macros.
 
 In macro calls the macro names can be prefixed by a question mark. In this
 case the macro will expand to nothing if the macro is not defined. Otherwise
 the undefined macro would be flagged with an error message.
 
- This macro call ${?foo} will expand to nothing if foo is undefined.
+The macro call
+
+ ${?foo}
+
+will expand to nothing if foo is undefined.
 EOT
        )
   end
@@ -1465,7 +1472,7 @@ these macros are expanded during the report generation. So the value of the
 macro is being changed after each table cell or table line. Consequently only
 build in macros can be used. To protect the macro calls against expansion
 during the initial file processing, the report macros must be prefixed with an
-additional $.
+additional ''''$''''.
 EOT
        )
 
@@ -2130,7 +2137,7 @@ EOT
       [ attribute, direction, scenario ]
     })
     arg(0, 'criteria', <<'EOT'
-The soring criteria must consist of a property attribute ID. See 'columnid'
+The soring criteria must consist of a property attribute ID. See [[columnid]]
 for a complete list of available attributes. The ID must be suffixed by '.up'
 or '.down' to determine the sorting direction. Optionally the ID may be
 prefixed with a scenario ID and a dot to determine the scenario that should be
@@ -2287,7 +2294,7 @@ EOT
     descr(<<'EOT'
 A reference using the full qualified ID of a task. The IDs of all enclosing
 parent tasks must be prepended to the task ID and separated with a dot, e.g.
-proj.plan.doc.
+''''proj.plan.doc''''.
 EOT
          )
 
@@ -2314,7 +2321,7 @@ EOT
 A relative task ID always starts with one or more exclamation marks and is
 followed by a task ID. Each exclamation mark lifts the scope where the ID is
 looked for to the enclosing task. The ID may contain some of the parent IDs
-separated by dots, e. g. !!plan.doc.
+separated by dots, e. g. ''''!!plan.doc''''.
 EOT
          )
   end
@@ -2479,7 +2486,7 @@ will depend on the availability of the resources.
 
 WARNING: In almost all real world projects effort is not the product of time
 and resources. This is only true if the task can be partitioned without adding
-any overhead. For more information about this read "The Mythical Man-Month" by
+any overhead. For more information about this read ''The Mythical Man-Month'' by
 Frederick P. Brooks, Jr.
 
 Tasks may not have subtasks if this attribute is used.
