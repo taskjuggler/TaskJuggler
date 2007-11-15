@@ -40,17 +40,16 @@ class ReportTableElement < ReportElement
   def to_html
     html = []
 
+    # Make sure we have some margins around the report.
+    html << (frame = XMLElement.new('div',
+                                    'style' => 'margin: 35px 5% 25px 5%; '))
+
     if @prolog
-      html << (div = XMLElement.new('div',
-        'style' => 'margin: 35px 5% 25px 5%; '))
       @prolog.sectionNumbers = false
-      div << @prolog.to_html
+      frame << @prolog.to_html
     end
 
-    # Outer table that holds several sub-tables.
-    html << (div = XMLElement.new('div', 'style' => 'width:90% ; ' +
-                                         'margin-left:5%; margin-right:5%'))
-    div << (table = XMLElement.new('table', 'summary' => 'Report Table',
+    frame << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                    'cellspacing' => '2', 'border' => '0',
                                    'cellpadding' => '0', 'align' => 'center',
                                    'class' => 'tabback'))
@@ -107,10 +106,8 @@ class ReportTableElement < ReportElement
     td << XMLText.new(" v#{AppConfig.version}")
 
     if @epilog
-      html << (div = XMLElement.new('div',
-        'style' => 'margin: 25px 5% 35px 5%; '))
       @epilog.sectionNumbers = false
-      div << @epilog.to_html
+      frame << @epilog.to_html
     end
 
     html

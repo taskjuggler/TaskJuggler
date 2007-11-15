@@ -52,9 +52,7 @@ EOT
     inp = "This is a text with ''italic words'' in it."
     out = RichText.new(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div><p>[This] [is] [a] [text] [with] <i>[italic] [words] </i>[in] [it.] </p>
-
-</div>
+<div>[This] [is] [a] [text] [with] <i>[italic] [words] </i>[in] [it.] </div>
 EOT
     assert_equal(out, ref)
   end
@@ -63,9 +61,7 @@ EOT
     inp = "This is a text with '''bold words''' in it."
     out = RichText.new(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div><p>[This] [is] [a] [text] [with] <b>[bold] [words] </b>[in] [it.] </p>
-
-</div>
+<div>[This] [is] [a] [text] [with] <b>[bold] [words] </b>[in] [it.] </div>
 EOT
     assert_equal(out, ref)
   end
@@ -74,37 +70,7 @@ EOT
     inp = "This is a text with ''''monospaced words'''' in it."
     out = RichText.new(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div><p>[This] [is] [a] [text] [with] <code>[monospaced] [words] </code>[in] [it.] </p>
-
-</div>
-EOT
-    assert_equal(out, ref)
-  end
-
-  def test_ref
-    inp = <<'EOT'
-This is a reference [[item]].
-For more info see [[manual the user manual]].
-EOT
-    out = RichText.new(inp).to_tagged + "\n"
-    ref = <<'EOT'
-<div><p>[This] [is] [a] [reference] <ref data="item">[item] </ref>[.] [For] [more] [info] [see] <ref data="manual">[the  user  manual ] </ref>[.] </p>
-
-</div>
-EOT
-    assert_equal(out, ref)
-  end
-
-  def test_href
-    inp = <<'EOT'
-This is a reference [http://www.taskjuggler.org].
-For more info see [[http://www.taskjuggler.org the TaskJuggler site]].
-EOT
-    out = RichText.new(inp).to_tagged + "\n"
-    ref = <<'EOT'
-<div><p>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org] </a>[.] [For] [more] [info] [see] <ref data="http://www.taskjuggler.org">[the  TaskJuggler  site ] </ref>[.] </p>
-
-</div>
+<div>[This] [is] [a] [text] [with] <code>[monospaced] [words] </code>[in] [it.] </div>
 EOT
     assert_equal(out, ref)
   end
@@ -116,9 +82,31 @@ This is a text with some '''bold words''', some ''italic'' words and some
 EOT
     out = RichText.new(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div><p>[This] [is] [a] [text] [with] [some] <b>[bold] [words] </b>[,] [some] <i>[italic] </i>[words] [and] [some] <b><i>[bold] [and] [italic] </i></b>[words] [in] [it.] </p>
+<div>[This] [is] [a] [text] [with] [some] <b>[bold] [words] </b>[,] [some] <i>[italic] </i>[words] [and] [some] <b><i>[bold] [and] [italic] </i></b>[words] [in] [it.] </div>
+EOT
+    assert_equal(out, ref)
+  end
 
-</div>
+  def test_ref
+    inp = <<'EOT'
+This is a reference [[item]].
+For more info see [[manual the user manual]].
+EOT
+    out = RichText.new(inp).to_tagged + "\n"
+    ref = <<'EOT'
+<div>[This] [is] [a] [reference] <ref data="item">[item] </ref>[.] [For] [more] [info] [see] <ref data="manual">[the  user  manual ] </ref>[.] </div>
+EOT
+    assert_equal(out, ref)
+  end
+
+  def test_href
+    inp = <<'EOT'
+This is a reference [http://www.taskjuggler.org].
+For more info see [[http://www.taskjuggler.org the TaskJuggler site]].
+EOT
+    out = RichText.new(inp).to_tagged + "\n"
+    ref = <<'EOT'
+<div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org] </a>[.] [For] [more] [info] [see] <ref data="http://www.taskjuggler.org">[the  TaskJuggler  site ] </ref>[.] </div>
 EOT
     assert_equal(out, ref)
   end

@@ -24,6 +24,8 @@ class RichTextScanner
     # The reference text should not change during processing. So we can
     # determine the length upfront. It's frequently used.
     @textLength = text.length
+    # The number of current line.
+    @lineNo = 1
     # This is the current position withing @text.
     @pos = 0
     # This flag is set to true whenever we are at the start of a text line.
@@ -159,9 +161,7 @@ class RichTextScanner
         return [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
       elsif c == ?\n
         # Newlines are pretty important as they can terminate blocks and turn
-        # the next character into the start of a control sequence. Save the
-        # position of the line start for later use during error reporting.
-        @lineStart = @pos
+        # the next character into the start of a control sequence.
         # Hard linebreaks consist of a newline followed by another newline or
         # any of the begin-of-line control characters.
         if (c = nextChar) && [ ?\n, ?*, ?#, 32, ?= ].include?(c)
@@ -227,7 +227,7 @@ class RichTextScanner
 
   # Report the current cursor position.
   def sourceFileInfo
-    @pos
+    [ @lineNo, @pos ]
   end
 
   # This function makes more sense for parsers that process actual files. As
@@ -238,8 +238,8 @@ class RichTextScanner
 
   # The parser uses this function to report any errors during parsing.
   def error(id, text, foo)
-    puts "Synatx error #{id}: #{text}"
-    puts "#{@text[@lineStart, @pos - @lineStart]}"
+    raise RichTextException.new(id, @lineNo, text,
+                                @text[@lineStart, @pos - @lineStart])
   end
 
 private
@@ -250,14 +250,35 @@ private
     return nil if @pos >= @textLength
     c = @text[@pos]
     @pos += 1
+    if c == ?\n
+      @lineNo += 1
+      # Save the position of the line start for later use during error
+      # reporting. The line begins after the newline.
+      @lineStart = @pos
+    end
     c
   end
 
   # Return one or more characters. _n_ is the number of characters to more
   # back the cursor.
   def returnChar(n = 1)
+    crossedNewline = false
     if @pos <= @textLength && @pos >= n
+      # Check for newlines an update @lineNo accordingly.
+      0.upto(n - 1) do |i|
+        if @text[@pos - i - 1] == ?\n
+          crossedNewline = true
+          @lineNo -= 1
+        end
+      end
       @pos -= n
+    end
+
+    # If we have crossed a newline during rewind, we have to find the start of
+    # the current line again.
+    if crossedNewline
+      @lineStart = @pos
+      @lineStart -= 1 while @lineStart > 0 && @text[@lineStart - 1] != ?\n
     end
   end
 
@@ -319,9 +340,25 @@ private
       end
     end
     returnChar
-    @lineStart = @pos
     @beginOfLine = true
     tok
   end
 
 end
+
+# Exception raised by the RichTextScanner in case of processing errors. Its
+# primary purpose is to carry the id, lineNo, error message and the currently
+# parsed line information.
+class RichTextException < RuntimeError
+
+  attr_reader :lineNo, :id, :text, :line
+
+  def initialize(id, lineNo, msgText, line)
+    @id = id
+    @lineNo = lineNo
+    @text = msgText
+    @line = line
+  end
+
+end
+

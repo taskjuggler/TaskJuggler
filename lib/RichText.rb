@@ -88,3 +88,4 @@ class RichText
   end
 
 end
+

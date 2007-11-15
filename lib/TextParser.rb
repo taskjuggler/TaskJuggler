@@ -144,7 +144,7 @@ class TextParser
 
       if enforceEndOfFile && (token = nextToken) != [ false, false ]
         error('eof_expected', 'End of file expected but found ' +
-              "[ #{token[0]}, #{token[1]} ].")
+              "'#{token[1]}' (#{token[0]}).")
       end
     rescue TjException
       return nil
@@ -348,7 +348,7 @@ private
             # keyword.
             if elToken != token[1]
               text = "#{elToken} expected but found " +
-                     "[#{token[0]}, '#{token[1]}']"
+                     "'#{token[1]}' (#{token[0]})."
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end
@@ -359,7 +359,7 @@ private
             # The token must match the expected variable type.
             if token[0] != elToken
               text = "#{elToken} expected but found " +
-                     "[#{token[0]}, '#{token[1]}']"
+                     "'#{token[1]}' (#{token[0]})."
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
               end

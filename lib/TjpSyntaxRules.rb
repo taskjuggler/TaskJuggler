@@ -1460,7 +1460,7 @@ EOT
     repeatable
 
     pattern(%w( _caption $STRING ), lambda {
-      @reportElement.caption = RichText.new(@val[1])
+      @reportElement.caption = newRichText(@val[1])
     })
     doc('caption', <<'EOT'
 The caption will be embedded in the footer of the table or data segment. The
@@ -1486,7 +1486,7 @@ EOT
        )
 
     pattern(%w( _epilog $STRING ), lambda {
-      @reportElement.epilog = RichText.new(@val[1])
+      @reportElement.epilog = newRichText(@val[1])
     })
     doc('epilog', <<'EOT'
 Define a text section that is printed right after the actual report data. The
@@ -1517,7 +1517,7 @@ EOT
        )
 
     pattern(%w( _prolog $STRING ), lambda {
-      @reportElement.prolog = RichText.new(@val[1])
+      @reportElement.prolog = newRichText(@val[1])
     })
     doc('prolog', <<'EOT'
 Define a text section that is printed right before the actual report data. The text will be interpreted as Wiki markup (see. [RichText]).

@@ -101,7 +101,7 @@ class KeywordDocumentation
           "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
           "Inheritable: #{@inheritable ? 'Yes' : 'No'}\n\n"
 
-    str += "Purpose:     #{format(tagW, RichText.new(@pattern.doc).to_s,
+    str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
                                   textW)}"
 
     if @syntax != '[{ <attributes> }]'
@@ -116,7 +116,7 @@ class KeywordDocumentation
           if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
             indent = arg.name.length + 2
             argStr += "#{arg.name}: " +
-                    "#{format(indent, RichText.new(arg.text).to_s,
+                    "#{format(indent, newRichText(arg.text).to_s,
                               textW - indent)}\n"
           else
             typeSpec = arg.typeSpec
@@ -124,7 +124,7 @@ class KeywordDocumentation
             typeSpec[-1] = ']'
             indent = arg.name.length + typeSpec.size + 3
             argStr += "#{arg.name} #{typeSpec}: " +
-                    "#{format(indent, RichText.new(arg.text).to_s,
+                    "#{format(indent, newRichText(arg.text).to_s,
                               textW - indent)}\n"
           end
         end
@@ -298,7 +298,7 @@ EOT
     tab << (tr = XMLElement.new('tr', 'align' => 'left'))
     tr << XMLNamedText.new('Purpose', 'td', 'class' => 'tag')
     tr << (td = XMLElement.new('td', 'class' => 'descr'))
-    td << RichText.new(@pattern.doc).to_html
+    td << newRichText(@pattern.doc).to_html
     if @syntax != '[{ <attributes> }]'
       tab << (tr = XMLElement.new('tr', 'align' => 'left'))
       tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
@@ -325,7 +325,7 @@ EOT
           end
           tr1 << (td = XMLElement.new('td',
             'style' => 'margin-top:2px; margin-bottom:2px;'))
-          td << RichText.new(arg.text).to_html
+          td << newRichText(arg.text).to_html
         end
       end
     end
@@ -484,6 +484,20 @@ private
 
   def keywordHTMLRef(parent, keyword)
     parent << XMLNamedText.new(keyword, 'a', 'href' => "#{keyword}.html")
+  end
+
+  # This function is primarily a wrapper around the RichText constructor. It
+  # catches all RichTextScanner processing problems and converts the exception
+  # data into an error message.
+  def newRichText(text)
+    begin
+      rText = RichText.new(text)
+    rescue RichTextException => msg
+      $stderr.puts "Error in RichText of rule #{@keyword}\n" +
+                   "Line #{msg.lineNo}: #{msg.text}\n" +
+                   "#{msg.line}"
+    end
+    rText
   end
 
 end

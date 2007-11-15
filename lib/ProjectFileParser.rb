@@ -123,6 +123,27 @@ private
     scenarioSpecific
   end
 
+  # This function is primarily a wrapper around the RichText constructor. It
+  # catches all RichTextScanner processing problems and converts the exception
+  # data into a MessageHandler message that points to the correct location.
+  # This is necessary, because the RichText parser knows nothing about the
+  # actual input file. So we have to map the error location in the RichText
+  # input stream back to the position in the project file.
+  def newRichText(text)
+    begin
+      rText = RichText.new(text)
+    rescue RichTextException => msg
+      sfi = sourceFileInfo
+      correctSFI = SourceFileInfo.new(sfi.fileName,
+                                      sfi.lineNo + msg.lineNo - 1, 0)
+      message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,
+                            @property, nil, correctSFI)
+      @messageHandler.send(message)
+
+    end
+    rText
+  end
+
   # The following functions are mostly conveniance functions to simplify the
   # syntax tree definition. The *Rule functions may only be used in _rule
   # functions. And only one function call per _rule function is allowed.
