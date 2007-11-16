@@ -56,7 +56,7 @@ require 'RichTextParser'
 #
 class RichText
 
-  attr_accessor :sectionNumbers
+  attr_accessor :sectionNumbers, :lineWidth
 
   # Create a rich text object by passing a String with markup elements to it.
   # _text_ must be plain text with MediaWiki compatible markup elements. In
@@ -64,6 +64,8 @@ class RichText
   def initialize(text)
     # Set this to false to disable automatically generated section numbers.
     @sectionNumbers = true
+    # Set this to the width of your text area. Needed for horizonal lines.
+    @lineWidth = 80
     parser = RichTextParser.new(self)
     parser.open(text)
     # Parse the input text and convert it to the intermediate representation.

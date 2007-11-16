@@ -16,6 +16,10 @@
 # different types of properties. Each property can have a set of predifined
 # attributes. The PropertySet class holds collections of the same
 # PropertyTreeNode objects and the defined attributes.
+# Each PropertySet has a predefined set of attributes, but the attribute set
+# can be extended by the user. E.g. a task has the predefined attribute
+# 'start' and 'end' date. The user can extend tasks with a user defined
+# attribute like an URL that contains more details about the task.
 class PropertyTreeNode
 
   attr_reader :id, :name, :parent, :project, :sequenceNo, :levelSeqNo,
@@ -225,6 +229,11 @@ class PropertyTreeNode
     end
   end
 
+  # Return the type of the attribute with ID _attributeId_.
+  def attributeDefinition(attributeId)
+    @propertySet.attributeDefinitions[attributeId]
+  end
+
   def get(attributeId)
     case attributeId
     when 'id'
@@ -325,7 +334,7 @@ class PropertyTreeNode
 private
 
   def newAttribute(attributeType)
-    attribute = attributeType.objClass.new(attributeType, self)
+    attribute = attributeType.objClass.new(self, attributeType)
     # If the attribute requires a pointer to the project, we'll hand it over.
     if !attribute.value.nil? && attribute.respond_to?('setProject')
       attribute.setProject(@project)

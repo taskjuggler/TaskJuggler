@@ -1,0 +1,8 @@
+project test "Test" "1.0" 2007-11-16 +2m 
+
+task t "T" {
+  start ${projectstart}
+# MARK: error 6 purge_unknown_id
+  purge foo
+}
+

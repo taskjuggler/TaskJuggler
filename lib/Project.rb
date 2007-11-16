@@ -26,6 +26,7 @@ require 'LimitsAttribute'
 require 'ReferenceAttribute'
 require 'StringAttribute'
 require 'ShiftAssignmentsAttribute'
+require 'SymbolAttribute'
 require 'TaskListAttribute'
 require 'ResourceListAttribute'
 require 'WorkingHoursAttribute'
@@ -45,10 +46,17 @@ require 'ProjectFileParser'
 # This class implements objects that hold all project properties. Project
 # generally consist of resources, tasks and a number of other optional
 # properties. Tasks, Resources, Accounts and Shifts are all build on the same
-# underlying storage class PropertyTreeNode.
+# underlying storage class PropertyTreeNode. Properties of the same kind are
+# kept in PropertySet objects. There is only one PropertySet for each type of
+# property. Additionally, each property may belong to various PropertyList
+# objects. In contrast to PropertySet objects, PropertyList object have well
+# defined sorting order and no information about the attributes of each type
+# of property. The PropertySet holds the blueprints for the data construction
+# inside the PropertyTreeNode objects. It contains the list of known
+# Attributes.
 class Project
 
-  attr_reader :tasks, :resources, :scenarios, :messageHandler
+  attr_reader :tasks, :resources, :scenarios, :reports, :messageHandler
 
   # Create a project with the specified _id_, _name_ and _version_.
   # _messageHandler_ is a MessageHandler reference that is used to handle all
@@ -57,7 +65,8 @@ class Project
   def initialize(id, name, version, messageHandler)
     @messageHandler = messageHandler
     @attributes = {
-      'id' => id,
+      'projectid' => id,
+      'projectids' => [ id ],
       'name' => name,
       'version' => version,
       'copyright' => nil,
@@ -82,6 +91,14 @@ class Project
       'yearlyworkingdays' => 260.714
     }
 
+    # Before we can add any properties to this project, we need to define the
+    # attributes that each of the property types will be using. In TaskJuggler
+    # lingo, properties of a project are resources, tasks, accounts, shifts
+    # and scenarios. Each of these properties can have lots of further
+    # information attached to it. These bits of information are called
+    # attributes. An attribute is defined by the AttributeDefinition class.
+    # The PropertySet objects need to be fed with a list of such attribute
+    # definitions to register the attributes with the properties.
     @scenarios = PropertySet.new(self, true)
     attrs = [
       # ID           Name          Type               Inh.     Scen.  Default
@@ -170,6 +187,7 @@ class Project
       [ 'pathcriticalness', 'Path Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'precedes',  '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
+      [ 'projectid', 'Project ID',   SymbolAttribute,   true,  true,  nil ],
       [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
       [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
       [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
@@ -185,7 +203,7 @@ class Project
 
     Scenario.new(self, 'plan', 'Plan Scenario', nil)
 
-    @reports = []
+    @reports = { }
   end
 
   def sendMessage(message)
@@ -307,7 +325,7 @@ class Project
 
   def generateReports
     begin
-      @reports.each { |report| report.generate }
+      @reports.each_value { |report| report.generate }
     rescue TjException
       $stderr.puts "Report Generation Error: #{$!}"
       return false
@@ -343,7 +361,7 @@ class Project
   end
 
   def addReport(report) # :nodoc:
-    @reports.push(report)
+    @reports[report.name] = report
   end
 
   def isWorkingTime(*args)

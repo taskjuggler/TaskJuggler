@@ -38,6 +38,9 @@ module RichTextSyntaxRules
     pattern(%w( !headlines !blankLines ), lambda {
       @val[0]
     })
+    pattern(%w( $HLINE !blankLines ), lambda {
+      RichTextElement.new(@richText, :hline, @val[0])
+    })
     pattern(%w( !paragraph ), lambda {
       @val[0]
     })

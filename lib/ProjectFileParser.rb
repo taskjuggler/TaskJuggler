@@ -39,6 +39,8 @@ class ProjectFileParser < TextParser
                      RELATIVE_ID ABSOLUTE_ID MACRO )
 
     initRules
+
+    @project = nil
   end
 
   # Call this function with the master file to start processing a TJP file or
@@ -51,7 +53,7 @@ class ProjectFileParser < TextParser
       error('file_open', $!.message)
     end
 
-    @project = @property = nil
+    @property = @report = nil
     @scenarioIdx = 0
   end
 
@@ -90,13 +92,14 @@ private
   end
 
   # The TaskJuggler syntax can be extended by the user when the properties are
-  # extended with user-defined attributes. These attribute definition
+  # extended with user-defined attributes. These attribute definitions
   # introduce keywords that have to be processed like the build-in keywords.
   # The parser therefor needs to adapt on the fly to the new syntax. By
   # calling this function, a TaskJuggler property can be extended with a new
   # attribute. @propertySet determines what property should be extended.
   # _type_ is the attribute type, _default_ is the default value.
   def extendPropertySetDefinition(type, default)
+    # Determine the values for scenarioSpecific and inheritable.
     inherit = false
     scenarioSpecific = false
     unless @val[3].nil?
@@ -109,6 +112,8 @@ private
         end
       end
     end
+    # Register the new Attribute type with the Property set it should belong
+    # to.
     @propertySet.addAttributeType(AttributeDefinition.new(
       @val[1], @val[2], type, inherit, scenarioSpecific, default, true))
 

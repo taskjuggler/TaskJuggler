@@ -74,6 +74,8 @@ class RichTextElement
     when :title3
       pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "\n\n"
+    when :hline
+      pre = "#{'-' * @richText.lineWidth - 4}\n"
     when :paragraph
       post = "\n\n"
     when :pre
@@ -135,6 +137,9 @@ class RichTextElement
     when :title3
       pre = "<h3>#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "</h3>\n\n"
+    when :hline
+      pre = '<hr>'
+      post = "</hr>\n"
     when :paragraph
       pre = '<p>'
       post = "</p>\n\n"
@@ -243,6 +248,8 @@ class RichTextElement
         el << XMLText.new("#{@data[0]}.#{@data[1]}.#{@data[2]} ")
       end
       el
+    when :hline
+      XMLElement.new('hr')
     when :paragraph
       XMLElement.new('p')
     when :pre
@@ -293,6 +300,9 @@ class RichTextElement
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"
     end
+
+    # Horizontal lines never have leaves.
+    return html if @category == :hline
 
     @children.each do |el|
       if el.is_a?(RichTextElement)

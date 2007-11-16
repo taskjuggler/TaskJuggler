@@ -13,31 +13,45 @@ require 'AttributeDefinition'
 require 'PropertyTreeNode'
 
 # A PropertySet is a collection of properties of the same kind. Properties can
-# be tasks, resources, scenarios, shifts or accounts. All properties of the
-# same kind have the same set of attributes. Some attributes are predefined,
-# but the attribute set can be extended by the user. E.g. a task has the
-# predefined attribute 'start' and 'end' date. The user can extend tasks with
-# a user defined attribute like an URL that contains more details about the
-# task.
+# be Task, Resources, Scenario, Shift or Accounts objects. All properties of
+# the same kind belong to the same PropertySet. A property may only belong to
+# one PropertySet in the Project. The PropertySet holds the definitions for
+# the attributes.
 class PropertySet
 
-  attr_reader :project, :topLevelItems, :flatNamespace
+  attr_reader :project, :topLevelItems, :flatNamespace, :attributeDefinitions
 
   def initialize(project, flatNamespace)
     if $DEBUG && project.nil?
       raise "project parameter may not be NIL"
     end
+    # Indicates whether the namespace of this PropertySet is flat or not. In a
+    # flat namespace all property IDs must be unique. Otherwise only the IDs
+    # within a group of siblings must be unique. The full ID of the Property
+    # is then composed of the siblings ID prefixed by the parent ID. ID fields
+    # are separated by dots.
     @flatNamespace = flatNamespace
+    # The main Project data structure reference.
     @project = project
+    # The number of topLevel items is used frequently. Since all
+    # PropertyTreeNodes must be registered with this class, we can keep a
+    # special counter for fast access.
     @topLevelItems = 0
+    # This is the blueprint for PropertyTreeNode attribute sets. Whever a new
+    # PropertTreeNode is created, an attribute is created for each definition
+    # in this list.
     @attributeDefinitions = Hash.new
+    # A hash of all PropertyTreeNodes in this set, hashed by their ID.
     @properties = Hash.new
 
+    # IDs and names of the built-in attributes. TODO: Check performance impact
+    # when making them normal attributes.
     @@fixedAttributeNames = {
       "id" => "ID",
       "name" => "Name",
       "seqno" => "Seq. No."
     }
+    # And their types.
     @@fixedAttributesTypes = {
       "id" => :String,
       "name" => :String,

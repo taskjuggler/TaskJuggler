@@ -36,6 +36,8 @@ class RichTextScanner
     # Most of the wiki markup interpretation can be turned on/off by using
     # <nowiki>...</nowiki> in the text. This flag keeps this state.
     @wikiEnabled = true
+    # Enable to trigger printout instead of exception.
+    @debug = false
   end
 
   # This is a wrapper for nextToken only used for debugging.
@@ -80,6 +82,11 @@ class RichTextScanner
           # If that's missing, The = are treated as normal text further down.
           returnChar(level + 1)
         end
+      when ?-
+        # Horizontal ruler. Must have exactly 4 -.
+        level = readSequenceMax(?-, 4)
+        return [ "HLINE", '-' * 4 ] if level == 4
+        returnChar(level)
       when ?*
         # Bullet lists start with one to three * characters.
         level = readSequenceMax(?*)
@@ -164,7 +171,7 @@ class RichTextScanner
         # the next character into the start of a control sequence.
         # Hard linebreaks consist of a newline followed by another newline or
         # any of the begin-of-line control characters.
-        if (c = nextChar) && [ ?\n, ?*, ?#, 32, ?= ].include?(c)
+        if (c = nextChar) && [ ?\n, ?*, ?#, 32, ?=, ?- ].include?(c)
           returnChar if c != ?\n
           # The next character may be a control character.
           @beginOfLine = true
@@ -238,8 +245,13 @@ class RichTextScanner
 
   # The parser uses this function to report any errors during parsing.
   def error(id, text, foo)
-    raise RichTextException.new(id, @lineNo, text,
-                                @text[@lineStart, @pos - @lineStart])
+    if @debug
+      $stderr.puts "Line #{@lineNo}: #{text}\n" +
+                   "#{@text[@lineStart, @pos - @lineStart]}"
+    else
+      raise RichTextException.new(id, @lineNo, text,
+                                  @text[@lineStart, @pos - @lineStart])
+    end
   end
 
 private

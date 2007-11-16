@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2007-11-15 +2m 
+
+task t "T" {
+# MARK: error 5 unknown_projectid
+  projectid foo
+  start 2007-11-15
+}

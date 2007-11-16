@@ -11,7 +11,7 @@
 # This class is the base for all property attribute types. Each property can
 # have multiple attributes of different type. For each type, there must be a
 # special Ruby class. Each of these classes must be derived from this class.
-# The class holds information like a reference to the property that own the
+# The class holds information like a reference to the property that owns the
 # attribute and the type of the attribute.
 #
 # The class can track wheter the attribute value was provided by the project
@@ -23,9 +23,9 @@ class AttributeBase
   attr_reader :property, :type, :provided, :inherited, :value
 
   # Create a new AttributeBase object. _type_ specifies the specific type of
-  # the object, _property_ is the PropertyTreeNode object this attribute
+  # the object. _property_ is the PropertyTreeNode object this attribute
   # belongs to.
-  def initialize(type, property)
+  def initialize(property, type)
     @type = type
     @property = property
     # Flag that marks whether the value of this attribute was inherited from

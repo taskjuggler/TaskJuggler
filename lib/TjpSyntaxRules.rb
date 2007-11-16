@@ -478,19 +478,23 @@ EOT
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
                    'in report columns and the like.')
 
-    pattern(%w( _reference $STRING !extendOptionsBody ), lambda {
+    pattern(%w( _reference !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
-      reference = ReferenceAttribute.new
-      reference.set([ @val[1], @val[2].nil? ? nil : @val[2][0] ])
       if extendPropertySetDefinition(ReferenceAttribute, nil)
         @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
+            reference = ReferenceAttribute.new(@property,
+              @property.attributeDefinition(@val[0]))
+            reference.set([ @val[2], @val[3].nil? ? nil : @val[3][0] ])
             @property[@val[0], @scenarioIdx] = reference
           }))
       else
         @ruleToExtend.addPattern(TextParserPattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
-            @property.set(reference)
+            reference = ReferenceAttribute.new(@property,
+              @property.attributeDefinition(@val[0]))
+            reference.set([ @val[2], @val[3].nil? ? nil : @val[3][0] ])
+            @property.set(@val[0], reference)
           }))
       end
     })
@@ -657,7 +661,13 @@ EOT
         error('no_html_suffix',
               "Report name must have .html suffix: #{@val[0]}")
       end
-      @val[0]
+      # Strip '.html' suffix from file name
+      name = @val[0][0..-6]
+      if @project.reports[name]
+        error('report_redefinition',
+              "A report with the name #{name} has already been defined.")
+      end
+      name
     })
   end
 
@@ -672,9 +682,7 @@ EOT
 
   def rule_htmlResourceReportHeader
     pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
-      # Strip '.html' suffix from file name
-      name = @val[1][0..-6]
-      @report = Report.new(@project, name, :html, sourceFileInfo)
+      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
@@ -694,9 +702,7 @@ EOT
 
   def rule_htmlTaskReportHeader
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
-      # Strip '.html' suffix from file name
-      name = @val[1][0..-6]
-      @report = Report.new(@project, name, :html, sourceFileInfo)
+      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
     arg(1, 'filename', <<'EOT'
@@ -1022,6 +1028,10 @@ EOT
     commaListRule('!weekDayInterval')
   end
 
+  def rule_moreProjectIDs
+    commaListRule('$ID')
+  end
+
   def rule_moreResources
     commaListRule('!resourceList')
   end
@@ -1158,7 +1168,7 @@ EOT
     repeatable
     optional
 
-    pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $STRING ),
+    pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $INTEGER ),
         lambda {
       @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
     })
@@ -1337,6 +1347,12 @@ EOT
     arg(3, 'version', 'The version of the project plan')
   end
 
+  def rule_projectIDs
+    pattern(%w( $ID !moreProjectIDs ), lambda {
+      [ @val[0] ] + @val[1]
+    })
+  end
+
   def rule_projection
     optionsRule('projectionAttributes')
   end
@@ -1404,6 +1420,28 @@ EOT
     pattern(%w( !include ))
     pattern(%w( !macro ))
 
+    pattern(%w( _projectid $ID ), lambda {
+      @project['projectids'] << @val[1]
+      @project['projectids'].uniq!
+      @project['projectid'] = @val[1]
+    })
+    doc('projectid', <<'EOT'
+This declares a new project id and activates it. All subsequent
+task definitions will inherit this ID. The tasks of a project can have
+different IDs.  This is particularly helpful if the project is merged from
+several sub projects that each have their own ID.
+EOT
+       )
+
+    pattern(%w( _projectids !projectIDs ), lambda {
+      @project['projectids'] << @val[1]
+      @project['projectids'].uniq!
+    })
+    doc('projectids', <<'EOT'
+Declares a list of project IDs. When an include file that was generated from another project brings different project IDs, these need to be declared first.
+EOT
+        )
+
     pattern(%w( _rate !number ), lambda {
       @project['rate'] = @val[1].to_f
     })
@@ -1441,6 +1479,34 @@ part-time, or vice versa, please refer to the 'Shift' property.
 EOT
        )
     arg(1, 'name', 'Name or purpose of the vacation')
+  end
+
+  def rule_purge
+    pattern(%w( _purge $ID ), lambda {
+      if (attributeDefinition = @property.attributeDefinition(@val[1])).nil?
+        error('purge_unknown_id',
+              "#{@val[1]} is not a known attribute for this property")
+      end
+      if attributeDefinition.scenarioSpecific
+        attr = @property[@val[1], 0]
+      else
+        attr = @propert.get(@val[1])
+      end
+      unless attr.is_a?(Array)
+        error('purge_no_list',
+              "#{@val[1]} is not a list attribute. Only those can be purged.")
+      end
+      attr = attributeDefinition.default
+    })
+    doc('purge', <<'EOT'
+List attributes, like regular attributes, can inherit their values from the
+enclosing property. By defining more values for such a list attribute, the new
+values will be appended to the existing ones. The purge statement clears such
+a list atribute. A subsequent definition for the attribute within the property
+will then add their values to an empty list.
+EOT
+       )
+    arg(1, 'attribute', 'Any name of a list attribute')
   end
 
   def rule_referenceAttributes
@@ -1781,11 +1847,27 @@ EOT
   def rule_resourceAttributes
     repeatable
     optional
+    pattern(%w( !purge ))
     pattern(%w( !resource ))
     pattern(%w( !resourceScenarioAttributes ))
     pattern(%w( !scenarioId !resourceScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
+
+    pattern(%w( _supplement !resourceId !resourceBody ), lambda {
+      @property = @property.parent
+    })
+    doc('supplement.resource', <<'EOT'
+The supplement keyword provides a mechanism to add more attributes to already
+defined resources. The additional attributes must obey the same rules as in
+regular resource definitions and must be enclosed by curly braces.
+
+This construct is primarily meant for situations where the information about a
+resource is split over several files. E. g. the vacation dates for the
+resources may be in a separate file that was generated by some other tool.
+EOT
+       )
+
     # Other attributes will be added automatically.
   end
 
@@ -1810,8 +1892,11 @@ EOT
 
   def rule_resourceId
     pattern(%w( $ID ), lambda {
-      if (resource = @project.resource(@val[0])).nil?
-        error('resource_id_expected', "#{@val[0]} is not a defined resource.")
+      id = @val[0]
+      # In case we have a nested supplement, we need to prepend the parent ID.
+      id = @property.fullId + '.' + id if @property && @property.is_a?(Resource)
+      if (resource = @project.resource(id)).nil?
+        error('resource_id_expected', "#{id} is not a defined resource.")
       end
       resource
     })
@@ -1895,8 +1980,14 @@ EOT
     pattern(%w( _rate !number ), lambda {
       @property['rate', @scenarioIdx] = @val[1]
     })
-    doc('resource_rate', <<'EOT'
+    doc('rate.resource', <<'EOT'
 The rate specifies the daily cost of the resource.
+EOT
+       )
+
+    pattern(%w( _shift !shiftAssignments ))
+    doc('shift.resource', <<'EOT'
+This keyword has been deprecated. Please use [shifts.resource] instead.
 EOT
        )
 
@@ -1949,6 +2040,24 @@ EOT
   def rule_scenarioAttributes
     optional
     repeatable
+
+    pattern(%w( _disabled ), lambda {
+      @property.set('enabled', false)
+    })
+    doc('disabled', <<'EOT'
+Disable the scenario for scheduling. The default for the top-level
+scenario is to be enabled.
+EOT
+       )
+
+    pattern(%w( _enabled ), lambda {
+      @property.set('enabled', true)
+    })
+    doc('enabled', <<'EOT'
+Enable the scenario for scheduling. This is the default for the top-level
+scenario.
+EOT
+       )
 
     pattern(%w( _projection !projection ), lambda {
       @property.set('projection', true)
@@ -2186,8 +2295,12 @@ EOT
   end
 
   def rule_supplement
-    pattern(%w( !supplementResource !resourceBody ))
-    pattern(%w( !supplementTask !taskBody ))
+    pattern(%w( !supplementResource !resourceBody ), lambda {
+      @property = nil
+    })
+    pattern(%w( !supplementTask !taskBody ), lambda {
+      @property = nil
+    })
   end
 
   def rule_supplementResource
@@ -2227,6 +2340,22 @@ EOT
     doc('note.task', <<'EOT'
 Attach a note to the task. This is usually a more detailed specification of
 what the task is about.
+EOT
+       )
+
+    pattern(%w( !purge ))
+
+    pattern(%w( _supplement !supplementTask !taskBody ), lambda {
+      @property = @property.parent
+    })
+    doc('supplement.task', <<'EOT'
+The supplement keyword provides a mechanism to add more attributes to already
+defined tasks. The additional attributes must obey the same rules as in
+regular task definitions and must be enclosed by curly braces.
+
+This construct is primarily meant for situations where the information about a
+task is split over several files. E. g. the vacation dates for the
+resources may be in a separate file that was generated by some other tool.
 EOT
        )
 
@@ -2371,8 +2500,11 @@ EOT
 
   def rule_taskId
     pattern(%w( !taskIdUnverifd ), lambda {
-      if (task = @project.task(@val[0])).nil?
-        error('unknown_task', "Unknown task #{@val[0]}")
+      id = @val[0]
+      # In case we have a nested supplement, we need to prepend the parent ID.
+      id = @property.fullId + '.' + id if @property && @property.is_a?(Task)
+      if (task = @project.task(id)).nil?
+        error('unknown_task', "Unknown task #{id}")
       end
       task
     })
@@ -2679,6 +2811,19 @@ of the subtask.
 EOT
        )
     arg(1, 'value', 'Priority value (1 - 1000)')
+
+    pattern(%w( _projectid $ID ), lambda {
+      unless @project['projectids'].include?(@val[1])
+        error('unknown_projectid', "Unknown project ID #{@val[1]}")
+      end
+      @property['projectid', @scenarioIdx] = @val[1]
+    })
+    doc('projectid.task', <<'EOT'
+In larger projects it may be desireable to work with different project IDs for
+parts of the project. This attribute assignes a new project ID to this task an
+all subsequently defined sub tasks. The project ID needs to be declared first using [[projectid]] or [[projectids]].
+EOT
+       )
 
     pattern(%w( _responsible !resourceList ), lambda {
       @property['responsible', @scenarioIdx] = @val[1]

@@ -24,9 +24,10 @@ class TaskJuggler
   # construct a Project object. In case of success true is returned.
   # Otherwise false.
   def parse(files)
-    parser = ProjectFileParser.new(@messageHandler)
     master = true
     @project = nil
+
+    parser = ProjectFileParser.new(@messageHandler)
     files.each do |file|
       begin
         parser.open(file)

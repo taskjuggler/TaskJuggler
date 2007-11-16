@@ -48,6 +48,38 @@ EOT
 EOT
   end
 
+  def test_hline
+    inp = <<'EOT'
+----
+Line above and below
+----
+== A heading ==
+----
+
+----
+----
+Another bit of text.
+----
+EOT
+    out = RichText.new(inp).to_tagged + "\n"
+    ref = <<'EOT'
+<div><hr>----</hr>
+<p>[Line] [above] [and] [below] </p>
+
+<hr>----</hr>
+<h1>1 [A] [heading] </h1>
+
+<hr>----</hr>
+<hr>----</hr>
+<hr>----</hr>
+<p>[Another] [bit] [of] [text.] </p>
+
+<hr>----</hr>
+</div>
+EOT
+    assert_equal(out, ref)
+  end
+
   def test_italic
     inp = "This is a text with ''italic words'' in it."
     out = RichText.new(inp).to_tagged + "\n"
@@ -152,27 +184,55 @@ EOT
   def test_number
     inp = <<'EOT'
 # This is item 1
-## This is item 1.1
-## This is item 1.2
-### This is item 1.2.1
 # This is item 2
 # This is item 3
+
+Normal text.
+
+# This is item 1
+## This is item 1.1
+## This is item 1.2
+## This is item 1.3
+# This is item 2
+## This is item 2.1
+## This is item 2.2
+### This is item 2.2.1
+### This is item 2.2.2
+# This is item 3
 ## This is item 3.1
+### This is item 3.1.1
 # This is item 4
 ### This is item 4.0.1
+
+Normal text.
+
+# This is item 1
 EOT
     out = RichText.new(inp).to_tagged + "\n"
     ref = <<'EOT'
 <div><ol><li>1 [This] [is] [item] [1] </li>
+<li>2 [This] [is] [item] [2] </li>
+<li>3 [This] [is] [item] [3] </li>
+</ol><p>[Normal] [text.] </p>
+
+<ol><li>1 [This] [is] [item] [1] </li>
 <ol><li>1.1 [This] [is] [item] [1.1] </li>
 <li>1.2 [This] [is] [item] [1.2] </li>
-<ol><li>1.2.1 [This] [is] [item] [1.2.1] </li>
-</ol></ol><li>2 [This] [is] [item] [2] </li>
-<li>3 [This] [is] [item] [3] </li>
+<li>1.3 [This] [is] [item] [1.3] </li>
+</ol><li>2 [This] [is] [item] [2] </li>
+<ol><li>2.1 [This] [is] [item] [2.1] </li>
+<li>2.2 [This] [is] [item] [2.2] </li>
+<ol><li>2.2.1 [This] [is] [item] [2.2.1] </li>
+<li>2.2.2 [This] [is] [item] [2.2.2] </li>
+</ol></ol><li>3 [This] [is] [item] [3] </li>
 <ol><li>3.1 [This] [is] [item] [3.1] </li>
-</ol><li>4 [This] [is] [item] [4] </li>
+<ol><li>3.1.1 [This] [is] [item] [3.1.1] </li>
+</ol></ol><li>4 [This] [is] [item] [4] </li>
 <ol><ol><li>4.0.1 [This] [is] [item] [4.0.1] </li>
-</ol></ol></ol></div>
+</ol></ol></ol><p>[Normal] [text.] </p>
+
+<ol><li>1 [This] [is] [item] [1] </li>
+</ol></div>
 EOT
     assert_equal(out, ref)
   end

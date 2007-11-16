@@ -21,7 +21,7 @@ require 'TjpExportRE'
 # elements.
 class Report
 
-  attr_reader :project, :start, :end, :userDefinedPeriod, :sourceFileInfo
+  attr_reader :name, :project, :start, :end, :userDefinedPeriod, :sourceFileInfo
   attr_accessor :currencyformat, :loadUnit, :now, :numberformat, :resourceroot,
                 :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
@@ -29,8 +29,8 @@ class Report
   # Create a new report object.
   def initialize(project, name, format, sourceFileInfo)
     @project = project
-    @project.addReport(self)
     @name = name
+    @project.addReport(self)
     @outputFormats = [ format ]
     @sourceFileInfo = sourceFileInfo
 

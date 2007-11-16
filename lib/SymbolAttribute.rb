@@ -1,5 +1,5 @@
 #
-# ReferenceAttribute.rb - The TaskJuggler3 Project Management Software
+# SymbolAttribute.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -9,13 +9,13 @@
 #
 
 
-class ReferenceAttribute < AttributeBase
+class SymbolAttribute < AttributeBase
   def initialize(property, type)
-    super
+    super(property, type)
   end
 
-  def ReferenceAttribute::tjpId
-    'reference'
+  def SymbolAttribute::tjpId
+    'symbol'
   end
 end
 
