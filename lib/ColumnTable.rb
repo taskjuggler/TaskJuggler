@@ -41,9 +41,14 @@ class ColumnTable < ReportTable
     # height that fits all lines but has a maximum width. In case the embedded
     # table is larger, a scrollbar will appear. We assume that the scrollbar
     # has a height of 18 pixels or less.
+    # Due to Firefoxes broken table rendering we have to specify a minimum
+    # width. It may not excede the maxWidth value.
+    mWidth = minWidth
+    mWidth = @maxWidth if mWidth > @maxWidth
     td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
       'style' => 'position:relative; overflow:auto; ' +
                  "max-width:#{@maxWidth}px; " +
+                 "min-width:#{mWidth}px; " +
                  'margin-top:-1px; margin-bottom:-1px; ' +
                  "height:#{height + 18}px;"))
 

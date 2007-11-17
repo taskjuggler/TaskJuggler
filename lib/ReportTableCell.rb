@@ -17,7 +17,7 @@ class ReportTableCell
 
   attr_reader :line
   attr_accessor :text, :category, :hidden, :alignment, :padding, :indent,
-                :fontSize, :bold, :width, :expandable, :rows, :columns, :special
+                :fontSize, :bold, :width, :rows, :columns, :special
 
   # Create the ReportTableCell object and initialize the attributes to some
   # default values. _line_ is the ReportTableLine this cell belongs to. _text_
@@ -40,7 +40,6 @@ class ReportTableCell
     @fontSize = nil
     @bold = false
     @width = nil
-    @expandable = false
     @rows = 1
     @columns = 1
     # Ignore everything and use this reference to generate the output.
@@ -87,7 +86,6 @@ class ReportTableCell
     attribs['rowspan'] = "#{@rows}" if @rows > 1
     attribs['colspan'] = "#{@columns}" if @columns > 1
     attribs['class'] = @category ? @category : 'tabcell'
-    attribs['width'] = '100%' if @expandable
 
     cell = XMLElement.new('td', attribs)
     if @width

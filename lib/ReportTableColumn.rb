@@ -23,7 +23,7 @@
 class ReportTableColumn
 
   attr_reader :definition, :cell1, :cell2
-  attr_accessor :expandable, :scrollbar
+  attr_accessor :scrollbar
 
   # Create a new column. _table_ is a reference to the ReportTable this column
   # belongs to. _definition_ is the TableColumnDefinition of the column from
@@ -46,6 +46,13 @@ class ReportTableColumn
     # This variable is set to true if the column requires a scrollbar later
     # on.
     @scrollbar = false
+  end
+
+  # Return the mininum required width for the column.
+  def minWidth
+    width = @cell1.width
+    width = @cell2.width if width.nil? || @cell2.width > width
+    width
   end
 
   # Convert the abstract representation into HTML elements.

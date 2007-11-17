@@ -47,6 +47,17 @@ class ReportTable
     @lines.length
   end
 
+  # Return the minimum required width for the table. If we don't have a
+  # mininum with, nil is returned.
+  def minWidth
+    width = 1
+    @columns.each do |column|
+      cw = column.minWidth
+      width += cw + 1 if cw
+    end
+    width
+  end
+
   # Output the table as HTML.
   def to_html
     determineMaxIndents

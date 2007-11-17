@@ -226,7 +226,8 @@ task AcSo "Accounting Software" {
 # A traditional Gantt chart with a project overview.
 htmltaskreport "ProjectPlanOverview.html" {
   prolog '
-== Accounting Software Project ==  
+== Accounting Software Project ==
+----
 === Project Overview ===
 
 The project is structured into 3 phases.
@@ -243,7 +244,8 @@ All project phases are properly staffed.
 '
 
   headline "Project Plan Overview"
-  columns hierarchindex, name, start, end, effort, duration, cost, chart
+  columns hierarchindex, name, start, end, effort, duration, cost,
+          revenue, chart
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
   timeformat "%a %Y-%m-%d"

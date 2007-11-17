@@ -160,8 +160,6 @@ protected
       column = ReportTableColumn.new(@table, columnDef, columnDef.title)
       column.cell1.rows = 2
       column.cell2.hidden = true
-      # Make the 'name' column expand faster than other columns if needed.
-      column.cell1.expandable = true if columnDef.id == 'name'
     end
   end
 
