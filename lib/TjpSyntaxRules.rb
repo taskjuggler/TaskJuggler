@@ -20,9 +20,11 @@ module TjpSyntaxRules
     })
     doc('account', <<'EOT'
 Declares an account. Accounts can be used to calculate costs of tasks or the
-whole project. Account declaration may be nested, but only the top level
-accounts may have a type attribute specified. An account that has sub-accounts
-may not have a credit. sub-accounts inherit this type.
+whole project. Account declaration may be nested, but only leaf accounts may
+be used to track turnover. When the cost of a task is split over multiple
+accounts they all must have the same top-level group account. Top-level
+accounts can be used for profit/loss calculations. The sub-account structure
+of a top-level account should be organized accordingly.
 EOT
        )
   end
@@ -43,7 +45,11 @@ EOT
   end
 
   def rule_accountHeader
-    pattern(%w( _account $ID $STRING $ID ), lambda {
+    pattern(%w( _account $ID $STRING ), lambda {
+      if @project.account(@val[1])
+        error('account_exists',
+              "Account #{@val[1]} has already been defined.")
+      end
       @property = Account.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
@@ -53,6 +59,18 @@ unique within the whole project.
 EOT
        )
     arg(2, 'name', 'A name or short description of the account')
+  end
+
+  def rule_accountId
+    pattern(%w( $ID ), lambda {
+      id = @val[0]
+      # In case we have a nested supplement, we need to prepend the parent ID.
+      id = @property.fullId + '.' + id if @property && @property.is_a?(Account)
+      if (account = @project.account(id)).nil?
+        error('unknown_account', "Unknown account #{id}")
+      end
+      account
+    })
   end
 
   def rule_accountScenarioAttributes
@@ -269,6 +287,42 @@ EOT
       (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
     })
     arg(0, 'value', 'A floating point or integer number')
+  end
+
+  def rule_chargeset
+    pattern(%w( _chargeset !chargeSetItem !moreChargeSetItems ), lambda {
+      items = [ @val[1] ]
+      items += @val[2] if @val[2]
+      chargeSet = ChargeSet.new
+      begin
+        items.each do |item|
+          chargeSet.addAccount(item[0], item[1])
+        end
+        chargeSet.complete
+      rescue TjException
+        error('chargeset', $!.message)
+      end
+      masterAccounts = []
+      @property['chargeset', @scenarioIdx].each do |set|
+        masterAccounts << set.master
+      end
+      if masterAccounts.include?(chargeSet.master)
+        error('chargeset_master',
+              "All charge sets for this task must have different top-level " +
+              "accounts.")
+      end
+      @property['chargeset', @scenarioIdx] =
+        @property['chargeset', @scenarioIdx] + [ chargeSet ]
+    })
+    doc('chargeset', <<'EOT'
+EOT
+       )
+  end
+
+  def rule_chargeSetItem
+    pattern(%w( !accountId !optionalPercent ), lambda {
+      [ @val[0], @val[1] ]
+    })
   end
 
   def rule_chartScale
@@ -589,13 +643,23 @@ EOT
     singlePattern('_resource')
   end
 
-
   def rule_flag
     pattern(%w( $ID ), lambda {
       unless @project['flags'].include?(@val[0])
         error('undecl_flag', "Undeclared flag #{@val[0]}")
       end
       @val[0]
+    })
+  end
+
+  def rule_flags
+    pattern(%w( _flags !flagList ), lambda {
+      @val[1].each do |flag|
+        unless @property['flags', @scenarioIdx].include?(flag)
+          @property['flags', @scenarioIdx] =
+            @property['flags', @scenarioIdx] + @val[1]
+        end
+      end
     })
   end
 
@@ -1016,6 +1080,10 @@ EOT
     commaListRule('!operation')
   end
 
+  def rule_moreChargeSetItems
+    commaListRule('!chargeSetItem')
+  end
+
   def rule_moreColumnDef
     commaListRule('!columnDef')
   end
@@ -1153,6 +1221,13 @@ EOT
     descr('The \'smaller-or-equal\' operator')
   end
 
+  def rule_optionalPercent
+    optional
+    pattern(%w( !number _% ), lambda {
+      @val[0] / 100.0
+    })
+  end
+
   def rule_project
     pattern(%w( !projectDeclaration !properties ), lambda {
       @val[0]
@@ -1230,7 +1305,7 @@ EOT
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
-    pattern(%w( _numberformat $STRING $STRING $STRING $STRING $STRING ),
+    pattern(%w( _numberformat $STRING $STRING $STRING $STRING $INTEGER ),
         lambda {
       @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
     })
@@ -1496,7 +1571,11 @@ EOT
         error('purge_no_list',
               "#{@val[1]} is not a list attribute. Only those can be purged.")
       end
-      attr = attributeDefinition.default
+      if attributeDefinition.scenarioSpecific
+        @property[@val[1], @scenarioIdx] = attributeDefinition.default.dup
+      else
+        @property.set(@val[1], attributeDefinition.default.dup)
+      end
     })
     doc('purge', <<'EOT'
 List attributes, like regular attributes, can inherit their values from the
@@ -1525,6 +1604,23 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _balance !accountId !accountId ), lambda {
+      if @val[1].parent
+        error('cost_acct_no_top',
+              "The cost account #{@val[1].fullId} is not a top-level account.")
+      end
+      if @val[2].parent
+        error('rev_acct_no_top',
+              "The revenue account #{@val[2].fullId} is not a top-level " +
+              "account.")
+      end
+      if @val[1] == @val[2]
+        error('cost_rev_same',
+              'The cost and revenue accounts may not be the same.')
+      end
+      @reportElement.costAccount = @val[1]
+      @reportElement.revenueAccount = @val[2]
+    })
     pattern(%w( _caption $STRING ), lambda {
       @reportElement.caption = newRichText(@val[1])
     })
@@ -1666,6 +1762,13 @@ EOT
     descr('A measure for how much effort the resource is allocated for, or' +
           'how strained the allocated resources of a task are')
 
+    singlePattern('_cost')
+    descr(<<'EOT'
+The cost of the task or resource. The use of this column requires that a cost
+account has been set for the report using the [[balance]] attribute.
+EOT
+         )
+
     singlePattern('_daily')
     descr('A group of columns with one column for each day')
 
@@ -1752,6 +1855,13 @@ EOT
 
     singlePattern('_responsible')
     descr('The responsible people for this task')
+
+    singlePattern('_revenue')
+    descr(<<'EOT'
+The revenue of the task or resource. The use of this column requires that a
+revenue account has been set for the report using the [[balance]] attribute.
+EOT
+         )
 
     singlePattern('_seqno')
     descr('The index of the item based on the declaration order')
@@ -1943,9 +2053,7 @@ EOT
   end
 
   def rule_resourceScenarioAttributes
-    pattern(%w( _flags !flagList ), lambda {
-      @property['flags', @scenarioIdx] += @val[1]
-    })
+    pattern(%w( !flags ))
     doc('flags.resource', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
@@ -2585,6 +2693,8 @@ time intervals a certain resource has worked on this task.
 EOT
        )
 
+    pattern(%w( !chargeset ))
+
     pattern(%w( _complete !number), lambda {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",
@@ -2672,9 +2782,7 @@ property at the moment the tasks ends.
 EOT
        )
 
-    pattern(%w( _flags !flagList ), lambda {
-      @property['flags', @scenarioIdx] += @val[1]
-    })
+    pattern(%w( !flags ))
     doc('flags.task', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.

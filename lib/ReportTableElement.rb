@@ -456,6 +456,16 @@ private
       if property.is_a?(Task) && property.leaf?
         cell.text = "#{property['complete', scenarioIdx].to_i}%"
       end
+    when 'cost'
+      if @costAccount
+        if property.is_a?(Task) || property.is_a?(Resource)
+          cell.text = @report.currencyformat.format(
+            property.turnover(scenarioIdx, startIdx, endIdx, @costAccount,
+                              scopeProperty))
+        end
+      else
+        cell.text = 'No cost account'
+      end
     when 'duration'
       # The duration of the task. After scheduling, it can be determined for
       # all tasks. Also for those who did not have a 'duration' attribute.
@@ -467,10 +477,26 @@ private
       workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx,
                                            scopeProperty)
       cell.text = scaleLoad(workLoad)
+    when 'id'
+      cell.text = property.fullId
     when 'line'
       cell.text = line.lineNo.to_s
     when 'no'
       cell.text = line.no.to_s
+    when 'rate'
+      if property.is_a?(Resource) && property.leaf?
+        cell.text = @currencyformat.format(property['rate', scenarioIdx])
+      end
+    when 'revenue'
+      if @revenueAccount
+        if property.is_a?(Task) || property.is_a?(Resource)
+          cell.text = @report.currencyformat.format(
+            property.turnover(scenarioIdx, startIdx, endIdx, @revenueAccount,
+                              scopeProperty))
+        end
+      else
+        cell.text = 'No revenue account'
+      end
     when 'wbs'
       cell.text = property.get('wbs')
       cell.indent = 2 if line.scopeLine

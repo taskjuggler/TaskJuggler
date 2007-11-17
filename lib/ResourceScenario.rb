@@ -175,7 +175,7 @@ class ResourceScenario < ScenarioData
         time += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
       end
     else
-      time = @project.convertToDailyLoad(
+      time = @project.convertToDailyLoad(@project['scheduleGranularity'] *
           getAllocatedSlots(startIdx, endIdx, task))
     end
     time
@@ -199,6 +199,29 @@ class ResourceScenario < ScenarioData
                @project['scheduleGranularity']) * a('efficiency')
     end
     work
+  end
+
+  def turnover(startIdx, endIdx, account, task = nil)
+    amount = 0.0
+    if @property.container?
+      @property.children.each do |child|
+        amount += child.turnover(@scenarioIdx, startIdx, endIdx, account, task)
+      end
+    else
+      a('duties').each do |duty|
+        amount += duty.turnover(@scenarioIdx, startIdx, endIdx, account,
+                                @property)
+      end
+    end
+
+    amount
+  end
+
+  # Returns the cost for using this resource during the specified Interval
+  # _period_. If a Task _task_ is provided, only the work on this particular
+  # task is considered.
+  def cost(startIdx, endIdx, task = nil)
+    getAllocatedTime(startIdx, endIdx, task) * a('rate')
   end
 
   # Returns true if the resource or any of its children is allocated during

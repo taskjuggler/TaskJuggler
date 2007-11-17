@@ -1,0 +1,24 @@
+project test "Test" "1.0" 2007-11-16 +2m 
+
+account group1 "Group1" {
+  account g1 "G1"
+  account g2 "G2"
+  account g3 "G3"
+}
+
+account group2 "Group2" {
+  account g4 "G1"
+  account g5 "G2"
+  account g6 "G3"
+}
+
+task t "T" {
+  start ${projectstart}
+	chargeset g1, g2
+}
+
+htmltaskreport "Tasks.html" {
+# MARK: error 22 rev_acct_no_top
+  balance group1 g5
+}
+

@@ -215,6 +215,15 @@ class PropertyTreeNode
     !@children.empty?
   end
 
+  # Return the top-level node for this node.
+  def topNode
+    n = self
+    while n.parent
+      n = n.parent
+    end
+    n
+  end
+
   # Register a new attribute with the PropertyTreeNode and create the
   # instances for each scenario.
   def declareAttribute(attributeType)

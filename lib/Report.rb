@@ -22,7 +22,8 @@ require 'TjpExportRE'
 class Report
 
   attr_reader :name, :project, :start, :end, :userDefinedPeriod, :sourceFileInfo
-  attr_accessor :currencyformat, :loadUnit, :now, :numberformat, :resourceroot,
+  attr_accessor :costAccount, :currencyformat, :loadUnit, :now,
+                :numberformat, :resourceroot, :revenueAccount,
                 :shorttimeformat, :taskroot, :timeformat, :timezone,
                 :weekstartsmonday
 
@@ -48,6 +49,7 @@ class Report
     @timezone = @project['timezone']
     @userDefinedPeriod = false
     @weekstartsmonday = @project['weekstartsmonday']
+    @costAccount = @revenueAccount = nil
 
     @elements = []
   end

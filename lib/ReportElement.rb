@@ -21,10 +21,11 @@ require 'LogicalExpression'
 class ReportElement
 
   attr_reader :start, :end, :userDefinedPeriod
-  attr_accessor :caption, :epilog, :headline, :columns, :scenarios,
-                :taskRoot, :resourceRoot,
+  attr_accessor :caption, :costAccount, :epilog, :headline, :columns,
+                :scenarios, :taskRoot, :resourceRoot,
                 :timeFormat, :loadUnit, :now, :numberFormat, :weekStartsMonday,
-                :hideTask, :prolog, :rollupTask, :hideResource, :rollupResource,
+                :hideTask, :prolog, :revenueAccount,
+                :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
                 :ganttBars,
                 :propertiesById, :propertiesByType
@@ -37,6 +38,7 @@ class ReportElement
     # The following attributes affect the report content and look.
     @caption = nil
     @columns = []
+    @costAccount = @report.costAccount
     @currencyformat = @report.currencyformat
     @end = @report.end
     @epilog = nil
@@ -49,6 +51,7 @@ class ReportElement
     @numberFormat = @report.numberformat
     @prolog = nil
     @resourceroot = @report.resourceroot
+    @revenueAccount = @report.revenueAccount
     @rollupResource = nil
     @rollupTask = nil
     @scenarios = [ 0 ]
@@ -66,12 +69,15 @@ class ReportElement
     @propertiesById = {
       # ID               Header        Indent  Align   Calced. Scen Spec.
       'complete'    => [ 'Completion', false,  :right, true,   true ],
+      'cost'        => [ 'Cost',       true,   :right, true,   true ],
       'duration'    => [ 'Duration',   true,   :right, true,   true ],
       'effort'      => [ 'Effort',     true,   :right, true,   true ],
-      'id'          => [ 'Id',         false,  :left,  false,  false ],
+      'id'          => [ 'Id',         false,  :left,  true,   false ],
       'line'        => [ 'Line No.',   false,  :right, true,   false ],
       'name'        => [ 'Name',       true,   :left,  false,  false ],
       'no'          => [ 'No.',        false,  :right, true,   false ],
+      'rate'        => [ 'Rate',       false,  :right, true,   true ],
+      'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
       'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
     }
     @propertiesByType = {

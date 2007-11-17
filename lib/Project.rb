@@ -15,6 +15,7 @@ require 'PropertySet'
 require 'AllocationAttribute'
 require 'BookingListAttribute'
 require 'BooleanAttribute'
+require 'ChargeSetListAttribute'
 require 'DateAttribute'
 require 'DependencyListAttribute'
 require 'DurationAttribute'
@@ -164,6 +165,7 @@ class Project
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
+      [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute, true, true, [] ],
       [ 'complete',  'Completion',   FloatAttribute,    false, true,  nil ],
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
       [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],

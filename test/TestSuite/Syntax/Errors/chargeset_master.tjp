@@ -1,0 +1,15 @@
+project test "Test" "1.0" 2007-11-16 +2m 
+
+account group1 "Group1" {
+  account g1 "G1"
+  account g2 "G2"
+  account g3 "G3"
+}
+
+task t "T" {
+  start ${projectstart}
+# MARK: error 14 chargeset_master
+	chargeset g1, g2
+  chargeset g3
+}
+

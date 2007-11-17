@@ -13,8 +13,12 @@ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
   now 2002-03-05-13:00
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
+  # Use US format for numbers
+  numberformat "-" "" "," "." 1
+  # Use US financial format for currency values. Don't show pence.
+  currencyformat "(" ")" "," "." 0
   # The currency for all money values is the Euro.
-  currency "EUR"
+  currency "USD"
 
   # We want to compare the baseline scenario to one with a slightly
   # delayed start.
@@ -31,7 +35,7 @@ copyright "© 2002 Crappy Software, Inc."
 # The daily default rate of all resources. This can be overridden for each
 # resource. We specify this, so that we can do a good calculation of
 # the costs of the project.
-rate 310.0
+rate 390.0
 
 # Register Good Friday as a global holiday for all resources.
 vacation "Good Friday" 2002-03-29
@@ -46,15 +50,15 @@ macro allocate_developers [
 flags team
 
 resource dev "Developers" {
-  resource dev1 "Paul Smith" { rate 330.0 }
+  resource dev1 "Paul Smith" { rate 350.0 }
   resource dev2 "Sébastien Bono"
   resource dev3 "Klaus Müller" { vacation 2002-02-01 - 2002-02-05 }
 
   flags team
 }
 resource misc "The Others" {
-  resource test "Peter Murphy" { limits { dailymax 6.4h } rate 240.0 }
-  resource doc "Dim Sung" { rate 280.0 vacation 2002-03-11 - 2002-03-16 }
+  resource test "Peter Murphy" { limits { dailymax 6.4h } rate 310.0 }
+  resource doc "Dim Sung" { rate 300.0 vacation 2002-03-11 - 2002-03-16 }
 
   flags team
 }
@@ -63,9 +67,11 @@ resource misc "The Others" {
 # specify accounts. One for the development costs, one for the
 # documentation costs, and one account to credit the customer payments
 # to.
-account dev "Development" cost
-account doc "Documentation" cost
-account rev "Payments" revenue
+account cost "Project Cost" {
+  account dev "Development"
+  account doc "Documentation"
+}
+account rev "Payments"
 
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
@@ -76,7 +82,7 @@ task AcSo "Accounting Software" {
 
   # All work-related costs will be booked to this account unless the
   # subtasks specify something different.
-  account dev
+  chargeset dev
 
   task spec "Specification" {
     # The effort to finish this task is 20 man-days.
@@ -161,14 +167,15 @@ task AcSo "Accounting Software" {
     effort 10w
     depends !deliveries.start
     allocate doc, dev3
-    account doc
+    purge chargeset
+    chargeset doc
   }
 
   task deliveries "Milestones" {
 
     # Some milestones have customer payments associated with them. We
     # credit these payments to the 'rev' account.
-    account rev
+    chargeset rev
 
     task start "Project start" {
       # A task that has no duration is a milestone. It only needs a
@@ -236,12 +243,13 @@ All project phases are properly staffed.
 '
 
   headline "Project Plan Overview"
-  columns hierarchindex, name, start, end, effort, duration, chart
+  columns hierarchindex, name, start, end, effort, duration, cost, chart
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
   timeformat "%a %Y-%m-%d"
   loadunit days
   hideresource 1
+  balance cost rev
   caption '
 All effort values are in man days.
 '
@@ -289,11 +297,13 @@ htmlresourcereport "ResourceGraph.html" {
 
 # A list of all project resources, both human and material resources,
 # together with the associated costs.
-resourcereport "Resource Sheet" {
+htmlresourcereport "ResourceSheet.html" {
   headline "Resource Sheet"
-  columns no, name, efficiency, id, rate
+  columns no, name, id, effort, weekly, rate, cost
   loadunit days
-  hidetask 1
+  hidetask ~isLeaf()
+  sorttasks plan.start.up
+  balance cost rev
 }
 
 # A list of resources and each task associated with each resource.
