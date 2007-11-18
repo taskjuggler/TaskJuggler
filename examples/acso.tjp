@@ -72,6 +72,8 @@ account cost "Project Cost" {
   account doc "Documentation"
 }
 account rev "Payments"
+# The Profit&Loss analysis should be rev - cost accounts.
+balance cost rev
 
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
@@ -83,6 +85,9 @@ task AcSo "Accounting Software" {
   # All work-related costs will be booked to this account unless the
   # subtasks specify something different.
   chargeset dev
+  # For the duration of the project we have running cost that are not
+  # included in the labor cost.
+  charge 170 perday
 
   task spec "Specification" {
     # The effort to finish this task is 20 man-days.
@@ -175,6 +180,7 @@ task AcSo "Accounting Software" {
 
     # Some milestones have customer payments associated with them. We
     # credit these payments to the 'rev' account.
+    purge chargeset
     chargeset rev
 
     task start "Project start" {
@@ -189,19 +195,19 @@ task AcSo "Accounting Software" {
       # At the beginning of this task we receive a payment from the
       # customer. This is credited to the account associated with this
       # task when the task starts.
-      startcredit 33000.0
+      charge 21000.0 onstart
     }
 
     task prev "Technology Preview" {
       milestone
       depends !!software.backend
-      startcredit 13000.0
+      startcredit 31000.0
     }
 
     task beta "Beta version" {
       milestone
       depends !!test.alpha
-      startcredit 13000.0
+      charge 13000.0 onstart
     }
 
     task done "Ship Product to Customer" {
@@ -213,7 +219,7 @@ task AcSo "Accounting Software" {
       # is issued.
       # maxend 2002-04-17
       depends !!test.beta, !!manual
-      startcredit 14000.0
+      charge 33000.0 onstart
     }
   }
 }

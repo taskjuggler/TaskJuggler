@@ -19,7 +19,7 @@ class TjTime
   # a Time object this is just copied to the @time variable. Or else it is
   # interpreted as seconds after Epoch.
   def initialize(t)
-    if t.class == Time
+    if t.is_a?(Time)
       @time = t
     else
       @time = Time.at(t)

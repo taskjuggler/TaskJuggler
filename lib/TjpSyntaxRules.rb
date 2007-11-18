@@ -239,6 +239,29 @@ EOT
     })
   end
 
+  def rule_balance
+    pattern(%w( _balance !accountId !accountId ), lambda {
+      if @val[1].parent
+        error('cost_acct_no_top',
+              "The cost account #{@val[1].fullId} is not a top-level account.")
+      end
+      if @val[2].parent
+        error('rev_acct_no_top',
+              "The revenue account #{@val[2].fullId} is not a top-level " +
+              "account.")
+      end
+      if @val[1] == @val[2]
+        error('cost_rev_same',
+              'The cost and revenue accounts may not be the same.')
+      end
+      [ @val[1], @val[2] ]
+    })
+    doc('balance', <<'EOT'
+During report generation, TaskJuggler can consider some accounts to be revenue accounts, while other can be considered cost accounts. By using the balance attribute, two top-level accounts can be designated for a profit-loss-analysis. This analysis includes all sub accounts of these two top-level accounts.
+EOT
+       )
+  end
+
   def rule_bookingAttributes
     optional
     repeatable
@@ -315,14 +338,41 @@ EOT
         @property['chargeset', @scenarioIdx] + [ chargeSet ]
     })
     doc('chargeset', <<'EOT'
+A chargeset defines how the turnover associated with the task will be charged
+to one or more accounts. A task may have any number of charge sets, but each
+chargeset must deal with a different top-level account. A charge set consists
+of one or more accounts. Each account must be a leaf account. The account ID
+may be followed by a percentage value that determines the share for this
+account. The total percentage of all accounts must be exactly 100%. If some
+accounts don't have a percentage specification, the remainder to 100% is
+distributed evenly to them.
 EOT
        )
+  end
+
+  def rule_chargeMode
+    singlePattern('_onstart')
+    descr('Charge the amount on starting the task.')
+
+    singlePattern('_onend')
+    descr('Charge the amount on finishing the task.')
+
+    singlePattern('_perhour')
+    descr('Charge the amount for every hour the task lasts.')
+
+    singlePattern('_perday')
+    descr('Charge the amount for every day the task lasts.')
+
+    singlePattern('_perweek')
+    descr('Charge the amount for every week the task lasts.')
   end
 
   def rule_chargeSetItem
     pattern(%w( !accountId !optionalPercent ), lambda {
       [ @val[0], @val[1] ]
     })
+    arg(0, 'account', 'The ID of a previously defined leaf account.')
+    arg(1, 'share', 'A percentage between 0 and 100%')
   end
 
   def rule_chartScale
@@ -1482,6 +1532,11 @@ Set a copyright notice for the project file and its content. This copyright noti
 EOT
        )
 
+    pattern(%w( !balance ), lambda {
+      @project['costAccount'] = @val[0][0]
+      @project['revenueAccount'] = @val[0][1]
+    })
+
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
@@ -1604,23 +1659,11 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _balance !accountId !accountId ), lambda {
-      if @val[1].parent
-        error('cost_acct_no_top',
-              "The cost account #{@val[1].fullId} is not a top-level account.")
-      end
-      if @val[2].parent
-        error('rev_acct_no_top',
-              "The revenue account #{@val[2].fullId} is not a top-level " +
-              "account.")
-      end
-      if @val[1] == @val[2]
-        error('cost_rev_same',
-              'The cost and revenue accounts may not be the same.')
-      end
-      @reportElement.costAccount = @val[1]
-      @reportElement.revenueAccount = @val[2]
+    pattern(%w( !balance ), lambda {
+      @reportElement.costAccount = @val[0][0]
+      @reportElement.revenueAccount = @val[0][1]
     })
+
     pattern(%w( _caption $STRING ), lambda {
       @reportElement.caption = newRichText(@val[1])
     })
@@ -2693,6 +2736,41 @@ time intervals a certain resource has worked on this task.
 EOT
        )
 
+    pattern(%w( _charge !number !chargeMode ), lambda {
+      if @property['chargeset', @scenarioIdx].empty?
+        error('task_without_chargeset',
+              'The task does not have a chargeset defined.')
+      end
+      case @val[2]
+      when 'onstart'
+        mode = :onStart
+        amount = @val[1]
+      when 'onend'
+        mode = :onEnd
+        amount = @val[1]
+      when 'perhour'
+        mode = :perDiem
+        amount = @val[1] * 24
+      when 'perday'
+        mode = :perDiem
+        amount = @val[1]
+      when 'perweek'
+        mode = :perDiem
+        amount = @val[1] / 7.0
+      end
+      @property['charge', @scenarioIdx] =
+        @property['charge', @scenarioIdx] +
+        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
+    })
+    doc('charge', <<'EOT'
+Specify a one-time or per-period charge to a certain account. The charge can
+occur at the start of the task, at the end of it, or continuously over the
+duration of the task. The accounts to be charged are determined by the
+[[chargeset]] setting of the task.
+EOT
+       )
+    arg(0, 'amount', 'The amount to charge')
+
     pattern(%w( !chargeset ))
 
     pattern(%w( _complete !number), lambda {
@@ -2774,11 +2852,14 @@ EOT
        )
 
     pattern(%w( _endcredit !number ), lambda {
-      @property['endcredit', @scenarioIdx] = @val[1]
+      @property['charge', @scenarioIdx] =
+        @property['charge', @scenarioIdx] +
+        [ Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
     })
     doc('endcredit', <<'EOT'
-Specifies an amount that is credited to the account specified by the account
-property at the moment the tasks ends.
+Specifies an amount that is credited to the accounts specified by the
+[[chargeset]] attributes at the moment the tasks ends. This attribute has been
+deprecated and should no longer be used. Use [[charge]] instead.
 EOT
        )
 
@@ -2871,14 +2952,16 @@ EOT
        )
 
     pattern(%w( _startcredit !number ), lambda {
-      @property['startcredit', @scenarioIdx] = @val[1]
+      @property['charge', @scenarioIdx] =
+        @property['charge', @scenarioIdx] +
+        [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
     doc('startcredit', <<'EOT'
-Specifies an amount that is credited to the account specified by the account
-property at the moment the tasks starts.
+Specifies an amount that is credited to the account specified by the
+[[chargeset]] attributes at the moment the tasks starts. This attribute has
+been deprecated and should no longer be used. Use [[charge]] instead.
 EOT
        )
-
     pattern(%w( !taskPeriod ))
 
     pattern(%w( _precedes !taskPredList ), lambda {

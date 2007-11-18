@@ -16,6 +16,7 @@ require 'AllocationAttribute'
 require 'BookingListAttribute'
 require 'BooleanAttribute'
 require 'ChargeSetListAttribute'
+require 'ChargeListAttribute'
 require 'DateAttribute'
 require 'DependencyListAttribute'
 require 'DurationAttribute'
@@ -70,6 +71,7 @@ class Project
       'projectids' => [ id ],
       'name' => name,
       'version' => version,
+      'costAccount' => nil,
       'copyright' => nil,
       'currency' => "EUR",
       'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
@@ -81,6 +83,7 @@ class Project
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
       'rate' => 0.0,
+      'revenueAccount' => nil,
       'scheduleGranularity' => 3600,
       'shorttimeformat' => "%H:%M",
       'start' => nil,
@@ -165,6 +168,7 @@ class Project
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
       [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
+      [ 'charge',    'Charges',      ChargeListAttribute, false, true, [] ],
       [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute, true, true, [] ],
       [ 'complete',  'Completion',   FloatAttribute,    false, true,  nil ],
       [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
@@ -172,7 +176,6 @@ class Project
       [ 'duration',  'Duration',     DurationAttribute, false, true,  0.0 ],
       [ 'effort',    'Effort',       DurationAttribute, false, true,  0.0 ],
       [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
-      [ 'endcredit', 'End Credit',   FloatAttribute,    false, true,  0.0 ],
       [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true,  [] ],
       [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true,  [] ],
       [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
@@ -195,7 +198,6 @@ class Project
       [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
         nil ],
       [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
-      [ 'startcredit', 'Start Credit', FloatAttribute,  false, true,  0.0 ],
       [ 'startpreds', 'Start Preds.', TaskListAttribute, false, true, [] ],
       [ 'startsuccs', 'Start Succs.', TaskListAttribute, false, true, [] ],
       [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
@@ -247,7 +249,7 @@ class Project
   end
 
   def scenario(arg)
-    if arg.class == Fixnum
+    if arg.is_a?(Fixnum)
       if $DEBUG && (arg < 0 || arg >= @scenarios.items)
         raise "Scenario index out of range: #{arg}"
       end

@@ -103,11 +103,12 @@ class ChargeSet
 
   # Return the set as comma separated list of account ID + share pairs.
   def to_s
-    str = ''
+    str = '('
     @set.each do |account, share|
-      str += ', ' unless str.empty?
-      str += "#{account.fullId} #{share}"
+      str += ', ' unless str == '('
+      str += "#{account.fullId} #{share * 100}%"
     end
+    str += ')'
   end
 
 end

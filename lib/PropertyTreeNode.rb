@@ -76,7 +76,7 @@ class PropertyTreeNode
 
     # Inherit scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|
-      next unless attrDef.scenarioSpecific || attrDef.inheritable
+      next if !attrDef.scenarioSpecific || !attrDef.inheritable
 
       0.upto(@project.scenarioCount - 1) do |scenarioIdx|
         if parent

@@ -36,12 +36,14 @@ class Report
     @sourceFileInfo = sourceFileInfo
 
     # The following attributes determine the content and look of the report.
+    @costAccount = @project['costAccount']
     @currencyformat = @project['currencyformat']
     @loadUnit = @project['loadunit']
     @end = @project['end']
     @now = @project['now']
     @numberformat = @project['numberformat']
     @resourceroot = nil
+    @revenueAccount = @project['revenueAccount']
     @shorttimeformat = @project['shorttimeformat']
     @start = @project['start']
     @taskroot = nil
@@ -49,7 +51,6 @@ class Report
     @timezone = @project['timezone']
     @userDefinedPeriod = false
     @weekstartsmonday = @project['weekstartsmonday']
-    @costAccount = @revenueAccount = nil
 
     @elements = []
   end
