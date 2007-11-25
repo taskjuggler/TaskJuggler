@@ -260,6 +260,14 @@ EOT
 During report generation, TaskJuggler can consider some accounts to be revenue accounts, while other can be considered cost accounts. By using the balance attribute, two top-level accounts can be designated for a profit-loss-analysis. This analysis includes all sub accounts of these two top-level accounts.
 EOT
        )
+    arg(1, 'cost account', <<'EOT'
+The top-level account that is used for all cost related charges.
+EOT
+       )
+    arg(2, 'revenue account', <<'EOT'
+The top-level account that is used for all revenue related charges.
+EOT
+       )
   end
 
   def rule_bookingAttributes
@@ -451,6 +459,44 @@ EOT
        )
   end
 
+  def rule_csvFileName
+    pattern(%w( $STRING ), lambda {
+      unless @val[0][-4,4] == '.csv'
+        error('no_csv_suffix',
+              "Report name must have .csv suffix: #{@val[0]}")
+      end
+      # Strip '.csv' suffix from file name
+      name = @val[0][0..-5]
+      if @project.reports[name]
+        error('report_redefinition',
+              "A report with the name #{name} has already been defined.")
+      end
+      name
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the report file to generate. It should end with a .html extension.
+EOT
+       )
+  end
+
+  def rule_csvTaskReport
+    pattern(%w( !csvTaskReportHeader !reportBody ))
+    doc('csvtaskreport', <<'EOT'
+The report lists all tasks and their respective values as CSV file. Due to the
+very simple nature of the CSV format, only a small subset of features will be
+supported for CSV output. Including resources or listing multiple scenarios
+will result in very difficult to read reports.
+EOT
+       )
+  end
+
+  def rule_csvTaskReportHeader
+    pattern(%w( _csvtaskreport !csvFileName ), lambda {
+      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @reportElement = TaskListRE.new(@report)
+    })
+  end
+
   def rule_date
     pattern(%w( $DATE ), lambda {
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
@@ -535,7 +581,7 @@ EOT
       @report = Report.new(@project, name, :export, sourceFileInfo)
       @reportElement = TjpExportRE.new(@report, mainFile)
     })
-    arg(1, 'filename', <<'EOT'
+    arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
 extension.
 EOT
@@ -783,6 +829,10 @@ EOT
       end
       name
     })
+    arg(1, 'file name', <<'EOT'
+The name of the report file to generate. It should end with a .html extension.
+EOT
+       )
   end
 
   def rule_htmlResourceReport
@@ -799,10 +849,6 @@ EOT
       @report = Report.new(@project, @val[1], :html, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
-    arg(1, 'filename', <<'EOT'
-The name of the report file to generate. It should end with a .html extension.
-EOT
-       )
   end
 
   def rule_htmlTaskReport
@@ -819,10 +865,6 @@ EOT
       @report = Report.new(@project, @val[1], :html, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
-    arg(1, 'filename', <<'EOT'
-The name of the report file to generate. It should end with a .html extension.
-EOT
-       )
   end
 
   def rule_include
@@ -1924,6 +1966,7 @@ EOT
   end
 
   def rule_reportDefinitions
+    pattern(%w( !csvTaskReport ))
     pattern(%w( !export ))
     pattern(%w( !htmlResourceReport ))
     pattern(%w( !htmlTaskReport ))
@@ -2089,7 +2132,7 @@ EOT
       @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
-    arg(1, 'filename', <<'EOT'
+    arg(1, 'file name', <<'EOT'
 The name of the report.
 EOT
        )
@@ -2711,7 +2754,7 @@ EOT
       @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
-    arg(1, 'filename', <<'EOT'
+    arg(1, 'file name', <<'EOT'
 The name of the report.
 EOT
        )

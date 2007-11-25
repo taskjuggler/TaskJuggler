@@ -113,6 +113,12 @@ class ReportTableElement < ReportElement
     html
   end
 
+  # Convert the ReportElement into an Array of Arrays. It has one Array for
+  # each line. The nested Arrays have one String for each column.
+  def to_csv
+    @table.to_csv
+  end
+
 protected
 
   # Generates cells for the table header. _columnDef_ is the
@@ -285,6 +291,8 @@ private
         iv = Interval.new(t, nextT)
         # Create the new column object.
         column = ReportTableColumn.new(table, nil, '')
+        # Store the date of the column in the original form.
+        column.cell1.data = t.to_s(@timeFormat)
         # The upper scale cells will be merged into one large cell that spans
         # all lower scale cells that belong to this upper cell.
         if firstColumn.nil?
@@ -330,6 +338,7 @@ private
       # not in this cell.
       cell = ReportTableCell.new(line)
       cell.hidden = true
+      cell.text = nil
       # The GanttChart can be reached via the special variable of the column
       # header.
       chart = columnDef.column.cell1.special

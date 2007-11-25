@@ -64,5 +64,13 @@ class ReportTableColumn
     end
   end
 
+  # Put the abstract representation into an Array. _csv_ is an Array of Arrays
+  # of Strings. We have an Array with Strings for every cell. The outer Array
+  # holds the Arrays representing the lines.
+  def to_csv(csv)
+    # For CSV reports we can only include the first header line.
+    @cell1.to_csv(csv)
+  end
+
 end
 

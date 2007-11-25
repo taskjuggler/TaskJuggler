@@ -69,5 +69,13 @@ class ReportTableLine
     tr
   end
 
+  # Convert the intermediate format into an Array of values. One entry for
+  # every column cell of this line.
+  def to_csv(csv)
+    @cells.each do |cell|
+      cell.to_csv(csv)
+    end
+  end
+
 end
 

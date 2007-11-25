@@ -7,7 +7,7 @@ echo "Building ${gem}..."
 sed "s/X\.X\.X/$version/g" README.in > README
 sed "s/X\.X\.X/$version/g" Rakefile.in > Rakefile 
 
-rdoc README TODO lib || exit 1
+rdoc -S README TODO lib || exit 1
 rake pkg/taskjuggler3-${version}.gem || exit 1
 
 

@@ -16,7 +16,7 @@
 class ReportTableCell
 
   attr_reader :line
-  attr_accessor :text, :category, :hidden, :alignment, :padding, :indent,
+  attr_accessor :data, :text, :category, :hidden, :alignment, :padding, :indent,
                 :fontSize, :bold, :width, :rows, :columns, :special
 
   # Create the ReportTableCell object and initialize the attributes to some
@@ -28,7 +28,10 @@ class ReportTableCell
     @line.addCell(self) if line
 
     @headerCell = headerCell
+    # The printable form of the cell content
     @text = text
+    # The original data of the cell content (optional, nil if not provided)
+    @data = nil
     @category = nil
     @hidden = false
     # How to horizontally align the cell
@@ -36,7 +39,7 @@ class ReportTableCell
     # Horizontal padding between frame and cell content
     @padding = 3
     # Whether or not to indent the cell
-    @indent = false
+    @indent = nil
     @fontSize = nil
     @bold = false
     @width = nil
@@ -96,6 +99,20 @@ class ReportTableCell
     end
 
     cell
+  end
+
+  # Add the text content of the cell to an Array of Arrays form of the table.
+  def to_csv(csv)
+    # We only support left indentation in CSV files as the spaces for right
+    # indentation will be disregarded by most applications.
+    indent = @indent && @alignment == :left ? '  ' * @indent : ''
+    if @special
+      csv[-1] << @special.to_csv
+    elsif @data && @data.is_a?(String)
+      csv[-1] << indent + @data
+    elsif @text
+      csv[-1] << indent + @text
+    end
   end
 
 end

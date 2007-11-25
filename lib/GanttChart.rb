@@ -189,6 +189,11 @@ class GanttChart
     td
   end
 
+  # This is a noop function.
+  def to_csv(csv)
+    # Can't put a Gantt chart into a CSV file.
+  end
+
   # Utility function that convers a date to the corresponding X-position in
   # the Gantt chart.
   def dateToX(date)

@@ -324,6 +324,11 @@ htmlresourcereport "ResourceUsage.html" {
   end 2002-02-10
 }
 
+csvtaskreport "csvtest.csv" {
+  columns no, name, id, effort, revenue, cost
+  loadunit days
+}
+
 # This report looks like a regular calendar that shows the tasks by
 # their dates.
 #htmlweeklycalendar "Calendar.html" {

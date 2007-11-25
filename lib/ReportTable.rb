@@ -98,6 +98,20 @@ class ReportTable
     table
   end
 
+  # Convert the intermediate representation into an Array of Arrays. _csv_ is
+  # the destination Array of Arrays. It may contain columns already.
+  def to_csv()
+    csv = [ [ ] ]
+    @columns.each { |col| col.to_csv(csv) }
+
+    @lines.each do |line|
+      # Insert a new Array for each line.
+      csv << []
+      line.to_csv(csv)
+    end
+    csv
+  end
+
 private
 
   # Some columns need to be indented when the data is sorted in tree mode.
