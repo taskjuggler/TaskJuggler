@@ -1,0 +1,43 @@
+project test "Test" "1.0" 2007-11-22 +6d
+
+resource computenodes "Compute Nodes" {
+  resource node01 "node01"
+  resource node02 "node02"
+  resource node03 "node03"
+  resource node04 "node04"
+  resource node05 "node05"
+
+}
+
+macro allocNodes [
+  allocate node01 { mandatory alternative node02, node03, node04, node05 }
+]
+
+task ProductionPlan "Production Plan" {
+  task A "A" {
+    start ${projectstart}
+    effort 4d
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+}
+  task B1 "B1" {
+    depends !A
+    effort 4d
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+  }
+  task B2 "B2" {
+    depends !A
+    effort 4d
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+    ${allocNodes}
+    minend 2007-11-26-18:00
+    maxend 2007-11-26-18:00
+  }
+}

@@ -833,6 +833,7 @@ class TaskScenario < ScenarioData
 
     # We first have to make sure that if there are mandatory resources
     # that these are all available for the time slot.
+    takenMandatories = []
     @mandatories.each do |allocation|
       return unless allocation.onShift?(date)
 
@@ -844,9 +845,12 @@ class TaskScenario < ScenarioData
         # group must be available.
         allAvailable = true
         candidate.allLeafs.each do |resource|
-          if !resource.available?(@scenarioIdx, sbIdx)
+          if !resource.available?(@scenarioIdx, sbIdx) ||
+             takenMandatories.include?(resource)
             allAvailable = false
             break
+          else
+            takenMandatories << resource
           end
         end
         if allAvailable
