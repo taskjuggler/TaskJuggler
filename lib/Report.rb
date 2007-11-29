@@ -23,8 +23,8 @@ class Report
 
   attr_reader :name, :project, :start, :end, :userDefinedPeriod, :sourceFileInfo
   attr_accessor :costAccount, :currencyformat, :loadUnit, :now,
-                :numberformat, :resourceroot, :revenueAccount,
-                :shorttimeformat, :taskroot, :timeformat, :timezone,
+                :numberformat, :resourceRoot, :revenueAccount,
+                :shorttimeformat, :taskRoot, :timeformat, :timezone,
                 :weekstartsmonday
 
   # Create a new report object.
@@ -42,11 +42,11 @@ class Report
     @end = @project['end']
     @now = @project['now']
     @numberformat = @project['numberformat']
-    @resourceroot = nil
+    @resourceRoot = nil
     @revenueAccount = @project['revenueAccount']
     @shorttimeformat = @project['shorttimeformat']
     @start = @project['start']
-    @taskroot = nil
+    @taskRoot = nil
     @timeformat = @project['timeformat']
     @timezone = @project['timezone']
     @userDefinedPeriod = false

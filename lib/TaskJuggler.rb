@@ -31,7 +31,7 @@ class TaskJuggler
     files.each do |file|
       begin
         parser.open(file)
-      rescue
+      rescue StandardError
         return false
       end
       if master

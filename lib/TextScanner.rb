@@ -51,7 +51,7 @@ class TextScanner
   def open
     begin
       @fileStack = [ (@cf = FileRecord.new(@masterFile)) ]
-    rescue
+    rescue StandardError
       raise TjException.new, "Cannot open file #{@masterFile}"
     end
     @tokenBuffer = nil
@@ -66,7 +66,7 @@ class TextScanner
   def include(fileName)
     begin
       @fileStack << (@cf = FileRecord.new(fileName))
-    rescue
+    rescue StandardError
       error('bad_include', "Cannot open include file #{fileName}")
     end
   end
@@ -210,7 +210,7 @@ private
       macroParser = MacroParser.new(self, @messageHandler)
       begin
         macroParser.parse('macroCall', false)
-      rescue
+      rescue TjException
       end
       @ignoreMacros = false
       return nextCharI(eofOk)

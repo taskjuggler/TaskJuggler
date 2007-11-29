@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'TjTime'
 require 'Booking'
 require 'PropertySet'
@@ -210,10 +209,13 @@ class Project
     @reports = { }
   end
 
+  # Pass a message (error or warning) to the message handler. _message_ is a
+  # String that contains the message.
   def sendMessage(message)
     @messageHandler.send(message)
   end
 
+  # Query the value of a Project attribute. _name_ is the ID of the attribute.
   def [](name)
     if !@attributes.has_key?(name)
       raise "Unknown project attribute #{name}"
@@ -221,6 +223,7 @@ class Project
     @attributes[name]
   end
 
+  # Set the Project attribute with ID _name_ to _value_.
   def []=(name, value)
     if !@attributes.has_key?(name)
       raise "Unknown project attribute #{name}"
@@ -228,22 +231,28 @@ class Project
     @attributes[name] = value
   end
 
+  # Return the number of defined scenarios for the project.
   def scenarioCount
     @scenarios.items
   end
 
+  # Return the average number of working hours per day. This defaults to 8 but
+  # can be set to other values by the user.
   def dailyWorkingHours
     @attributes['dailyworkinghours']
   end
 
+  # Return the average number of working days per week.
   def weeklyWorkingDays
     @attributes['yearlyworkingdays'] / 52.1429
   end
 
+  # Return the average number of working days per month.
   def monthlyWorkingDays
     @attributes['yearlyworkingdays'] / 12
   end
 
+  # Return the average number of working days per year.
   def yearlyWorkingDays
     @attributes['yearlyworkingdays']
   end
@@ -291,6 +300,9 @@ class Project
     @resources[id]
   end
 
+  # This function must be called after the Project data structures have been
+  # filled with data. It schedules all scenario and stores the result in the
+  # data structures again.
   def schedule
     [ @shifts, @resources, @tasks ].each do |p|
       p.inheritAttributesFromScenario
@@ -317,7 +329,10 @@ class Project
         # as computed.
         AttributeBase.setMode(2)
 
+        # Schedule the scenario.
         scheduleScenario(scIdx)
+
+        # Complete the data sets, and check the result.
         finishScenario(scIdx)
       end
     rescue TjException
@@ -327,6 +342,8 @@ class Project
     true
   end
 
+  # Call this function to generate the reports based on the scheduling result.
+  # This function may only be called after Project#schedule has been called.
   def generateReports
     begin
       @reports.each_value { |report| report.generate }

@@ -49,7 +49,7 @@ class ProjectFileParser < TextParser
     begin
       @scanner = TextScanner.new(masterFile, @messageHandler)
       @scanner.open
-    rescue
+    rescue StandardError
       error('file_open', $!.message)
     end
 

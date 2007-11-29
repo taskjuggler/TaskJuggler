@@ -50,7 +50,7 @@ class ReportElement
     @now = @report.now
     @numberFormat = @report.numberformat
     @prolog = nil
-    @resourceroot = @report.resourceroot
+    @resourceRoot = @report.resourceRoot
     @revenueAccount = @report.revenueAccount
     @rollupResource = nil
     @rollupTask = nil
@@ -59,8 +59,7 @@ class ReportElement
     @sortResources = [[ 'seqno', true, -1 ]]
     @sortTasks = [[ 'seqno', true, -1 ]]
     @start = @report.start
-    @taskRoot = nil
-    @taskroot = @report.taskroot
+    @taskRoot = @report.taskRoot
     @timeFormat = @report.timeformat
     @timezone = @report.timezone
     @userDefinedPeriod = @report.userDefinedPeriod
@@ -101,13 +100,13 @@ class ReportElement
 
   # Take the complete task list and remove all tasks that are matching the
   # hide expression, the rollup Expression or are not a descendent of
-  # taskRoot. In case resource is not nil, a task is only included if
+  # @taskRoot. In case resource is not nil, a task is only included if
   # the resource is allocated to it in any of the reported scenarios.
   def filterTaskList(list_, resource, hideExpr, rollupExpr)
     list = list_.clone
-    if taskRoot
-      # Remove all tasks that are not descendents of the taskRoot.
-      list.delete_if { |task| !task.isChildOf?(taskRoot) }
+    if @taskRoot
+      # Remove all tasks that are not descendents of the @taskRoot.
+      list.delete_if { |task| !task.isChildOf?(@taskRoot) }
     end
 
     if resource
@@ -148,13 +147,13 @@ class ReportElement
 
   # Take the complete resource list and remove all resources that are matching
   # the hide expression, the rollup Expression or are not a descendent of
-  # resourceRoot. In case task is not nil, a resource is only included if
+  # @resourceRoot. In case task is not nil, a resource is only included if
   # it is assigned to the task in any of the reported scenarios.
   def filterResourceList(list_, task, hideExpr, rollupExpr)
     list = list_.clone
-    if resourceRoot
-      # Remove all resources that are not descendents of the resourceRoot.
-      list.delete_if { |resource| !resource.isChildOf?(resourceRoot) }
+    if @resourceRoot
+      # Remove all resources that are not descendents of the @resourceRoot.
+      list.delete_if { |resource| !resource.isChildOf?(@resourceRoot) }
     end
 
     if task
@@ -208,7 +207,7 @@ class ReportElement
           value.to_s
         end
       end
-    rescue
+    rescue TjException
       ''
     end
   end

@@ -253,7 +253,7 @@ class PropertyTreeNode
       @sequenceNo
     else
       unless @attributes.has_key?(attributeId)
-        raise "Unknown attribute #{attributeId}"
+        raise TjException.new, "Unknown attribute #{attributeId}"
       end
       @attributes[attributeId].get
     end
@@ -269,7 +269,7 @@ class PropertyTreeNode
 
   def set(attributeId, value)
     unless @attributes.has_key?(attributeId)
-      raise "Unknown attribute #{attributeId}"
+      raise TjException.new, "Unknown attribute #{attributeId}"
     end
     @attributes[attributeId].set(value)
   end
@@ -280,7 +280,7 @@ class PropertyTreeNode
     elsif @attributes.has_key?(attributeId)
       @attributes[attributeId].set(value)
     else
-      raise "Unknown attribute #{attributeId}"
+      raise TjException.new, "Unknown attribute #{attributeId}"
     end
     @scenarioAttributes[scenario][attributeId].set(value)
   end
