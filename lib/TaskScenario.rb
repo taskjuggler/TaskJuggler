@@ -472,11 +472,8 @@ class TaskScenario < ScenarioData
   end
 
   def calcCriticalness
-    # We cache the value for the directional path criticalness. Every time we
-    # recalculate the criticalnesses, we have to clear the cached values.
-    @maxForwardCriticalness = nil
-    @maxBackwardCriticalness = nil
     @property['criticalness', @scenarioIdx] = 0.0
+    @property['pathcriticalness', @scenarioIdx] = nil
 
     return if a('effort') <= 0
 
@@ -512,9 +509,37 @@ class TaskScenario < ScenarioData
   # Since both the forward and backward functions include the
   # criticalness of this function we have to subtract it again.
   def calcPathCriticalness
-    @property['pathcriticalness', @scenarioIdx] =
-      calcDirCriticalness(false) - a('criticalness') +
-      calcDirCriticalness(true)
+    # If we have computed this already, just return the value.
+    return a('pathcriticalness') if a('pathcriticalness')
+
+    maxCriticalness = 0.0
+
+    if @property.container?
+      @property.children.each do |task|
+        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
+            maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+    else
+      a('endsuccs').each do |task, onEnd|
+        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
+           maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+
+      maxCriticalness += a('criticalness')
+
+      a('startsuccs').each do |task, onEnd|
+        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
+            maxCriticalness
+          maxCriticalness = criticalness
+        end
+      end
+    end
+
+    @property['pathcriticalness', @scenarioIdx] = maxCriticalness
   end
 
   # Return the date of the next slot this task wants to have scheduled. This
@@ -1183,54 +1208,6 @@ private
       task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
     # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
-  end
-
-  # This function computes the maximum criticalness of all possible pathes
-  # that run trough this task in either forward or backward direction. The
-  # pathes start at the start (forward) or end (backward) of the task. The
-  # criticalness of a path is the sum of all criticalness of the tasks along
-  # the path.
-  def calcDirCriticalness(forward)
-    # If we have computed this already, use cached value.
-    if forward && @maxForwardCriticalness
-      return @maxForwardCriticalness
-    elsif !forward && @maxBackwardCriticalness
-      return @maxBackwardCriticalness
-    end
-    maxCriticalness = 0.0
-
-    if @property.container?
-      @property.children.each do |task|
-        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
-            maxCriticalness
-          maxCriticalness = criticalness
-        end
-      end
-    else
-      a(forward ? 'endsuccs' : 'startpreds').each do |task, onEnd|
-        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
-           maxCriticalness
-          maxCriticalness = criticalness
-        end
-      end
-
-      # For start predecessors or end successors we also include the
-      # criticalness of this task.
-      maxCriticalness += a('criticalness')
-
-      a(forward ? 'startsuccs' : 'endpreds').each do |task, onEnd|
-        if (criticalness = task.calcDirCriticalness(@scenarioIdx, forward)) >
-            maxCriticalness
-          maxCriticalness = criticalness
-        end
-      end
-    end
-
-    if forward
-      @maxForwardCriticalness = maxCriticalness
-    else
-      @maxBackwardCriticalness = maxCriticalness
-    end
   end
 
   # Calculate the current completion degree for tasks that have no user
