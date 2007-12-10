@@ -47,6 +47,7 @@ class TaskJuggler
   end
 
   def schedule
+    #puts @project.to_s
     @project.schedule
   end
 

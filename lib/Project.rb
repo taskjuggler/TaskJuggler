@@ -257,6 +257,11 @@ class Project
     @attributes['yearlyworkingdays']
   end
 
+  # call-seq:
+  #   scenario(index) -> Scenario
+  #   scenario(id) -> Scenario
+  #
+  # Return the Scenario with the given _id_ or _index_.
   def scenario(arg)
     if arg.is_a?(Fixnum)
       if $DEBUG && (arg < 0 || arg >= @scenarios.items)
@@ -274,6 +279,11 @@ class Project
     end
   end
 
+  # call-seq:
+  #   scenarioIdx(scenario)
+  #   scenarioIdx(id)
+  #
+  # Return the index of the given Scenario specified by _scenario_ or _id_.
   def scenarioIdx(sc)
     if sc.is_a?(Scenario)
       return sc.sequenceNo - 1
@@ -284,18 +294,22 @@ class Project
     end
   end
 
+  # Return the Shift with the ID _id_ or return nil if it does not exist.
   def shift(id)
     @shifts[id]
   end
 
+  # Return the Account with the ID _id_ or return nil if it does not exist.
   def account(id)
     @accounts[id]
   end
 
+  # Return the Task with the ID _id_ or return nil if it does not exist.
   def task(id)
     @tasks[id]
   end
 
+  # Return the Resource with the ID _id_ or return nil if it does not exist.
   def resource(id)
     @resources[id]
   end
@@ -322,13 +336,11 @@ class Project
         # inherited by setting the mode to 1. As we always call
         # PropertyTreeNode#inherit this is just a safeguard.
         AttributeBase.setMode(1)
-
         prepareScenario(scIdx)
 
         # Now change to mode 2 so all values that are modified are marked
         # as computed.
         AttributeBase.setMode(2)
-
         # Schedule the scenario.
         scheduleScenario(scIdx)
 
@@ -385,6 +397,16 @@ class Project
     @reports[report.name] = report
   end
 
+  # call-seq:
+  #   isWorkingTime(slot) -> true or false
+  #   isWorkingTime(startTime, endTime) -> true or false
+  #   isWorkingTime(interval) -> true or false
+  #
+  # Return true if the _slot_ (TjTime) is withing globally defined working
+  # time or false if not. If the argument is an Interval, all slots of the
+  # interval must be working time to return true as result. Global work time
+  # means, no vacation defined and the slot lies within a defined working time
+  # period.
   def isWorkingTime(*args)
     # Normalize argument(s) to Interval
     if args.length == 1
@@ -407,6 +429,8 @@ class Project
     true
   end
 
+  # Convert working _seconds_ to working days. The result depends on the
+  # setting of the global 'dailyworkinghours' attribute.
   def convertToDailyLoad(seconds)
     seconds / (@attributes['dailyworkinghours'] * 3600)
   end
@@ -434,6 +458,15 @@ class Project
       end
     end
     ((date - @attributes['start']) / @attributes['scheduleGranularity']).to_i
+  end
+
+  def to_s
+    @attributes.each do |attribute, value|
+      if value
+        puts "#{attribute}: " +
+             "#{value.is_a?(PropertyTreeNode) ? value.fullId : value}"
+      end
+    end
   end
 
 protected
