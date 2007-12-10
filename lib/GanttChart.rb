@@ -257,9 +257,13 @@ private
       # Generate the dependencies on the start of the task.
       startX, startY = line.getTask.startDepLineStart
       task['startsuccs', scenarioIdx].each do |t, onEnd|
-        # Skip inherited dependencies.
-        next if t.parent &&
-                task.hasDependency?(scenarioIdx, 'startsuccs', t.parent, onEnd)
+        # Skip inherited dependencies and tasks that are not included in the
+        # chart.
+        if (t.parent &&
+            task.hasDependency?(scenarioIdx, 'startsuccs', t.parent, onEnd)) ||
+           !@tasks.include?(t)
+          next
+        end
         endX, endY = @tasks[t][lineIndex].getTask.send(
           onEnd ? :endDepLineEnd : :startDepLineEnd)
         routeArrow(startX, startY, endX, endY)
@@ -268,9 +272,13 @@ private
       # Generate the dependencies on the end of the task.
       startX, startY = line.getTask.endDepLineStart
       task['endsuccs', scenarioIdx].each do |t, onEnd|
-        # Skip inherited dependencies.
-        next if t.parent &&
-                task.hasDependency?(scenarioIdx, 'endsuccs', t.parent, onEnd)
+        # Skip inherited dependencies and tasks that are not included in the
+        # chart.
+        if (t.parent &&
+            task.hasDependency?(scenarioIdx, 'endsuccs', t.parent, onEnd)) ||
+           !@tasks.include?(t)
+          next
+        end
         endX, endY = @tasks[t][lineIndex].getTask.send(
           onEnd ? :endDepLineEnd : :startDepLineEnd)
         routeArrow(startX, startY, endX, endY)

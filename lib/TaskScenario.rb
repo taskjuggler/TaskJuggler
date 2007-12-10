@@ -840,7 +840,7 @@ class TaskScenario < ScenarioData
     if @project.scenario(@scenarioIdx).get('projection') &&
        date < @project['now'] &&
        (@project.scenario(@scenarioIdx).get('strict') ||
-        a('bookedresources').empty?)
+        a('assignedresources').empty?)
       return
     end
 

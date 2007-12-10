@@ -38,6 +38,7 @@ class TaskJuggler
         @project = parser.parse('project')
         master = false
       else
+        parser.setGlobalMacros
         parser.parse('properties')
       end
       parser.close

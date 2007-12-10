@@ -78,6 +78,18 @@ class ProjectFileParser < TextParser
     @scanner.returnToken(token)
   end
 
+  # A set of standard marcros is defined in all files as soon as the project
+  # header has been read. Calling this functions gets the values from @project
+  # and inserts the Macro objects into the TextScanner.
+  def setGlobalMacros
+    @scanner.addMacro(Macro.new('projectstart', @project['start'].to_s,
+                                @scanner.sourceFileInfo))
+    @scanner.addMacro(Macro.new('projectend', @project['end'].to_s,
+                                @scanner.sourceFileInfo))
+    @scanner.addMacro(Macro.new('now', @project['now'].to_s,
+                                @scanner.sourceFileInfo))
+  end
+
 private
 
   # Utility function that convers English weekday names into their index

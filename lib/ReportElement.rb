@@ -103,7 +103,7 @@ class ReportElement
   # @taskRoot. In case resource is not nil, a task is only included if
   # the resource is allocated to it in any of the reported scenarios.
   def filterTaskList(list_, resource, hideExpr, rollupExpr)
-    list = list_.clone
+    list = list_.dup
     if @taskRoot
       # Remove all tasks that are not descendents of the @taskRoot.
       list.delete_if { |task| !task.isChildOf?(@taskRoot) }
@@ -141,8 +141,6 @@ class ReportElement
     end
 
     standardFilterOps(list, hideExpr, rollupExpr, resource)
-
-    list
   end
 
   # Take the complete resource list and remove all resources that are matching
@@ -150,7 +148,7 @@ class ReportElement
   # @resourceRoot. In case task is not nil, a resource is only included if
   # it is assigned to the task in any of the reported scenarios.
   def filterResourceList(list_, task, hideExpr, rollupExpr)
-    list = list_.clone
+    list = list_.dup
     if @resourceRoot
       # Remove all resources that are not descendents of the @resourceRoot.
       list.delete_if { |resource| !resource.isChildOf?(@resourceRoot) }
@@ -173,8 +171,6 @@ class ReportElement
     end
 
     standardFilterOps(list, hideExpr, rollupExpr, task)
-
-    list
   end
 
   # This is the default attribute value to text converter. It is used
@@ -333,23 +329,32 @@ private
     if rollupExpr
       list.delete_if do |property|
         parent = property.parent
+        delete = true
         while (parent)
-          return true if rollupExpr.eval(parent, scopeProperty)
+          if rollupExpr.eval(parent, scopeProperty)
+            delete = false
+            break
+          end
           parent = parent.parent
         end
-        false
+        delete
       end
     end
 
     # Re-add parents in tree mode
     if list.treeMode?
+      parents = []
       list.each do |property|
         parent = property
         while (parent = parent.parent)
-          list << parent unless list.include?(parent)
+          parents << parent unless list.include?(parent) ||
+                                   parents.include?(parent)
         end
       end
+      list.append(parents)
     end
+
+    list
   end
 
   # This function converts number to strings that may include a unit. The

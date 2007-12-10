@@ -78,7 +78,7 @@ class Project
       'end' => nil,
       'flags' => [],
       'loadunit' => :shortauto,
-      'now' => TjTime.now,
+      'now' => TjTime.now.align(3600),
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
       'priority' => 500,
       'rate' => 0.0,
@@ -165,7 +165,6 @@ class Project
       # ID           Name            Type               Inher. Scen.  Default
       [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
       [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
-      [ 'bookedresources', 'Booked Resources', ResourceListAttribute, false, true, [] ],
       [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
       [ 'charge',    'Charges',      ChargeListAttribute, false, true, [] ],
       [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute, true, true, [] ],

@@ -24,7 +24,7 @@ task t1 "Task 1" {
 	booking tux1 2007-04-24 +10h,
 					    2007-04-25 +10h { sloppy 1 }
   booking tux1 2007-04-27 +10h { overtime 2 }
-	${Fixend "2007-05-09-17:00"}
+	${Fixend "2007-05-08-18:00"}
 }
 
 task t2 "Task 2" {
