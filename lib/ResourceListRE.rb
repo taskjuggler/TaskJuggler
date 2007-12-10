@@ -47,14 +47,14 @@ class ResourceListRE < ReportTableElement
 
     # Prepare the resource list.
     resourceList = PropertyList.new(@project.resources)
+    resourceList.setSorting(@sortResources)
     resourceList = filterResourceList(resourceList, nil, @hideResource,
                                       @rollupResource)
-    resourceList.setSorting(@sortResources)
 
     # Prepare the task list.
     taskList = PropertyList.new(@project.tasks)
-    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
     taskList.setSorting(@sortTasks)
+    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
 
     # Generate the list.
     generateResourceList(resourceList, taskList, nil)

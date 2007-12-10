@@ -44,6 +44,13 @@ class PropertyList < Array
     @scenarioIdx = []
   end
 
+  # Append another Array of Tasks or a PropertyList to this. The list will be
+  # sorted again.
+  def append(list)
+    concat(list)
+    self.sort!
+  end
+
   # Append a new sorting level to the existing levels.
   def addSortingCriteria(criteria, up, scIdx)
     unless @propertySet.knownAttribute?(criteria)

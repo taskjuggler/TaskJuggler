@@ -50,6 +50,10 @@ have the minimum required version installed.
 [*RubyGems*] If it did not come with your OS or Ruby package, see
 	     here[http://docs.rubygems.org] how to get and install it.
 
+[*Rake*] Rake[http://rake.rubyforge.org] is only needed when you
+	 start with the source code from the Git repository. It's not
+	 needed when you already have a Gem package.
+
 [*TaskJuggler*] Get TaskJuggler III from the
                 {Download Page}[http://www.taskjuggler.org/download.php]
 
@@ -62,7 +66,7 @@ package first.
 
 To install the Gem package, just run as root the following command.
 
-<tt>gem install taskjuggler3-X.X.X.gem</tt> 
+<tt>gem install pkg/taskjuggler3-X.X.X.gem</tt> 
 
 It will install all components of the Gem in the appropriate place.
 
@@ -70,7 +74,7 @@ It will install all components of the Gem in the appropriate place.
 
 Updates work just like the installation.
 
-<tt>gem update taskjuggler3-X.X.X.gem</tt>
+<tt>gem update pkg/taskjuggler3-X.X.X.gem</tt>
 
 = Using TaskJuggler III
 

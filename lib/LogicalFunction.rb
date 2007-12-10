@@ -26,7 +26,9 @@ class LogicalFunction < LogicalOperation
     # A map with the names of the supported functions and the number of
     # arguments they require.
     @@functions = {
-      'isLeaf' => 0
+      'isdutyof' => 2,
+      'isleaf' => 0,
+      'isresource' => 1
     }
   end
 
@@ -50,12 +52,8 @@ class LogicalFunction < LogicalOperation
   # Evaluate the function by calling it with the arguments.
   def eval(expr)
     args = []
-    # Evaluate all arguments. They can be LogicalOperation objects.
-    @arguments.each do |arg|
-      args << arg.eval(expr)
-    end
     # Call the function and return the result.
-    send(@name, expr, args)
+    send(@name, expr, @arguments)
   end
 
   # Return a textual expression of the function call.
@@ -65,8 +63,24 @@ class LogicalFunction < LogicalOperation
 
 private
 
-  def isLeaf(expr, args)
+  def isdutyof(expr, args)
+    # The result can only be true when called for a Task property.
+    return false unless expr.property.is_a?(Task)
+    project = expr.property.project
+    # 1st arg must be a resource ID.
+    return false if (resource = project.resource(args[0])).nil?
+    # 2nd arg must be a scenario index.
+    return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
+
+    expr.property['assignedresources', scenarioIdx].include?(resource)
+  end
+
+  def isleaf(expr, args)
     expr.property.leaf?
+  end
+
+  def isresource(expr, args)
+    expr.property.is_a?(Resource) && expr.property.fullId == args[0]
   end
 
 end

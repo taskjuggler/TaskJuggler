@@ -203,9 +203,9 @@ protected
         # If we have a resourceList we generate nested lines for each of the
         # resources that are assigned to this task and pass the user-defined
         # filter.
+        resourceList.setSorting(@sortResources)
         assignedResourceList = filterResourceList(resourceList, task,
             @hideResource, @hideTask)
-        assignedResourceList.setSorting(@sortResources)
         lineNo = generateResourceList(assignedResourceList, nil, line)
       end
     end
@@ -245,9 +245,9 @@ protected
         # If we have a taskList we generate nested lines for each of the
         # tasks that the resource is assigned to and pass the user-defined
         # filter.
+        taskList.setSorting(@sortTasks)
         assignedTaskList = filterTaskList(taskList, resource,
             @hideTask, @hideResource)
-        assignedTaskList.setSorting(@sortTasks)
         lineNo = generateTaskList(assignedTaskList, nil, line)
       end
     end

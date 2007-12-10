@@ -41,16 +41,16 @@ class TaskListRE < ReportTableElement
   def generateIntermediateFormat
     # Prepare the task list.
     taskList = PropertyList.new(@project.tasks)
-    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
     taskList.setSorting(@sortTasks)
+    taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
 
     adjustReportPeriod(taskList, @scenarios) unless @userDefinedPeriod
 
     # Prepare the resource list.
     resourceList = PropertyList.new(@project.resources)
+    resourceList.setSorting(@sortResources)
     resourceList = filterResourceList(resourceList, nil, @hideResource,
         @rollupResource)
-    resourceList.setSorting(@sortResources)
 
     # Generate the table header.
     @columns.each do |columnDescr|

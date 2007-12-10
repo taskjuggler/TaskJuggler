@@ -43,6 +43,11 @@ class TjTime
     TjTime.new(Time.local(*args).gmtime)
   end
 
+  # Align the date to a time grid. The grid distance is determined by _clock_.
+  def align(clock)
+    TjTime.new((@time.to_i / clock) * clock)
+  end
+
   # Returns the total number of seconds of the day. The time is assumed to be
   # in the time zone specified by _tz_.
   def secondsOfDay(tz = nil)

@@ -7,8 +7,6 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-# $Id$
-#
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 

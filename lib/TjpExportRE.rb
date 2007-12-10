@@ -47,13 +47,13 @@ class TjpExportRE < ReportElement
   def to_tjp
     # Prepare the resource list.
     @resourceList = PropertyList.new(@project.resources)
+    @resourceList.setSorting(@sortResources)
     @resourceList = filterResourceList(@resourceList, nil, @hideResource,
         @rollupResource)
-    @resourceList.setSorting(@sortResources)
     # Prepare the task list.
     @taskList = PropertyList.new(@project.tasks)
-    @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
     @taskList.setSorting(@sortTasks)
+    @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
 
     getBookings
 

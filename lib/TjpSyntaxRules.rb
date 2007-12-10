@@ -225,6 +225,15 @@ EOT
     })
   end
 
+  def rule_argument
+    pattern(%w( $ID ), lambda {
+      @val[0]
+    })
+    pattern(%w( $DATE ), lambda {
+      @val[0]
+    })
+  end
+
   def rule_argumentList
     optional
     pattern(%w( _( !argumentListBody _) ), lambda {
@@ -234,8 +243,8 @@ EOT
 
   def rule_argumentListBody
     optional
-    pattern(%w( !operation !moreArguments ), lambda {
-      [ @val[0] ] + @val[1].nil? ? [] : @val[1]
+    pattern(%w( !argument !moreArguments ), lambda {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -789,6 +798,13 @@ EOT
     # This rule is not used by the parser. It's only for the documentation.
     pattern(['_isLeaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
+
+    pattern(['_isresource', '_(', '$ID', '_)' ])
+    doc('isresource', <<'EOT'
+The result is true if the property is a resource with the specified ID.
+EOT
+       )
+    arg(2, 'ID', 'A resource ID')
   end
 
   def rule_hideresource
@@ -1169,7 +1185,7 @@ EOT
   end
 
   def rule_moreArguments
-    commaListRule('!operation')
+    commaListRule('!argument')
   end
 
   def rule_moreChargeSetItems
@@ -1499,13 +1515,8 @@ EOT
     pattern(%w( _project $ID $STRING $STRING !interval ), lambda {
       @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
       @project['start'] = @val[4].start
-      @scanner.addMacro(Macro.new('projectstart', @project['start'].to_s,
-                                  @scanner.sourceFileInfo))
       @project['end'] = @val[4].end
-      @scanner.addMacro(Macro.new('projectend', @project['end'].to_s,
-                                  @scanner.sourceFileInfo))
-      @scanner.addMacro(Macro.new('now', TjTime.now.to_s,
-                                  @scanner.sourceFileInfo))
+      setGlobalMacros
       @property = nil
       @project
     })
