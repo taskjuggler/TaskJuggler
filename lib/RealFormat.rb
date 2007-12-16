@@ -44,6 +44,9 @@ class RealFormat
     if @fractionDigits > 0
       fracPart = ((number - number.to_i) *
                   (10 ** @fractionDigits)).round.to_i.to_s
+      # Due to the rounding, the result can have one more digit than we want.
+      # Chop it off.
+      fracPart.chop! if fracPart.length > @fractionDigits
       # Prepend zeros if needed.
       if fracPart.length < @fractionDigits
         fracPart = '0' * (@fractionDigits - fracPart.length) + fracPart

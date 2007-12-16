@@ -278,7 +278,7 @@ htmltaskreport "TaskUsage.html" {
           duration, chart { scale day }
   timeformat "%Y-%m-%d"
   loadunit days
-  hideresource ~isLeaf()
+  hideresource ~isleaf()
   sortresources name.up
 }
 
@@ -299,7 +299,7 @@ htmlresourcereport "ResourceGraph.html" {
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly #, utilization, freeload, chart
   loadunit days
-  hidetask ~isLeaf()
+  hidetask ~isleaf()
   sorttasks plan.start.up
 }
 
@@ -309,7 +309,7 @@ htmlresourcereport "ResourceSheet.html" {
   headline "Resource Sheet"
   columns no, name, id, effort, weekly, rate, cost
   loadunit days
-  hidetask ~isLeaf()
+  hidetask ~isleaf()
   sorttasks plan.start.up
   balance cost rev
 }
@@ -320,7 +320,7 @@ htmlresourcereport "ResourceUsage.html" {
   columns no, name, chart { scale day } #, utilization, freeload, cost, chart
   loadunit days
   sorttasks plan.start.up
-  hidetask ~isLeaf()
+  hidetask ~isleaf()
   end 2002-02-10
 }
 

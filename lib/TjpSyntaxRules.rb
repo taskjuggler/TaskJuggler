@@ -796,7 +796,7 @@ EOT
 
   def rule_functionPatterns
     # This rule is not used by the parser. It's only for the documentation.
-    pattern(['_isLeaf', '_(', '_)' ])
+    pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
 
     pattern(['_isresource', '_(', '$ID', '_)' ])

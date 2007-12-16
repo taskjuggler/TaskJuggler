@@ -21,7 +21,8 @@ require 'LogicalExpression'
 class ReportElement
 
   attr_reader :start, :end, :userDefinedPeriod
-  attr_accessor :caption, :costAccount, :epilog, :headline, :columns,
+  attr_accessor :caption, :costAccount, :currencyFormat,
+                :epilog, :headline, :columns,
                 :scenarios, :taskRoot, :resourceRoot,
                 :timeFormat, :loadUnit, :now, :numberFormat, :weekStartsMonday,
                 :hideTask, :prolog, :revenueAccount,
@@ -39,7 +40,7 @@ class ReportElement
     @caption = nil
     @columns = []
     @costAccount = @report.costAccount
-    @currencyformat = @report.currencyformat
+    @currencyFormat = @report.currencyformat
     @end = @report.end
     @epilog = nil
     @ganttBars = true
@@ -75,7 +76,7 @@ class ReportElement
       'line'        => [ 'Line No.',   false,  :right, true,   false ],
       'name'        => [ 'Name',       true,   :left,  false,  false ],
       'no'          => [ 'No.',        false,  :right, true,   false ],
-      'rate'        => [ 'Rate',       false,  :right, true,   true ],
+      'rate'        => [ 'Rate',       true,   :right, true,   true ],
       'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
       'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
     }
@@ -296,6 +297,7 @@ protected
   # Convert a duration to the format specified by @loadUnit.  _work_ is the
   # effort in man days. The return value is the converted value with optional
   # unit as a String.
+  # TODO: Delete when all users have been migrated to use Query!
   def scaleDuration(value)
     scaleValue(value, [ 24 * 60, 24, 1, 1 / 7, 1 / 30.42, 1 / 365 ])
   end
@@ -303,6 +305,7 @@ protected
   # Convert a load or effort value to the format specified by @loadUnit.
   # _work_ is the effort in man days. The return value is the converted value
   # with optional unit as a String.
+  # TODO: Delete when all users have been migrated to use Query!
   def scaleLoad(value)
     project = @report.project
     scaleValue(value, [ project.dailyWorkingHours * 60,
@@ -362,6 +365,7 @@ private
   # possible result is shown and the unit is always appended. _value_ is the
   # value to convert. _factors_ determines the conversion factors for the
   # different units.
+  # TODO: Delete when all users have been migrated to use Query!
   def scaleValue(value, factors)
     if @loadUnit == :shortauto || @loadUnit == :longauto
       # We try all possible units and store the resulting strings here.

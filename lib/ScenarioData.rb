@@ -51,4 +51,8 @@ class ScenarioData
     @project.sendMessage(message)
   end
 
+  def query_id(query)
+    query.result = query.sortableResult = @property.fullId
+  end
+
 end

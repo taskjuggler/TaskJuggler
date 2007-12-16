@@ -49,6 +49,8 @@ class PropertyTreeNode
     0.upto(@project.scenarioCount - 1) do |i|
       @scenarioAttributes[i] = Hash.new
     end
+    # Scenario specific data
+    @data = nil
   end
 
   def inheritAttributes
@@ -293,6 +295,18 @@ class PropertyTreeNode
     end
   end
 
+  # This function returns true if the PropertyTreeNode has a query function
+  # for the given ID _queryId_. In case a _scenarioIdx_ is specified, the
+  # query function must be scenario specific.
+  def hasQuery?(queryId, scenarioIdx = nil)
+    methodName = 'query_' + queryId
+    if scenarioIdx
+      @data[scenarioIdx].respond_to?(methodName)
+    else
+      respond_to?(methodName)
+    end
+  end
+
   def provided(attributeId, scenarioIdx = nil)
     if scenarioIdx
       return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
@@ -338,6 +352,14 @@ class PropertyTreeNode
       end
     end
     res += '-' * 75 + "\n"
+  end
+
+  # Many PropertyTreeNode functions are scenario specific. These functions are
+  # provided by the class *Scenario classes. In case we can't find a function
+  # called for the base class we try to find it in corresponding *Scenario
+  # class.
+  def method_missing(func, scenarioIdx, *args)
+    @data[scenarioIdx].method(func).call(*args)
   end
 
 private

@@ -11,6 +11,7 @@
 require 'GanttChart'
 require 'ReportTableLegend'
 require 'ColumnTable'
+require 'Query'
 
 # This is base class for all types of tabular report elements. All tabular
 # report elements are converted to an abstract (output independent)
@@ -458,57 +459,25 @@ private
 
     scopeProperty = line.scopeLine ? line.scopeLine.property : nil
 
+    query = Query.new('property' => property, 'scopeProperty' => scopeProperty,
+                      'attributeId' => columnDef.id,
+                      'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
+                      'numberFormat' => @numberFormat,
+                      'currencyFormat' => @currencyFormat,
+                      'start' => @start, 'end' => @end,
+                      'costAccount' => @costAccount,
+                      'revenueAccount' => @revenueAccount)
+    query.process
+    cell.text = query.result
+
+    # Some columns need some extra care.
     case columnDef.id
-    when 'complete'
-      if property.is_a?(Task) && property.leaf?
-        cell.text = "#{property['complete', scenarioIdx].to_i}%"
-      end
-    when 'cost'
-      if @costAccount
-        if property.is_a?(Task) || property.is_a?(Resource)
-          cell.text = @report.currencyformat.format(
-            property.turnover(scenarioIdx, startIdx, endIdx, @costAccount,
-                              scopeProperty))
-        end
-      else
-        cell.text = 'No cost account'
-      end
-    when 'duration'
-      # The duration of the task. After scheduling, it can be determined for
-      # all tasks. Also for those who did not have a 'duration' attribute.
-      if property.is_a?(Task)
-        cell.text = scaleLoad(property.duration(scenarioIdx))
-      end
-    when 'effort'
-      # The total effort for the task or resource.
-      workLoad = property.getEffectiveWork(scenarioIdx, startIdx, endIdx,
-                                           scopeProperty)
-      cell.text = scaleLoad(workLoad)
-    when 'id'
-      cell.text = property.fullId
     when 'line'
       cell.text = line.lineNo.to_s
     when 'no'
       cell.text = line.no.to_s
-    when 'rate'
-      if property.is_a?(Resource) && property.leaf?
-        cell.text = @currencyformat.format(property['rate', scenarioIdx])
-      end
-    when 'revenue'
-      if @revenueAccount
-        if property.is_a?(Task) || property.is_a?(Resource)
-          cell.text = @report.currencyformat.format(
-            property.turnover(scenarioIdx, startIdx, endIdx, @revenueAccount,
-                              scopeProperty))
-        end
-      else
-        cell.text = 'No revenue account'
-      end
     when 'wbs'
-      cell.text = property.get('wbs')
       cell.indent = 2 if line.scopeLine
-    else
-      raise "Unsupported column #{columnDef.id}"
     end
   end
 
