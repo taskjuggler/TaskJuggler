@@ -22,7 +22,7 @@
 class TextParserRule
 
   attr_reader :name, :patterns, :optional, :repeatable, :keyword, :doc
-  attr_accessor :transitions
+  attr_accessor :transitions, :transitiveOptional
 
   def initialize(name)
     @name = name
@@ -30,6 +30,9 @@ class TextParserRule
     @repeatable = false
     @optional = false
     @transitions = []
+    # In case a rule is optional or any of the patterns is fully optional,
+    # this variable is set to true.
+    @transitiveOptional = nil
     @keyword = nil
     @doc = nil
   end

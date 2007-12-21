@@ -37,6 +37,9 @@ class TextScanner
       @charBuffer = []
     end
 
+    def dirname
+      File.dirname(@fileName)
+    end
   end
 
   def initialize(masterFile, messageHandler)
@@ -65,6 +68,12 @@ class TextScanner
 
   def include(fileName)
     begin
+      if fileName[0] != '/'
+        # If the included file is not an absolute name, we interpret the file
+        # name relative to the including file.
+        fileName = @fileStack.last.dirname + '/' + fileName
+      end
+
       @fileStack << (@cf = FileRecord.new(fileName))
     rescue StandardError
       error('bad_include', "Cannot open include file #{fileName}")

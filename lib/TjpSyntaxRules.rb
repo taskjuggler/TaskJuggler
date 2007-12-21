@@ -470,12 +470,15 @@ EOT
 
   def rule_csvFileName
     pattern(%w( $STRING ), lambda {
-      unless @val[0][-4,4] == '.csv'
-        error('no_csv_suffix',
+      # '.' means stdout
+      unless @val[0] == '.'
+        unless @val[0][-4,4] == '.csv'
+          error('no_csv_suffix',
               "Report name must have .csv suffix: #{@val[0]}")
+        end
+        # Strip '.csv' suffix from file name
+        name = @val[0][0..-5]
       end
-      # Strip '.csv' suffix from file name
-      name = @val[0][0..-5]
       if @project.reports[name]
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
@@ -576,23 +579,33 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export $STRING ), lambda {
-      extension = @val[1][-4, 4]
-      if extension == '.tjp'
+      if @val[1] == '.'
         mainFile = true
-      elsif extension == '.tji'
-        mainFile = false
+        name = '.'
       else
-        error('export_bad_extn',
+        extension = @val[1][-4, 4]
+        if extension == '.tjp'
+          mainFile = true
+        elsif extension == '.tji'
+          mainFile = false
+        else
+          error('export_bad_extn',
               'Export report files must have a .tjp or .tji extension.')
+        end
+        # File name without extension.
+        name = @val[1][0..-5]
       end
-      # File name without extension.
-      name = @val[1][0..-5]
+
+      if @project.reports[name]
+        error('report_redefinition',
+              "A report with the name #{name} has already been defined.")
+      end
       @report = Report.new(@project, name, :export, sourceFileInfo)
       @reportElement = TjpExportRE.new(@report, mainFile)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
-extension.
+extension, or use . to use the standard output channel.
 EOT
        )
   end
@@ -1337,10 +1350,9 @@ EOT
   end
 
   def rule_project
-    pattern(%w( !projectDeclaration !properties ), lambda {
-      @val[0]
+    pattern(%w( !projectProlog !projectDeclaration !properties ), lambda {
+      @val[1]
     })
-    pattern(%w( !macro ))
   end
 
   def rule_projectBody
@@ -1554,6 +1566,13 @@ In strict mode all tasks will be filled starting with the current date. No
 bookings will be added prior to the current date.
 EOT
        )
+  end
+
+  def rule_projectProlog
+    optional
+    repeatable
+    pattern(%w( !include ))
+    pattern(%w( !macro ))
   end
 
   def rule_projectProperties

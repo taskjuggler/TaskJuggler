@@ -183,45 +183,55 @@ private
   # the rule. For each rule pattern we store the transitions for this
   # pattern in a token -> rule hash.
   def getTransitions(rule)
-    transitions = []
     # If we have processed this rule before we can just return a copy
     # of the transitions of this rule. This avoids endless recursions.
     return rule.transitions.clone unless rule.transitions.empty?
 
+    rule.transitions = []
+    rule.transitiveOptional = rule.optional
     rule.patterns.each do |pat|
-      next if pat.empty?
-      token = pat[0].slice(1, pat[0].length - 1)
-      if pat[0][0] == ?!
-        result = { }
-        unless @rules.has_key?(token)
-          raise "Fatal Error: Unknown reference to #{token} in pattern " +
+      allTokensOptional = true
+      transitions = { }
+      pat.each do |token|
+        tokenId = token.slice(1, token.length - 1)
+        if token[0] == ?!
+          unless @rules.has_key?(tokenId)
+            raise "Fatal Error: Unknown reference to #{tokenId} in pattern " +
                 "#{pat} + of rule #{rule.name}"
+          end
+          refRule = @rules[tokenId]
+          # If the referenced rule describes optional content, we need to look
+          # at the next token as well.
+          res = getTransitions(@rules[tokenId])
+          allTokensOptional = false unless refRule.transitiveOptional
+          # Combine the hashes for each pattern into a single hash
+          res.each do |pat|
+            pat.each { |tok, r| transitions[tok] = r }
+          end
+          optional = true if refRule.optional
+        elsif token[0] == ?_ || token[0] == ?$
+          transitions[token] = rule
+          allTokensOptional = false
+        else
+          raise 'Fatal Error: Illegal token type specifier used for token' +
+                ": #{tokenId}"
         end
-        res = getTransitions(@rules[token])
-        # Combine the hashes for each pattern into a single hash
-        res.each do |pat|
-          pat.each { |tok, r| result[tok] = r }
-        end
-      elsif pat[0][0] == ?_ || pat[0][0] == ?$
-        result = { pat[0] => rule }
-      else
-        raise "Fatel Error: Illegal token type specifier used for token" +
-	      ": #{token}"
+        break unless allTokensOptional
       end
       # Make sure that we only have one possible transition for each
       # target.
-      result.each do |key, value|
-        transitions.each do |trans|
+      transitions.each do |key, value|
+        rule.transitions.each do |trans|
           if trans.has_key?(key)
-	    raise "Fatal Error: Rule #{rule.name} has ambigeous transitions " +
-	          "for target #{key}"
-	  end
-	end
+            raise "Fatal Error: Rule #{rule.name} has ambigeous " +
+                  "transitions for target #{key}"
+          end
+        end
       end
-      transitions << result
+      rule.transitions << transitions
+      rule.transitiveOptional = true if allTokensOptional
     end
-    # Store the list of found transitions with the rule.
-    rule.transitions = transitions.clone
+    rule.transitions.clone
   end
 
   def checkRule(rule)
@@ -255,7 +265,7 @@ private
     $stderr.puts "Parsing with rule #{rule.name}" if @@debug >= 10
     result = rule.repeatable ? TextParserResultArray.new : nil
     # Rules can be marked 'repeatable'. This flag will be set to true after
-    # the first iternation has been completed.
+    # the first iteration has been completed.
     repeatMode = false
     loop do
       # At the beginning of a rule we need a token from the input to determine
