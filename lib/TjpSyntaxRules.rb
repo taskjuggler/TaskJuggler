@@ -470,8 +470,10 @@ EOT
 
   def rule_csvFileName
     pattern(%w( $STRING ), lambda {
-      # '.' means stdout
-      unless @val[0] == '.'
+      # '.' means 'use $stdout'
+      if @val[0] == '.'
+        name = '.'
+      else
         unless @val[0][-4,4] == '.csv'
           error('no_csv_suffix',
               "Report name must have .csv suffix: #{@val[0]}")
@@ -2471,7 +2473,7 @@ EOT
       case args.length
       when 2
         scenario = -1
-        direction = args[1]
+        direction = args[1] == 'up'
         attribute = args[0]
       when 3
         if (scenario = @project.scenarioIdx(args[0])).nil?

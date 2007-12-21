@@ -1,0 +1,9 @@
+include "project-1.tji"
+
+csvtaskreport "." {
+  columns start, wbs, id
+  timeformat "%Y-%m-%d-%H:%M:%S"
+  sorttasks plan.start.down, id.up
+}
+
+

@@ -1,4 +1,4 @@
-project test "Test" "1.0" 2007-12-16 +2m
+project test "Test" "1.0" 2007-12-16 +3m
 
 resource jill "Jill"
 resource joe "Joe"
@@ -6,13 +6,50 @@ resource jack "Jack"
 
 task plan "Plan Work" {
   start ${projectstart}
-  effort 2w
-  allocate joe
+  task plan_a "Plan A" {
+    effort 2w
+    allocate joe
+  }
+  task plan_b "Plan B" {
+    effort 1.5w
+    allocate jill
+  }
+  task plan_c "Plan C" {
+    depends !plan_a
+    allocate jill
+    effort 1w
+  }
 }
 task execute "Execute Work" {
   depends !plan
-  allocate jill
-  effort 4w
+  task ex1 "Step 1" {
+    allocate jill
+    effort 4w
+  }
+  task ex2 "Step 2" {
+    task ex2_1 "Step 2.1" {
+      allocate joe
+      effort 2d
+    }
+    task ex2_2 "Step 2.2" {
+      depends !!ex1
+      effort 2w
+      allocate jack, jill
+    }
+  }
+  task ms1 "Milestone 1" {
+    depends !ex2
+  }
+  task ex3 "Step 3" {
+    depends execute.ex2.ex2_1
+    effort 12d
+    allocate jack
+  }
+  task ex4 "Step 4" {
+    depends !ex1
+    effort 2d
+    allocate joe, jack
+  }
 }
 task check "Check Work" {
   depends !execute

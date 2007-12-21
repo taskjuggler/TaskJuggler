@@ -115,7 +115,12 @@ class PropertyList < Array
 
   # Turn the list into a String. This is only used for debugging.
   def to_s
-    res = ""
+    res = "Sorting: "
+    0.upto(@sortingLevels - 1) do |i|
+      res += "#{@sortingCriteria[i]}/#{@sortingUp[i] ? 'up' : 'down'}/" +
+             "#{@scenarioIdx[i]}, "
+    end
+    res += "\n"
     each { |i| res += "#{i.get('id')}: #{i.get('name')}\n" }
     res
   end

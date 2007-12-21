@@ -236,7 +236,9 @@ EOT
       end
     end
 
-    file = name == '.' ? STDOUT : File.open(@name + '.csv', 'w')
+    # Use the CSV class to write the Array of Arrays to a colon separated
+    # file. Write to $stdout if the filename was set to '.'.
+    file = @name == '.' ? $stdout: File.open(@name + '.csv', 'w')
     CSV::Writer.generate(file, ';') do |csvWriter|
       csv.each { |line| csvWriter << line }
     end
@@ -245,7 +247,7 @@ EOT
 
   # Generate an export report
   def generateExport
-    f = @name == '.' ? STDOUT : File.new(@name + '.tjp', 'w')
+    f = @name == '.' ? $stdout : File.new(@name + '.tjp', 'w')
     f.puts "#{@elements[0].to_tjp}"
   end
 

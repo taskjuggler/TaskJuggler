@@ -1,0 +1,14 @@
+WBS;Name;Id;Duration
+1;Plan Work;plan;3.1w
+1.1;  Plan A;plan.plan_a;2.3w
+1.2;  Plan B;plan.plan_b;9.2d
+1.3;  Plan C;plan.plan_c;4.4d
+2;Execute Work;execute;7.0w
+2.1;  Step 1;execute.ex1;5.1w
+2.2;  Step 2;execute.ex2;7.0w
+2.2.1;    Step 2.1;execute.ex2.ex2_1;1.4d
+2.2.2;    Step 2.2;execute.ex2.ex2_2;4.4d
+2.3;  Milestone 1;execute.ms1;0.0d
+2.4;  Step 3;execute.ex3;3.1w
+2.5;  Step 4;execute.ex4;1.4d
+3;Check Work;check;4.4d
