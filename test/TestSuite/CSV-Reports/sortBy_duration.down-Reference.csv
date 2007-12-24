@@ -1,0 +1,14 @@
+Duration;Id
+7.0w;execute.ex2
+7.0w;execute
+5.1w;execute.ex1
+3.1w;plan
+3.1w;execute.ex3
+2.3w;plan.plan_a
+9.2d;plan.plan_b
+4.4d;check
+4.4d;execute.ex2.ex2_2
+4.4d;plan.plan_c
+1.4d;execute.ex2.ex2_1
+1.4d;execute.ex4
+0.0d;execute.ms1

@@ -978,8 +978,8 @@ class TaskScenario < ScenarioData
   # The duration of the task. After scheduling, it can be determined for
   # all tasks. Also for those who did not have a 'duration' attribute.
   def query_duration(query)
-    query.sortableResult = query.result =
-      query.scaleLoad((a('end') - a('start')) / (60 * 60 * 24))
+    query.sortableResult = (a('end') - a('start')) / (60 * 60 * 24)
+    query.result = query.scaleLoad(query.sortableResult)
   end
 
   # The effort allocated for the task in the specified interval. In case a
