@@ -104,7 +104,7 @@ class ReportElement
   # @taskRoot. In case resource is not nil, a task is only included if
   # the resource is allocated to it in any of the reported scenarios.
   def filterTaskList(list_, resource, hideExpr, rollupExpr)
-    list = list_.dup
+    list = PropertyList.new(list_)
     if @taskRoot
       # Remove all tasks that are not descendents of the @taskRoot.
       list.delete_if { |task| !task.isChildOf?(@taskRoot) }
@@ -149,7 +149,7 @@ class ReportElement
   # @resourceRoot. In case task is not nil, a resource is only included if
   # it is assigned to the task in any of the reported scenarios.
   def filterResourceList(list_, task, hideExpr, rollupExpr)
-    list = list_.dup
+    list = PropertyList.new(list_)
     if @resourceRoot
       # Remove all resources that are not descendents of the @resourceRoot.
       list.delete_if { |resource| !resource.isChildOf?(@resourceRoot) }

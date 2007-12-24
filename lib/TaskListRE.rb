@@ -43,6 +43,7 @@ class TaskListRE < ReportTableElement
     taskList = PropertyList.new(@project.tasks)
     taskList.setSorting(@sortTasks)
     taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
+    taskList.sort!
 
     adjustReportPeriod(taskList, @scenarios) unless @userDefinedPeriod
 
@@ -51,6 +52,7 @@ class TaskListRE < ReportTableElement
     resourceList.setSorting(@sortResources)
     resourceList = filterResourceList(resourceList, nil, @hideResource,
         @rollupResource)
+    resourceList.sort!
 
     # Generate the table header.
     @columns.each do |columnDescr|

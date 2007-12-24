@@ -27,11 +27,11 @@ require 'TjException'
 # error message.
 class Query
 
-  attr_reader :project, :propertyType, :propertyId, :property,
-              :scopePropertyType, :scopePropertyId, :scopeProperty,
-              :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
-              :numberFormat, :currencyFormat, :costAccount, :revenueAccount
-  attr_accessor :result, :sortableResult, :ok, :errorMessage
+  attr_accessor :project, :propertyType, :propertyId, :property,
+                :scopePropertyType, :scopePropertyId, :scopeProperty,
+                :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
+                :numberFormat, :currencyFormat, :costAccount, :revenueAccount,
+                :result, :sortableResult, :ok, :errorMessage
 
   # Create a new Query object. The _parameters_ need to be sufficent to
   # uniquely identify an attribute.

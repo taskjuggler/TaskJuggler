@@ -176,6 +176,16 @@ protected
   # is defined, the generated task lines will be within the scope this resource
   # line.
   def generateTaskList(taskList, resourceList, scopeLine)
+    queryAttrs = { 'scopeProperty' => scopeLine ? scopeLine.property : nil,
+                   'loadUnit' => @loadUnit,
+                   'numberFormat' => @numberFormat,
+                   'currencyFormat' => @currencyFormat,
+                   'start' => @start, 'end' => @end,
+                   'costAccount' => @costAccount,
+                   'revenueAccount' => @revenueAccount }
+    taskList.query = Query.new(queryAttrs)
+    taskList.sort!
+
     # The primary line counter. Is not used for enclosed lines.
     no = 0
     # The scope line counter. It's reset for each new scope.
@@ -207,6 +217,7 @@ protected
         resourceList.setSorting(@sortResources)
         assignedResourceList = filterResourceList(resourceList, task,
             @hideResource, @hideTask)
+        assignedResourceList.sort!
         lineNo = generateResourceList(assignedResourceList, nil, line)
       end
     end
@@ -218,6 +229,16 @@ protected
   # each task that the resource is assigned to. If _scopeLine_ is defined, the
   # generated resource lines will be within the scope this task line.
   def generateResourceList(resourceList, taskList, scopeLine)
+    queryAttrs = { 'scopeProperty' => scopeLine ? scopeLine.property : nil,
+                   'loadUnit' => @loadUnit,
+                   'numberFormat' => @numberFormat,
+                   'currencyFormat' => @currencyFormat,
+                   'start' => @start, 'end' => @end,
+                   'costAccount' => @costAccount,
+                   'revenueAccount' => @revenueAccount }
+    resourceList.query = Query.new(queryAttrs)
+    resourceList.sort!
+
     # The primary line counter. Is not used for enclosed lines.
     no = 0
     # The scope line counter. It's reset for each new scope.
@@ -249,6 +270,7 @@ protected
         taskList.setSorting(@sortTasks)
         assignedTaskList = filterTaskList(taskList, resource,
             @hideTask, @hideResource)
+        assignedTaskList.sort!
         lineNo = generateTaskList(assignedTaskList, nil, line)
       end
     end

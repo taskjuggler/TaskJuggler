@@ -17,14 +17,35 @@
 # (up/down).
 class PropertyList < Array
 
+  attr_writer :query
+  attr_reader :propertySet, :query, :sortingLevels, :sortingCriteria,
+              :sortingUp, :scenarioIdx
+
   # A PropertyList is always bound to a certain PropertySet. All properties in
   # the list must be of that set.
-  def initialize(propertySet)
-    @propertySet = propertySet
-    super(propertySet.to_ary)
-    resetSorting
-    addSortingCriteria('seqno', true, -1)
-    self.sort!
+  def initialize(arg)
+    super(arg.to_ary)
+    if arg.is_a?(PropertySet)
+      # Create a PropertyList from the given PropertySet.
+      @propertySet = arg
+      # To keep the list sorted, we may have to access Property attributes.
+      # Pre-scheduling, we can only use static attributes. Post-scheduling, we
+      # can include dynamic attributes as well. This query template will be used
+      # to query attributes when it has been set. Otherwise the list can only be
+      # sorted by static attributes.
+      @query = nil
+      resetSorting
+      addSortingCriteria('seqno', true, -1)
+      self.sort!
+    else
+      # Create a PropertyList from a given other PropertyList.
+      @propertySet = arg.propertySet
+      @query = arg.query.dup if arg.query
+      @sortingLevels = arg.sortingLevels
+      @sortingCriteria = arg.sortingCriteria.dup
+      @sortingUp = arg.sortingUp.dup
+      @scenarioIdx = arg.scenarioIdx.dup
+    end
   end
 
   # Set all sorting levels as Array of triplets.
@@ -33,7 +54,6 @@ class PropertyList < Array
     modes.each do |mode|
       addSortingCriteria(*mode)
     end
-    self.sort!
   end
 
   # Clear all sorting levels.
@@ -84,14 +104,32 @@ class PropertyList < Array
     super do |a, b|
       res = 0
       0.upto(@sortingLevels - 1) do |i|
-        # If the scenario index is negative we have a non-scenario-specific
-        # attribute.
-        if @scenarioIdx[i] < 0
-          res = a.get(@sortingCriteria[i]) <=> b.get(@sortingCriteria[i])
+        if @query
+          # In case we have a Query reference, we get the two values with this
+          # query.
+          @query.scenarioIdx = @scenarioIdx[i] < 0 ? nil : @scenarioIdx[i]
+          @query.attributeId = @sortingCriteria[i]
+
+          @query.property = a
+          @query.process
+          aVal = @query.sortableResult
+
+          @query.property = b
+          @query.process
+          bVal = @query.sortableResult
         else
-          res = a[@sortingCriteria[i], @scenarioIdx[i]] <=>
-                b[@sortingCriteria[i], @scenarioIdx[i]]
+          # In case we don't have a query, we use the static mechanism.
+          # If the scenario index is negative we have a non-scenario-specific
+          # attribute.
+          if @scenarioIdx[i] < 0
+            aVal = a.get(@sortingCriteria[i])
+            bVal = b.get(@sortingCriteria[i])
+          else
+            aVal = a[@sortingCriteria[i], @scenarioIdx[i]]
+            bVal = b[@sortingCriteria[i], @scenarioIdx[i]]
+          end
         end
+        res = aVal <=> bVal
         # Invert the result if we have to sort in decreasing order.
         res = -res unless @sortingUp[i]
         # If the two elements are equal on this compare level we try the next

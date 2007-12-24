@@ -551,6 +551,7 @@ protected
     allWorkItems.setSorting([ [ 'priority', false, scIdx ],
                               [ 'pathcriticalness', false, scIdx ],
                               [ 'seqno', true, -1 ] ])
+    allWorkItems.sort!
 
     # The main scheduler loop only needs to look at the tasks that are ready
     # to be scheduled.
