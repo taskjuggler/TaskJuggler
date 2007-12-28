@@ -1,0 +1,10 @@
+include "project-1.tji"
+
+csvtaskreport "." {
+  columns wbs, name, start, end, duration, effort, weekly
+  timeformat "%Y-%m-%d-%H:%M:%S"
+  loadunit days
+  hideresource 0
+}
+
+

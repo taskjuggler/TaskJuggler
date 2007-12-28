@@ -493,13 +493,32 @@ EOT
        )
   end
 
+  def rule_csvResourceReport
+    pattern(%w( !csvResourceReportHeader !reportBody ))
+    doc('csvtaskreport', <<'EOT'
+The report lists all resources and their respective values as colon-separated-value (CSV) file. Due to
+the very simple nature of the CSV format, only a small subset of features will
+be supported for CSV output. Including tasks or listing multiple scenarios
+will result in very difficult to read reports.
+EOT
+       )
+  end
+
+  def rule_csvResourceReportHeader
+    pattern(%w( _csvresourcereport !csvFileName ), lambda {
+      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @reportElement = ResourceListRE.new(@report)
+    })
+  end
+
   def rule_csvTaskReport
     pattern(%w( !csvTaskReportHeader !reportBody ))
     doc('csvtaskreport', <<'EOT'
-The report lists all tasks and their respective values as CSV file. Due to the
-very simple nature of the CSV format, only a small subset of features will be
-supported for CSV output. Including resources or listing multiple scenarios
-will result in very difficult to read reports.
+The report lists all tasks and their respective values as
+colon-separated-value (CSV) file. Due to the very simple nature of the CSV
+format, only a small subset of features will be supported for CSV output.
+Including resources or listing multiple scenarios will result in very
+difficult to read reports.
 EOT
        )
   end
@@ -1998,6 +2017,7 @@ EOT
   end
 
   def rule_reportDefinitions
+    pattern(%w( !csvResourceReport ))
     pattern(%w( !csvTaskReport ))
     pattern(%w( !export ))
     pattern(%w( !htmlResourceReport ))

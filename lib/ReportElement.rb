@@ -294,28 +294,6 @@ protected
     @end += padding
   end
 
-  # Convert a duration to the format specified by @loadUnit.  _work_ is the
-  # effort in man days. The return value is the converted value with optional
-  # unit as a String.
-  # TODO: Delete when all users have been migrated to use Query!
-  def scaleDuration(value)
-    scaleValue(value, [ 24 * 60, 24, 1, 1 / 7, 1 / 30.42, 1 / 365 ])
-  end
-
-  # Convert a load or effort value to the format specified by @loadUnit.
-  # _work_ is the effort in man days. The return value is the converted value
-  # with optional unit as a String.
-  # TODO: Delete when all users have been migrated to use Query!
-  def scaleLoad(value)
-    project = @report.project
-    scaleValue(value, [ project.dailyWorkingHours * 60,
-                        project.dailyWorkingHours,
-                        1,
-                        1 / project.weeklyWorkingDays,
-                        1 / project.monthlyWorkingDays,
-                        1 / project.yearlyWorkingDays ])
-  end
-
 private
 
   # This function implements the generic filtering functionality for all kinds
@@ -332,10 +310,10 @@ private
     if rollupExpr
       list.delete_if do |property|
         parent = property.parent
-        delete = true
+        delete = false
         while (parent)
           if rollupExpr.eval(parent, scopeProperty)
-            delete = false
+            delete = true
             break
           end
           parent = parent.parent

@@ -129,8 +129,9 @@ class ResourceScenario < ScenarioData
   # directly assiciated with the Task is taken into account.
   def query_cost(query)
     if query.costAccount
-      query.sortableResult = turnover(query.startIdx, query.endIdx,
-                                      query.costAccount, query.scopeProperty)
+      query.sortableResult = query.numericalResult =
+        turnover(query.startIdx, query.endIdx, query.costAccount,
+                 query.scopeProperty)
       query.result = query.currencyFormat.format(query.sortableResult)
     else
       query.result = 'No cost account'
@@ -141,14 +142,21 @@ class ResourceScenario < ScenarioData
   # Task is given as scope property only the effort allocated to this Task is
   # taken into account.
   def query_effort(query)
-    query.sortableResult = getEffectiveWork(query.startIdx, query.endIdx,
-                                            query.scopeProperty)
+    query.sortableResult = query.numericalResult =
+      getEffectiveWork(query.startIdx, query.endIdx, query.scopeProperty)
+    query.result = query.scaleLoad(query.sortableResult)
+  end
+
+  # The unallocated effort of the Resource in the specified interval.
+  def query_freework(query)
+    query.sortableResult = query.numericalResult =
+      getEffectiveFreeWork(query.startIdx, query.endIdx)
     query.result = query.scaleLoad(query.sortableResult)
   end
 
   # Get the rate of the resource.
   def query_rate(query)
-    query.sortableResult = rate
+    query.sortableResult = query.numericalResult = rate
     query.result = query.currencyFormat.format(query.sortableResult)
   end
 
@@ -157,8 +165,9 @@ class ResourceScenario < ScenarioData
   # revenue directly associated to this Task is taken into account.
   def query_revenue(query)
     if query.revenueAccount
-      query.sortableResult = turnover(query.startIdx, query.endIdx,
-                                      query.revenueAccount, query.scopeProperty)
+      query.sortableResult = query.numericalResult =
+        turnover(query.startIdx, query.endIdx, query.revenueAccount,
+                 query.scopeProperty)
       query.result = query.currencyFormat.format(query.sortableResult)
     else
       query.result = 'No revenue account'

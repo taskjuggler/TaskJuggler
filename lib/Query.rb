@@ -21,17 +21,18 @@ require 'TjException'
 # computed dynamically and further variables such as a start and end time will
 # be incorporated into the result computation.
 #
-# The result is returned as String and as an entity that can be used for
-# sorting. To get the result, Query#process needs to be called. In case an
-# error occured, Query#ok is set to false and Query#errorMessage contains an
-# error message.
+# The result is returned as String (Query#result), in numerical form
+# (Query#numericalResult) if available as number, and as an entity that can be
+# used for sorting (Query#sortableResult). To get the result, Query#process
+# needs to be called. In case an error occured, Query#ok is set to false and
+# Query#errorMessage contains an error message.
 class Query
 
   attr_accessor :project, :propertyType, :propertyId, :property,
                 :scopePropertyType, :scopePropertyId, :scopeProperty,
                 :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
                 :numberFormat, :currencyFormat, :costAccount, :revenueAccount,
-                :result, :sortableResult, :ok, :errorMessage
+                :result, :numericalResult, :sortableResult, :ok, :errorMessage
 
   # Create a new Query object. The _parameters_ need to be sufficent to
   # uniquely identify an attribute.
@@ -50,6 +51,7 @@ class Query
   # result data.
   def reset
     @result = nil
+    @numericalResult = nil
     @sortableResult = nil
     @ok = nil
     @errorMessage = nil
@@ -91,6 +93,8 @@ class Query
             @property.get(@attributeId)
           end
         @result = @sortableResult.to_s
+        @numericalResult = @result if @result.is_a?(Fixnum) or
+                                      @result.is_a?(Float)
       end
     rescue TjException
       @errorMessage = $!

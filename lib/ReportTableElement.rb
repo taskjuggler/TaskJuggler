@@ -526,6 +526,13 @@ private
                           task['end', scenarioIdx].nil? ?
                           @project['end'] : task['end', scenarioIdx])
 
+    query = Query.new('property' => task, 'scopeProperty' => resource,
+                      'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
+                      'numberFormat' => @numberFormat,
+                      'currencyFormat' => @currencyFormat,
+                      'costAccount' => @costAccount,
+                      'revenueAccount' => @revenueAccount)
+
     firstCell = nil
     while t < @end
       # Create a new cell
@@ -538,15 +545,12 @@ private
       when 'empty'
         # We only generate cells will different background colors.
       when 'load'
-        # Report the effort spent on this task during this interval.
-        startIdx = @project.dateToIdx(t, true)
-        endIdx = @project.dateToIdx(nextT, true) - 1
-        workLoad = task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
-                                         resource)
+        query.attributeId = 'effort'
+        query.startIdx = t
+        query.endIdx = nextT
+        query.process
         # To increase readability, we don't show 0.0 values.
-        if workLoad > 0.0
-          cell.text = scaleLoad(workLoad)
-        end
+        cell.text = query.result if query.result != '0.0'
       else
         raise "Unknown column content #{column.content}"
       end
@@ -595,6 +599,13 @@ private
       task = nil
     end
 
+    query = Query.new('property' => resource,
+                      'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
+                      'numberFormat' => @numberFormat,
+                      'currencyFormat' => @currencyFormat,
+                      'costAccount' => @costAccount,
+                      'revenueAccount' => @revenueAccount)
+
     firstCell = nil
     while t < @end
       # Create a new cell
@@ -603,16 +614,27 @@ private
       # call TjTime::sameTimeNext... function
       nextT = t.send(sameTimeNextFunc)
       cellIv = Interval.new(t, nextT)
-      startIdx = @project.dateToIdx(t, true)
-      endIdx = @project.dateToIdx(nextT, true) - 1
-      workLoad = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx)
+      # Get work load for all tasks.
+      query.scopeProperty = nil
+      query.attributeId = 'effort'
+      query.startIdx = @project.dateToIdx(t, true)
+      query.endIdx = @project.dateToIdx(nextT, true) - 1
+      query.process
+      workLoad = query.numericalResult
+      scaledWorkLoad = query.result
       if task
-        workLoadTask = resource.getEffectiveWork(scenarioIdx, startIdx, endIdx,
-                                                 task)
+        # Get work load for the particular task.
+        query.scopeProperty = task
+        query.process
+        workLoadTask = query.numericalResult
+        scaledWorkLoad = query.result
       else
         workLoadTask = 0.0
       end
-      freeLoad = resource.getEffectiveFreeWork(scenarioIdx, startIdx, endIdx)
+      # Get unassigned work load.
+      query.attributeId = 'freework'
+      query.process
+      freeLoad = query.numericalResult
       case columnDef.content
       when 'empty'
         # We only generate cells will different background colors.
@@ -621,7 +643,7 @@ private
         # To increase readability, we don't show 0.0 values.
         wLoad = task ? workLoadTask : workLoad
         if wLoad > 0.0
-          cell.text = scaleLoad(wLoad)
+          cell.text = scaledWorkLoad
         end
       else
         raise "Unknown column content #{column.content}"
