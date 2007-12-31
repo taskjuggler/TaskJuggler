@@ -1,0 +1,152 @@
+=== How to Contribute ===
+
+==== Why contribute? ====
+
+TaskJuggler is an Open Source Project. It was developed by volunteers
+mostly in their spare time. Made available under the GNU General
+Public license and similar licenses, TaskJuggler can be shared and
+used free of charge by anybody who respects the license conditions.
+Does that mean you can use it without worrying about anything? Clearly
+not! Though users have no legal obligation to contribute, you should
+feel a moral obligation to support Open Source in whatever way you
+can. This can range from helping out other users with their first
+Linux installation to actively contributing to the TaskJuggler
+Project, not just as a programmer. The following section describes,
+how you can contribute to any of the components that are part of the
+TaskJuggler software releases.  Preparing a contribution
+
+All TaskJuggler development is coordinated using the
+[http://git.or.cz/ Git revision control system]. All changes must be
+submitted using git so that we can track the authorship of each
+submission. To contribute you need to have at least git version 1.5.0
+installed. As a first step, you need to checkout the latest version of
+the TaskJuggler. This will create a directory called taskjuggler in
+your current directory. It not only contains the latest sources, but
+also the full revision history of the code. It is your local copy of
+the TaskJuggler source repository.
+
+ git clone http://www.taskjuggler.org/git-repos/taskjuggler.git
+
+If you have never used git before, you need to configure it first. You
+need to set your name and email address. This information will be
+present in all patches that you submit.
+
+ git config --global user.name "Your Name"
+ git config --global user.email "firstname.lastname@domain.org"
+
+You then need to configure and install the TaskJuggler version. Make
+sure, you have removed all other instances of TaskJuggler removed from
+you system before doing so. It is a common mistake to have an old
+version of the TaskJuggler library used by a newer version of the
+executables.
+
+ cd taskjuggler
+ make -f Makefile.cvs
+ ./configure # Put your options here (see ./configure --help
+ for details)
+ make
+ # Run as root
+ make install
+
+Do not use the development snapshots and send your patches as plain
+diff files. After having switched to Git, we no longer accept such
+patches.
+
+Next you need to find the files where you want to make your
+modifications. Sometimes files will be generated from other files. Do
+not change those generated files. Your changes will be overwritten the
+next time you call the make utility. To identify those files, some
+familiarity with make and other Linux tools are helpful. Whenever
+there is a file with the same base name and the extension .in in the
+same directory, then the file is generated from the .in-file. You need
+to modify the .in-file, not the one with just the base name. Another
+indicator is the fact that the file is not part of the repository.
+With few exceptions the repository does not contain any generated
+files.
+
+==== Creating a Patch ====
+
+When you are done with your changes, it's a good idea to test them. In
+the taskjuggler directory run the following commands. 
+
+ make
+ # Run as root
+ make install
+
+If there are no errors, you can check or test the result. If
+everything works fine, you can lock at your changes again.
+
+ git diff
+
+The git-diff utility performs a line-by-line comparison of the files
+against the latest version in you local repository. Try to only make
+changes that have an impact on the generated files. Do not change
+indentation or line wrapping of paragraphs unless absolutely
+necessary. These kinds of changes increase the size of diff files and
+make it much harder to evaluate the patches. When making changes to
+the program code, please use exactly the same coding style. If your
+contribution is large enough to justify a copyright claim, please
+indicate what copyright you claim in the patch. For modifications to
+existing files, we will assume that your contribution falls under the
+same license as the modified file. All new files will need to contain
+a license declaration, preferably GPL version 2. In any case, the
+license must be [http://www.opensource.org/licenses an OSI accepted
+license] and be compatible with the rest of the project.
+
+Review all changes carefully. In case you have created new source
+files, you need to register them with your repository.
+
+ git add FILENAME
+
+If you think you are done, you can commit your changes to your local
+repository.
+
+ git commit -a
+
+Whenever you have made a certain change or added a certain feature,
+you should commit your changes to your local repository. This keeps
+patches small and makes reviewing them easier. The easier your patches
+can be reviewed, the more likely they will get in.
+
+The final step to submit your changes is to package them up and sign
+them. It is always a good idea to check for upstream changes again.
+
+ git pull
+
+This makes sure you are really committing your patches against the
+latest version of the source code. In case there were upstream
+changes, you need to merge them first. Usually git does this
+automatically. Refer to the
+[http://www.kernel.org/pub/software/scm/git/docs/user-manual.html Git
+manual] for details on resolving conflicts during merges. Now you can
+create the patch or patch-set.
+
+ git format-patch -s origin
+
+This will generate a number of files starting with 5-digit file names.
+You then need to attach these files to a posting in the
+[http://www.taskjuggler.org/FUDforum2/index.php?t=thread&frm_id=5
+TaskJuggler Developer Forum].
+
+==== Contributing Translations ====
+
+Another possible area of contribution are translations of TaskJuggler
+into languages other than US-English. Our development process is in
+principle prepared for translations, but the first translation will
+definitely be a bit difficult to do. TaskJuggler has several hundred
+messages and more than two hundred pages of documentation. Any
+translation is a significant effort and an ongoing commitment.
+TaskJuggler is still actively developed and this will require the
+translations to be updated as well. Please understand that we do not
+want to ship partial or outdated translations to our users, so please
+ensure you or a group of people are willing to maintain the
+translations.
+
+==== Some final words to Contributors ====
+
+We do welcome all contributions, but please understand that we reserve
+the right to reject any contribution that does not follow the above
+guidelines or otherwise conflicts with the goals of the TaskJuggler
+team. It is a good idea to contact the team prior to making any larger
+efforts.
+

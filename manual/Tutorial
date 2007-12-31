@@ -1,0 +1,626 @@
+== The Tutorial: Your first Project ==
+
+We have mentioned already that TaskJuggler uses plain text files that
+describe the project to schedule it. As you will see now, the syntax
+of these files is easy to understand and very intuitive. This chapter
+will walk you step by step through your first project. You create the
+project plan for a made-up accounting software project. Refer to
+Chapter 8 for a full listing of the example. This project
+demonstrates some of the basic features of TaskJuggler; for more
+advanced features please refer to Chapter 6.
+
+=== Starting the project ===
+
+To start a TaskJuggler project file you need to use the project
+property.
+
+ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-26 {
+   now 2002-03-04
+   timeformat "%Y-%m-%d"
+   currency "EUR"
+   scenario plan "Plan" {
+     # Mark all paths as critical that have less than 10%
+     # slack time.
+     minslackrate 10.0
+     scenario delayed "Delayed"
+   }
+ }
+
+It tells TaskJuggler the default project ID, a short name for your
+project, a version number and a start and end date. The start and end
+dates don't need to be exact, but must enclose all tasks. They specify
+the time interval the TaskJuggler scheduler will use to fit the tasks
+in. So, make it large enough for all your tasks to fit in. But don't
+make it too large, because this will result in longer scheduling times
+and higher memory consumption.
+
+All TaskJuggler properties have a certain number of fixed attributes
+and a set of optional attributes. Optional attributes are always
+enclosed in curly braces. In this example we use the optional
+attributes now to set the current day for the scheduler to another
+value than to the moment your invoke TaskJuggler. We pick a day in the
+specified project period and we will always get the same results of a
+TaskJuggler run, no matter when we process our first project. The
+currency attribute specifies the unit of currency values.
+
+Because each culture has it's own way of specifying dates, the format
+is configurable.  Use the timeformat attribute to specify the default
+format. This is the format used for reports. It's not the format that
+you use in TaskJuggler project files. This format is fixed and must be
+Year-Month-Day-Hours:Minutes:Seconds-Timezone.  All values after day
+are optional.
+
+In this tutorial we would like to compare two scenarios of the
+project. The first scenario is the one that we have planned. The
+second scenario is how it really happened. The two scenarios have the
+same task structure, but the start and end dates of the task may vary.
+In reality we assume that the project got delayed, so we call the
+second scenario "Delayed". The scenario property is used to specify
+the scenarios. The delayed scenario is nested into the plan scenario.
+This tells TaskJuggler to use all values from the plan scenario also
+for the delayed scenario unless the delay scenario has it's own
+values. We'll see further below, how to specify values for a scenario.
+
+Certain attributes are scenario specific. These have to be included in
+the scenario definition.  In this example, we use the minslackrate
+attribute to specify the percentage of slack time a task path must at
+least have before it is considered a critical path. Tasks on critical
+paths are marked with a red frame in the graphical user interface.
+
+=== Global Attributes ===
+
+Besides finding suitable start and end dates of our project, we also
+like to do a simple profit and loss analysis. So we have to specify
+the default daily costs of an employee. This can be changed for
+certain employees later, but it illustrates an important concept of
+TaskJuggler – inheritance of attributes. In order to reduce the size
+of the TaskJuggler project file to a readable minimum, properties
+inherit many optional attributes from their enclosing scopes. We'll
+see further below, what this actually means. Here we are at top-level
+scope, so this is the default for all following properties.
+
+ rate 310.0
+
+The rate attribute can be used to specify the daily costs of
+resources. All subsequent resources will have this rate unless
+specified differently.
+
+You might also want to tell TaskJuggler about holidays that affect
+all resources. Global vacations are periods where TaskJuggler does
+not do any resource assignments to tasks.
+
+ # Register Good Friday as a global holiday for all resources.
+ vacation "Good Friday" 2002-03-29
+
+Use the vacation attribute to define a global vacation. Global
+vacations must have a name and a date or date range. This is slightly
+different from vacations of individual resources. They are defined
+with the vacation attribute for resources and are unnamed.
+
+Macros are another TaskJuggler feature to keep project files small.
+Macros are text patterns that can be defined once and inserted
+multiple times in the project file. A macro always has a name and the
+text pattern is enclosed by square brackets. 
+
+ macro allocate_developers [
+   allocate dev1
+   allocate dev2 { limits { dailymax 4h } }
+   allocate dev3
+ ]
+
+To use the macro you simply have to write
+''''${allocate_developers}'''' and TaskJuggler will replace the term
+''''${allocate_developers}'''' with the pattern. We will use this
+macro further below in the example and then explain the meaning of the
+pattern.
+
+=== Declaring Resources ===
+
+A TaskJuggler feature that you will probably make heavy use of is
+flags. Once declared you can attach them to many properties. When you
+generate reports of the TaskJuggler results, you can use the flags to
+filter out information and limit the report to exactly those details
+that you want to have included.
+
+ flags team
+ 
+ resource dev "Developers" {
+   resource dev1 "Paul Smith" { rate 330.0 }
+   resource dev2 "Sébastien Bono"
+   resource dev3 "Klaus Müller" {
+     vacation 2002-02-01 - 2002-02-05
+   }
+ 
+   flags team
+ }
+ 
+ resource misc "The Others" {
+   resource test "Peter Murphy" {
+     limits { dailymax 6.4h }
+     rate 240.0
+   }
+   resource doc "Dim Sung" { rate 280.0 }
+ 
+   flags team
+ }
+
+This snippet of the example shows the resource property. Resources
+always have an ID and a Name. IDs may only consist of ASCII
+characters, numbers and the underline character. All global
+TaskJuggler properties have IDs. They need to be unique within their
+property class. The ID is necessary so that we can reference the
+property again later without having to write the potentially much
+longer name. Names are strings and as such enclosed in double quotes.
+Strings may contain any character, even non-ASCII characters.  As you
+can see, resource properties can be nested: dev is a virtual resource,
+a team that consists of three other resources.
+
+dev1, alias Paul Smith, costs more than the normal employee. So the
+declaration of dev1 overwrites the inherited default rate with a new
+value of 330.0.
+
+The default value has been inherited from the enclosing scope,
+resource dev, which in turn has inherited it from the global scope.
+The declaration of the resource Klaus Müller uses another optional
+attribute. With vacation you can specify a certain time interval where
+the resource is not available.
+
+Here you need to understand how TaskJuggler handles time intervals.
+Internally, TaskJuggler uses the number of seconds after January 1st,
+1970 to store any date.  So all dates are actually stored with an
+accuracy of 1 second. 2002-02-01 specifies midnight February 1st,
+2002. Again following the TaskJuggler concept of requiring as little
+information as necessary and extending the rest with sensible
+defaults, TaskJuggler adds the time 0:00:00 if nothing else has been
+specified. So the vacation ends on midnight February 5th, 2002. Well,
+almost. Every time you specify a time interval, the end date is not
+included in the interval.  But the second before the date that you
+have specified is. So Klaus Müllers vacation ends 23:59:59 on February
+4th, 2002.
+
+Peter Murphy only works 6.4 hours a day. So we use the limits
+attribute to limit his daily working hours. We could also define exact
+working hours using the shift property, but we ignore this for now.
+
+Note that we have attached the flag team after the declaration of the
+sub-resources to the team resources.  This way, these flags don't get
+handed down to the sub-resources. If we would have declared the flags
+before the sub-resources, then they would have the flags attached as
+well.
+
+=== Declaring Accounts ===
+
+The use of our resources will create costs. For a profit and loss
+analysis, we need to balance the costs against the customer payments.
+In order not to get lost with all the various amounts, we declare 3
+accounts to credit the amounts to. We create one account for the
+development costs, one for the documentation costs, and one for the
+customer payments.
+
+ account dev "Development" cost
+ account doc "Documentation" cost
+ account rev "Payments" revenue
+
+The account property has three fixed attributes: an ID, a name, and a
+type. The type can either be cost or revenue. For the analysis
+TaskJuggler subtracts the total amount of all cost accounts from the
+total amount from all revenue accounts.
+
+Accounts can also be nested. Nested accounts may not have a type
+specified. They inherit the type of the top-level account.
+
+=== Specifying the Tasks ===
+
+Let's focus on the real work now. The project should solve a problem:
+the creation of an accounting software. Because the job is quite
+complicated, we break it down into several subtasks. We need to do a
+specification, develop the software, test the software, and write a
+manual. In TaskJuggler syntax this would look as follows:
+
+ task AcSo "Accounting Software" {
+   task spec "Specification" 
+   task software "Software Development"
+   task test "Software testing"
+   task deliveries "Milestones"
+ }
+
+Similar to resources, tasks are declared by using the task keyword
+followed by an ID and a name string. All TaskJuggler properties have
+their own namespaces. This means, that it is quite OK to have a
+resource and a task with the same ID. Tasks may have optional
+attributes which can be tasks again, so tasks can be nested. In
+contrast to all other TaskJuggler properties, task IDs inherit the ID
+of the enclosing task as a prefix to the ID. The full ID of the spec
+task is AcSo.spec.
+
+To track important milestones of the project, we also added a task
+called Milestones. This task, like most of the other tasks will get
+some subtasks later on. We consider the specification task simple
+enough, so we don't have to break it into further subtasks. So let's
+add some more details to it.
+
+ task spec "Specification" {
+   effort 20d
+   ${allocate_developers}
+   depends !deliveries.start
+ }
+
+The effort to complete the task is specified with 20 man-days.
+Alternatively we could have used the length attribute or the duration
+attribute. length specifies the duration of the task in working days
+while duration specifies the duration in calendar days. Contrary to
+effort, these two don't have to have a specification of the involved
+resources. Since effort specifies the duration in man-days, we need to
+say who should be allocated to the task. The task won't finish before
+the resources could be allocated long enough to reach the specified
+effort. Tasks with length or duration criteria and allocated resources
+will last exactly as long as requested. Resources will be allocated
+only if available.
+
+Here we use the allocate_developers macro mentioned above. The expression 
+''''${allocate_developers}'''' is simply expanded to 
+
+ allocate dev1
+ allocate dev2 { limits { dailymax 4h } }
+ allocate dev3
+
+If you need to allocate the same bunch of people to several tasks, the
+macro saves you some typing. You could have written the allocate
+attributes directly instead of using the macro. Since the allocation
+of multiple resources to a task is a very common place for macro
+usage, we found it a good idea to use it in this example as well.
+
+One more interesting thing to note is the fact that we like the
+resource dev2 only to work 50% of the day on this task, so we use the
+optional attribute limits to specify this.
+
+For TaskJuggler to schedule a task, it needs to know either the start
+and end criteria of a task, or one of them and a duration
+specification. The start and end criteria can either be fixed dates or
+relative dates. Relative dates are specifications of the type "task B
+starts after task A has finished". Or in other words, task B depends
+on task A. In this example the spec task depends on a subtasks of the
+deliveries task. We have not specified it yet, but it has the local ID
+start.
+
+To specify the dependency between the two tasks, we use the depends
+attribute. This attribute must be followed by one or more task IDs. If
+more than one ID is specified, each ID has to be separated with a
+comma from the previous one. Task IDs can be either absolute IDs or
+relative IDs. An absolute ID of a task is the ID of this task
+prepended by the IDs of all enclosing tasks. The task IDs are
+separated by a dot from each other. The absolute ID of the
+specification task would be AcSo.spec.
+
+Relative IDs always start with one or more exclamation marks. Each
+exclamation mark moves the scope to the next enclosing task. So
+!deliveries.start is expanded to AcSo.deliveries.start since AcSo is
+the enclosing task of deliveries. Relative task IDs are a little bit
+confusing at first, but have a real advantage over absolute IDs.
+Sooner or later you want to move tasks around in your project and then
+it's a lot less likely that you have to fix dependency specifications
+of relative IDs.
+
+The software development task is still too complex to specify it
+directly. So we split it further into subtasks.
+
+ task software "Software Development" {
+   priority 1000
+   task database "Database coupling"
+   task gui "Graphical User Interface"
+   task backend "Back-End Functions"
+ }
+
+We use the priority attribute to mark the importance of the tasks. 500
+is the default priority of top-level tasks. Setting the priority to
+1000 marks the task as most important task, since the possible range
+is 1 (not important at all) to 1000 (ultimately important). priority
+is an attribute that is handed down to subtasks if specified before
+the subtasks' declaration. So all subtasks of software have a priority
+of 1000 as well, unless they have their own priority definition.
+
+ task database "Database coupling" {
+   effort 20d
+   depends !!spec
+   allocate dev1, dev2
+ }
+
+The work on the database coupling should not start before the
+specification has been finished. So we again use the depends attribute
+to let TaskJuggler know about this. This time we use two exclamation
+marks for the relative ID. The first one puts us in the scope of the
+enclosing software task. The second one is to get into the AcSo scope
+that contains the spec tasks. This time we allocate resources directly
+without using a macro.
+
+ task gui "Graphical User Interface" {
+   effort 35d
+   delayed:effort 40d
+   depends !database, !backend
+   allocate dev2, dev3
+ }
+
+TaskJuggler can schedule your project for two different scenarios. We
+have called the first scenario "plan" scenario and the second
+"delayed" scenario. Many of the reports allow you to put the values of
+both scenarios side by side to each other, so you can compare the two
+scenarios. All scenario-specific values that are not explicitly stated
+for the delayed scenario are taken from the plan scenario. So the user
+only has to specify the values that differ in the delayed scenario.
+The two scenarios must have the same task structure and the same
+dependencies. But the start and end dates of tasks as well as the
+duration may vary. In the example we have planned the work on the
+graphical user interface to be 35 man-days. It turned out that we
+actually needed 40 man-days. By prefixing the start effort attribute
+with delayed:, the effort value for the delayed scenario can be
+specified.
+
+ task backend "Back-End Functions" {
+   effort 30d
+   complete 95
+   depends !database, !!spec
+   allocate dev1
+   allocate dev2
+ }
+
+By default, TaskJuggler assumes that all tasks are on schedule.
+Sometimes you want to generate reports that show how much of a task
+has actually been completed. TaskJuggler uses the current date for
+this, unless you have specified another date using the now attribute.
+If a task is ahead of schedule or late, this can be specified using
+the complete attribute. This specifies how many percent of the task
+have been completed up to the current date. In our case the back-end
+implementation is slightly ahead of schedule as we will see from the
+report.
+
+ task test "Software testing" {
+
+   task alpha "Alpha Test" {
+     effort 1w
+     depends !!software
+     allocate test, dev2
+   }
+
+   task beta "Beta Test" {
+     effort 4w
+     depends !alpha
+     allocate test, dev1
+   }
+ }
+
+The software testing task has been split up into an alpha and a beta
+test task. The interesting thing here is, that efforts can not only be
+specified as man-days, but also man-weeks, man-hours, etc. By default,
+TaskJuggler assumes a man-week is 40 man-hours or 5 man-days. These
+values can be changed using the dailyworkinghours attribute.
+
+Let's go back to the outermost task again. At the beginning of the
+example we stated that we want to credit all development work to one
+account with ID dev and all documentation work to the account doc. To
+achieve this, we use the attribute account to credit all tasks to the
+dev account.
+
+ task AcSo "Accounting Software" {
+
+   account dev
+
+   task software "Software Development" {
+
+Since we specify the attribute for the top-level task before we
+declare any subtasks, this attribute will be inherited by all subtasks
+and their subtasks and so on. The only exception is the writing of the
+manual. We need to change the account for this task again, as it is
+also a subtask of AcSo.
+
+ task manual "Manual" {
+   effort 10w
+   depends !deliveries.start
+   allocate doc, dev3
+   account doc
+ }
+
+=== Specifying Milestones ===
+
+All tasks that have been discussed so far, had a certain duration. We
+did not always specify the duration explicitly, but we expect them to
+last for a certain period of time. Sometimes you just want to capture
+a certain moment in your project plan. These moments are usually
+called milestones, since they have some level of importance for the
+progress of the project.
+
+TaskJuggler has support for milestones as well. They are handled as
+special types of tasks. By using the optional attribute milestone for
+a task, this task is declared a milestone. Milestones have no
+duration, so it's illegal to specify any duration criteria, or a non
+identical start and end date.
+
+ task deliveries "Milestones" {
+
+   account rev
+
+   task start "Project start" {
+     milestone
+     start 2002-01-16
+     delayed:start 2002-01-20
+     startcredit 33000.0
+   }
+
+   task prev "Technology Preview" {
+     milestone
+     depends !!software.backend
+     startcredit 13000.0
+   }
+
+   task beta "Beta version" {
+     milestone
+     depends !!test.alpha
+     startcredit 13000.0
+   }
+
+   task done "Ship Product to customer" {
+     milestone
+     # maxend 2002-04-17
+     depends !!test.beta, !!manual
+     startcredit 14000.0
+   }
+ }
+
+We have put all important milestones of the project as subtasks of the
+deliveries task. This way they show up nicely grouped in the reports.
+All milestones either have a dependency or a fixed start date. For the
+first milestone we have used the attribute start to set a fixed start
+date. All other tasks have direct or indirect dependencies on this
+task. Moving back the start date will slip the whole project. This has
+actually happened, so we use the delayed: prefix again to specify the
+start date for the delayed scenario.
+
+Every milestone is linked to a customer payment. By using the
+startcredit attribute we can credit the specified amount to the
+account associated with this task. Since we have assigned the rev
+account to the enclosing task, all milestones will use this account as
+well.
+
+Did you notice the line in the task done that starts with a hash? This
+line is commented out. If TaskJuggler finds a hash, it ignores the
+rest of the line. This way you can include comments in your project.
+The maxend attribute specifies that the task should end no later than
+the specified date. This information is not used for scheduling, but
+only for checking the schedule afterwards. Since the task will end
+later than the specified date, commenting out the line would trigger a
+warning.
+
+Now the project has been completely specified. Stopping here would
+result in a valid TaskJuggler file that could be processed and
+scheduled. But no reports would be generated to visualize the results.
+
+=== Generating Reports of the scheduled Project ===
+
+TaskJuggler offers a number of report types. Probably the most popular ones are interactive reports and HTML reports.
+
+==== Generating Interactive Reports ====
+
+Interactive reports are only available in the TaskJuggler GUI. The
+command line version will just ignore interactive report definitions.
+To view a task report in the GUI, you have to add the following lines
+to your project. This will give you a list of all the project's tasks
+and the classical Gantt chart.
+
+ taskreport "Gantt Chart" {
+   headline "Project Gantt Chart"
+   columns hierarchindex, name, start, end, effort, duration, chart
+   timeformat "%a %Y-%m-%d"
+   loadunit days
+   hideresource 1
+ }
+
+The GUI requires the name column to be present in the report. If you
+don't specify it, it will be added automatically. It does not support
+any of the index columns. They will not be shown in the GUI.
+Nonetheless, it's a good idea to request it, as the printed version of
+the interactive reports behave like the other reports. They only show
+specified columns. The printed reports repeat the first column on
+every page in case it does not fit on a single page. To print a report
+from the GUI just select File->Print from the menu or click the
+printer icon in the toolbar.
+
+For this report we like to have the abbreviated weekday in front of
+the date. %a is the tag for this. See the manual for a complete list
+of all options.
+
+We don't want to see any resources in this report, so we hide them
+all. 1 means always hide a resource. To show all resources we could
+write a 0, which means never hide a resource. Or we could write a
+logical expression that only shows the leaf resources and sorts them
+by name as we did for the next report. It's a list of all tasks
+showing the resources assigned to each task.
+
+ taskreport "Task Usage" {
+   headline "Task Usage Report"
+   columns hierarchindex, name, start, end, effort { title "Work" }, duration,
+     cost, revenue
+   timeformat "%Y-%m-%d"
+   loadunit days
+   hideresource ~isLeaf()
+   sortresources nameup
+ }
+
+The default title for the effort column is replaced with a custom
+title. Additionally we show the cost and revenue of all tasks and
+resources. All loads are shown as resource-days.  The next report is
+similar to the first one, but has the completion degree as additional
+column.
+
+ # A list of all tasks with the percentage complete for each task
+ taskreport "Tracking Gantt" {
+   headline "Tracking Gantt Chart"
+   columns hierarchindex, name, start, end, effort { title "Work" }, duration,
+     completed, chart
+   timeformat "%a %Y-%m-%d"
+   loadunit days
+   hideresource 1
+ }
+
+We can also have resource-centric reports. This is done with the
+report type resourcereport. The following report is showing resource
+allocation. It identifies whether each resource is under- or
+over-allocated for.
+
+ resourcereport "Resource Graph" {
+   headline "Resource Allocation Graph"
+   columns no, name, rate, utilization, freeload, chart
+   loadunit days
+   hidetask 1
+ }
+
+The next report is a list of all project resources, both human and
+material resources, together with the associated costs.
+
+ resourcereport "Resource Sheet" {
+   headline "Resource Sheet"
+   columns no, name, efficiency, id, maxeffort, rate
+   loadunit days
+   hidetask 1
+ }
+
+The next report is similar to the previous one, but also lists the
+tasks for each of the resources. It also provides details about the
+cost for each resource and task.
+
+ # A list of resources and each task associated with each resource.
+ resourcereport "Resource Usage" {
+   headline "Resource Usage Report"
+   columns no, name, utilization, freeload, cost
+   loadunit days
+   hidetask 0
+ }
+
+==== Generating HTML Reports ====
+
+In addition to the interactive reports, TaskJuggler also provides HTML
+reports. These reports have the benefit that you can create report
+files that you can publish on a web server. TaskJuggler supports a
+variety of HTML reports. Please refer to the manual for a full list.
+In this tutorial we will only cover a subset of them.
+
+To conclude the HTML reports, a report is generated that shows how
+poorly the project is calculated. The company won't get rich with this
+project. Due to the slip, it actually needs a loan from the bank to
+pay the salaries.
+
+ htmlaccountreport "Accounting.html" {
+   columns no, name, scenario, total, monthly
+   headline "P&L for the Project"
+   caption "The table shows the profit and loss analysis as well as
+            the cashflow situation of the Accounting Software Project."
+   accumulate
+   scenarios plan, delayed
+ }
+
+The htmlaccountreport property produces similar reports as the ones
+shown above, but it lists accounts instead of tasks or resources. The
+total column shows the value of the account at the end of the reported
+time interval. The accumulate attribute puts the calendar in
+accumulation mode. The monthly columns list the value of the account
+at the end of the month. Normally the amount that has been added or
+subtracted from the account would be listed.
+

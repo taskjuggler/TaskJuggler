@@ -1,0 +1,54 @@
+== Installation ==
+
+TaskJuggler III is written in [http://www.ruby-lang.org Ruby]. It
+should run on any platform that Ruby is available on. It uses the
+standard Ruby mechanism for distribution. The package format is called
+[http://docs.rubygems.org Ruby Gems]. Alternatively, you can install
+from a the source code using ''''setup.rb''''.
+
+This is a prototype. Consider it being alpha quality at best!
+
+=== Requirements ===
+
+Ruby applications are platform independent. There is no need to
+compile anything. But TaskJuggler has a very small set of
+dependencies that you have to take care of first. Please make sure you
+have the minimum required version installed.
+
+* ''Ruby'' TaskJuggler III is written in Ruby.  You need a Ruby
+runtime environment to run it. This can be downloaded from
+[http://www.ruby-lang.org/en/downloads/ here].  Most Linux
+distributions usually have Ruby already included. So does MacOS X
+Leopard. For Windows, there is a one-click installer available.
+TaskJuggler currently needs at least Ruby version 1.8.5.
+
+* ''RubyGems'' If it did not come with your OS or Ruby package, see
+[http://docs.rubygems.org here] how to get and install it.
+
+* ''Rake'' [http://rake.rubyforge.org Rake] is only needed when you
+start with the source code from the Git repository. It's not needed
+when you already have a Gem package.
+
+* ''TaskJuggler'' Get TaskJuggler III from the
+[http://www.taskjuggler.org/download.php Download Page].
+
+=== Installation Process ===
+
+If you have checked-out the git repository, you need to build the Gem
+package first.
+
+ cd taskjuggler3; ./makedist
+
+To install the Gem package, just run as root the following command.
+
+ gem install pkg/taskjuggler3-X.X.X.gem 
+
+It will install all components of the Gem in the appropriate place.
+
+=== Update from previous versions ===
+
+Updates work just like the installation.
+
+ gem update pkg/taskjuggler3-X.X.X.gem
+
+

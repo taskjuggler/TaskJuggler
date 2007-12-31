@@ -72,6 +72,7 @@ module RichTextSyntaxRules
     pattern(%w( $TITLE1 !text $TITLE1END ), lambda {
       el = RichTextElement.new(@richText, :title1, @val[1])
       @sectionCounter[0] += 1
+      @sectionCounter[1] = @sectionCounter[2] = 0
       el.data = @sectionCounter.dup
       el
     })
@@ -81,6 +82,7 @@ module RichTextSyntaxRules
     pattern(%w( $TITLE2 !text $TITLE2END ), lambda {
       el = RichTextElement.new(@richText, :title2, @val[1])
       @sectionCounter[1] += 1
+      @sectionCounter[2] = 0
       el.data = @sectionCounter.dup
       el
     })

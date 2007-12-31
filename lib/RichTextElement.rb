@@ -57,6 +57,36 @@ class RichTextElement
     self
   end
 
+  # Recursively extract the section headings from the RichTextElement and
+  # build fill the TableOfContents _toc_ with the gathered sections.
+  # _fileName_ is the base name (without .html or other suffix) of the file
+  # the TOCEntries should point to.
+  def tableOfContents(toc, fileName)
+    number = nil
+    case @category
+    when :title1
+      number = "#{@data[0]} "
+    when :title2
+      number = "#{@data[0]}.#{@data[1]} "
+    when :title3
+      number = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
+    end
+    if number
+      # We've found a section heading. The String value of the Element is the
+      # title.
+      title = children_to_s
+      tag = convertToID(title)
+      toc.addEntry(TOCEntry.new(number, title, tag, fileName))
+    else
+      # Recursively extract the TOC from the child objects.
+      @children.each do |el|
+        el.tableOfContents(toc, fileName) if el.is_a?(RichTextElement)
+      end
+    end
+
+    toc
+  end
+
   # Conver the intermediate representation into a plain text again. All
   # elements that can't be represented in plain text easily will be ignored or
   # just their value will be included.
@@ -231,19 +261,19 @@ class RichTextElement
     when :richtext
       XMLElement.new('div')
     when :title1
-      el = XMLElement.new('h1')
+      el = XMLElement.new('h1', 'id' => convertToID(children_to_s))
       if @richText.sectionNumbers
         el << XMLText.new("#{@data[0]} ")
       end
       el
     when :title2
-      el = XMLElement.new('h2')
+      el = XMLElement.new('h2', 'id' => convertToID(children_to_s))
       if @richText.sectionNumbers
         el << XMLText.new("#{@data[0]}.#{@data[1]} ")
       end
       el
     when :title3
-      el = XMLElement.new('h3')
+      el = XMLElement.new('h3', 'id' => convertToID(children_to_s))
       if @richText.sectionNumbers
         el << XMLText.new("#{@data[0]}.#{@data[1]}.#{@data[2]} ")
       end
@@ -317,6 +347,32 @@ class RichTextElement
     end
 
     html
+  end
+
+  # Convert all childern into a single plain text String.
+  def children_to_s
+    text = ''
+    @children.each do |el|
+      if el.is_a?(RichTextElement)
+        text << el.to_s
+      else
+        text << el
+      end
+    end
+    text
+  end
+
+  # This function converts a String into a new String that only contains
+  # characters that are acceptable for HTML tag IDs.
+  def convertToID(text)
+    out = ''
+    text.each_byte do |c|
+      out << c if (c >= ?A && c <= ?Z) ||
+                  (c >= ?a && c <= ?z) ||
+                  (c >= ?0 && c <= ?9)
+      out << '_' if c == 32
+    end
+    out.chomp('_')
   end
 
 end

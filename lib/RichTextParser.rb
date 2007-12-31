@@ -23,7 +23,7 @@ class RichTextParser < TextParser
 
   # Create the parser and initialize the rule set. _rt_ is the RichText object
   # the resulting tree of RichTextElement objects should belong to.
-  def initialize(rt)
+  def initialize(rt, sectionCounter = [ 0, 0, 0] )
     super()
     @richText = rt
     # These are the tokens that can be returned by the RichTextScanner.
@@ -35,7 +35,7 @@ class RichTextParser < TextParser
     initRules
     # The sections and numbered list can each nest 3 levels deep. We use these
     # counter Arrays to generate proper 1.2.3 type labels.
-    @sectionCounter = [ 0, 0, 0 ]
+    @sectionCounter = sectionCounter
     @numberListCounter = [ 0, 0, 0 ]
   end
 

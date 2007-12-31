@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'MessageHandler'
 require 'KeywordDocumentation'
 require 'ProjectFileParser'

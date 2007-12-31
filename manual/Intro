@@ -1,0 +1,66 @@
+== Introduction ==
+=== About TaskJuggler ===
+
+TaskJuggler is a modern and powerful project management tool. Its new
+approach to project planning and tracking is far superior to the
+commonly used Gantt chart editing tools. It has already been
+successfully used in many projects and scales easily to projects with
+hundreds of resources and thousands of tasks.
+
+TaskJuggler is an Open Source tool for serious project managers. It
+covers the complete spectrum of project management tasks from the
+first idea to the completion of the project. It assists you during
+project scoping, resource assignment, cost and revenue planning, risk
+and communication management.
+
+TaskJuggler provides an optimizing scheduler that computes your
+project time lines and resource assignments based on the project
+outline and the constrains that you have provided. The built-in
+resource balancer and consistency checker offload you from having to
+worry about irrelevant details and ring the alarm if the project gets
+out of hand. Its flexible "as many details as necessary"-approach
+allows you to still plan your project as you go, making it also ideal
+for new management strategies such as Extreme Programming and Agile
+Project Management.
+
+If you are about to build a skyscraper or just want to put together
+your colleague's shift plan for the next month, TaskJuggler is the
+right tool for you. If you just want to draw nice looking Gantt
+charts to impress your boss or your investors, TaskJuggler might not
+be right for you. It takes some effort to master its power, but it
+will become a companion you don't want to miss anymore.
+
+=== Features and Highlights ===
+
+* Manages tasks, resources and costs in one package
+* Automatic resource leveling, tasks conflict resolutions, and task
+filtering
+* Comprehensive and flexible views and reports so you can find the
+information you need when you need it
+* Built-in templates to get you started (you can also save your own
+schedules as templates for future use)
+* Project tracking and status reporting
+* Unlimited number of scenarios (baselines) of same project for what-if
+analysis
+* CSV data export for exchange with Office Suites
+* Risk analysis
+* Project breakdown and management team support
+* Flexible working hours and vacation handling
+* Support for shift working
+* Multiple timezone support
+* Tasks may have initial costs, finishing costs
+* Resources may have running costs
+* Support for profit/loss analysis
+* HTML and XML report generation
+* Powerful project description syntax with macro support
+* Support for central resource allocation database
+
+=== TaskJuggler on the Web ===
+
+The official TaskJuggler web site can be found at
+[http://www.taskjuggler.org].
+
+Since the developers are mostly busy project managers themselves, we
+have created a [http://www.taskjuggler.org/FUDforum2 forum] for users
+to help each other.
+

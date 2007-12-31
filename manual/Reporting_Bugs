@@ -1,0 +1,26 @@
+=== Reporting Bugs and Sending Feedback ===
+
+All official releases of TaskJuggler are meant to be stable releases
+unless explicitly noted differently. But our test suite is still very
+small and some features are not tested at all. So it's very likely
+that your current version of TaskJuggler contains some bugs. If you
+find a bug, please follow this procedure:
+
+* Read this manual to make sure that it is actually a bug and not a
+feature.
+
+* Check the [http://www.taskjuggler.org TaskJuggler web page] and the
+[http://www.taskjuggler.org/FUDforum2 Discussion Forum].
+
+* Possibly the bug was already found
+and a patch or workaround exists.
+
+* Try to create a test project that is as small as possible but still
+reproduces the bug.
+
+* Send the test project and a detailed description of the problem to
+the [http://www.taskjuggler.org/FUDforum2 TaskJuggler Developer
+Forum].  Not sending a test project is the most common mistake when
+reporting bugs. This usually triggers requests or leads to bug reports
+being ignored.
+

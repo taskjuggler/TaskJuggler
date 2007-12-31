@@ -99,6 +99,7 @@ class XMLText < XMLElement
 
   def initialize(text)
     super(nil, {})
+    raise 'Text may not be nil' unless text
     @text = text
   end
 

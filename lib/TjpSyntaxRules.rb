@@ -495,7 +495,7 @@ EOT
 
   def rule_csvResourceReport
     pattern(%w( !csvResourceReportHeader !reportBody ))
-    doc('csvtaskreport', <<'EOT'
+    doc('csvresourcereport', <<'EOT'
 The report lists all resources and their respective values as colon-separated-value (CSV) file. Due to
 the very simple nature of the CSV format, only a small subset of features will
 be supported for CSV output. Including tasks or listing multiple scenarios

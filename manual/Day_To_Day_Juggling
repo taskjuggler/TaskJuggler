@@ -1,0 +1,167 @@
+== Day To Day Juggling ==
+
+=== Tracking the Project ===
+
+Once the initial plan has been made and the project has started, TaskJuggler
+can be turned from a planning tool into a tracking tool. You don't have to
+change a lot to do this. After all, as the initial plan is almost always just a
+first guess, you need to continue planning your project as new details become
+evident. So what you really want is a way to gradually freeze the plan as work
+has been completed, while still having full flexibility with all future work.
+
+While it is generally accepted to invest some amount of time in project
+planning, it is very common that once the project has been started, project
+managers tend to avoid a proper tracking of the project. Our bet is that the
+vast majority of project plans are only made to get management or investor
+approval. After the approval phase, many project managers only work with their
+project plan again when the project is running really late. On the other hand
+there are projects that are done using strict project management techniques
+that require detailed status tracking. Both extremes probably have their fans
+and TaskJuggler offers good support for both extremes as well as various
+techniques in between.
+
+=== Recording Progress ===
+
+As mentioned previously, your initial project plan is only a first estimate of
+how the project will progress. During the course of the project you will have
+to make changes to the plan as new information needs to be taken into account
+and you probably want to track the progress of the project in a formalized
+form. TaskJuggler will support you during this phase of the project as well,
+but it needs your help. You have to provide the additional information in the
+project file. In return you get current status reports and an updated project
+plan based on the current status of the project.
+
+The most simple form of capturing the current status of the project is to use
+the complete attribute.
+
+ task impl "Implementation" {
+   depends !spec
+   effort 4w
+   allocate dev1, dev2
+   complete 50
+ }
+
+This tells TaskJuggler that 50% of the task's effort has been completed by the
+current date. Tasks that have no completion specification will be assumed to be
+on track. TaskJuggler calculates the completion degree based on the current
+date. Completion specifications only need to be supplied for tasks that are
+either ahead of schedule or behind schedule. Please keep in mind that the
+completion degree does not affect the scheduling and resource allocation. It is
+only for reporting purposes. It also does not tell TaskJuggler which resource
+actually worked on the tasks.
+
+If you want the past work to affect scheduling you must use the booking
+statements as outlined in the next section.
+
+When your project plan reflects the current status of your project, TaskJuggler
+can generate nice status reports for you. To generate an HTML report for the
+last week listing all tasks that are running late, all tasks that are ongoing,
+tasks that have been completed last week, and task that will be started next
+week, you just specify 
+
+ htmlstatusreport "Status-Report.html" {
+ }
+
+=== Recording Resource Usage ===
+
+The initial project plan should be made by entering the minimum amount of
+required information such as task dependencies and efforts. TaskJuggler will
+then compute all the missing data based on this initial setup. This is your
+project baseline. As the project progresses you can now track the work already
+completed by recording the work that your resources have done. Let's assume you
+had the following task in your original plan: 
+
+ task impl "Implementation" {
+   depends !spec
+   effort 4w
+   allocate dev1, dev2
+ }
+
+After the first week of work on this task the two resources have really been
+able to complete half the job. You can capture this in your project plan using
+the booking attribute. Bookings are resource specific, so you have to add the
+booking to the resource definition, not the task definition.
+
+ resource dev1 "Developer 1" {
+   booking impl 2005-04-11 2005-04-16 { sloppy 2 }
+ }
+ 
+ resource dev2 "Developer 2" {
+   booking impl 2005-04-11 2005-04-16 { sloppy 2 }
+ }
+
+The sloppy attribute defines the accuracy of your bookings. If it's missing or
+0, the booking must only describe a continuous working period during working
+hours. With higher values the interval may overlap with off-hour or vacation
+time slots. See details on sloppy.
+
+If you don't like to mix the resource definitions and their bookings, you can
+specify the bookings with supplement statements. These supplement statements
+can even reside in an other file. Some companies have created a web front-end
+for their developers to report the completed work against the project plan. The
+reports are stored in a database and include files for TaskJuggler are
+generated from this database. This way the project manager gets a very current
+status of the project and can compute the current project plan based on these
+data without much effort. If you are interested in this you should have a look
+at the download section of the TaskJuggler web site.
+
+It is ok to specify bookings beyond the effort value found in the task
+definition. In case you want to declare a task as done, even if the bookings do
+not reach the specified effort or length, you can use the scheduled property.
+
+ supplement task impl {
+   actual:scheduled
+ }
+
+As a side note we would like to mention that the recording of the work time of
+employees is regulated by labor law in certain countries. You might also
+require approval from a Worker's Council before you can deploy time recording
+tools.
+
+In case your actual progress does not deviate a lot from your project plan, you
+can generate the file with the booking statements automatically.
+
+ export "DoneWork-Week15.tji" {
+   hideresource 0
+   start 2005-04-11
+   end 2005-04-16
+   properties bookings
+ }
+
+This will generate a TaskJuggler include file that contains all bookings
+according to the project plan for the specified interval. You can then use this
+file as a baseline and modify it to reflect the real work that has happened
+during the interval. After that you can include it into your project again.
+
+ include "DoneWork-Week15.tji"
+
+As this include file references the tasks and resources of your project you
+should include it after all task and resource definitions.
+
+To make TaskJuggler aware that you want to compute the end date based on the
+bookings and the effort you need to enable the projection mode for the
+scenario. This has to be done in the scenario definition in the project header.
+If you don't have a scenario definition because you are only using the built-in
+default scenario, you have to add a scenario definition.
+
+ project prj "Project" "1.0" 2005-04-01 2005-05-01 {
+   scenario plan "Plan" {
+     # Compute when the task will be ready based on the already
+     # done work and the current date.
+     projection
+   }
+ }
+
+TaskJuggler now assumes that for all tasks that have bookings, all work has
+been specified with bookings up to the current date. It then calculates the end
+date of the task based on the effort that is still left over. It also computes
+the complete value based on the specified bookings. So if you specify bookings
+for a task you should not specify a completion value as well. It will be
+ignored and replaced by a value based on the specified bookings.
+
+When you now schedule the project again, it will take these bookings into
+account and generate a new project plan based on your current project status.
+Each time you review your project status you should generate such an include
+file for the period that you are reviewing. Then you sync the content with the
+feedback that you get from your resources and add the file to the project plan.
+
