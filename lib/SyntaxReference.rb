@@ -1,5 +1,5 @@
 #
-# SyntaxDocumentation.rb - The TaskJuggler3 Project Management Software
+# SyntaxReference.rb - The TaskJuggler3 Project Management Software
 #
 # Copyright (c) 2006, 2007 by Chris Schlaeger <cs@kde.org>
 #
@@ -18,13 +18,14 @@ require 'HTMLDocument'
 # work in done in the contructor. The documentation can then be generated for
 # all found keyword or just a single one. Currently plain text output as well
 # as HTML files are supported.
-class SyntaxDocumentation
+class SyntaxReference
 
   # The constructor is the most important function of this class. It creates a
   # parser object and then traverses all rules and extracts the documented
   # patterns. In a second pass the extracted KeywordDocumentation objects are
   # then cross referenced to capture their relationships.
-  def initialize
+  def initialize(manual = nil)
+    @manual = manual
     @messageHandler = MessageHandler.new(true)
     @parser = ProjectFileParser.new(@messageHandler)
     @parser.updateParserTables
@@ -47,7 +48,7 @@ class SyntaxDocumentation
         # values.
         kwd = KeywordDocumentation.new(rule, pattern,
                 pattern.to_syntax(argDocs, @parser.rules), argDocs,
-                optionalAttributes(pattern, {}))
+                optionalAttributes(pattern, {}), @manual)
         @keywords[pattern.keyword] = kwd
       end
     end
@@ -69,6 +70,25 @@ class SyntaxDocumentation
       pred.successor = keyword if pred
       keyword.predecessor = pred
       pred = keyword
+    end
+  end
+
+  # Generate entries for a TableOfContents for each of the keywords. The
+  # entries are appended to the TableOfContents _toc_. _sectionPrefix_ is the
+  # prefix that is used for the chapter numbers. In case we have 20 keywords
+  # and _sectionPrefix_ is 'A', the keywords will be enumerated 'A.1' to
+  # 'A.20'.
+  def tableOfContents(toc, sectionPrefix)
+    keywords = all
+    # Set the chapter name to 'Syntax Reference' with a link to the first
+    # keyword.
+    toc.addEntry(TOCEntry.new(sectionPrefix, 'Syntax Reference', nil,
+                              keywords[0]))
+    i = 1
+    keywords.each do |keyword|
+      title = @keywords[keyword].title
+      toc.addEntry(TOCEntry.new("#{sectionPrefix}.#{i}", title, nil, keyword))
+      i += 1
     end
   end
 
@@ -94,27 +114,7 @@ class SyntaxDocumentation
     end
   end
 
-  # Generate the top-level file for the HTML reference manual.
-  def generateHTMLindex(directory)
-    html = HTMLDocument.new(:frameset)
-    html << (head = XMLElement.new('head'))
-    head << (e = XMLNamedText.new('TaskJuggler Syntax Reference', 'title'))
-    head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                           'content' => 'text/html; charset=iso-8859-1')
-
-    html << (frameset = XMLElement.new('frameset', 'cols' => '15%, 85%'))
-    frameset << (navFrames = XMLElement.new('frameset', 'rows' => '15%, 85%'))
-    navFrames << XMLElement.new('frame', 'src' => 'alphabet.html',
-                                'name' => 'alphabet')
-    navFrames << XMLElement.new('frame', 'src' => 'navbar.html',
-                                'name' => 'navigator')
-    frameset << XMLElement.new('frame', 'src' => 'intro.html',
-                               'name' => 'display')
-
-    html.write(directory + 'index.html')
-  end
-
-  # Generate 2 files names navbar.html and alphabet.html. They are used to
+  # Generate 2 files named navbar.html and alphabet.html. They are used to
   # support navigating through the syntax reference.
   def generateHTMLnavbar(directory, keywords)
     html = HTMLDocument.new
@@ -125,17 +125,12 @@ class SyntaxDocumentation
     head << XMLElement.new('base', 'target' => 'display')
     html << (body = XMLElement.new('body'))
 
-    body << XMLNamedText.new('Intro', 'a', 'href' => 'intro.html')
+    body << XMLNamedText.new('Table Of Contents', 'a', 'href' => 'toc.html')
     body << XMLElement.new('br')
 
     normalizedKeywords = {}
     keywords.each do |keyword|
-      kwTokens = keyword.split('.')
-      if kwTokens.size == 1
-        normalizedKeywords[keyword] = keyword
-      else
-        normalizedKeywords["#{kwTokens[0]} (#{kwTokens[1]})"] = keyword
-      end
+      normalizedKeywords[@keywords[keyword].title] = keyword
     end
     letter = nil
     letters = []
@@ -167,62 +162,6 @@ class SyntaxDocumentation
                              'href' => "navbar.html##{letter}")
     end
     html.write(directory + 'alphabet.html')
-  end
-
-  # Generate the intro page for the HTML documentation. _directory_ is the
-  # path to the directory the file should be generated in. The file will be
-  # called intro.html.
-  def generateHTMLintro(directory)
-    html = HTMLDocument.new
-    html << (head = XMLElement.new('head'))
-    html << (body = XMLElement.new('body'))
-    body << (div = XMLElement.new('div', 'align' => 'center',
-                                  'style' => 'margin-top:10%'))
-    div << XMLNamedText.new("The #{AppConfig.packageName} Reference Manual",
-                            'h1')
-    div << XMLNamedText.new('Project Management beyond Gantt Chart drawing',
-                            'em')
-    div << XMLNamedText.new("Copyright (c) #{AppConfig.copyright.join(', ')} " +
-                            "by #{AppConfig.authors.join(', ')}", 'h3')
-    div << XMLText.new("Generated by #{AppConfig.appName} on " +
-                       "#{TjTime.now.strftime('%Y-%m-%d')}")
-    div << XMLElement.new('br')
-    div << XMLNamedText.new("This manual covers #{AppConfig.packageName} " +
-                            "version #{AppConfig.version}.", 'h3')
-    body << XMLBlob.new(<<'EOT'
-<br/><hr/><br/>
-<div style="margin-left:10%; margin-right:10%">
-<p>Each TaskJuggler project consists of one or more text files. There is
-always a main project file that may include other files. The main file name
-should have a <code>.tjp</code> suffix, the included files must have a
-<code>.tji</code> suffix.</p>
-
-<p>Every project must start with a <a href="project.html">project header</a>.
-The header must then be followed by any number of <a
-href="properties.html">project properties</a>. Properties don't have to be used in a particular order, but may have interdependencies that require such an order. It is therefor recommended to define them in the following sequence.</p>
-
-<ul>
-<li><a href="macro.html">macros</a></li>
-<li><a href="flags.html">flags</a></li>
-<li><a href="account.html">accounts</a></li>
-<li><a href="shift.html">shifts</a></li>
-<li><a href="vacation.html">vacations</a></li>
-<li><a href="resource.html">resources</a></li>
-<li><a href="task.html">tasks</a></li>
-<li><a href="reports.html">reports</a></li>
-</ul>
-
-<p>To schedule a TaskJuggler project you need to process the main file with TaskJuggler. Just type the following command in a command shell.</p>
-
-<pre>tj3 yourproject.tjp</pre>
-
-<p>It will check the project for consistency and schedule all tasks. If no
-fatal error were detected, the defined reports will be generated.</p>
-</div>
-EOT
-                      )
-
-    html.write(directory + 'intro.html')
   end
 
 private

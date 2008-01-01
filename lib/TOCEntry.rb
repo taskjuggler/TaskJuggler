@@ -36,7 +36,8 @@ class TOCEntry
     td << XMLText.new(@number)
     tr << (td = XMLElement.new('td',
                                'style' => "padding-left:#{5 + 20 * level}px"))
-    td << (a = XMLElement.new('a', 'href' => "#{@file}.html\##{@tag}"))
+    tag = @tag ? "##{@tag}" : ''
+    td << (a = XMLElement.new('a', 'href' => "#{@file}.html#{tag}"))
     a << XMLText.new(@title)
     html << tr
 

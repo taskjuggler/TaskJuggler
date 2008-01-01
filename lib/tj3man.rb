@@ -10,18 +10,16 @@
 
 require 'optparse'
 require 'Tj3Config'
-require 'SyntaxDocumentation'
+require 'SyntaxReference'
 
 AppConfig.appName = 'tj3man'
 
 class Arguments
 
-  attr_reader :outputFormat, :keywords, :directory
+  attr_reader :keywords
 
   def initialize(argv)
-    @outputFormat = :text
     @keywords = nil
-    @directory = nil
 
     opts = OptionParser.new
     opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
@@ -35,20 +33,6 @@ class Arguments
     opts.separator "Usage: #{AppConfig.appName} [options] [<keyword>]"
     opts.separator 'Options:'
 
-    opts.on('-f', '--format (text|html)',
-            'Set the output format to be text (default) or HTML') do |format|
-      case format
-      when 'text'
-        @outputFormat = :text
-      when 'html'
-        @outputFormat = :html
-      end
-    end
-    opts.on('-d', '--directory String',
-            'Generate output as files into this directory.') do |dir|
-      dir << ?/ unless dir[-1] == ?/
-      @directory = dir
-    end
     opts.on_tail('-h', '--help', 'Show this message.') do
       puts opts
       exit
@@ -65,26 +49,14 @@ end
 def main
   args = Arguments.new(ARGV)
 
-  man = SyntaxDocumentation.new
+  man = SyntaxReference.new
   keywords = args.keywords
   if keywords.empty?
     keywords = man.all
   end
 
-  if args.outputFormat == :html
-    if args.directory
-      man.generateHTMLindex(args.directory)
-      man.generateHTMLnavbar(args.directory, keywords)
-      man.generateHTMLintro(args.directory)
-    end
-  end
-
   keywords.each do |keyword|
-    if args.outputFormat == :html
-      man.generateHTMLreference(args.directory, keyword)
-    else
-      puts man.to_s(keyword)
-    end
+    puts man.to_s(keyword)
   end
 
   #$stderr.puts "#{AppConfig.packageName} v#{AppConfig.version} - " +

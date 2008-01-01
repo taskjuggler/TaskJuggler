@@ -2,12 +2,15 @@
 
 version=`grep "AppConfig.version =" lib/Tj3Config.rb | sed "s/.*'\(.*\)'/\1/g"`
 gem=pkg/TaskJuggler-${version}.gem
-echo "Building ${gem}..."
 
 sed "s/X\.X\.X/$version/g" README.in > README
 sed "s/X\.X\.X/$version/g" Rakefile.in > Rakefile 
 
+echo "Generating User Manual..."
+cd lib ; ruby UserManual.rb ; cd ..
+echo "Generating Code Documentation..."
 rdoc -S README TODO lib || exit 1
+echo "Building ${gem}..."
 rake pkg/taskjuggler3-${version}.gem || exit 1
 
 

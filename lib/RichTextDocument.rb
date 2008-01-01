@@ -17,11 +17,19 @@ class RichTextDocument
     @snippets = []
     @dirty = false
     @sectionCounter = [ 0, 0, 0 ]
+    @toc = nil
   end
 
   def addSnip(file)
     @snippets << RichTextSnip.new(self, file, @sectionCounter)
     @dirty = true
+  end
+
+  def tableOfContents
+    @toc = TableOfContents.new
+    @snippets.each do |snip|
+      snip.tableOfContents(@toc, snip.name)
+    end
   end
 
   def generateHTML(directory = '')
@@ -59,15 +67,15 @@ private
                            'content' => 'text/html; charset=iso-8859-1')
     html << (body = XMLElement.new('body'))
 
-    generateHTMLCover(body)
+    body << generateHTMLCover
 
-    toc = TableOfContents.new
-    @snippets.each do |snip|
-      snip.tableOfContents(toc, snip.name)
-    end
-    body << toc.to_html
+    body << @toc.to_html
 
-    generateHTMLFooter(body)
+    body << XMLElement.new('br')
+    body << XMLElement.new('hr')
+    body << XMLElement.new('br')
+
+    body << generateHTMLFooter
 
     html.write(directory + 'toc.html')
   end

@@ -13,13 +13,25 @@ can. This can range from helping out other users with their first
 Linux installation to actively contributing to the TaskJuggler
 Project, not just as a programmer. The following section describes,
 how you can contribute to any of the components that are part of the
-TaskJuggler software releases.  Preparing a contribution
+TaskJuggler software releases.  
+
+==== Preparing a contribution ====
 
 All TaskJuggler development is coordinated using the
 [http://git.or.cz/ Git revision control system]. All changes must be
-submitted using git so that we can track the authorship of each
-submission. To contribute you need to have at least git version 1.5.0
-installed. As a first step, you need to checkout the latest version of
+submitted using Git so that we can track the authorship of each
+submission. To contribute you need to have at least Git version 1.5.0
+installed. Git was developed as a tool for the Linux Kernel
+developers but is now very popular with many other Open Source
+projects as well. Git and the TaskJuggler development environment are
+primarily designed to be used on Linux or Unix-like systems. While it
+is possible to use it on other systems such as Microsoft Windows, we
+do not recommend this. If you can't switch to a Linux installation
+for your TaskJuggler contributions, you should consider using a Linux
+Live (or bootable) CD/DVD or use a VmWare Player image of a Linux
+distribution.
+
+As a first step, you need to checkout the latest version of
 the TaskJuggler. This will create a directory called taskjuggler in
 your current directory. It not only contains the latest sources, but
 also the full revision history of the code. It is your local copy of
@@ -27,7 +39,7 @@ the TaskJuggler source repository.
 
  git clone http://www.taskjuggler.org/git-repos/taskjuggler.git
 
-If you have never used git before, you need to configure it first. You
+If you have never used Git before, you need to configure it first. You
 need to set your name and email address. This information will be
 present in all patches that you submit.
 
@@ -115,7 +127,7 @@ them. It is always a good idea to check for upstream changes again.
 
 This makes sure you are really committing your patches against the
 latest version of the source code. In case there were upstream
-changes, you need to merge them first. Usually git does this
+changes, you need to merge them first. Usually Git does this
 automatically. Refer to the
 [http://www.kernel.org/pub/software/scm/git/docs/user-manual.html Git
 manual] for details on resolving conflicts during merges. Now you can
@@ -128,19 +140,42 @@ You then need to attach these files to a posting in the
 [http://www.taskjuggler.org/FUDforum2/index.php?t=thread&frm_id=5
 TaskJuggler Developer Forum].
 
-==== Contributing Translations ====
+==== Contributing to the User Manual ====
 
-Another possible area of contribution are translations of TaskJuggler
-into languages other than US-English. Our development process is in
-principle prepared for translations, but the first translation will
-definitely be a bit difficult to do. TaskJuggler has several hundred
-messages and more than two hundred pages of documentation. Any
-translation is a significant effort and an ongoing commitment.
-TaskJuggler is still actively developed and this will require the
-translations to be updated as well. Please understand that we do not
-want to ship partial or outdated translations to our users, so please
-ensure you or a group of people are willing to maintain the
-translations.
+The user manual is currently a rough port of the 2.x manual. It
+contains many inaccuracies and does not provide much more than a
+tutorial and a syntax reference. Any help to turn this into a real
+user manual is appreciated.
+
+The manual is automatically generated. The sources for normal pages
+are in MediaWiki format and can be found in the ''''manual''''
+directory of the source distribution. The information information in
+the syntax reference is extracted from the TJP parser. It can be
+found in the file ''''lib/TjpSyntaxRules.rb''''. The following
+commands build the HTML files for the manual in the
+''''data/manual'''' directory.
+
+ cd lib
+ ruby UserManual.rb 
+
+==== Contributing to the Test Suite ====
+
+The test suite can be found in the ''''test'''' directory. It
+contains unit and system tests but is very rudimentary at the moment.
+Adding more system tests to the CSV-Report directory is probably the
+best place to start.
+
+==== Contributing to the Ruby code ====
+
+For the first stable TaskJuggler III release we should have all 2.x
+features supported. The few things that break backwards compatibility
+should be documented in the [[TaskJuggler_2x_Migration]] section.
+
+In general, patches are very welcome. Please follow the coding style
+and naming conventions used in the existing code. Larger changes
+should be preceded by a discussion in the
+[http://www.taskjuggler.org/FUDforum2/index.php?t=thread&frm_id=5
+TaskJuggler Developer Forum].
 
 ==== Some final words to Contributors ====
 

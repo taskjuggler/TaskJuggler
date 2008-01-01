@@ -31,7 +31,7 @@ class KeywordDocumentation
   # Array of ParserTokenDoc that describe the arguments of the _pattern_.
   # _optAttrPatterns_ is an Array with references to TextParserPatterns that
   # are optional attributes to this keyword.
-  def initialize(rule, pattern, syntax, args, optAttrPatterns)
+  def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
     @rule = rule
     @pattern = pattern
     @keyword = pattern.keyword
@@ -40,6 +40,7 @@ class KeywordDocumentation
     # Hash that maps patterns of optional attributes to a boolean value. It is
     # true if the pattern is a scenario specific attribute.
     @optAttrPatterns = optAttrPatterns
+    @manual = manual
     # The above hash is later converted into a list that points to the keyword
     # documentation of the optional attribute.
     @optionalAttributes = []
@@ -88,6 +89,18 @@ class KeywordDocumentation
       end
       @seeAlso << keywords[also]
     end
+  end
+
+  # Return the keyword name in a more readable form. E.g. 'foo.bar' is
+  # returned as 'foo (bar)'. 'foo' will remain 'foo'.
+  def title
+    kwTokens = @keyword.split('.')
+    if kwTokens.size == 1
+      title = @keyword
+    else
+      title = "#{kwTokens[0]} (#{kwTokens[1]})"
+    end
+    title
   end
 
   # Return the complete documentation of this keyword as formatted text
@@ -189,86 +202,12 @@ class KeywordDocumentation
     html = HTMLDocument.new(:transitional)
     html << (head = XMLElement.new('head'))
     head << XMLNamedText.new("#{keyword}", 'title')
-    head << (style = XMLElement.new('style', 'type' => 'text/css'))
-    style << XMLBlob.new(<<'EOT'
-pre {
-  font-size:16px;
-  font-family: Courier;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:0px;
-  padding-bottom:0px;
-}
-p {
-  margin-top:8px;
-  margin-bottom:8px;
-}
-code {
-  font-size:16px;
-  font-family: Courier;
-}
-.table {
-  background-color:#ABABAB;
-  width:90%;
-  margin-left:5%;
-  margin-right:5%;
-}
-.tag {
-  background-color:#E0E0F0;
-  font-size:16px;
-  font-weight:bold;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-.descr {
-  background-color:#F0F0F0;
-  font-size:16px;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-EOT
-               )
-    html << (body = XMLElement.new('body'))
-    body << (headline = XMLElement.new('div', 'align' => 'center'))
-    headline << XMLNamedText.new(
-      "The #{AppConfig.packageName} Syntax Reference Manual", 'h2',
-      'align' => 'center')
-    headline << XMLNamedText.new(
-      'Project Management beyond Gantt Chart Drawing', 'em',
-      'align' => 'center')
-    body << XMLElement.new('hr')
+    head << @manual.generateStyleSheet
 
-    # Navigation bar
-    if @predecessor || @successor
-      body << (tab = XMLElement.new('table',
-        'style' => 'width:90%; margin-left:5%; margin-right:5%'))
-      tab << (tr = XMLElement.new('tr'))
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:left; width:35%;'))
-      if @predecessor
-        td << XMLText.new('<< ')
-        td << XMLNamedText.new("#{@predecessor.keyword}", 'a',
-                               'href' => "#{@predecessor.keyword}.html")
-        td << XMLText.new(' <<')
-      end
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:center; width:30%;'))
-      td << XMLNamedText.new('Intro', 'a', 'href' => 'intro.html')
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:right; width:35%;'))
-      if @successor
-        td << XMLText.new('>> ')
-        td << XMLNamedText.new("#{@successor.keyword}", 'a',
-                               'href' => "#{@successor.keyword}.html")
-        td << XMLText.new(' >>')
-      end
-      body << XMLElement.new('hr')
-    end
-    body << XMLElement.new('br')
+    html << (body = XMLElement.new('body'))
+    body << @manual.generateHTMLHeader
+
+    body << generateHTMLNavigationBar
 
     body << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
@@ -344,7 +283,7 @@ EOT
         else
           td << XMLText.new(', ')
         end
-        keywordHTMLRef(td, context.keyword)
+        keywordHTMLRef(td, context)
       end
     end
 
@@ -365,7 +304,7 @@ EOT
           td << XMLText.new(', ')
         end
         td << XMLText.new('[sc:]') if attr.scenarioSpecific
-        keywordHTMLRef(td, attr.keyword)
+        keywordHTMLRef(td, attr)
       end
     end
 
@@ -380,18 +319,12 @@ EOT
         else
           td << XMLText.new(', ')
         end
-        keywordHTMLRef(td, also.keyword)
+        keywordHTMLRef(td, also)
       end
     end
 
-    body << XMLElement.new('br')
-    body << XMLElement.new('hr')
-    body << (div = XMLElement.new('div', 'align' => 'center',
-                                  'style' => 'font-size:10px;'))
-    div << XMLText.new("Copyright (c) #{AppConfig.copyright.join(', ')} by " +
-                       "#{AppConfig.authors.join(', ')}.")
-    div << XMLNamedText.new('TaskJuggler', 'a', 'href' => AppConfig.contact)
-    div << XMLText.new(' is a trademark of Chris Schlaeger.')
+    body << generateHTMLNavigationBar
+    body << @manual.generateHTMLFooter
 
     if directory
       html.write(directory + "#{keyword}.html")
@@ -482,8 +415,19 @@ private
     out += word
   end
 
+  # Generate the navigation bar.
+  def generateHTMLNavigationBar
+    @manual.generateHTMLNavigationBar(
+      @predecessor ? @predecessor.title : nil,
+      @predecessor ? "#{@predecessor.keyword}.html" : nil,
+      @successor ? @successor.title : nil,
+      @successor ? "#{@successor.keyword}.html" : nil)
+  end
+
+  # Return a HTML object with a link to the manual page for the keyword.
   def keywordHTMLRef(parent, keyword)
-    parent << XMLNamedText.new(keyword, 'a', 'href' => "#{keyword}.html")
+    parent << XMLNamedText.new(keyword.title,
+                               'a', 'href' => "#{keyword.keyword}.html")
   end
 
   # This function is primarily a wrapper around the RichText constructor. It

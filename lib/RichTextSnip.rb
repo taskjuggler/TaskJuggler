@@ -11,11 +11,20 @@
 require 'RichText'
 require 'HTMLDocument'
 
+# A RichTextSnip is a building block for a RichTextDocument. It represents the
+# contense of a text file that contains structured text using the RichText
+# syntax. The class can read-in such a text file and generate an equivalent
+# HTML version.
 class RichTextSnip
 
   attr_reader :name
   attr_accessor :prevSnip, :nextSnip
 
+  # Create a RichTextSnip object. _document_ is a reference to the
+  # RichTextDocument. _fileName_ is the name of the structured text file using
+  # RichText syntax. _sectionCounter_ is an 3 item Fixnum Array. These 3
+  # numbers are used to store the section counters over multiple RichTextSnip
+  # objects.
   def initialize(document, fileName, sectionCounter)
     @document = document
     # Strip any directories from fileName.
@@ -38,101 +47,44 @@ class RichTextSnip
     @prevSnip = @nextSnip = nil
   end
 
+  # Generate a TableOfContents object from the section headers of the
+  # RichTextSnip.
   def tableOfContents(toc, fileName)
     @richText.tableOfContents(toc, fileName)
   end
 
+  # Generate a HTML version of the structured text. The base file name is the
+  # same as the original file. _directory_ is the name of the output
+  # directory.
   def generateHTML(directory = '')
     html = HTMLDocument.new
     html << (head = XMLElement.new('head'))
     head << XMLNamedText.new(@name, 'title')
     head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
                            'content' => 'text/html; charset=iso-8859-1')
-    head << (style = XMLElement.new('style', 'type' => 'text/css'))
-    style << XMLBlob.new(<<'EOT'
-pre {
-  font-size:16px;
-  font-family: Courier;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:0px;
-  padding-bottom:0px;
-}
-p {
-  margin-top:8px;
-  margin-bottom:8px;
-}
-code {
-  font-size:16px;
-  font-family: Courier;
-}
-.table {
-  background-color:#ABABAB;
-  width:90%;
-  margin-left:5%;
-  margin-right:5%;
-}
-.tag {
-  background-color:#E0E0F0;
-  font-size:16px;
-  font-weight:bold;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-.descr {
-  background-color:#F0F0F0;
-  font-size:16px;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-EOT
-               )
+    head << @document.generateStyleSheet
 
     html << (body = XMLElement.new('body'))
-    @document.generateHTMLHeader(body)
-    generateHTMLNavigationBar(body)
+    body << @document.generateHTMLHeader
+    body << generateHTMLNavigationBar
 
     body << (div = XMLElement.new('div',
       'style' => 'width:90%; margin-left:5%; margin-right:5%'))
     div << @richText.to_html
-    @document.generateHTMLFooter(body)
+    body << generateHTMLNavigationBar
+    body << @document.generateHTMLFooter
 
     html.write(directory + @name + '.html')
   end
 
 private
 
-  def generateHTMLNavigationBar(html)
-    # Generate the 'previous'/'next' navigation elements.
-    if @prevSnip || @nextSnip
-      html << (tab = XMLElement.new('table',
-        'style' => 'width:90%; margin-left:5%; margin-right:5%'))
-      tab << (tr = XMLElement.new('tr'))
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:left; width:35%;'))
-      if @prevSnip
-        td << XMLText.new('<< ')
-        td << XMLNamedText.new("#{@prevSnip.name}", 'a',
-                               'href' => "#{@prevSnip.name}.html")
-        td << XMLText.new(' <<')
-      end
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:center; width:30%;'))
-      td << XMLNamedText.new('Index', 'a', 'href' => 'toc.html')
-      tr << (td = XMLElement.new('td',
-        'style' => 'text-align:right; width:35%;'))
-      if @nextSnip
-        td << XMLText.new('>> ')
-        td << XMLNamedText.new("#{@nextSnip.name}", 'a',
-                               'href' => "#{@nextSnip.name}.html")
-        td << XMLText.new(' >>')
-      end
-      html << XMLElement.new('hr')
-    end
+  def generateHTMLNavigationBar
+    @document.generateHTMLNavigationBar(
+      @prevSnip ? @prevSnip.name : nil,
+      @prevSnip ? "#{prevSnip.name}.html" : nil,
+      @nextSnip ? @nextSnip.name : nil,
+      @nextSnip ? "#{nextSnip.name}.html" : nil)
   end
 
 end
