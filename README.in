@@ -12,7 +12,7 @@ even use it on Windows and MacOS X.
 
 = Copyright and License
 
-TaskJuggler is (c) 2006, 2007 by Chris Schlaeger <cs (at) kde (dot) org>
+TaskJuggler is (c) 2006, 2007, 2008 by Chris Schlaeger <cs (at) kde (dot) org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of {version 2 of the GNU General Public
@@ -78,26 +78,14 @@ Updates work just like the installation.
 
 = Using TaskJuggler III
 
-There is currently no consistent user manual available. But you can
-get along pretty well by using the {TaskJuggler 2.x
-manual}[http://www.taskjuggler.org/manual-git/index.html] and the
-TaskJuggler III {syntax
-reference}[http://www.taskjuggler.org/tj3/refman/index.html].
+The user manual can be found in folder data/manual of the Gem file or
+at the {TaskJuggler Web Site}[http://www.taskjuggler.org/tj3/manual/index.html].
 
-= Bugs reports, sending patches and other feedback
+= Understanding the source code
 
-This Ruby implementation of TaskJuggler[http://www.taskjuggler.org] is
-just a prototype. Feedback is welcome, but don't expect any kind of
-support. Certain feature are still missing or don't work properly
-yet.! Please post a message on the {TaskJuggler
-Forum}[http://www.taskjuggler.org/FUDforum2/] to get in contact with
-the developers or other users. Don't forget to upload a small sample
-project to illustrate the problem you are reporting.
-
-For legal reasons, we want to track the authors of all contributions.
-Therefore we only accept patches in
-Git[http://www.kernel.org/pub/software/scm/git/docs/] format. Patches
-should only be made against the latest development version. The
-TaskJuggler 2.x manual has a good description on {how to contribute
-patches}[http://www.taskjuggler.org/manual-git/how_to_contribute.html].
+Ruby code is usually pretty readable even if you don't know Ruby yet.
+Additionally, we have tried to document all critical parts of the
+code well enough for other people to understand the code. When
+browsing the code you should start with the file
+taskjuggler3.rb and the class TaskJuggler.
 

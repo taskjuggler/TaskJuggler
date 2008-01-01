@@ -11,10 +11,15 @@
 require 'Project'
 require 'MessageHandler'
 
+# The TaskJuggler class models the object that provides access to the
+# fundamental features of the TaskJuggler software. It can read project
+# files, schedule them and generate the reports.
 class TaskJuggler
 
   attr_reader :messageHandler
 
+  # Create a new TaskJuggler object. _console_ is a boolean that determines
+  # whether or not messsages can be written to $stderr.
   def initialize(console)
     @project = nil
     @messageHandler = MessageHandler.new(console)
@@ -47,11 +52,16 @@ class TaskJuggler
     @messageHandler.messages.empty?
   end
 
+  # Schedule all scenarios in the project. Return true if no error was
+  # detected, false otherwise.
   def schedule
     #puts @project.to_s
     @project.schedule
   end
 
+  # Generate all specified reports. The project must have be scheduled before
+  # this method can be called. It returns true if no error occured, false
+  # otherwise.
   def generateReports
     @project.generateReports
   end
