@@ -15,14 +15,19 @@ require 'TOCEntry'
 # TOCEntry objects. Each TOCEntry objects represents the title of a section.
 class TableOfContents
 
+  # Create an empty TableOfContents object.
   def initialize
     @entries = []
   end
 
+  # This method must be used to add new TOCEntry objects to the
+  # TableOfContents. _entry_ must be a TOCEntry object reference.
   def addEntry(entry)
     @entries << entry
   end
 
+  # Return HTML elements that represent the content of the TableOfContents
+  # object. The result is a tree of XMLElement objects.
   def to_html
     div = XMLElement.new('div', 'style' => 'margin-left:15%; margin-right:15%;')
     div << (table = XMLElement.new('table'))

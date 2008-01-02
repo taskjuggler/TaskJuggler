@@ -57,6 +57,12 @@ class SyntaxReference
     @keywords.each_value do |kwd|
       kwd.crossReference(@keywords, @parser.rules)
     end
+
+    # Figure out whether the keyword describes an inheritable attribute or
+    # not.
+    @keywords.each_value do |kwd|
+      kwd.computeInheritance(@keywords, @parser.rules)
+    end
   end
 
   # Return a sorted Array with all keywords.
@@ -82,12 +88,11 @@ class SyntaxReference
     keywords = all
     # Set the chapter name to 'Syntax Reference' with a link to the first
     # keyword.
-    toc.addEntry(TOCEntry.new(sectionPrefix, 'Syntax Reference', nil,
-                              keywords[0]))
+    toc.addEntry(TOCEntry.new(sectionPrefix, 'Syntax Reference', keywords[0]))
     i = 1
     keywords.each do |keyword|
       title = @keywords[keyword].title
-      toc.addEntry(TOCEntry.new("#{sectionPrefix}.#{i}", title, nil, keyword))
+      toc.addEntry(TOCEntry.new("#{sectionPrefix}.#{i}", title, keyword))
       i += 1
     end
   end

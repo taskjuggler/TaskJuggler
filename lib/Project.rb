@@ -57,7 +57,8 @@ require 'ProjectFileParser'
 # Attributes.
 class Project
 
-  attr_reader :tasks, :resources, :scenarios, :reports, :messageHandler
+  attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
+              :reports, :messageHandler
 
   # Create a project with the specified _id_, _name_ and _version_.
   # _messageHandler_ is a MessageHandler reference that is used to handle all

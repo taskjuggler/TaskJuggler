@@ -23,7 +23,8 @@ require 'RichText'
 class KeywordDocumentation
 
   attr_reader :keyword, :pattern
-  attr_accessor :contexts, :scenarioSpecific, :predecessor, :successor
+  attr_accessor :contexts, :scenarioSpecific, :inheritable,
+                :predecessor, :successor
 
   # Construct a new KeywordDocumentation object. _rule_ is the TextParserRule
   # and _pattern_ is the corresponding TextParserPattern. _syntax_ is an
@@ -88,6 +89,32 @@ class KeywordDocumentation
         raise "See also reference #{also} of #{@pattern} is unknown"
       end
       @seeAlso << keywords[also]
+    end
+  end
+
+  def computeInheritance(keywords, rules)
+    property = nil
+    @contexts.each do |kwd|
+      if %w( task resource account shift scenario).include?(kwd.keyword)
+        property = kwd.keyword
+        break
+      end
+    end
+    if property
+      project = Project.new('id', 'dummy', '1.0', nil)
+      propertySet = case property
+                    when 'task'
+                      project.tasks
+                    when 'resource'
+                      project.resources
+                    when 'account'
+                      project.accounts
+                    when 'shift'
+                      project.shifts
+                    when 'scenario'
+                      project.scenarios
+                    end
+      @inheritable = propertySet.inheritable?(keyword)
     end
   end
 
@@ -201,14 +228,14 @@ class KeywordDocumentation
   def generateHTML(directory)
     html = HTMLDocument.new(:transitional)
     html << (head = XMLElement.new('head'))
-    head << XMLNamedText.new("#{keyword}", 'title')
-    head << @manual.generateStyleSheet
+    head << XMLNamedText.new("#{keyword}", 'title') <<
+      @manual.generateStyleSheet
 
     html << (body = XMLElement.new('body'))
-    body << @manual.generateHTMLHeader
+    body << @manual.generateHTMLHeader <<
+      generateHTMLNavigationBar
 
-    body << generateHTMLNavigationBar
-
+    # Box with keyword name.
     body << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
                                'class' => 'table'))
@@ -216,17 +243,10 @@ class KeywordDocumentation
     tab << (tr = XMLElement.new('tr', 'align' => 'left'))
     tr << XMLNamedText.new('Keyword', 'td', 'class' => 'tag',
                           'style' => 'width:15%')
-    tr << XMLNamedText.new(@keyword, 'td', 'class' => 'descr',
-                           'style' => 'width:35%')
-    tr << XMLNamedText.new('Scenario Specific', 'td', 'class' => 'tag',
-                           'style' => 'width:20%')
-    tr << XMLNamedText.new("#{@scenarioSpecific ? 'Yes' : 'No'}", 'td',
-                           'class' => 'descr', 'style' => 'width:10%')
-    tr << XMLNamedText.new('Inheritable', 'td', 'class' => 'tag',
-                           'style' => 'width:15%')
-    tr << XMLNamedText.new("#{@inheritable ? 'Yes' : 'No'}", 'td',
-                           'class' => 'descr', 'style' => 'width:5%')
+    tr << XMLNamedText.new(title, 'td', 'class' => 'descr',
+                           'style' => 'width:85%; font-weight:bold')
 
+    # Box with purpose, syntax, arguments and context.
     body << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
                                'class' => 'table'))
@@ -273,7 +293,8 @@ class KeywordDocumentation
     tr << XMLNamedText.new('Context', 'td', 'class' => 'tag')
     if @contexts.empty?
       tr << (td = XMLElement.new('td', 'class' => 'descr'))
-      td << XMLNamedText.new('Global scope', 'a', 'href' => 'intro.html')
+      td << XMLNamedText.new('Global scope', 'a',
+        'href' => 'Getting_Started.html#Structure_of_a_TJP_File')
     else
       tr << (td = XMLElement.new('td', 'class' => 'descr'))
       first = true
@@ -284,27 +305,6 @@ class KeywordDocumentation
           td << XMLText.new(', ')
         end
         keywordHTMLRef(td, context)
-      end
-    end
-
-    tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-    tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag')
-    if @optionalAttributes.empty?
-      tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
-    else
-      @optionalAttributes.sort! do |a, b|
-        a.keyword <=> b.keyword
-      end
-      tr << (td = XMLElement.new('td', 'class' => 'descr'))
-      first = true
-      @optionalAttributes.each do |attr|
-        if first
-          first = false
-        else
-          td << XMLText.new(', ')
-        end
-        td << XMLText.new('[sc:]') if attr.scenarioSpecific
-        keywordHTMLRef(td, attr)
       end
     end
 
@@ -320,6 +320,70 @@ class KeywordDocumentation
           td << XMLText.new(', ')
         end
         keywordHTMLRef(td, also)
+      end
+    end
+
+    # Box with attributes.
+    unless @optionalAttributes.empty?
+      @optionalAttributes.sort! do |a, b|
+        a.keyword <=> b.keyword
+      end
+      hasScenSpec = hasInheritable = false
+      none = []
+      scenSpec = []
+      inheritable = []
+      scenSpecInheritable = []
+      @optionalAttributes.each do |attr|
+        if attr.inheritable
+          hasInheritable = true
+          if attr.scenarioSpecific
+            hasScenSpec = true
+            scenSpecInheritable << attr
+          else
+            inheritable << attr
+          end
+        else
+          if attr.scenarioSpecific
+            hasScenSpec = true
+            scenSpec << attr
+          else
+            none << attr
+          end
+        end
+      end
+      body << (p = XMLElement.new('p'))
+      p << (tab = XMLElement.new('table', 'align' => 'center',
+                               'class' => 'table'))
+      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+      tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
+                             'style' => 'width:15%')
+      if hasScenSpec || hasInheritable
+        tr << XMLNamedText.new('Scenario specific', 'td', 'class' => 'tag',
+                               'style' => 'width:42%')
+        tr << XMLNamedText.new('Not scenario specific', 'td', 'class' => 'tag',
+                               'style' => 'width:43%')
+        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+        tr << XMLNamedText.new('Inheritable', 'td', 'class' => 'tag',
+                               'style' => 'width:15%')
+        tr << listHTMLAttributes(scenSpecInheritable, 42)
+        tr << listHTMLAttributes(inheritable, 43)
+        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+        tr << XMLNamedText.new('Not inheritable', 'td', 'class' => 'tag',
+                               'style' => 'width:15%')
+        tr << listHTMLAttributes(scenSpec, 42)
+        tr << listHTMLAttributes(none, 43)
+      else
+        tr << (td = XMLElement.new('td', 'class' => 'descr'))
+        first = true
+        @optionalAttributes.each do |attr|
+          if first
+            first = false
+          else
+            td << XMLText.new(', ')
+          end
+          td << XMLText.new('[sc:]') if attr.scenarioSpecific
+          keywordHTMLRef(td, attr)
+        end
       end
     end
 
@@ -442,6 +506,25 @@ private
                    "#{msg.line}"
     end
     rText
+  end
+
+  # Utility function to turn a list of keywords into a comma separated list of
+  # HTML references to the files of these keywords. All embedded in a table
+  # cell element. _list_ is the KeywordDocumentation list. _width_ is the
+  # percentage width of the cell.
+  def listHTMLAttributes(list, width)
+    td = XMLElement.new('td', 'class' => 'descr', 'style' => "width:#{width}%")
+    first = true
+    list.each do |attr|
+      if first
+        first = false
+      else
+        td << XMLText.new(', ')
+      end
+      keywordHTMLRef(td, attr)
+    end
+
+    td
   end
 
 end

@@ -76,7 +76,7 @@ class RichTextElement
       # title.
       title = children_to_s
       tag = convertToID(title)
-      toc.addEntry(TOCEntry.new(number, title, tag, fileName))
+      toc.addEntry(TOCEntry.new(number, title, fileName, tag))
     else
       # Recursively extract the TOC from the child objects.
       @children.each do |el|

@@ -13,10 +13,10 @@ in your favorite text editor and in a command shell.
 
 The commandline version of TaskJuggler works like a compiler. You
 provide the source files, it computes the contents and creates the
-output files. Let's say you have a project file called AcSo.tjp. It
-contains the tasks of your project and their dependencies. To schedule
-the project and create report files you have to ask TaskJuggler to
-process it.
+output files. Let's say you have a project file called
+''''AcSo.tjp''''. It contains the tasks of your project and their
+dependencies. To schedule the project and create report files you have
+to ask TaskJuggler to process it.
 
  tj3 AcSo.tjp
 
@@ -24,4 +24,29 @@ TaskJuggler will try to schedule all tasks with the specified
 conditions and generate the reports that were requested with the
 htmltaskreport, htmlresourcereport or other report properties in the
 input file.
+
+=== Structure of a TJP File ===
+
+Each TaskJuggler project consists of one or more text files. There is
+always a main project file that may include other files. The main
+file name should have a ''''.tjp'''' suffix, the included files must
+have a ''''.tji'''' suffix.
+
+Every project must start with a [[project project header]]. The header
+must then be followed by any number of project properties such as
+[[account accounts]], [[resource resources]] and [[task tasks]]. Each
+project must have at least one task defined and should have at least
+one [[reports report]].  Properties don't have to be listed in a
+particular order, but may have interdependencies that require such an
+order. It is therefor recommended to define them in the following
+sequence.
+
+* [[macro macros]]
+* [[flags]]
+* [[acount accounts]]
+* [[shift shifts]]
+* [[vacation vacations]]
+* [[resource resources]]
+* [[task tasks]]
+* [[reports]]
 

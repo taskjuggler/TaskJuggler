@@ -11,8 +11,15 @@
 require 'RichTextSnip'
 require 'TableOfContents'
 
+# A RichTextDocument object collect a set of structured text files into a
+# single document. This document may have a consistent table of contents
+# across all files and can be turned into a set of corresponding HTML files.
+# This class is an abstract class. To use it, a derrived class must define the
+# functions generateHTMLCover, generateStyleSheet, generateHTMLHeader and
+# generateHTMLFooter.
 class RichTextDocument
 
+  # Create a new empty RichTextDocument object.
   def initialize
     @snippets = []
     @dirty = false
@@ -20,11 +27,16 @@ class RichTextDocument
     @toc = nil
   end
 
+  # Add a new structured text file to the document. _file_ must be the name of
+  # a file with RichText compatible syntax elements.
   def addSnip(file)
     @snippets << RichTextSnip.new(self, file, @sectionCounter)
     @dirty = true
   end
 
+  # Call this method to generate a table of contents for all files that were
+  # registered so far. The table of contents is stored internally and will be
+  # used when the document is produced in a new format.
   def tableOfContents
     @toc = TableOfContents.new
     @snippets.each do |snip|
@@ -32,8 +44,13 @@ class RichTextDocument
     end
   end
 
+  # Generate HTML files for all registered text files. The files have the same
+  # name as the orginal files with '.html' appended. The files will be
+  # generated into the _directory_. _directory_ must be empty or a valid path
+  # name that is terminated with a '/'. A table of contense is generated into
+  # a file called 'toc.html'.
   def generateHTML(directory = '')
-    cleanUp
+    crossReference
 
     generateHTMLTableOfContents(directory)
 
@@ -44,7 +61,10 @@ class RichTextDocument
 
 private
 
-  def cleanUp
+  # Register the previous and next file with each of the text files. This
+  # function is used by the output generators to have links to the next and
+  # previous file in the sequence embedded into the generated files.
+  def crossReference
     return unless @dirty
 
     prevSnip = nil
@@ -59,23 +79,21 @@ private
     @dirty = false
   end
 
+  # Generate a HTML file with the table of contense for all registered files.
   def generateHTMLTableOfContents(directory)
     html = HTMLDocument.new
     html << (head = XMLElement.new('head'))
-    head << XMLNamedText.new('Index', 'title')
-    head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                           'content' => 'text/html; charset=iso-8859-1')
+    head << XMLNamedText.new('Index', 'title') <<
+      XMLElement.new('meta', 'http-equiv' => 'Content-Type',
+                     'content' => 'text/html; charset=iso-8859-1')
     html << (body = XMLElement.new('body'))
 
-    body << generateHTMLCover
-
-    body << @toc.to_html
-
-    body << XMLElement.new('br')
-    body << XMLElement.new('hr')
-    body << XMLElement.new('br')
-
-    body << generateHTMLFooter
+    body << generateHTMLCover <<
+      @toc.to_html <<
+      XMLElement.new('br') <<
+      XMLElement.new('hr') <<
+      XMLElement.new('br') <<
+      generateHTMLFooter
 
     html.write(directory + 'toc.html')
   end
