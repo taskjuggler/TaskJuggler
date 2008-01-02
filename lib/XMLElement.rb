@@ -60,12 +60,14 @@ class XMLElement
     else
       out << '>'
       @children.each do |child|
-        if @children.size > 1 && !child.is_a?(XMLText)
+        # We only insert newlines for multiple childs and after a tag has been
+        # closed.
+        if @children.size > 1 && !child.is_a?(XMLText) && out[-1] == ?>
           out << "\n" + indentation(indent + 1)
         end
         out << child.to_s(indent + 1)
       end
-      out << "\n" + indentation(indent) if @children.size > 1
+      out << "\n" + indentation(indent) if @children.size > 1 && out[-1] == ?>
       out << '</' + @name + '>'
     end
   end

@@ -191,7 +191,7 @@ class RichTextScanner
           @pos += 'nowiki>'.length
           @wikiEnabled = false
           next
-        elsif peekMatch('/nowiki')
+        elsif peekMatch('/nowiki>')
           # Turn most wiki markup interpretation on.
           @pos += '/nowiki>'.length
           @wikiEnabled = true
@@ -271,12 +271,12 @@ private
     c
   end
 
-  # Return one or more characters. _n_ is the number of characters to more
+  # Return one or more characters. _n_ is the number of characters to move
   # back the cursor.
   def returnChar(n = 1)
     crossedNewline = false
     if @pos <= @textLength && @pos >= n
-      # Check for newlines an update @lineNo accordingly.
+      # Check for newlines and update @lineNo accordingly.
       0.upto(n - 1) do |i|
         if @text[@pos - i - 1] == ?\n
           crossedNewline = true
@@ -305,7 +305,7 @@ private
   # Return true if the next characters match exactly the character sequence in
   # word.
   def peekMatch(word)
-    return @text[@pos, word.length] == word
+    @text[@pos, word.length] == word
   end
 
   # Read a sequence of characters that are all contained in the _chars_ Array.

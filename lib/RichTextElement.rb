@@ -9,6 +9,7 @@
 #
 
 require 'TjException'
+require 'XMLElement'
 
 # The RichTextElement class models the nodes of the intermediate
 # representation that the RichTextParser generates. Each node can reference an
@@ -105,7 +106,7 @@ class RichTextElement
       pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "\n\n"
     when :hline
-      pre = "#{'-' * @richText.lineWidth - 4}\n"
+      return "#{'-' * (@richText.lineWidth - 4)}\n"
     when :paragraph
       post = "\n\n"
     when :pre
@@ -140,12 +141,11 @@ class RichTextElement
     when :bold
     when :code
     when :text
-      post = ' '
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"
     end
 
-    pre + @children.join(' ') + post
+    pre + children_to_s + post
   end
 
   # Convert the tree of RichTextElement nodes into an XML like text
@@ -237,7 +237,7 @@ class RichTextElement
       post = '</code>'
     when :text
       pre = '['
-      post = '] '
+      post = ']'
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"
     end
@@ -247,7 +247,7 @@ class RichTextElement
       if el.is_a?(RichTextElement)
         out << el.to_tagged
       else
-        out << el
+        out << el.to_s
       end
     end
 
@@ -283,7 +283,8 @@ class RichTextElement
     when :paragraph
       XMLElement.new('p')
     when :pre
-      XMLElement.new('pre')
+      pre = XMLElement.new('pre')
+      pre << XMLText.new(@children[0])
     when :bulletlist1
       XMLElement.new('ul')
     when :bulletitem1
@@ -327,23 +328,24 @@ class RichTextElement
     when :code
       XMLElement.new('code')
     when :text
+      XMLText.new(@children[0])
     else
       raise TjException.new, "Unknown RichTextElement category #{@category}"
     end
 
-    # Horizontal lines never have leaves.
-    return html if @category == :hline
+    # Some elements never have leaves.
+    return html if [ :text, :pre, :hline ].include?(@category)
 
+    prependSpace = false
     @children.each do |el|
-      if el.is_a?(RichTextElement)
-        html << el.to_html
-      else
-        if html
-          html << XMLText.new(el)
-        else
-          html = XMLText.new(el + " ")
-        end
+      # Only insert spaces after words or word elements and not before
+      # puctuation marks.
+      if prependSpace && !(el.category == :text &&
+                           [ ?., ?,, ??, ?!, ?;].include?(el.children[0][0]))
+        html << XMLText.new(' ')
       end
+      html << el.to_html
+      prependSpace = [ :text, :code, :italic, :bold ].include?(el.category)
     end
 
     html
@@ -352,12 +354,14 @@ class RichTextElement
   # Convert all childern into a single plain text String.
   def children_to_s
     text = ''
-    @children.each do |el|
-      if el.is_a?(RichTextElement)
-        text << el.to_s
-      else
-        text << el
-      end
+    @children.each do |c|
+      str = c.to_s
+      # Only insert a space in front of the child text if the last char in the
+      # text buffer is not a newline or the first char of the child text is a
+      # puctuation char.
+      text += ' ' unless text.empty? || text[-1] == ?\n ||
+                         [ ?., ?,, ??, ?!, ?;].include?(str[0])
+      text << c.to_s
     end
     text
   end
