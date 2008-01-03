@@ -88,6 +88,24 @@ class RichTextElement
     toc
   end
 
+  # Return an Array with all other snippet names that are referenced by
+  # internal references in this RichTextElement.
+  def internalReferences
+    references = []
+    if @category == :ref
+        references << @data
+    else
+      @children.each do |el|
+        if el.is_a?(RichTextElement)
+          references += el.internalReferences
+        end
+      end
+    end
+
+    # We only need each reference once.
+    references.uniq
+  end
+
   # Conver the intermediate representation into a plain text again. All
   # elements that can't be represented in plain text easily will be ignored or
   # just their value will be included.
@@ -213,18 +231,10 @@ class RichTextElement
       pre = "<li>#{@data[0]}.#{@data[1]}.#{@data[2]} "
       post = "</li>\n"
     when :ref
-      if @data
-        pre = "<ref data=\"#{@data}\">"
-      else
-        pre = '<ref>'
-      end
+      pre = "<ref data=\"#{@data}\">"
       post = '</ref>'
     when :href
-      if @data
-        pre = "<a href=\"#{@data}\">"
-      else
-        pre = '<a>'
-      end
+      pre = "<a href=\"#{@data}\">"
       post = '</a>'
     when :italic
       pre = '<i>'
@@ -310,17 +320,9 @@ class RichTextElement
     when :numberitem3
       XMLElement.new('li')
     when :ref
-      if @data
-        XMLElement.new('a', 'href' => "#{@data}.html")
-      else
-        XMLElement.new('a')
-      end
+      XMLElement.new('a', 'href' => "#{@data}.html")
     when :href
-      if @data
-        XMLElement.new('a', 'href' => @data)
-      else
-        XMLElement.new('a')
-      end
+      XMLElement.new('a', 'href' => @data)
     when :italic
       XMLElement.new('i')
     when :bold

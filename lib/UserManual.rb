@@ -29,6 +29,7 @@ class UserManual < RichTextDocument
   def tableOfContents
     super
     @reference.tableOfContents(@toc, 'A')
+    @snipNames += @reference.all
   end
 
   # Generate the manual in HTML format. _directory_ specifies a directory
@@ -246,6 +247,7 @@ files.each do |file|
 end
 # Generate the table of contense
 man.tableOfContents
+man.checkInternalReferences
 # Generate the HTML files.
 man.generateHTML(destDir)
 

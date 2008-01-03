@@ -85,6 +85,12 @@ class RichText
     @richText.tableOfContents(toc, fileName)
   end
 
+  # Return an Array with all other snippet names that are referenced by
+  # internal references in this RichText object.
+  def internalReferences
+    @richText.internalReferences
+  end
+
   # Convert the rich text to plain ASCII text. All elements that can't be
   # represented easily in ASCII Strings are ommitted.
   def to_s

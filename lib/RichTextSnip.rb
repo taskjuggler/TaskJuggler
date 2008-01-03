@@ -53,6 +53,12 @@ class RichTextSnip
     @richText.tableOfContents(toc, fileName)
   end
 
+  # Return an Array with all other snippet names that are referenced by
+  # internal references in this snip.
+  def internalReferences
+    @richText.internalReferences
+  end
+
   # Generate a HTML version of the structured text. The base file name is the
   # same as the original file. _directory_ is the name of the output
   # directory.
