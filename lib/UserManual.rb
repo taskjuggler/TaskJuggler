@@ -21,6 +21,7 @@ class UserManual < RichTextDocument
   # Create a UserManual object and gather the TJP syntax information.
   def initialize
     super
+    # Don't confuse this with RichTextDocument#references
     @reference = SyntaxReference.new(self)
   end
 
@@ -37,6 +38,10 @@ class UserManual < RichTextDocument
   def generateHTML(directory)
     generateHTMLindex(directory)
     generateHTMLReference(directory)
+    # The SyntaxReference only generates the reference list when the HTML is
+    # generated. So we have to collect it after the HTML generation.
+    @references.merge!(@reference.internalReferences)
+
     super
   end
 
@@ -247,7 +252,7 @@ files.each do |file|
 end
 # Generate the table of contense
 man.tableOfContents
-man.checkInternalReferences
 # Generate the HTML files.
 man.generateHTML(destDir)
+man.checkInternalReferences
 

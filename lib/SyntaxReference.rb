@@ -97,6 +97,15 @@ class SyntaxReference
     end
   end
 
+  def internalReferences
+    references = {}
+    @keywords.each_value do |keyword|
+      (refs = keyword.references.uniq).empty? ||
+        references[keyword.keyword] = refs
+    end
+    references
+  end
+
   # Generate a documentation for the keyword or an error message. The result
   # is a multi-line plain text String for known keywords. In case of an error
   # the result is empty but an error message will be send to $stderr.

@@ -48,7 +48,8 @@ class RichTextDocument
     @snippets.each do |snip|
       snip.tableOfContents(@toc, snip.name)
       @snipNames << snip.name
-      @references[snip] = snip.internalReferences
+      (refs = snip.internalReferences).empty? ||
+        @references[snip.name] = refs
     end
   end
 
@@ -58,7 +59,7 @@ class RichTextDocument
       refs.each do |reference|
         unless @snipNames.include?(reference)
           # TODO: Probably an Exception is cleaner here.
-          puts "Warning: Rich text file #{snip.name} references unknown " +
+          puts "Warning: Rich text file #{snip} references unknown " +
                "object #{reference}"
         end
       end

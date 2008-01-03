@@ -22,7 +22,7 @@ require 'RichText'
 # keyword) and whether the keyword is scenario specific or not.
 class KeywordDocumentation
 
-  attr_reader :keyword, :pattern
+  attr_reader :keyword, :pattern, :references
   attr_accessor :contexts, :scenarioSpecific, :inheritable,
                 :predecessor, :successor
 
@@ -53,6 +53,8 @@ class KeywordDocumentation
     # alphabetically sorted list.
     @predecessor = nil
     @successor = nil
+    # Array to collect all references to other RichText objects.
+    @references = []
   end
 
   # Post process the class member to set cross references to other
@@ -500,6 +502,7 @@ private
   def newRichText(text)
     begin
       rText = RichText.new(text)
+      @references += rText.internalReferences
     rescue RichTextException => msg
       $stderr.puts "Error in RichText of rule #{@keyword}\n" +
                    "Line #{msg.lineNo}: #{msg.text}\n" +
