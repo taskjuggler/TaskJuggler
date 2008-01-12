@@ -107,6 +107,7 @@ class Project
     attrs = [
       # ID           Name          Type               Inh.     Scen.  Default
       [ 'enabled',   'Enabled',    BooleanAttribute,  true,    false, true ],
+      [ 'minslackrate', 'Min. Slack Rate', FloatAttribute, true, false, 0.0 ],
       [ 'projection', 'Projection Mode', BooleanAttribute, true, false, false ],
       [ 'strict', 'Strict Bookings', BooleanAttribute, true, false, false ]
     ]

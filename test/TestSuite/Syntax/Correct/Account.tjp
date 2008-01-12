@@ -1,0 +1,45 @@
+project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26 {
+  currency "USD"
+}
+
+account project_cost "Project Costs"
+account payments "Customer Payments" {
+  credit 2005-06-08 "Customer down payment" 500.0
+}
+
+resource tux "Tux" {
+  rate 300
+}
+
+task items "Project breakdown" {
+  start 2005-06-06
+  # The default account for all tasks
+  account project_cost
+
+  task plan "Plan work" {
+    # Some upfront material cost
+    startcredit 500.0
+    length 3d
+  }
+
+  task implementation "Implement work" {
+    effort 5d
+    allocate tux
+    depends !plan
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+    account payments
+    # Customer pays at end of acceptance  
+    endcredit 2000.0  
+  }
+}
+
+#htmlaccountreport "PAndL.html" {
+#  timeformat "%d-%M-%y"
+#  accumulate
+#  columns index, name, weekly
+#}
+

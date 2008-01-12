@@ -1,0 +1,23 @@
+project mainID "ProjectIDs example" "1.0" 2006-08-22 +1m
+
+
+task t1 "Task 1" {
+  start 2006-08-22
+	# This task has project ID "mainID"
+}
+
+projectid prj1
+projectids prj2
+
+task t2 "Task 2" {
+  start 2006-08-22
+	# This task has now project ID "prj1"
+}
+
+
+task t3 "Task 3" {
+  start 2006-08-22
+  projectid prj2
+	# This task has now project ID "prj2"
+}
+

@@ -1,0 +1,17 @@
+project p "P" "1.0" 2003-11-09 - 2003-12-24
+
+task foo1 "foo1" {
+  task foo2 "foo2" {
+    start 2003-12-04
+    milestone 
+  }
+  task foo3 "foo3" { 
+    precedes !foo2
+    length 1d 
+  }
+}
+task bar "bar" {
+  precedes foo1.foo2
+  length 2d
+}
+

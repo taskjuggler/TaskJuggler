@@ -120,7 +120,7 @@ class TextScanner
       when ?#
         skipComment
       when ?/
-        skipMultiLineComment
+        skipCPlusPlusComments
       when ?0..?9
         token = readNumber(c)
         break
@@ -282,19 +282,21 @@ private
     returnChar(c)
   end
 
-  def skipMultiLineComment
-    if (c = nextChar(false)) != ?*
-      returnChar(c)
-      returnChar(?/)
-      return
+  def skipCPlusPlusComments
+    if (c = nextChar(false)) == ?*
+      # /* */ style multi-line comment
+      @ignoreMacros = true
+      begin
+        while (c = nextChar(false)) != ?*
+        end
+      end until (c = nextChar(false)) == ?/
+      @ignoreMacros = false
+    elsif c == ?/
+      # // style single line comment
+      skipComment
+    else
+      error('bad_comment', "'/' or '*' expected after start of comment")
     end
-
-    @ignoreMacros = true
-    begin
-      while (c = nextChar(false)) != ?*
-      end
-    end until (c = nextChar(false)) == ?/
-    @ignoreMacros = false
   end
 
   def readBlanks(c)
@@ -394,7 +396,7 @@ private
     end
 
     if nextChar != ?:
-      raise TjException.new, "Corrupted time"
+      raise TjException.new, "Corrupted time. ':' expected."
     end
 
     minutes = readDigits.to_i
@@ -402,14 +404,14 @@ private
       raise TjException.new, "Minutes must be between 0 and 59"
     end
 
-    if (c = nextChar(true)) != ?:
+    if (c = nextChar(true)) == ?:
+      seconds = readDigits.to_i
+      if seconds < 0 || seconds > 59
+        raise TjException.new, "Seconds must be between 0 and 59"
+      end
+    else
+      seconds = 0
       returnChar(c)
-      return [ 'DATE', TjTime.local(year, month, day, hour, minutes) ]
-    end
-
-    seconds = readDigits.to_i
-    if seconds < 0 || seconds > 59
-      raise TjException.new, "Seconds must be between 0 and 59"
     end
 
     if (c = nextChar(true)) != ?-
@@ -423,7 +425,7 @@ private
       delta = -1
     else
       # An actual time zone name
-      tz = readId(c)
+      tz = readId(c)[1]
       oldTz = ENV['TZ']
       ENV['TZ'] = tz
       timeVal = TjTime.local(year, month, day, hour, minutes, seconds)

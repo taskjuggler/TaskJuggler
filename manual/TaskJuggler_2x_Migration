@@ -2,3 +2,34 @@
 
 This section will cover changes between TaskJuggler 2.x and 3.x.
 
+* The ''''shift'''' attribute for tasks and resources has been
+renamed to ''''shifts'''' to allow support for multiple shifts.
+
+* The global ''''limits'''' attribute has been removed. Since both
+tasks and resources have a ''''limits'''' attribute, a global
+attribute was inconsistent as only resources inherited this
+attribute. Use a parent resource to emulate the old behaviour.
+
+* The ''''startbuffer'''' and ''''endbuffer'''' attributes have been
+deprecated. They have not been widely used and had no impact on
+scheduling.
+
+* The ''''barlabels'''' attribute for reports is no longer needed.
+HTML reports have always empty Gantt-chart bars and the calendar
+reports always have values.
+
+* The project attribute ''''allowredifinitions'''' has been dropped.
+It was an ugly workaround for a rare corner case. Using [[supplement]] is
+the clean way to do this.
+
+* Camel case names for function names in logical expressions have
+been deprecated. Function names need to be all lower case now.
+
+* Top-level accounts no longer need a ''''cost'''' or ''''revenue''''
+attribute. Any two top level accounts can now be balanced against
+each other using the [[balance]] attribute in the report.
+
+* The sorting modes have been extended to include the scenario. Also,
+the sorting direction is no longer mangled with the attribute name.
+What used to be ''''startup'''' is now ''''plan.start.up''''. See
+[[sorttasks]] or [[sortresources]] for details.

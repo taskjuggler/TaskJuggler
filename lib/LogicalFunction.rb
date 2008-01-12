@@ -28,7 +28,8 @@ class LogicalFunction < LogicalOperation
     @@functions = {
       'isdutyof' => 2,
       'isleaf' => 0,
-      'isresource' => 1
+      'isresource' => 1,
+      'isoncriticalpath' => 1
     }
   end
 
@@ -81,6 +82,11 @@ private
 
   def isresource(expr, args)
     expr.property.is_a?(Resource) && expr.property.fullId == args[0]
+  end
+
+  def isoncricitalpath(expr, args)
+    # TODO
+    false
   end
 
 end

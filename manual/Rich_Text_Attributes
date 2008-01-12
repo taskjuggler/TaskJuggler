@@ -1,0 +1,90 @@
+=== Rich Text Attributes ===
+
+TaskJuggler supports Rich Text data for some STRING attributes that
+are marked accordingly in the syntax reference. Rich Text means, that
+you can use certain markup symbols to structure the text into
+sections, include headlines, bullet lists and the like. The following
+sections describe the supported markup elements and how to use them.
+
+The markup syntax is mostly compatible to the syntax used by the
+popular [http://www.mediawiki.org MediaWiki].
+
+==== Block Markups ====
+
+All block markups are delimited by an empty line. The markup must
+always start at the beginning of the first line of the block. Block
+markups cannot be nested.
+
+The simplest form of a block is a paragraph. It's a block of text
+that is separated by empty lines from other blocks. There is no
+markup needed to start a text block.
+
+Headlines can be inserted by using ''''='''' characters to start a
+line. There are 3 level of headlines.
+
+ == Headline Level 1 ==
+ === Headline Level 2 ===
+ ==== Headline Level 3 ====
+
+A line that starts with four dashes creates a horizontal line.
+
+ ----
+
+Items of a bullet list start with a star. The number of stars
+determines the bullet list level of the item. Three levels are
+supported. Bullet items may span multiple lines but cannot contain
+paragraphs.
+
+ * Bullet 1
+ ** Bullet 2
+ *** Bullet 3
+
+Enumerated lists are formed by using a ''''#'''' instead of ''''*''''.
+
+ # Enumeration Level 1
+ ## Enumeration Level 2
+ ### Enumeration Level 3
+
+Sections of lines that start with a space character are interpreted
+as pre-formatted text. The formatting will be preserved by using a
+fixed-width font and by not interpreting any markup characters within
+the text.
+
+  Preformatted text start with
+  a single space at the start of 
+  each line.
+
+==== In-Line Markups ====
+
+In-line markups may occur within a text block. They don't have to
+start at the start of the line.
+
+ This is an ''italic'' word.
+ This is a '''bold''' word.
+ This is a ''''monospaced'''' word.
+ This is a '''''italic and bold''''' word.
+
+The monospace format is not part of the original MediaWiki markup, but
+we found it useful to have for this manual.
+
+Links to external documents are possible as well. In the first form,
+the URL will appear in the readable text as well. In the second form,
+the text after the URL will be visible but the link will be available
+if the output format supports it.
+
+ [http://www.taskjuggler.org]
+ [http://www.taskjuggler.org The TaskJuggler Web Site]
+
+For local references, the second form is available as well. In this
+form, ''''.html'''' is appended to the first word in the reference to
+create the URL.
+
+ [[item]]
+ [[item An item]]
+
+In some situations, it is desirable to not interpret certain markup
+sequences and reproduce the text verbatim. Such text must be enclosed
+in nowiki tags.
+
+ <nowiki> This is not '''bold''' text. </nowiki>
+

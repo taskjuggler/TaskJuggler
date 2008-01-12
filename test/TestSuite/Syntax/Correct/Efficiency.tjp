@@ -1,0 +1,19 @@
+project prj "Resource Efficiency Example" "1.0" 2005-07-21 - 2005-07-22
+
+# A team of 5 people. They can only be assigned en block. Either all
+# or nobody works.
+resource tuxies "Tuxies" { efficiency 5.0 } 
+
+# A hard-working guy
+resource tux1 "Tux 1" { efficiency 1.2 }
+
+# And a lazy one
+resource tux2 "Tux 2" { efficiency 0.9 }
+
+# And a thing that cannot do any work
+resource confRoom "Conference Room" { efficiency 0 }
+
+task t "An important date" {
+  start 2005-07-21
+}
+

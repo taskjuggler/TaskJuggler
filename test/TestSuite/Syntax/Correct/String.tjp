@@ -1,0 +1,12 @@
+project test "String Tests" "1.0" 2005-06-06 - 2005-06-26
+
+resource tux "Tux \"The Penguing\" Tuxus"
+
+task items "Project Plan\\\\Breakdown" {
+  start 2005-06-06
+  effort 2d
+  allocate tux
+}
+
+taskreport "My Tasks"
+

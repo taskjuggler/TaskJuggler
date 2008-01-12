@@ -598,6 +598,35 @@ EOT
        )
   end
 
+  def rule_exportableResourceAttribute
+    singlePattern('_all')
+    singlePattern('_vacation')
+    singlePattern('_workinghours')
+  end
+
+  def rule_exportableResourceAttributes
+    listRule('moreExportableResourceAttributes', '!exportableResourceAttribute')
+  end
+
+  def rule_exportableTaskAttribute
+    singlePattern('_all')
+    singlePattern('_booking')
+    singlePattern('_complete')
+    singlePattern('_depends')
+    singlePattern('_flags')
+    singlePattern('_maxend')
+    singlePattern('_maxstart')
+    singlePattern('_minend')
+    singlePattern('_minstart')
+    singlePattern('_note')
+    singlePattern('_priority')
+    singlePattern('_responsible')
+  end
+
+  def rule_exportableTaskAttributes
+    listRule('moreExportableTaskAttributes', '!exportableTaskAttribute')
+  end
+
   def rule_exportHeader
     pattern(%w( _export $STRING ), lambda {
       if @val[1] == '.'
@@ -640,6 +669,22 @@ EOT
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
+    pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
+      @reportElement.resourceAttrs = @val[1]
+    })
+    doc('resourceattributes', <<"EOT"
+Define a list of resource attributes that should be included in the report. To
+include all supported attributes just use ''''all''''.
+EOT
+        )
+    pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
+      @reportElement.taskAttrs = @val[1]
+    })
+    doc('taskattributes', <<"EOT"
+Define a list of task attributes that should be included in the report. To
+include all supported attributes just use ''''all''''.
+EOT
+        )
   end
 
   def rule_exportBody
@@ -1572,7 +1617,7 @@ EOT
     optional
     repeatable
     pattern(%w( _sloppy ), lambda {
-      @property['strict', @scenarioIdx] = false
+      @property.set('strict', false)
     })
     doc('sloppy.projection', <<'EOT'
 In sloppy mode tasks with no bookings will be filled from the original start.
@@ -1580,7 +1625,7 @@ EOT
        )
 
     pattern(%w( _strict ), lambda {
-      @property['strict', @scenarioIdx] = true
+      @property.set('strict', true)
     })
     doc('strict.projection', <<'EOT'
 In strict mode all tasks will be filled starting with the current date. No
@@ -1657,7 +1702,7 @@ EOT
        )
 
     pattern(%w( _projectids !projectIDs ), lambda {
-      @project['projectids'] << @val[1]
+      @project['projectids'] += @val[1]
       @project['projectids'].uniq!
     })
     doc('projectids', <<'EOT'
@@ -1762,7 +1807,7 @@ EOT
     })
     doc('caption', <<'EOT'
 The caption will be embedded in the footer of the table or data segment. The
-text will be interpreted as Wiki markup (see. [RichText]).
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
 
@@ -1788,7 +1833,7 @@ EOT
     })
     doc('epilog', <<'EOT'
 Define a text section that is printed right after the actual report data. The
-text will be interpreted as Wiki markup (see. [RichText]).
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
 
@@ -1818,7 +1863,26 @@ EOT
       @reportElement.prolog = newRichText(@val[1])
     })
     doc('prolog', <<'EOT'
-Define a text section that is printed right before the actual report data. The text will be interpreted as Wiki markup (see. [RichText]).
+Define a text section that is printed right before the actual report data. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
+    pattern(%w( _rawhead $STRING ), lambda {
+      @reportElement.rawHead = @val[1]
+    })
+    doc('rawhead', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the top of the
+report.
+EOT
+        )
+
+    pattern(%w( _rawtail $STRING ), lambda {
+      @reportElement.rawTail = @val[1]
+    })
+    doc('rawtail', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the bottom of
+the report.
 EOT
        )
 
@@ -2191,6 +2255,22 @@ EOT
   end
 
   def rule_resourceScenarioAttributes
+    pattern(%w( _efficiency !number ), lambda {
+      @property['efficiency', @scenarioIdx] = @val[1]
+    })
+    doc('efficiency', <<'EOT'
+The efficiency of a resource can be used for two purposes. First you can use
+it as a crude way to model a team. A team of 5 people should have an
+efficiency of 5.0. Keep in mind that you cannot track the members of the team
+individually if you use this feature. They always act as a group.
+
+The other use is to model performance variations between your resources. Again, this is a fairly crude mechanism and should be used with care. A resource that isn't every good at some task might be pretty good at another. This can't be taken into account as the resource efficiency can only set globally for all tasks.
+
+All resources that do not contribute effort to the task, should have an
+efficiency of 0.0. A typical example would be a conference room. It's necessary for a meeting, but it does not contribute any work.
+EOT
+       )
+
     pattern(%w( !flags ))
     doc('flags.resource', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
@@ -2233,7 +2313,8 @@ EOT
 
     pattern(%w( _shift !shiftAssignments ))
     doc('shift.resource', <<'EOT'
-This keyword has been deprecated. Please use [shifts.resource] instead.
+This keyword has been deprecated. Please use [shifts.resource shifts
+(resource)] instead.
 EOT
        )
 
@@ -2302,6 +2383,27 @@ EOT
     doc('enabled', <<'EOT'
 Enable the scenario for scheduling. This is the default for the top-level
 scenario.
+EOT
+       )
+
+    pattern(%w( _minslackrate !number ), lambda {
+       @property.set('minslackrate', @val[1] / 100.0)
+    })
+    doc('minslackrate', <<'EOT'
+Specifies the minimum percentage of slack a task path must have before it is
+marked as critical. A path is any list of explicitely or implicitely connected
+tasks measured from first task to last task. The slack is the time between
+start of the first task and end of the last task that is not covered by any
+task of the path.
+
+Larger values in combination with a project that uses lots of inherited
+dependencies and long dependency pathes can result in very long scheduling
+times. The more slack you require, the more pathes have to be searched till
+the end. For larger projects an increase of 5% can turn a 10 second scheduling
+run into a 1 hour or more scheduling run. If you need larger slack rate
+values, avoid the use of inherited dependencies.
+
+The default value is 0% which turns off the critical path detector.
 EOT
        )
 
@@ -3165,6 +3267,13 @@ lower priority.
 As a general rule, try to avoid ALAP tasks whenever possible. Have a close
 eye on tasks that have been switched implicitly to ALAP mode because the
 end attribute comes after the start attribute.
+EOT
+       )
+
+    pattern(%w( _shift !shiftAssignments ))
+    doc('shift.task', <<'EOT'
+This keyword has been deprecated. Please use [shifts.task shifts
+(task)] instead.
 EOT
        )
 

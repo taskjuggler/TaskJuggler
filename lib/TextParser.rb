@@ -357,7 +357,7 @@ private
             # If the element requires a keyword the token must match this
             # keyword.
             if elToken != token[1]
-              text = "#{elToken} expected but found " +
+              text = "'#{elToken}' expected but found " +
                      "'#{token[1]}' (#{token[0]})."
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text
@@ -368,7 +368,7 @@ private
           else
             # The token must match the expected variable type.
             if token[0] != elToken
-              text = "#{elToken} expected but found " +
+              text = "'#{elToken}' expected but found " +
                      "'#{token[1]}' (#{token[0]})."
               unless @@expectedTokens.empty?
                 text = "#{@@expectedTokens.join(', ')} or " + text

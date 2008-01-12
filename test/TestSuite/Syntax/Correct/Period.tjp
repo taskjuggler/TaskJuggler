@@ -1,0 +1,16 @@
+project prj "Period Project" "1.0" 2006-09-24 +3m {
+	now 2006-10-02
+}
+
+task items "Project breakdown" {
+  start ${projectstart}
+
+  task plan "Plan work" {
+    period 2006-10-01 +2w
+  }
+}
+
+taskreport "My Tasks" {
+	period ${now} +1w
+}
+

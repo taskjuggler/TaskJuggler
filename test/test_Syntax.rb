@@ -24,6 +24,14 @@ class TestScheduler < Test::Unit::TestCase
   def teardown
   end
 
+  def test_syntaxCorrect
+    Dir.glob('TestSuite/Syntax/Correct/*.tjp').each do |f|
+      tj = TaskJuggler.new(false)
+      assert(tj.parse(f), "Parser failed for #{f}")
+      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+    end
+  end
+
   def test_syntaxErrors
     Dir.glob('TestSuite/Syntax/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)

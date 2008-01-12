@@ -1,0 +1,23 @@
+project prj  "Project" "1.0" 2000-01-01 - 2000-03-01
+
+resource r "Resource"
+
+task t "Task" {
+  start 2000-01-01
+  effort 10d
+  allocate r
+}
+
+# Export the project as fully scheduled project.
+export "FullProject.tjp" {
+  taskattributes all
+  hideresource 0
+}
+
+# Export only bookings for 1st week as resource supplements
+export "Week1Bookings.tji" {
+  start 2000-01-01
+  end 2000-01-08
+  taskattributes booking
+  hideresource 0
+}

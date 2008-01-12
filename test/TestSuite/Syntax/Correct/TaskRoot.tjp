@@ -1,0 +1,34 @@
+project prj "Taskroot Example" "1.0" 2005-07-22 - 2005-08-26
+
+task items "Project breakdown" {
+  start 2005-07-22
+
+  task plan "Plan work" {
+    length 3d
+  }
+
+  task implementation "Implement work" {
+    task phase1 "Phase 1" {
+      length 5d
+      depends !!plan
+    }
+    task phase2 "Phase 2" {
+      length 3d
+      depends !phase1
+    }
+    task phase3 "Phase 3" {
+      length 4d
+      depends !phase2
+    }
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+  }
+}
+
+taskreport "My Tasks" {
+  taskroot items.implementation
+}
+

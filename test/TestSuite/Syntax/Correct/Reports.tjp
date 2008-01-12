@@ -1,0 +1,54 @@
+project test "Test Project" "$Id" 2000-01-01 - 2000-03-01
+
+flags flag1, flag2, flag3, flag4
+
+rate 100.0
+
+resource r1 "FooResource 1" 
+resource r2 "FooResource 2" 
+resource r3 "FooResource 3" 
+resource r4 "FooResource 4" 
+
+account a1 "FooAccount 1" {
+  account a3 "FooAccount 3"
+}
+
+account a2 "FooAccount 2" {
+  account a4 "FooAccount 4"
+}
+
+task t1 "FooTask1" {
+  account a4
+  task t1_1 "FooTask1_1" {
+    flags flag2
+    start 2000-01-01
+    effort 20d
+    allocate r1
+    allocate r2
+  }
+  flags flag3
+}
+
+task t2 "FooTask2" {
+  flags flag1
+  start 2000-01-01
+  duration 1d
+  startcredit 10000.0
+  account a4
+}
+
+task t3 "FooTask3" {
+  flags flag4
+  milestone
+  start 2000-01-01
+}
+
+htmltaskreport "Report_task.html" {
+  balance a1 a2
+  columns hierarchindex, name { title "Task Name" }, daily, effort
+  sorttasks tree, plan.start.up, name.up
+}
+
+htmlresourcereport "Report_resource.html" {
+}
+

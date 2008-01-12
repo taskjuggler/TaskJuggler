@@ -1,0 +1,12 @@
+project prj "Milestone demo" "1.0" 2005-07-15 - 2005-08-01
+
+task project_start "Project Start" {
+  start 2005-07-15
+  milestone
+}
+
+task deadline "Important Deadline" {
+  start 2005-07-20
+  # A task with only a start or end date and no duration specification
+  # is automatically assumed to be a milestone.
+}

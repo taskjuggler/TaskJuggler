@@ -38,8 +38,8 @@ require 'RichTextParser'
 #  ### Enumeration Level 3
 #
 #   Preformatted text start with
-#   a single space at the start of the
-#   the line.
+#   a single space at the start of
+#   each line.
 #
 #
 # The following are in-line mark-ups and can occur within any text block

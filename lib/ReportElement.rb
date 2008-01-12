@@ -29,6 +29,7 @@ class ReportElement
                 :rollupTask, :hideResource, :rollupResource,
                 :sortTasks, :sortResources,
                 :ganttBars,
+                :rawHead, :rawTail,
                 :propertiesById, :propertiesByType
 
   def initialize(report)
@@ -51,6 +52,8 @@ class ReportElement
     @now = @report.now
     @numberFormat = @report.numberformat
     @prolog = nil
+    @rawHead = nil
+    @rawTail = nil
     @resourceRoot = @report.resourceRoot
     @revenueAccount = @report.revenueAccount
     @rollupResource = nil

@@ -1,0 +1,55 @@
+project prj "Example" "1.0" 2000-01-01 - 2000-03-31
+
+shift s1 "Shift1" {
+  # Special working hours Monday to Wednesday. Use program defaults
+  # for other days.
+  workinghours mon 10:00 - 12:00, 13:00 - 15:00
+  workinghours tue 9:00 - 14:00
+  workinghours wed off
+
+  shift s2 "Shift2" {
+    # Like s1 but with different times on Monday
+    workinghours mon 10:00 - 17:00
+  }
+}
+
+resource r1 "Resource1" {
+  shift s1 2000-01-01 - 2000-01-10
+  shift s2 2000-01-11 - 2000-01-20
+}
+
+shift s3 "Part-time schedule 1" {
+  # The resource works on mondays, wednesdays and fridays.
+  # The days that the resource doesn't work must be mentioned
+  # explicitely otherwise the defaults values are used (usually
+  # full-time employment).
+  workinghours mon,fri 9:00 - 12:00, 13:00 - 18:00
+  workinghours wed 9:00 - 12:00
+  workinghours tue, thu off
+}
+
+shift s4 "Part-time schedule 2" {
+  # The resource changes his schedule to work on tuesday and
+  # thursdays. The days that the resource doesn't work must be
+  # mentioned explicitely, otherwise the default values are used
+  # (usually full-time employment).
+  workinghours tue, thu 9:00 - 12:00, 13:00 - 18:00
+  workinghours mon, wed, fri off
+}
+
+# Now determine when these schedules are applicable
+resource r2 "Resource2" {
+  # r2 works three days a week from January to June
+  shift s3 2005-01-01 - 2005-01-15
+  # r2 switches to two days a week 
+  shift s4 2005-01-15 - 2006-01-01
+}
+
+task t1 "Task1" {
+  start 2000-01-01
+  length 200h
+  # During the specified interval only work at the shift s2 working
+  # hours.
+  shifts s2 2000-01-09 - 2000-01-17
+}
+

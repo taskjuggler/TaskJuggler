@@ -1,0 +1,29 @@
+project simple "Simple Project" "$Id" 2000-01-01 - 2000-01-04
+
+resource tux "Tux"
+
+task t1 "Task1" {
+  start 2000-01-01
+  length 1d
+}
+
+task t2 "Task2" {
+  start 2000-01-01
+  duration 1d
+}
+
+task t3 "Task3" {
+  start 2000-01-01
+  effort 1d
+  allocate tux
+}
+
+htmltaskreport "RawTask.html" {
+  rawhead '<h1>This is a line of text</h1>'
+  rawtail '<h2>This is another line of text with "double qoutes"</h2>'
+}
+
+htmlresourcereport "RawResource.html" {
+  rawhead '<h1>This is a line of text</h1>'
+  rawtail '<h2>This is another line of text with "double qoutes"</h2>'
+}

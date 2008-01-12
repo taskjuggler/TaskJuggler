@@ -1,0 +1,28 @@
+project duration "Duration Example" "1.0" 2005-06-06 - 2005-06-26
+
+resource tux "Tux"
+
+task t "Enclosing" {
+  start 2005-06-06
+  task durationTask "Duration Task" {
+    # This task is 10 calendar days long.
+    duration 10d
+  }
+
+  task intervalTask "Interval Task" {
+    # This task is similar to the durationTask. Instead of a start
+    # date and a duration it has a fixed start and end date.
+    end 2005-06-17
+  }
+
+  task lengthTask "Length Task" {
+    # This task 10 working days long. So about 12 calendar days.
+    length 10d
+  }
+
+  task effortTask "Effort Task" {
+    effort 10d
+    allocate tux
+  }
+}
+

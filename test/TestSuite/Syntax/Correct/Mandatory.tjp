@@ -1,0 +1,17 @@
+project prj "Project" "1.0" 2000-01-01 - 2000-03-01
+
+resource tuxus "Tuxus"
+resource truck "Truck" {
+  # Truck does not do any work!
+  efficiency 0.0
+}
+
+task t "Ship stones to customers" {
+  start 2000-01-01
+  effort 5d
+  # We need the truck to deliver the stones, so only allocate
+  # tuxus when the truck is available.
+  allocate tuxus
+  allocate truck { mandatory }
+}
+

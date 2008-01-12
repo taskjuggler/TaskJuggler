@@ -1,0 +1,15 @@
+project prj "Example Project" "1.0" 2005-05-29 - 2005-07-01
+
+task t1 "Task 1" {
+  start 2005-05-29
+}
+
+task t2 "Task 2" {
+  # starts 5 calendar days after t1
+  depends !t1 { gapduration 5d }
+}
+
+task t3 "Task 3" {
+  # starts 5 working days after t1
+  depends !t1 { gaplength 5d }
+}

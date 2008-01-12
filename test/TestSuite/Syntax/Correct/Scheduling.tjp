@@ -1,0 +1,26 @@
+project prj "Scheduling Example" "1.0" 2005-07-23 - 2005-09-01
+
+task items "Project breakdown" {
+  task t1 "Task 1" {
+    start 2005-07-25
+    end 2005-08-01
+    # Implicite ALAP task
+  }
+  task t2 "Task 2" {
+    end 2005-08-01
+    start 2005-07-25
+    # Implicite ASAP task
+  }
+  task t3 "Task 3" {
+    start 2005-07-25
+    end 2005-08-01
+    scheduling asap
+    # Explicite ASAP task
+  }
+  task t4 "Task 4" {
+    end 2005-08-01
+    start 2005-07-25
+    scheduling alap
+    # Explicite ALAP task
+  }
+}

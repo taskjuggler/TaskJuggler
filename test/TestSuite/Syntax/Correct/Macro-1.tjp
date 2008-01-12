@@ -1,0 +1,17 @@
+macro prjstart [ 2000-01-01 ]
+macro prjend [ 2000-01-04 ]
+
+project macro "Macro Test" "$Id$" ${prjstart} - ${prjend}
+
+macro resourcedef [
+  resource ${1} "${2}"
+] 
+
+${resourcedef "tux1" "Tux 1" }
+
+resource tux "Tux"
+
+task t1 "Task1" {
+  start ${prjstart}
+  milestone
+}

@@ -1,0 +1,33 @@
+project prj "Vacation Examples" "1.0" 2005-07-22 - 2006-01-01
+
+# Labor Day
+vacation "Labor Day" 2005-09-05
+# 2 days Christmas break (27th not included!)
+vacation "Christmas" 2005-12-25 - 2005-12-27
+
+resource team "A team" {
+  # 2 days of team vacation
+  vacation 2005-10-07 +2d
+  resource tux2 "Tux2" 
+  resource tux3 "Tux3" {
+    # And one extra day
+    vacation 2005-08-10
+  }
+}
+
+# The vacation property is also usefull when new employees start
+# working in the course of a project or if someone quits.
+resource tuxia "Tuxia" {
+  # Tuxia is a new employee as of August 1st 2005
+  vacation 1971-01-01 - 2005-08-01
+}
+ 
+resource tuxus "Tuxus" {
+  # Tuxus quits his job on September 1st 2005
+  vacation 2005-09-01 - 2030-01-01
+}
+
+task t "An important date" {
+  start 2005-07-22
+}
+

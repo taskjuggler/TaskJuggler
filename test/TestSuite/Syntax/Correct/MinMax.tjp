@@ -1,0 +1,17 @@
+project minmax "Min Max Example" "1.0" 2005-06-06 - 2005-06-26
+
+task items "Project breakdown" {
+  start 2005-06-07
+
+  task plan "Plan work" {
+		note "Some more information about this task."
+    # Set acceptable interval for task start
+    minstart 2005-06-06
+    maxstart 2005-06-08
+    length 3d
+    # Set acceptable interval for task end
+    minend 2005-06-09
+    maxend 2005-06-11
+  }
+}
+

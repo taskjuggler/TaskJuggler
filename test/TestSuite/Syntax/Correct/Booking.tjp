@@ -1,0 +1,26 @@
+project prj "Project" "1.0" 2003-06-05 +1m {
+  # The baseline date for the projection.
+  now 2003-06-15
+  scenario plan "Plan" {
+    # Compute when the task will be ready based on the already done
+    # work and the current date.
+    projection { strict }
+  }
+}
+
+resource r1 "Resource 1"
+
+task t1 "Task 1" {
+  start 2003-06-05
+  effort 10d
+  allocate r1
+}
+
+supplement resource r1 {
+  # This is the work that has been done up until now by r1.
+  booking t1 2003-06-06 +8h { sloppy 2 }
+  booking t1 2003-06-08 +4h,
+             2003-06-09 +4h { sloppy 2 }
+  # Book interval that extends into off-hours.
+  booking t1 2003-06-11-8:00 +10h { overtime 1 }
+}

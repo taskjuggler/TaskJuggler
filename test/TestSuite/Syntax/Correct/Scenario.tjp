@@ -1,0 +1,15 @@
+project prj "Example" "1.0" 2005-05-29 - 2005-07-01 {
+  scenario plan "Planned Scenario" {
+    scenario actual "Actual Scenario"
+    scenario test "Test Scenario" {
+      disabled
+    }
+  }
+}
+
+task t "Task" {
+  start 2005-05-29
+  actual:start 2005-06-03
+  test:start 2005-06-07
+}
+

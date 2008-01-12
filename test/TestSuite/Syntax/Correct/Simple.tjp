@@ -1,0 +1,25 @@
+project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26
+
+resource tux "Tux"
+
+task items "Project breakdown" {
+  start 2005-06-06
+
+  task plan "Plan work" {
+    length 3d
+  }
+
+  task implementation "Implement work" {
+    effort 5d
+    allocate tux
+    depends !plan
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+  }
+}
+
+taskreport "My Tasks"
+

@@ -1,0 +1,17 @@
+project limits "Limits" "1.0" 2004-03-01 - 2004-05-01
+
+resource r1 "R1" { 
+  # Limit the usage of this resource to a maximum of 2 hours per day,
+  # 6 hours per week and 2.5 days per month.
+  limits { dailymax 2h weeklymax 6h monthlymax 2.5d }
+}
+
+resource r2 "R2"
+
+task t1 "Task 1" {
+  start 2004-03-01
+  duration 60d
+  # allocation is subject to resource limits
+  allocate r1
+}
+

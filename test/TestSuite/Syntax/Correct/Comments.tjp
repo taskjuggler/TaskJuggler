@@ -1,0 +1,29 @@
+/* This is a multi-line comment
+ * that spans multiple rows.
+ */
+project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26
+
+// A resource definition
+resource tux "Tux"
+
+task items "Project breakdown" {
+  start 2005-06-06
+
+  task plan "Plan work" {
+    length 3d
+  }
+
+  task implementation "Implement work" {
+    effort 5d // Some effort
+    allocate tux # A resource
+    depends !plan
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+  }
+}
+
+taskreport "My Tasks"
+# End of project

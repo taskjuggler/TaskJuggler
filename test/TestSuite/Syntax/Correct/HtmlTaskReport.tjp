@@ -1,0 +1,33 @@
+project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26
+  
+copyright "Bucks Beavis Inc."
+
+resource tux "Tux"
+
+task items "Project breakdown" {
+  start 2005-06-06
+
+  task plan "Plan work" {
+    length 3d
+  }
+
+  task implementation "Implement work" {
+    effort 5d
+    allocate tux
+    depends !plan
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+  }
+}
+
+htmltaskreport "ProjectBreakdown.html" {
+  caption "This is the project breakdown"
+  headline "Project Breakdown"
+  columns name, start, end, daily
+  # Don't hide any resource, meaning show them all.
+  hideresource 0
+}
+

@@ -1,0 +1,16 @@
+project prj "Responsible Demo" "1.0" 2005-07-15 - 2005-08-01
+
+resource tux "Tux"
+resource ubertux "Uber Tux"
+
+task someJob "Some Job" {
+  start 2005-07-15
+  effort 1w
+  allocate tux
+  responsible ubertux
+}
+
+taskreport "Job List" {
+  columns effort, responsible
+}
+

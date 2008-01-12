@@ -1,0 +1,14 @@
+project ca "Custom Attributes" "1.0" 2003-05-28 - 2003-06-28 {
+  extend task {
+    reference MyLink "My Link"
+    text MyText "My Text" { inherit }
+  }
+}
+
+task t "Task" {
+  start 2003-05-28
+  milestone
+  MyLink "http://www.taskjuggler.org" { label "TJ Web" }
+  MyText "TaskJuggler is great!"
+}
+

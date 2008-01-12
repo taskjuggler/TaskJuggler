@@ -1,0 +1,30 @@
+project prj "Priority Demo" "1.0" 2005-07-15 - 2005-10-01
+
+resource tux "Tux"
+
+task items "Project breakdown" {
+  start 2005-07-15
+
+  task coolStuff "Do some cool stuff" {
+    start 2005-08-01
+    effort 10d
+    priority 800
+    allocate tux
+  }
+
+  task otherStuff "Other not so important stuff" {
+    start 2005-08-01
+    effort 20d
+    priority 500
+    allocate tux
+  }
+  
+  task maintenance "Maintenance work" {
+    # This is a fallback task. Whenever tux is not doing something
+    # else he is allocated to this task.
+    duration 2m
+    priority 300
+    allocate tux
+  }
+}
+

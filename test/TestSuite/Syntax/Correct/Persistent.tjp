@@ -1,0 +1,11 @@
+project prj "Project" "1.0" 2003-06-05 - 2003-07-05
+
+resource r1 "Resource 1"
+resource r2 "Resource 2"
+
+task t1 "Task 1" {
+  start 2003-06-05
+  effort 5d
+  # Pick one of them and use it for the entire task
+  allocate r1 { alternative r2 persistent }
+}

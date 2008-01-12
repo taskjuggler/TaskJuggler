@@ -3,14 +3,20 @@
 This is a possibly still incomplete list of things that still could
 or should be done for TaskJuggler III.
 
-== Missing features for 2.x compatibility
+== Top items for first alpha release
 
-* Add 'Account' property.
+* Add missing functions for logical expressions.
+
+* Support for syntax examples in the manual.
+
+* Properly handle rich text attributes in report columns.
+
+== Missing features for 2.x compatibility
 
 * Complete TaskScenario.preScheduleCheck().
 
 * Missing reports: htmlaccountreport, htmlstatusreport, htmlweeklycalendar,
-  htmlmonthlycalendar, xmlreport, all csv-reports
+  htmlmonthlycalendar, xmlreport, some csv-reports
 
 * Export reports still have less content than 2.x version.
 
@@ -21,11 +27,9 @@ or should be done for TaskJuggler III.
 
 * Critical path detection after scheduling.
 
-* Most dynamic report columns are still missing.
+* Many dynamic report columns are still missing.
 
 * Legacy sorting modes.
-
-* Function support for logical expressions.
 
 * Limits for resource allocations.
 
@@ -33,7 +37,7 @@ or should be done for TaskJuggler III.
 
 * Lots more test cases for the test suite.
 
-== New features
+== New features (probably after first stable release)
 
 * Hammock tasks
 

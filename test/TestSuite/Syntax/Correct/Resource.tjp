@@ -1,0 +1,20 @@
+project resources "Resource Examples" "1.0" 2005-06-06 - 2005-06-26
+
+# A simple resource
+resource tux1 "Tux1"
+
+# A team
+resource team "A team" {
+  # A 2 days of team vacation
+  vacation 2005-06-07 - 2006-05-09
+  resource tux2 "Tux2" 
+  resource tux3 "Tux3" {
+    # And one extra day
+    vacation 2005-06-10
+  }
+}
+
+task t "An important date" {
+  start 2005-06-10
+}
+

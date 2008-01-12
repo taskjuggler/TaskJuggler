@@ -1,0 +1,32 @@
+project prj "Flags Example" "1.0" 2005-07-21 - 2005-08-26
+
+# Declare the flag to mark important tasks
+flags important
+
+task items "Project breakdown" {
+  start 2005-07-22
+
+  task plan "Plan work" {
+    length 3d
+    flags important
+  }
+
+  task implementation "Implement work" {
+    length 5d
+    depends !plan
+  }
+
+  task acceptance "Customer acceptance" {
+    duration 5d
+    depends !implementation
+    flags important
+  }
+}
+
+taskreport "My Tasks" {
+  # Show only the important tasks
+  hidetask ~important
+  # Turn treemode off so parent tasks are not automatically included.
+  sorttasks name.up
+}
+

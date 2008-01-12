@@ -29,6 +29,7 @@ class UserManual < RichTextDocument
   # RichText pages as well as the SyntaxReference.
   def tableOfContents
     super
+    # Let's call the reference 'Appendix A'
     @reference.tableOfContents(@toc, 'A')
     @snipNames += @reference.all
   end
@@ -237,17 +238,17 @@ srcDir = '../manual/'
 destDir = '../data/manual/'
 man = UserManual.new
 # A list of all source files. The order is important.
-files = %w(
+%w(
   Intro
-  TaskJuggler_2x_Migration
-  How_To_Contribute
-  Reporting_Bugs
-  Installation
+    TaskJuggler_2x_Migration
+    How_To_Contribute
+    Reporting_Bugs
+    Installation
   Getting_Started
+    Rich_Text_Attributes
   Tutorial
   Day_To_Day_Juggling
-)
-files.each do |file|
+).each do |file|
   man.addSnip(srcDir + file)
 end
 # Generate the table of contense

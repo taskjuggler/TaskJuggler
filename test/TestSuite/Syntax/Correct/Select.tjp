@@ -1,0 +1,27 @@
+project prj "Project" "1.0" 2000-01-01 - 2000-03-01
+
+resource tuxus "Tuxus"
+resource tuxia "Tuxia"
+
+task t1 "Task 1" {
+  start 2000-01-01
+  effort 5d
+  # First try to allocate Tuxus. When he is not available try Tuxia.
+  allocate tuxus { alternative tuxia select order }
+}
+
+task t2 "Task 2" {
+  start 2000-01-01
+  effort 5d
+  # Use tuxux or tuxia, whoever is available and try to balance
+  # the allocated load.
+  allocate tuxus { alternative tuxia select minloaded}
+}
+
+task t3 "Task 3" {
+  start 2000-01-01
+  effort 5d
+  # For slave drivers: Always pick the resource that has been loaded
+  # the most already.
+  allocate tuxus { alternative tuxia select maxloaded}
+}

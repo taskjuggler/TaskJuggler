@@ -14,6 +14,8 @@ require 'ReportElement'
 # project data in the TJP syntax format.
 class TjpExportRE < ReportElement
 
+  attr_writer :resourceAttrs, :taskAttrs
+
   # Create a new object and set some default values.
   def initialize(report, mainFile)
     super(report)

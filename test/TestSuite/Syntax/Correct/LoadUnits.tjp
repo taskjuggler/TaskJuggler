@@ -1,0 +1,31 @@
+project simple "Simple Project" "$Id" 2000-01-01 - 2001-02-01 {
+  yearlyworkingdays 252
+}
+
+resource tux1 "Tux1"
+resource tux2 "Tux2"
+resource tux3 "Tux3"
+
+task t1 "Task1" {
+  start 2000-01-01
+  effort 20d
+  allocate tux1
+}
+
+task t2 "Task2" {
+  start 2000-01-01
+  length 1y
+  allocate tux2
+}
+
+task t3 "Task3" {
+  start 2000-01-01
+  effort 2d
+  allocate tux3
+}
+
+htmltaskreport "LoadUnits.html" {
+  columns no, name, effort, monthly
+  loadunit months
+}
+

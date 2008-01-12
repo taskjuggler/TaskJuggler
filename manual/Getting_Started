@@ -22,13 +22,19 @@ to ask TaskJuggler to process it.
 
 TaskJuggler will try to schedule all tasks with the specified
 conditions and generate the reports that were requested with the
-htmltaskreport, htmlresourcereport or other report properties in the
-input file.
+[[htmltaskreport]], [[htmlresourcereport]] or other report properties
+in the input file. The report files will be generated in the current
+directory or relative to it.
+
+If you specify file names in a project file, you need to use the
+''''/'''' as directory separator. This way, projects are portable
+across all operating systems. Do not use the ''''\'''' or '''':''''
+that are used on some operating systems.
 
 === Structure of a TJP File ===
 
 Each TaskJuggler project consists of one or more text files. There is
-always a main project file that may include other files. The main
+always a main project file that may [[include]] other files. The main
 file name should have a ''''.tjp'''' suffix, the included files must
 have a ''''.tji'''' suffix.
 

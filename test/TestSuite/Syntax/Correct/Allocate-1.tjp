@@ -1,0 +1,21 @@
+project allocate "allocate" "1.0" 2003-06-05 - 2003-07-05
+
+resource r1 "Resource 1"
+resource r2 "Resource 2"
+
+task t1 "Task 1" {
+  start 2003-06-05
+  # All sub-tasks inherit this allocation of r1
+  allocate r1
+  task t2 "Task 2" {
+    effort 10d
+  }
+  task t3 "Task 3" {
+    effort 20d
+    # This task has r1 and r2 allocated
+    allocate r2
+  }
+  task m1 "Milestone 1" {
+    milestone
+  }
+}

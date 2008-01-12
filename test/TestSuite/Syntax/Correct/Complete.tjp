@@ -1,0 +1,15 @@
+project simple "Some task" "1.0" 2005-06-06 - 2005-06-26 {
+  now 2005-06-15
+}
+
+resource tux "Tux"
+
+task t "Task" { 
+  start 2005-06-06
+  effort 10d
+  allocate tux
+  # This task should have be be completed much more on Jun 15, but
+  # it's only 20% done.
+  complete 20
+}
+
