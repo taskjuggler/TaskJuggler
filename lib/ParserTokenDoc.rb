@@ -19,9 +19,13 @@ class ParserTokenDoc
 
   # Construct a ParserTokenDoc object. _name_ and _text_ are Strings that
   # hold the name and textual description of the parser token.
-  def initialize(name, text)
+  def initialize(name, arg)
     @name = name
-    @text = text
+    if arg.is_a?(String)
+      @text = arg
+    else
+      @pattern = arg
+    end
     @typeSpec = nil
     @pattern = nil
   end

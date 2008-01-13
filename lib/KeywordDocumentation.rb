@@ -144,7 +144,7 @@ class KeywordDocumentation
           "Inheritable: #{@inheritable ? 'Yes' : 'No'}\n\n"
 
     str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
-                                  textW)}"
+                                  textW)}\n\n"
 
     if @syntax != '[{ <attributes> }]'
       str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
@@ -157,8 +157,9 @@ class KeywordDocumentation
         @args.each do |arg|
           if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
             indent = arg.name.length + 2
+            argText = arg.text || "See #{arg.name} for details."
             argStr += "#{arg.name}: " +
-                    "#{format(indent, newRichText(arg.text).to_s,
+                    "#{format(indent, newRichText(argText).to_s,
                               textW - indent)}\n"
           else
             typeSpec = arg.typeSpec
@@ -166,12 +167,13 @@ class KeywordDocumentation
             typeSpec[-1] = ']'
             indent = arg.name.length + typeSpec.size + 3
             argStr += "#{arg.name} #{typeSpec}: " +
-                    "#{format(indent, newRichText(arg.text).to_s,
+                    "#{format(indent, newRichText(argText).to_s,
                               textW - indent)}\n"
           end
         end
         str += format(tagW, argStr, textW)
       end
+      str += "\n"
     end
 
     str += 'Context:     '
@@ -286,7 +288,8 @@ class KeywordDocumentation
           end
           tr1 << (td = XMLElement.new('td',
             'style' => 'margin-top:2px; margin-bottom:2px;'))
-          td << newRichText(arg.text).to_html
+          td << newRichText(arg.text ||
+                            "See [[#{arg.name}]] for details.").to_html
         end
       end
     end

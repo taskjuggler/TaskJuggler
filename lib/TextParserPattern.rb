@@ -188,14 +188,10 @@ class TextParserPattern
         when ?!
           if rules[token].patterns.length == 1 &&
              !rules[token].patterns[0].doc.nil?
-            # The argument pattern contains a reference to another documented
-            # pattern.
-            keyword = rules[token].patterns[0].keyword
-            str << "<#{keyword}>"
-            argDoc = ParserTokenDoc.new(keyword,
-                                        "See #{keyword} for more info.")
-            argDoc.pattern = rules[token].patterns[0]
-            addArgDoc(argDocs, argDoc)
+            addArgDoc(argDocs,
+                      ParserTokenDoc.new(rules[token].patterns[0].keyword,
+                                         rules[token].patterns[0]))
+            str << '<' + rules[token].patterns[0].keyword + '>'
           else
             # References are followed recursively.
             str << rules[token].to_syntax(stack, argDocs, rules, 0)
