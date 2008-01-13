@@ -70,6 +70,7 @@ module RichTextSyntaxRules
 
   def rule_title1
     pattern(%w( $TITLE1 !text $TITLE1END ), lambda {
+      @val[1][-1].appendSpace = false
       el = RichTextElement.new(@richText, :title1, @val[1])
       @sectionCounter[0] += 1
       @sectionCounter[1] = @sectionCounter[2] = 0
@@ -80,6 +81,7 @@ module RichTextSyntaxRules
 
   def rule_title2
     pattern(%w( $TITLE2 !text $TITLE2END ), lambda {
+      @val[1][-1].appendSpace = false
       el = RichTextElement.new(@richText, :title2, @val[1])
       @sectionCounter[1] += 1
       @sectionCounter[2] = 0
@@ -90,6 +92,7 @@ module RichTextSyntaxRules
 
   def rule_title3
     pattern(%w( $TITLE3 !text $TITLE3END ), lambda {
+      @val[1][-1].appendSpace = false
       el = RichTextElement.new(@richText, :title3, @val[1])
       @sectionCounter[2] += 1
       el.data = @sectionCounter.dup
@@ -175,43 +178,53 @@ module RichTextSyntaxRules
     pattern(%w( !plainTextWithLinks ), lambda {
       @val[0]
     })
-    pattern(%w( $ITALIC !plainTextWithLinks $ITALIC ), lambda {
-      RichTextElement.new(@richText, :italic, @val[1])
+    pattern(%w( $ITALIC !plainTextWithLinks $ITALIC !space ), lambda {
+      el = RichTextElement.new(@richText, :italic, @val[1])
+      el.appendSpace = !@val[3].empty?
+      el
     })
-    pattern(%w( $BOLD !plainTextWithLinks $BOLD ), lambda {
-      RichTextElement.new(@richText, :bold, @val[1])
+    pattern(%w( $BOLD !plainTextWithLinks $BOLD !space ), lambda {
+      el = RichTextElement.new(@richText, :bold, @val[1])
+      el.appendSpace = !@val[3].empty?
+      el
     })
-    pattern(%w( $CODE !plainTextWithLinks $CODE ), lambda {
-      RichTextElement.new(@richText, :code, @val[1])
+    pattern(%w( $CODE !plainTextWithLinks $CODE !space ), lambda {
+      el = RichTextElement.new(@richText, :code, @val[1])
+      el.appendSpace = !@val[3].empty?
+      el
     })
-    pattern(%w( $BOLDITALIC !plainTextWithLinks $BOLDITALIC ), lambda {
-      RichTextElement.new(@richText,
+    pattern(%w( $BOLDITALIC !plainTextWithLinks $BOLDITALIC !space ), lambda {
+      el = RichTextElement.new(@richText,
                           :bold, RichTextElement.new(@richText,
                                                      :italic, @val[1]))
+      el.appendSpace = !@val[3].empty?
+      el
     })
   end
 
   def rule_plainTextWithLinks
     repeatable
-    pattern(%w( $WORD ), lambda {
-      RichTextElement.new(@richText, :text, @val[0])
+    pattern(%w( !plainText ), lambda {
+      @val[0]
     })
-    pattern(%w( $REF $WORD !plainText $REFEND ), lambda {
+    pattern(%w( $REF $WORD !space !plainText $REFEND !space ), lambda {
       el = RichTextElement.new(@richText, :ref,
                                RichTextElement.new(@richText,
-                                                   :text, @val[2].empty? ?
+                                                   :text, @val[3].empty? ?
                                                    @val[1] :
-                                                   @val[2].join(' ')))
+                                                   @val[3].join(' ')))
       el.data = @val[1]
+      el.appendSpace = !@val[5].empty?
       el
     })
-    pattern(%w( $HREF $WORD !plainText $HREFEND ), lambda {
+    pattern(%w( $HREF $WORD !space !plainText $HREFEND !space ), lambda {
       el = RichTextElement.new(@richText, :href,
                                RichTextElement.new(@richText,
-                                                   :text, @val[2].empty? ?
+                                                   :text, @val[3].empty? ?
                                                    @val[1] :
-                                                   @val[2].join(' ')))
+                                                   @val[3].join(' ')))
       el.data = @val[1]
+      el.appendSpace = !@val[5].empty?
       el
     })
   end
@@ -219,8 +232,18 @@ module RichTextSyntaxRules
   def rule_plainText
     repeatable
     optional
-    pattern(%w( $WORD ), lambda {
-      RichTextElement.new(@richText, :text, @val[0])
+    pattern(%w( $WORD !space ), lambda {
+      el = RichTextElement.new(@richText, :text, @val[0])
+      el.appendSpace = !@val[1].empty?
+      el
+    })
+  end
+
+  def rule_space
+    optional
+    repeatable
+    pattern(%w( $SPACE ), lambda {
+      true
     })
   end
 
@@ -228,6 +251,7 @@ module RichTextSyntaxRules
     optional
     repeatable
     pattern(%w( $LINEBREAK ))
+    pattern(%w( $SPACE ))
   end
 
 end

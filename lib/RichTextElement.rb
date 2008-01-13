@@ -20,6 +20,7 @@ class RichTextElement
 
   attr_reader :category, :children
   attr_writer :data
+  attr_accessor :appendSpace
 
   # Create a new RichTextElement node. _rt_ is the RichText object this
   # element belongs to. _category_ is the type of the node. It can be :title,
@@ -46,6 +47,7 @@ class RichTextElement
     # require additional data. This variable is used for this. It can hold an
     # Array of counters or a link label.
     @data = nil
+    @appendSpace = false
   end
 
   # Remove a paragraph node from the richtext node if it is the only node in
@@ -255,7 +257,7 @@ class RichTextElement
     out = ''
     @children.each do |el|
       if el.is_a?(RichTextElement)
-        out << el.to_tagged
+        out << el.to_tagged + (el.appendSpace ? ' ' : '')
       else
         out << el.to_s
       end
@@ -338,16 +340,9 @@ class RichTextElement
     # Some elements never have leaves.
     return html if [ :text, :pre, :hline ].include?(@category)
 
-    prependSpace = false
     @children.each do |el|
-      # Only insert spaces after words or word elements and not before
-      # puctuation marks.
-      if prependSpace && !(el.category == :text &&
-                           [ ?., ?,, ??, ?!, ?;].include?(el.children[0][0]))
-        html << XMLText.new(' ')
-      end
       html << el.to_html
-      prependSpace = [ :text, :code, :italic, :bold ].include?(el.category)
+      html << XMLText.new(' ') if el.appendSpace
     end
 
     html
@@ -357,13 +352,7 @@ class RichTextElement
   def children_to_s
     text = ''
     @children.each do |c|
-      str = c.to_s
-      # Only insert a space in front of the child text if the last char in the
-      # text buffer is not a newline or the first char of the child text is a
-      # puctuation char.
-      text += ' ' unless text.empty? || text[-1] == ?\n ||
-                         [ ?., ?,, ??, ?!, ?;].include?(str[0])
-      text << c.to_s
+      text << c.to_s + (c.is_a?(RichTextElement) && c.appendSpace ? ' ' : '')
     end
     text
   end

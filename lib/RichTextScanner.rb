@@ -127,7 +127,7 @@ class RichTextScanner
         # Sequences of tabs or spaces are treated as token boundaries, but
         # otherwise they are ignored.
         readSequence(32, ?\t)
-        next
+        return [ 'SPACE', ' ' ]
       elsif c == ?' && !ignoreInlineMarkup && @wikiEnabled
         # Sequence of 2 ' means italic, 3 ' means bold, 5 ' means italic and
         # bold. Anything else is just normal text.
@@ -183,7 +183,7 @@ class RichTextScanner
           # Single line breaks are treated as spaces. Return the char after
           # the newline and start with this one again.
           returnChar
-          next
+          return [ 'SPACE', ' ' ]
         end
       elsif c == ?<
         if peekMatch('nowiki>')

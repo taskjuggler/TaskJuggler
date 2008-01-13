@@ -27,7 +27,7 @@ class RichTextParser < TextParser
     super()
     @richText = rt
     # These are the tokens that can be returned by the RichTextScanner.
-    @variables = %w( LINEBREAK WORD BOLD ITALIC CODE BOLDITALIC PRE
+    @variables = %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE
                      HREF HREFEND REF REFEND HLINE
                      TITLE1 TITLE2 TITLE3 TITLE1END TITLE2END TITLE3END
                      BULLET1 BULLET2 BULLET3 NUMBER1 NUMBER2 NUMBER3 )

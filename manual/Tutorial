@@ -257,8 +257,8 @@ effort. Tasks with length or duration criteria and allocated resources
 will last exactly as long as requested. Resources will be allocated
 only if available.
 
-Here we use the allocate_developers macro mentioned above. The expression 
-''''${allocate_developers}'''' is simply expanded to 
+Here we use the allocate_developers macro mentioned above. The
+expression ''''${allocate_developers}'''' is simply expanded to 
 
  allocate dev1
  allocate dev2 { limits { dailymax 4h } }

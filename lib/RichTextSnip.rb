@@ -38,7 +38,7 @@ class RichTextSnip
     begin
       @richText = RichText.new(text, sectionCounter)
     rescue RichTextException => msg
-      $stderr.puts "Error in RichText of rule #{@keyword}\n" +
+      $stderr.puts "Error in RichText of file '#{fileName}'\n" +
                    "Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"
       exit
