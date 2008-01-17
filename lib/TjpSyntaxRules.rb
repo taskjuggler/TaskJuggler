@@ -1557,7 +1557,7 @@ EOT
         'Specify that you want to base all week calculation on weeks ' +
         'starting on Sunday. This is common in the United States of America.')
 
-    pattern(%w( !workinghours ))
+    pattern(%w( !workinghoursProject ))
     pattern(%w( _yearlyworkingdays !number ), lambda {
       @project['yearlyworkingdays'] = @val[1]
     })
@@ -2339,7 +2339,7 @@ to the 'Shift' property.
 EOT
        )
 
-    pattern(%w( !workinghours ))
+    pattern(%w( !workinghoursResource ))
     # Other attributes will be added automatically.
   end
 
@@ -2571,7 +2571,7 @@ Specify a vacation period associated with this shift.
 EOT
        )
 
-    pattern(%w( !workinghours ))
+    pattern(%w( !workinghoursShift ))
   end
 
   def rule_sortCriteria
@@ -3580,8 +3580,33 @@ EOT
                     @property['timezone', @scenarioIdx]
       0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
-    doc('workinghours', <<'EOT'
-The working hours specification limits the availability of resources or the activity on a task to certain time slots of week days.
+  end
+
+  def rule_workinghoursProject
+    pattern(%w( !workinghours ))
+    doc('workinghours.project', <<'EOT'
+Set the default working hours for all subsequent resource definitions.
+The working hours specification limits the availability of resources to
+certain time slots of week days.
+EOT
+       )
+  end
+
+  def rule_workinghoursResource
+    pattern(%w( !workinghours ))
+    doc('workinghours.resource', <<'EOT'
+Set the working hours for a specific resource. The working hours specification
+limits the availability of resources to certain time slots of week days.
+EOT
+       )
+  end
+
+  def rule_workinghoursShift
+    pattern(%w( !workinghours ))
+    doc('workinghours.shift', <<'EOT'
+Set the default working hours for the shift. The working hours specification
+limits the availability of resources or the activity on a task to certain time
+slots of week days.
 EOT
        )
   end
