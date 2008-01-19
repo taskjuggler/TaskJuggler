@@ -1,5 +1,6 @@
 project allocate "allocate" "1.0" 2003-06-05 - 2003-07-05
 
+# *** EXAMPLE: 1 +
 resource r1 "Resource 1"
 resource r2 "Resource 2"
 
@@ -15,7 +16,9 @@ task t1 "Task 1" {
     # This task has r1 and r2 allocated
     allocate r2
   }
+# *** EXAMPLE: 1 -
   task m1 "Milestone 1" {
     milestone
   }
+# *** EXAMPLE: 1 +
 }

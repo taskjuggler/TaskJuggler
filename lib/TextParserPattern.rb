@@ -33,7 +33,8 @@ require 'ParserTokenDoc'
 # documentary information about the pattern.
 class TextParserPattern
 
-  attr_reader :keyword, :doc, :seeAlso, :tokens, :function
+  attr_reader :keyword, :doc, :seeAlso, :exampleFile, :exampleTag,
+              :tokens, :function
 
   def initialize(tokens, function = nil)
     # A unique name for the pattern that is used in the documentation.
@@ -45,6 +46,11 @@ class TextParserPattern
     @args = []
     # A list of references to other patterns that are related to this pattern.
     @seeAlso = []
+    # A reference to a file under test/TestSuite/Syntax/Correct and a tag
+    # within that file. This identifies example TJP code to be included with
+    # the reference manual.
+    @exampleFile = nil
+    @exampleTag = nil
 
     tokens.each do |token|
       if token[0] != ?! && token[0] != ?$ && token[0] != ?_
@@ -72,6 +78,12 @@ class TextParserPattern
   # Set the references to related patterns.
   def setSeeAlso(also)
     @seeAlso = also
+  end
+
+  # Set the file and tag for the TJP code example.
+  def setExample(file, tag)
+    @exampleFile = file
+    @exampleTag = tag
   end
 
   # Conveniance function to access individual tokens by index.

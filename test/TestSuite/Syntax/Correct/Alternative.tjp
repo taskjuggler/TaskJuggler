@@ -1,12 +1,13 @@
 project prj "Project" "1.0" 2000-01-01 - 2000-03-01
 
+# *** EXAMPLE: 1 +
 resource tuxus "Tuxus"
 resource tuxia "Tuxia"
 
 task t "Task" {
-  start 2000-01-01
+  start ${projectstart}
   effort 5d
-  # Use tuxux or tuxia, whoever is available.
+  # Use tuxus or tuxia, whoever is available.
   allocate tuxus { alternative tuxia }
 }
 

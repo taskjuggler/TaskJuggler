@@ -34,7 +34,6 @@ class TextParserRule
     # this variable is set to true.
     @transitiveOptional = nil
     @keyword = nil
-    @doc = nil
   end
 
   def addPattern(pattern)
@@ -62,6 +61,10 @@ class TextParserRule
   def setSeeAlso(also)
     raise 'No pattern defined yet' if @patterns.empty?
     @patterns[-1].setSeeAlso(also)
+  end
+
+  def setExample(file, tag)
+    @patterns[-1].setExample(file, tag)
   end
 
   def pattern(idx)

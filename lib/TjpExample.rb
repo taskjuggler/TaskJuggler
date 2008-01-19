@@ -49,7 +49,8 @@ class TjpExample
   end
 
   # This method returns the snip identified by _tag_.
-  def to_s(tag = 'full text')
+  def to_s(tag = nil)
+    tag = 'full text' unless tag
     return nil unless @snippets[tag]
 
     s = ''
@@ -100,6 +101,11 @@ private
         # Add all lines to this buffer.
         @snippets['full text'] << line
       end
+    end
+
+    # Remove empty lines at end of all snips
+    @snippets.each_value do |snip|
+      snip.delete_at(-1) if snip[-1] == "\n"
     end
   end
 

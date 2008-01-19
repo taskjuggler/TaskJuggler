@@ -10,6 +10,7 @@
 
 require 'HTMLDocument'
 require 'RichText'
+require 'TjpExample'
 
 # The textual TaskJuggler Project description consists of many keywords. The
 # parser has built-in support to document the meaning and usage of these
@@ -240,7 +241,9 @@ class KeywordDocumentation
       generateHTMLNavigationBar
 
     # Box with keyword name.
-    body << (p = XMLElement.new('p'))
+    body << (bbox = XMLElement.new('div',
+      'style' => 'margin-left:5%; margin-right:5%'))
+    bbox << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
                                'class' => 'table'))
 
@@ -251,7 +254,7 @@ class KeywordDocumentation
                            'style' => 'width:85%; font-weight:bold')
 
     # Box with purpose, syntax, arguments and context.
-    body << (p = XMLElement.new('p'))
+    bbox << (p = XMLElement.new('p'))
     p << (tab = XMLElement.new('table', 'align' => 'center',
                                'class' => 'table'))
     tab << (colgroup = XMLElement.new('colgroup'))
@@ -356,7 +359,7 @@ class KeywordDocumentation
           end
         end
       end
-      body << (p = XMLElement.new('p'))
+      bbox << (p = XMLElement.new('p'))
       p << (tab = XMLElement.new('table', 'align' => 'center',
                                'class' => 'table'))
       tab << (tr = XMLElement.new('tr', 'align' => 'left'))
@@ -390,6 +393,19 @@ class KeywordDocumentation
           keywordHTMLRef(td, attr)
         end
       end
+    end
+
+    if @pattern.exampleFile
+      example = TjpExample.new
+      fileName = "../test/TestSuite/Syntax/Correct/#{@pattern.exampleFile}.tjp"
+      example.open(fileName)
+      bbox << (frame = XMLElement.new('div', 'class' => 'codeframe'))
+      frame << (pre = XMLElement.new('pre', 'class' => 'code'))
+      unless (text = example.to_s(@pattern.exampleTag))
+        raise "There is not tag '#{@pattern.exampleTag}' in file " +
+          "#{fileName}."
+      end
+      pre << XMLText.new(text)
     end
 
     body << generateHTMLNavigationBar

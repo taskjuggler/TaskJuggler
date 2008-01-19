@@ -27,6 +27,7 @@ accounts can be used for profit/loss calculations. The sub-account structure
 of a top-level account should be organized accordingly.
 EOT
        )
+    example('Account', '1')
   end
 
   def rule_accountAttributes
@@ -101,6 +102,7 @@ restrict the allocation to certain time intervals or to limit them to a
 certain maximum per time period.
 EOT
        )
+    example('Allocate-1', '1')
   end
 
   def rule_allocation
@@ -126,6 +128,7 @@ restrict the allocation to certain time intervals or to limit them to a
 certain maximum per time period.
 EOT
        )
+    example('Alternative', '1')
 
     pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])
@@ -999,7 +1002,7 @@ EOT
     doc('interval3', <<'EOT'
 There are three ways to specify a date interval. The first is the most
 obvious. A date interval consists of a start and end DATE. Watch out for end
-dates without a time specification! Dates specifications are 0 expanded. An
+dates without a time specification! Date specifications are 0 extended. An
 end date without a time is expanded to midnight that day. So the day of the
 end date is not included in the interval! The start and end dates must be separated by a hyphen character.
 
@@ -1023,7 +1026,7 @@ EOT
     doc('interval2', <<'EOT'
 There are to ways to specify a date interval. The first is the most
 obvious. A date interval consists of a start and end DATE. Watch out for end
-dates without a time specification! Dates specifications are 0 expanded. An
+dates without a time specification! Date specifications are 0 extended. An
 end date without a time is expanded to midnight that day. So the day of the
 end date is not included in the interval! The start and end dates must be separated by a hyphen character.
 
@@ -1257,6 +1260,7 @@ The macro call
 will expand to nothing if foo is undefined.
 EOT
        )
+    example('Macro-1')
   end
 
   def rule_moreAlternatives
@@ -3505,8 +3509,8 @@ EOT
 There are to ways to specify a date interval. The start and end date must lie within the specified project period.
 
 The first is the most obvious. A date interval consists of a start and end
-DATE. Watch out for end dates without a time specification! Dates
-specifications are 0 expanded. An end date without a time is expanded to
+DATE. Watch out for end dates without a time specification! Date
+specifications are 0 extended. An end date without a time is expanded to
 midnight that day. So the day of the end date is not included in the interval!
 The start and end dates must be separated by a hyphen character.
 

@@ -70,9 +70,7 @@ code {
 }
 .table {
   background-color:#ABABAB;
-  width:90%;
-  margin-left:5%;
-  margin-right:5%;
+  width:100%;
 }
 .tag {
   background-color:#E0E0F0;
@@ -90,6 +88,20 @@ code {
   padding-right:8px;
   padding-top:5px;
   padding-bottom:5px;
+}
+.codeframe{
+  border-width:2px;
+  border-color:#ABABAB;
+  border-style:solid;
+  background-color:#F0F0F0;
+  margin-top:8px;
+  margin-bottom:8px;
+}
+.code {
+  padding-left:15px;
+  padding-right:15px;
+  padding-top:0px;
+  padding-bottom:0px;
 }
 EOT
                )

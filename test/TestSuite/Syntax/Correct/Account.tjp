@@ -2,6 +2,7 @@ project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26 {
   currency "USD"
 }
 
+# *** EXAMPLE: 1 +
 account project_cost "Project Costs"
 account payments "Customer Payments" {
   credit 2005-06-08 "Customer down payment" 500.0
@@ -9,7 +10,7 @@ account payments "Customer Payments" {
 
 resource tux "Tux" {
   rate 300
-}
+} 
 
 task items "Project breakdown" {
   start 2005-06-06
@@ -36,6 +37,7 @@ task items "Project breakdown" {
     endcredit 2000.0  
   }
 }
+# *** EXAMPLE: 1 -
 
 #htmlaccountreport "PAndL.html" {
 #  timeformat "%d-%M-%y"

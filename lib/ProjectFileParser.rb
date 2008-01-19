@@ -226,5 +226,12 @@ private
     @cr.setSeeAlso(seeAlso)
   end
 
+  # Add a TJP file or parts of it as an example. The TJP _file_ must be in the
+  # directory test/TestSuite/Syntax/Correct. _tag_ can be used to identify
+  # that only a part of the file should be included.
+  def example(file, tag = nil)
+    @cr.setExample(file, tag)
+  end
+
 end
 
