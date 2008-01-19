@@ -43,6 +43,7 @@ class RichTextSnip
                    "#{msg.line}"
       exit
     end
+    @richText.setProtocolHandlers(@document.protocolHandlers)
 
     @prevSnip = @nextSnip = nil
   end

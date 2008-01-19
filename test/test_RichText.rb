@@ -282,13 +282,13 @@ EOT
   def test_href
     inp = <<'EOT'
 This is a reference [http://www.taskjuggler.org].
-For more info see [[http://www.taskjuggler.org the TaskJuggler site]].
+For more info see [http://www.taskjuggler.org the TaskJuggler site].
 EOT
 
     # Check tagged output.
     out = newRichText(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org]</a>[.] [For] [more] [info] [see] <ref data="http://www.taskjuggler.org">[the TaskJuggler site]</ref>[.]</div>
+<div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org]</a>[.] [For] [more] [info] [see] <a href="http://www.taskjuggler.org">[the TaskJuggler site]</a>[.]</div>
 EOT
     assert_equal(out, ref)
 
@@ -303,7 +303,7 @@ EOT
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
-<div>This is a reference <a href="http://www.taskjuggler.org">http://www.taskjuggler.org</a>. For more info see <a href="http://www.taskjuggler.org.html">the TaskJuggler site</a>.</div>
+<div>This is a reference <a href="http://www.taskjuggler.org">http://www.taskjuggler.org</a>. For more info see <a href="http://www.taskjuggler.org">the TaskJuggler site</a>.</div>
 EOT
     assert_equal(out, ref)
   end

@@ -145,14 +145,21 @@ TaskJuggler Developer Forum].
 The user manual is currently a rough port of the 2.x manual. It
 contains many inaccuracies and does not provide much more than a
 tutorial and a syntax reference. Any help to turn this into a real
-user manual is appreciated.
+user manual is greatly appreciated.
 
-The manual is automatically generated. The sources for normal pages
-are in MediaWiki format and can be found in the ''''manual''''
-directory of the source distribution. The information information in
-the syntax reference is extracted from the TJP parser. It can be
-found in the file ''''lib/TjpSyntaxRules.rb''''. The following
-commands build the HTML files for the manual in the
+The manual is composed from 3 different sources.
+
+# The sources for normal pages are in MediaWiki format and can be
+found in the ''''manual'''' directory of the source distribution. 
+
+# The information in the syntax reference is extracted from the TJP
+parser source code. It can be found in the file
+''''lib/TjpSyntaxRules.rb''''.
+
+# The TJP examples are in the ''''test/TestSuite/Syntax/Correct''''
+directory.
+
+The following commands build the HTML files for the manual in the
 ''''data/manual'''' directory.
 
  cd lib

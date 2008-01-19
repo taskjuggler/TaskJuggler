@@ -94,7 +94,7 @@ class RichTextElement
   # internal references in this RichTextElement.
   def internalReferences
     references = []
-    if @category == :ref
+    if @category == :ref && !@data.include?(':')
         references << @data
     else
       @children.each do |el|
@@ -322,7 +322,15 @@ class RichTextElement
     when :numberitem3
       XMLElement.new('li')
     when :ref
-      XMLElement.new('a', 'href' => "#{@data}.html")
+      if @data.include?(':')
+        protocol, path = @data.split(':')
+        raise TjException.new, "Reference protocol empty." if protocol.empty?
+        raise TjException.new, "Reference path may not be empty." if path.empty?
+        args = children_to_s.split(' ')
+        return @richText.protocolHandler(protocol).to_html(path, args)
+      else
+        XMLElement.new('a', 'href' => "#{@data}.html")
+      end
     when :href
       XMLElement.new('a', 'href' => @data)
     when :italic

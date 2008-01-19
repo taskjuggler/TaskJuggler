@@ -10,6 +10,7 @@
 
 require 'RichTextSnip'
 require 'TableOfContents'
+require 'RichTextProtocolHandler'
 
 # A RichTextDocument object collect a set of structured text files into a
 # single document. This document may have a consistent table of contents
@@ -19,12 +20,20 @@ require 'TableOfContents'
 # generateHTMLFooter.
 class RichTextDocument
 
+  attr_reader :protocolHandlers
+
   # Create a new empty RichTextDocument object.
   def initialize
+    @protocolHandlers = {}
     @snippets = []
     @dirty = false
     @sectionCounter = [ 0, 0, 0 ]
     @toc = nil
+  end
+
+  # Register a new RichTextProtocolHandler for this document.
+  def registerProtocolHandler(handler)
+    @protocolHandlers[handler.protocol] = handler
   end
 
   # Add a new structured text file to the document. _file_ must be the name of

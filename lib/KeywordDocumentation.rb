@@ -402,7 +402,7 @@ class KeywordDocumentation
       bbox << (frame = XMLElement.new('div', 'class' => 'codeframe'))
       frame << (pre = XMLElement.new('pre', 'class' => 'code'))
       unless (text = example.to_s(@pattern.exampleTag))
-        raise "There is not tag '#{@pattern.exampleTag}' in file " +
+        raise "There is no tag '#{@pattern.exampleTag}' in file " +
           "#{fileName}."
       end
       pre << XMLText.new(text)

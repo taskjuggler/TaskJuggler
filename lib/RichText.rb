@@ -58,6 +58,7 @@ require 'RichTextParser'
 #  [[item]] site internal internal reference (in HTML .html gets appended
 #                                             automatically)
 #  [[item An item]] another internal reference
+#  [[protocol:path arg1 arg2 ...]]
 #
 #  <nowiki> ... </nowiki> Disable markup interpretation for the enclosed
 #  portion of text.
@@ -74,10 +75,34 @@ class RichText
     @sectionNumbers = true
     # Set this to the width of your text area. Needed for horizonal lines.
     @lineWidth = 80
+    # These are the RichTextProtocolHandler objects to handle references with
+    # a protocol specification.
+    @protocolHandlers = {}
     parser = RichTextParser.new(self, sectionCounter)
     parser.open(text)
     # Parse the input text and convert it to the intermediate representation.
     @richText = parser.parse('richtext').cleanUp
+  end
+
+  # Use this function to register new RichTextProtocolHandler objects with
+  # this class.
+  def registerProtocol(protocolHandler)
+    @protocolHandlers[protocolHandler.protocol] = protocolHandler
+  end
+
+  # Use this function to register a set of RichTextProtocolHandler objects
+  # with this class. This will replace any previously registered handlers.
+  def setProtocolHandlers(protocolHandlers)
+    @protocolHandlers = protocolHandlers
+  end
+
+  # Return the handler for the given _protocol_ or raise an exception if it
+  # does not exist.
+  def protocolHandler(protocol)
+    unless @protocolHandlers.include?(protocol)
+      raise TjException.new, "Unsupported protocol #{protocol}"
+    end
+    @protocolHandlers[protocol]
   end
 
   # Return a TableOfContents for the section headings.

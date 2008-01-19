@@ -12,6 +12,7 @@ require 'Tj3Config'
 require 'RichTextDocument'
 require 'SyntaxReference'
 require 'TjTime'
+require 'RichTextProtocolExample'
 
 # This class specializes the RichTextDocument class for the TaskJuggler user
 # manual. This manual is not only generated from a set of RichTextSnip files,
@@ -23,6 +24,7 @@ class UserManual < RichTextDocument
     super
     # Don't confuse this with RichTextDocument#references
     @reference = SyntaxReference.new(self)
+    registerProtocolHandler(RichTextProtocolExample.new)
   end
 
   # Create a table of contents that includes both the sections from the
