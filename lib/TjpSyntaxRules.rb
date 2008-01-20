@@ -2687,7 +2687,7 @@ EOT
     repeatable
     optional
     pattern(%w( _note $STRING ), lambda {
-      @property.set('note', @val[1])
+      @property.set('note', newRichText(@val[1]))
     })
     doc('note.task', <<'EOT'
 Attach a note to the task. This is usually a more detailed specification of

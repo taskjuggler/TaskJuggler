@@ -86,6 +86,7 @@ class ReportElement
     @propertiesByType = {
       # Type                  Indent  Align
       StringAttribute    => [ false,  :left ],
+      RichTextAttribute  => [ false,  :left ],
       FloatAttribute     => [ false,  :right ]
     }
   end
@@ -181,16 +182,16 @@ class ReportElement
   # whenever we need no special treatment.
   def cellText(property, scenarioIdx, colId)
     if property.is_a?(Resource)
-      attribute = @project.resources
+      propertyList = @project.resources
     elsif property.is_a?(Task)
-      attribute = @project.tasks
+      propertyList = @project.tasks
     else
       raise "Fatal Error: Unknown property #{property.class}"
     end
 
     begin
       # Get the value no matter if it's scenario specific or not.
-      if attribute.scenarioSpecific?(colId)
+      if propertyList.scenarioSpecific?(colId)
         value = property[colId, scenarioIdx]
       else
         value = property.get(colId)
@@ -200,9 +201,11 @@ class ReportElement
         ''
       else
         # Certain attribute types need special treatment.
-        type = attribute.attributeType(colId)
+        type = propertyList.attributeType(colId)
         if type == DateAttribute
           value.to_s(timeFormat)
+        elsif type == RichTextAttribute
+          value
         else
           value.to_s
         end

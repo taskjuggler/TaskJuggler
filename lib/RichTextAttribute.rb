@@ -1,5 +1,5 @@
 #
-# StringAttribute.rb - The TaskJuggler III Project Management Software
+# RichTextAttribute.rb - The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
 #
@@ -8,18 +8,19 @@
 # published by the Free Software Foundation.
 #
 
-class StringAttribute < AttributeBase
+class RichTextAttribute < AttributeBase
   def initialize(property, type)
     super(property, type)
   end
 
-  def StringAttribute::tjpId
-    'text'
+  def RichTextAttribute::tjpId
+    'richtext'
   end
 
   def to_tjp
-    "#{@type.id} \"#{@value}\""
+    "#{@type.id} \"#{@value.to_s}\""
   end
 
 end
+
 

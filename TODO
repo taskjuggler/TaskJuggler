@@ -7,8 +7,6 @@ or should be done for TaskJuggler III.
 
 * Add missing functions for logical expressions.
 
-* Support for syntax examples in the manual.
-
 * Properly handle rich text attributes in report columns.
 
 == Missing features for 2.x compatibility

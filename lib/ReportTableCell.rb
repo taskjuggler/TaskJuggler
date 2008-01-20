@@ -65,6 +65,13 @@ class ReportTableCell
     return nil if @hidden
     return @special.to_html if @special
 
+    attribs = { 'style' => 'padding:0px' }
+    # Determine cell attributes
+    attribs['rowspan'] = "#{@rows}" if @rows > 1
+    attribs['colspan'] = "#{@columns}" if @columns > 1
+    attribs['class'] = @category ? @category : 'tabcell'
+    cell = XMLElement.new('td', attribs)
+
     # Determine cell style
     alignSymbols = [ :left, :center, :right ]
     aligns = %w( left center right)
@@ -81,22 +88,16 @@ class ReportTableCell
     else
       style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
     end
-    style += 'font-weight:bold; ' if @bold
-    style += "font-size: #{@fontSize}px; " if fontSize
-
-    attribs = { 'style' => style }
-    # Determine cell attributes
-    attribs['rowspan'] = "#{@rows}" if @rows > 1
-    attribs['colspan'] = "#{@columns}" if @columns > 1
-    attribs['class'] = @category ? @category : 'tabcell'
-
-    cell = XMLElement.new('td', attribs)
-    if @width
-      cell << (div = XMLElement.new('div', 'style' => "width: #{@width}px"))
-      div << XMLText.new(@text)
-    else
-      cell << XMLText.new(@text)
+    unless @text.is_a?(RichText)
+      style += 'font-weight:bold; ' if @bold
+      style += "font-size: #{@fontSize}px; " if fontSize
     end
+    style += "width: #{@width}px; " if @width
+    style += "height:#{@line.height - 3}px; " if @line && @line.height > 2
+    cell << (div = XMLElement.new('div', 'class' => 'celldiv',
+                                         'style' => style))
+
+    div << (@text.is_a?(RichText) ?  @text.to_html : XMLText.new(@text))
 
     cell
   end

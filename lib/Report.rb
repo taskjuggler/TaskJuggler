@@ -154,6 +154,7 @@ private
     color:#ffffff;
     text-align:center;
   }
+  .celldiv { padding-top:3px; overflow:auto; }
   .tabline { color:#000000 }
   .taskcell1 { background-color:#ebf2ff; white-space:nowrap; }
   .taskcell2 { background-color:#d9dfeb; white-space:nowrap; }

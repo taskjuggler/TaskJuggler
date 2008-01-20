@@ -25,6 +25,7 @@ require 'FixnumAttribute'
 require 'IntervalListAttribute'
 require 'LimitsAttribute'
 require 'ReferenceAttribute'
+require 'RichTextAttribute'
 require 'StringAttribute'
 require 'ShiftAssignmentsAttribute'
 require 'SymbolAttribute'
@@ -188,7 +189,7 @@ class Project
       [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
       [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
       [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
-      [ 'note',      'Note',         StringAttribute,   false, false, nil ],
+      [ 'note',      'Note',         RichTextAttribute, false, false, nil ],
       [ 'pathcriticalness', 'Path Criticalness', FloatAttribute, false, true, 0.0 ],
       [ 'precedes',  '-',      DependencyListAttribute, true,  true,  [] ],
       [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
@@ -436,11 +437,18 @@ class Project
     seconds / (@attributes['dailyworkinghours'] * 3600)
   end
 
+  # Many internal data structures use Scoreboard objects to keep track of
+  # scheduling data. These have one entry for every schedulable time slot in
+  # the project time frame. This functions returns the number of entries in
+  # the scoreboards.
   def scoreboardSize
     ((@attributes['end'] - @attributes['start']) /
      @attributes['scheduleGranularity']).to_i
   end
 
+  # Convert a Scoreboard index to the equivalent date. _idx_ is the index and
+  # it must be within the range of the Scoreboard objects. If not, an
+  # exception is raised.
   def idxToDate(idx)
     if $DEBUG && (idx < 0 || idx > scoreboardSize)
       raise "Scoreboard index out of range"
@@ -448,19 +456,25 @@ class Project
     @attributes['start'] + idx * @attributes['scheduleGranularity']
   end
 
+  # Convert a _date_ (TjTime) to the equivalent Scoreboard index. If
+  # _forceIntoProject_ is true, the date will be pushed into the project time
+  # frame.
   def dateToIdx(date, forceIntoProject = false)
     if (date < @attributes['start'] || date > @attributes['end'])
+      # Date is out of range.
       if forceIntoProject
         return 0 if date < @attributes['start']
-        return scoreboardSize if date > @attributes['end']
+        return scoreboardSize - 1 if date > @attributes['end']
       else
         raise "Date #{date} is out of project time range " +
               "(#{@attributes['start']} - #{@attributes['end']})"
       end
     end
+    # Calculate the corresponding index.
     ((date - @attributes['start']) / @attributes['scheduleGranularity']).to_i
   end
 
+  # Print the attribute values. It's used for debugging only.
   def to_s
     @attributes.each do |attribute, value|
       if value
@@ -550,6 +564,12 @@ protected
     # allWorkItems list.
     allWorkItems = PropertyList.new(@tasks)
     allWorkItems.delete_if { |task| !task.leaf? }
+    # The sorting of the work item list determines which tasks will get their
+    # resources first. The first sorting criterium is the user specified task
+    # priority. The second criterium is the scheduler determined priority
+    # stored in the pathcriticalness attribute. That way, the user can always
+    # override the scheduler determined priority. To always have a defined
+    # order, the third criterium is the sequence number.
     allWorkItems.setSorting([ [ 'priority', false, scIdx ],
                               [ 'pathcriticalness', false, scIdx ],
                               [ 'seqno', true, -1 ] ])
@@ -561,38 +581,63 @@ protected
 	  workItems.delete_if { |task| !task.readyForScheduling?(scIdx) }
 
     @breakFlag = false
+    # Enter the main scheduling loop. This loop is only terminated when all
+    # tasks have been scheduled or another thread has set the breakFlag to
+    # true.
     loop do
+      # For now, we assume this will be the last iteration.
       done = true
+      # We don't know what time slot we will be scheduling.
       slot = nil
+      # The currently handled task priority.
       priority = 0
+      # The currently handled task criticalness.
       pathCriticalness = 0.0
+      # The scheduler is advanding forward in time.
       forward = true
 
       workItems.each do |task|
         if slot.nil?
+          # We don't know what time slot we should schedule next. We check the
+          # tasks for the next slot they like to see scheduled. Tasks that are
+          # not ready to be scheduled, return nil.
           slot = task.nextSlot(scIdx, @attributes['scheduleGranularity'])
+          # Check the next task if we don't have a slot yet.
           next if slot.nil?
-
-          priority = task['priority', scIdx]
-          pathCriticalness = task['pathcriticalness', scIdx]
-          forward = task['forward', scIdx]
 
           if (slot < @attributes['start'] ||
               slot > @attributes['end'])
+            # When the task asked for time slot outside of the project
+            # interval, we deem it a runaway. It will be ignored for the rest
+            # of the scheduling run and the overall result will be incomplete.
             task.markAsRunaway(scIdx)
             slot = nil
             next
           end
+
+          # To avoid priority inversions as good as possible, we store the
+          # priority, criticalness and scheduling direction of the task that
+          # provided the slot. These will form a lower barrier for the rest of
+          # the tasks that can be scheduled in this iteration of the outer
+          # loop.
+          priority = task['priority', scIdx]
+          pathCriticalness = task['pathcriticalness', scIdx]
+          forward = task['forward', scIdx]
+          # We have at least one task left to process.
+          done = false
+        else
+          # Stop processing the work item list in case we hit a task that runs
+          # into the opposite direction or has a lower priority or
+          # criticalness.
+          break if (task['forward', scIdx] != forward &&
+                    !task['milestone', scIdx]) ||
+                    task['priority', scIdx] < priority ||
+                    (task['priority', scIdx] == priority &&
+                     task['pathcriticalness', scIdx] < pathCriticalness)
         end
 
-        done = false
 
-        break if (task['forward', scIdx] != forward &&
-                  !task['milestone', scIdx]) ||
-                 task['priority', scIdx] < priority ||
-                 (task['priority', scIdx] == priority &&
-                  task['pathcriticalness', scIdx] < pathCriticalness)
-
+        # Schedule the current task for the current time slot.
         if task.schedule(scIdx, slot, @attributes['scheduleGranularity'])
           # If one or more tasks have been scheduled completely, we
 	        # recreate the list of all tasks that are ready to be scheduled.
@@ -602,6 +647,8 @@ protected
         end
       end
 
+      # Break the outer loop if we have no more tasks left or the interrupt
+      # flag has been set by another thread.
       break if done || @breakFlag
     end
   end
