@@ -2106,6 +2106,10 @@ EOT
 
   def rule_reportEnd
     pattern(%w( _end !date ), lambda {
+      if @val[1] < @reportElement.start
+        error('report_end',
+              "End date must be before start date #{@reportElement.start}")
+      end
       @reportElement.end = @val[1]
     })
     doc('end.report', <<'EOT'
@@ -2129,6 +2133,10 @@ EOT
 
   def rule_reportStart
     pattern(%w( _start !date ), lambda {
+      if @val[1] > @reportElement.end
+        error('report_start',
+              "Start date must be before end date #{@reportElement.end}")
+      end
       @reportElement.start = @val[1]
     })
     doc('start.report', <<'EOT'
