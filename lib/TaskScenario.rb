@@ -505,37 +505,49 @@ class TaskScenario < ScenarioData
   # higher criticalness level than the individual tasks. In fact, the path
   # criticalness of this chain is equal to the sum of the individual
   # criticalnesses of the tasks.
-  #
-  # Since both the forward and backward functions include the
-  # criticalness of this function we have to subtract it again.
-  def calcPathCriticalness
-    # If we have computed this already, just return the value.
-    return a('pathcriticalness') if a('pathcriticalness')
+  def calcPathCriticalness(atEnd = false)
+    # If we have computed this already, just return the value. If we are only
+    # at the end of the task, we do not include the criticalness of this task
+    # as it is not really part of the path.
+    if a('pathcriticalness')
+      return a('pathcriticalness') - (atEnd ? 0 : a('criticalness'))
+    end
 
     maxCriticalness = 0.0
 
-    if @property.container?
-      @property.children.each do |task|
-        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
-            maxCriticalness
-          maxCriticalness = criticalness
-        end
+    if atEnd
+      # At the end, we only care about pathes through the successors of this
+      # task or its parent tasks.
+      if (criticalness = calcPathCriticalnessEndSuccs) > maxCriticalness
+        maxCriticalness = criticalness
       end
     else
-      a('endsuccs').each do |task, onEnd|
-        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
-           maxCriticalness
-          maxCriticalness = criticalness
-        end
-      end
-
-      maxCriticalness += a('criticalness')
-
-      a('startsuccs').each do |task, onEnd|
-        if (criticalness = task.calcPathCriticalness(@scenarioIdx)) >
+      # At the start of the task, we have two options.
+      if @property.container?
+        # For container tasks, we ignore all dependencies and check the pathes
+        # through all the children.
+        @property.children.each do |task|
+          if (criticalness = task.calcPathCriticalness(@scenarioIdx, false)) >
             maxCriticalness
+            maxCriticalness = criticalness
+          end
+        end
+      else
+        # For leaf tasks, we check all pathes through the start successors and
+        # then the pathes through the end successors of this task and all its
+        # parent tasks.
+        a('startsuccs').each do |task, onEnd|
+          if (criticalness = task.calcPathCriticalness(@scenarioIdx, onEnd)) >
+            maxCriticalness
+            maxCriticalness = criticalness
+          end
+        end
+
+        if (criticalness = calcPathCriticalnessEndSuccs) > maxCriticalness
           maxCriticalness = criticalness
         end
+
+        maxCriticalness += a('criticalness')
       end
     end
 
@@ -1200,6 +1212,31 @@ private
       task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
     # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
+  end
+
+  # This is a helper function for calcPathCriticalness(). It computes the
+  # larges criticalness of the pathes through the end-successors of this task
+  # and all its parent tasks.
+  def calcPathCriticalnessEndSuccs
+    maxCriticalness = 0.0
+    # Gather a list of all end-successors of this task and its parent task.
+    tList = []
+    p = @property
+    while (p)
+      p['endsuccs', @scenarioIdx].each do |task, onEnd|
+        tList << [ task, onEnd ] unless tList.include?([ task, onEnd ])
+      end
+      p = p.parent
+    end
+
+    tList.each do |task, onEnd|
+      if (criticalness = task.calcPathCriticalness(@scenarioIdx, onEnd)) >
+        maxCriticalness
+        maxCriticalness = criticalness
+      end
+    end
+
+    maxCriticalness
   end
 
   # Calculate the current completion degree for tasks that have no user
