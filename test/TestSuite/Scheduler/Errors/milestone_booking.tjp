@@ -1,0 +1,10 @@
+project test "Test" "1.0" 2007-10-31 +1m
+
+resource foo "Foo"
+
+# MARK: error 6 milestone_booking 
+task t "T" {
+  start ${projectstart}
+  booking foo 2008-11-01-10:00 +1h
+  milestone
+}

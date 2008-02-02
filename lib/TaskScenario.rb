@@ -127,7 +127,32 @@ class TaskScenario < ScenarioData
     propagateDate(a('end'), true) if a('end')
   end
 
+  # Before the actual scheduling work can be started, we need to do a few
+  # consistency checks on the task.
   def preScheduleCheck
+    # Accounts can have sub accounts added after being used in a chargetset.
+    # So we need to re-test here.
+    a('chargeset').each do |chargeset|
+      chargeset.each do |account, share|
+        unless account.leaf?
+          error('account_no_leaf',
+              "Chargesets may not include group account #{account.fullId}.")
+        end
+      end
+    end
+
+    # Leaf tasks can be turned into containers after bookings have been added.
+    # We need to check for this.
+    unless @property.leaf? || a('booking').empty?
+      error('container_booking',
+            "Container task #{@property.fullId} may not have bookings.")
+    end
+
+    if @property.get('milestone') && !a('booking').empty?
+      error('milestone_booking',
+            "Milestone #{@property.fullId} may not have bookings.")
+    end
+
     durationSpecs = 0
     durationSpecs += 1 if a('effort') > 0.0
     durationSpecs += 1 if a('length') > 0.0

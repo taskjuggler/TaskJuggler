@@ -1,0 +1,13 @@
+project test "Test" "1.0" 2007-10-31 +1m
+
+account foo "Foo"
+
+# MARK: error 6 account_no_leaf
+task t "T" {
+  effort 1d
+  chargeset foo
+}
+
+supplement account foo {
+  account bar "Bar"
+}
