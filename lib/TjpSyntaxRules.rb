@@ -1952,7 +1952,14 @@ EOT
 
   def rule_reportableAttributes
     singlePattern('_chart')
-    descr('A Gantt chart')
+    descr(<<'EOT'
+A Gantt chart. This column type requires all lines to have the same fixed
+height. This does not work well with rich text columns in some browsers. Some
+show a scrollbar for the compressed table cells, others don't. It is
+recommended, that you don't use rich text columns in conjuction with the chart
+column.
+EOT
+         )
 
     singlePattern('_complete')
     descr('The completion degree of a task')

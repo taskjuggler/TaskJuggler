@@ -5,13 +5,11 @@ or should be done for TaskJuggler III.
 
 == Top items for first alpha release
 
-* Add missing functions for logical expressions.
-
-* Properly handle rich text attributes in report columns.
+* Complete TaskScenario.preScheduleCheck().
 
 == Missing features for 2.x compatibility
 
-* Complete TaskScenario.preScheduleCheck().
+* Add missing functions for logical expressions.
 
 * Missing reports: htmlaccountreport, htmlstatusreport, htmlweeklycalendar,
   htmlmonthlycalendar, xmlreport, some csv-reports

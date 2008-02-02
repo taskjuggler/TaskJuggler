@@ -142,6 +142,8 @@ protected
       column = ReportTableColumn.new(@table, columnDef, '')
       column.cell1.special = gantt
       column.cell2.hidden = true
+      column.scrollbar = gantt.hasScrollbar?
+      @table.equiLines = true
     when 'hourly'
       genCalChartHeader(columnDef, @start.midnight, :sameTimeNextHour,
                         :weekdayAndDate, :hour)
@@ -288,12 +290,16 @@ private
   def genCalChartHeader(columnDef, t, sameTimeNextFunc, name1Func, name2Func)
     tableColumn = ReportTableColumn.new(@table, columnDef, '')
 
+    # Calendar chars only work when all lines have same height.
+    @table.equiLines = true
+
     # Embedded tables have unpredictable width. So we always need to make room
     # for a potential scrollbar.
     tableColumn.scrollbar = true
 
     # Create the table that is embedded in this column.
     tableColumn.cell1.special = table = ColumnTable.new
+    table.equiLines = true
     tableColumn.cell2.hidden = true
     table.maxWidth = columnDef.width
 
@@ -573,7 +579,7 @@ private
 
     legend.addCalendarItem('Container Task', 'calconttask1')
     legend.addCalendarItem('Task', 'caltask1')
-    legend.addCalendarItem('Off duty time', 'offduty1')
+    legend.addCalendarItem('Off duty time', 'offduty')
   end
 
   # Generate the cells for the resource lines of a calendar column. These
@@ -690,7 +696,7 @@ private
     legend.addCalendarItem('Resource is fully loaded', 'busy1')
     legend.addCalendarItem('Resource is partially loaded', 'loaded1')
     legend.addCalendarItem('Resource is available', 'free')
-    legend.addCalendarItem('Off duty time', 'offduty1')
+    legend.addCalendarItem('Off duty time', 'offduty')
   end
 
   def setStandardCellAttributes(cell, columnDef, attributeType, line)

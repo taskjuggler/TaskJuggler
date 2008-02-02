@@ -130,7 +130,7 @@ private
   table {
     font-size:13px;
   }
-  td, div { white-space:nowrap; }
+  td, div { white-space:nowrap; padding:0px; margin:0px; }
   h1 { font-size:22px; }
   h2 { font-size:18px; }
   h3 { font-size:16px; }
@@ -154,38 +154,120 @@ private
     color:#ffffff;
     text-align:center;
   }
-  .celldiv { padding-top:3px; overflow:auto; }
+  .headercelldiv {
+    padding-top:1px;
+    padding-right:3px;
+    padding-left:3px;
+    padding-bottom:0px;
+    white-space:nowrap;
+    overflow:auto;
+  }
+  .celldiv {
+    padding-top:3px;
+    padding-right:3px;
+    padding-left:3px;
+    padding-bottom:0px;
+    white-space:nowrap;
+    overflow:auto;
+  }
   .tabline { color:#000000 }
-  .taskcell1 { background-color:#ebf2ff; white-space:nowrap; }
-  .taskcell2 { background-color:#d9dfeb; white-space:nowrap; }
-  .resourcecell1 { background-color:#fff2eb; white-space:nowrap; }
-  .resourcecell2 { background-color:#ebdfd9; white-space:nowrap; }
-  .busy1 { background-color:#ff3b3b; white-space:nowrap; }
-  .busy2 { background-color:#eb4545; white-space:nowrap; }
-  .loaded1 { background-color:#ff9b9b; white-space:nowrap; }
-  .loaded2 { background-color:#eb8f8f; white-space:nowrap; }
-  .free1 { background-color:#a5ffb4; white-space:nowrap; }
-  .free2 { background-color:#98eba6; white-space:nowrap; }
-  .offduty1 { background-color:#f3f990; white-space:nowrap; }
-  .offduty2 { background-color:#dde375; white-space:nowrap; }
-  .calconttask1 { background-color:#abbeae; white-space:nowrap; }
-  .calconttask2 { background-color:#99aa9c; white-space:nowrap; }
+  .tabcell {
+    white-space:nowrap;
+    padding:0px;
+  }
+  .taskcell1 {
+    background-color:#ebf2ff;
+    white-space:nowrap;
+    padding:0px;
+  }
+  .taskcell2 {
+    background-color:#d9dfeb;
+    white-space:nowrap;
+    padding:0px;
+  }
+  .resourcecell1 {
+    background-color:#fff2eb;
+    white-space:nowrap;
+    padding:0px;
+  }
+  .resourcecell2 {
+    background-color:#ebdfd9;
+    white-space:nowrap;
+    padding:0px;
+  }
+  .busy1 { background-color:#ff3b3b; }
+  .busy2 { background-color:#eb4545; }
+  .loaded1 { background-color:#ff9b9b; }
+  .loaded2 { background-color:#eb8f8f; }
+  .free1 { background-color:#a5ffb4; }
+  .free2 { background-color:#98eba6; }
+  .offduty1 { background-color:#f3f990; }
+  .offduty2 { background-color:#dde375; }
+  .calconttask1 { background-color:#abbeae; }
+  .calconttask2 { background-color:#99aa9c; }
   .caltask1 { background-color:#2050e5; }
   .caltask2 { background-color:#2f57ea; }
-  .todo1 { background-color:#beabab; white-space:nowrap; }
-  .todo2 { background-color:#aa9999; white-space:nowrap; }
-  .containerbar { background-color:#09090a; }
-  .taskbarframe { background-color:#09090a; }
-  .taskbar { background-color:#2f57ea; }
-  .progressbar { background-color:#36363f; }
-  .milestone { background-color:#09090a; }
-  .loadstackframe { background-color:#452a2a; }
-  .free { background-color:#a5ffb4; }
-  .busy { background-color:#ff9b9b; }
-  .assigned { background-color:#ff3b3b; }
-  .depline { background-color:#000000; }
-  .nowline { background-color:#EE0000; }
-  .white { background-color:#FFFFFF; }
+  .todo1 { background-color:#beabab; }
+  .todo2 { background-color:#aa9999; }
+
+  .tabvline {
+    background-color:#9a9a9a;
+    position:absolute;
+  }
+  .containerbar {
+    background-color:#09090a;
+    position:absolute;
+  }
+  .taskbarframe {
+    background-color:#09090a;
+    position:absolute;
+  }
+  .taskbar {
+    background-color:#2f57ea;
+    position:absolute;
+  }
+  .progressbar {
+    background-color:#36363f;
+    position:absolute;
+  }
+  .milestone {
+    background-color:#09090a;
+    position:absolute;
+  }
+  .loadstackframe {
+    background-color:#452a2a;
+    position:absolute;
+  }
+  .free {
+    background-color:#a5ffb4;
+    position:absolute;
+  }
+  .busy {
+    background-color:#ff9b9b;
+    position:absolute;
+  }
+  .assigned {
+    background-color:#ff3b3b;
+    position:absolute;
+  }
+  .offduty {
+    background-color:#f3f990;
+    white-space:nowrap;
+    position:absolute;
+  }
+  .depline {
+    background-color:#000000;
+    position:absolute;
+  }
+  .nowline {
+    background-color:#EE0000;
+    position:absolute;
+  }
+  .white {
+    background-color:#FFFFFF;
+    position:absolute;
+  }
+
   .legendback { background-color:#d4dde6; }
   .caption {
      padding: 5px 13px 5px 13px;
