@@ -2663,12 +2663,22 @@ EOT
   end
 
   def rule_supplement
+    pattern(%w( !supplementAccount !accountBody ), lambda {
+      @property = nil
+    })
     pattern(%w( !supplementResource !resourceBody ), lambda {
       @property = nil
     })
     pattern(%w( !supplementTask !taskBody ), lambda {
       @property = nil
     })
+  end
+
+  def rule_supplementAccount
+    pattern(%w( _account !accountId ), lambda {
+      @property = @val[1]
+    })
+    arg(1, 'account ID', 'The ID of an already defined account.')
   end
 
   def rule_supplementResource
