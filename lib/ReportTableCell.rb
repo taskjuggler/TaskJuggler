@@ -65,8 +65,8 @@ class ReportTableCell
     return nil if @hidden
     return @special.to_html if @special
 
-    attribs = { 'style' => 'padding:0px' }
     # Determine cell attributes
+    attribs = { }
     attribs['rowspan'] = "#{@rows}" if @rows > 1
     attribs['colspan'] = "#{@columns}" if @columns > 1
     attribs['class'] = @category ? @category : 'tabcell'
@@ -78,14 +78,14 @@ class ReportTableCell
     style = "text-align:#{aligns[alignSymbols.index(@alignment)]}; "
     if @indent && @alignment != :center
       if @alignment == :left
-        style += "padding-left:#{@padding + @indent * 8}px; " +
-                 "padding-right:#{@padding}px; "
+        style += "padding-left:#{@padding + @indent * 8}px; "
+        style += "padding-right:#{@padding}px; " unless @padding == 3
       elsif @alignment == :right
-        style += "padding-left:#{@padding}px; " +
-                 "padding-right:#{@padding +
+        style += "padding-left:#{@padding}px; " unless @padding == 3
+        style += "padding-right:#{@padding +
                                   (@line.table.maxIndent - @indent) * 8}px; "
       end
-    else
+    elsif @padding != 3
       style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
     end
     unless @text.is_a?(RichText)
@@ -93,9 +93,11 @@ class ReportTableCell
       style += "font-size: #{@fontSize}px; " if fontSize
     end
     style += "width: #{@width}px; " if @width
-    style += "height:#{@line.height - 3}px; " if @line && @line.height > 2
-    cell << (div = XMLElement.new('div', 'class' => 'celldiv',
-                                         'style' => style))
+    if @text.is_a?(RichText) && @line && @line.table.equiLines
+      style += "height:#{@line.height - 3}px; "
+    end
+    cell << (div = XMLElement.new('div',
+      'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
     div << (@text.is_a?(RichText) ?  @text.to_html : XMLText.new(@text))
 

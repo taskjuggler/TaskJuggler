@@ -25,14 +25,12 @@ module HTMLGraphics
     if ys == ye
       # Horizontal line
       xs, xe = xe, xs if xe < xs
-      style = "position:absolute; " +
-              "left:#{xs}px; top:#{ys}px; " +
+      style = "left:#{xs}px; top:#{ys}px; " +
               "width:#{xe - xs + 1}px; height:1px;"
     elsif xs == xe
       # Vertical line
       ys, ye = ye, ys if ye < ys
-      style = "position:absolute; " +
-              "left:#{xs}px; top:#{ys}px; " +
+      style = "left:#{xs}px; top:#{ys}px; " +
               "width:1px; height:#{ye - ys + 1}px;"
     else
       raise "Can't draw diagonal line #{xs}/#{ys} to #{xe}/#{ye}!"
@@ -47,8 +45,7 @@ module HTMLGraphics
   # _h_ into another HTML element. The color is determined by the class
   # _category_.
   def rectToHTML(x, y, w, h, category)
-    style = "position:absolute; " +
-            "left:#{x.to_i}px; top:#{y.to_i}px; " +
+    style = "left:#{x.to_i}px; top:#{y.to_i}px; " +
             "width:#{w.to_i}px; height:#{h.to_i}px;"
     div = XMLElement.new('div', 'class' => category, 'style' => style)
     # Most browsers don't like the <div/> notation. So we need to make sure we

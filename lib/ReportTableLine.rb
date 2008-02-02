@@ -62,7 +62,8 @@ class ReportTableLine
 
   # Return this line as a set of XMLElement that represent the line in HTML.
   def to_html
-    style = "height:#{@height}px; "
+    style = ""
+    style += "height:#{@height}px; " if @table.equiLines
     style += "font-size:#{@fontSize}px; " if @fontSize
     tr = XMLElement.new('tr', 'class' => 'tabline', 'style' => style)
     @cells.each { |cell| tr << cell.to_html }

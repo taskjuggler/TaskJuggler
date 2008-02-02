@@ -67,12 +67,12 @@ class GanttLine
                          "font-size:10px;")
     # Render time-off zones.
     @timeOffZones.each do |zone|
-      div << rectToHTML(zone[0], 0, zone[1], @height, 'offduty1')
+      div << rectToHTML(zone[0], 0, zone[1], @height, 'offduty')
     end
 
     # Render grid lines. The grid lines are determined by the large scale.
     @chart.header.gridLines.each do |line|
-      div << rectToHTML(line, 0, 1, @height, 'tabback')
+      div << rectToHTML(line, 0, 1, @height, 'tabvline')
     end
 
     # Now render the content as HTML elements.

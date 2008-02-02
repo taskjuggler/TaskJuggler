@@ -18,6 +18,7 @@ require 'ReportTableLine'
 class ReportTable
 
   attr_reader :maxIndent, :headerLineHeight, :headerFontSize
+  attr_accessor :equiLines
 
   # Create a new ReportTable object.
   def initialize
@@ -30,6 +31,8 @@ class ReportTable
     # Array of ReportTableLine objects.
     @lines = []
     @maxIndent = 0
+    # Whether or not all table lines must have same height.
+    @equiLines = false
   end
 
   # This function should only be called by the ReportTableColumn constructor.
@@ -62,8 +65,6 @@ class ReportTable
   def to_html
     determineMaxIndents
 
-    attributes = {
-    }
     table = XMLElement.new('table', 'align' => 'center', 'cellspacing' => '1',
                            'cellpadding' => '2', 'width' => '100%',
                            'class' => 'tabback')
@@ -85,9 +86,10 @@ class ReportTable
     @lines.each { |line| tbody << line.to_html }
 
     # In case we have columns with scrollbars, we generate an extra line with
-    # cells for all columns that don't have a scrollbar.
+    # cells for all columns that don't have a scrollbar. The scrollbar must
+    # have a height of 18 pixels or less.
     if hasScrollbar?
-      tbody << (tr = XMLElement.new('tr'))
+      tbody << (tr = XMLElement.new('tr', 'style' => 'height:18px'))
       @columns.each do |column|
         unless column.scrollbar
           tr << XMLElement.new('td')
