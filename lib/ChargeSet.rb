@@ -32,11 +32,6 @@ class ChargeSet
   # 100%. This needs to be checked at a later stage. Accounts may have a share
   # of nil. This will be set in ChargeSet#complete later.
   def addAccount(account, share)
-    unless account.leaf?
-      raise TjException.new,
-        "Account #{account.fullId} is a group account and cannot be used " +
-        "in a chargeset."
-    end
     if @set.include?(account)
       raise TjException.new,
         "Account #{account.fullId} is already a member of the charge set."

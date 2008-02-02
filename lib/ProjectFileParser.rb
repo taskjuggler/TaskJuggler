@@ -103,6 +103,19 @@ private
     day
   end
 
+  # Convenience function to check the integrity of a booking statement.
+  def checkBooking(task, resource)
+    unless task.leaf?
+      error('booking_no_leaf', "#{task.fullId} is not a leaf task")
+    end
+    if task['milestone', @scenarioIdx]
+      error('booking_milestone', "You cannot add bookings to a milestone")
+    end
+    unless resource.leaf?
+      error('booking_group', "You cannot book a group resource")
+    end
+  end
+
   # The TaskJuggler syntax can be extended by the user when the properties are
   # extended with user-defined attributes. These attribute definitions
   # introduce keywords that have to be processed like the build-in keywords.

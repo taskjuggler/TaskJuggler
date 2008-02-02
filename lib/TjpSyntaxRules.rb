@@ -2214,6 +2214,7 @@ EOT
 
   def rule_resourceBookingHeader
     pattern(%w( !taskId !intervals ), lambda {
+      checkBooking(@val[0], @property)
       @booking = Booking.new(@property, @val[0], @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
       @booking
@@ -2662,22 +2663,12 @@ EOT
   end
 
   def rule_supplement
-    pattern(%w( !supplementAccount !accountBody ), lambda {
-      @property = nil
-    })
     pattern(%w( !supplementResource !resourceBody ), lambda {
       @property = nil
     })
     pattern(%w( !supplementTask !taskBody ), lambda {
       @property = nil
     })
-  end
-
-  def rule_supplementAccount
-    pattern(%w( _account !accountId ), lambda {
-      @property = @val[1]
-    })
-    arg(1, 'account ID', 'The ID of an already defined account.')
   end
 
   def rule_supplementResource
@@ -2756,6 +2747,7 @@ EOT
 
   def rule_taskBookingHeader
     pattern(%w( !resourceId !intervals ), lambda {
+      checkBooking(@property, @val[0])
       @booking = Booking.new(@val[0], @property, @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
       @booking

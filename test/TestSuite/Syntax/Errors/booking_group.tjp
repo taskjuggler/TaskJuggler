@@ -1,0 +1,14 @@
+project test "Test" "1.0" 2007-08-19 +2m 
+
+resource tuxies "Tuxies" {
+  resource tux "Tux"
+}
+
+task t "T" {
+  start 2007-08-19
+}
+
+supplement resource tuxies {
+# MARK: error 13 booking_group
+	booking t 2007-08-25-10:00 +2h
+}
