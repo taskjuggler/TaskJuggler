@@ -1,4 +1,4 @@
-#
+  #
 # TaskScenario.rb - The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
@@ -15,10 +15,13 @@ class TaskScenario < ScenarioData
 
   attr_reader :isRunAway
 
+  # Create a new TaskScenario object.
   def initialize(task, scenarioIdx, attributes)
     super
   end
 
+  # Call this function to reset all scheduling related data prior to
+  # scheduling.
   def prepareScheduling
     @property['startpreds', @scenarioIdx] = []
     @property['startsuccs', @scenarioIdx] =[]
@@ -101,19 +104,21 @@ class TaskScenario < ScenarioData
     end
   end
 
+  # This function primarily determines implicit milestones and marks them
+  # accordingly.
   def implicitXref
-    # TODO: Propagate implicit dependencies.
+    # TODO: Check if the propagation of implicit dependencies is still
+    # necessary. It might be obsolite in TJ 3.x.
 
-    # Automatically detect and mark task that have no duration criteria but
-    # proper start or end specification.
+    # Automatically detect and mark task as milestones that have no duration
+    # criteria but proper start or end specification.
     return if !@property.leaf? || a('milestone')
 
-    hasDurationSpec = a('length') > 0 || a('duration') > 0 || a('effort') > 0
     hasStartSpec = !(a('start').nil? && a('depends').empty?)
     hasEndSpec = !(a('end').nil? && a('precedes').empty?)
 
     @property['milestone', @scenarioIdx] =
-      !hasDurationSpec && (hasStartSpec ^ hasEndSpec)
+      !hasDurationSpec? && (hasStartSpec ^ hasEndSpec)
   end
 
   # Return true of this Task has a dependency [ _target_, _onEnd_ ] in the
@@ -162,15 +167,15 @@ class TaskScenario < ScenarioData
     end
 
     # If an effort has been specified resources must be allocated as well.
-    if a('effort') > 0.0 && a('allocate').empty?
+    if a('effort') > 0 && a('allocate').empty?
       error('effort_no_allocations',
             "Task #{@property.fullId} has an effort but no allocations.")
     end
 
     durationSpecs = 0
-    durationSpecs += 1 if a('effort') > 0.0
-    durationSpecs += 1 if a('length') > 0.0
-    durationSpecs += 1 if a('duration') > 0.0
+    durationSpecs += 1 if a('effort') > 0
+    durationSpecs += 1 if a('length') > 0
+    durationSpecs += 1 if a('duration') > 0
     durationSpecs += 1 if a('milestone')
 
     # The rest of this function performs a number of plausibility tests with
@@ -719,6 +724,12 @@ class TaskScenario < ScenarioData
     false
   end
 
+  # This function is the entry point for the core scheduling algorithm. It
+  # schedules the task for the time interval specified by _slot_ and
+  # _slotDuration_. _slot_ must be a TjTime. _slotDuration_ must be constant
+  # for a scheduling run.
+  # The function returns true if a start or end date has been determined and
+  # other tasks may be ready for scheduling now.
   def schedule(slot, slotDuration)
     # Tasks must always be scheduled in a single contigous fashion. @lastSlot
     # indicates the slot that was used for the previous call. Depending on the
@@ -736,6 +747,8 @@ class TaskScenario < ScenarioData
 
       return false unless slot == @lastSlot + slotDuration
     else
+      # On first call, the @lastSlot is not set yet. We set it to the slot
+      # to the end slot.
       if @lastSlot.nil?
         @lastSlot = a('end')
         @tentativeStart = slot
@@ -769,6 +782,8 @@ class TaskScenario < ScenarioData
     elsif a('effort') > 0
       bookResources(slot, slotDuration) if @doneEffort < a('effort')
       if @doneEffort >= a('effort')
+        # The specified effort has been reached. The has been fully scheduled
+        # now.
         @property['scheduled', @scenarioIdx] = true
         if a('forward')
           propagateDate(@tentativeEnd, true)
@@ -839,11 +854,10 @@ class TaskScenario < ScenarioData
   end
 
   # Find the smallest possible interval that encloses all child tasks. Abort
-  # the opration if any of the child tasks are not yet scheduled.
+  # the operation if any of the child tasks are not yet scheduled.
   def scheduleContainer
     return if a('scheduled') || !@property.container?
 
-    # puts "Scheduling container #{@property.fullId}"
     nStart = nil
     nEnd = nil
 
@@ -870,11 +884,8 @@ class TaskScenario < ScenarioData
     @property['scheduled', @scenarioIdx] = true
   end
 
-  def hasDurationSpec
-    (@property['effort', @scenarioIdx] > 0 ||
-     @property['length', @scenarioIdx] > 0 ||
-     @property['duration', @scenarioIdx] > 0) &&
-    !@property['milestone', @scenarioIdx]
+  def hasDurationSpec?
+    (a('length') > 0 || a('duration') > 0 || a('effort') > 0) && !a('milestone')
   end
 
   # This function checks if the task has certain dependencies. If _atEnd_ is
@@ -1285,6 +1296,12 @@ private
     depTask
   end
 
+  # Check if the start (_checkStart == true) or end of the task can be
+  # determined. This can occur on several ways. This most obvious case is a
+  # fixed start or end date of this task or any of the parent tasks. Container
+  # tasks can be determined when a child task can be determined. Normal tasks
+  # can be determined by a determinable other end and a duration. Or via a
+  # dependency.
   def dateCanBeDetermined(checkStart)
     if checkStart
       return @startIsDetermed unless @startIsDetermed.nil?
@@ -1302,7 +1319,8 @@ private
     end
 
     if @property.children.empty?
-      # Check if start can be calculated
+      # Check if start can be calculated from the other and and a task
+      # duration criteria. This only works in the scheduling direction.
       if (checkStart ^ a('forward')) &&
          (a('duration') > 0 || a('length') > 0 || a('effort') > 0 ||
           a('milestone')) &&
@@ -1335,10 +1353,11 @@ private
     setDetermination(checkStart, false)
   end
 
+  # Set @startIsDetermed or @endIsDetermed (depending on _setStart) to
+  # _value_.
   def setDetermination(setStart, value)
     setStart ? @startIsDetermed = value : @endIsDetermed = value
   end
-
 
   def propagateDateToDep(task, atEnd)
     # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId}"
@@ -1348,7 +1367,7 @@ private
                           task.earliestStart(@scenarioIdx))).nil?
        !task['scheduled', @scenarioIdx] &&
        ((atEnd ^ task['forward', @scenarioIdx]) ||
-        !task.hasDurationSpec(@scenarioIdx))
+        !task.hasDurationSpec?(@scenarioIdx))
       task.propagateDate(@scenarioIdx, nDate, atEnd)
     end
     # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"

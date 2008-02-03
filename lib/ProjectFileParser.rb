@@ -103,6 +103,16 @@ private
     day
   end
 
+  # Make sure that certain attributes are not used after sub properties have
+  # been added to a property.
+  def checkContainer(attribute)
+    if @property.container?
+      error('container_attribute',
+            "The attribute #{attribute} may not be used for this property " +
+            'after sub properties have been added.')
+    end
+  end
+
   # Convenience function to check that an Interval fits completely within the
   # project time frame.
   def checkInterval(iv)

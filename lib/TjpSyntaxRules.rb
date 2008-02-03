@@ -90,6 +90,7 @@ EOT
 
   def rule_allocate
     pattern(%w( _allocate !allocations ), lambda {
+      checkContainer('allocate')
       # Don't use << operator here so the 'provided' flag gets set properly.
       @property['allocate', @scenarioIdx] =
         @property['allocate', @scenarioIdx] + @val[1]
@@ -334,6 +335,7 @@ EOT
 
   def rule_chargeset
     pattern(%w( _chargeset !chargeSetItem !moreChargeSetItems ), lambda {
+      checkContainer('chargeset')
       items = [ @val[1] ]
       items += @val[2] if @val[2]
       chargeSet = ChargeSet.new
@@ -2951,7 +2953,7 @@ EOT
       # TODO
     })
     doc('account.task', <<'EOT'
-All amounts associated with the task will be credited to the specified account. The account must not be an account group.
+This property has been deprecated. Use [[charge]] instead.
 EOT
         )
 
@@ -2965,6 +2967,8 @@ EOT
        )
 
     pattern(%w( _charge !number !chargeMode ), lambda {
+      checkContainer('charge')
+
       if @property['chargeset', @scenarioIdx].empty?
         error('task_without_chargeset',
               'The task does not have a chargeset defined.')
@@ -3019,6 +3023,7 @@ EOT
     arg(1, 'percent', 'The percent value. It must be between 0 and 100.')
 
     pattern(%w( _depends !taskDepList ), lambda {
+      checkContainer('depends')
       @property['depends', @scenarioIdx] =
         @property['depends', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = true
@@ -3033,6 +3038,7 @@ EOT
         )
 
     pattern(%w( _duration !calendarDuration ), lambda {
+      checkContainer('duration')
       @property['duration', @scenarioIdx] = @val[1]
     })
     doc('duration', <<'EOT'
@@ -3047,6 +3053,7 @@ EOT
     also(%w( effort length ))
 
     pattern(%w( _effort !workingDuration ), lambda {
+      checkContainer('effort')
       if @val[1] <= 0.0
         error('effort_zero', "Effort value must be larger than 0", @property)
       end
@@ -3099,6 +3106,7 @@ EOT
        )
 
     pattern(%w( _length !workingDuration ), lambda {
+      checkContainer('length')
       @property['length', @scenarioIdx] = @val[1]
     })
     doc('length', <<'EOT'
@@ -3117,6 +3125,7 @@ EOT
     also(%w( duration effort ))
 
     pattern(%w( !limits ), lambda {
+      checkContainer('limits')
       @property['limits', @scenarioIdx] = @val[0]
     })
     doc('limits.task', <<'EOT'
@@ -3146,6 +3155,7 @@ EOT
        )
 
     pattern(%w( _milestone ), lambda {
+      checkContainer('limits')
       @property['milestone', @scenarioIdx] = true
     })
     doc('milestone', <<'EOT'
@@ -3193,6 +3203,7 @@ EOT
     pattern(%w( !taskPeriod ))
 
     pattern(%w( _precedes !taskPredList ), lambda {
+      checkContainer('precedes')
       @property['precedes', @scenarioIdx] =
         @property['precedes', @scenarioIdx] + @val[1]
       @property['forward', @scenarioIdx] = false
@@ -3263,6 +3274,7 @@ EOT
        )
 
     pattern(%w( _scheduling !schedulingDirection ), lambda {
+      checkContainer('scheduling')
       if @val[1] == 'alap'
         @property['forward', @scenarioIdx] = false
       elsif @val[1] == 'asap'
@@ -3301,14 +3313,18 @@ end attribute comes after the start attribute.
 EOT
        )
 
-    pattern(%w( _shift !shiftAssignments ))
+    pattern(%w( _shift !shiftAssignments ), lambda {
+      checkContainer('shift')
+    })
     doc('shift.task', <<'EOT'
 This keyword has been deprecated. Please use [shifts.task shifts
 (task)] instead.
 EOT
        )
 
-    pattern(%w( _shifts !shiftAssignments ))
+    pattern(%w( _shifts !shiftAssignments ), lambda {
+      checkContainer('shifts')
+    })
     doc('shifts.task', <<'EOT'
 Limits the working time for this task to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.

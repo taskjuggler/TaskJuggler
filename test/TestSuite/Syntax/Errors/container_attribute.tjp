@@ -1,0 +1,13 @@
+project test "Test" "1.0" 2008-02-03 +2m 
+
+task m "M" {
+  start ${projectstart}
+}
+
+task t "T" {
+  start ${projectstart}
+  task s "S"
+# MARK: error 12 container_attribute 
+  depends !m
+}
+
