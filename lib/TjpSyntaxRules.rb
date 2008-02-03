@@ -2213,7 +2213,7 @@ EOT
   end
 
   def rule_resourceBookingHeader
-    pattern(%w( !taskId !intervals ), lambda {
+    pattern(%w( !taskId !valIntervals ), lambda {
       checkBooking(@val[0], @property)
       @booking = Booking.new(@property, @val[0], @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
@@ -2756,7 +2756,7 @@ EOT
   end
 
   def rule_taskBookingHeader
-    pattern(%w( !resourceId !intervals ), lambda {
+    pattern(%w( !resourceId !valIntervals ), lambda {
       checkBooking(@property, @val[0])
       @booking = Booking.new(@val[0], @property, @val[1])
       @booking.sourceFileInfo = @scanner.sourceFileInfo
@@ -3522,6 +3522,39 @@ EOT
     })
   end
 
+  def rule_valIntervalOrDate
+    pattern(%w( !date !intervalOptionalEnd ), lambda {
+      if @val[1]
+        mode = @val[1][0]
+        endSpec = @val[1][1]
+        if mode == 0
+          iv = Interval.new(@val[0], endSpec)
+        else
+          iv = Interval.new(@val[0], @val[0] + endSpec)
+        end
+      else
+        iv = Interval.new(@val[0], @val[0].sameTimeNextDay)
+      end
+      checkInterval(iv)
+      iv
+    })
+    doc('interval4', <<'EOT'
+There are three ways to specify a date interval. The first is the most
+obvious. A date interval consists of a start and end DATE. Watch out for end
+dates without a time specification! Date specifications are 0 extended. An
+end date without a time is expanded to midnight that day. So the day of the
+end date is not included in the interval! The start and end dates must be separated by a hyphen character.
+
+In the second form, the end date is omitted. A 24 hour interval is assumed.
+
+The third form specifies the start date and an interval duration. The duration must be prefixed by a plus character.
+
+The start and end date of the interval must be within the specified project
+time frame.
+EOT
+       )
+  end
+
   def rule_valInterval
     pattern(%w( !date !intervalEnd ), lambda {
       mode = @val[1][0]
@@ -3531,15 +3564,7 @@ EOT
       else
         iv = Interval.new(@val[0], @val[0] + endSpec)
       end
-      # Make sure the interval is within the project time frame.
-      if iv.start < @project['start'] || iv.start >= @project['end']
-        error('interval_start_in_range',
-              "Start date #{iv.start} must be within the project time frame")
-      end
-      if iv.end <= @project['start'] || iv.end > @project['end']
-        error('interval_end_in_range',
-              "End date #{iv.end} must be within the project time frame")
-      end
+      checkInterval(iv)
       iv
     })
     doc('interval1', <<'EOT'
@@ -3555,6 +3580,10 @@ In the second form specifies the start date and an interval duration. The
 duration must be prefixed by a plus character.
 EOT
        )
+  end
+
+  def rule_valIntervals
+    listRule('moreValIntervals', '!valIntervalOrDate')
   end
 
   def rule_weekday

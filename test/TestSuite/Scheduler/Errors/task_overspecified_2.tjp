@@ -1,0 +1,14 @@
+project test "Test" "1.0" 2008-02-03 +1m
+
+task m "M" {
+  start ${projectstart}
+}
+
+# MARK: error 8 task_overspecified
+task t "T" {
+  depends !m
+  length 2d
+  end 2008-02-06
+  scheduling asap
+}
+

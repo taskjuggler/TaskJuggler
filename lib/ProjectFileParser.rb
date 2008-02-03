@@ -103,6 +103,20 @@ private
     day
   end
 
+  # Convenience function to check that an Interval fits completely within the
+  # project time frame.
+  def checkInterval(iv)
+    # Make sure the interval is within the project time frame.
+    if iv.start < @project['start'] || iv.start >= @project['end']
+      error('interval_start_in_range',
+              "Start date #{iv.start} must be within the project time frame")
+    end
+    if iv.end <= @project['start'] || iv.end > @project['end']
+      error('interval_end_in_range',
+              "End date #{iv.end} must be within the project time frame")
+    end
+  end
+
   # Convenience function to check the integrity of a booking statement.
   def checkBooking(task, resource)
     unless task.leaf?

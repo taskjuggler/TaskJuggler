@@ -116,7 +116,7 @@ class TaskScenario < ScenarioData
       !hasDurationSpec && (hasStartSpec ^ hasEndSpec)
   end
 
-  # Return true of this Task has a dependency [ _target_, _onEnd ] in the
+  # Return true of this Task has a dependency [ _target_, _onEnd_ ] in the
   # dependency category _depType_.
   def hasDependency?(depType, target, onEnd)
     a(depType).include?([target, onEnd])
@@ -148,9 +148,23 @@ class TaskScenario < ScenarioData
             "Container task #{@property.fullId} may not have bookings.")
     end
 
+    # Milestones may not have bookings.
     if a('milestone') && !a('booking').empty?
       error('milestone_booking',
             "Milestone #{@property.fullId} may not have bookings.")
+    end
+
+    # All 'scheduled' tasks must have a fixed start and end date.
+    if a('scheduled') && (a('start').nil? || a('end').nil?)
+      error('not_scheduled',
+            "Task #{@property.fullId} is marked as scheduled but does not " +
+            'have a fixed start and end date.')
+    end
+
+    # If an effort has been specified resources must be allocated as well.
+    if a('effort') > 0.0 && a('allocate').empty?
+      error('effort_no_allocations',
+            "Task #{@property.fullId} has an effort but no allocations.")
     end
 
     durationSpecs = 0
@@ -159,21 +173,110 @@ class TaskScenario < ScenarioData
     durationSpecs += 1 if a('duration') > 0.0
     durationSpecs += 1 if a('milestone')
 
+    # The rest of this function performs a number of plausibility tests with
+    # regards to task start and end critiria. To explain the various cases,
+    # the following symbols are used:
+    #
+    # |: fixed start or end date
+    # -: no fixed start or end date
+    # M: Milestone
+    # D: start or end dependency
+    # x->: ASAP task with duration criteria
+    # <-x: ALAP task with duration criteria
+    # -->: ASAP task without duration criteria
+    # <--: ALAP task without duration criteria
+    hasStartDep = hasDependencies(false, false)
+    hasEndDep = hasDependencies(true, false)
+
     if @property.container?
       if durationSpecs > 0
         error('container_duration',
-              "Container tasks may not have a duration or be marked as " +
-              "milestones.")
+              "Container task #{@property.fullId} may not have a duration " +
+              "or be marked as milestones.")
+      end
+    elsif a('milestone')
+      if durationSpecs > 1
+        error('milestone_duration',
+              "Milestone task #{@property.fullId} may not have a duration.")
+      end
+      # Milestones can have the following cases:
+      #
+      #   |  M -   ok     |D M -   ok     - M -   err1   -D M -   ok
+      #   |  M |   err2   |D M |   err2   - M |   ok     -D M |   ok
+      #   |  M -D  ok     |D M -D  ok     - M -D  ok     -D M -D  ok
+      #   |  M |D  err2   |D M |D  err2   - M |D  ok     -D M |D  ok
+
+      # err1: no start and end
+      # already handled by 'start_undetermed' or 'end_undetermed'
+
+      # err2: differnt start and end dates
+      if a('start') && a('end') && a('start') != a('end')
+        error('milestone_start_end',
+              "Start (#{a('start')}) and end (#{a('end')}) dates of " +
+              "milestone task #{@property.fullId} must be identical.")
       end
     else
+      #   Error table for non-container, non-milestone tasks:
+      #   AMP: Automatic milestone promotion for underspecified tasks.
+      #   Ref. implicitXref()
+      #
+      #   | x-> -   ok     |D x-> -   ok     - x-> -   err2   -D x-> -   ok
+      #   | x-> |   err1   |D x-> |   err1   - x-> |   err2   -D x-> |   err1
+      #   | x-> -D  ok     |D x-> -D  ok     - x-> -D  err2   -D x-> -D  ok
+      #   | x-> |D  err1   |D x-> |D  err1   - x-> |D  err2   -D x-> |D  err1
+      #   | --> -   AMP    |D --> -   AMP    - --> -   err2   -D --> -   AMP
+      #   | --> |   ok     |D --> |   ok     - --> |   err2   -D --> |   ok
+      #   | --> -D  ok     |D --> -D  ok     - --> -D  err2   -D --> -D  ok
+      #   | --> |D  ok     |D --> |D  ok     - --> |D  err2   -D --> |D  ok
+      #   | <-x -   err3   |D <-x -   err3   - <-x -   err3   -D <-x -   err3
+      #   | <-x |   err1   |D <-x |   err1   - <-x |   ok     -D <-x |   ok
+      #   | <-x -D  err1   |D <-x -D  err1   - <-x -D  ok     -D <-x -D  ok
+      #   | <-x |D  err1   |D <-x |D  err1   - <-x |D  ok     -D <-x |D  ok
+      #   | <-- -   err3   |D <-- -   err3   - <-- -   err3   -D <-- -   err3
+      #   | <-- |   ok     |D <-- |   ok     - <-- |   AMP    -D <-- |   ok
+      #   | <-- -D  ok     |D <-- -D  ok     - <-- -D  AMP    -D <-- -D  ok
+      #   | <-- |D  ok     |D <-- |D  ok     - <-- |D  AMP    -D <-- |D  ok
+
+      #   err1: Overspecified (12 cases)
+      #   |  x-> |
+      #   |  <-x |
+      #   |  x-> |D
+      #   |  <-x |D
+      #   |D x-> |
+      #   |D <-x |
+      #   |D <-x |D
+      #   |D x-> |D
+      #   -D x-> |
+      #   -D x-> |D
+      #   |D <-x -D
+      #   |  <-x -D
       if durationSpecs > 1
         error('multiple_durations',
               "Tasks may only have either a duration, length or effort or " +
               "be a milestone.")
       end
+      startSpeced = @property.provided('start', @scenarioIdx)
+      endSpeced = @property.provided('end', @scenarioIdx)
+      if ((startSpeced && endSpeced) ||
+          (hasStartDep && a('forward') && endSpeced) ||
+          (hasEndDep && !a('forward') && startSpeced)) &&
+         durationSpecs > 0 && !a('scheduled')
+        error('task_overspecified',
+              "Task #{@property.fullId} has a start, an end and a " +
+              'duration specification.')
+      end
+
+      # The err2 and err3 cases are already being taken care of in
+      # checkDetermination().
     end
 
-    # TODO: Fixme
+    if !a('booking').empty? && !a('forward') && !a('scheduled')
+      error('alap_booking',
+            'An task scheduled in ALAP mode may only have bookings if it ' +
+            'has been marked as fully scheduled. Keep in mind that ' +
+            'certain attributes like \'end\' or \'precedes\' automatically ' +
+            'switch the task to ALAP mode.')
+    end
   end
 
   # When the actual scheduling process has been completed, this function must
@@ -774,7 +877,12 @@ class TaskScenario < ScenarioData
     !@property['milestone', @scenarioIdx]
   end
 
-  def hasDependencies(atEnd)
+  # This function checks if the task has certain dependencies. If _atEnd_ is
+  # true, it checks for end dependencies, otherwise for start dependencies. If
+  # _upwards_ is true, it checks this task and the parent tasks. Otherwise it
+  # checks this task and the sub tasks. If a dependency is found, it returns
+  # true and stops the search. If no dependency is found, it returns false.
+  def hasDependencies(atEnd, upwards = true)
     if atEnd
       return true if a('end') ||  a('forward') ||
                      !a('endsuccs').empty? || !a('endpreds').empty?
@@ -783,9 +891,15 @@ class TaskScenario < ScenarioData
                      !a('startpreds').empty? || !a('startsuccs').empty?
     end
 
-    p = @property
-    while (p = p.parent) do
-      return true if p.hasDependencies(@scenarioIdx, atEnd)
+    if upwards
+      p = @property
+      while (p = p.parent) do
+        return true if p.hasDependencies(@scenarioIdx, atEnd, true)
+      end
+    else
+      @property.children.each do |task|
+        return true if task.hasDependencies(@scenarioIdx, atEnd, false)
+      end
     end
 
     false
@@ -1224,6 +1338,7 @@ private
   def setDetermination(setStart, value)
     setStart ? @startIsDetermed = value : @endIsDetermed = value
   end
+
 
   def propagateDateToDep(task, atEnd)
     # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId}"

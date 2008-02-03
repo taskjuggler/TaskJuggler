@@ -3,10 +3,6 @@
 This is a possibly still incomplete list of things that still could
 or should be done for TaskJuggler III.
 
-== Top items for first alpha release
-
-* Complete TaskScenario.preScheduleCheck().
-
 == Missing features for 2.x compatibility
 
 * Add missing functions for logical expressions.

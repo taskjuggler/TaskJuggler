@@ -1,0 +1,8 @@
+project test "Test" "1.0" 2008-02-02 +1m
+
+# MARK: error 4 milestone_start_end
+task t "T" {
+  start 2008-02-10
+  end 2008-02-11
+  milestone
+}
