@@ -145,7 +145,7 @@ class ReportElement
       delete
     end
 
-    standardFilterOps(list, hideExpr, rollupExpr, resource)
+    standardFilterOps(list, hideExpr, rollupExpr, resource, taskRoot)
   end
 
   # Take the complete resource list and remove all resources that are matching
@@ -175,7 +175,7 @@ class ReportElement
       end
     end
 
-    standardFilterOps(list, hideExpr, rollupExpr, task)
+    standardFilterOps(list, hideExpr, rollupExpr, task, resourceRoot)
   end
 
   # This is the default attribute value to text converter. It is used
@@ -304,7 +304,7 @@ private
 
   # This function implements the generic filtering functionality for all kinds
   # of lists.
-  def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty)
+  def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)
     # Remove all properties that the user wants to have hidden.
     if hideExpr
       list.delete_if do |property|
@@ -336,6 +336,7 @@ private
         while (parent = parent.parent)
           parents << parent unless list.include?(parent) ||
                                    parents.include?(parent)
+          break if parent == root
         end
       end
       list.append(parents)

@@ -26,10 +26,19 @@ class GanttLoadStack
     @x = x
     @y = @line.y
     @w = w
+    @drawFrame = false
     if values.length != categories.length
       raise "Values and categories must have the same number of entries!"
     end
     @categories = categories
+    i = 0
+    @categories.each do |cat|
+      if cat == 'transparent' && values[i] > 0
+        @drawFrame = true
+        break
+      end
+      i += 1
+    end
 
     # Convert the values to chart Y coordinates and store them in yLevels.
     sum = 0
@@ -37,6 +46,7 @@ class GanttLoadStack
     # If the sum is 0, all yLevels values must be 0 as well.
     if sum == 0
       @yLevels = nil
+      @drawFrame = true
     else
       @yLevels = []
       values.each do |v|
@@ -59,16 +69,34 @@ class GanttLoadStack
     return nil unless @yLevels
 
     html = []
-    # Draw a background rectable to create a frame.
-    html << @line.rectToHTML(@x, 1, @w, @lineHeight - 2,
-                             'loadstackframe')
+    # Draw a background rectable to create a frame. In case the frame is not
+    # fully filled by the stack, we need to draw a real frame to keep the
+    # background.
+    if @drawFrame
+      # Top frame line
+      html << @line.lineToHTML(@x, 1, @x + @w - 1, 1, 'loadstackframe')
+      # Bottom frame line
+      html << @line.lineToHTML(@x, @lineHeight - 2, @x + @w - 1,
+                               @lineHeight - 2, 'loadstackframe')
+      # Left frame line
+      html << @line.lineToHTML(@x, 1, @x, @lineHeight - 2, 'loadstackframe')
+      # Right frame line
+      html << @line.lineToHTML(@x + @w - 1, 1, @x + @w - 1, @lineHeight - 2,
+                               'loadstackframe')
+    else
+      html << @line.rectToHTML(@x, 1, @w, @lineHeight - 2,
+                               'loadstackframe')
+    end
+
     yPos = 2
     # Than draw the slighly narrower bars as a pile ontop of it.
     (@yLevels.length - 1).downto(0) do |i|
       next if @yLevels[i] <= 0
-      html << @line.rectToHTML(@x + 1, yPos.to_i, @w - 2,
-                               (yPos + @yLevels[i]).to_i - yPos.to_i,
-                               @categories[i])
+      if @categories[i] != 'transparent'
+        html << @line.rectToHTML(@x + 1, yPos.to_i, @w - 2,
+                                 (yPos + @yLevels[i]).to_i - yPos.to_i,
+                                 @categories[i])
+      end
       yPos += @yLevels[i]
     end
 

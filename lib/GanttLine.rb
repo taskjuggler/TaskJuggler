@@ -126,8 +126,7 @@ private
   # appear in the scope of a resource.
   def generateTask
     # Set the background color
-    @category = @property.get('index') % 2 == 1 ?
-      'taskcell1' : 'taskcell2'
+    @category = "taskcell#{@property.get('index') % 2 + 1}"
 
     taskStart = @property['start', @scenarioIdx]
     taskEnd = @property['end', @scenarioIdx]
@@ -138,7 +137,7 @@ private
       # all tasks.
       x = nil
       startDate = endDate = nil
-      categories = [ 'busy', @category ]
+      categories = [ 'busy', 'transparent' ]
 
       @chart.header.cellStartDates.each do |date|
         if x.nil?
@@ -186,7 +185,7 @@ private
         end
       end
       if @chart.table
-        @chart.table.legend.addGanttItem('Resource busy with task', 'busy')
+        @chart.table.legend.addGanttItem('Resource assigned to task(s)', 'busy')
       end
     else
       # The task is not nested into a resource. We show the classical Gantt
@@ -214,8 +213,8 @@ private
   # line or appear in the scope of a task.
   def generateResource
     # Set the alternating background color
-    @category = @property.get('index') % 2 == 1 ?
-      'resourcecell1' : 'resourcecell2'
+    @category = "resourcecell#{@property.get('index') % 2 + 1}"
+
     # The cellStartDate Array contains the end of the final cell as last
     # element. We need to use a shift mechanism to start and end
     # dates/positions properly.
@@ -233,15 +232,16 @@ private
       if @chart.table
         @chart.table.legend.addGanttItem('Resource assigned to this task',
                                           'assigned')
-        @chart.table.legend.addGanttItem('Resource assigned to other task',
-                                         'busy')
+        @chart.table.legend.addGanttItem('Resource assigned to task(s)', 'busy')
         @chart.table.legend.addGanttItem('Resource available', 'free')
+        @chart.table.legend.addGanttItem('Resource off-duty', 'offduty')
       end
     else
       categories = [ 'busy', 'free' ]
       if @chart.table
-        @chart.table.legend.addGanttItem('Resource assigned to tasks', 'busy')
+        @chart.table.legend.addGanttItem('Resource assigned to task(s)', 'busy')
         @chart.table.legend.addGanttItem('Resource available', 'free')
+        @chart.table.legend.addGanttItem('Resource off-duty', 'offduty')
       end
     end
 

@@ -50,7 +50,7 @@ class ColumnTable < ReportTable
                  "max-width:#{@maxWidth}px; " +
                  "min-width:#{mWidth}px; " +
                  'margin-top:-1px; margin-bottom:-1px; ' +
-                 "height:#{height + 18}px;"))
+                 "height:#{height + 18 + 2}px;"))
 
     scrollDiv << super
     td
