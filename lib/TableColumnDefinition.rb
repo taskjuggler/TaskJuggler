@@ -8,16 +8,27 @@
 # published by the Free Software Foundation.
 #
 
-
+# This class holds the definition of a column of a report. This is the user
+# specified data that is later used to generate the actual ReportTableColumn.
+# The column is uniquely identified by an ID.
 class TableColumnDefinition
 
   attr_reader :id
-  attr_accessor :title, :scale, :width, :content, :column
+  attr_accessor :cellText, :title, :scale, :width, :content, :column
 
   def initialize(id, title)
+    # The column ID. It must be unique within the report.
     @id = id
+    # An alternative title for the column header.
     @title = title
+    # For regular columns (non-calendar and non-chart) the user can override
+    # the actual cell content.
+    @cellText = nil
+    # The content attribute is only used for calendar columns. It specifies
+    # what content should be displayed in the colendar columns.
     @content = 'load'
+    # The scale attribute is only used for Gantt chart columns. It specifies
+    # the minimum resolution of the chart.
     @scale = 'week'
     # The default maximum width of columns.
     @width = 450

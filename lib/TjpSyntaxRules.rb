@@ -444,6 +444,17 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _celltext $STRING ), lambda {
+      @column.cellText = @val[1]
+    })
+    doc('celltext.column', <<'EOT'
+Specifies an alternative content that is used for the cells of the column.
+Usually such a text contains a runtime macro, otherwise all cells of the
+column will have the same fixed value.
+EOT
+        )
+    arg(1, 'text', 'Alterntive cell text')
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })

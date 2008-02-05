@@ -458,6 +458,21 @@ private
 
     setStandardCellAttributes(cell, columnDef,
                               properties.attributeType(columnDef.id), line)
+
+    if columnDef.cellText
+      scopeProperty = line.scopeLine ? line.scopeLine.property : nil
+      query = Query.new('property' => property,
+                      'scopeProperty' => scopeProperty,
+                      'attributeId' => columnDef.id,
+                      'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
+                      'numberFormat' => @numberFormat,
+                      'currencyFormat' => @currencyFormat,
+                      'start' => @start, 'end' => @end,
+                      'costAccount' => @costAccount,
+                      'revenueAccount' => @revenueAccount)
+
+      cell.text = expandMacros(columnDef.cellText, cell.text, query)
+    end
     true
   end
 
@@ -481,13 +496,9 @@ private
 
     setStandardCellAttributes(cell, columnDef, nil, line)
 
-    startIdx = @project.dateToIdx(@start, true)
-    endIdx = @project.dateToIdx(@end, true) - 1
-    iv = Interval.new(@start, @end)
-
     scopeProperty = line.scopeLine ? line.scopeLine.property : nil
-
-    query = Query.new('property' => property, 'scopeProperty' => scopeProperty,
+    query = Query.new('property' => property,
+                      'scopeProperty' => scopeProperty,
                       'attributeId' => columnDef.id,
                       'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
                       'numberFormat' => @numberFormat,
@@ -506,6 +517,10 @@ private
       cell.text = line.no.to_s
     when 'wbs'
       cell.indent = 2 if line.scopeLine
+    end
+
+    if columnDef.cellText
+      cell.text = expandMacros(columnDef.cellText, cell.text, query)
     end
   end
 
@@ -747,6 +762,53 @@ private
       cell.hidden = true
       c.columns += 1
     end
+  end
+
+  # Expand the run-time macros in _pattern_. ${0} is a special case and will
+  # be replaced with the _originalText_. For all other macros the _query_ will
+  # be used with the macro name used for the attributeId of the query. The
+  # method returns the expanded pattern.
+  def expandMacros(pattern, originalText, query)
+    return pattern unless pattern.include?('${')
+
+    out = ''
+    # Scan the pattern for macros ${...}
+    i = 0
+    while i < pattern.length
+      c = pattern[i]
+      if c == ?$
+        # This could be a macro
+        if pattern[i + 1] != ?{
+          # It's not. Just append the '$'
+          out << c
+        else
+          # It is a macro.
+          i += 2
+          macro = ''
+          # Scan for the end '}' and get the macro name.
+          while i < pattern.length && pattern[i] != ?}
+            macro << pattern[i]
+            i += 1
+          end
+          if macro == '0'
+            # This turn RichText into plain ASCII!
+            out += originalText
+          else
+            # resolve by query
+            query.attributeId = macro
+            query.process
+            # This turn RichText into plain ASCII!
+            out += query.result
+          end
+        end
+      else
+        # Just append the character to the output.
+        out << c
+      end
+      i += 1
+    end
+
+    out
   end
 
 end
