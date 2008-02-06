@@ -137,7 +137,7 @@ private
       # all tasks.
       x = nil
       startDate = endDate = nil
-      categories = [ 'busy', 'transparent' ]
+      categories = [ 'busy', nil ]
 
       @chart.header.cellStartDates.each do |date|
         if x.nil?

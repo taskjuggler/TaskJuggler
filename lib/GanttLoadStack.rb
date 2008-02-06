@@ -33,7 +33,7 @@ class GanttLoadStack
     @categories = categories
     i = 0
     @categories.each do |cat|
-      if cat == 'transparent' && values[i] > 0
+      if cat.nil? && values[i] > 0
         @drawFrame = true
         break
       end
@@ -92,7 +92,7 @@ class GanttLoadStack
     # Than draw the slighly narrower bars as a pile ontop of it.
     (@yLevels.length - 1).downto(0) do |i|
       next if @yLevels[i] <= 0
-      if @categories[i] != 'transparent'
+      if @categories[i]
         html << @line.rectToHTML(@x + 1, yPos.to_i, @w - 2,
                                  (yPos + @yLevels[i]).to_i - yPos.to_i,
                                  @categories[i])
