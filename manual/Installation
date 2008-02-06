@@ -34,12 +34,20 @@ when you already have a Gem package.
 
 === Installation Process ===
 
-If you have checked-out the git repository, you need to build the Gem
-package first.
+If you have downloaded the gem package, you can skip to the next
+paragraph.  If you have checked-out the git repository, you need to
+build the Gem package first. Make sure, you have removed all other
+instances of TaskJuggler from you system before doing so. It is a
+common mistake to have an old version of the TaskJuggler installed and
+then use parts of the old and new version together.  The following
+command will create an archive file called a gem package.
 
  cd taskjuggler3; ./makedist
-
-To install the Gem package, just run as root the following command.
+ 
+A gem package is an operating system and architecture independent
+archive file for Ruby programs. You can install it on any system that
+has Ruby and ruby-gems installed.  Normally, you should be logged-in
+as root or administrator to run the following installation command.
 
  gem install pkg/taskjuggler3-X.X.X.gem 
 

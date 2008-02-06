@@ -46,19 +46,8 @@ present in all patches that you submit.
  git config --global user.name "Your Name"
  git config --global user.email "firstname.lastname@domain.org"
 
-You then need to configure and install the TaskJuggler version. Make
-sure, you have removed all other instances of TaskJuggler removed from
-you system before doing so. It is a common mistake to have an old
-version of the TaskJuggler library used by a newer version of the
-executables.
-
- cd taskjuggler
- make -f Makefile.cvs
- ./configure # Put your options here (see ./configure --help
- for details)
- make
- # Run as root
- make install
+See the [[Installation]] section for how to build and install
+TaskJuggler.
 
 Do not use the development snapshots and send your patches as plain
 diff files. After having switched to Git, we no longer accept such
@@ -81,9 +70,12 @@ files.
 When you are done with your changes, it's a good idea to test them. In
 the taskjuggler directory run the following commands. 
 
- make
- # Run as root
- make install
+ cd taskjuggler3/test
+ ruby test_all
+ cd ../lib
+ ruby UserManual.rb
+ cd ..
+ ./makedist
 
 If there are no errors, you can check or test the result. If
 everything works fine, you can lock at your changes again.
@@ -154,7 +146,8 @@ found in the ''''manual'''' directory of the source distribution.
 
 # The information in the syntax reference is extracted from the TJP
 parser source code. It can be found in the file
-''''lib/TjpSyntaxRules.rb''''.
+''''lib/TjpSyntaxRules.rb''''. You can ignore all but the
+''''doc(...)'''', ''''arg(...)'''' and ''''example(...)'''' sections.
 
 # The TJP examples are in the ''''test/TestSuite/Syntax/Correct''''
 directory.
