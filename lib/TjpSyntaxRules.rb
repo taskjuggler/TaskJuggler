@@ -455,6 +455,17 @@ EOT
         )
     arg(1, 'text', 'Alterntive cell text')
 
+    pattern(%w( _cellurl $STRING ), lambda {
+      @column.cellURL = @val[1]
+    })
+    doc('cellurl.column', <<'EOT'
+Specifies a URL that is associated with the content of the cell.
+Usually such a URL contains a runtime macro, otherwise all cells of the
+column will have the same fixed URL.
+EOT
+        )
+    arg(1, 'text', 'Hyperlink address (e.g. http://www.taskjuggler.org)')
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })

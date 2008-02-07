@@ -459,9 +459,8 @@ private
     setStandardCellAttributes(cell, columnDef,
                               properties.attributeType(columnDef.id), line)
 
-    if columnDef.cellText
-      scopeProperty = line.scopeLine ? line.scopeLine.property : nil
-      query = Query.new('property' => property,
+    scopeProperty = line.scopeLine ? line.scopeLine.property : nil
+    query = Query.new('property' => property,
                       'scopeProperty' => scopeProperty,
                       'attributeId' => columnDef.id,
                       'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
@@ -470,9 +469,10 @@ private
                       'start' => @start, 'end' => @end,
                       'costAccount' => @costAccount,
                       'revenueAccount' => @revenueAccount)
-
+    if columnDef.cellText
       cell.text = expandMacros(columnDef.cellText, cell.text, query)
     end
+    setCellURL(cell, columnDef, query)
     true
   end
 
@@ -522,6 +522,7 @@ private
     if columnDef.cellText
       cell.text = expandMacros(columnDef.cellText, cell.text, query)
     end
+    setCellURL(cell, columnDef, query)
   end
 
   # Generate the cells for the task lines of a calendar column. These lines do
@@ -756,6 +757,15 @@ private
     line.indentation += level if treeMode
   end
 
+  # Set the URL associated with the cell text. _cell_ is the ReportTableCell.
+  # _columnDef_ is the user specified definition for the cell content and
+  # look. _query_ is the query used to resolve dynamic macros in the cellURL.
+  def setCellURL(cell, columnDef, query)
+    return unless columnDef.cellURL
+
+    cell.url = expandMacros(columnDef.cellURL, cell.text, query)
+  end
+
   # Try to merge equal cells without text to multi-column cells.
   def tryCellMerging(cell, line, firstCell)
     if cell.text == '' && firstCell && (c = line.last(1)) && c == cell
@@ -791,13 +801,16 @@ private
             i += 1
           end
           if macro == '0'
-            # This turn RichText into plain ASCII!
+            # This turns RichText into plain ASCII!
             out += originalText
           else
             # resolve by query
             query.attributeId = macro
             query.process
-            # This turn RichText into plain ASCII!
+            unless query.ok
+              raise TjException.new, query.errorMessage
+            end
+            # This turns RichText into plain ASCII!
             out += query.result
           end
         end

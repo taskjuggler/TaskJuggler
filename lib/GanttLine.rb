@@ -126,7 +126,7 @@ private
   # appear in the scope of a resource.
   def generateTask
     # Set the background color
-    @category = "taskcell#{@property.get('index') % 2 + 1}"
+    @category = "taskcell#{(@property.get('index') + 1) % 2 + 1}"
 
     taskStart = @property['start', @scenarioIdx]
     taskEnd = @property['end', @scenarioIdx]
@@ -213,7 +213,7 @@ private
   # line or appear in the scope of a task.
   def generateResource
     # Set the alternating background color
-    @category = "resourcecell#{@property.get('index') % 2 + 1}"
+    @category = "resourcecell#{(@property.get('index') + 1) % 2 + 1}"
 
     # The cellStartDate Array contains the end of the final cell as last
     # element. We need to use a shift mechanism to start and end

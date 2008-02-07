@@ -16,8 +16,9 @@
 class ReportTableCell
 
   attr_reader :line
-  attr_accessor :data, :text, :category, :hidden, :alignment, :padding, :indent,
-                :fontSize, :bold, :width, :rows, :columns, :special
+  attr_accessor :data, :text, :url, :category, :hidden, :alignment,
+                :padding, :indent, :fontSize, :bold, :width,
+                :rows, :columns, :special
 
   # Create the ReportTableCell object and initialize the attributes to some
   # default values. _line_ is the ReportTableLine this cell belongs to. _text_
@@ -30,6 +31,8 @@ class ReportTableCell
     @headerCell = headerCell
     # The printable form of the cell content
     @text = text
+    # A URL that is associated with the content of the cell.
+    @url = nil
     # The original data of the cell content (optional, nil if not provided)
     @data = nil
     @category = nil
@@ -38,7 +41,8 @@ class ReportTableCell
     @alignment = :center
     # Horizontal padding between frame and cell content
     @padding = 3
-    # Whether or not to indent the cell
+    # Whether or not to indent the cell. If not nil, it is a Fixnum
+    # indicating the indentation level.
     @indent = nil
     @fontSize = nil
     @bold = false
@@ -99,7 +103,12 @@ class ReportTableCell
     cell << (div = XMLElement.new('div',
       'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
-    div << (@text.is_a?(RichText) ?  @text.to_html : XMLText.new(@text))
+    if url
+      div << (a = XMLElement.new('a', 'href' => @url))
+      a << XMLText.new(@text.is_a?(RichText) ?  @text.to_s : text)
+    else
+      div << (@text.is_a?(RichText) ?  @text.to_html : XMLText.new(@text))
+    end
 
     cell
   end

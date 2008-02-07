@@ -14,7 +14,7 @@
 class TableColumnDefinition
 
   attr_reader :id
-  attr_accessor :cellText, :title, :scale, :width, :content, :column
+  attr_accessor :cellText, :cellURL, :title, :scale, :width, :content, :column
 
   def initialize(id, title)
     # The column ID. It must be unique within the report.
@@ -24,6 +24,8 @@ class TableColumnDefinition
     # For regular columns (non-calendar and non-chart) the user can override
     # the actual cell content.
     @cellText = nil
+    # The cell text can be associated with a hyperlink.
+    @cellURL = nil
     # The content attribute is only used for calendar columns. It specifies
     # what content should be displayed in the colendar columns.
     @content = 'load'
