@@ -763,7 +763,8 @@ private
   def setCellURL(cell, columnDef, query)
     return unless columnDef.cellURL
 
-    cell.url = expandMacros(columnDef.cellURL, cell.text, query)
+    url = expandMacros(columnDef.cellURL, cell.text, query)
+    cell.url = url unless url.empty?
   end
 
   # Try to merge equal cells without text to multi-column cells.
@@ -805,9 +806,16 @@ private
             out += originalText
           else
             # resolve by query
+            # If the macro is prefixed by a '?' it may be undefined.
+            if macro[0] == ??
+              macro = macro[1..-1]
+              ignoreErrors = true
+            else
+              ignoreErrors = false
+            end
             query.attributeId = macro
             query.process
-            unless query.ok
+            unless query.ok || ignoreErrors
               raise TjException.new, query.errorMessage
             end
             # This turns RichText into plain ASCII!
