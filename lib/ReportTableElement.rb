@@ -218,7 +218,7 @@ protected
         # filter.
         resourceList.setSorting(@sortResources)
         assignedResourceList = filterResourceList(resourceList, task,
-            @hideResource, @hideTask)
+            @hideResource, @rollupResource)
         assignedResourceList.sort!
         lineNo = generateResourceList(assignedResourceList, nil, line)
       end
@@ -271,7 +271,7 @@ protected
         # filter.
         taskList.setSorting(@sortTasks)
         assignedTaskList = filterTaskList(taskList, resource,
-            @hideTask, @hideResource)
+            @hideTask, @rollupTask)
         assignedTaskList.sort!
         lineNo = generateTaskList(assignedTaskList, nil, line)
       end

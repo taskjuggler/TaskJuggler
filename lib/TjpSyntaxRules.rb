@@ -3296,7 +3296,6 @@ EOT
        )
 
     pattern(%w( _scheduling !schedulingDirection ), lambda {
-      checkContainer('scheduling')
       if @val[1] == 'alap'
         @property['forward', @scenarioIdx] = false
       elsif @val[1] == 'asap'
