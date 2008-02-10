@@ -315,7 +315,8 @@ htmlresourcereport "ResourceGraph.html" {
 htmlresourcereport "ResourceSheet.html" {
   headline "Resource Sheet"
   columns no, name, id, effort, weekly, rate, cost
-  loadunit days
+  loadunit shortauto
+  #loadunit days
   hidetask ~isleaf()
   sorttasks plan.start.up
   balance cost rev

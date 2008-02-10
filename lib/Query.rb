@@ -32,6 +32,7 @@ class Query
                 :scopePropertyType, :scopePropertyId, :scopeProperty,
                 :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
                 :numberFormat, :currencyFormat, :costAccount, :revenueAccount,
+                :loadUnit,
                 :result, :numericalResult, :sortableResult, :ok, :errorMessage
 
   # Create a new Query object. The _parameters_ need to be sufficent to
@@ -53,6 +54,7 @@ class Query
     @result = nil
     @numericalResult = nil
     @sortableResult = nil
+    @loadUnit = :days
     @ok = nil
     @errorMessage = nil
   end
@@ -108,7 +110,7 @@ class Query
   # effort in man days. The return value is the converted value with optional
   # unit as a String.
   def scaleDuration(value)
-    scaleValue(value, [ 24 * 60, 24, 1, 1 / 7, 1 / 30.42, 1 / 365 ])
+    scaleValue(value, [ 24 * 60, 24, 1, 1.0 / 7, 1.0 / 30.42, 1.0 / 365 ])
   end
 
   # Convert a load or effort value to the format specified by @loadUnit.
@@ -117,10 +119,10 @@ class Query
   def scaleLoad(value)
     scaleValue(value, [ @project.dailyWorkingHours * 60,
                         @project.dailyWorkingHours,
-                        1,
-                        1 / @project.weeklyWorkingDays,
-                        1 / @project.monthlyWorkingDays,
-                        1 / @project.yearlyWorkingDays ])
+                        1.0,
+                        1.0 / @project.weeklyWorkingDays,
+                        1.0 / @project.monthlyWorkingDays,
+                        1.0 / @project.yearlyWorkingDays ])
   end
 
 private
@@ -150,19 +152,22 @@ private
     if @loadUnit == :shortauto || @loadUnit == :longauto
       # We try all possible units and store the resulting strings here.
       options = []
+      # For each option we also save the delta between the String value and
+      # the original value.
+      delta = []
       # For each of the units we can define a maximum value that the value
-      # should not exceed. A maximum of 0 means no limit.
-      max = [ 60, 48, 0, 8, 24, 0 ]
+      # should not exceed. nil means no limit.
+      max = [ 60, 48, nil, 8, 24, nil ]
 
       i = 0
-      shortest = nil
       factors.each do |factor|
         scaledValue = value * factor
         str = @numberFormat.format(scaledValue)
+        delta[i] = ((scaledValue - str.to_f).abs * 1000).to_i
         # We ignore results that are 0 or exceed the maximum. To ensure that
         # we have at least one result the unscaled value is always taken.
-        if (factor != 1.0 && scaledValue == 0) ||
-           (max[i] != 0 && scaledValue > max[i])
+        if (factor != 1.0 && /^[0.]*$/ =~ str) ||
+           (max[i] && scaledValue > max[i])
           options << nil
         else
           options << str
@@ -170,11 +175,17 @@ private
         i += 1
       end
 
-      # Default to days in case they are all the same.
+      # Find the value that is the closest to the original value. This will be
+      # the default if all values have the same length.
       shortest = 2
+      0.upto(delta.length - 1) do |i|
+        shortest = i if options[i] && options[i][0, 2] != '0.' &&
+                        delta[i] <= delta[shortest]
+      end
+
       # Find the shortest option.
       0.upto(5) do |i|
-        shortest = i if options[i] &&
+        shortest = i if options[i] && options[i][0, 2] != '0.' &&
                         options[i].length < options[shortest].length
       end
 

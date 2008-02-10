@@ -12,10 +12,8 @@ or should be done for TaskJuggler III.
 
 * Export reports still have less content than 2.x version.
 
-* Column attributes like celltext, cellurl, hidecelltext,
+* Column attributes like hidecelltext,
   hidecellurl, subtitle, subtitleurl, titleurl
-
-* Macro expansion for report cells.
 
 * Critical path detection after scheduling.
 
@@ -28,6 +26,8 @@ or should be done for TaskJuggler III.
 * More unit tests for core classes.
 
 * Lots more test cases for the test suite.
+
+* Support for journalentry and better journal reporting.
 
 == New features (probably after first stable release)
 

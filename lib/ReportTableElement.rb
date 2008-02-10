@@ -572,7 +572,7 @@ private
         query.endIdx = nextT
         query.process
         # To increase readability, we don't show 0.0 values.
-        cell.text = query.result if query.result != '0.0'
+        cell.text = query.result if query.numericalResult > 0.0
       else
         raise "Unknown column content #{column.content}"
       end

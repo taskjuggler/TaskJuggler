@@ -40,22 +40,13 @@ class RealFormat
     end
 
     # Determine the integer part.
-    intPart = number.to_i.to_s
-    if @fractionDigits > 0
-      fracPart = ((number - number.to_i) *
-                  (10 ** @fractionDigits)).round.to_i.to_s
-      # Due to the rounding, the result can have one more digit than we want.
-      # Chop it off.
-      fracPart.chop! if fracPart.length > @fractionDigits
-      # Prepend zeros if needed.
-      if fracPart.length < @fractionDigits
-        fracPart = '0' * (@fractionDigits - fracPart.length) + fracPart
-      end
-      # Add the fraction separator.
-      fracPart = @fractionSeparator + fracPart
-    else
-      fracPart = ''
+    intNumber = (number * (10 ** @fractionDigits)).round.to_i.to_s
+    if intNumber.length <= @fractionDigits
+      intNumber = '0' * (@fractionDigits - intNumber.length + 1) + intNumber
     end
+    intPart = intNumber[0..-(@fractionDigits + 1)]
+    fracPart =
+      @fractionDigits > 0 ? '.' + intNumber[-(@fractionDigits)..-1] : ''
 
     if @thousandsSeparator.empty?
       out = intPart
