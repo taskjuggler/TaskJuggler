@@ -283,8 +283,8 @@ class ResourceScenario < ScenarioData
 
     startIdx = @firstBookedSlot if @firstBookedSlot &&
                                    startIdx < @firstBookedSlot
-    endIdx = @lastBookedSlot if @lastBookedSlot &&
-                                endIdx < @lastBookedSlot
+    endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
+                                    endIdx < @lastBookedSlot + 1
     return false if startIdx > endIdx
 
     return allocatedSub(startIdx, endIdx, task)
@@ -301,16 +301,16 @@ class ResourceScenario < ScenarioData
     # To speedup the collection we start with the first booked slot and end
     # with the last booked slot.
     startIdx = @firstBookedSlot
-    endIdx = @lastBookedSlot
+    endIdx = @lastBookedSlot + 1
 
     # In case the index markers are still uninitialized, we have no bookings.
     return [] if startIdx.nil? || endIdx.nil?
 
-    startIdx.upto(endIdx) do |idx|
+    startIdx.upto(endIdx - 1) do |idx|
       task = @scoreboard[idx]
       # Now we watch for task changes.
       if task != lastTask || (lastTask == nil && task.is_a?(Task)) ||
-         (task.is_a?(Task) && idx == endIdx)
+         (task.is_a?(Task) && idx == endIdx - 1)
         unless lastTask.nil?
           # If we don't have a Booking for the task yet, we create one.
           if bookings[lastTask].nil?
@@ -318,7 +318,7 @@ class ResourceScenario < ScenarioData
           end
 
           # Make sure the index is correct even for the last task block.
-          idx += 1 if idx == endIdx
+          idx += 1 if idx == endIdx - 1
           # Append the new interval to the Booking.
           bookings[lastTask].intervals <<
             Interval.new(@scoreboard.idxToDate(bookingStart),
@@ -361,8 +361,8 @@ private
     # Mark all resource specific vacation slots as such (2)
     a('vacations').each do |vacation|
       startIdx = @scoreboard.dateToIdx(vacation.start, true)
-      endIdx = @scoreboard.dateToIdx(vacation.end, true) - 1
-      startIdx.upto(endIdx) do |i|
+      endIdx = @scoreboard.dateToIdx(vacation.end, true)
+      startIdx.upto(endIdx - 1) do |i|
          @scoreboard[i] = 2
       end
     end
@@ -370,8 +370,8 @@ private
     # Mark all global vacation slots as such (2)
     @project['vacations'].each do |vacation|
       startIdx = @scoreboard.dateToIdx(vacation.start, true)
-      endIdx = @scoreboard.dateToIdx(vacation.end, true) - 1
-      startIdx.upto(endIdx) do |i|
+      endIdx = @scoreboard.dateToIdx(vacation.end, true)
+      startIdx.upto(endIdx - 1) do |i|
          @scoreboard[i] = 2
       end
     end
@@ -422,10 +422,11 @@ private
     # with the last booked slot.
     startIdx = @firstBookedSlot if @firstBookedSlot &&
                                    startIdx < @firstBookedSlot
-    endIdx = @lastBookedSlot if @lastBookedSlot && endIdx > @lastBookedSlot
+    endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
+                                    endIdx > @lastBookedSlot + 1
 
     bookedSlots = 0
-    startIdx.upto(endIdx) do |idx|
+    startIdx.upto(endIdx - 1) do |idx|
       if (task.nil? && @scoreboard[idx].is_a?(Task)) ||
          (task && @scoreboard[idx] == task)
         bookedSlots += 1
@@ -438,7 +439,7 @@ private
   # Count the free slots between the start and end index.
   def getFreeSlots(startIdx, endIdx)
     freeSlots = 0
-    startIdx.upto(endIdx) do |idx|
+    startIdx.upto(endIdx - 1) do |idx|
       freeSlots += 1 if @scoreboard[idx].nil?
     end
 
@@ -457,7 +458,7 @@ private
     else
       return false unless a('duties').include?(task)
 
-      startIdx.upto(endIdx) do |idx|
+      startIdx.upto(endIdx - 1) do |idx|
         return true if @scoreboard[idx] == task
       end
     end

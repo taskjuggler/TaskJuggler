@@ -241,7 +241,7 @@ class Project
   # Return the average number of working hours per day. This defaults to 8 but
   # can be set to other values by the user.
   def dailyWorkingHours
-    @attributes['dailyworkinghours']
+    @attributes['dailyworkinghours'].to_f
   end
 
   # Return the average number of working days per week.
@@ -251,12 +251,12 @@ class Project
 
   # Return the average number of working days per month.
   def monthlyWorkingDays
-    @attributes['yearlyworkingdays'] / 12
+    @attributes['yearlyworkingdays'] / 12.0
   end
 
   # Return the average number of working days per year.
   def yearlyWorkingDays
-    @attributes['yearlyworkingdays']
+    @attributes['yearlyworkingdays'].to_f
   end
 
   # call-seq:
@@ -434,7 +434,7 @@ class Project
   # Convert working _seconds_ to working days. The result depends on the
   # setting of the global 'dailyworkinghours' attribute.
   def convertToDailyLoad(seconds)
-    seconds / (@attributes['dailyworkinghours'] * 3600)
+    seconds / (@attributes['dailyworkinghours'] * 3600.0)
   end
 
   # Many internal data structures use Scoreboard objects to keep track of

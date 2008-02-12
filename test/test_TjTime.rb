@@ -53,11 +53,14 @@ class TestTjTime < Test::Unit::TestCase
       begin
         t2 = t2.sameTimeNextWeek
         t2_a = t2.localtime.to_a
+        # Check that hour, minutes and seconds are the same.
         assert_equal(t1_a[0, 3], t2_a[0, 3])
+        # Check that weekday is the same
         assert(t2_a[6] == old_t2_a[6],
                "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
-        assert(t2_a[7] == old_t2_a[7] + 7 ||
-               t2_a[7] <= 7,
+        # Check that day of year has increased by 7 or has wrapped at end of
+        # the year.
+        assert(t2_a[7] == old_t2_a[7] + 7 || t2_a[7] <= 7,
                "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
 
         old_t2_a = t2_a

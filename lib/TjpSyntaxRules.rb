@@ -321,14 +321,14 @@ EOT
 
   def rule_calendarDuration
     pattern(%w( !number !durationUnit ), lambda {
-      convFactors = [ 60, # minutes
-                      60 * 60, # hours
-                      60 * 60 * 24, # days
-                      60 * 60 * 24 * 7, # weeks
-                      60 * 60 * 24 * 30.4167, # months
-                      60 * 60 * 24 * 365 # years
+      convFactors = [ 60.0, # minutes
+                      60.0 * 60, # hours
+                      60.0 * 60 * 24, # days
+                      60.0 * 60 * 24 * 7, # weeks
+                      60.0 * 60 * 24 * 30.4167, # months
+                      60.0 * 60 * 24 * 365 # years
                      ]
-      (@val[0] * convFactors[@val[1]] / @project['scheduleGranularity']).to_i
+      ((@val[0] * convFactors[@val[1]]) / @project['scheduleGranularity']).to_i
     })
     arg(0, 'value', 'A floating point or integer number')
   end
