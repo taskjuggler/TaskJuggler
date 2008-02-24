@@ -466,6 +466,15 @@ EOT
         )
     arg(1, 'text', 'Hyperlink address (e.g. http://www.taskjuggler.org)')
 
+    pattern(%w( _hidecelltext !logicalExpression ), lambda {
+      @column.hideCellText = @val[1]
+    })
+    doc('hidecelltext', <<'EOT'
+This logical expression is evaluated during report generation for each report
+cell. If it evaluates to true, the cell will have no content.
+EOT
+        )
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })

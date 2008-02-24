@@ -1,0 +1,6 @@
+include "project-1.tji"
+
+csvtaskreport "." {
+  columns wbs, name { celltext "$${name} ($${id})" }
+}
+

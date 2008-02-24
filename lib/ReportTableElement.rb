@@ -496,6 +496,9 @@ private
 
     setStandardCellAttributes(cell, columnDef, nil, line)
 
+    return if columnDef.hideCellText &&
+              endcolumnDef.hideCellText.eval(property, scopeProperty)
+
     scopeProperty = line.scopeLine ? line.scopeLine.property : nil
     query = Query.new('property' => property,
                       'scopeProperty' => scopeProperty,

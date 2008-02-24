@@ -349,7 +349,7 @@ private
                 error('unexpctd_eof', "Unexpected end of file")
               end
             rescue TjException
-              error('parse_rule2', $!)
+              error('parse_rule2', $!.message)
             end
           end
 
