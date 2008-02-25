@@ -96,11 +96,12 @@ EOT
         @property['allocate', @scenarioIdx] + @val[1]
     })
     doc('allocate', <<'EOT'
-Specify which resources should be allocated to the task. The optional
+Specify which resources should be allocated to the task. The 
 attributes provide numerous ways to control which resource is used and when
 exactly it will be assigned to the task. Shifts and limits can be used to
 restrict the allocation to certain time intervals or to limit them to a
-certain maximum per time period.
+certain maximum per time period. The purge statement can be used to change
+inherited allocations or flags.
 EOT
        )
     example('Allocate-1', '1')
