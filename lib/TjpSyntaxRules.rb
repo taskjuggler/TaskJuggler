@@ -3258,6 +3258,7 @@ EOT
         error('task_priority', "Priority must have a value between 0 and 1000",
               @property)
       end
+      @property['priority', @scenarioIdx] = @val[1]
     })
     doc('priority', <<'EOT'
 Specifies the priority of the task. A task with higher priority is more

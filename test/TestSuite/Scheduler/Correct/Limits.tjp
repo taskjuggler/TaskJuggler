@@ -46,14 +46,14 @@ task nested "Nested Tasks (20h/week limit)" {
   task a "Task A" {
     allocate e
     effort 30d
-    ${Fixend "2008-01-22-10:00"}
+    ${Fixend "2008-02-06-14:00"}
   }
   task b "Task B (7h/day limit)" {
     effort 30d
     allocate f
     priority 600
     limits { dailymax 7h }
-    ${Fixend "2008-02-06-16:00"}
+    ${Fixend "2007-11-14-16:00"}
   }
 }
 
