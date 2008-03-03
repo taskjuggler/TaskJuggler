@@ -50,9 +50,10 @@ class MacroParser < TextParser
         if @val[1].nil?
           error('undef_macro', "Macro #{@val[2]} is undefined")
         end
-        return nil
+        nil
+      else
+        @scanner.expandMacro([ @val[2] ] + @val[3])
       end
-      @scanner.expandMacro([ @val[2] ] + @val[3])
     })
     pattern(%w( _( $ID _) ), lambda {
       ENV[@val[0]]

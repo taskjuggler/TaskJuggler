@@ -758,18 +758,12 @@ EOT
       if extendPropertySetDefinition(ReferenceAttribute, nil)
         @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
-            reference = ReferenceAttribute.new(@property,
-              @property.attributeDefinition(@val[0]))
-            reference.set([ @val[2], @val[3].nil? ? nil : @val[3][0] ])
-            @property[@val[0], @scenarioIdx] = reference
+            @property[@val[0], @scenarioIdx] = [ @val[1], @val[2] ]
           }))
       else
         @ruleToExtend.addPattern(TextParserPattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
-            reference = ReferenceAttribute.new(@property,
-              @property.attributeDefinition(@val[0]))
-            reference.set([ @val[2], @val[3].nil? ? nil : @val[3][0] ])
-            @property.set(@val[0], reference)
+            @property.set(@val[0], [ @val[1], @val[2] ])
           }))
       end
     })

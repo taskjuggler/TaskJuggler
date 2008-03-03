@@ -94,6 +94,11 @@ class Query
           else
             @property.get(@attributeId)
           end
+        if @sortableResult.is_a?(Array)
+          # This ugly special case is needed for custom attributes of type
+          # reference.
+          @sortableResult = @sortableResult[0]
+        end
         @result = @sortableResult.to_s
         @numericalResult = @result if @result.is_a?(Fixnum) or
                                       @result.is_a?(Float)
