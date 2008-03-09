@@ -1,15 +1,16 @@
-project simple "Some task" "1.0" 2005-06-06 - 2005-06-26 {
-  now 2005-06-15
+project simple "Simple Project" "1.0" 2007-01-01 - 2007-01-30 {
+  now 2007-01-15
 }
 
+# *** EXAMPLE: 1 +
 resource tux "Tux"
 
-task t "Task" { 
-  start 2005-06-06
+task t "Task" {
+  start 2007-01-06
   effort 10d
   allocate tux
-  # This task should have be be completed much more on Jun 15, but
-  # it's only 20% done.
+  # This task should have been completed on Jan 15, but only
+  # 20% of the task have been completed so far.
   complete 20
 }
 

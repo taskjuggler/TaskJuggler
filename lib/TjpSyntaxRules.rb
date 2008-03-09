@@ -3048,6 +3048,8 @@ on the scheduler. It's meant for documentation purposes only.
 Tasks may not have subtasks if this attribute is used.
 EOT
         )
+    example('Complete', '1')
+
     arg(1, 'percent', 'The percent value. It must be between 0 and 100.')
 
     pattern(%w( _depends !taskDepList ), lambda {
