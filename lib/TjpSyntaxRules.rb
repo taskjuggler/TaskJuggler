@@ -83,6 +83,7 @@ EOT
 Book the specified amount to the account at the specified date.
 EOT
        )
+    example('Account', '1')
     arg(2, 'description', 'Short description of the transaction')
     arg(3, 'amount', 'Amount to be booked.')
     # Other attributes will be added automatically.
