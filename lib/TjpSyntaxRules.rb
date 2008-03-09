@@ -1701,6 +1701,7 @@ EOT
 Set a copyright notice for the project file and its content. This copyright notice will be added to all reports that can support it.
 EOT
        )
+    example('Caption', '2')
 
     pattern(%w( !balance ), lambda {
       @project['costAccount'] = @val[0][0]
