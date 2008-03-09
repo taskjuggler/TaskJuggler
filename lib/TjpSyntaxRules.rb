@@ -2345,6 +2345,7 @@ other allocations automatically. If it's not given, all bookings must only
 cover working time for the resource.
 EOT
        )
+    example('Booking')
 
     pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
