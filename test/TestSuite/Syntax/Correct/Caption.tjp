@@ -1,0 +1,33 @@
+project simple "Simple Project" "1.0" 2007-01-01 - 2007-02-01
+
+# *** EXAMPLE: 2 +
+copyright "Tux Inc."
+
+# *** EXAMPLE: 1 +
+
+resource r1 "Resource 1"
+
+task plant "How to plant a tree" {
+ start 2007-01-01
+ # All sub-tasks inherit this allocation of r1
+ allocate r1
+ task plan "Choose the planting site" {
+   effort 2d
+ }
+ task buy "Get a tree" {
+   effort 1d
+   depends !plan
+ }
+ task action "Plant the tree" {
+   effort 0.5d
+   depends !buy
+ }
+}
+
+htmltaskreport "PlantTree.html" {
+ caption "This project shows how to plant a tree easily"
+ headline "How to plant a tree"
+ columns name, start, end, daily
+ # Don't hide any resource, thus show them all.
+ hideresource 0
+}

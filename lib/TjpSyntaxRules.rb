@@ -1842,6 +1842,7 @@ The caption will be embedded in the footer of the table or data segment. The
 text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
+    example('Caption', '1')
 
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
