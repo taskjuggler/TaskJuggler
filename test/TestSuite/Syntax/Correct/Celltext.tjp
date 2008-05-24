@@ -1,0 +1,28 @@
+project celltext  "celltext" "1.0" 2007-01-01 - 2007-03-01
+
+# *** EXAMPLE: 1 +
+resource tux "Tux"
+
+task t "Task" {
+  task s "SubTask" {
+    start 2007-01-01
+    effort 5d
+    allocate tux
+  }
+}
+# *** EXAMPLE: 1 -
+# Just a very basic report with some standard columns
+htmltaskreport "SimpleReport.html" {
+  columns hierarchindex, name, start, end, weekly
+}
+
+# Report with custom colum title
+htmltaskreport "CustomTitle.html" {
+  columns hierarchindex, name { title "Work Item" }, effort
+}
+
+# *** EXAMPLE: 1 +
+# Report with index and task name combined in one single column
+htmltaskreport "CombinedColumn.html" {
+  columns name { celltext "$${hierarchno} $${0}"}, start, end, weekly
+}

@@ -1,4 +1,4 @@
-project prj "Example" "1.0" 2005-05-29 - 2005-07-01 {
+project prj "Example" "1.0" 2007-05-29 - 2007-07-01 {
   scenario plan "Planned Scenario" {
     scenario actual "Actual Scenario"
     scenario test "Test Scenario" {
@@ -8,8 +8,8 @@ project prj "Example" "1.0" 2005-05-29 - 2005-07-01 {
 }
 
 task t "Task" {
-  start 2005-05-29
-  actual:start 2005-06-03
-  test:start 2005-06-07
+  start 2007-05-29
+  actual:start 2007-06-03
+  test:start 2007-06-07
 }
 

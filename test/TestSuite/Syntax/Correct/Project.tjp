@@ -1,4 +1,4 @@
-project prj "Example Project" "1.0" 2000-01-01 - 2000-03-09 {
+project prj "Example Project" "1.0" 2007-01-01 - 2007-03-09 {
   # The following attributes are all optional. They illustrate the
   # default values. These attributes are only needed if you want to
   # specify different values than those listed below. 
@@ -16,6 +16,6 @@ project prj "Example Project" "1.0" 2000-01-01 - 2000-03-09 {
 }
 
 task t "Task" {
-  start 2000-01-01
+  start 2007-01-01
 }
 

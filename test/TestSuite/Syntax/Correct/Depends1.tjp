@@ -1,8 +1,8 @@
-project p "P" "1.0" 2003-11-09 - 2003-12-24
+project p "P" "1.0" 2007-11-09 - 2007-12-24
 
 task foo1 "foo1" {
   task foo2 "foo2" {
-    start 2003-12-04
+    start 2007-12-04
     milestone 
   }
   task foo3 "foo3" { 

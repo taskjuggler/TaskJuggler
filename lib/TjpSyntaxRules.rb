@@ -634,6 +634,7 @@ scheduling runs. When an export report is included the project IDs of the
 included tasks must be declared first with the project id property.`
 EOT
        )
+    example('Export')
   end
 
   def rule_exportableResourceAttribute
@@ -1126,7 +1127,7 @@ EOT
       @limits.setUpper('daily', @val[1])
     })
     doc('dailymax', 'Maximum amount of effort for any single day.')
-
+    example('Limits-1', '1')
     pattern(%w( _dailymin !workingDuration ), lambda {
       @limits.setLower('daily', @val[1])
     })
@@ -1136,7 +1137,7 @@ the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT
        )
-
+    example('Limits-1','4')
     pattern(%w( _monthlymax !workingDuration ), lambda {
       @limits.setUpper('monthly', @val[1])
     })
@@ -1469,6 +1470,7 @@ EOT
     doc('currencyformat',
         'These values specify the default format used for all currency ' +
         'values.')
+    example('Currencyformat')
     arg(1, 'negativeprefix', 'Prefix for negative numbers')
     arg(2, 'negativesuffix', 'Suffix for negative numbers')
     arg(3, 'thousandsep', 'Separator used for every 3rd digit')
@@ -1479,6 +1481,7 @@ EOT
       @project['currency'] = @val[1]
     })
     doc('currency', 'The default currency unit.')
+    example('Account')
     arg(1, 'symbol', 'Currency symbol')
 
     pattern(%w( _dailyworkinghours !number ), lambda {
@@ -1492,6 +1495,7 @@ and should work for most Western countries. The value you specify
 should match the settings you specified for workinghours.
 EOT
        )
+    example('Project')
     arg(1, 'hours', 'Average number of working hours per working day')
 
     pattern(%w( _extend !extendProperty !extendBody ), lambda {
@@ -1507,6 +1511,7 @@ can specify if the attribute value should be inherited from the enclosing
 property.
 EOT
        )
+    example('CustomAttributes')
 
     pattern(%w( !include ))
 
@@ -2155,6 +2160,7 @@ Specifies the end date of the report. In task reports only tasks that start
 before this end date are listed.
 EOT
        )
+    example('Export', '2')
   end
 
   def rule_reportPeriod
@@ -2321,7 +2327,7 @@ All resources that do not contribute effort to the task, should have an
 efficiency of 0.0. A typical example would be a conference room. It's necessary for a meeting, but it does not contribute any work.
 EOT
        )
-
+    example('Efficiency')
     pattern(%w( !flags ))
     doc('flags.resource', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
@@ -2428,7 +2434,7 @@ Disable the scenario for scheduling. The default for the top-level
 scenario is to be enabled.
 EOT
        )
-
+    example('Scenario')
     pattern(%w( _enabled ), lambda {
       @property.set('enabled', true)
     })
@@ -3068,7 +3074,7 @@ By using the 'depends' attribute, the scheduling policy is automatically set
 to asap. If both depends and precedes are used, the last policy counts.
 EOT
         )
-
+    example('Depends1')
     pattern(%w( _duration !calendarDuration ), lambda {
       checkContainer('duration')
       @property['duration', @scenarioIdx] = @val[1]
@@ -3082,6 +3088,7 @@ task. It will always be the specified duration.
 Tasks may not have subtasks if this attribute is used.
 EOT
        )
+    example('Durations')
     also(%w( effort length ))
 
     pattern(%w( _effort !workingDuration ), lambda {
@@ -3105,6 +3112,7 @@ Frederick P. Brooks, Jr.
 Tasks may not have subtasks if this attribute is used.
 EOT
        )
+    example('Durations')
     also(%w( duration length ))
 
     pattern(%w( _end !valDate ), lambda {
@@ -3117,7 +3125,7 @@ this attributes also implicitly sets the scheduling policy of the tasks to
 alap.
 EOT
        )
-
+    example('Export', '1')
     pattern(%w( _endcredit !number ), lambda {
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
@@ -3130,6 +3138,7 @@ deprecated and should no longer be used. Use [[charge]] instead.
 EOT
        )
 
+    example('Account', '1')
     pattern(%w( !flags ))
     doc('flags.task', <<'EOT'
 Attach a set of flags. The flags can be used in logical expressions to filter
