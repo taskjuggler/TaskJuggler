@@ -1759,9 +1759,9 @@ EOT
     pattern(%w( _supplement !supplement ))
     doc('supplement', <<'EOT'
 The supplement keyword provides a mechanism to add more attributes to already
-defined tasks or resources. The additional attributes must obey the same rules
-as in regular task or resource definitions and must be enclosed by curly
-braces.
+defined accounts, tasks or resources. The additional attributes must obey the
+same rules as in regular task or resource definitions and must be enclosed by
+curly braces.
 
 This construct is primarily meant for situations where the information about a
 task or resource is split over several files. E. g. the vacation dates for the
