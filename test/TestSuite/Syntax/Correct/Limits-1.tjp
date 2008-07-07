@@ -1,4 +1,4 @@
-project limits "Limits" "1.0" 2007-03-01 - 2007-05-01
+project limits "Limits" "1.0" 2007-03-01 +1y
 
 # Default limit that affects all subsequently defined resources
 limits { weeklymax 4d }
@@ -21,13 +21,15 @@ resource r2 "R2"
 task t1 "Task 1" {
   start 2007-03-30
   effort 10d
-  allocate r2 { limits { dailymax 3h } }
+  allocate r2
+  limits { dailymax 3h }
 }
 # *** EXAMPLE: 4 +
 task t1 "Task 1" {
   start 2007-03-30
   effort 10d
-  allocate r2 { limits { dailymin 5h } }
+  allocate r2 
+  limits { dailymin 5h }
 }
 # *** EXAMPLE: 1 -
 # *** EXAMPLE: 2 +
@@ -35,14 +37,16 @@ task t1 "Task 1" {
 task t1 "Task 1" {
   start 2007-03-30
   effort 10d
-  allocate r2 { limits { weeklymax 2d } }
+  allocate r2 
+  limits { weeklymax 2d }
 }
 # *** EXAMPLE: 2 -
 # *** EXAMPLE: 3 +
 task t1 "Task 1" {
   start 2007-03-30
   effort 10d
-  allocate r2 { limits { monthlymax 1w } }
+  allocate r2 
+  limits { monthlymax 1w }
 }
 # *** EXAMPLE: 1 +
 # *** EXAMPLE: 2 +
@@ -57,9 +61,8 @@ task t3 "Task 3" {
   start 2007-03-01
   duration 60d
   # limits can also be specified per allocation
-  allocate r2 {
-    limits { dailymax 4h weeklymax 3d monthlymax 2w }
-  }
+  allocate r2
+  limits { dailymax 4h weeklymax 3d monthlymax 2w }
 }
 # *** EXAMPLE: 1 -
 # *** EXAMPLE: 2 -

@@ -330,7 +330,8 @@ EOT
 
   # Generate an export report
   def generateExport
-    f = @name == '.' ? $stdout : File.new(@name + '.tjp', 'w')
+    extension = @elements[0].mainFile ? 'tjp' : 'tji'
+    f = @name == '.' ? $stdout : File.new(@name + '.' + extension, 'w')
     f.puts "#{@elements[0].to_tjp}"
   end
 

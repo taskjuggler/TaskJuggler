@@ -10,16 +10,17 @@ task t1 "Task 1" {
   start 2007-01-01
   effort 20d
   allocate tux
-  allocate bob { limits { dailymax 6h } }
+  allocate bob 
+  limits { dailymax 6h }
 }
 # *** EXAMPLE: 1 +
 # *** EXAMPLE: 2 -
 task t2 "Task 2" {
   start 2007-01-01
   end 2007-06-30
-  duration 4m
-  allocate tux { limits { weeklymax 3d } }
-  allocate bob { limits { monthlymax 2d } }
+  allocate tux
+  allocate bob 
+  limits { weeklymax 3d }
 }
 
 # *** EXAMPLE: 1 -

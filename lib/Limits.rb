@@ -155,7 +155,7 @@ class Limits
   # uniquely identified by _name_. _value_ is the new limit. In case _name_ is
   # not a predefined period like daily, weekly or monthly, _period_ must
   # specify the duration of the limited periods.
-  def setLower(name, value)
+  def setLower(name, value, period = nil)
     newLimit(name, period) unless limits.include?(name)
 
     limits[name].setLower(value)

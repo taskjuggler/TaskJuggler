@@ -1128,6 +1128,14 @@ EOT
     })
     doc('dailymax', 'Maximum amount of effort for any single day.')
     example('Limits-1', '1')
+    pattern(%w( !limits ), lambda {
+      checkContainer('limits')
+      @property['limits', @scenarioIdx] = @val[0]
+    })
+    doc('limits.task', <<'EOT'
+Set per-interval allocation limits for the task. This setting affects all allocations for this task.
+EOT
+       )
     pattern(%w( _dailymin !workingDuration ), lambda {
       @limits.setLower('daily', @val[1])
     })
@@ -1725,6 +1733,17 @@ EOT
        )
 
     pattern(%w( !include ))
+
+    pattern(%w( !limits ), lambda {
+      @project['limits'] = @val[0]
+    })
+    doc('limits', <<'EOT'
+Set per-interval allocation limits for the following resource definitions.
+The limits can be overwritten in each resource definition and the global
+limits can be changed later.
+EOT
+       )
+
     pattern(%w( !macro ))
 
     pattern(%w( _projectid $ID ), lambda {
@@ -3137,7 +3156,6 @@ Specifies an amount that is credited to the accounts specified by the
 deprecated and should no longer be used. Use [[charge]] instead.
 EOT
        )
-
     example('Account', '1')
     pattern(%w( !flags ))
     doc('flags.task', <<'EOT'

@@ -79,6 +79,7 @@ class Project
       'dailyworkinghours' => 8.0,
       'end' => nil,
       'flags' => [],
+      'limits' => nil,
       'loadunit' => :shortauto,
       'now' => TjTime.now.align(3600),
       'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),

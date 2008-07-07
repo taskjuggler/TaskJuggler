@@ -15,6 +15,7 @@ require 'ReportElement'
 class TjpExportRE < ReportElement
 
   attr_writer :resourceAttrs, :taskAttrs
+  attr_reader :mainFile
 
   # Create a new object and set some default values.
   def initialize(report, mainFile)
@@ -77,7 +78,7 @@ class TjpExportRE < ReportElement
 private
 
   def generateProjectProperty
-    @file << "project #{@project['id']} \"#{@project['name']}\" " +
+    @file << "project #{@project['projectid']} \"#{@project['name']}\" " +
              "\"#{@project['version']}\" #{@project['start']} - " +
              "#{@project['end']} {\n"
     generateCustomAttributeDeclarations('resource', @project.resources,
