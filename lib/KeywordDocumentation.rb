@@ -156,20 +156,18 @@ class KeywordDocumentation
       else
         argStr = ''
         @args.each do |arg|
+          argText = arg.text || "See #{arg.name} for details."
           if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
             indent = arg.name.length + 2
-            argText = arg.text || "See #{arg.name} for details."
             argStr += "#{arg.name}: " +
-                    "#{format(indent, newRichText(argText).to_s,
-                              textW - indent)}\n"
+                    "#{format(indent, argText, textW - indent)}\n"
           else
             typeSpec = arg.typeSpec
             typeSpec[0] = '['
             typeSpec[-1] = ']'
             indent = arg.name.length + typeSpec.size + 3
             argStr += "#{arg.name} #{typeSpec}: " +
-                    "#{format(indent, newRichText(argText).to_s,
-                              textW - indent)}\n"
+                    "#{format(indent, argText, textW - indent)}\n"
           end
         end
         str += format(tagW, argStr, textW)

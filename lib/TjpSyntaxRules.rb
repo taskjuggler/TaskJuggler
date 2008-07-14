@@ -1128,14 +1128,7 @@ EOT
     })
     doc('dailymax', 'Maximum amount of effort for any single day.')
     example('Limits-1', '1')
-    pattern(%w( !limits ), lambda {
-      checkContainer('limits')
-      @property['limits', @scenarioIdx] = @val[0]
-    })
-    doc('limits.task', <<'EOT'
-Set per-interval allocation limits for the task. This setting affects all allocations for this task.
-EOT
-       )
+
     pattern(%w( _dailymin !workingDuration ), lambda {
       @limits.setLower('daily', @val[1])
     })
@@ -1146,6 +1139,7 @@ minium required amount has not been reached, a warning will be generated.
 EOT
        )
     example('Limits-1','4')
+
     pattern(%w( _monthlymax !workingDuration ), lambda {
       @limits.setUpper('monthly', @val[1])
     })
@@ -1160,6 +1154,7 @@ the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT
        )
+
     pattern(%w( _weeklymax !workingDuration ), lambda {
       @limits.setUpper('weekly', @val[1])
     })
@@ -1174,7 +1169,6 @@ the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT
        )
-
   end
 
   def rule_limitsBody
