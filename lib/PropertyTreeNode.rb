@@ -55,7 +55,7 @@ class PropertyTreeNode
 
   def inheritAttributes
     # These attributes are being inherited from the global context.
-    whitelist = %w( priority projectid rate vacation workinghours )
+    whitelist = %w( limits priority projectid rate vacation workinghours )
 
     # Inherit non-scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|

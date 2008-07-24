@@ -8,6 +8,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'time'
+require 'parsedate'
 
 # The TjTime class is based on the original Ruby class Time but provides lots
 # of additional functionality.
@@ -15,12 +17,19 @@ class TjTime
 
   attr_reader :time
 
-  # The constructor is overloaded and accepts 2 kinds of arguments. If _t_ is
-  # a Time object this is just copied to the @time variable. Or else it is
-  # interpreted as seconds after Epoch.
+  # call-seq:
+  #   TjTime(time) -> Scenario
+  #   TjTime(s) -> Scenario
+  #   TjTime(secs) -> Scenario
+  #
+  # The constructor is overloaded and accepts 3 kinds of arguments. If _t_ is
+  # a Time object this is just copied to the @time variable. If it's a string,
+  # it is parsed as a date. Or else it is interpreted as seconds after Epoch.
   def initialize(t)
     if t.is_a?(Time)
       @time = t
+    elsif t.is_a?(String)
+      @time = Time.local(*ParseDate.parsedate(t))
     else
       @time = Time.at(t)
     end
