@@ -84,11 +84,11 @@ the booking attribute. Bookings are resource specific, so you have to add the
 booking to the resource definition, not the task definition.
 
  resource dev1 "Developer 1" {
-   booking impl 2005-04-11 2005-04-16 { sloppy 2 }
+   booking impl 2005-04-11 - 2005-04-16 { sloppy 2 }
  }
  
  resource dev2 "Developer 2" {
-   booking impl 2005-04-11 2005-04-16 { sloppy 2 }
+   booking impl 2005-04-11 - 2005-04-16 { sloppy 2 }
  }
 
 The sloppy attribute defines the accuracy of your bookings. If it's missing or
@@ -145,7 +145,7 @@ scenario. This has to be done in the scenario definition in the project header.
 If you don't have a scenario definition because you are only using the built-in
 default scenario, you have to add a scenario definition.
 
- project prj "Project" "1.0" 2005-04-01 2005-05-01 {
+ project prj "Project" "1.0" 2005-04-01 - 2005-05-01 {
    scenario plan "Plan" {
      # Compute when the task will be ready based on the already
      # done work and the current date.
