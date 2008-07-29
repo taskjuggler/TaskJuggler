@@ -16,10 +16,11 @@ require 'PropertyTreeNode'
 # be Task, Resources, Scenario, Shift or Accounts objects. All properties of
 # the same kind belong to the same PropertySet. A property may only belong to
 # one PropertySet in the Project. The PropertySet holds the definitions for
-# the attributes.
+# the attributes. All Properties of the set will have a set of these
+# attributes.
 class PropertySet
 
-  attr_reader :project, :topLevelItems, :flatNamespace, :attributeDefinitions
+  attr_reader :project, :flatNamespace, :attributeDefinitions
 
   def initialize(project, flatNamespace)
     if $DEBUG && project.nil?
@@ -33,16 +34,15 @@ class PropertySet
     @flatNamespace = flatNamespace
     # The main Project data structure reference.
     @project = project
-    # The number of topLevel items is used frequently. Since all
-    # PropertyTreeNodes must be registered with this class, we can keep a
-    # special counter for fast access.
-    @topLevelItems = 0
     # This is the blueprint for PropertyTreeNode attribute sets. Whever a new
     # PropertTreeNode is created, an attribute is created for each definition
     # in this list.
     @attributeDefinitions = Hash.new
-    # A hash of all PropertyTreeNodes in this set, hashed by their ID.
-    @properties = Hash.new
+    # A list of all PropertyTreeNodes in this set.
+    @properties = Array.new
+    # A hash of all PropertyTreeNodes in this set, hashed by their ID. This is
+    # the same data as in @properties, but hashed by ID for faster access.
+    @propertyMap = Hash.new
 
     # IDs and names of the built-in attributes. TODO: Check performance impact
     # when making them normal attributes.
@@ -61,12 +61,25 @@ class PropertySet
 
   # Inherit all attributes of each property from the parent scenario.
   def inheritAttributesFromScenario
-    @properties.each_value { |p| p.inheritAttributesFromScenario }
+    @properties.each { |p| p.inheritAttributesFromScenario }
   end
 
   # Call this function to delete all registered properties.
   def clearProperties
     @properties.clear
+    @propertyMap.clear
+  end
+
+  # Return the index of the top-level _property_ in the set.
+  def levelSeqNo(property)
+    seqNo = 1
+    @properties.each do |p|
+      unless p.parent
+        return seqNo if p == property
+        seqNo += 1
+      end
+    end
+    raise "Fatal Error: Unknow property #{property}"
   end
 
   # Use the function to declare the various attributes that properties of this
@@ -167,19 +180,17 @@ class PropertySet
     # The PropertyTreeNode objects are indexed by ID or hierachical ID
     # depending on the name space setting of this set.
     if @flatNamespace
-      @properties[property.id] = property
+      @propertyMap[property.id] = property
     else
-      @properties[property.fullId] = property
+      @propertyMap[property.fullId] = property
     end
-
-    # Increase the counter for top-level items if this property is one.
-    @topLevelItems += 1 unless property.parent
+    @properties << property
   end
 
   # Return the PropertyTreeNode object with ID _id_ from the set or nil if not
   # present.
   def [](id)
-    @properties[id]
+    @propertyMap[id]
   end
 
   # Update the WBS and tree indicies.
@@ -221,16 +232,30 @@ class PropertySet
     @properties.length
   end
 
+  # Return the number of top-level PropertyTreeNode objects. Top-Level items
+  # are no children.
+  def topLevelItems
+    items = 0
+    @properties.each do |p|
+      items += 1 unless p.parent
+    end
+    items
+  end
+
   # Iterator over all PropertyTreeNode objects in this set.
   def each
-    @properties.each do |key, value|
+    @properties.each do |value|
       yield(value)
     end
   end
 
   # Return the set of PropertyTreeNode objects as flat Array.
   def to_ary
-    @properties.values
+    @properties
+  end
+
+  def to_s
+    PropertyList.new(self).to_s
   end
 
 end

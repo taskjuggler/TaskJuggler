@@ -43,6 +43,7 @@ class TestProject < Test::Unit::TestCase
     assert_equal(p.task('foo'), t)
 
     p.schedule
+    assert_equal(t['end', 0], TjTime.new('2008-07-25 19:00'))
     p.generateReports
   end
 

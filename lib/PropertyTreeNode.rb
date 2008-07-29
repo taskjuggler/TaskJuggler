@@ -22,10 +22,15 @@
 # attribute like an URL that contains more details about the task.
 class PropertyTreeNode
 
-  attr_reader :id, :name, :parent, :project, :sequenceNo, :levelSeqNo,
-              :children
+  attr_reader :id, :name, :parent, :project, :sequenceNo, :children
   attr_accessor :sourceFileInfo
 
+  # Create a new PropertyTreeNode object. _propertySet_ is the PropertySet
+  # that this PropertyTreeNode object belongs to. The PropertySet determines
+  # the attributes that are common to all Nodes in the set. _id_ is a String
+  # that is unique in the set. _name_ is a user readable, short description of
+  # the object. _parent_ is the PropertyTreeNode that sits above this node in
+  # the object hierachy. A root object has a _parent_ of nil.
   def initialize(propertySet, id, name, parent)
     @id = id
     @name = name
@@ -37,11 +42,10 @@ class PropertyTreeNode
     @parent = parent
     @sequenceNo = @propertySet.items + 1
     @children = Array.new
+    # In case we have a parent object, we register this object as child of
+    # the parent.
     if (@parent)
       @parent.addChild(self)
-      @levelSeqNo = parent.children.length
-    else
-      @levelSeqNo = @propertySet.topLevelItems + 1
     end
 
     @attributes = Hash.new
@@ -51,6 +55,11 @@ class PropertyTreeNode
     end
     # Scenario specific data
     @data = nil
+  end
+
+  # Return the index of the child _node_.
+  def levelSeqNo(node)
+    @children.index(node) + 1
   end
 
   def inheritAttributes
@@ -190,8 +199,9 @@ class PropertyTreeNode
     idcs = []
     p = self
     begin
-      idcs.insert(0, p.levelSeqNo)
-      p = p.parent
+      parent = p.parent
+      idcs.insert(0, parent ? parent.levelSeqNo(p) : @propertySet.levelSeqNo(p))
+      p = parent
     end while p
     idcs
   end

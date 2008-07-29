@@ -17,7 +17,7 @@ require 'ShiftScenario'
 class Shift < PropertyTreeNode
 
   def initialize(project, id, name, parent)
-    super(project.resources, id, name, parent)
+    super(project.shifts, id, name, parent)
     project.addShift(self)
 
     @data = Array.new(@project.scenarioCount, nil)
