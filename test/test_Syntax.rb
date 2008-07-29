@@ -18,12 +18,6 @@ class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
-  def setup
-  end
-
-  def teardown
-  end
-
   def test_syntaxCorrect
     Dir.glob('TestSuite/Syntax/Correct/*.tjp').each do |f|
       tj = TaskJuggler.new(false)

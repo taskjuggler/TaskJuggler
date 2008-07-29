@@ -20,12 +20,6 @@ class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
-  def setup
-  end
-
-  def teardown
-  end
-
   # This function captures the $stdout output of the passed block to a String
   # and returns it.
   def captureStdout

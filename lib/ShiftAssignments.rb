@@ -273,7 +273,7 @@ private
         end
       end
     end
-    undefine_finalizer(self)
+    ObjectSpace.undefine_finalizer(self)
   end
 
   # Returns true if the interval overlaps with any of the assignment periods.

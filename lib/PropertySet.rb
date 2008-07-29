@@ -64,12 +64,6 @@ class PropertySet
     @properties.each { |p| p.inheritAttributesFromScenario }
   end
 
-  # Call this function to delete all registered properties.
-  def clearProperties
-    @properties.clear
-    @propertyMap.clear
-  end
-
   # Return the index of the top-level _property_ in the set.
   def levelSeqNo(property)
     seqNo = 1
@@ -170,6 +164,10 @@ class PropertySet
   # Add the new PropertyTreeNode object _property_ to the set. The set is
   # indexed by ID. In case an object with the same ID already exists in the
   # set it will be overwritten.
+  #
+  # Whenever the set has been extended, the 'wbs' and 'tree' attributes of the
+  # properties are no longer up-to-date. You must call index() before using
+  # these attributes.
   def addProperty(property)
     # The PropertySet defines the set of attribute that each PropertyTreeNode
     # in this set has. Create these attributes with their default values.
@@ -187,13 +185,46 @@ class PropertySet
     @properties << property
   end
 
+  # Remove the PropertyTreeNode (and all its children) object from the set.
+  # _prop_ can either be a property ID or a reference to the PropertyTreeNode.
+  #
+  # TODO: This function does not take care of references to this PTN!
+  def removeProperty(prop)
+    if prop.is_a?(String)
+      property = @propertyMap[prop]
+    else
+      property = prop
+    end
+
+    # Recursively remove all sub-nodes. The children list is modified during
+    # the call, so we can't use an iterator here.
+    until property.children.empty? do
+      removeProperty(property.children[0])
+    end
+
+    @properties.delete(property)
+    @propertyMap.delete(property.fullId)
+
+    # Remove this node from the child list of the parent node.
+    property.parent.children.delete(property) if property.parent
+
+    property
+  end
+
+  # Call this function to delete all registered properties.
+  def clearProperties
+    @properties.clear
+    @propertyMap.clear
+  end
+
   # Return the PropertyTreeNode object with ID _id_ from the set or nil if not
   # present.
   def [](id)
     @propertyMap[id]
   end
 
-  # Update the WBS and tree indicies.
+  # Update the WBS and tree indicies. This method needs to be called whenever
+  # the set has been modified.
   def index
     each do |p|
       wbsIdcs = p.getWBSIndicies

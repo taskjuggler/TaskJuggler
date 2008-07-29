@@ -15,8 +15,7 @@ require 'TjException'
 # run has been completed, but it only produces good results for static
 # attributes. And for such queries, the PropertyTreeNode.get and [] functions
 # are a lot more efficient.
-#
-# When constructing a Query, a set of variables need to be set that is
+# # When constructing a Query, a set of variables need to be set that is
 # sufficient enough to identify a unique attribute. Some attribute are
 # computed dynamically and further variables such as a start and end time will
 # be incorporated into the result computation.
@@ -42,7 +41,7 @@ class Query
              scopeProperty attributeId scenarioIdx start end startIdx endIdx
              loadUnit numberFormat currencyFormat costAccount revenueAccount)
     ps.each do |p|
-      instance_variable_set('@' + p, parameters[p]) if parameters[p]
+      instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
     end
 
     reset

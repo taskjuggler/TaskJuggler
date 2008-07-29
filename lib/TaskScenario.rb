@@ -40,6 +40,7 @@ class TaskScenario < ScenarioData
 
     @startIsDetermed = nil
     @endIsDetermed = nil
+    @tentativeStart = @tentativeEnd = nil
 
     # Inheriting start or end values is a bit tricky. This should really only
     # happen if the task is a leaf task and scheduled away from the specified
@@ -591,7 +592,7 @@ class TaskScenario < ScenarioData
     resources = []
     a('allocate').each do |allocation|
       allocation.candidates.each do |candidate|
-        candidate.allLeafs.each do |resource|
+        candidate.allLeaves.each do |resource|
           resources << resource unless resources.include?(resource)
         end
       end
@@ -617,7 +618,7 @@ class TaskScenario < ScenarioData
     resources = []
     a('allocate').each do |allocation|
       allocation.candidates.each do |candidate|
-        candidate.allLeafs.each do |resource|
+        candidate.allLeaves.each do |resource|
           resources << resource unless resources.include?(resource)
         end
       end
@@ -1031,7 +1032,7 @@ class TaskScenario < ScenarioData
         # When a resource group is marked mandatory, all members of the
         # group must be available.
         allAvailable = true
-        candidate.allLeafs.each do |resource|
+        candidate.allLeaves.each do |resource|
           if !resource.available?(@scenarioIdx, sbIdx) ||
              takenMandatories.include?(resource)
             allAvailable = false
@@ -1073,7 +1074,7 @@ class TaskScenario < ScenarioData
 
   def bookResource(resource, sbIdx, date)
     booked = false
-    resource.allLeafs.each do |r|
+    resource.allLeaves.each do |r|
       if r.book(@scenarioIdx, sbIdx, @property)
 
         if a('assignedresources').empty?

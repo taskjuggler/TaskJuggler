@@ -28,13 +28,31 @@ class PropertyTreeNode
   # Create a new PropertyTreeNode object. _propertySet_ is the PropertySet
   # that this PropertyTreeNode object belongs to. The PropertySet determines
   # the attributes that are common to all Nodes in the set. _id_ is a String
-  # that is unique in the set. _name_ is a user readable, short description of
-  # the object. _parent_ is the PropertyTreeNode that sits above this node in
-  # the object hierachy. A root object has a _parent_ of nil.
+  # that is unique in the namespace of the set. _name_ is a user readable,
+  # short description of the object. _parent_ is the PropertyTreeNode that
+  # sits above this node in the object hierachy. A root object has a _parent_
+  # of nil. For sets with hierachical name spaces, parent can be nil and
+  # specified by a hierachical _id_ (e. g. 'father.son').
   def initialize(propertySet, id, name, parent)
-    @id = id
-    @name = name
     @propertySet = propertySet
+    if !@propertySet.flatNamespace && id.include?('.')
+      parentId = id[0..(id.rindex('.') - 1)]
+      # Set parent to the parent property if it's still nil.
+      parent = @propertySet[parentId] unless parent
+      if $DEBUG
+        if !parent || !@propertySet[parent.fullId]
+          raise "Fatal Error: parent must be member of same property set"
+        end
+        if parentId != parent.fullId
+          raise "Fatal Error: parent (#{parent.fullId}) and parent ID " +
+              "(#{parentId}) don't match"
+        end
+      end
+      @id = id[(id.rindex('.') + 1).. -1]
+    else
+      @id = id
+    end
+    @name = name
     @project = propertySet.project
     @level = -1
     @sourceFileInfo = nil
@@ -146,13 +164,13 @@ class PropertyTreeNode
   end
 
   # Return a list of all leaf nodes of this node.
-  def allLeafs
+  def allLeaves
     if leaf?
       res = [ self ]
     else
       res = []
       @children.each do |c|
-        res += c.allLeafs
+        res += c.allLeaves
       end
     end
     res
@@ -341,7 +359,13 @@ class PropertyTreeNode
     res = "#{self.class} #{fullId} \"#{@name}\"\n" +
           "  Sequence No: #{@sequenceNo}\n"
 
-    res += "  Parent: #{@parent.get('id')}\n" if @parent
+    res += "  Parent: #{@parent.fullId}\n" if @parent
+    children = ""
+    @children.each do |c|
+      children += ', ' unless children.empty?
+      children += c.fullId
+    end
+    res += '  Children: ' + children + "\n"  unless children.empty?
     @attributes.sort.each do |key, attr|
       if attr.get != @propertySet.defaultValue(key)
         res += indent("  #{key}: ", attr.to_s)

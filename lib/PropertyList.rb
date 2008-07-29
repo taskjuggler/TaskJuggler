@@ -40,7 +40,7 @@ class PropertyList < Array
     else
       # Create a PropertyList from a given other PropertyList.
       @propertySet = arg.propertySet
-      @query = arg.query.dup if arg.query
+      @query = arg.query ? arg.query.dup : nil
       @sortingLevels = arg.sortingLevels
       @sortingCriteria = arg.sortingCriteria.dup
       @sortingUp = arg.sortingUp.dup
