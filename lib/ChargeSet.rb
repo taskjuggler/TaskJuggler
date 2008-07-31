@@ -42,12 +42,12 @@ class ChargeSet
         "Account #{account.fullId} is already a member of the charge set."
     end
     if @master.nil?
-      @master = account.topNode
-    elsif @master != account.topNode
+      @master = account.root
+    elsif @master != account.root
       raise TjException.new,
         "All members of this charge set must belong to the " +
         "#{@master.fullId} account. #{account.fullId} belongs to " +
-        "#{account.topNode.fullId}."
+        "#{account.root.fullId}."
     end
     if account.container?
       raise TjException.new,

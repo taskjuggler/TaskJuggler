@@ -14,7 +14,8 @@
 # well defined order. The order can be determined by an arbitrary number of
 # sorting levels. A sorting level specifies an attribute who's value should be
 # used for sorting, a scenario index if necessary and the sorting direction
-# (up/down).
+# (up/down). All nodes in the PropertyList must belong to the same
+# PropertySet.
 class PropertyList < Array
 
   attr_writer :query
@@ -67,6 +68,14 @@ class PropertyList < Array
   # Append another Array of Tasks or a PropertyList to this. The list will be
   # sorted again.
   def append(list)
+    if $DEBUG
+      list.each do |node|
+        unless node.propertySet == @propertySet
+          raise "Fatal Error: All nodes must belong to the same PropertySet."
+        end
+      end
+    end
+
     concat(list)
     self.sort!
   end
@@ -152,7 +161,7 @@ class PropertyList < Array
   end
 
   # Turn the list into a String. This is only used for debugging.
-  def to_s
+  def to_s # :nodoc:
     res = "Sorting: "
     0.upto(@sortingLevels - 1) do |i|
       res += "#{@sortingCriteria[i]}/#{@sortingUp[i] ? 'up' : 'down'}/" +

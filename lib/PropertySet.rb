@@ -64,18 +64,6 @@ class PropertySet
     @properties.each { |p| p.inheritAttributesFromScenario }
   end
 
-  # Return the index of the top-level _property_ in the set.
-  def levelSeqNo(property)
-    seqNo = 1
-    @properties.each do |p|
-      unless p.parent
-        return seqNo if p == property
-        seqNo += 1
-      end
-    end
-    raise "Fatal Error: Unknow property #{property}"
-  end
-
   # Use the function to declare the various attributes that properties of this
   # PropertySet can have. The attributes must be declared before the first
   # property is added to the set.
@@ -199,7 +187,7 @@ class PropertySet
     # Recursively remove all sub-nodes. The children list is modified during
     # the call, so we can't use an iterator here.
     until property.children.empty? do
-      removeProperty(property.children[0])
+      removeProperty(property.children.first)
     end
 
     @properties.delete(property)
@@ -246,6 +234,18 @@ class PropertySet
       p.set('wbs', wbs)
       p.set('tree', tree)
     end
+  end
+
+  # Return the index of the top-level _property_ in the set.
+  def levelSeqNo(property)
+    seqNo = 1
+    @properties.each do |p|
+      unless p.parent
+        return seqNo if p == property
+        seqNo += 1
+      end
+    end
+    raise "Fatal Error: Unknow property #{property}"
   end
 
   # Return the maximum used number of breakdown levels. A flat list has a

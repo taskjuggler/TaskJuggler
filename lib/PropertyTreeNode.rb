@@ -22,7 +22,8 @@
 # attribute like an URL that contains more details about the task.
 class PropertyTreeNode
 
-  attr_reader :id, :name, :parent, :project, :sequenceNo, :children
+  attr_reader :propertySet, :id, :name, :parent, :project, :sequenceNo,
+              :children
   attr_accessor :sourceFileInfo
 
   # Create a new PropertyTreeNode object. _propertySet_ is the PropertySet
@@ -80,8 +81,9 @@ class PropertyTreeNode
     @children.index(node) + 1
   end
 
+  # Inherit values for the attributes from the parent node or the Project.
   def inheritAttributes
-    # These attributes are being inherited from the global context.
+    # These attributes are being inherited from the Project.
     whitelist = %w( limits priority projectid rate vacation workinghours )
 
     # Inherit non-scenario-specific values
@@ -129,6 +131,8 @@ class PropertyTreeNode
     end
   end
 
+  # Inherit attribute values from the parent scenario. This is only being done
+  # for attributes that don't have a user-specified value already.
   def inheritAttributesFromScenario
     # Inherit scenario-specific values
     @propertySet.eachAttributeDefinition do |attrDef|
@@ -176,18 +180,23 @@ class PropertyTreeNode
     res
   end
 
+  # Iterator over all non-scenario-specific attributes of this node.
   def eachAttribute
     @attributes.each do |attr|
       yield attr
     end
   end
 
+  # Iterator over all scenario-specific attributes of this node.
   def eachScenarioAttribute(scenario)
     @scenarioAttributes[scenario].each_value do |attr|
       yield attr
     end
   end
 
+  # Return the full id of this node. For PropertySet objects with a flat
+  # namespace, this is just the ID. Otherwise, the full ID is composed of all
+  # IDs from the root node to this node, separating the IDs by a dot.
   def fullId
     res = @id
     unless @propertySet.flatNamespace
@@ -213,6 +222,9 @@ class PropertyTreeNode
     @level
   end
 
+  # Return the hierarchical index of this node. In project management lingo
+  # this is called the Work Breakdown Structure (WBS). The result is an Array
+  # with an index for each level from the root to this node.
   def getWBSIndicies
     idcs = []
     p = self
@@ -224,7 +236,11 @@ class PropertyTreeNode
     idcs
   end
 
+  # Add _child_ node as child to this node.
   def addChild(child)
+    if $DEBUG && child.propertySet != @propertySet
+      raise "Child nodes must belong to the same property set as the parent"
+    end
     @children.push(child)
   end
 
@@ -237,16 +253,18 @@ class PropertyTreeNode
     false
   end
 
+  # Return true if the node is a leaf node (has no children).
   def leaf?
     @children.empty?
   end
 
+  # Return true if the node has children.
   def container?
     !@children.empty?
   end
 
   # Return the top-level node for this node.
-  def topNode
+  def root
     n = self
     while n.parent
       n = n.parent
@@ -273,6 +291,9 @@ class PropertyTreeNode
     @propertySet.attributeDefinitions[attributeId]
   end
 
+  # Return the value of the non-scenario-specific attribute with ID
+  # _attributeId_. In case the attribute does not exist, an exception is
+  # raised.
   def get(attributeId)
     case attributeId
     when 'id'
@@ -289,6 +310,9 @@ class PropertyTreeNode
     end
   end
 
+  # Return the value of the attribute with ID _attributeId_. In case this is a
+  # scenario-specific attribute, the scenario index needs to be provided by
+  # _scenarioIdx_.
   def getAttr(attributeId, scenarioIdx = nil)
     if scenarioIdx.nil?
       @attributes[attributeId]
@@ -297,6 +321,8 @@ class PropertyTreeNode
     end
   end
 
+  # Set the non-scenario-specific attribute with ID _attributeId_ to _value_.
+  # In case the attribute does not exist, an exception is raised.
   def set(attributeId, value)
     unless @attributes.has_key?(attributeId)
       raise TjException.new, "Unknown attribute #{attributeId}"
@@ -304,6 +330,9 @@ class PropertyTreeNode
     @attributes[attributeId].set(value)
   end
 
+  # Set the scenario specific attribute with ID _attributeId_ for the scenario
+  # with index _scenario_ to _value_. In case the attribute does not exist, an
+  # exception is raised.
   def []=(attributeId, scenario, value)
     if @scenarioAttributes[scenario].has_key?(attributeId)
       @scenarioAttributes[scenario][attributeId].set(value)
@@ -315,6 +344,9 @@ class PropertyTreeNode
     @scenarioAttributes[scenario][attributeId].set(value)
   end
 
+  # Return the value of the attribute with ID _attributeId_. For
+  # scenario-specific attributes, _scenario_ must indicate the index of the
+  # Scenario.
   def [](attributeId, scenario)
     if @scenarioAttributes[scenario].has_key?(attributeId)
       @scenarioAttributes[scenario][attributeId].get
@@ -335,6 +367,8 @@ class PropertyTreeNode
     end
   end
 
+  # Returns true if the value of the attribute _attributeId_ (in scenario
+  # _scenarioIdx_) has been provided by the user.
   def provided(attributeId, scenarioIdx = nil)
     if scenarioIdx
       return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
@@ -345,6 +379,8 @@ class PropertyTreeNode
     end
   end
 
+  # Returns true if the value of the attribute _attributeId_ (in scenario
+  # _scenarioIdx_) has been inherited from a parent node or scenario.
   def inherited(attributeId, scenarioIdx = nil)
     if scenarioIdx
       return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
@@ -355,7 +391,8 @@ class PropertyTreeNode
     end
   end
 
-  def to_s
+  # Dump the class data in human readable form. Used for debugging only.
+  def to_s # :nodoc:
     res = "#{self.class} #{fullId} \"#{@name}\"\n" +
           "  Sequence No: #{@sequenceNo}\n"
 
