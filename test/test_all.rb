@@ -1,6 +1,7 @@
 require 'test_MacroTable'
 require 'test_RealFormat'
 require 'test_RichText'
+require 'test_LogicalExpression'
 require 'test_PropertySet'
 require 'test_Project'
 require 'test_Scheduler'

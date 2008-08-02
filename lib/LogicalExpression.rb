@@ -30,15 +30,19 @@ class LogicalExpression
   end
 
   # This function triggers the evaluation of the expression. _property_ is the
-  # PropertyTreeNode that should be used for the evaluation.
+  # PropertyTreeNode that should be used for the evaluation. _scopeProperty_
+  # is the PropertyTreeNode that describes the scope. It may be nil.
   def eval(property, scopeProperty)
     @property = property
     @scopeProperty = scopeProperty
-    @operation.eval(self)
+    res = @operation.eval(self)
+    return res if res.class == TrueClass || res.class == FalseClass
+    # In TJP syntax 'non 0' means false.
+    return res != 0
   end
 
   # This function is only used for debugging.
-  def to_s
+  def to_s # :nodoc:
     if @sourceFileInfo.nil?
       "#{@operation}"
     else
@@ -54,8 +58,7 @@ class LogicalExpression
     else
       str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
     end
-    $stderr.puts str
-    raise TjException.new, "Syntax error"
+    raise TjException.new, str
   end
 
 end

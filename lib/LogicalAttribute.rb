@@ -11,7 +11,7 @@
 
 require 'LogicalOperation'
 
-class LogicalAttribute < LogicalOperation
+class LogicalAttribute
 
   def initialize(attribute, scenario)
     @scenarioIdx = scenario

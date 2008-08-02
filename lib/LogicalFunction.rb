@@ -13,24 +13,23 @@ require 'LogicalOperation'
 
 # The LogicalFunction is a specialization of the LogicalOperation. It models a
 # function call in a LogicalExpression.
-class LogicalFunction < LogicalOperation
+class LogicalFunction
 
   attr_accessor :name, :arguments
 
-  # Create a new LogicalFunction. _opnd_ is the name of the function.
-  def initialize(opnd)
-    super
-    @name = opnd
-    @arguments = []
-
-    # A map with the names of the supported functions and the number of
-    # arguments they require.
-    @@functions = {
+  # A map with the names of the supported functions and the number of
+  # arguments they require.
+  @@functions = {
       'isdutyof' => 2,
       'isleaf' => 0,
       'isresource' => 1,
       'isoncriticalpath' => 1
-    }
+  }
+
+  # Create a new LogicalFunction. _opnd_ is the name of the function.
+  def initialize(opnd)
+    @name = opnd
+    @arguments = []
   end
 
   # Register the arguments of the function and check if the name is a known
