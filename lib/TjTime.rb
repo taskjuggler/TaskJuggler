@@ -9,7 +9,7 @@
 #
 
 require 'time'
-require 'parsedate'
+require 'date'
 
 # The TjTime class is based on the original Ruby class Time but provides lots
 # of additional functionality.
@@ -29,7 +29,8 @@ class TjTime
     if t.is_a?(Time)
       @time = t
     elsif t.is_a?(String)
-      @time = Time.local(*ParseDate.parsedate(t))
+      d = DateTime.parse(t)
+      @time = Time.mktime(d.year, d.mon, d.day, d.hour, d.min, d.sec)
     else
       @time = Time.at(t)
     end

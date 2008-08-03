@@ -8,7 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-
+require 'UTF8String'
 require 'TjTime'
 require 'TjException'
 require 'SourceFileInfo'
@@ -19,18 +19,17 @@ require 'MacroParser'
 # used by a parser. Files can be nested. A file can include an other file.
 class TextScanner
 
-  # File records are entries on the parser stack. For each nested file the
-  # scanner puts an entry on the stack while the files are scanned. With this
-  # stack the scanner can resume the processing of the enclosing file once the
-  # included files has been completely processed.
-  class FileRecord
+  # This class is used to handle the low-level input operations. It knows
+  # whether it deals with a text buffer or a file and abstracts this to the
+  # TextScanner. For each nested file the scanner puts an StreamHandle on the
+  # stack while the file is scanned. With this stack the scanner can resume
+  # the processing of the enclosing file once the included files has been
+  # completely processed.
+  class StreamHandle
 
-    attr_reader :file, :fileName
     attr_accessor :lineNo, :columnNo, :line, :charBuffer
 
-    def initialize(fileName)
-      @fileName = fileName
-      @file = File.new(fileName, 'r')
+    def initialize
       @lineNo = 1
       @columnNo = 1
       @line = ""
@@ -42,30 +41,96 @@ class TextScanner
     end
   end
 
+  # Specialized version of StreamHandle for operations on files.
+  class FileStreamHandle < StreamHandle
+
+    attr_reader :fileName
+
+    def initialize(fileName)
+      super()
+      @fileName = fileName
+      @file = File.new(fileName, 'r')
+    end
+
+    def close
+      @file.close
+    end
+
+    def getc
+      @file.getc
+    end
+  end
+
+  # Specialized version of StreamHandle for operations on Strings.
+  class BufferStreamHandle < StreamHandle
+
+    def initialize(buffer)
+      super()
+      @buffer = buffer
+      @pos = 0
+      @length = @buffer.length_utf8
+    end
+
+    def close
+      @buffer = nil
+    end
+
+    def getc
+      return nil if @pos >= @length
+
+      c = @buffer[@pos]
+      @pos += 1
+      c
+    end
+
+    def fileName
+      ''
+    end
+  end
+
+  # Create a new instance of TextScanner. _masterFile_ must be a String that
+  # either contains the name of the file to start with or the text itself.
+  # _messageHandler_ is a MessageHandler that is used for error messages.
   def initialize(masterFile, messageHandler)
     @masterFile = masterFile
     @messageHandler = messageHandler
+    # This table contains all macros that may be expanded when found in the
+    # text.
     @macroTable = MacroTable.new(messageHandler)
+    # This Array stores the currently processed nested files.
     @fileStack = []
+    # This Array stores the currently processed nested macros.
     @macroStack = []
+    # In certain situation we want to ignore Macro replacement and this flag
+    # is set to true.
     @ignoreMacros = false
   end
 
-  def open
-    begin
-      @fileStack = [ (@cf = FileRecord.new(@masterFile)) ]
-    rescue StandardError
-      raise TjException.new, "Cannot open file #{@masterFile}"
+  # Start the processing. if _fileNameIsBuffer_ is true, we operate on a
+  # String, else on a File.
+  def open(fileNameIsBuffer = false)
+    if fileNameIsBuffer
+      @fileStack = [ @cf = BufferStreamHandle.new(@masterFile) ]
+    else
+      begin
+        @fileStack = [ @cf = FileStreamHandle.new(@masterFile) ]
+      rescue StandardError
+        raise TjException.new, "Cannot open file #{@masterFile}"
+      end
     end
     @tokenBuffer = nil
     @pos = nil
   end
 
+  # Finish processing and reset all data structures.
   def close
     @fileStack = []
-    @cf = @tokenBuffer = nil
+    @cf = @tokenBuffer = @pos = nil
   end
 
+  # Continue processing with a new file specified by _fileName_. When this
+  # file is finished, we will continue in the old file after the location
+  # where we started with the new file.
   def include(fileName)
     begin
       if fileName[0] != '/'
@@ -74,32 +139,37 @@ class TextScanner
         fileName = @fileStack.last.dirname + '/' + fileName
       end
 
-      @fileStack << (@cf = FileRecord.new(fileName))
+      @fileStack << (@cf = FileStreamHandle.new(fileName))
     rescue StandardError
       error('bad_include', "Cannot open include file #{fileName}")
     end
   end
 
+  # Return SourceFileInfo for the current processing prosition.
   def sourceFileInfo
     @pos ? @pos.clone : SourceFileInfo.new(fileName, lineNo, columnNo)
   end
 
+  # Return the name of the currently processed file. If we are working on a
+  # text buffer, the text will be returned.
   def fileName
     @cf ? @cf.fileName : @masterFile
   end
 
-  def lineNo
+  def lineNo # :nodoc:
     @cf ? @cf.lineNo : 0
   end
 
-  def columnNo
+  def columnNo # :nodoc:
     @cf ? @cf.columnNo : 0
   end
 
-  def line
+  def line # :nodoc:
     @cf ? @cf.line : 0
   end
 
+  # Scan for the next token in the input stream and return it. The result will
+  # be an Array of the form [ TokenType, TokenValue ].
   def nextToken
     # If we have a pushed-back token, return that first.
     unless @tokenBuffer.nil?
@@ -151,6 +221,8 @@ class TextScanner
     return token
   end
 
+  # Return a token to retrieve it with the next nextToken() call again. Only 1
+  # token can be returned before the next nextToken() call.
   def returnToken(token)
     unless @tokenBuffer.nil?
       raise "Fatal Error: Cannot return more than 1 token in a row"
@@ -159,10 +231,12 @@ class TextScanner
     @pos = @lastPos
   end
 
+  # Add a Macro to the macro translation table.
   def addMacro(macro)
     @macroTable.add(macro)
   end
 
+  # Return true if the Macro _name_ has been added already.
   def macroDefined?(name)
     @macroTable.include?(name)
   end
@@ -174,7 +248,7 @@ class TextScanner
     @macroStack << [ macro, args ]
     # Mark end of macro with a 0 element
     @cf.charBuffer << 0
-    text.reverse.each_byte do |c|
+    text.reverse.each_utf8_char do |c|
       @cf.charBuffer << c
     end
     @cf.line = ''
@@ -244,8 +318,8 @@ private
     else
       # If EOF has been reached, try the parent file until even the master
       # file has been processed completely.
-      while (c = @cf.file.getc).nil? && !@fileStack.empty?
-        @cf.file.close
+      while (c = @cf.getc).nil? && !@fileStack.empty?
+        @cf.close
         @fileStack.pop
         @cf = @fileStack.last
 

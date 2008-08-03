@@ -8,6 +8,8 @@
 # published by the Free Software Foundation.
 #
 
+$KCODE='UTF8'
+require 'jcode'
 require 'Tj3Config'
 require 'TaskJuggler'
 
