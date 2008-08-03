@@ -35,18 +35,34 @@ EOT
 
     s = TextScanner.new(text, MessageHandler.new(false))
     s.open(true)
-    assert_equal(['ID', 'Hello'], s.nextToken)
-    assert_equal(['ID', 'world'], s.nextToken)
-    assert_equal(['INTEGER', 1], s.nextToken)
-    assert_equal(['FLOAT', 2.0], s.nextToken)
-    assert_equal(['DATE', TjTime.new('2008-12-14')], s.nextToken)
-    assert_equal(['ID_WITH_COLON', 'foo'], s.nextToken)
-    assert_equal(['ABSOLUTE_ID', 'a.b.c'], s.nextToken)
-    assert_equal(['LITERAL', ' - '], s.nextToken)
-    assert_equal(['LITERAL', '$'], s.nextToken)
-    assert_equal(['MACRO', 'A Macro'], s.nextToken)
-    assert_equal(['TIME', ((15 * 60) + 23) * 60], s.nextToken)
-    assert_equal(['STRING', 'A string'], s.nextToken)
+    ref = [
+      ['ID', 'Hello', 1],
+      ['ID', 'world', 1],
+      ['INTEGER', 1, 1],
+      ['FLOAT', 2.0, 2],
+      ['DATE', TjTime.new('2008-12-14'), 3],
+      ['ID_WITH_COLON', 'foo', 5],
+      ['ABSOLUTE_ID', 'a.b.c', 6],
+      ['LITERAL', ' - ', 6],
+      ['LITERAL', '$', 6],
+      ['MACRO', 'A Macro', 6],
+      ['TIME', ((15 * 60) + 23) * 60, 7],
+      ['STRING', 'A string', 7]
+    ]
+
+    ref.each do |type, val, line|
+      token = s.nextToken
+      assert_equal([ type, val ], token,
+                   "1: Bad token #{token[1]} instead of #{val}")
+      assert_equal(line, s.lineNo,
+                   "1: Bad line number #{s.lineNo} instead of #{line} for #{val}")
+      s.returnToken(token)
+      token = s.nextToken
+      assert_equal([ type, val ], token,
+                   "2: Bad token #{token[1]} instead of #{val}")
+      assert_equal(line, s.lineNo,
+                   "2: Bad line number #{s.lineNo} instead of #{line} for #{val}")
+    end
 
     s.close
   end
@@ -68,5 +84,4 @@ EOT
 
   end
 end
-
 
