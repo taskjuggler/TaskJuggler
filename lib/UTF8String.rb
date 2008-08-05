@@ -8,20 +8,17 @@
 # published by the Free Software Foundation.
 #
 
-KCODE='u'
+KCODE='UTF8'
 require 'jcode'
 
 # This is an extension and modification of the standard String class. We do a
 # lot of UTF-8 character processing in the parser. Ruby 1.8 does not have good
 # enough UTF-8 support and Ruby 1.9 only handles UTF-8 characters as Strings.
 # This is very inefficient compared to representing them as Fixnum objects.
-# Some of these hacks can be removed once we have switched to 1.9 support
-# only.
 class String
 
   # Iteratate over the String calling the block for each UTF-8 character in
-  # the String. This implementation looks more awkward but is noticeably
-  # faster than the often propagated regexp based implementations.
+  # the String.
   def each_utf8_char
     c = 0
     length = 0
@@ -69,9 +66,7 @@ class String
     end
   end
 
-  # Return the number of UTF8 characters in the String. We don't override the
-  # built-in length() function here as we don't know who else uses it for what
-  # purpose.
+  # Return the number of UTF8 characters in the String
   def length_utf8
     len = 0
     each_utf8_char { |c| len += 1 }
