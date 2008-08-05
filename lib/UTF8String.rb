@@ -11,17 +11,14 @@
 KCODE='u'
 require 'jcode'
 
-# This is an extension and modification of the standard String class. We do a
-# lot of UTF-8 character processing in the parser. Ruby 1.8 does not have good
-# enough UTF-8 support and Ruby 1.9 only handles UTF-8 characters as Strings.
-# This is very inefficient compared to representing them as Fixnum objects.
-# Some of these hacks can be removed once we have switched to 1.9 support
-# only.
+# This is an extension and modification of the standard String class. It was
+# created to form a compatibility layer that allows us to write code that runs
+# on Ruby 1.8 and Ruby 1.9. The Ruby 1.8 implementation does not make any
+# attempt to be 100% UTF-8 compatible.
 class String
 
   # Iteratate over the String calling the block for each UTF-8 character in
-  # the String. This implementation looks more awkward but is noticeably
-  # faster than the often propagated regexp based implementations.
+  # the String.
   def each_utf8_char
     c = ''
     length = 0
@@ -49,25 +46,46 @@ class String
     end
   end
 
+#  alias oldBrackets []
+#
+#  def [](ui, count = 1)
+#    if ui.is_a?(Range)
+#      ui, count = ui.begin, ui.end - ui.begin + 1
+#    end
+#    ui = length_utf8 - ui if ui < 0
+#    last = ui + count - 1
+#    i = 0
+#    res = nil
+#    each_utf8_char do |c|
+#      if ui <= i && i <= last
+#        res = '' unless res
+#        res << c
+#      end
+#      return res if i >= last
+#      i += 1
+#    end
+#    res
+#  end
+
   # Replacement for the existing << operator that also works for characters
   # above Fixnum 255 (UTF-8 characters).
-  def << (obj)
-    if obj.is_a?(String) || (obj < 256)
-      # In this case we can use the built-in concat.
-      concat(obj)
-    else
-      # UTF-8 characters have a maximum length of 4 byte and no byte is 0.
-      mask = 0xFF000000
-      pos = 3
-      while pos >= 0
-        # Use the built-in concat operator for each byte.
-        concat((obj & mask) >> (8 * pos)) if (obj & mask) != 0
-        # Move mask and position to the next byte.
-        mask = mask >> 8
-        pos -= 1
-      end
-    end
-  end
+#  def << (obj)
+#    if obj.is_a?(String) || (obj < 256)
+#      # In this case we can use the built-in concat.
+#      concat(obj)
+#    else
+#      # UTF-8 characters have a maximum length of 4 byte and no byte is 0.
+#      mask = 0xFF000000
+#      pos = 3
+#      while pos >= 0
+#        # Use the built-in concat operator for each byte.
+#        concat((obj & mask) >> (8 * pos)) if (obj & mask) != 0
+#        # Move mask and position to the next byte.
+#        mask = mask >> 8
+#        pos -= 1
+#      end
+#    end
+#  end
 
   # Return the number of UTF8 characters in the String. We don't override the
   # built-in length() function here as we don't know who else uses it for what
@@ -79,11 +97,11 @@ class String
   end
 
   # UTF-8 aware version of reverse that replaces the built-in one.
-  def reverse
-    a = []
-    each_utf8_char { |c| a << c }
-    s = ''
-    a.reverse.join
-  end
+#  def reverse
+#    a = []
+#    each_utf8_char { |c| a << c }
+#    s = ''
+#    a.reverse.join
+#  end
 
 end
