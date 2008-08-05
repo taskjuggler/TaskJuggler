@@ -62,7 +62,7 @@ private
   # the section number.
   def level
     lev = 0
-    @number.each_utf8_char { |c| lev += 1 if c == ?. }
+    @number.each_utf8_char { |c| lev += 1 if c == '.' }
     lev
   end
 

@@ -46,7 +46,7 @@ EOT
 
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     out = newRichText(inp).to_s
@@ -58,7 +58,7 @@ Only 2 successive newlines end the paragraph.
 I hope this example is clear now.
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -69,7 +69,7 @@ EOT
  <p>I hope this example is clear now.</p>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_hline
@@ -103,7 +103,7 @@ EOT
 <hr>----</hr>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -123,7 +123,7 @@ Another bit of text.
 
 --------------------------------------------------------
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -140,7 +140,7 @@ EOT
  <hr/>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_italic
@@ -151,7 +151,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [text] [with] <i>[italic] [words]</i> [in] [it.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -159,14 +159,14 @@ EOT
     ref = <<'EOT'
 This is a text with italic words in it.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a text with <i>italic words</i> in it.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_bold
@@ -177,7 +177,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [text] [with] <b>[bold] [words]</b> [in] [it.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -185,14 +185,14 @@ EOT
     ref = <<'EOT'
 This is a text with bold words in it.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a text with <b>bold words</b> in it.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_code
@@ -203,7 +203,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [text] [with] <code>[monospaced] [words]</code> [in] [it.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -211,14 +211,14 @@ EOT
     ref = <<'EOT'
 This is a text with monospaced words in it.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a text with <code>monospaced words</code> in it.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_boldAndItalic
@@ -232,7 +232,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [text] [with] [some] <b>[bold] [words]</b>[,] [some] <i>[italic]</i> [words] [and] [some] <b><i>[bold] [and] [italic]</i></b> [words] [in] [it.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -240,14 +240,14 @@ EOT
     ref = <<'EOT'
 This is a text with some bold words, some italic words and some bold and italic words in it.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a text with some <b>bold words</b>, some <i>italic</i> words and some <b><i>bold and italic</i></b> words in it.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_ref
@@ -261,7 +261,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [reference] <ref data="item">[item]</ref>[.] [For] [more] [info] [see] <ref data="manual">[the user manual]</ref>[.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -269,14 +269,14 @@ EOT
     ref = <<'EOT'
 This is a reference item. For more info see the user manual.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a reference <a href="item.html">item</a>. For more info see <a href="manual.html">the user manual</a>.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_href
@@ -290,7 +290,7 @@ EOT
     ref = <<'EOT'
 <div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org]</a>[.] [For] [more] [info] [see] <a href="http://www.taskjuggler.org">[the TaskJuggler site]</a>[.]</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -298,14 +298,14 @@ EOT
     ref = <<'EOT'
 This is a reference http://www.taskjuggler.org. For more info see the TaskJuggler site.
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
 <div>This is a reference <a href="http://www.taskjuggler.org">http://www.taskjuggler.org</a>. For more info see <a href="http://www.taskjuggler.org">the TaskJuggler site</a>.</div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_headline
@@ -329,7 +329,7 @@ EOT
 
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -344,7 +344,7 @@ EOT
 1.1.1 This is level 3
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -356,7 +356,7 @@ EOT
  <h3 id="This_is_level_3">1.1.1 This is level 3</h3>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_bullet
@@ -374,7 +374,7 @@ EOT
 <ul><li>  * [This] [is] [a] [level] [3] [bullet] [item]</li>
 </ul></ul></ul></div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -388,7 +388,7 @@ EOT
 
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -401,7 +401,7 @@ EOT
   </ul>
  </ul></div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_number
@@ -459,7 +459,7 @@ EOT
 <ol><li>1 [This] [is] [item] [1]</li>
 </ol></div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -507,7 +507,7 @@ Normal text.
 
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -547,7 +547,7 @@ EOT
  <ol><li>This is item 1</li></ol>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_pre
@@ -569,7 +569,7 @@ main() {
 
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -581,7 +581,7 @@ main() {
 }
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -592,7 +592,7 @@ main() {
 }
 </pre></div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_mix
@@ -638,7 +638,7 @@ EOT
 
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -669,7 +669,7 @@ Not sure what to put here. Maybe just some silly text.
 Some more text. And we're done.
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -693,7 +693,7 @@ EOT
  <p>Some more text. And we're done.</p>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def test_nowiki
@@ -739,7 +739,7 @@ EOT
 
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check ASCII output.
     rt = newRichText(inp)
@@ -770,7 +770,7 @@ Not sure ''what'' to put here. Maybe just some silly text.
 Some more text. And we're done.
 
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
@@ -794,7 +794,7 @@ EOT
  <p>Some more text. And we're done.</p>
 </div>
 EOT
-    assert_equal(out, ref)
+    assert_equal(ref, out)
   end
 
   def newRichText(text)

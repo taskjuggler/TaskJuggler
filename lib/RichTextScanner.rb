@@ -67,12 +67,12 @@ class RichTextScanner
 
       # We already know that the last newline was a real linebreak. Further
       # newlines can safely be ignored.
-      readSequence(?\n)
+      readSequence("\n")
 
       case (c = nextChar)
-      when ?=
+      when '='
         # Headings start with 2 or more = and must be followed by a space.
-        level = readSequenceMax(?=, 4)
+        level = readSequenceMax('=', 4)
         if level == 1
           # 1 = does not mean anything. Push it back and process it as normal
           # text further down.
@@ -80,34 +80,34 @@ class RichTextScanner
         else
           # Between the = characters and the title text must be exactly one
           # space.
-          return [ "TITLE#{level - 1}", '=' * level ] if nextChar == 32
+          return [ "TITLE#{level - 1}", '=' * level ] if nextChar == ' '
           # If that's missing, The = are treated as normal text further down.
           returnChar(level + 1)
         end
-      when ?-
+      when '-'
         # Horizontal ruler. Must have exactly 4 -.
-        level = readSequenceMax(?-, 4)
+        level = readSequenceMax('-', 4)
         return [ "HLINE", '-' * 4 ] if level == 4
         returnChar(level)
-      when ?*
+      when '*'
         # Bullet lists start with one to three * characters.
-        level = readSequenceMax(?*)
+        level = readSequenceMax('*')
         # Between the * characters and the bullet text must be exactly one
         # space.
-        return [ "BULLET#{level}", '*' * level ] if nextChar == 32
+        return [ "BULLET#{level}", '*' * level ] if nextChar == ' '
         # If that's missing, The # are treated as normal text further down.
         returnChar(level + 1)
-      when ?#
+      when '#'
         # Numbered list start with one to three # characters.
-        level = readSequenceMax(?#)
+        level = readSequenceMax('#')
         # Between the # characters and the bullet text must be exactly one
         # space.
-        return [ "NUMBER#{level}", '#' * level ] if nextChar == 32
+        return [ "NUMBER#{level}", '#' * level ] if nextChar == ' '
         # If that's missing, The # are treated as normal text further down.
         returnChar(level + 1)
-      when 32
+      when ' '
         # Lines that start with a space are treated as verbatim text.
-        return [ "PRE", readCode ] if (c = peek) && c != '\n'
+        return [ "PRE", readCode ] if (c = peek) && c != "\n"
       else
         # If the character is not a known control character we push it back
         # and treat it as normal text further down.
@@ -125,15 +125,15 @@ class RichTextScanner
       if c.nil?
         # We've reached the end of the text.
         return [ false, false ]
-      elsif c == 32 || c == ?\t
+      elsif c == ' ' || c == "\t"
         # Sequences of tabs or spaces are treated as token boundaries, but
         # otherwise they are ignored.
-        readSequence(32, ?\t)
+        readSequence(' ', "\t")
         return [ 'SPACE', ' ' ]
-      elsif c == ?' && !ignoreInlineMarkup && @wikiEnabled
-        # Sequence of 2 ' means italic, 3 ' means bold, 5 ' means italic and
-        # bold. Anything else is just normal text.
-        level = readSequenceMax(?', 5)
+      elsif c == "'" && !ignoreInlineMarkup && @wikiEnabled
+        # Sequence of 2 ' means italic, 3 ' means bold, 4 ' means monospaced
+        # code, 5 ' means italic and bold. Anything else is just normal text.
+        level = readSequenceMax("'", 5)
         if level == 2
           return [ 'ITALIC', "'" * level ]
         elsif level == 3
@@ -150,8 +150,8 @@ class RichTextScanner
           ignoreInlineMarkup = true
           next
         end
-      elsif c == ?= && !ignoreInlineMarkup && @wikiEnabled
-        level = readSequenceMax(?=, 4)
+      elsif c == '=' && !ignoreInlineMarkup && @wikiEnabled
+        level = readSequenceMax('=', 4)
         if level > 1
           return [ "TITLE#{level - 1}END", '=' * level ]
         else
@@ -162,19 +162,19 @@ class RichTextScanner
           ignoreInlineMarkup = true
           next
         end
-      elsif c == ?[ && @wikiEnabled
-        level = readSequenceMax(?[, 2)
+      elsif c == '[' && @wikiEnabled
+        level = readSequenceMax('[', 2)
         return [ level == 1 ? 'HREF' : 'REF', '[' * level ]
-      elsif c == ?] && @wikiEnabled
-        level = readSequenceMax(?], 2)
+      elsif c == ']' && @wikiEnabled
+        level = readSequenceMax(']', 2)
         return [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
-      elsif c == ?\n
+      elsif c == "\n"
         # Newlines are pretty important as they can terminate blocks and turn
         # the next character into the start of a control sequence.
         # Hard linebreaks consist of a newline followed by another newline or
         # any of the begin-of-line control characters.
-        if (c = nextChar) && [ ?\n, ?*, ?#, 32, ?=, ?- ].include?(c)
-          returnChar if c != ?\n
+        if (c = nextChar) && "\n*# =-".include?(c)
+          returnChar if c != "\n"
           # The next character may be a control character.
           @beginOfLine = true
           return [ 'LINEBREAK', "\n" ]
@@ -187,7 +187,7 @@ class RichTextScanner
           returnChar
           return [ 'SPACE', ' ' ]
         end
-      elsif c == ?<
+      elsif c == '<'
         if peekMatch('nowiki>')
           # Turn most wiki markup interpretation off.
           @pos += 'nowiki>'.length
@@ -207,15 +207,15 @@ class RichTextScanner
         str = ''
         str << c
         # Now we can collect characters of a word until we hit a whitespace.
-        while (c = nextChar) && ![ 32, ?\n, ?\t ].include?(c)
+        while (c = nextChar) && !" \n\t".include?(c)
           if @wikiEnabled
             # Or at least to ' characters in a row.
-            break if c == ?' && peek == ?'
+            break if c == "'" && peek == "'"
             # Or a ] or <
-            break if [ ?], ?< ].include?(c)
+            break if ']<'.include?(c)
           else
             # Make sure we find the </nowiki> tag even within a word.
-            break if c == ?<
+            break if c == '<'
           end
           str << c
         end
@@ -270,7 +270,9 @@ private
       # reporting. The line begins after the newline.
       @lineStart = @pos
     end
-    c
+    # Since Ruby 1.9 is returning Strings for String#[] we need to emulate
+    # this for Ruby 1.8.
+    '' << c
   end
 
   # Return one or more characters. _n_ is the number of characters to move
@@ -301,13 +303,17 @@ private
   # return the last character provided by nextChar().
   def peek(lookAhead = 1)
     return nil if (@pos + lookAhead - 1) >= @textLength
-    @text[@pos + lookAhead - 1]
+    # Since Ruby 1.9 is returning Strings for String#[] we need to emulate
+    # this for Ruby 1.8.
+    '' << @text[@pos + lookAhead - 1]
   end
 
   # Return true if the next characters match exactly the character sequence in
   # word.
   def peekMatch(word)
-    @text[@pos, word.length] == word
+    # Since Ruby 1.9 is returning Strings for String#[] we need to emulate
+    # this for Ruby 1.8.
+    '' << @text[@pos, word.length] == word
   end
 
   # Read a sequence of characters that are all contained in the _chars_ Array.
@@ -341,7 +347,7 @@ private
     tok = ''
     loop do
       # Read until the end of the line
-      while (c = nextChar) && c != ?\n
+      while (c = nextChar) && c != "\n"
         # Append a found characters.
         tok << c
       end
@@ -349,7 +355,7 @@ private
       tok << c
       # If the next line does not start with a space, we've reached the end of
       # the code block.
-      if (c = nextChar) && c != 32
+      if (c = nextChar) && c != ' '
         break
       end
     end

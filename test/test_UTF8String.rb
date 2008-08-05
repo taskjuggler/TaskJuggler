@@ -23,9 +23,9 @@ class TestUTF8String < Test::Unit::TestCase
 
   def test_each_utf8_char
     patterns = [
-      [ '1', [ ?1 ] ],
-      [ 'abc', [ ?a, ?b, ?c ] ],
-      [ 'àcA绋féà', [ 0xC3A0, ?c, ?A, 0xE7BB8B, ?f, 0xC3A9, 0xC3A0 ] ]
+      [ '1', [ '1' ] ],
+      [ 'abc', [ 'a', 'b', 'c' ] ],
+      [ 'àcA绋féà', [ 'à', 'c', 'A', '绋', 'f', 'é', 'à' ] ]
     ]
     patterns.each do |inp, out|
       i = 0
@@ -38,10 +38,10 @@ class TestUTF8String < Test::Unit::TestCase
 
   def test_concat
     patterns = [
-      [ '', ?a, 'a' ],
-      [ 'a', ?b, 'ab' ],
-      [ 'abc', 0xC3A0, 'abcà' ],
-      [ 'abá', ?b, 'abáb' ]
+      [ '', 'a', 'a' ],
+      [ 'a', 'b', 'ab' ],
+      [ 'abc', 'à', 'abcà' ],
+      [ 'abá', 'b', 'abáb' ]
     ]
 
     patterns.each do |left, right, combined|
