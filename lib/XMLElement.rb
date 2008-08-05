@@ -8,7 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'UTF8String'
 
 # This class models an XML node that may contain other XML nodes. XML element
 # trees can be constructed with the class constructor and converted into XML.
@@ -84,7 +83,7 @@ private
   # Make sure that any double quote in _str_ is properly quoted.
   def quoteAttr(str)
     out = ''
-    str.each_utf8_char do |c|
+    str.each_byte do |c|
       if c == ?"
         out << '\"'
       else
@@ -108,7 +107,7 @@ class XMLText < XMLElement
 
   def to_s(indent)
     out = ''
-    @text.each_utf8_char do |c|
+    @text.each_byte do |c|
       case c
       when ?<
         out << '&lt;'

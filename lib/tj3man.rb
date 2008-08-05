@@ -8,9 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-$KCODE='UTF8'
-require 'jcode'
-
 require 'optparse'
 require 'Tj3Config'
 require 'SyntaxReference'
