@@ -21,14 +21,6 @@ class TestUTF8String < Test::Unit::TestCase
   def teardown
   end
 
-#  def test_brackets
-#    assert_equal('a', 'abc'[0])
-#    assert_equal('b', 'abc'[1])
-#    assert_equal('c', 'abc'[2])
-#    assert_equal('c', 'ábc'[2])
-#    assert_equal('ç', 'abç'[2])
-#  end
-
   def test_each_utf8_char
     patterns = [
       [ '1', [ '1' ] ],
@@ -72,18 +64,18 @@ class TestUTF8String < Test::Unit::TestCase
     end
   end
 
-#  def test_reverse
-#    patterns = [
-#      [ '', '' ],
-#      [ 'a', 'a' ],
-#      [ 'ábc', 'cbá' ],
-#      [ 'abç', 'çba' ]
-#    ]
-#
-#    patterns.each do |str, rts|
-#      assert_equal(rts, str.reverse)
-#    end
-#  end
+  def test_reverse
+    patterns = [
+      [ '', '' ],
+      [ 'a', 'a' ],
+      [ 'ábc', 'cbá' ],
+      [ 'abç', 'çba' ]
+    ]
+
+    patterns.each do |str, rts|
+      assert_equal(rts, str.reverse)
+    end
+  end
 
 end
 
