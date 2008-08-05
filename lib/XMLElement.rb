@@ -85,7 +85,7 @@ private
   def quoteAttr(str)
     out = ''
     str.each_utf8_char do |c|
-      if c == '"'
+      if c == ?"
         out << '\"'
       else
         out << c
@@ -110,11 +110,11 @@ class XMLText < XMLElement
     out = ''
     @text.each_utf8_char do |c|
       case c
-      when '<'
+      when ?<
         out << '&lt;'
-      when '>'
+      when ?>
         out << '&gt;'
-      when '&'
+      when ?&
         out << '&amp;'
       else
         out << c

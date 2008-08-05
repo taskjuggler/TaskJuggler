@@ -23,19 +23,20 @@ class String
   # the String. This implementation looks more awkward but is noticeably
   # faster than the often propagated regexp based implementations.
   def each_utf8_char
-    c = ''
+    c = 0
     length = 0
     each_byte do |b|
-      c << b
       if length > 0
         # subsequent unicode byte
+        c = (c << 8) | b
         if (length -= 1) == 0
           # end of unicode character reached
           yield c
-          c = ''
+          c = 0
         end
       elsif (b & 0xC0) == 0xC0
         # first unicode byte
+        c = b
         length = -1
         while (b & 0x80) != 0
           length += 1
@@ -43,8 +44,7 @@ class String
         end
       else
         # ASCII character
-        yield c
-        c = ''
+        yield b
       end
     end
   end
@@ -83,7 +83,8 @@ class String
     a = []
     each_utf8_char { |c| a << c }
     s = ''
-    a.reverse.join
+    a.reverse.each { |c| s << c }
+    s
   end
 
 end

@@ -371,10 +371,10 @@ class RichTextElement
   def convertToID(text)
     out = ''
     text.each_utf8_char do |c|
-      out << c if (c >= 'A' && c <= 'Z') ||
-                  (c >= 'a' && c <= 'z') ||
-                  (c >= '0' && c <= '9')
-      out << '_' if c == ' '
+      out << c if (c >= ?A && c <= ?Z) ||
+                  (c >= ?a && c <= ?z) ||
+                  (c >= ?0 && c <= ?9)
+      out << '_' if c == 32
     end
     out.chomp('_')
   end
