@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # test_UTF8String.rb - TaskJuggler
 #
