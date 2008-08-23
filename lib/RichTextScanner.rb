@@ -8,8 +8,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'UTF8String'
-
 # The RichTextScanner is used by the RichTextParser to chop the input text
 # into digestable tokens. The parser and the scanner only communicate over
 # RichTextScanner#nextToken and RichTextScanner#returnToken. The scanner can

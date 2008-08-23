@@ -8,7 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'UTF8String'
+
 require 'TjTime'
 require 'TjException'
 require 'SourceFileInfo'
@@ -57,7 +57,9 @@ class TextScanner
     end
 
     def getc
-      @file.getc
+      c = @file.getc
+      return nil if c.nil?
+      c
     end
   end
 
@@ -68,7 +70,7 @@ class TextScanner
       super()
       @buffer = buffer
       @pos = 0
-      @length = @buffer.length_utf8
+      @length = @buffer.length
     end
 
     def close
@@ -248,7 +250,7 @@ class TextScanner
     @macroStack << [ macro, args ]
     # Mark end of macro with a 0 element
     @cf.charBuffer << 0
-    text.reverse.each_utf8_char do |c|
+    text.reverse.each_byte do |c|
       @cf.charBuffer << c
     end
     @cf.line = ''
