@@ -228,22 +228,17 @@ class TjTime
   # Return a new time that is 1 month later than time but at the same time of
   # day.
   def sameTimeNextMonth
-    switch_delta = [ 31, 30, 29, 28 ]
-    dst_delta = [ 0, -1, 1 ]
-
-    localT1 = @time.localtime.to_a
-
-    switch_delta.each do |days|
-      dst_delta.each do |hours|
-        t = @time + (days * 24 + hours) * 60 * 60
-        localT2 = t.localtime.to_a
-        if localT1[0, 3] == localT2[0, 3] &&
-           localT1[3] == localT2[3]
-          return TjTime.new(t)
-        end
-      end
+    sec, min, hour, day, month, year, wday, yday, isdst, tz =
+      @time.localtime.to_a
+    monMax = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
+    monMax[2] = 29 if leapYear?(year)
+    month += 1
+    if month > 12
+      month = 1
+      year += 1
     end
-    raise "Algorithm is broken for #{@time}"
+    day = monMax[month] if day >= monMax[month]
+    TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0))
   end
 
   # Return a new time that is 1 quarter later than time but at the same time of
@@ -371,6 +366,14 @@ private
       i += 1
     end
     i
+  end
+
+  def leapYear?(year)
+    case
+    when year % 400 == 0 : true
+    when year % 100 == 0 : false
+    else year % 4 == 0
+    end
   end
 
 end
