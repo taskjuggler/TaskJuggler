@@ -8,7 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-
+require 'UTF8String'
 require 'TjTime'
 require 'TjException'
 require 'SourceFileInfo'
@@ -59,7 +59,7 @@ class TextScanner
     def getc
       c = @file.getc
       return nil if c.nil?
-      c
+      '' << c
     end
   end
 
@@ -70,7 +70,7 @@ class TextScanner
       super()
       @buffer = buffer
       @pos = 0
-      @length = @buffer.length
+      @length = @buffer.length_utf8
     end
 
     def close
@@ -82,7 +82,7 @@ class TextScanner
 
       c = @buffer[@pos]
       @pos += 1
-      c
+      '' << c
     end
 
     def fileName
@@ -184,31 +184,31 @@ class TextScanner
     # Start processing characters from the input.
     while c = nextChar(true)
       case c
-      when 32, ?\n, ?\t
+      when ' ', "\n", "\t"
 	      if tok = readBlanks(c)
 	        token = tok
           break
         end
-      when ?#
+      when '#'
         skipComment
-      when ?/
+      when '/'
         skipCPlusPlusComments
-      when ?0..?9
+      when '0'..'9'
         token = readNumber(c)
         break
-      when ?'
+      when "'"
         token = readString(c)
         break
-      when ?"
+      when '"'
         token = readString(c)
         break
-      when ?!
+      when '!'
         token = readRelativeId(c)
         break
-      when ?a..?z, ?A..?Z, ?_
+      when 'a'..'z', 'A'..'Z', '_'
         token = readId(c)
         break
-      when ?[
+      when '['
         token = readMacro
         break
       else
@@ -250,7 +250,7 @@ class TextScanner
     @macroStack << [ macro, args ]
     # Mark end of macro with a 0 element
     @cf.charBuffer << 0
-    text.reverse.each_byte do |c|
+    text.reverse.each_utf8_char do |c|
       @cf.charBuffer << c
     end
     @cf.line = ''
@@ -280,14 +280,14 @@ private
   # features a FIFO buffer that can hold any amount of returned characters.
   # When it has reached the end of the master file it returns nil.
   def nextChar(eofOk = false)
-    if (c = nextCharI(eofOk)) == ?$ && !@ignoreMacros
+    if (c = nextCharI(eofOk)) == '$' && !@ignoreMacros
       # Double $ are reduced to a single $.
-      return c if (c = nextCharI(false)) == ?$
+      return c if (c = nextCharI(false)) == '$'
 
       # Macros start with $( or ${. All other $. are ignored.
-      if c != ?( && c != ?{
+      if c != '(' && c != '{'
          returnChar(c)
-         return ?$
+         return '$'
       end
 
       @ignoreMacros = true
@@ -312,7 +312,7 @@ private
     # Otherwise get next character from input stream.
     unless @cf.charBuffer.empty?
       c = @cf.charBuffer.pop
-      @cf.lineNo -= 1 if c == ?\n && !@macroStack.empty?
+      @cf.lineNo -= 1 if c == "\n" && !@macroStack.empty?
       while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == 0
         @cf.charBuffer.pop
         @macroStack.pop
@@ -334,10 +334,9 @@ private
         end
       end
     end
-    @cf.lineNo += 1 if c == ?\n
+    @cf.lineNo += 1 if c == "\n"
     @cf.line = "" if @cf.line[-1] == ?\n
     @cf.line << c
-
     c
   end
 
@@ -346,28 +345,28 @@ private
 
     @cf.line.chop!
     @cf.charBuffer << c
-    @cf.lineNo -= 1 if c == ?\n && @macroStack.empty?
+    @cf.lineNo -= 1 if c == "\n" && @macroStack.empty?
   end
 
   def skipComment
     # Read all characters until line or file end is found
     @ignoreMacros = true
-    while (c = nextChar(true)) && c != ?\n
+    while (c = nextChar(true)) && c != "\n"
     end
     @ignoreMacros = false
     returnChar(c)
   end
 
   def skipCPlusPlusComments
-    if (c = nextChar(false)) == ?*
+    if (c = nextChar(false)) == '*'
       # /* */ style multi-line comment
       @ignoreMacros = true
       begin
-        while (c = nextChar(false)) != ?*
+        while (c = nextChar(false)) != '*'
         end
-      end until (c = nextChar(false)) == ?/
+      end until (c = nextChar(false)) == '/'
       @ignoreMacros = false
-    elsif c == ?/
+    elsif c == '/'
       # // style single line comment
       skipComment
     else
@@ -377,15 +376,15 @@ private
 
   def readBlanks(c)
     loop do
-      if c == 32
-        if (c2 = nextChar(true)) == ?-
-          if (c3 = nextChar(true)) == 32
+      if c == ' '
+        if (c2 = nextChar(true)) == '-'
+          if (c3 = nextChar(true)) == ' '
             return [ 'LITERAL', ' - ']
           end
           returnChar(c3)
         end
         returnChar(c2)
-      elsif c != ?\n && c != ?\t
+      elsif c != "\n" && c != "\t"
         returnChar(c)
         return nil
       end
@@ -396,16 +395,16 @@ private
   def readNumber(c)
     token = ""
     token << c
-    while (?0..?9) === (c = nextChar(true))
+    while ('0'..'9') === (c = nextChar(true))
       token << c
     end
-    if c == ?-
+    if c == '-'
       return readDate(token)
-    elsif c == ?.
+    elsif c == '.'
       frac = readDigits
 
       return [ 'FLOAT', token.to_f + frac.to_f / (10.0 ** frac.length) ]
-    elsif c == ?:
+    elsif c == ':'
       hours = token.to_i
       mins = readDigits.to_i
       if hours < 0 || hours > 24
@@ -430,10 +429,10 @@ private
   def readRelativeId(c)
     token = ""
     token << c
-    while (c = nextChar) && c == ?!
+    while (c = nextChar) && c == '!'
       token << c
     end
-    unless (?a..?z) === c || (?A..?Z) === c || c == ?_
+    unless ('a'..'z') === c || ('A'..'Z') === c || c == '_'
       raise TjException.new, "Identifier expected"
     end
     id = readId(c)
@@ -452,7 +451,7 @@ private
     if month < 1 || month > 12
       raise TjException.new, "Month must be between 1 and 12"
     end
-    if nextChar != ?-
+    if nextChar != '-'
       raise TjException.new, "Corrupted date"
     end
 
@@ -461,7 +460,7 @@ private
       raise TjException.new, "Day must be between 1 and 31"
     end
 
-    if (c = nextChar(true)) != ?-
+    if (c = nextChar(true)) != '-'
       returnChar(c)
       return [ 'DATE', TjTime.local(year, month, day) ]
     end
@@ -471,7 +470,7 @@ private
       raise TjException.new, "Hour must be between 0 and 23"
     end
 
-    if nextChar != ?:
+    if nextChar != ':'
       raise TjException.new, "Corrupted time. ':' expected."
     end
 
@@ -480,7 +479,7 @@ private
       raise TjException.new, "Minutes must be between 0 and 59"
     end
 
-    if (c = nextChar(true)) == ?:
+    if (c = nextChar(true)) == ':'
       seconds = readDigits.to_i
       if seconds < 0 || seconds > 59
         raise TjException.new, "Seconds must be between 0 and 59"
@@ -490,14 +489,14 @@ private
       returnChar(c)
     end
 
-    if (c = nextChar(true)) != ?-
+    if (c = nextChar(true)) != '-'
       returnChar(c)
       return [ 'DATE', TjTime.local(year, month, day, hour, minutes, seconds) ]
     end
 
-    if (c = nextChar) == ?-
+    if (c = nextChar) == '-'
       delta = 1
-    elsif c == ?+
+    elsif c == '+'
       delta = -1
     else
       # An actual time zone name
@@ -529,11 +528,11 @@ private
   def readString(terminator)
     token = ""
     while (c = nextChar) && c != terminator
-      if c == ?\\
+      if c == "\\"
         # Terminators can be used as regular characters when prefixed by a \.
         if (c = nextChar) && c != terminator
           # \ followed by non-terminator. Just add both.
-          token << ?\
+          token << "\\"
         end
       end
       token << c
@@ -546,16 +545,17 @@ private
     token = ""
     token << c
     while (c = nextChar(true)) &&
-          ((?a..?z) === c || (?A..?Z) === c || (?0..?9)  === c || c == ?_)
+          (('a'..'z') === c || ('A'..'Z') === c || ('0'..'9')  === c ||
+           c == '_')
       token << c
     end
-    if c == ?:
+    if c == ':'
       return [ 'ID_WITH_COLON', token ]
-    elsif  c == ?.
+    elsif  c == '.'
       token << c
       loop do
         token += readIdentifier
-        break if (c = nextChar) != ?.
+        break if (c = nextChar) != '.'
         token += '.'
       end
       returnChar c
@@ -569,7 +569,7 @@ private
 
   def readMacro
     token = ''
-    while (c = nextCharI(false)) != ?]
+    while (c = nextCharI(false)) != ']'
       token << c
     end
     return [ 'MACRO', token ]
@@ -578,7 +578,7 @@ private
   # Read only decimal digits and return the result als Fixnum.
   def readDigits
     token = ""
-    while (?0..?9) === (c = nextChar(true))
+    while ('0'..'9') === (c = nextChar(true))
       token << c
     end
     # Make sure that we have read at least one digit.
@@ -593,8 +593,8 @@ private
   def readIdentifier(noDigit = true)
     token = ""
     while (c = nextChar(true)) &&
-          ((?a..?z) === c || (?A..?Z) === c ||
-           (!noDigit && ((?0..?9)  === c)) || c == ?_)
+          (('a'..'z') === c || ('A'..'Z') === c ||
+           (!noDigit && (('0'..'9')  === c)) || c == '_')
       token << c
       noDigit = false
     end

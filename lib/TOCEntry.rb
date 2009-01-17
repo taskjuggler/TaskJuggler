@@ -8,6 +8,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'UTF8String'
 require 'XMLElement'
 
 # A TOCEntry object is used to store the data of an entry in a TableOfContents
@@ -61,7 +62,7 @@ private
   # the section number.
   def level
     lev = 0
-    @number.each_byte { |c| lev += 1 if c == ?. }
+    @number.each_utf8_char { |c| lev += 1 if c == '.' }
     lev
   end
 

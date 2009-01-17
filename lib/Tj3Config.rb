@@ -8,7 +8,7 @@
 # published by the Free Software Foundation.
 #
 
-
+require 'UTF8String'
 require 'AppConfig'
 
 AppConfig.version = '0.0.1'

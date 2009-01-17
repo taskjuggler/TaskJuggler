@@ -22,7 +22,6 @@ class TestTjTime < Test::Unit::TestCase
       TjTime.local(1972, 2, 12, 10),
       TjTime.local(1984, 11, 1, 12),
       TjTime.local(1992, 1, 1),
-      TjTime.local(2007, 1, 30),
     ]
   end
 
@@ -71,23 +70,20 @@ class TestTjTime < Test::Unit::TestCase
 
   def test_sameTimeNextMonth
     @startTimes.each do |st|
-      t1 = st
+      t1 = t2 = st
+      t1_a = old_t2_a = t1.localtime.to_a
       begin
-        t1_a = t1.localtime.to_a
-        t2 = t1.sameTimeNextMonth
+        t2 = t2.sameTimeNextMonth
         t2_a = t2.localtime.to_a
-        # Clock time must be same
         assert_equal(t1_a[0, 3], t2_a[0, 3])
-        # Day must be same unless we are over 28
-        assert(t1_a[3] == t2_a[3] ||
-               t1_a[3] > 28,
-               "t1: #{t1_a.join(', ')}\nt2: #{t2_a.join(', ')}")
-        # Month must be + 1 or 1 with year + 1
-        assert(t1_a[4] + 1 == t2_a[4] ||
-               (t2_a[4] == 1 && t2_a[5] == t1_a[5] + 1),
-               "t1: #{t1_a.join(', ')}\nt2: #{t2_a.join(', ')}")
+        assert(t2_a[3] == t2_a[3] ||
+               t2_a[3] > 28,
+               "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
+        assert(t2_a[4] == old_t2_a[4] + 1 ||
+               t2_a[4] == 1,
+               "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
 
-        t1 = t2
+        old_t2_a = t2_a
       end while t2 < @endTime
     end
   end

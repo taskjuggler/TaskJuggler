@@ -8,6 +8,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'UTF8String'
 require 'TjException'
 require 'XMLElement'
 
@@ -369,11 +370,11 @@ class RichTextElement
   # characters that are acceptable for HTML tag IDs.
   def convertToID(text)
     out = ''
-    text.each_byte do |c|
-      out << c if (c >= ?A && c <= ?Z) ||
-                  (c >= ?a && c <= ?z) ||
-                  (c >= ?0 && c <= ?9)
-      out << '_' if c == 32
+    text.each_utf8_char do |c|
+      out << c if (c >= 'A' && c <= 'Z') ||
+                  (c >= 'a' && c <= 'z') ||
+                  (c >= '0' && c <= '9')
+      out << '_' if c == ' '
     end
     out.chomp('_')
   end
