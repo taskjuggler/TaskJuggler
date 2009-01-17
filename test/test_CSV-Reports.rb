@@ -49,12 +49,12 @@ class TestScheduler < Test::Unit::TestCase
   # reference files _refFile_.
   def compareCSVs(outStr, refFile)
     ref = []
-    CSV.open(refFile, 'r', ';') do |row|
+    CSV.foreach(refFile, { :col_sep => ';' }) do |row|
       ref << row
     end
 
     out = []
-    CSV.parse(outStr, ';') do |row|
+    CSV.parse(outStr, { :col_sep => ';' }) do |row|
       out << row
     end
     assert(ref.length == out.length,
@@ -79,7 +79,7 @@ class TestScheduler < Test::Unit::TestCase
       baseName = f[22, f.length - 26]
       refFile = "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
       tj = TaskJuggler.new(true)
-      assert(tj.parse(f), "Parser failed for #{f}")
+      assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
       if File.file?(refFile)
         # If there is a reference CSV file for this test case, compare the

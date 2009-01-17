@@ -321,11 +321,16 @@ EOT
 
     # Use the CSV class to write the Array of Arrays to a colon separated
     # file. Write to $stdout if the filename was set to '.'.
-    file = @name == '.' ? $stdout: File.open(@name + '.csv', 'w')
-    CSV::Writer.generate(file, ';') do |csvWriter|
-      csv.each { |line| csvWriter << line }
+    if @name == '.'
+      str = CSV.generate({ :col_sep => ';' }) do |csvWriter|
+        csv.each { |line| csvWriter << line }
+      end
+      puts str
+    else
+      CSV.open(file, 'w', { :col_sep => ';'}) do |csvWriter|
+        csv.each { |line| csvWriter << line }
+      end
     end
-    file.close unless @name == '.'
   end
 
   # Generate an export report

@@ -230,7 +230,7 @@ private
       id = sbRecord[0][0]
       # We have to store the object_id, not the reference. If we'd store a
       # reference, the GC will never destroy it.
-      if self == _id2ref(id)
+      if self == ObjectSpace._id2ref(id)
         # Register the ShiftAssignments object as a user of an existing
         # scoreboard.
         sbRecord[0] << object_id
