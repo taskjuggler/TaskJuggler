@@ -9,7 +9,6 @@
 #
 
 require 'time'
-require 'parsedate'
 
 # The TjTime class is based on the original Ruby class Time but provides lots
 # of additional functionality.
@@ -370,9 +369,12 @@ private
 
   def leapYear?(year)
     case
-    when year % 400 == 0 : true
-    when year % 100 == 0 : false
-    else year % 4 == 0
+    when year % 400 == 0
+      true
+    when year % 100 == 0
+      false
+    else
+      year % 4 == 0
     end
   end
 
