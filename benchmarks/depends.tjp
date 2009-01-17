@@ -1,0 +1,112 @@
+project test "Dependency Performance Test" "1.0" 2007-08-25 +3m
+
+macro leaftask [
+  task l${1} "Leaftask ${1}" {
+    length 1d
+  }
+]
+
+macro subtasks [
+  task s${1} "Subtasks ${1}" {
+    ${leaftask "0"}
+    ${leaftask "1"}
+    ${leaftask "2"}
+    ${leaftask "3"}
+    ${leaftask "4"}
+    ${leaftask "5"}
+    ${leaftask "6"}
+    ${leaftask "7"}
+    ${leaftask "8"}
+    ${leaftask "9"}
+  }
+]
+
+macro tasktree [
+  task t${1} "Task ${1}" {
+    start ${projectstart}
+    ${subtasks "0"}
+    ${subtasks "1"}
+    ${subtasks "2"}
+    ${subtasks "3"}
+    ${subtasks "4"}
+    ${subtasks "5"}
+    ${subtasks "6"}
+    ${subtasks "7"}
+    ${subtasks "8"}
+    ${subtasks "9"}
+  }
+]
+
+macro depends [
+  supplement task ${1} {
+    depends ${2}
+  }
+]
+
+macro dependsXY [
+  ${depends "t1.s${2}.l${2}" "t0.s${1}.l${1}"}
+]
+
+macro dependLeaf [
+  ${depends "${1}.l1" "!l0"}
+  ${depends "${1}.l2" "!l1"}
+  ${depends "${1}.l3" "!l2"}
+  ${depends "${1}.l4" "!l3"}
+  ${depends "${1}.l5" "!l4"}
+  ${depends "${1}.l6" "!l5"}
+  ${depends "${1}.l7" "!l6"}
+  ${depends "${1}.l8" "!l6"}
+  ${depends "${1}.l9" "!l8"}
+]
+
+${tasktree "0"}
+${tasktree "1"}
+
+${dependsXY "1" "0"}
+${dependsXY "2" "1"}
+${dependsXY "3" "2"}
+${dependsXY "4" "3"}
+${dependsXY "5" "4"}
+${dependsXY "6" "5"}
+${dependsXY "7" "6"}
+${dependsXY "8" "7"}
+${dependsXY "9" "8"}
+${dependLeaf "t0.s0"}
+${dependLeaf "t0.s1"}
+${dependLeaf "t0.s2"}
+${dependLeaf "t0.s4"}
+${dependLeaf "t0.s5"}
+${dependLeaf "t0.s6"}
+${dependLeaf "t0.s8"}
+${dependLeaf "t0.s9"}
+${dependLeaf "t1.s1"}
+${dependLeaf "t1.s2"}
+${dependLeaf "t1.s3"}
+${dependLeaf "t1.s4"}
+${dependLeaf "t1.s5"}
+${dependLeaf "t1.s7"}
+${dependLeaf "t1.s8"}
+${dependLeaf "t1.s9"}
+${depends "t0.s3.l2" "t1.s1.l1"}
+${depends "t0.s2.l3" "t1.s2.l9"}
+${depends "t0.s2.l8" "t1.s3.l3"}
+${depends "t0.s3.l2" "t1.s7.l2"}
+${depends "t0.s3.l9" "t0.s1.l5"}
+${depends "t0.s4.l2" "t0.s1.l8"}
+${depends "t0.s1.l1" "t0.s0.l5"}
+${depends "t0.s4.l2" "t0.s2.l7"}
+${depends "t1.s9.l2" "t1.s7.l4"}
+${depends "t1.s7.l1" "t1.s2.l8"}
+${depends "t0.s8.l0" "t0.s4.l5"}
+${depends "t1.s4.l1" "t0.s6.l8"}
+${depends "t1.s4.l4" "t0.s5.l4"}
+${depends "t0.s5.l3" "t0.s3.l9"}
+${depends "t1.s8.l0" "t0.s2.l8"}
+${depends "t1.s9.l1" "t1.s6.l6"}
+${depends "t0.s7.l7" "t0.s5.l9"}
+${depends "t0.s5.l2" "t0.s1.l4"}
+${depends "t1.s2.l1" "t0.s7.l7"}
+
+htmltaskreport "depends.html" {
+  columns no, name, id, chart { scale week }
+}

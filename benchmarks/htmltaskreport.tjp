@@ -1,0 +1,45 @@
+project test "HTML Task Report Performance Test" "1.0" 2007-08-25 +3m
+
+macro leaftask [
+  task leaf${1} "Leaftask ${1}" {
+    period ${projectstart} - ${projectend}
+  }
+]
+
+macro subtasks [
+  task s${1} "Subtasks ${1}" {
+    ${leaftask "0"}
+    ${leaftask "1"}
+    ${leaftask "2"}
+    ${leaftask "3"}
+    ${leaftask "4"}
+    ${leaftask "5"}
+    ${leaftask "6"}
+    ${leaftask "7"}
+    ${leaftask "8"}
+    ${leaftask "9"}
+  }
+]
+
+macro tasktree [
+  task t${1} "Task ${1}" {
+    ${subtasks "0"}
+    ${subtasks "1"}
+    ${subtasks "2"}
+    ${subtasks "3"}
+    ${subtasks "4"}
+    ${subtasks "5"}
+    ${subtasks "6"}
+    ${subtasks "7"}
+    ${subtasks "8"}
+    ${subtasks "9"}
+  }
+]
+
+${tasktree "0"}
+${tasktree "1"}
+
+htmltaskreport "htmltaskreport.html" {
+  columns no, name, start, end, chart
+}
+
