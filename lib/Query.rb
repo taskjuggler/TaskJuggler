@@ -1,7 +1,9 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# Query.rb - The TaskJuggler III Project Management Software
+# = Query.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -182,15 +184,15 @@ private
       # Find the value that is the closest to the original value. This will be
       # the default if all values have the same length.
       shortest = 2
-      0.upto(delta.length - 1) do |i|
-        shortest = i if options[i] && options[i][0, 2] != '0.' &&
-                        delta[i] <= delta[shortest]
+      0.upto(delta.length - 1) do |j|
+        shortest = j if options[j] && options[j][0, 2] != '0.' &&
+                        delta[j] <= delta[shortest]
       end
 
       # Find the shortest option.
-      0.upto(5) do |i|
-        shortest = i if options[i] && options[i][0, 2] != '0.' &&
-                        options[i].length < options[shortest].length
+      0.upto(5) do |j|
+        shortest = j if options[j] && options[j][0, 2] != '0.' &&
+                        options[j].length < options[shortest].length
       end
 
       str = options[shortest]

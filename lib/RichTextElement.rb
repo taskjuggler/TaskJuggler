@@ -1,7 +1,9 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# RichTextElement.rb - The TaskJuggler III Project Management Software
+# = RichTextElement.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -349,9 +351,9 @@ class RichTextElement
     # Some elements never have leaves.
     return html if [ :text, :pre, :hline ].include?(@category)
 
-    @children.each do |el|
-      html << el.to_html
-      html << XMLText.new(' ') if el.appendSpace
+    @children.each do |el_i|
+      html << el_i.to_html
+      html << XMLText.new(' ') if el_i.appendSpace
     end
 
     html

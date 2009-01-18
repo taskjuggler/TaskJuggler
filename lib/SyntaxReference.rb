@@ -1,7 +1,9 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# SyntaxReference.rb - The TaskJuggler III Project Management Software
+# = SyntaxReference.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -171,9 +173,9 @@ class SyntaxReference
     html << (body = XMLElement.new('body'))
 
     body << (h3 = XMLElement.new('h3'))
-    letters.each do |letter|
-      h3 << XMLNamedText.new(letter.upcase, 'a',
-                             'href' => "navbar.html##{letter}")
+    letters.each do |l|
+      h3 << XMLNamedText.new(l.upcase, 'a',
+                             'href' => "navbar.html##{l}")
     end
     html.write(directory + 'alphabet.html')
   end

@@ -1,7 +1,9 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# TextParser.rb - The TaskJuggler III Project Management Software
+# = TextParser.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -205,8 +207,8 @@ private
           res = getTransitions(@rules[tokenId])
           allTokensOptional = false unless refRule.transitiveOptional
           # Combine the hashes for each pattern into a single hash
-          res.each do |pat|
-            pat.each { |tok, r| transitions[tok] = r }
+          res.each do |pat_i|
+            pat_i.each { |tok, r| transitions[tok] = r }
           end
           optional = true if refRule.optional
         elsif token[0] == ?_ || token[0] == ?$

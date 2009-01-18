@@ -1,7 +1,9 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# TjpExample.rb - The TaskJuggler III Project Management Software
+# = TjpExample.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -90,12 +92,12 @@ private
       else
         # Process the regular lines and add them to all currently active
         # snippets.
-        snippetState.each do |tag, state|
+        snippetState.each do |t, state|
           if state
             # Create a new snip buffer if it does not yet exist.
-            @snippets[tag] = [] unless @snippets[tag]
+            @snippets[t] = [] unless @snippets[t]
             # Add the line.
-            @snippets[tag] << line
+            @snippets[t] << line
           end
         end
         # Add all lines to this buffer.

@@ -1,7 +1,8 @@
+#!/usr/bin/env ruby -w
 #
-# UTF8String.rb - The TaskJuggler III Project Management Software
+# = UTF8String.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -18,7 +19,7 @@ KCODE='u'
 # only.
 class String
 
-  # Iteratate over the String calling the block for each UTF-8 character in
+  # Iterate over the String calling the block for each UTF-8 character in
   # the String. This implementation looks more awkward but is noticeably
   # faster than the often propagated regexp based implementations.
   def each_utf8_char
@@ -48,6 +49,8 @@ class String
     end
   end
 
+  alias old_double_left_angle <<
+
   # Replacement for the existing << operator that also works for characters
   # above Fixnum 255 (UTF-8 characters).
   def << (obj)
@@ -76,6 +79,8 @@ class String
     each_utf8_char { |c| len += 1 }
     len
   end
+
+  alias old_reverse reverse
 
   # UTF-8 aware version of reverse that replaces the built-in one.
   def reverse

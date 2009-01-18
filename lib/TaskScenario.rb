@@ -1,13 +1,14 @@
-  #
-# TaskScenario.rb - The TaskJuggler III Project Management Software
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
 #
-# Copyright (c) 2006, 2007, 2008 by Chris Schlaeger <cs@kde.org>
+# = TaskScenario.rb -- The TaskJuggler III Project Management Software
+#
+# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
-
 
 require 'ScenarioData'
 
@@ -1078,7 +1079,7 @@ class TaskScenario < ScenarioData
       if r.book(@scenarioIdx, sbIdx, @property)
 
         if a('assignedresources').empty?
-	        if a('forward')
+          if a('forward')
             @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
           else
             @property['end', @scenarioIdx] = @project.idxToDate(sbIdx + 1)
@@ -1184,9 +1185,9 @@ class TaskScenario < ScenarioData
         workLoad += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
                                               @property)
       else
-        a('assignedresources').each do |resource|
-          workLoad += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
-                                                @property)
+        a('assignedresources').each do |r|
+          workLoad += r.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
+                                         @property)
         end
       end
     end
@@ -1331,21 +1332,21 @@ private
 
       # Check if date depends on a determined other end of another task
       if checkStart ^ !a('forward')
-        a(checkStart ? 'startpreds' : 'endsuccs').each do |task, targetEnd|
-          if task.dateCanBeDetermined(@scenarioIdx, !targetEnd)
+        a(checkStart ? 'startpreds' : 'endsuccs').each do |t, targetEnd|
+          if t.dateCanBeDetermined(@scenarioIdx, !targetEnd)
             return setDetermination(checkStart, true)
           end
         end
-        a(checkStart ? 'startsuccs' : 'endpreds').each do |task, targetEnd|
-          if task.dateCanBeDetermined(@scenarioIdx, !targetEnd)
+        a(checkStart ? 'startsuccs' : 'endpreds').each do |t, targetEnd|
+          if t.dateCanBeDetermined(@scenarioIdx, !targetEnd)
             return setDetermination(checkStart, true)
           end
         end
       end
     else
       # Check if any of the children has a determined date
-      @property.children.each do |task|
-        if task.dateCanBeDetermined(@scenarioIdx, checkStart)
+      @property.children.each do |t|
+        if t.dateCanBeDetermined(@scenarioIdx, checkStart)
           return setDetermination(checkStart, true)
         end
       end
