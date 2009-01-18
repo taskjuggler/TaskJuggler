@@ -11,10 +11,10 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'stringio'
-require 'csv'
 require 'test/unit'
 require 'TaskJuggler'
 require 'MessageChecker'
+require 'CSVFile'
 
 class TestScheduler < Test::Unit::TestCase
 
@@ -37,7 +37,7 @@ class TestScheduler < Test::Unit::TestCase
   # the name fileName.
   def stdoutToFile(fileName)
     oldStdOut = $stdout
-    $stdout = File.open(fileName, 'w')
+    $stdout = ile.open(fileName, 'w')
     begin
       yield
     ensure
@@ -49,14 +49,10 @@ class TestScheduler < Test::Unit::TestCase
   # reference files _refFile_.
   def compareCSVs(outStr, refFile)
     ref = []
-    CSV.foreach(refFile, { :col_sep => ';' }) do |row|
-      ref << row
-    end
+    CSVFile.new(ref).read(refFile)
 
     out = []
-    CSV.parse(outStr, { :col_sep => ';' }) do |row|
-      out << row
-    end
+    CSVFile.new(out).parse(outStr)
     assert(ref.length == out.length,
            "Line number mismatch (#{out.length} instead of #{ref.length}) " +
            "in #{refFile}")

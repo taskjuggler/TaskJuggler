@@ -8,12 +8,12 @@
 # published by the Free Software Foundation.
 #
 
-require 'csv'
 require 'ReportElement'
 require 'HTMLDocument'
 require 'TaskListRE'
 require 'ResourceListRE'
 require 'TjpExportRE'
+require 'CSVFile'
 
 # The Report class holds the fundamental description and functionality to turn
 # the scheduled project into a user readable form. A report consists of one or
@@ -319,18 +319,9 @@ EOT
       end
     end
 
-    # Use the CSV class to write the Array of Arrays to a colon separated
-    # file. Write to $stdout if the filename was set to '.'.
-    if @name == '.'
-      str = CSV.generate({ :col_sep => ';' }) do |csvWriter|
-        csv.each { |line| csvWriter << line }
-      end
-      puts str
-    else
-      CSV.open(file, 'w', { :col_sep => ';'}) do |csvWriter|
-        csv.each { |line| csvWriter << line }
-      end
-    end
+    # Use the CSVFile class to write the Array of Arrays to a colon
+    # separated file. Write to $stdout if the filename was set to '.'.
+    CSVFile.new(csv, ';').write(@name)
   end
 
   # Generate an export report
