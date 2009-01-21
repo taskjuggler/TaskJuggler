@@ -585,7 +585,7 @@ A DATE is an ISO-compliant date in the format
 ''''<nowiki>YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]</nowiki>''''. Hour, minutes,
 seconds, and the ''''TIMEZONE'''' are optional. If not specified, the values
 are set to 0.  ''''TIMEZONE'''' must be an offset to GMT or UTC, specified as
-''''+HHMM'''' or ''''-HHMM''''.
+''''+HHMM'''' or ''''-HHMM''''. Dates must always be aligned with the [[timingresolution]].
 EOT
        )
   end
@@ -1115,6 +1115,47 @@ EOT
     singlePattern('!intervals')
   end
 
+  def rule_limitInterval
+    optionsRule('limitIntervalAttributes')
+  end
+
+  def rule_limitIntervalAttributes
+    optional
+    repeatable
+
+    pattern(%w( _end !valDate ), lambda {
+      @limitInterval.end = @val[1]
+    })
+    doc('limit.end', <<'EOT'
+The end date of the limit interval. It must be within the project time frame.
+EOT
+    )
+
+    pattern(%w( _period !valInterval ), lambda {
+      @limitInterval = @val[1]
+    })
+    doc('limit.period', <<'EOT'
+This property is a shortcut for setting the start and end dates of the limit
+interval. Both dates must be within the project time frame.
+EOT
+       )
+
+    pattern(%w( _start !valDate ), lambda {
+      @limitInterval.start = @val[1]
+    })
+    doc('limit.start', <<'EOT'
+The start date of the limit interval. It must be within the project time frame.
+EOT
+    )
+  end
+
+  def rule_limitValue
+    pattern([ '!workingDuration' ], lambda {
+      @limitInterval = Interval.new(@project['start'], @project['end'])
+      @val[0]
+    })
+  end
+
   def rule_limits
     pattern(%w( !limitsHeader !limitsBody ), lambda {
       @val[0]
@@ -1125,48 +1166,76 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _dailymax !workingDuration ), lambda {
-      @limits.setUpper('daily', @val[1])
+    pattern(%w( _dailymax !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
-    doc('dailymax', 'Maximum amount of effort for any single day.')
+    doc('dailymax', <<'EOT'
+Set a maximum limit for each calendar day.
+EOT
+       )
     example('Limits-1', '1')
 
-    pattern(%w( _dailymin !workingDuration ), lambda {
-      @limits.setLower('daily', @val[1])
+    pattern(%w( _dailymin !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
     doc('dailymin', <<'EOT'
-Minimum required effort for any single day. This value cannot be guaranteed by
+Minimum required effort for any calendar day. This value cannot be guaranteed by
 the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT
        )
-    example('Limits-1','4')
+    example('Limits-1', '4')
 
-    pattern(%w( _monthlymax !workingDuration ), lambda {
-      @limits.setUpper('monthly', @val[1])
+    pattern(%w( _maximum !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
-    doc('monthlymax', 'Maximum amount of effort for any single month.')
+    doc('maximum', <<'EOT'
+Set a maximum limit for the specified period. You must ensure that the overall
+effort can be achieved!
+EOT
+       )
 
-    pattern(%w( _monthlymin !workingDuration ), lambda {
-      @limits.setLower('monthly', @val[1])
+    pattern(%w( _minimum !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
+    })
+    doc('minimum', <<'EOT'
+Set a minim limit for each calendar month. This will only result in a warning
+if not met.
+EOT
+       )
+
+    pattern(%w( _monthlymax !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
+    })
+    doc('monthlymax', <<'EOT'
+Set a maximum limit for each calendar month.
+EOT
+       )
+
+    pattern(%w( _monthlymin !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
     doc('monthlymin', <<'EOT'
-Minimum required effort for any single month. This value cannot be guaranteed by
-the scheduler. It is only checked after the schedule is complete. In case the
-minium required amount has not been reached, a warning will be generated.
+Minimum required effort for any calendar month. This value cannot be
+guaranteed by the scheduler. It is only checked after the schedule is
+complete. In case the minium required amount has not been reached, a warning
+will be generated.
 EOT
        )
 
-    pattern(%w( _weeklymax !workingDuration ), lambda {
-      @limits.setUpper('weekly', @val[1])
+    pattern(%w( _weeklymax !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
-    doc('weeklymax', 'Maximum amount of effort for any single week.')
+    doc('weeklymax', <<'EOT'
+Set a maximum limit for each calendar week.
+EOT
+       )
 
-    pattern(%w( _weeklymin !workingDuration ), lambda {
-      @limits.setLower('weekly', @val[1])
+    pattern(%w( _weeklymin !limitValue !limitInterval ), lambda {
+      @limits.setLimit(@val[0], @val[1], @val[2])
     })
     doc('weeklymin', <<'EOT'
-Minimum required effort for any single week. This value cannot be guaranteed by
+Minimum required effort for any calendar week. This value cannot be guaranteed by
 the scheduler. It is only checked after the schedule is complete. In case the
 minium required amount has not been reached, a warning will be generated.
 EOT

@@ -17,7 +17,7 @@ require 'TjTime'
 # of the interval, the end is not.
 class Interval
 
-  attr_reader :start, :end
+  attr_accessor :start, :end
 
   # Create a new Interval. _args_ can be three different kind of arguments.
   #

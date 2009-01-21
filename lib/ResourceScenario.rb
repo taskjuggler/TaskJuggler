@@ -59,7 +59,7 @@ class ResourceScenario < ScenarioData
     return false unless @scoreboard[sbIdx].nil?
 
     limits = a('limits')
-    return false if limits && !limits.checkUpper(@scoreboard.idxToDate(sbIdx))
+    return false if limits && !limits.ok?(@scoreboard.idxToDate(sbIdx))
 
     true
   end

@@ -1015,7 +1015,7 @@ class TaskScenario < ScenarioData
     # If the task has allocation limits we need to make sure that none of them
     # is already exceeded.
     @limits.each do |limit|
-      return if !limit.checkUpper(date)
+      return if !limit.ok?(date)
     end
 
     sbIdx = @project.dateToIdx(date)

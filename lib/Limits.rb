@@ -17,15 +17,15 @@ require 'Scoreboard'
 # within a certain time period. It supports an upper and a lower limit.
 class Limit
 
-  # To create a new Limit object, the _startDate_, the _endDate_ and the
-  # interval duration (_period_ in seconds) must be specified. This creates a
-  # counter for each period within the overall interval. Additionally an
-  # _upper_ and _lower_ limit can be specified.
-  def initialize(startDate, endDate, period, upper = nil, lower = nil)
-    @startDate = startDate
-    @endDate = endDate
+  # To create a new Limit object, the Interval +interval+ and the
+  # period duration (+period+ in seconds) must be specified. This creates a
+  # counter for each period within the overall interval. +value+ is the value
+  # of the limit. +upper+ specifies whether the limit is an upper or lower
+  # limit.
+  def initialize(interval, period, value, upper)
+    @interval = interval
     @period = period
-    @lower = lower
+    @value = value
     @upper = upper
 
     # To avoid multiple resets of untouched scoreboards we keep this dirty
@@ -36,7 +36,7 @@ class Limit
 
   # Returns a deep copy of the class instance.
   def copy
-    Limit.new(@startDate, @endDate, @period, @upper, @lower)
+    Limit.new(@interval, @period, @value, @upper)
   end
 
   # This function can be used to reset the counter for a specific period
@@ -45,8 +45,9 @@ class Limit
     return unless @dirty
 
     if date.nil?
-      @scoreboard = Scoreboard.new(@startDate, @endDate, @period, 0)
+      @scoreboard = Scoreboard.new(@interval.start, @interval.end, @period, 0)
     else
+      return unless @interval.contains?(date)
       @scoreboard.set(date, 0)
     end
     @dirty = false
@@ -54,51 +55,27 @@ class Limit
 
   # Increase the counter for a specific period specified by _date_.
   def inc(date)
+    return unless @interval.contains?(date)
     @dirty = true
     @scoreboard.set(date, @scoreboard.get(date) + 1)
   end
 
-  # Set the upper limit to _value_.
-  def setUpper(value)
-    @upper = value
-  end
-
-  # Set the lower limit to _value_.
-  def setLower(value)
-    @lower = value
-  end
-
   # Returns true if the counter for the period specified by _date_ or all
-  # counters are below the upper limit.
-  def checkUpper(date = nil)
-    # If no upper limit has been set we return always true.
-    return true if @upper.nil?
-
+  # counters are within the limit.
+  def ok?(date = nil, upper = true)
     if date.nil?
+      # if @upper does not match, we can ignore this limit.
+      return true if @upper != upper
       # Check all counters.
       @scoreboard.each do |i|
-        return false if i >= @upper
+        return false if @upper ? i >= @value : i < @value
       end
       return true
     else
-      @scoreboard.get(date) < @upper
-    end
-  end
-
-  # Return true if the counter for the period specified by _date_ or all
-  # counters are above the lower limit.
-  def checkLower(date = nil)
-    # If no lower limit has been set we return always true.
-    return true if @lower.nil?
-
-    if date.nil?
-      # Check all counters
-      @scoreboard.each do |i|
-        return false if i <= @lower
-      end
-      return true
-    else
-      @scoreboard.get(date) > @lower
+      # If the date is outside the interval or @upper does not match, ignore
+      # this limit.
+      return true if !@interval.contains?(date) || @upper != upper
+      return @upper ? @scoreboard.get(date) < @value : @scoreboard.get(date) >= @value
     end
   end
 
@@ -132,9 +109,7 @@ class Limits
   # The objects need access to some project specific data like the project
   # period.
   def setProject(project)
-    @limits.each do |limit|
-      raise "Cannot change project after limits have been set!" if limit
-    end
+    raise "Cannot change project after limits have been set!" unless @limits.empty?
     @project = project
   end
 
@@ -143,24 +118,14 @@ class Limits
     @limits.each_value { |limit| limit.reset }
   end
 
-  # Call this function to create or change an upper limit. The limit must be
-  # uniquely identified by _name_. _value_ is the new limit. In case _name_ is
-  # not a predefined period like daily, weekly or monthly, _period_ must
-  # specify the duration of the limited periods.
-  def setUpper(name, value, period = nil)
-    newLimit(name, period) unless limits.include?(name)
-
-    limits[name].setUpper(value)
-  end
-
-  # Call this function to create or change a lower limit. The limit must be
-  # uniquely identified by _name_. _value_ is the new limit. In case _name_ is
-  # not a predefined period like daily, weekly or monthly, _period_ must
-  # specify the duration of the limited periods.
-  def setLower(name, value, period = nil)
-    newLimit(name, period) unless limits.include?(name)
-
-    limits[name].setLower(value)
+  # Call this function to create or change a limit. The limit must be uniquely
+  # identified by +name+. +value+ is the new limit value (in time slots).
+  # +period+ is the Interval where the limit is active. In case the interval
+  # is nil, the complete project time frame is used.
+  def setLimit(name, value, interval = nil)
+    @limits.delete(name) if @limits[name]
+    newLimit(name, value, interval.nil? ?
+             Interval.new(@project['start'], @project['end']) : interval)
   end
 
   # This function increases the counters for all limits for a specific
@@ -174,9 +139,9 @@ class Limits
   # Check all upper limits and return true if none is exceeded. If a _date_ is
   # specified only the counter for that specific period is tested. Otherwise
   # all periods are tested.
-  def checkUpper(date = nil)
+  def ok?(date = nil, upper = true)
     @limits.each_value do |limit|
-      return false unless limit.checkUpper(date)
+      return false unless limit.ok?(date, upper)
     end
     true
   end
@@ -184,30 +149,57 @@ class Limits
 private
 
   # This function creates a new Limit identified by _name_. In case _name_ is
-  # none of the predefined intervals (daily, weekly, monthly) a period length
-  # in seconds need to be specified.
-  def newLimit(name, period = nil)
+  # none of the predefined intervals (e. g. dailymax, weeklymin, monthlymax) a
+  # the whole interval is used for the period length.
+  def newLimit(name, value, interval)
     # The known intervals are aligned to start at their respective start.
+    interval.start = interval.start.midnight
+    interval.end = interval.end.midnight
     case name
-    when 'daily'
-      startDate = @project['start'].midnight
+    when 'dailymax'
       period = 60 * 60 * 24
-    when 'weekly'
-      startDate = @project['start'].beginOfWeek(@project['weekstartsmonday'])
+      upper = true
+    when 'dailymin'
+      period = 60 * 60 * 24
+      upper = false
+    when 'weeklymax'
+      interval.start = interval.start.beginOfWeek(@project['weekstartsmonday'])
+      interval.end = interval.end.beginOfWeek(@project['weekstartsmonday'])
       period = 60 * 60 * 24 * 7
-    when 'monthly'
-      startDate = @project['start'].beginOfMonth
+      upper = true
+    when 'weeklymin'
+      interval.start = interval.start.beginOfWeek(@project['weekstartsmonday'])
+      interval.end = interval.end.beginOfWeek(@project['weekstartsmonday'])
+      period = 60 * 60 * 24 * 7
+      upper = false
+    when 'monthlymax'
+      interval.start = interval.start.beginOfMonth
+      interval.end = interval.end.beginOfMonth
       # We use 30 days intervals here. This will cause the interval to drift
       # away from calendar months. But it's better than using 30.4167 which
-      # is much more likely to cause drift against day boundaries.
+      # does not align with day boundaries.
       period = 60 * 60 * 24 * 30
+      upper = true
+    when 'monthlymin'
+      interval.start = interval.start.beginOfMonth
+      interval.end = interval.end.beginOfMonth
+      # We use 30 days intervals here. This will cause the interval to drift
+      # away from calendar months. But it's better than using 30.4167 which
+      # does not align with day boundaries.
+      period = 60 * 60 * 24 * 30
+      upper = false
+    when 'maximum'
+      period = interval.end - interval.start
+      upper = true
+    when 'minimum'
+      period = interval.end - interval.start
+      upper = false
     else
-      startDate = @project['start']
-      raise "Limit period undefined" if period.nil?
+      raise "Limit period undefined"
     end
     endDate = @project['end']
 
-    @limits[name] = Limit.new(startDate, endDate, period)
+    @limits[name] = Limit.new(interval, period, value, upper)
   end
 
 end
