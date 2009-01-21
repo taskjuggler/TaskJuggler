@@ -17,9 +17,9 @@ require 'TjpExample'
 # The textual TaskJuggler Project description consists of many keywords. The
 # parser has built-in support to document the meaning and usage of these
 # keywords. Most keywords are unique, but there can be exceptions. To resolve
-# ambiguoties the keywords can be prefixed by a scope. The scope is usually
-# a keyword that describes the context that the ambiguous keyword is used in.
-# This class stores the keyword, the corresponding TextParserPattern and the
+# ambiguoties the keywords can be prefixed by a scope. The scope is usually a
+# keyword that describes the context that the ambiguous keyword is used in.
+# This class stores the keyword, the corresponding TextParser::Pattern and the
 # context that the keyword is used in. It also stores information such as the
 # list of optional attributes (keywords used in the context of the current
 # keyword) and whether the keyword is scenario specific or not.
@@ -29,11 +29,11 @@ class KeywordDocumentation
   attr_accessor :contexts, :scenarioSpecific, :inheritable,
                 :predecessor, :successor
 
-  # Construct a new KeywordDocumentation object. _rule_ is the TextParserRule
-  # and _pattern_ is the corresponding TextParserPattern. _syntax_ is an
-  # expanded syntax representation of the _pattern_. _args_ is a
-  # Array of ParserTokenDoc that describe the arguments of the _pattern_.
-  # _optAttrPatterns_ is an Array with references to TextParserPatterns that
+  # Construct a new KeywordDocumentation object. _rule_ is the
+  # TextParser::Rule and _pattern_ is the corresponding TextParser::Pattern.
+  # _syntax_ is an expanded syntax representation of the _pattern_. _args_ is
+  # a Array of ParserTokenDoc that describe the arguments of the _pattern_.
+  # _optAttrPatterns_ is an Array with references to TextParser::Patterns that
   # are optional attributes to this keyword.
   def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
     @rule = rule
@@ -106,7 +106,7 @@ class KeywordDocumentation
       end
     end
     if property
-      project = Project.new('id', 'dummy', '1.0', nil)
+      project = TaskJuggler::Project.new('id', 'dummy', '1.0', nil)
       propertySet = case property
                     when 'task'
                       project.tasks

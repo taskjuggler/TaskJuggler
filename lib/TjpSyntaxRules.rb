@@ -739,12 +739,12 @@ EOT
     pattern(%w( _date !extendId  $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(DateAttribute, nil)
-        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+        @ruleToExtendWithScenario.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '!date' ], lambda {
             @property[@val[0], @scenarioIdx] = @val[1]
           }))
       else
-        @ruleToExtend.addPattern(TextParserPattern.new(
+        @ruleToExtend.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '!date' ], lambda {
             @property.set(@val[0], @val[1])
           }))
@@ -760,12 +760,12 @@ EOT
     pattern(%w( _reference !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(ReferenceAttribute, nil)
-        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+        @ruleToExtendWithScenario.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
             @property[@val[0], @scenarioIdx] = [ @val[1], @val[2] ]
           }))
       else
-        @ruleToExtend.addPattern(TextParserPattern.new(
+        @ruleToExtend.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '$STRING', '!referenceBody' ], lambda {
             @property.set(@val[0], [ @val[1], @val[2] ])
           }))
@@ -782,12 +782,12 @@ EOT
     pattern(%w( _text !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(StringAttribute, nil)
-        @ruleToExtendWithScenario.addPattern(TextParserPattern.new(
+        @ruleToExtendWithScenario.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '$STRING' ], lambda {
             @property[@val[0], @scenarioIdx] = @val[1]
           }))
       else
-        @ruleToExtend.addPattern(TextParserPattern.new(
+        @ruleToExtend.addPattern(TextParser::Pattern.new(
           [ '_' + @val[1], '$STRING' ], lambda {
             @property.set(@val[0], @val[1])
           }))
@@ -1633,7 +1633,8 @@ EOT
 
   def rule_projectHeader
     pattern(%w( _project $ID $STRING $STRING !interval ), lambda {
-      @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
+      @project = TaskJuggler::Project.new(@val[1], @val[2], @val[3],
+                                          @messageHandler)
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
       setGlobalMacros

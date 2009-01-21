@@ -256,7 +256,7 @@ private
   # pattern of the currently processed rule. _name_ is that should be used for
   # this variable. _text_ is the documentation text.
   def arg(idx, name, text)
-    @cr.setArg(idx, ParserTokenDoc.new(name, text))
+    @cr.setArg(idx, TextParser::TokenDoc.new(name, text))
   end
 
   # Add a reference to another pattern. This information is only used to
