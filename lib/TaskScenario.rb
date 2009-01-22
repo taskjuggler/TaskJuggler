@@ -58,7 +58,7 @@ class TaskScenario < ScenarioData
       @property['end', @scenarioIdx] = nil
     end
 
-    # Collect the limits if this task and all parent tasks into a single
+    # Collect the limits of this task and all parent tasks into a single
     # Array.
     @limits = []
     task = @property

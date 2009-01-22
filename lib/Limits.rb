@@ -10,82 +10,89 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'Scoreboard'
-
-# This class implements a mechanism that can be used to limit certain events
-# within a certain time period. It supports an upper and a lower limit.
-class Limit
-
-  # To create a new Limit object, the Interval +interval+ and the
-  # period duration (+period+ in seconds) must be specified. This creates a
-  # counter for each period within the overall interval. +value+ is the value
-  # of the limit. +upper+ specifies whether the limit is an upper or lower
-  # limit.
-  def initialize(interval, period, value, upper)
-    @interval = interval
-    @period = period
-    @value = value
-    @upper = upper
-
-    # To avoid multiple resets of untouched scoreboards we keep this dirty
-    # flag. It's set whenever a counter is increased.
-    @dirty = true
-    reset
-  end
-
-  # Returns a deep copy of the class instance.
-  def copy
-    Limit.new(@interval, @period, @value, @upper)
-  end
-
-  # This function can be used to reset the counter for a specific period
-  # specified by _date_ or to reset all counters.
-  def reset(date = nil)
-    return unless @dirty
-
-    if date.nil?
-      @scoreboard = Scoreboard.new(@interval.start, @interval.end, @period, 0)
-    else
-      return unless @interval.contains?(date)
-      @scoreboard.set(date, 0)
-    end
-    @dirty = false
-  end
-
-  # Increase the counter for a specific period specified by _date_.
-  def inc(date)
-    return unless @interval.contains?(date)
-    @dirty = true
-    @scoreboard.set(date, @scoreboard.get(date) + 1)
-  end
-
-  # Returns true if the counter for the period specified by _date_ or all
-  # counters are within the limit.
-  def ok?(date = nil, upper = true)
-    if date.nil?
-      # if @upper does not match, we can ignore this limit.
-      return true if @upper != upper
-      # Check all counters.
-      @scoreboard.each do |i|
-        return false if @upper ? i >= @value : i < @value
-      end
-      return true
-    else
-      # If the date is outside the interval or @upper does not match, ignore
-      # this limit.
-      return true if !@interval.contains?(date) || @upper != upper
-      return @upper ? @scoreboard.get(date) < @value : @scoreboard.get(date) >= @value
-    end
-  end
-
-end
 
 # This class holds a set of limits. Each limit can be created individually and
 # must have unique name. The Limit objects are created when an upper or lower
 # limit is set. All upper or lower limits can be tested with a single function
 # call.
 class Limits
+
+  # This class implements a mechanism that can be used to limit certain events
+  # within a certain time period. It supports an upper and a lower limit.
+  class Limit
+
+    # To create a new Limit object, the Interval +interval+ and the
+    # period duration (+period+ in seconds) must be specified. This creates a
+    # counter for each period within the overall interval. +value+ is the value
+    # of the limit. +upper+ specifies whether the limit is an upper or lower
+    # limit. The limit can also be restricted to certain a Resource specified
+    # by +resource+.
+    def initialize(interval, period, value, upper, resource)
+      @interval = interval
+      @period = period
+      @value = value
+      @upper = upper
+      @resource = resource
+
+      # To avoid multiple resets of untouched scoreboards we keep this dirty
+      # flag. It's set whenever a counter is increased.
+      @dirty = true
+      reset
+    end
+
+    # Returns a deep copy of the class instance.
+    def copy
+      Limit.new(@interval, @period, @value, @upper, @resource)
+    end
+
+    # This function can be used to reset the counter for a specific period
+    # specified by +date+ or to reset all counters.
+    def reset(date = nil)
+      return unless @dirty
+
+      if date.nil?
+        @scoreboard = Scoreboard.new(@interval.start, @interval.end, @period, 0)
+      else
+        return unless @interval.contains?(date)
+        @scoreboard.set(date, 0)
+      end
+      @dirty = false
+    end
+
+    # Increase the counter for a specific period specified by +date+. If
+    # +resource+ is not nil, the counter is only increased if +resource+
+    # matches resource.
+    def inc(date, resource)
+      return if !@interval.contains?(date) || (!resource.nil? && @resource != resource)
+
+      @dirty = true
+      @scoreboard.set(date, @scoreboard.get(date) + 1)
+    end
+
+    # Returns true if the counter for the time slot specified by +date+ or all
+    # counters are within the limit. If +upper+ is true, only upper limits are
+    # checked. If not, only lower limits are checked. If +resource+ is not
+    # nil, only limits for this resource are checked.
+    def ok?(date, upper, resource)
+      if date.nil?
+        # if @upper does not match, we can ignore this limit.
+        return true if @upper != upper || (!resource.nil? && @resource != resource)
+
+        # Check all counters.
+        @scoreboard.each do |i|
+          return false if @upper ? i >= @value : i < @value
+        end
+        return true
+      else
+        # If the date is outside the interval or @upper does not match, ignore
+        # this limit.
+        return true if !@interval.contains?(date) || @upper != upper
+        return @upper ? @scoreboard.get(date) < @value : @scoreboard.get(date) >= @value
+      end
+    end
+
+  end
 
   attr_reader :limits, :project
 
@@ -122,26 +129,26 @@ class Limits
   # identified by +name+. +value+ is the new limit value (in time slots).
   # +period+ is the Interval where the limit is active. In case the interval
   # is nil, the complete project time frame is used.
-  def setLimit(name, value, interval = nil)
+  def setLimit(name, value, interval = nil, resource = nil)
     @limits.delete(name) if @limits[name]
     newLimit(name, value, interval.nil? ?
-             Interval.new(@project['start'], @project['end']) : interval)
+             Interval.new(@project['start'], @project['end']) : interval, resource)
   end
 
   # This function increases the counters for all limits for a specific
   # interval identified by _date_.
-  def inc(date)
+  def inc(date, resource = nil)
     @limits.each_value do |limit|
-      limit.inc(date)
+      limit.inc(date, resource)
     end
   end
 
   # Check all upper limits and return true if none is exceeded. If a _date_ is
   # specified only the counter for that specific period is tested. Otherwise
   # all periods are tested.
-  def ok?(date = nil, upper = true)
+  def ok?(date = nil, upper = true, resource = nil)
     @limits.each_value do |limit|
-      return false unless limit.ok?(date, upper)
+      return false unless limit.ok?(date, upper, resource)
     end
     true
   end
@@ -151,7 +158,7 @@ private
   # This function creates a new Limit identified by _name_. In case _name_ is
   # none of the predefined intervals (e. g. dailymax, weeklymin, monthlymax) a
   # the whole interval is used for the period length.
-  def newLimit(name, value, interval)
+  def newLimit(name, value, interval, resource)
     # The known intervals are aligned to start at their respective start.
     interval.start = interval.start.midnight
     interval.end = interval.end.midnight
@@ -199,7 +206,8 @@ private
     end
     endDate = @project['end']
 
-    @limits[name] = Limit.new(interval, period, value, upper)
+    @limits[name] = Limit.new(interval, period, value, upper, resource)
   end
 
 end
+

@@ -1,0 +1,12 @@
+project test "Test" "1.0" 2009-01-22 +2m 
+
+resource team "T" {
+  resource foo "Foo"
+}
+
+task t "T" {
+  start ${projectstart}
+# MARK: error 10 leaf_resource_id_expected
+  limits { dailymax 4h { resources team }}
+}
+

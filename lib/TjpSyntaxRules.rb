@@ -1115,11 +1115,22 @@ EOT
     singlePattern('!intervals')
   end
 
-  def rule_limitInterval
-    optionsRule('limitIntervalAttributes')
+  def rule_leafResourceId
+    pattern(%w( !resourceId ), lambda {
+      resource = @val[0]
+      unless resource.leaf?
+        error('leaf_resource_id_expected', "#{resource.id} is not a leaf resource.")
+      end
+      resource
+    })
+    arg(0, 'resource', 'The ID of a leaf resource')
   end
 
-  def rule_limitIntervalAttributes
+  def rule_limitAttributes
+    optionsRule('limitAttributesBody')
+  end
+
+  def rule_limitAttributesBody
     optional
     repeatable
 
@@ -1140,6 +1151,18 @@ interval. Both dates must be within the project time frame.
 EOT
        )
 
+    pattern(%w( _resources !resourceLeafList ), lambda {
+      @limitResources = @val[1]
+    })
+    doc('limit.resources', <<'EOT'
+When [[limits]] are used in a [[task]] context, the limits can be restricted
+to a list of resources that are allocated to the task. In that case each
+resource will not be allocated more than the specified upper limit.  Lower
+limits have no impact on the scheduler but do generate a warning when not met.
+All specified resources must be leaf resources.
+EOT
+       )
+
     pattern(%w( _start !valDate ), lambda {
       @limitInterval.start = @val[1]
     })
@@ -1152,6 +1175,7 @@ EOT
   def rule_limitValue
     pattern([ '!workingDuration' ], lambda {
       @limitInterval = Interval.new(@project['start'], @project['end'])
+      @limitResources = []
       @val[0]
     })
   end
@@ -1166,8 +1190,8 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _dailymax !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _dailymax !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('dailymax', <<'EOT'
 Set a maximum limit for each calendar day.
@@ -1175,8 +1199,8 @@ EOT
        )
     example('Limits-1', '1')
 
-    pattern(%w( _dailymin !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _dailymin !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('dailymin', <<'EOT'
 Minimum required effort for any calendar day. This value cannot be guaranteed by
@@ -1186,8 +1210,8 @@ EOT
        )
     example('Limits-1', '4')
 
-    pattern(%w( _maximum !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _maximum !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('maximum', <<'EOT'
 Set a maximum limit for the specified period. You must ensure that the overall
@@ -1195,8 +1219,8 @@ effort can be achieved!
 EOT
        )
 
-    pattern(%w( _minimum !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _minimum !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('minimum', <<'EOT'
 Set a minim limit for each calendar month. This will only result in a warning
@@ -1204,16 +1228,16 @@ if not met.
 EOT
        )
 
-    pattern(%w( _monthlymax !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _monthlymax !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('monthlymax', <<'EOT'
 Set a maximum limit for each calendar month.
 EOT
        )
 
-    pattern(%w( _monthlymin !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _monthlymin !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('monthlymin', <<'EOT'
 Minimum required effort for any calendar month. This value cannot be
@@ -1223,16 +1247,16 @@ will be generated.
 EOT
        )
 
-    pattern(%w( _weeklymax !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _weeklymax !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('weeklymax', <<'EOT'
 Set a maximum limit for each calendar week.
 EOT
        )
 
-    pattern(%w( _weeklymin !limitValue !limitInterval ), lambda {
-      @limits.setLimit(@val[0], @val[1], @val[2])
+    pattern(%w( _weeklymin !limitValue !limitAttributes), lambda {
+      setLimit(@val[0], @val[1], @limitInterval)
     })
     doc('weeklymin', <<'EOT'
 Minimum required effort for any calendar week. This value cannot be guaranteed by
@@ -1384,6 +1408,10 @@ EOT
 
   def rule_moreDepTasks
     commaListRule('!taskDep')
+  end
+
+  def rule_moreLeafResources
+    commaListRule('!resourceLeafList')
   end
 
   def rule_moreListOfDays
@@ -2368,6 +2396,12 @@ unique within the whole project.
 EOT
        )
     arg(2, 'name', 'The name of the resource')
+  end
+
+  def rule_resourceLeafList
+    pattern(%w( !leafResourceId !moreLeafResources ), lambda {
+      [ @val[0] ] + @val[1]
+    })
   end
 
   def rule_resourceList

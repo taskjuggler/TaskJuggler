@@ -200,6 +200,18 @@ private
     rText
   end
 
+  # If the @limitResources list is not empty, we have to create a Limits
+  # object for each Resource. Otherwise, one Limits object is enough.
+  def setLimit(name, value, interval)
+    if @limitResources.empty?
+      @limits.setLimit(name, value, interval)
+    else
+      @limitResources.each do |resource|
+        @limits.setLimit(name, value, interval, resource)
+      end
+    end
+  end
+
   # The following functions are mostly conveniance functions to simplify the
   # syntax tree definition. The *Rule functions may only be used in _rule
   # functions. And only one function call per _rule function is allowed.

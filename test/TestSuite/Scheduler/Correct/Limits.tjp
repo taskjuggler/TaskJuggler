@@ -11,6 +11,8 @@ resource c "C"
 resource d "D"
 resource e "E"
 resource f "F"
+resource g "G"
+resource h "H"
 
 task tasks "Tasks" {
   start ${projectstart}
@@ -55,6 +57,22 @@ task nested "Nested Tasks (20h/week limit)" {
     limits { dailymax 7h }
     ${Fixend "2007-11-14-16:00"}
   }
+}
+
+task interval "Interval Limit" {
+  start ${projectstart}
+  effort 20d
+  allocate g
+  limits { weeklymax 8h { period 2007-09-05 +8d }}
+  ${Fixend "2007-10-01-18:00"}
+}
+
+task resource "Resource Limit" {
+  start ${projectstart}
+  effort 10d
+  allocate h
+  limits { weeklymax 16h { resources h }}
+  ${Fixend "2007-09-25-18:00"}
 }
 
 htmltaskreport "Limits.html" {

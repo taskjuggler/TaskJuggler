@@ -47,6 +47,23 @@ class TestLimits < Test::Unit::TestCase
     assert_equal(l.limits.count, 2, 'setLimits() failed')
   end
 
+  def test_inc
+    l = Limits.new
+    l.setProject(@p)
+    l.setLimit('weeklymax', 2, Interval.new(TjTime.new('2009-02-10'),
+                                            TjTime.new('2009-02-15')))
+    # Outside of limit interval, should be ignored
+    l.inc(TjTime.new('2009-02-05-10:00'))
+    l.inc(TjTime.new('2009-02-20-10:00'))
+    assert(l.ok?)
+    # Inside the calendar week interval
+    l.inc(TjTime.new('2009-02-09-10:00'))
+    assert(l.ok?)
+    # The inc will exceed the weekly limit
+    l.inc(TjTime.new('2009-02-09-11:00'))
+    assert(!l.ok?)
+  end
+
   def test_ok
     l = Limits.new
     l.setProject(@p)
@@ -61,6 +78,22 @@ class TestLimits < Test::Unit::TestCase
     assert(l.ok?(TjTime.new('2009-01-31')))
     assert(!l.ok?(TjTime.new('2009-02-01')))
     assert(l.ok?(TjTime.new('2009-02-01'), false))
+  end
+
+  def test_with_resource
+    l = Limits.new
+    l.setProject(@p)
+    l.setLimit('dailymax', 4)
+    r = Resource.new(@p, 'r', 'R', nil)
+    l.setLimit('dailymax', 3, nil, r)
+    l.inc(TjTime.new('2009-02-01-10:00'))
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-11:00'), r)
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-12:00'), r)
+    assert(!l.ok?)
+    l.inc(TjTime.new('2009-02-01-13:00'))
+    assert(!l.ok?)
   end
 
 end

@@ -21,7 +21,7 @@ or should be done for TaskJuggler III.
 
 * Legacy sorting modes.
 
-* Limits for resource allocations.
+* Map allocation limits to task limits for resources.
 
 * More unit tests for core classes.
 
