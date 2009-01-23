@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
+
 require 'MessageHandler'
 require 'KeywordDocumentation'
 require 'ProjectFileParser'
@@ -275,6 +277,8 @@ private
 
     true
   end
+
+end
 
 end
 

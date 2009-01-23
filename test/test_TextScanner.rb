@@ -35,7 +35,7 @@ a.b.c - $ [A Macro]
 15:23 "A string"
 EOT
 
-    s = TextScanner.new(text, MessageHandler.new(false))
+    s = TaskJuggler::TextScanner.new(text, MessageHandler.new(false))
     s.open(true)
     ref = [
       ['ID', 'Hello', 1],
@@ -74,7 +74,7 @@ EOT
 This ${adj} software
 EOT
 
-    s = TextScanner.new(text, MessageHandler.new(false))
+    s = TaskJuggler::TextScanner.new(text, MessageHandler.new(false))
     s.open(true)
     s.addMacro(Macro.new('adj', 'great', nil))
 

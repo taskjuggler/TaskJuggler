@@ -22,6 +22,8 @@ class Limits
   # within a certain time period. It supports an upper and a lower limit.
   class Limit
 
+    attr_accessor :resource
+
     # To create a new Limit object, the Interval +interval+ and the
     # period duration (+period+ in seconds) must be specified. This creates a
     # counter for each period within the overall interval. +value+ is the value

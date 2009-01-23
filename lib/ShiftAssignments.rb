@@ -192,7 +192,7 @@ class ShiftAssignments
                                         [ 2, 3, (1 << 8) | 2, (1 << 8) | 3 ])
   end
 
-  # Returns true of two ShiftAssignments object have the same assignment
+  # Returns true if two ShiftAssignments object have the same assignment
   # pattern.
   def ==(shiftAssignments)
     return false if @assignments.size != shiftAssignments.assignments.size ||
@@ -229,12 +229,10 @@ private
     @@scoreboards.each do |sbRecord|
       # We only have to look at the first ShiftAssignment for a comparison.
       # The others should match as well.
-      id = sbRecord[0][0]
-      # We have to store the object_id, not the reference. If we'd store a
-      # reference, the GC will never destroy it.
-      if self == ObjectSpace._id2ref(id)
+      if self == ObjectSpace._id2ref(sbRecord[0][0])
         # Register the ShiftAssignments object as a user of an existing
-        # scoreboard.
+        # scoreboard.  We have to store the object_id, not the reference. If
+        # we'd store a reference, the GC will never destroy it.
         sbRecord[0] << object_id
         # Return a reference to the existing scoreboard.
         return sbRecord[1]

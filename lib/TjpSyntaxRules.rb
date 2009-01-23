@@ -135,6 +135,16 @@ EOT
        )
     example('Alternative', '1')
 
+    pattern(%w( !limits ), lambda {
+      limits = @property['limits', @scenarioIdx] = @val[0]
+      @allocate.candidates.each do |resource|
+         limits.each do |l|
+           l.resource = resource if resource.leaf?
+         end
+      end
+    })
+    doc('allocate.limits', 'This keyword is deprecated. Don\'t use it anymore!')
+
     pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])
     })

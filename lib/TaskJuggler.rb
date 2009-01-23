@@ -12,6 +12,7 @@
 
 require 'Project'
 require 'MessageHandler'
+require 'Log'
 
 # The TaskJuggler class models the object that provides access to the
 # fundamental features of the TaskJuggler software. It can read project
@@ -31,6 +32,7 @@ class TaskJuggler
   # construct a Project object. In case of success true is returned.
   # Otherwise false.
   def parse(files)
+    Log.enter('parser', 'Parsing files ...')
     master = true
     @project = nil
 
@@ -38,7 +40,8 @@ class TaskJuggler
     files.each do |file|
       begin
         parser.open(file)
-      rescue StandardError
+      rescue TjException
+        Log.exit('parser')
         return false
       end
       if master
@@ -51,21 +54,28 @@ class TaskJuggler
       parser.close
     end
 
+    Log.exit('parser')
     @messageHandler.messages.empty?
   end
 
   # Schedule all scenarios in the project. Return true if no error was
   # detected, false otherwise.
   def schedule
+    Log.enter('scheduler', 'Scheduling project ...')
     #puts @project.to_s
-    @project.schedule
+    res = @project.schedule
+    Log.exit('scheduler')
+    res
   end
 
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
   def generateReports
-    @project.generateReports
+    Log.enter('reports', 'Generating reports ...')
+    res = @project.generateReports
+    Log.exit('reports')
+    res
   end
 
 end
