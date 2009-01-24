@@ -50,7 +50,6 @@ class TaskJuggler
     # Call this function with the master file to start processing a TJP file or
     # a set of TJP files.
     def open(masterFile)
-      Log.enter('pfparser', "Parsing file #{masterFile} ...")
       begin
         @scanner = TextScanner.new(masterFile, @messageHandler)
         @scanner.open
@@ -66,7 +65,6 @@ class TaskJuggler
     # processing has been completed.
     def close
       res = @scanner.close
-      Log.exit('pfparser')
       res
     end
 

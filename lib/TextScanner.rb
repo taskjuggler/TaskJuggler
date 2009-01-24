@@ -54,6 +54,7 @@ class TaskJuggler
         super()
         @fileName = fileName
         @file = File.new(fileName, 'r')
+        Log << "Parsing file #{@fileName} ..."
       end
 
       def close
@@ -75,6 +76,7 @@ class TaskJuggler
         @buffer = buffer
         @pos = 0
         @length = @buffer.length_utf8
+        Log << "Parsing buffer #{@buffer[0, 20]} ..."
       end
 
       def close

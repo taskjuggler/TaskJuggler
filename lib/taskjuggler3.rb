@@ -10,31 +10,65 @@
 # published by the Free Software Foundation.
 #
 
+require 'optparse'
 require 'Tj3Config'
 require 'TaskJuggler'
 
 # Name of the application suite
 AppConfig.appName = 'taskjuggler3'
 
-def showUsage
-  $stderr.puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
-               "#{AppConfig.packageInfo}\n\n" +
-               "Copyright (c) #{AppConfig.copyright.join(', ')}" +
-               " by #{AppConfig.authors.join(', ')}\n\n" +
-               "#{AppConfig.license}\n" +
-               "For more info about #{AppConfig.packageName} see " +
-               "#{AppConfig.contact}\n\n" +
-               "#{AppConfig.appName} file.tjp [ file1.tji ...]"
-end
+def processArguments(argv)
+  opts = OptionParser.new
 
-def main
-  if ARGV.empty?
-    showUsage
+  opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
+                "#{AppConfig.packageInfo}\n\n" +
+                "Copyright (c) #{AppConfig.copyright.join(', ')}" +
+                " by #{AppConfig.authors.join(', ')}\n\n" +
+                "#{AppConfig.license}\n" +
+                "For more info about #{AppConfig.packageName} see " +
+                "#{AppConfig.contact}\n\n" +
+                "Usage: #{AppConfig.appName} [options] file.tjp " +
+                "[ file1.tji ... ]"
+  opts.separator ""
+  opts.on('--debuglevel N', Integer, "Verbosity of debug output") do |arg|
+    TaskJuggler::Log.level = arg
+  end
+  opts.on('--debugmodules x,y,z', Array,
+          'Restrict debug output to a list of modules') do |arg|
+    TaskJuggler::Log.segments = arg.split(',')
+  end
+
+  opts.on_tail('-h', '--help', 'Show this message') do
+    puts opts.to_s
+    exit 0
+  end
+
+  opts.on_tail('--version', 'Show version info') do
+    puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+      "#{AppConfig.packageInfo}"
+    exit 0
+  end
+
+  begin
+    files = opts.parse(argv)
+  rescue OptionParser::ParseError => msg
+    puts opts.to_s + "\n"
+    $stderr.puts msg
+    exit 0
+  end
+
+  if files.empty?
+    puts opts.to_s
+    $stderr.puts "\nNo file name specified!"
     exit 1
   end
 
-  tj = TaskJuggler.new(true)
-  unless tj.parse(ARGV)
+  files
+end
+
+def main
+  tj = TaskJuggler.new(files = processArguments(ARGV))
+  unless tj.parse(files)
     exit 1
   end
 

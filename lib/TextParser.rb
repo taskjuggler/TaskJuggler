@@ -149,6 +149,7 @@ class TextParser
               "'#{token[1]}' (#{token[0]}).")
       end
     rescue TjException
+      # error('parse_error', $!.message)
       return nil
     end
 
