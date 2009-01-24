@@ -92,16 +92,17 @@ class PropertyTreeNode
     @propertySet.eachAttributeDefinition do |attrDef|
       next if attrDef.scenarioSpecific || !attrDef.inheritable
 
+      aId = attrDef.id
       if parent
         # Inherit values from parent property
-        if parent.provided(attrDef.id) || parent.inherited(attrDef.id)
-          @attributes[attrDef.id].inherit(parent.get(attrDef))
+        if parent.provided(aId) || parent.inherited(aId)
+          @attributes[aId].inherit(parent.get(aId))
         end
       else
         # Inherit selected values from project if top-level property
-        if whitelist.index(attrDef.id)
-          if @project[attrDef.id]
-            @attributes[attrDef.id].inherit(@project[attrDef.id])
+        if whitelist.index(aId)
+          if @project[aId]
+            @attributes[aId].inherit(@project[aId])
           end
         end
       end
