@@ -15,14 +15,14 @@ EXT_SRC_FILES   = FileList["#{EXT_DIR}/**/*.{c,h}"]
 EXT_FILES       = EXT_SRC_FILES + EXT_CONF_FILES
 
 # FILES
-RAKE_FILES      = FileList["#{RAKE_DIR}/*"]
+RAKE_FILES      = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, SETUP_FILE, "#{RAKE_DIR}/*"]
 BIN_FILES       = FileList["#{BIN_DIR}/**/*"]
 LIB_FILES       = FileList["#{LIB_DIR}/**/*.rb"]
 TEST_FILES      = FileList["#{TEST_DIR}/**/test_*.rb"]
 RDOC_FILES      = FileList[README, CHANGES, LICENSE]
 
 # DIST FILES
-DIST_FILES       = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, SETUP_FILE]
+DIST_FILES       = FileList[]
 DIST_FILES.include(RAKE_FILES)
 DIST_FILES.include(BIN_FILES)
 DIST_FILES.include(LIB_FILES)
