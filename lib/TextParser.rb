@@ -196,7 +196,7 @@ private
       allTokensOptional = true
       transitions = { }
       pat.each do |token|
-        tokenId = token.slice(1, token.length - 1)
+        tokenId = token[1..-1]
         if token[0] == ?!
           unless @rules.has_key?(tokenId)
             raise "Fatal Error: Unknown reference to #{tokenId} in pattern " +
@@ -245,7 +245,7 @@ private
     rule.patterns.each do |pat|
       pat.each do |tok|
         type = tok[0]
-        token = tok.slice(1, tok.length - 1)
+        token = tok[1..-1]
         if type == ?$
           if @variables.index(token).nil?
             raise "Fatal Error: Illegal variable type #{token} used for " +
@@ -306,7 +306,7 @@ private
         # error occured.
         rule.transitions.each do |transition|
           keys = transition.keys
-          keys.collect! { |key| key.slice(1, key.length - 1) }
+          keys.collect! { |key| key[1..-1] }
           @@expectedTokens += keys
           @@expectedTokens.sort!
         end
@@ -334,7 +334,7 @@ private
       pattern.each do |element|
         # Separate the type and token text for pattern element.
         elType = element[0]
-        elToken = element.slice(1, element.length - 1)
+        elToken = element[1..-1]
         if elType == ?!
           # The element is a reference to another rule. Return the token if we
           # still have one and continue with the referenced rule.
