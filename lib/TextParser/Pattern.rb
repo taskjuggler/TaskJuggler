@@ -109,6 +109,22 @@ class TextParser
       @tokens.length
     end
 
+    # Return true if all tokens of the pattern are optional. If a token
+    # references a rule, this rule is followed for the check.
+    def optional?(rules)
+      @tokens.each do |token|
+        if token[0] == ?_ || token[0] == ?$
+          return false
+        elsif token[0] == ?!
+          token = token[1..-1]
+          if !rules[token].optional?(rules)
+            return false
+          end
+        end
+      end
+      true
+    end
+
     # Returns true if the i-th token is a terminal symbol.
     def terminalSymbol?(i)
       @tokens[i][0] == ?$ || @tokens[i][0] == ?_

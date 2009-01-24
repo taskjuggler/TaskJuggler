@@ -311,7 +311,7 @@ private
           @@expectedTokens.sort!
         end
 
-        unless rule.optional || repeatMode
+        unless rule.optional?(@rules) || repeatMode
           error('unexpctd_token',
                 (token[0] != false ?
                  "Unexpected token '#{token[1]}' of type '#{token[0]}'. " :

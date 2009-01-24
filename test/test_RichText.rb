@@ -23,6 +23,63 @@ class TestRichText < Test::Unit::TestCase
   def teardown
   end
 
+  def test_empty
+    inp = ''
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = "<div></div>\n"
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    out = newRichText(inp).to_s
+    ref = ''
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = "<div/>\n"
+    assert_equal(ref, out)
+  end
+
+  def test_one_word
+    inp = "foo"
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = "<div>[foo]</div>\n"
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    out = newRichText(inp).to_s
+    ref = 'foo'
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = "<div>foo</div>\n"
+    assert_equal(ref, out)
+  end
+
+  def test_two_words
+    inp = "foo bar"
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = "<div>[foo] [bar]</div>\n"
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    out = newRichText(inp).to_s
+    ref = 'foo bar'
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = "<div>foo bar</div>\n"
+    assert_equal(ref, out)
+  end
+
   def test_paragraph
     inp = <<'EOT'
 A paragraph may span multiple

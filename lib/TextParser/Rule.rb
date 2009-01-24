@@ -32,6 +32,7 @@ class TextParser
       @patterns = []
       @repeatable = false
       @optional = false
+      @allOptional = nil
       @transitions = []
       # In case a rule is optional or any of the patterns is fully optional,
       # this variable is set to true.
@@ -45,6 +46,26 @@ class TextParser
 
     def setOptional
       @optional = true
+    end
+
+    # Return true if the rule describes optional elements. The evaluation
+    # recursively descends into the pattern if necessary and stores the result
+    # to be reused for later calls.
+    def optional?(rules)
+      # If we have a cached result, use this.
+      return @allOptional if @allOptional
+
+      # If the rule is marked optional, then it is optional.
+      if @optional
+        return @allOptional = true
+      end
+
+      # If all patterns describe optional content, then this rule is optional
+      # as well.
+      @allOptional = true
+      @patterns.each do |pat|
+        return @allOptional = false unless pat.optional?(rules)
+      end
     end
 
     def setRepeatable

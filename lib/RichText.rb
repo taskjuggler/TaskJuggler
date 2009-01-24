@@ -83,7 +83,10 @@ class RichText
     parser = RichTextParser.new(self, sectionCounter)
     parser.open(text)
     # Parse the input text and convert it to the intermediate representation.
-    @richText = parser.parse('richtext').cleanUp
+    @richText = parser.parse('richtext')
+    # In case the result is empty, use an empty RichTextElement as result
+    @richText = RichTextElement.new(@richText, :richtext, nil) unless @richText
+    @richText.cleanUp
   end
 
   # Use this function to register new RichTextProtocolHandler objects with

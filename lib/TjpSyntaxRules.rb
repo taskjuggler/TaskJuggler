@@ -138,7 +138,7 @@ EOT
     pattern(%w( !limits ), lambda {
       limits = @property['limits', @scenarioIdx] = @val[0]
       @allocate.candidates.each do |resource|
-         limits.each do |l|
+         limits.limits.each_value do |l|
            l.resource = resource if resource.leaf?
          end
       end
