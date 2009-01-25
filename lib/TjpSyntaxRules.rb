@@ -49,6 +49,9 @@ EOT
 
   def rule_accountHeader
     pattern(%w( _account $ID $STRING ), lambda {
+      if @property.nil? && !@accountprefix.empty?
+        @property = @project.task(@accountprefix)
+      end
       if @project.account(@val[1])
         error('account_exists',
               "Account #{@val[1]} has already been defined.")
@@ -67,6 +70,7 @@ EOT
   def rule_accountId
     pattern(%w( $ID ), lambda {
       id = @val[0]
+      id = @accountprefix + '.' + id unless @accountprefix.empty?
       # In case we have a nested supplement, we need to prepend the parent ID.
       id = @property.fullId + '.' + id if @property && @property.is_a?(Account)
       if (account = @project.account(id)).nil?
@@ -1007,24 +1011,40 @@ EOT
     })
   end
 
-  def rule_include
-    pattern(%w( _include $STRING ), lambda {
-      @scanner.include(@val[1])
-    })
-    doc('include', <<'EOT'
-Includes the specified file name as if its contents would be written
-instead of the include property. The only exception is the include
-statement itself. When the included files contains other include
-statements or report definitions, the filenames are relative to file
-where they are defined in. include commands can be used in the project
-header, at global scope or between property declarations of tasks,
-resources, and accounts.
+  def rule_includeAttributes
+    optionsRule('includeAttributesBody')
+  end
 
-For technical reasons you have to supply the optional pair of curly
-brackets if the include is followed immediately by a macro call that
-is defined within the included file.
+  def rule_includeAttributesBody
+    optional
+    repeatable
+
+    pattern(%w( _taskprefix !taskId ), lambda {
+      @taskprefix = @val[1].fullId
+    })
+    doc('taskprefix', <<'EOT'
+This attribute can be used to insert the tasks of the included file as sub-task of the task specified by ID.
 EOT
-       )
+    )
+  end
+
+  def rule_includeProjectHeader
+    pattern(%w( $STRING ), lambda {
+      @scanner.include(@val[0])
+    })
+  end
+
+  def rule_includeProlog
+    pattern(%w( $STRING ), lambda {
+      @scanner.include(@val[0])
+    })
+  end
+
+  def rule_includeProperties
+    pattern(%w( $STRING !includeAttributes ), lambda {
+      pushFileStack
+      @scanner.include(@val[0])
+    })
   end
 
   def rule_intervalOrDate
@@ -1624,7 +1644,7 @@ EOT
        )
     example('CustomAttributes')
 
-    pattern(%w( !include ))
+    pattern(%w( !projectBodyInclude ))
 
     pattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
@@ -1787,7 +1807,7 @@ EOT
   def rule_projectProlog
     optional
     repeatable
-    pattern(%w( !include ))
+    pattern(%w( !prologInclude ))
     pattern(%w( !macro ))
   end
 
@@ -1807,7 +1827,41 @@ EOT
     optionsRule('properties')
   end
 
+  def rule_projectBodyInclude
+    pattern(%w( _include !includeProjectHeader !projectBodyAttributes . ))
+    doc('include.project', <<'EOT'
+Includes the specified file name as if its contents would be written
+instead of the include property. The only exception is the include
+statement itself. When the included files contains other include
+statements or report definitions, the filenames are relative to file
+where they are defined in.
+
+The included files may only contain content that may be present in a project
+header section.
+EOT
+       )
+  end
+
+  def rule_prologInclude
+    pattern(%w( _include !includeProlog !projectProlog . ), lambda {
+    })
+    doc('include.macro', <<'EOT'
+Includes the specified file name as if its contents would be written
+instead of the include property. The only exception is the include
+statement itself. When the included files contains other include
+statements or report definitions, the filenames are relative to file
+where they are defined in.
+
+The included file may only contain macro definitions.
+EOT
+       )
+  end
+
   def rule_properties
+    pattern(%w( !propertiesBody . ))
+  end
+
+  def rule_propertiesBody
     repeatable
 
     pattern(%w( !account ))
@@ -1836,7 +1890,7 @@ Declare one or more flag for later use. Flags can be used to mark tasks, resourc
 EOT
        )
 
-    pattern(%w( !include ))
+    pattern(%w( !propertiesInclude ))
 
     pattern(%w( !limits ), lambda {
       @project['limits'] = @val[0]
@@ -1909,6 +1963,26 @@ part-time, or vice versa, please refer to the 'Shift' property.
 EOT
        )
     arg(1, 'name', 'Name or purpose of the vacation')
+  end
+
+  def rule_propertiesInclude
+    pattern(%w( _include !includeProperties !properties ), lambda {
+      popFileStack
+    })
+    doc('include.properties', <<'EOT'
+Includes the specified file name as if its contents would be written
+instead of the include property. The only exception is the include
+statement itself. When the included files contains other include
+statements or report definitions, the filenames are relative to file
+where they are defined in. include commands can be used in the project
+header, at global scope or between property declarations of tasks,
+resources, and accounts.
+
+For technical reasons you have to supply the optional pair of curly
+brackets if the include is followed immediately by a macro call that
+is defined within the included file.
+EOT
+       )
   end
 
   def rule_purge
@@ -2385,6 +2459,7 @@ EOT
   def rule_resourceId
     pattern(%w( $ID ), lambda {
       id = @val[0]
+      id = @resourceprefix + '.' + id unless @resourceprefix.empty?
       # In case we have a nested supplement, we need to prepend the parent ID.
       id = @property.fullId + '.' + id if @property && @property.is_a?(Resource)
       if (resource = @project.resource(id)).nil?
@@ -2397,6 +2472,9 @@ EOT
 
   def rule_resourceHeader
     pattern(%w( _resource $ID $STRING ), lambda {
+      if @property.nil? && !@resourceprefix.empty?
+        @property = @project.task(@resourceprefix)
+      end
       @property = Resource.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
@@ -3035,6 +3113,9 @@ EOT
 
   def rule_taskHeader
     pattern(%w( _task $ID $STRING ), lambda {
+      if @property.nil? && !@taskprefix.empty?
+        @property = @project.task(@taskprefix)
+      end
       @property = Task.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
@@ -3047,6 +3128,7 @@ EOT
   def rule_taskId
     pattern(%w( !taskIdUnverifd ), lambda {
       id = @val[0]
+      id = @taskprefix + '.' + id unless @taskprefix.empty?
       # In case we have a nested supplement, we need to prepend the parent ID.
       id = @property.fullId + '.' + id if @property && @property.is_a?(Task)
       if (task = @project.task(id)).nil?

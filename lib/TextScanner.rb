@@ -16,6 +16,7 @@ require 'TjException'
 require 'SourceFileInfo'
 require 'MacroTable'
 require 'MacroParser'
+require 'Log'
 
 class TaskJuggler
 
@@ -74,8 +75,8 @@ class TaskJuggler
       def initialize(buffer)
         super()
         @buffer = buffer
-        @pos = 0
         @length = @buffer.length_utf8
+        @pos = 0
         Log << "Parsing buffer #{@buffer[0, 20]} ..."
       end
 
@@ -105,7 +106,9 @@ class TaskJuggler
       # This table contains all macros that may be expanded when found in the
       # text.
       @macroTable = MacroTable.new(messageHandler)
-      # This Array stores the currently processed nested files.
+      # This Array stores the currently processed nested files. It's an Array
+      # of Arrays. The nested Array consists of 3 elements, the @cf,
+      # @tokenBuffer and the @pos of the file.
       @fileStack = []
       # This Array stores the currently processed nested macros.
       @macroStack = []
@@ -118,16 +121,15 @@ class TaskJuggler
     # String, else on a File.
     def open(fileNameIsBuffer = false)
       if fileNameIsBuffer
-        @fileStack = [ @cf = BufferStreamHandle.new(@masterFile) ]
+        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil, nil ] ]
       else
         begin
-          @fileStack = [ @cf = FileStreamHandle.new(@masterFile) ]
+          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil, nil ] ]
         rescue StandardError
           raise TjException.new, "Cannot open file #{@masterFile}"
         end
       end
-      @tokenBuffer = nil
-      @pos = nil
+      @tokenBuffer = @pos = nil
     end
 
     # Finish processing and reset all data structures.
@@ -144,10 +146,12 @@ class TaskJuggler
         if fileName[0] != '/'
           # If the included file is not an absolute name, we interpret the file
           # name relative to the including file.
-          fileName = @fileStack.last.dirname + '/' + fileName
+          fileName = @fileStack.last[0].dirname + '/' + fileName
         end
 
-        @fileStack << (@cf = FileStreamHandle.new(fileName))
+        @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
+        @tokenBuffer = @pos = nil
+        @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
       rescue StandardError
         error('bad_include', "Cannot open include file #{fileName}")
       end
@@ -186,13 +190,13 @@ class TaskJuggler
         return res
       end
 
-      token = [ false, false ]
       # Start processing characters from the input.
+      token = [ '.', '<END>' ]
       while c = nextChar(true)
         case c
         when ' ', "\n", "\t"
           if (tok = readBlanks(c))
-  	        token = tok
+            token = tok
             break
           end
         when '#'
@@ -217,6 +221,9 @@ class TaskJuggler
         when '['
           token = readMacro
           break
+        when nil
+          # We've reached an end of file or buffer
+          break
         else
           str = ""
           str << c
@@ -233,6 +240,7 @@ class TaskJuggler
     # token can be returned before the next nextToken() call.
     def returnToken(token)
       unless @tokenBuffer.nil?
+        $stderr.puts @tokenBuffer
         raise "Fatal Error: Cannot return more than 1 token in a row"
       end
       @tokenBuffer = token
@@ -314,6 +322,7 @@ class TaskJuggler
       # This can only happen when a previous call already returned nil.
       return nil if @cf.nil?
 
+      c = nil
       # If there are characters in the return buffer process them first.
       # Otherwise get next character from input stream.
       unless @cf.charBuffer.empty?
@@ -326,30 +335,38 @@ class TaskJuggler
       else
         # If EOF has been reached, try the parent file until even the master
         # file has been processed completely.
-        while (c = @cf.getc).nil? && !@fileStack.empty?
+        if (c = @cf.getc).nil?
           @cf.close
           @fileStack.pop
-          @cf = @fileStack.last
-
-          if @cf.nil?
-            # If the caller does not expect an EOF, we raise an exception.
-            unless eofOk
-              raise TjException.new, "Unexpected end of file"
+          if @fileStack.empty?
+            # We are done with the top-level file now.
+            return @cf = @tokenBuffer = @pos = nil
+          else
+            @cf, @tokenBuffer, @pos = @fileStack.last
+            # We have been called by nextToken() already, so we can't just
+            # restore @tokenBuffer and be done. We need to feed the token text
+            # back into the charBuffer and return the first character.
+            if @tokenBuffer
+              @tokenBuffer[1].reverse.each_utf8_char do |ch|
+                @cf.charBuffer.push(ch)
+              end
+              return @tokenBuffer = nil
             end
-            return nil
           end
         end
       end
-      @cf.lineNo += 1 if c == "\n"
-      @cf.line = "" if @cf.line[-1] == ?\n
-      @cf.line << c
+      unless c.nil?
+        @cf.lineNo += 1 if c == "\n"
+        @cf.line = "" if @cf.line[-1] == ?\n
+        @cf.line << c
+      end
       c
     end
 
     def returnChar(c)
-      return if c.nil?
+      return if @cf.nil?
 
-      @cf.line.chop!
+      @cf.line.chop! if c
       @cf.charBuffer << c
       @cf.lineNo -= 1 if c == "\n" && @macroStack.empty?
     end
@@ -384,6 +401,8 @@ class TaskJuggler
       loop do
         if c == ' '
           if (c2 = nextChar(true)) == '-'
+            # Special case for the dash between period dates. It must be
+            # surrounded by blanks.
             if (c3 = nextChar(true)) == ' '
               return [ 'LITERAL', ' - ']
             end

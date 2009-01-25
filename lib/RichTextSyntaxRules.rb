@@ -27,7 +27,7 @@ module RichTextSyntaxRules
 
   # This is the entry node.
   def rule_richtext
-    pattern(%w( !sections !blankLines ), lambda {
+    pattern(%w( !sections !blankLines . ), lambda {
       el = RichTextElement.new(@richText, :richtext, @val[0])
     })
   end

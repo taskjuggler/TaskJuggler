@@ -59,6 +59,7 @@ class TaskJuggler
 
       @property = @report = nil
       @scenarioIdx = 0
+      initFileStack
     end
 
     # Call this function to cleanup the parser structures after the file
@@ -285,6 +286,41 @@ class TaskJuggler
     # that only a part of the file should be included.
     def example(file, tag = nil)
       @cr.setExample(file, tag)
+    end
+
+    # To manage certain variables that have file scope throughout a hierachie
+    # of nested include files, we use a @fileStack to track those variables.
+    # The values primarily live in their class instance variables. But upon
+    # return from an included file, we need to restore the old values. This
+    # function creates or resets the stack.
+    def initFileStack
+      @fileStackVariables = %w( taskprefix resourceprefix accountprefix )
+      stackEntry = {}
+      @fileStackVariables.each do |var|
+        stackEntry[var] = ''
+        instance_variable_set('@' + var, '')
+      end
+      @fileStack = [ stackEntry ]
+    end
+
+    # Push a new set of variables onto the @fileStack.
+    def pushFileStack
+      stackEntry = {}
+      @fileStackVariables.each do |var|
+        stackEntry[var] = instance_variable_get('@' + var)
+      end
+      @fileStack << stackEntry
+    end
+
+    # Pop the last stack entry from the @fileStack and restore the class
+    # variables according to the now top-entry.
+    def popFileStack
+      @fileStack.pop
+      @fileStackVariables.each do |var|
+        stackEntry = @fileStack.last
+        instance_variable_set('@' + var, stackEntry[var])
+      end
+      @property = nil
     end
 
   end

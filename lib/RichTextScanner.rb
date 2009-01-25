@@ -126,7 +126,7 @@ class RichTextScanner
       c = nextChar
       if c.nil?
         # We've reached the end of the text.
-        return [ false, false ]
+        return [ '.', '<END>' ]
       elsif c == ' ' || c == "\t"
         # Sequences of tabs or spaces are treated as token boundaries, but
         # otherwise they are ignored.
@@ -182,7 +182,7 @@ class RichTextScanner
           return [ 'LINEBREAK', "\n" ]
         elsif c.nil?
           # We hit the end of the text.
-          return [ false, false ]
+          return [ '.', '<END>' ]
         else
           # Single line breaks are treated as spaces. Return the char after
           # the newline and start with this one again.

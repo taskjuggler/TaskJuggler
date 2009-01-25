@@ -32,6 +32,8 @@ class TextParser
       @patterns = []
       @repeatable = false
       @optional = false
+      # FIXME: @allOptional and @transitiveOptional have the same meaning but
+      # are generated in two different ways.
       @allOptional = nil
       @transitions = []
       # In case a rule is optional or any of the patterns is fully optional,

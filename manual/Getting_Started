@@ -34,9 +34,9 @@ that are used on some operating systems.
 === Structure of a TJP File ===
 
 Each TaskJuggler project consists of one or more text files. There is
-always a main project file that may [[include]] other files. The main
-file name should have a ''''.tjp'''' suffix, the included files must
-have a ''''.tji'''' suffix.
+always a main project file that may [[include.properties]] other
+files. The main file name should have a ''''.tjp'''' suffix, the
+included files must have a ''''.tji'''' suffix.
 
 Every project must start with a [[project project header]]. The header
 must then be followed by any number of project properties such as

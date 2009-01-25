@@ -52,7 +52,7 @@ class TaskJuggler
     # This function is used to close an open segment. To make this mechanism a
     # bit more robust, it will search the stack of open segments for a segment
     # with that name and will close all nested segments as well.
-    def Log.exit(segment)
+    def Log.exit(segment, message = nil)
       return if @@level == 0
 
       if @@stack.include?(segment)
@@ -61,7 +61,7 @@ class TaskJuggler
           break if m == segment
         end
       end
-      # Log.<< "<< [#{segment}]"
+      Log.<< "<< [#{segment}] #{message}" if message
     end
 
     # Use this function to show a log message within the currently active

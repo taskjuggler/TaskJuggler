@@ -49,7 +49,8 @@ EOT
       ['LITERAL', '$', 6],
       ['MACRO', 'A Macro', 6],
       ['TIME', ((15 * 60) + 23) * 60, 7],
-      ['STRING', 'A string', 7]
+      ['STRING', 'A string', 7],
+      ['.', '<END>', 0 ]
     ]
 
     ref.each do |type, val, line|
@@ -81,6 +82,7 @@ EOT
     assert_equal(['ID', 'This'], s.nextToken)
     assert_equal(['ID', 'great'], s.nextToken)
     assert_equal(['ID', 'software'], s.nextToken)
+    assert_equal(['.', '<END>'], s.nextToken)
 
     s.close
 

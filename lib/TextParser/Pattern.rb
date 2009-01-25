@@ -17,7 +17,7 @@ class TextParser
   # This class models the most crutial elements of a syntax description - the
   # pattern. A TextParserPattern primarily consists of a set of tokens. Tokens
   # are Strings where the first character determines the type of the token.
-  # There are 3 known types.
+  # There are 4 known types.
   #
   # Terminal token: The terminal token is prefixed by an underscore. Terminal
   # tokens are terminal symbols of the syntax tree. They just represent
@@ -31,6 +31,8 @@ class TextParser
   # Reference token: The reference token specifies a reference to another parser
   # rule. The token is prefixed by a bang and the text matches the name of the
   # rule. See TextParserRule for details.
+  #
+  # End token: The . token marks the expected end of the input stream.
   #
   # In addition to the pure syntax tree information the pattern also holds
   # documentary information about the pattern.
@@ -56,9 +58,9 @@ class TextParser
       @exampleTag = nil
 
       tokens.each do |token|
-        if token[0] != ?! && token[0] != ?$ && token[0] != ?_
+        unless '!$_.'.include?(token[0])
           raise "Fatal Error: All pattern tokens must start with a type " +
-                "identifier [!$_]: #{tokens.join(', ')}"
+                "identifier [!$_.]: #{tokens.join(', ')}"
         end
         # Initialize pattern argument descriptions as empty.
         @args << nil
