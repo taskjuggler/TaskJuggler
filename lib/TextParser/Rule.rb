@@ -84,6 +84,12 @@ class TextParser
       @patterns[-1].setArg(idx, doc)
     end
 
+    def setLastSyntaxToken(idx)
+      raise 'No pattern defined yet' if @patterns.empty?
+      raise 'Token index too large' if idx >= @patterns[-1].tokens.count
+      @patterns[-1].setLastSyntaxToken(idx)
+    end
+
     def setSeeAlso(also)
       raise 'No pattern defined yet' if @patterns.empty?
       @patterns[-1].setSeeAlso(also)

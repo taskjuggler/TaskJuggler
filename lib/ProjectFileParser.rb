@@ -275,6 +275,12 @@ class TaskJuggler
       @cr.setArg(idx, TextParser::TokenDoc.new(name, text))
     end
 
+    # Restrict the syntax documentation of the previously defined pattern to
+    # the first +idx+ tokens.
+    def lastSyntaxToken(idx)
+      @cr.setLastSyntaxToken(idx)
+    end
+
     # Add a reference to another pattern. This information is only used to
     # generate the documentation for the patterns of this rule.
     def also(seeAlso)
