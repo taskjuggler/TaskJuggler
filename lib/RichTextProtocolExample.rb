@@ -39,7 +39,7 @@ class RichTextProtocolExample < RichTextProtocolHandler
     end
 
     example = TjpExample.new
-    fileName = "../test/TestSuite/Syntax/Correct/#{path}.tjp"
+    fileName = "test/TestSuite/Syntax/Correct/#{path}.tjp"
     example.open(fileName)
     frame = XMLElement.new('div', 'class' => 'codeframe')
     frame << (pre = XMLElement.new('pre', 'class' => 'code'))

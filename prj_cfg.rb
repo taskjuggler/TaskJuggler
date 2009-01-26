@@ -29,6 +29,7 @@ TEST_DIR        = 'test'
 RDOC_DIR        = 'rdoc'
 RCOV_DIR        = 'rcov'
 RAKE_DIR        = 'tasks'
+MANUAL_DIR      = 'manual/html'
 
 # FILES
 README          = 'README.rb'
