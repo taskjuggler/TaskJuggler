@@ -38,5 +38,5 @@ RAKEFILE        = 'Rakefile'
 SETUP_FILE      = 'setup.rb'
 PRJ_FILE        = 'prj_cfg.rb'
 GEM_SPEC_FILE   = 'gem_spec.rb'
-DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/**/*", "test/all.rb", "test/TestSuite/**/*" ]
+DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/**/*", "test/TestSuite/**/*" ]
 

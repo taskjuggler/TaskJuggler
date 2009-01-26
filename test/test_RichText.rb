@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
 require 'test/unit'
 require 'RichText'
 

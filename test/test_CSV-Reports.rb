@@ -10,10 +10,12 @@
 # published by the Free Software Foundation.
 #
 
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
 require 'stringio'
 require 'test/unit'
 require 'TaskJuggler'
-require 'test/MessageChecker'
+require 'MessageChecker'
 require 'CSVFile'
 
 class TestScheduler < Test::Unit::TestCase

@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
 require 'test/unit'
 require 'Project'
 require 'Query'
@@ -18,7 +20,7 @@ class TestQuery < Test::Unit::TestCase
 
   def setup
     @mh = MessageHandler.new
-    @p = TaskJuggler::Project.new('id', 'name', 'ver', @mh)
+    @p = Project.new('id', 'name', 'ver', @mh)
     @p['start'] = TjTime.new(1202491644)
     @p['end'] = TjTime.new(1202439409)
   end
