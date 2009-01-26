@@ -253,10 +253,10 @@ end
 AppConfig.appName = 'UserManual'
 # Directory where to find the manual RichText sources. Must be relative to
 # lib directory.
-srcDir = '../manual/'
+srcDir = 'manual/'
 # Directory where to put the generated HTML files. Must be relative to lib
 # directory.
-destDir = '../data/manual/'
+destDir = 'manual/html/'
 man = TaskJuggler::UserManual.new
 # A list of all source files. The order is important.
 %w(

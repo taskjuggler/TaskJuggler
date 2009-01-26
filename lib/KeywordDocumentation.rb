@@ -397,7 +397,7 @@ class KeywordDocumentation
 
     if @pattern.exampleFile
       example = TjpExample.new
-      fileName = "../test/TestSuite/Syntax/Correct/#{@pattern.exampleFile}.tjp"
+      fileName = "test/TestSuite/Syntax/Correct/#{@pattern.exampleFile}.tjp"
       example.open(fileName)
       bbox << (frame = XMLElement.new('div', 'class' => 'codeframe'))
       frame << (pre = XMLElement.new('pre', 'class' => 'code'))
