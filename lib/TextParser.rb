@@ -193,7 +193,7 @@ private
       transitions = { }
       pat.each do |token|
         tokenId = token[1..-1]
-        if token[0] == '!'
+        if token[0] == ?!
           unless @rules.has_key?(tokenId)
             raise "Fatal Error: Unknown reference to #{tokenId} in pattern " +
                 "#{pat} + of rule #{rule.name}"
@@ -208,7 +208,7 @@ private
             pat_i.each { |tok, r| transitions[tok] = r }
           end
           optional = true if refRule.optional
-        elsif token[0] == '_' || token[0] == '$' || token[0] == '.'
+        elsif '_$.'.include?(token[0])
           transitions[token] = rule
           allTokensOptional = false
         else
@@ -329,7 +329,7 @@ private
         # Separate the type and token text for pattern element.
         elType = element[0]
         elToken = element[1..-1]
-        if elType == '!'
+        if elType == ?!
           # The element is a reference to another rule. Return the token if we
           # still have one and continue with the referenced rule.
           unless token.nil?
@@ -349,7 +349,7 @@ private
             end
           end
 
-          if elType == '_'
+          if elType == ?_
             # If the element requires a keyword the token must match this
             # keyword.
             if elToken != token[1]
@@ -361,7 +361,7 @@ private
               error('spec_keywork_expctd', text)
             end
             @stack.last.store(elToken)
-          elsif elType == '.'
+          elsif elType == ?.
             if token != [ '.', '<END>' ]
               error('end_expected', 'End expected but found ' +
                     "'#{token[1]}' (#{token[0]}).")
