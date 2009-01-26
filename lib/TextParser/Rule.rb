@@ -25,16 +25,14 @@ class TextParser
   class Rule
 
     attr_reader :name, :patterns, :optional, :repeatable, :keyword, :doc
-    attr_accessor :transitions, :transitiveOptional
+    attr_accessor :transitions
 
+    # Create a new syntax rule called +name+.
     def initialize(name)
       @name = name
       @patterns = []
       @repeatable = false
       @optional = false
-      # FIXME: @allOptional and @transitiveOptional have the same meaning but
-      # are generated in two different ways.
-      @allOptional = nil
       @transitions = []
       # In case a rule is optional or any of the patterns is fully optional,
       # this variable is set to true.
@@ -42,10 +40,13 @@ class TextParser
       @keyword = nil
     end
 
+    # Add a new +pattern+ to the Rule. It should be of type
+    # TextParser::Pattern.
     def addPattern(pattern)
       @patterns << pattern
     end
 
+    # Mark the rule as an optional element of the syntax.
     def setOptional
       @optional = true
     end
@@ -55,48 +56,61 @@ class TextParser
     # to be reused for later calls.
     def optional?(rules)
       # If we have a cached result, use this.
-      return @allOptional if @allOptional
+      return @transitiveOptional if @transitiveOptional
 
       # If the rule is marked optional, then it is optional.
       if @optional
-        return @allOptional = true
+        return @transitiveOptional = true
       end
 
       # If all patterns describe optional content, then this rule is optional
       # as well.
-      @allOptional = true
+      @transitiveOptional = true
       @patterns.each do |pat|
-        return @allOptional = false unless pat.optional?(rules)
+        return @transitiveOptional = false unless pat.optional?(rules)
       end
     end
 
+    # Mark the syntax element described by this Rule as a repeatable element
+    # that can occur once or more times in sequence.
     def setRepeatable
       @repeatable = true
     end
 
+    # Add a description for the syntax elements of this Rule. +doc+ is a
+    # RichText and +keyword+ is a unique name of this Rule. To avoid
+    # ambiguouties, an optional scope can be appended, separated by a dot
+    # (E.g. name.scope).
     def setDoc(keyword, doc)
       raise 'No pattern defined yet' if @patterns.empty?
       @patterns[-1].setDoc(keyword, doc)
     end
 
+    # Add a description for a pattern element of the last added pattern.
     def setArg(idx, doc)
       raise 'No pattern defined yet' if @patterns.empty?
       @patterns[-1].setArg(idx, doc)
     end
 
+    # Add a reference to another rule for documentation purposes.
     def setSeeAlso(also)
       raise 'No pattern defined yet' if @patterns.empty?
       @patterns[-1].setSeeAlso(also)
     end
 
+    # Add a reference to a code example. +file+ is the name of the file. +tag+
+    # is a tag within the file that specifies a part of this file.
     def setExample(file, tag)
       @patterns[-1].setExample(file, tag)
     end
 
+    # Return a reference the pattern of this Rule.
     def pattern(idx)
       @patterns[idx]
     end
 
+    # Return the pattern of this rule that matches the given +token+. If no
+    # pattern matches, return nil.
     def matchingPatternIndex(token)
       0.upto(@transitions.length - 1) do |i|
         return i if @transitions[i].has_key?(token)
