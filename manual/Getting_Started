@@ -38,14 +38,17 @@ always a main project file that may [[include.properties]] other
 files. The main file name should have a ''''.tjp'''' suffix, the
 included files must have a ''''.tji'''' suffix.
 
-Every project must start with a [[project project header]]. The header
-must then be followed by any number of project properties such as
-[[account accounts]], [[resource resources]] and [[task tasks]]. Each
-project must have at least one task defined and should have at least
-one [[reports report]].  Properties don't have to be listed in a
+Every project must start with a [[project project header]]. The
+project header must be in the main project file. All other elements
+may be put into include files. The project header must then be
+followed by any number of project properties such as [[account
+accounts]], [[resource resources]] and [[task tasks]]. Each project
+must have at least one task defined and should have at least one
+[[reports report]].  Properties don't have to be listed in a
 particular order, but may have interdependencies that require such an
-order. It is therefor recommended to define them in the following
-sequence.
+order. If you want to assign a resource to work on a task, this
+resource needs to be defined first. It is therefor recommended to
+define them in the following sequence.
 
 * [[macro macros]]
 * [[flags]]

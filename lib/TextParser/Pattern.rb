@@ -67,6 +67,9 @@ class TextParser
       end
       @tokens = tokens
       @function = function
+      # In some cases we don't want to show all tokens in the syntax
+      # documentation. This value specifies the index of the last shown token.
+      @lastSyntaxToken = @tokens.count - 1
     end
 
     # Set the keyword and documentation text for the pattern.
@@ -78,6 +81,11 @@ class TextParser
     # Set the documentation text and for the idx-th variable.
     def setArg(idx, doc)
       @args[idx] = doc
+    end
+
+    # Restrict the syntax documentation to the first +idx+ tokens.
+    def setLastSyntaxToken(idx)
+      @lastSyntaxToken = idx
     end
 
     # Set the references to related patterns.
@@ -174,7 +182,7 @@ class TextParser
       str = ''
       first = true
       # Analyze the tokens of the pattern skipping the first 'skip' tokens.
-      skip.upto(@tokens.length - 1) do |i|
+      skip.upto(@lastSyntaxToken) do |i|
         token = @tokens[i]
         # If the first token is a _{ the pattern describes optional attributes.
         # They are represented by a standard idiom.

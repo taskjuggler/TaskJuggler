@@ -92,6 +92,14 @@ class TextParser
       @patterns[-1].setArg(idx, doc)
     end
 
+    # Specify the index +idx+ of the last token to be used for the syntax
+    # documentation. All subsequent tokens will be ignored.
+    def setLastSyntaxToken(idx)
+      raise 'No pattern defined yet' if @patterns.empty?
+      raise 'Token index too large' if idx >= @patterns[-1].tokens.count
+      @patterns[-1].setLastSyntaxToken(idx)
+    end
+
     # Add a reference to another rule for documentation purposes.
     def setSeeAlso(also)
       raise 'No pattern defined yet' if @patterns.empty?

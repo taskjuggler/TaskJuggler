@@ -1019,25 +1019,44 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _accountprefix !taskId ), lambda {
+      @accountprefix = @val[1].fullId
+    })
+    doc('accountprefix', <<'EOT'
+This attribute can be used to insert the accounts of the included file as
+sub-account of the account specified by ID. The parent account must already be
+defined.
+EOT
+    )
+
+    pattern(%w( _resourceprefix !taskId ), lambda {
+      @resourceprefix = @val[1].fullId
+    })
+    doc('resourceprefix', <<'EOT'
+This attribute can be used to insert the resources of the included file as
+sub-resource of the resource specified by ID. The parent resource must already
+be defined.
+EOT
+    )
+
     pattern(%w( _taskprefix !taskId ), lambda {
       @taskprefix = @val[1].fullId
     })
     doc('taskprefix', <<'EOT'
-This attribute can be used to insert the tasks of the included file as sub-task of the task specified by ID.
+This attribute can be used to insert the tasks of the included file as
+sub-task of the task specified by ID. The parent task must already be defined.
 EOT
     )
   end
 
-  def rule_includeProjectHeader
+  def rule_includeFile
     pattern(%w( $STRING ), lambda {
       @scanner.include(@val[0])
     })
-  end
-
-  def rule_includeProlog
-    pattern(%w( $STRING ), lambda {
-      @scanner.include(@val[0])
-    })
+    arg(0, 'filename', <<'EOT'
+Name of the file to include. This must have a ''''.tji'''' extension. The name may have an absolute or relative path. You need to use ''''/'''' characters to separate directories.
+EOT
+       )
   end
 
   def rule_includeProperties
@@ -1045,6 +1064,10 @@ EOT
       pushFileStack
       @scanner.include(@val[0])
     })
+    arg(0, 'filename', <<'EOT'
+Name of the file to include. This must have a ''''.tji'''' extension. The name may have an absolute or relative path. You need to use ''''/'''' characters to separate directories.
+EOT
+       )
   end
 
   def rule_intervalOrDate
@@ -1828,7 +1851,8 @@ EOT
   end
 
   def rule_projectBodyInclude
-    pattern(%w( _include !includeProjectHeader !projectBodyAttributes . ))
+    pattern(%w( _include !includeFile !projectBodyAttributes . ))
+    lastSyntaxToken(1)
     doc('include.project', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
@@ -1843,8 +1867,9 @@ EOT
   end
 
   def rule_prologInclude
-    pattern(%w( _include !includeProlog !projectProlog . ), lambda {
+    pattern(%w( _include !includeFile !projectProlog . ), lambda {
     })
+    lastSyntaxToken(1)
     doc('include.macro', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
@@ -1969,6 +1994,7 @@ EOT
     pattern(%w( _include !includeProperties !properties ), lambda {
       popFileStack
     })
+    lastSyntaxToken(1)
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
