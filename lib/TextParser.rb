@@ -187,7 +187,6 @@ private
     return rule.transitions.clone unless rule.transitions.empty?
 
     rule.transitions = []
-    rule.transitiveOptional = rule.optional
     rule.patterns.each do |pat|
       allTokensOptional = true
       transitions = { }
@@ -202,7 +201,7 @@ private
           # If the referenced rule describes optional content, we need to look
           # at the next token as well.
           res = getTransitions(@rules[tokenId])
-          allTokensOptional = false unless refRule.transitiveOptional
+          allTokensOptional = false unless refRule.optional?(@rules)
           # Combine the hashes for each pattern into a single hash
           res.each do |pat_i|
             pat_i.each { |tok, r| transitions[tok] = r }
@@ -228,7 +227,6 @@ private
         end
       end
       rule.transitions << transitions
-      rule.transitiveOptional = true if allTokensOptional
     end
     rule.transitions.clone
   end
