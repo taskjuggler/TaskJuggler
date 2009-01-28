@@ -16,7 +16,7 @@ require 'stringio'
 require 'test/unit'
 require 'TaskJuggler'
 require 'test/MessageChecker'
-require 'CSVFile'
+require 'reports/CSVFile'
 
 class TestScheduler < Test::Unit::TestCase
 

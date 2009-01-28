@@ -51,7 +51,7 @@ end
 def main
   args = Arguments.new(ARGV)
 
-  man = SyntaxReference.new
+  man = TaskJuggler::SyntaxReference.new
   keywords = args.keywords
   if keywords.empty?
     keywords = man.all
