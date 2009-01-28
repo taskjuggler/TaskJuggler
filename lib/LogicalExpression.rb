@@ -11,7 +11,7 @@
 #
 
 require 'LogicalOperation'
-require 'LogicalAttribute'
+require 'Attributes'
 require 'LogicalFlag'
 require 'LogicalFunction'
 

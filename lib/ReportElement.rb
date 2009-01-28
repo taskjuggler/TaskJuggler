@@ -87,9 +87,9 @@ class ReportElement
     }
     @propertiesByType = {
       # Type                  Indent  Align
-      StringAttribute    => [ false,  :left ],
-      RichTextAttribute  => [ false,  :left ],
-      FloatAttribute     => [ false,  :right ]
+      TaskJuggler::StringAttribute    => [ false,  :left ],
+      TaskJuggler::RichTextAttribute  => [ false,  :left ],
+      TaskJuggler::FloatAttribute     => [ false,  :right ]
     }
   end
 
@@ -204,9 +204,9 @@ class ReportElement
       else
         # Certain attribute types need special treatment.
         type = propertyList.attributeType(colId)
-        if type == DateAttribute
+        if type == TaskJuggler::DateAttribute
           value.to_s(timeFormat)
-        elsif type == RichTextAttribute
+        elsif type == TaskJuggler::RichTextAttribute
           value
         else
           value.to_s
