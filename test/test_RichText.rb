@@ -858,8 +858,8 @@ EOT
 
   def newRichText(text)
     begin
-      rText = RichText.new(text)
-    rescue RichTextException => msg
+      rText = TaskJuggler::RichText.new(text)
+    rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"
     end

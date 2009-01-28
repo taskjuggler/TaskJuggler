@@ -94,12 +94,12 @@ class ReportTableCell
     elsif @padding != 3
       style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
     end
-    unless @text.is_a?(RichText)
+    unless @text.is_a?(TaskJuggler::RichText)
       style += 'font-weight:bold; ' if @bold
       style += "font-size: #{@fontSize}px; " if fontSize
     end
     style += "width: #{@width}px; " if @width
-    if @text.is_a?(RichText) && @line && @line.table.equiLines
+    if @text.is_a?(TaskJuggler::RichText) && @line && @line.table.equiLines
       style += "height:#{@line.height - 3}px; "
     end
     cell << (div = XMLElement.new('div',
@@ -107,9 +107,9 @@ class ReportTableCell
 
     if url
       div << (a = XMLElement.new('a', 'href' => @url))
-      a << XMLText.new(@text.is_a?(RichText) ?  @text.to_s : text)
+      a << XMLText.new(@text.is_a?(TaskJuggler::RichText) ?  @text.to_s : text)
     else
-      div << (@text.is_a?(RichText) ?  @text.to_html : XMLText.new(@text))
+      div << (@text.is_a?(TaskJuggler::RichText) ?  @text.to_html : XMLText.new(@text))
     end
 
     cell
