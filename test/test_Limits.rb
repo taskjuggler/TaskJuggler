@@ -40,11 +40,11 @@ class TestLimits < Test::Unit::TestCase
     l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
-    assert_equal(l.limits.count, 1, 'setLimits() failed')
+    assert_equal(l.limits.length, 1, 'setLimits() failed')
     l.setLimit('dailymax', 6)
-    assert_equal(l.limits.count, 1, 'setLimits() replace failed')
+    assert_equal(l.limits.length, 1, 'setLimits() replace failed')
     l.setLimit('weeklymax', 20)
-    assert_equal(l.limits.count, 2, 'setLimits() failed')
+    assert_equal(l.limits.length, 2, 'setLimits() failed')
   end
 
   def test_inc
