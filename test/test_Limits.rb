@@ -68,7 +68,7 @@ class TestLimits < Test::Unit::TestCase
     l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
-    assert_equal(l.limits.count, 1, 'setLimits() failed')
+    assert_equal(l.limits.length, 1, 'setLimits() failed')
     l.inc(TjTime.new('2009-02-01-10:00'))
     assert(l.ok?)
     l.inc(TjTime.new('2009-02-01-11:00'))
