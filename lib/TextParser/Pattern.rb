@@ -69,7 +69,7 @@ class TextParser
       @function = function
       # In some cases we don't want to show all tokens in the syntax
       # documentation. This value specifies the index of the last shown token.
-      @lastSyntaxToken = @tokens.count - 1
+      @lastSyntaxToken = @tokens.length - 1
     end
 
     # Set the keyword and documentation text for the pattern.

@@ -77,14 +77,14 @@ class TaskJuggler
           # first listed segments on the stack. This and all nested segments
           # will be shown.
           if @@segments.include?(segment) &&
-            (offset = @@stack.count - @@stack.index(segment)) >= @@level
+            (offset = @@stack.length - @@stack.index(segment)) >= @@level
             showMessage = true
             break
           end
         end
         return unless showMessage
       end
-      $stderr.puts ' ' * (@@stack.count - offset) + message
+      $stderr.puts ' ' * (@@stack.length - offset) + message
     end
 
   end
