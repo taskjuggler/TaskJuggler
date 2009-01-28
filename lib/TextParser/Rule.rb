@@ -96,7 +96,7 @@ class TextParser
     # documentation. All subsequent tokens will be ignored.
     def setLastSyntaxToken(idx)
       raise 'No pattern defined yet' if @patterns.empty?
-      raise 'Token index too large' if idx >= @patterns[-1].tokens.count
+      raise 'Token index too large' if idx >= @patterns[-1].tokens.length
       @patterns[-1].setLastSyntaxToken(idx)
     end
 
