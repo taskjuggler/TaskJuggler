@@ -26,14 +26,14 @@ BIN_DIR         = 'bin'
 LIB_DIR         = 'lib'
 EXT_DIR         = 'ext'
 TEST_DIR        = 'test'
-RDOC_DIR        = 'rdoc'
+RDOC_DIR        = 'doc'
 RCOV_DIR        = 'rcov'
 RAKE_DIR        = 'tasks'
 MANUAL_DIR      = 'manual/html'
 
 # FILES
-README          = 'README.rb'
-CHANGES         = #'CHANGES'
+README          = FileList['README.rb','README']
+CHANGES         = ''#'CHANGES'
 LICENSE         = 'COPYING'
 RAKEFILE        = 'Rakefile'
 SETUP_FILE      = 'setup.rb'

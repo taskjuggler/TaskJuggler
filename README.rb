@@ -1,4 +1,4 @@
-open( README, 'w' ) { |fn| fn << "
+open( 'README', 'w' ) { |fn| fn << "
 
 = About {#{PROJECT_NAME}}[#{PROJECT_HOMEPAGE}]
 
