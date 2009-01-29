@@ -11,11 +11,11 @@
 #
 
 require 'reports/ReportElement'
-require 'reports/HTMLDocument'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
 require 'reports/CSVFile'
+require 'HTMLDocument'
 
 class TaskJuggler
 
