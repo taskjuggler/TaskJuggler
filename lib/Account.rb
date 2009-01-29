@@ -14,32 +14,36 @@
 require 'PropertyTreeNode'
 require 'AccountScenario'
 
-# An Account is an object to record financial transactions. Alternatively, an
-# Account can just be a container for a set of Accounts. In this case it
-# cannot directly record any transactions.
-class Account < PropertyTreeNode
+class TaskJuggler
 
-  def initialize(project, id, name, parent)
-    super(project.resources, id, name, parent)
-    project.addAccount(self)
+  # An Account is an object to record financial transactions. Alternatively, an
+  # Account can just be a container for a set of Accounts. In this case it
+  # cannot directly record any transactions.
+  class Account < PropertyTreeNode
 
-    @data = Array.new(@project.scenarioCount, nil)
-    0.upto(@project.scenarioCount) do |i|
-      @data[i] = AccountScenario.new(self, i, @scenarioAttributes[i])
+    def initialize(project, id, name, parent)
+      super(project.resources, id, name, parent)
+      project.addAccount(self)
+
+      @data = Array.new(@project.scenarioCount, nil)
+      0.upto(@project.scenarioCount) do |i|
+        @data[i] = AccountScenario.new(self, i, @scenarioAttributes[i])
+      end
     end
-  end
 
-  # Many Account functions are scenario specific. These functions are
-  # provided by the class AccountScenario. In case we can't find a
-  # function called for the Account class we try to find it in
-  # AccountScenario.
-  def method_missing(func, scenarioIdx, *args)
-    @data[scenarioIdx].method(func).call(*args)
-  end
+    # Many Account functions are scenario specific. These functions are
+    # provided by the class AccountScenario. In case we can't find a
+    # function called for the Account class we try to find it in
+    # AccountScenario.
+    def method_missing(func, scenarioIdx, *args)
+      @data[scenarioIdx].method(func).call(*args)
+    end
 
-  # Return a reference to the _scenarioIdx_-th scenario.
-  def scenario(scenarioIdx)
-    return @data[scenarioIdx]
+    # Return a reference to the _scenarioIdx_-th scenario.
+    def scenario(scenarioIdx)
+      return @data[scenarioIdx]
+    end
+
   end
 
 end

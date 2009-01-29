@@ -30,14 +30,14 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_new
-    l1 = Limits.new
+    l1 = TaskJuggler::Limits.new
     l1.setProject(@p)
-    l2 = Limits.new(l1)
+    l2 = TaskJuggler::Limits.new(l1)
     assert_equal(l1.project, l2.project, "Copy constructor failed")
   end
 
   def test_setLimit
-    l = Limits.new
+    l = TaskJuggler::Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     assert_equal(l.limits.length, 1, 'setLimits() failed')
@@ -48,7 +48,7 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_inc
-    l = Limits.new
+    l = TaskJuggler::Limits.new
     l.setProject(@p)
     l.setLimit('weeklymax', 2, Interval.new(TjTime.new('2009-02-10'),
                                             TjTime.new('2009-02-15')))
@@ -65,7 +65,7 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_ok
-    l = Limits.new
+    l = TaskJuggler::Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     assert_equal(l.limits.length, 1, 'setLimits() failed')
@@ -81,7 +81,7 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_with_resource
-    l = Limits.new
+    l = TaskJuggler::Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     r = Resource.new(@p, 'r', 'R', nil)

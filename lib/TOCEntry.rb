@@ -13,59 +13,64 @@
 require 'UTF8String'
 require 'XMLElement'
 
-# A TOCEntry object is used to store the data of an entry in a TableOfContents
-# object. It stores the section number, the title, the file name and the name
-# of the tag in this file. The tag is optional and may be nil. The object can
-# be turned into an HTML tree.
-class TOCEntry
+class TaskJuggler
 
-  # Create a TOCEntry object.
-  # _number_: The section number as String, e. g. '1.2.3' or 'A.3'.
-  # _title_: The section title as String.
-  # _file_: The name of the file.
-  # _tag_: An optional tag within the file.
-  def initialize(number, title, file, tag = nil)
-    @number = number
-    @title = title
-    @file = file
-    @tag = tag
-  end
+  # A TOCEntry object is used to store the data of an entry in a TableOfContents
+  # object. It stores the section number, the title, the file name and the name
+  # of the tag in this file. The tag is optional and may be nil. The object can
+  # be turned into an HTML tree.
+  class TOCEntry
 
-  # Return the TOCEntry as equivalent HTML elements. The result is an Array of
-  # XMLElement objects.
-  def to_html
-    html = []
-
-    if level == 0
-      # A another table line for some extra distance above main chapters.
-      html << (tr = XMLElement.new('tr'))
-      tr << (td = XMLElement.new('td'))
-      td << XMLElement.new('div', 'style' => 'height:10px')
+    # Create a TOCEntry object.
+    # _number_: The section number as String, e. g. '1.2.3' or 'A.3'.
+    # _title_: The section title as String.
+    # _file_: The name of the file.
+    # _tag_: An optional tag within the file.
+    def initialize(number, title, file, tag = nil)
+      @number = number
+      @title = title
+      @file = file
+      @tag = tag
     end
 
-    fontSizes = [ 20, 17, 15 ]
-    tr = XMLElement.new('tr', 'style' => "font-size:#{fontSizes[level]}px;")
-    tr << (td = XMLElement.new('td',
-                               'style' => "padding-left:#{10 * level}px"))
-    td << XMLText.new(@number)
-    tr << (td = XMLElement.new('td',
-                               'style' => "padding-left:#{5 + 20 * level}px"))
-    tag = @tag ? "##{@tag}" : ''
-    td << (a = XMLElement.new('a', 'href' => "#{@file}.html#{tag}"))
-    a << XMLText.new(@title)
-    html << tr
+    # Return the TOCEntry as equivalent HTML elements. The result is an Array of
+    # XMLElement objects.
+    def to_html
+      html = []
 
-    html
-  end
+      if level == 0
+        # A another table line for some extra distance above main chapters.
+        html << (tr = XMLElement.new('tr'))
+        tr << (td = XMLElement.new('td'))
+        td << XMLElement.new('div', 'style' => 'height:10px')
+      end
 
-private
+      fontSizes = [ 20, 17, 15 ]
+      tr = XMLElement.new('tr', 'style' => "font-size:#{fontSizes[level]}px;")
+      tr << (td = XMLElement.new('td',
+                                 'style' => "padding-left:#{10 * level}px"))
+      td << XMLText.new(@number)
+      tr << (td = XMLElement.new('td',
+                                 'style' => "padding-left:#{5 + 20 * level}px"))
+      tag = @tag ? "##{@tag}" : ''
+      td << (a = XMLElement.new('a', 'href' => "#{@file}.html#{tag}"))
+      a << XMLText.new(@title)
+      html << tr
 
-  # Returns the level of the section. It simply counts the number of dots in
-  # the section number.
-  def level
-    lev = 0
-    @number.each_utf8_char { |c| lev += 1 if c == '.' }
-    lev
+      html
+    end
+
+  private
+
+    # Returns the level of the section. It simply counts the number of dots in
+    # the section number.
+    def level
+      lev = 0
+      @number.each_utf8_char { |c| lev += 1 if c == '.' }
+      lev
+    end
+
   end
 
 end
+

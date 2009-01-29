@@ -31,7 +31,7 @@ This line is in.
 This line is out.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     ex.parse(text)
 
     out = ex.to_s
@@ -64,7 +64,7 @@ This line is in snip 2 and 3.
 This line is in snip 3.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     ex.parse(text)
 
     out = ex.to_s
@@ -114,7 +114,7 @@ This line is out.
 This line is in as well.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     ex.parse(text)
 
     out = ex.to_s
@@ -139,7 +139,7 @@ EOT
 This line is in.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     assert_raise(RuntimeError) { ex.parse(text) }
   end
 
@@ -151,7 +151,7 @@ This line is in.
 This line is in.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     assert_raise(RuntimeError) { ex.parse(text) }
   end
 
@@ -161,7 +161,7 @@ EOT
 This line is in.
 EOT
 
-    ex = TjpExample.new
+    ex = TaskJuggler::TjpExample.new
     assert_raise(RuntimeError) { ex.parse(text) }
   end
 

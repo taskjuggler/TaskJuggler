@@ -12,25 +12,28 @@
 
 require 'ScenarioData'
 
-# This class handles the scenario specific features of a Account object.
-class AccountScenario < ScenarioData
+class TaskJuggler
 
-  def initialize(account, scenarioIdx, attributes)
-    super
-  end
+  # This class handles the scenario specific features of a Account object.
+  class AccountScenario < ScenarioData
 
-  # Compute the turnover for the _period_. Period should be an Interval.
-  def turnover(period)
-    amount = 0.0
-    if container?
-      @children.each { |child| amount += child.turnover }
-    else
-      @project.tasks.each do |task|
-        amount += task.turnover(period, self)
-      end
+    def initialize(account, scenarioIdx, attributes)
+      super
     end
-    amount
+
+    # Compute the turnover for the _period_. Period should be an Interval.
+    def turnover(period)
+      amount = 0.0
+      if container?
+        @children.each { |child| amount += child.turnover }
+      else
+        @project.tasks.each do |task|
+          amount += task.turnover(period, self)
+        end
+      end
+      amount
+    end
+
   end
 
 end
-

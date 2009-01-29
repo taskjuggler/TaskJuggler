@@ -18,7 +18,7 @@ require 'MacroTable'
 class TestMacroTable < Test::Unit::TestCase
 
   def setup
-    @mt = MacroTable.new(MessageHandler.new)
+    @mt = TaskJuggler::MacroTable.new(MessageHandler.new)
   end
 
   def teardown
@@ -26,14 +26,14 @@ class TestMacroTable < Test::Unit::TestCase
   end
 
   def test_addAndClear
-    @mt.add(Macro.new('macro1', 'This is macro 1', nil))
-    @mt.add(Macro.new('macro2', 'This is macro 2', nil))
+    @mt.add(TaskJuggler::Macro.new('macro1', 'This is macro 1', nil))
+    @mt.add(TaskJuggler::Macro.new('macro2', 'This is macro 2', nil))
     @mt.clear
   end
 
   def test_resolve
-    @mt.add(Macro.new('macro1', 'This is macro 1', nil))
-    @mt.add(Macro.new('macro2', 'This is macro 2 with ${1} and ${2}', nil))
+    @mt.add(TaskJuggler::Macro.new('macro1', 'This is macro 1', nil))
+    @mt.add(TaskJuggler::Macro.new('macro2', 'This is macro 2 with ${1} and ${2}', nil))
     assert_equal('This is macro 1', @mt.resolve(%w( macro1 ), nil)[1])
     assert_equal('This is macro 2 with arg1 and arg2',
                  @mt.resolve(%w( macro2 arg1 arg2), nil)[1])

@@ -10,7 +10,7 @@
 # published by the Free Software Foundation.
 #
 
-class TextParser
+class TaskJuggler::TextParser
 
   # The TextParserRule holds the basic elment of the syntax description. Each
   # rule has a name and a set of patterns. The parser uses these rules to parse

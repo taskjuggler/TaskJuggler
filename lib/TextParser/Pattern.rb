@@ -12,7 +12,7 @@
 
 require 'TextParser/TokenDoc'
 
-class TextParser
+class TaskJuggler::TextParser
 
   # This class models the most crutial elements of a syntax description - the
   # pattern. A TextParserPattern primarily consists of a set of tokens. Tokens

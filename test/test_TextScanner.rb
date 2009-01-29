@@ -77,7 +77,7 @@ EOT
 
     s = TaskJuggler::TextScanner.new(text, MessageHandler.new(false))
     s.open(true)
-    s.addMacro(Macro.new('adj', 'great', nil))
+    s.addMacro(TaskJuggler::Macro.new('adj', 'great', nil))
 
     assert_equal(['ID', 'This'], s.nextToken)
     assert_equal(['ID', 'great'], s.nextToken)

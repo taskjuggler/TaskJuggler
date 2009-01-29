@@ -14,59 +14,63 @@
 require 'TextParser'
 require 'MessageHandler'
 
-# This class implements a mini parser for the macro calls. It will be called
-# from the same scanner that it uses to read the macro tokens.
-class MacroParser < TextParser
+class TaskJuggler
 
-  def initialize(scanner, messageHandler)
-    super()
+  # This class implements a mini parser for the macro calls. It will be called
+  # from the same scanner that it uses to read the macro tokens.
+  class MacroParser < TextParser
 
-    @scanner = scanner
-    @messageHandler = messageHandler
-    @variables = %w( ID STRING )
+    def initialize(scanner, messageHandler)
+      super()
 
-    initRules
-  end
+      @scanner = scanner
+      @messageHandler = messageHandler
+      @variables = %w( ID STRING )
 
-  def nextToken
-    @scanner.nextToken
-  end
+      initRules
+    end
 
-  def returnToken(token)
-    @scanner.returnToken(token)
-  end
+    def nextToken
+      @scanner.nextToken
+    end
 
-  def rule_macroArguments
-    optional
-    repeatable
-    pattern(%w( $STRING ), Proc.new {
-      @val[0]
-    })
-  end
+    def returnToken(token)
+      @scanner.returnToken(token)
+    end
 
-  def rule_macroCall
-    pattern(%w( _{ !relax $ID !macroArguments _} ), Proc.new {
-      # When the ID is prefixed by a '?' the macro may be undefined and the
-      # macro call is replaced by an empty string.
-      unless @scanner.macroDefined?(@val[2])
-        if @val[1].nil?
-          error('undef_macro', "Macro #{@val[2]} is undefined")
+    def rule_macroArguments
+      optional
+      repeatable
+      pattern(%w( $STRING ), Proc.new {
+        @val[0]
+      })
+    end
+
+    def rule_macroCall
+      pattern(%w( _{ !relax $ID !macroArguments _} ), Proc.new {
+        # When the ID is prefixed by a '?' the macro may be undefined and the
+        # macro call is replaced by an empty string.
+        unless @scanner.macroDefined?(@val[2])
+          if @val[1].nil?
+            error('undef_macro', "Macro #{@val[2]} is undefined")
+          end
+          nil
+        else
+          @scanner.expandMacro([ @val[2] ] + @val[3])
         end
-        nil
-      else
-        @scanner.expandMacro([ @val[2] ] + @val[3])
-      end
-    })
-    pattern(%w( _( $ID _) ), lambda {
-      ENV[@val[0]]
-    })
-  end
+      })
+      pattern(%w( _( $ID _) ), lambda {
+        ENV[@val[0]]
+      })
+    end
 
-  def rule_relax
-    optional
-    pattern(%w( _? ), lambda {
-      true
-    })
+    def rule_relax
+      optional
+      pattern(%w( _? ), lambda {
+        true
+      })
+    end
+
   end
 
 end

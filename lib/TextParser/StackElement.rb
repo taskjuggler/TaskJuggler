@@ -10,7 +10,7 @@
 # published by the Free Software Foundation.
 #
 
-class TextParser
+class TaskJuggler::TextParser
 
   # This class models the elements of the stack that the TextParser uses to keep
   # track of its state. It stores the current TextParserRule, the current

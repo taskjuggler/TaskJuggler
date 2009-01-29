@@ -10,7 +10,7 @@
 # published by the Free Software Foundation.
 #
 
-class TextParser
+class TaskJuggler::TextParser
 
   # Utility class to store a name and a textual description of the meaning of a
   # token used by the parser syntax tree. A specification of the variable type

@@ -56,7 +56,7 @@ EOT
         error('account_exists',
               "Account #{@val[1]} has already been defined.")
       end
-      @property = Account.new(@project, @val[1], @val[2], @property)
+      @property = TaskJuggler::Account.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
     arg(1, 'id', <<'EOT'
@@ -72,7 +72,7 @@ EOT
       id = @val[0]
       id = @accountprefix + '.' + id unless @accountprefix.empty?
       # In case we have a nested supplement, we need to prepend the parent ID.
-      id = @property.fullId + '.' + id if @property && @property.is_a?(Account)
+      id = @property.fullId + '.' + id if @property && @property.is_a?(TaskJuggler::Account)
       if (account = @project.account(id)).nil?
         error('unknown_account', "Unknown account #{id}")
       end
@@ -356,7 +356,7 @@ EOT
       checkContainer('chargeset')
       items = [ @val[1] ]
       items += @val[2] if @val[2]
-      chargeSet = ChargeSet.new
+      chargeSet = TaskJuggler::ChargeSet.new
       begin
         items.each do |item|
           chargeSet.addAccount(item[0], item[1])
@@ -1325,7 +1325,7 @@ EOT
 
   def rule_limitsHeader
     pattern(%w( _limits ), lambda {
-      @limits = Limits.new
+      @limits = TaskJuggler::Limits.new
       @limits.setProject(@project)
       @limits
     })
@@ -3265,7 +3265,7 @@ EOT
       end
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
+        [ TaskJuggler::Charge.new(amount, mode, @property, @scenarioIdx) ]
     })
     doc('charge', <<'EOT'
 Specify a one-time or per-period charge to a certain account. The charge can
@@ -3366,7 +3366,7 @@ EOT
     pattern(%w( _endcredit !number ), lambda {
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
+        [ TaskJuggler::Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
     })
     doc('endcredit', <<'EOT'
 Specifies an amount that is credited to the accounts specified by the
@@ -3469,7 +3469,7 @@ EOT
     pattern(%w( _startcredit !number ), lambda {
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
+        [ TaskJuggler::Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
     doc('startcredit', <<'EOT'
 Specifies an amount that is credited to the account specified by the
