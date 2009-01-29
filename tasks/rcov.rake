@@ -1,4 +1,3 @@
-
 require 'rcov/rcovtask'
 
 # RCOV TASK

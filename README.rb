@@ -34,7 +34,7 @@ the source code using setup.rb.
 
 This is a prototype. Consider it being alpha quality at best!
 
-== Requirements 
+== Requirements
 
 Ruby applications are platform independent. There is no need to
 compile anything. But #{PROJECT_NAME[0..-5]} has a very small set of
@@ -52,23 +52,27 @@ have the minimum required version installed.
 [*RubyGems*] If it did not come with your OS or Ruby package, see
 	     here[http://docs.rubygems.org] how to get and install it.
 
-[*Rake*] Rake[http://rake.rubyforge.org] is only needed when you
-	 start with the source code from the Git repository. It's not
-	 needed when you already have a Gem package.
-
 [*#{PROJECT_NAME[0..-5]}*] Get #{PROJECT_NAME} from the
                 {Download Page}[#{PROJECT_HOMEPAGE}/download.php]
+
+The following dependencies are only needed if you want to build the gem
+package yourself.
+
+[*Rake*] Rake[http://rake.rubyforge.org] is only needed when you
+	 start with the source code from the Git repository.
+
+[*rcov] rcov[http://eigenclass.org/hiki.rb?rcov] Code coverage tool.
 
 == Installation Process
 
 If you have checked-out the git repository, you need to build the Gem
 package first.
 
-<tt>cd #{UNIX_NAME}; ./makedist</tt>
+<tt>cd #{UNIX_NAME}3; rake release</tt>
 
 To install the Gem package, just run as root the following command.
 
-<tt>gem install pkg/#{UNIX_NAME}-#{PROJECT_VERSION}.gem</tt> 
+<tt>gem install pkg/#{UNIX_NAME}-#{PROJECT_VERSION}.gem</tt>
 
 It will install all components of the Gem in the appropriate place.
 
@@ -80,7 +84,7 @@ Updates work just like the installation.
 
 = Using #{PROJECT_NAME}
 
-The user manual can be found in folder data/manual of the Gem file or
+The user manual can be found in folder manual/html of the Gem file or
 at the {#{PROJECT_NAME[0..-5]} Web Site}[#{PROJECT_HOMEPAGE}/tj3/manual/index.html].
 
 = Understanding the source code
@@ -89,7 +93,7 @@ Ruby code is usually pretty readable even if you don't know Ruby yet.
 Additionally, we have tried to document all critical parts of the
 code well enough for other people to understand the code. When
 browsing the code you should start with the file
-#{UNIX_NAME}.rb and the class #{PROJECT_NAME[0..-5]}.
+taskjuggler3.rb and the class TaskJuggler.rb.
 "
 }
 

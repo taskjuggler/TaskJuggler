@@ -25,10 +25,6 @@ TaskJuggler currently needs at least Ruby version 1.8.5.
 * ''RubyGems'' If it did not come with your OS or Ruby package, see
 [http://docs.rubygems.org here] how to get and install it.
 
-* ''Rake'' [http://rake.rubyforge.org Rake] is only needed when you
-start with the source code from the Git repository. It's not needed
-when you already have a Gem package.
-
 * ''TaskJuggler'' Get TaskJuggler III from the
 [http://www.taskjuggler.org/download.php Download Page].
 
@@ -39,17 +35,27 @@ paragraph.  If you have checked-out the git repository, you need to
 build the Gem package first. Make sure, you have removed all other
 instances of TaskJuggler from you system before doing so. It is a
 common mistake to have an old version of the TaskJuggler installed and
-then use parts of the old and new version together.  The following
-command will create an archive file called a gem package.
+then use parts of the old and new version together.
 
- cd taskjuggler3; ./makedist
+In addition to the above listed dependencies, you need to have the
+following packages installed:
+
+* [http://rake.rubyforge.org Rake] The Ruby build tool.
+
+* [http://eigenclass.org/hiki.rb?rcov rcov] The rcov code
+coverage analysis tool.
+
+The following command will create an archive file called a gem
+package.
+
+ cd taskjuggler3; rake release
  
 A gem package is an operating system and architecture independent
 archive file for Ruby programs. You can install it on any system that
 has Ruby and ruby-gems installed.  Normally, you should be logged-in
 as root or administrator to run the following installation command.
 
- gem install pkg/taskjuggler3-X.X.X.gem 
+ gem install pkg/taskjuggler-X.X.X.gem 
 
 It will install all components of the Gem in the appropriate place.
 
@@ -57,6 +63,6 @@ It will install all components of the Gem in the appropriate place.
 
 Updates work just like the installation.
 
- gem update pkg/taskjuggler3-X.X.X.gem
+ gem update pkg/taskjuggler-X.X.X.gem
 
 

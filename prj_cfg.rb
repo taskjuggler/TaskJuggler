@@ -4,7 +4,7 @@
 PROJECT_NAME    = 'TaskJuggler III'
 PROJECT_SUMMARY = 'Project Management Software'
 PROJECT_HOMEPAGE= 'http://www.taskjuggler.org'
-UNIX_NAME       = File.basename( Dir.pwd ).downcase
+UNIX_NAME       = 'taskjuggler'
 
 # PERSONAL
 USER_NAME       = 'Chris Schlaeger'
@@ -32,7 +32,7 @@ RAKE_DIR        = 'tasks'
 MANUAL_DIR      = 'manual/html'
 
 # FILES
-README          = FileList['README.rb','README']
+README          = FileList['README']
 CHANGES         = ''#'CHANGES'
 LICENSE         = 'COPYING'
 RAKEFILE        = 'Rakefile'
