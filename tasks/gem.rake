@@ -5,7 +5,7 @@ Rake::GemPackageTask.new(GEM_SPEC) { |pkg|
     puts "Signed with #{CERT_PRIVATE}" if HAVE_CERT
 }
 
-task :release => [:clobber, :chmod] do
+task :release => [:clobber] do
     puts "Preparing release of #{PROJECT_NAME} version #{PROJECT_VERSION}"
     Rake::Task[:test].invoke
 #    Rake::Task[:rdoc].invoke
