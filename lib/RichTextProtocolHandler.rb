@@ -10,21 +10,25 @@
 # published by the Free Software Foundation.
 #
 
-# This class is the abstract base class for all RichText protocol handlers. A
-# protocol handler is responsible for a certain protocol such as 'example' or
-# 'query'. Protocols are used in internal RichText references such as
-# '[[example:Allocation 2]]'. 'example' is the protocol, 'Allocation' is the
-# path and '2' is the first argument. Arguments are optional. Protocol handler
-# can turn such internal references into Strings or XMLElement trees.
-# Therefor, each derived handler needs to implement a to_s, to_html and
-# to_tagged method that takes two parameter. The first is the path, the second
-# is the argument Array.
-class RichTextProtocolHandler
+class TaskJuggler
 
-  attr_reader :protocol
+  # This class is the abstract base class for all RichText protocol handlers. A
+  # protocol handler is responsible for a certain protocol such as 'example' or
+  # 'query'. Protocols are used in internal RichText references such as
+  # '[[example:Allocation 2]]'. 'example' is the protocol, 'Allocation' is the
+  # path and '2' is the first argument. Arguments are optional. Protocol handler
+  # can turn such internal references into Strings or XMLElement trees.
+  # Therefor, each derived handler needs to implement a to_s, to_html and
+  # to_tagged method that takes two parameter. The first is the path, the second
+  # is the argument Array.
+  class RichTextProtocolHandler
 
-  def initialize(protocol)
-    @protocol = protocol
+    attr_reader :protocol
+
+    def initialize(protocol)
+      @protocol = protocol
+    end
+
   end
 
 end

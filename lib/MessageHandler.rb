@@ -10,21 +10,24 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
 
-class MessageHandler
+  class MessageHandler
 
-  attr_reader :messages
+    attr_reader :messages
 
-  def initialize(console = false)
-    @messages = []
-    @console = console
-  end
-
-  def send(message)
-    @messages << message
-    if @console
-      $stderr.puts message
+    def initialize(console = false)
+      @messages = []
+      @console = console
     end
+
+    def send(message)
+      @messages << message
+      if @console
+        $stderr.puts message
+      end
+    end
+
   end
 
 end

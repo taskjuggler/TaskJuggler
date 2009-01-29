@@ -15,6 +15,8 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'test/unit'
 require 'Project'
 
+class TaskJuggler
+
 class TestProject < Test::Unit::TestCase
 
   def setup
@@ -48,6 +50,8 @@ class TestProject < Test::Unit::TestCase
     assert_equal(t['end', 0], TjTime.new('2008-07-25 19:00'))
     p.generateReports
   end
+
+end
 
 end
 

@@ -10,21 +10,25 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'LogicalOperation'
 
-class LogicalFlag < LogicalOperation
+class TaskJuggler
 
-  def initialize(opnd)
-    super
-  end
+  class LogicalFlag < LogicalOperation
 
-  def eval(expr)
-    expr.property['flags', 0].include?(@operand1)
-  end
+    def initialize(opnd)
+      super
+    end
 
-  def to_s
-    @operand1
+    def eval(expr)
+      expr.property['flags', 0].include?(@operand1)
+    end
+
+    def to_s
+      @operand1
+    end
+
   end
 
 end
+

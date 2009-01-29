@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
 
 # This module contains the rule definition for the TJP syntax. Every rule is
 # put in a function who's name must start with rule_. The functions are not
@@ -56,7 +57,7 @@ EOT
         error('account_exists',
               "Account #{@val[1]} has already been defined.")
       end
-      @property = TaskJuggler::Account.new(@project, @val[1], @val[2], @property)
+      @property = Account.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
     })
     arg(1, 'id', <<'EOT'
@@ -72,7 +73,7 @@ EOT
       id = @val[0]
       id = @accountprefix + '.' + id unless @accountprefix.empty?
       # In case we have a nested supplement, we need to prepend the parent ID.
-      id = @property.fullId + '.' + id if @property && @property.is_a?(TaskJuggler::Account)
+      id = @property.fullId + '.' + id if @property && @property.is_a?(Account)
       if (account = @project.account(id)).nil?
         error('unknown_account', "Unknown account #{id}")
       end
@@ -356,7 +357,7 @@ EOT
       checkContainer('chargeset')
       items = [ @val[1] ]
       items += @val[2] if @val[2]
-      chargeSet = TaskJuggler::ChargeSet.new
+      chargeSet = ChargeSet.new
       begin
         items.each do |item|
           chargeSet.addAccount(item[0], item[1])
@@ -560,8 +561,8 @@ EOT
 
   def rule_csvResourceReportHeader
     pattern(%w( _csvresourcereport !csvFileName ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :csv, sourceFileInfo)
-      @reportElement = TaskJuggler::ResourceListRE.new(@report)
+      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @reportElement = ResourceListRE.new(@report)
     })
   end
 
@@ -579,8 +580,8 @@ EOT
 
   def rule_csvTaskReportHeader
     pattern(%w( _csvtaskreport !csvFileName ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :csv, sourceFileInfo)
-      @reportElement = TaskJuggler::TaskListRE.new(@report)
+      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @reportElement = TaskListRE.new(@report)
     })
   end
 
@@ -705,8 +706,8 @@ EOT
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      @report = TaskJuggler::Report.new(@project, name, :export, sourceFileInfo)
-      @reportElement = TaskJuggler::TjpExportRE.new(@report, mainFile)
+      @report = Report.new(@project, name, :export, sourceFileInfo)
+      @reportElement = TjpExportRE.new(@report, mainFile)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -990,8 +991,8 @@ EOT
 
   def rule_htmlResourceReportHeader
     pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :html, sourceFileInfo)
-      @reportElement = TaskJuggler::ResourceListRE.new(@report)
+      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
+      @reportElement = ResourceListRE.new(@report)
     })
   end
 
@@ -1006,8 +1007,8 @@ EOT
 
   def rule_htmlTaskReportHeader
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :html, sourceFileInfo)
-      @reportElement = TaskJuggler::TaskListRE.new(@report)
+      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
+      @reportElement = TaskListRE.new(@report)
     })
   end
 
@@ -1325,7 +1326,7 @@ EOT
 
   def rule_limitsHeader
     pattern(%w( _limits ), lambda {
-      @limits = TaskJuggler::Limits.new
+      @limits = Limits.new
       @limits.setProject(@project)
       @limits
     })
@@ -1783,7 +1784,7 @@ EOT
 
   def rule_projectHeader
     pattern(%w( _project $ID $STRING $STRING !interval ), lambda {
-      @project = TaskJuggler::Project.new(@val[1], @val[2], @val[3],
+      @project = Project.new(@val[1], @val[2], @val[3],
                                           @messageHandler)
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
@@ -2535,8 +2536,8 @@ EOT
 
   def rule_resourceReportHeader
     pattern(%w( _resourcereport $STRING ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :gui, sourceFileInfo)
-      @reportElement = TaskJuggler::ResourceListRE.new(@report)
+      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
+      @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report.
@@ -3211,8 +3212,8 @@ EOT
 
   def rule_taskReportHeader
     pattern(%w( _taskreport $STRING ), lambda {
-      @report = TaskJuggler::Report.new(@project, @val[1], :gui, sourceFileInfo)
-      @reportElement = TaskJuggler::TaskListRE.new(@report)
+      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
+      @reportElement = TaskListRE.new(@report)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report.
@@ -3265,7 +3266,7 @@ EOT
       end
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ TaskJuggler::Charge.new(amount, mode, @property, @scenarioIdx) ]
+        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
     })
     doc('charge', <<'EOT'
 Specify a one-time or per-period charge to a certain account. The charge can
@@ -3366,7 +3367,7 @@ EOT
     pattern(%w( _endcredit !number ), lambda {
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ TaskJuggler::Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
+        [ Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
     })
     doc('endcredit', <<'EOT'
 Specifies an amount that is credited to the accounts specified by the
@@ -3469,7 +3470,7 @@ EOT
     pattern(%w( _startcredit !number ), lambda {
       @property['charge', @scenarioIdx] =
         @property['charge', @scenarioIdx] +
-        [ TaskJuggler::Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
+        [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
     doc('startcredit', <<'EOT'
 Specifies an amount that is credited to the account specified by the
@@ -3973,6 +3974,8 @@ slots of week days.
 EOT
        )
   end
+
+end
 
 end
 

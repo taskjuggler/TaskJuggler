@@ -15,6 +15,8 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'test/unit'
 require 'Project'
 
+class TaskJuggler
+
 class TestPropertySet < Test::Unit::TestCase
 
   def setup
@@ -62,6 +64,8 @@ class TestPropertySet < Test::Unit::TestCase
       assert_equal(r.fullId, r.get('wbs'))
     end
   end
+
+end
 
 end
 

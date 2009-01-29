@@ -14,24 +14,28 @@
 require 'PropertyTreeNode'
 require 'ResourceScenario'
 
-class Resource < PropertyTreeNode
+class TaskJuggler
 
-  def initialize(project, id, name, parent)
-    super(project.resources, id, name, parent)
-    project.addResource(self)
+  class Resource < PropertyTreeNode
 
-    @data = Array.new(@project.scenarioCount, nil)
-    0.upto(@project.scenarioCount) do |i|
-      @data[i] = ResourceScenario.new(self, i, @scenarioAttributes[i])
+    def initialize(project, id, name, parent)
+      super(project.resources, id, name, parent)
+      project.addResource(self)
+
+      @data = Array.new(@project.scenarioCount, nil)
+      0.upto(@project.scenarioCount) do |i|
+        @data[i] = ResourceScenario.new(self, i, @scenarioAttributes[i])
+      end
     end
-  end
 
-  # Many Resource functions are scenario specific. These functions are
-  # provided by the class ResourceScenario. In case we can't find a
-  # function called for the Resource class we try to find it in
-  # ResourceScenario.
-  def method_missing(func, scenarioIdx, *args)
-    @data[scenarioIdx].method(func).call(*args)
+    # Many Resource functions are scenario specific. These functions are
+    # provided by the class ResourceScenario. In case we can't find a
+    # function called for the Resource class we try to find it in
+    # ResourceScenario.
+    def method_missing(func, scenarioIdx, *args)
+      @data[scenarioIdx].method(func).call(*args)
+    end
+
   end
 
 end

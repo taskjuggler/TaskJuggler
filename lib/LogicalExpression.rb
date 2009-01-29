@@ -15,52 +15,56 @@ require 'Attributes'
 require 'LogicalFlag'
 require 'LogicalFunction'
 
-# A LogicalExpression is an object that describes tree of LogicalOperation
-# objects and the context that it should be evaluated in.
-class LogicalExpression
+class TaskJuggler
 
-  attr_reader :property, :sourceFileInfo
+  # A LogicalExpression is an object that describes tree of LogicalOperation
+  # objects and the context that it should be evaluated in.
+  class LogicalExpression
 
-  # Create a new LogicalExpression object. _op_ must be a LogicalOperation.
-  # _sourceFileInfo_ is the file position where expression started. It may be
-  # nil if not available.
-  def initialize(op, sourceFileInfo = nil)
-    @operation = op
-    @sourceFileInfo = sourceFileInfo
+    attr_reader :property, :sourceFileInfo
 
-    @property = @scopeProperty = nil
-  end
+    # Create a new LogicalExpression object. _op_ must be a LogicalOperation.
+    # _sourceFileInfo_ is the file position where expression started. It may be
+    # nil if not available.
+    def initialize(op, sourceFileInfo = nil)
+      @operation = op
+      @sourceFileInfo = sourceFileInfo
 
-  # This function triggers the evaluation of the expression. _property_ is the
-  # PropertyTreeNode that should be used for the evaluation. _scopeProperty_
-  # is the PropertyTreeNode that describes the scope. It may be nil.
-  def eval(property, scopeProperty)
-    @property = property
-    @scopeProperty = scopeProperty
-    res = @operation.eval(self)
-    return res if res.class == TrueClass || res.class == FalseClass
-    # In TJP syntax 'non 0' means false.
-    return res != 0
-  end
-
-  # This function is only used for debugging.
-  def to_s # :nodoc:
-    if @sourceFileInfo.nil?
-      "#{@operation}"
-    else
-      str = "#{@sourceFileInfo} #{@operation}"
+      @property = @scopeProperty = nil
     end
-  end
 
-  # This is an internal function. It's called by the LogicalOperation methods
-  # in case something went wrong during an evaluation.
-  def error(text) # :nodoc:
-    if @sourceFileInfo.nil?
-      str = "Logical expression error: " + text
-    else
-      str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
+    # This function triggers the evaluation of the expression. _property_ is the
+    # PropertyTreeNode that should be used for the evaluation. _scopeProperty_
+    # is the PropertyTreeNode that describes the scope. It may be nil.
+    def eval(property, scopeProperty)
+      @property = property
+      @scopeProperty = scopeProperty
+      res = @operation.eval(self)
+      return res if res.class == TrueClass || res.class == FalseClass
+      # In TJP syntax 'non 0' means false.
+      return res != 0
     end
-    raise TjException.new, str
+
+    # This function is only used for debugging.
+    def to_s # :nodoc:
+      if @sourceFileInfo.nil?
+        "#{@operation}"
+      else
+        str = "#{@sourceFileInfo} #{@operation}"
+      end
+    end
+
+    # This is an internal function. It's called by the LogicalOperation methods
+    # in case something went wrong during an evaluation.
+    def error(text) # :nodoc:
+      if @sourceFileInfo.nil?
+        str = "Logical expression error: " + text
+      else
+        str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
+      end
+      raise TjException.new, str
+    end
+
   end
 
 end

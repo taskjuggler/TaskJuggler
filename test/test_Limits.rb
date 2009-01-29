@@ -17,10 +17,12 @@ require 'Limits'
 require 'Project'
 require 'TjTime'
 
+class TaskJuggler
+
 class TestLimits < Test::Unit::TestCase
 
   def setup
-    @p = TaskJuggler::Project.new('p1', 'p 1', '1.0', MessageHandler.new)
+    @p = Project.new('p1', 'p 1', '1.0', MessageHandler.new)
     @p['start'] = TjTime.new('2009-01-21')
     @p['end'] = TjTime.new('2009-03-01')
   end
@@ -30,14 +32,14 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_new
-    l1 = TaskJuggler::Limits.new
+    l1 = Limits.new
     l1.setProject(@p)
-    l2 = TaskJuggler::Limits.new(l1)
+    l2 = Limits.new(l1)
     assert_equal(l1.project, l2.project, "Copy constructor failed")
   end
 
   def test_setLimit
-    l = TaskJuggler::Limits.new
+    l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     assert_equal(l.limits.length, 1, 'setLimits() failed')
@@ -48,10 +50,10 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_inc
-    l = TaskJuggler::Limits.new
+    l = Limits.new
     l.setProject(@p)
     l.setLimit('weeklymax', 2, Interval.new(TjTime.new('2009-02-10'),
-                                            TjTime.new('2009-02-15')))
+                                                         TjTime.new('2009-02-15')))
     # Outside of limit interval, should be ignored
     l.inc(TjTime.new('2009-02-05-10:00'))
     l.inc(TjTime.new('2009-02-20-10:00'))
@@ -65,7 +67,7 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_ok
-    l = TaskJuggler::Limits.new
+    l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     assert_equal(l.limits.length, 1, 'setLimits() failed')
@@ -81,7 +83,7 @@ class TestLimits < Test::Unit::TestCase
   end
 
   def test_with_resource
-    l = TaskJuggler::Limits.new
+    l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     r = Resource.new(@p, 'r', 'R', nil)
@@ -95,6 +97,8 @@ class TestLimits < Test::Unit::TestCase
     l.inc(TjTime.new('2009-02-01-13:00'))
     assert(!l.ok?)
   end
+
+end
 
 end
 

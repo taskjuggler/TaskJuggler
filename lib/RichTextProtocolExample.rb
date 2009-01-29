@@ -14,46 +14,50 @@ require 'RichTextProtocolHandler'
 require 'TjpExample'
 require 'XMLElement'
 
-# This class is a specialized RichTextProtocolHandler that turns references to
-# TJP example code in the test/TestSuite/Syntax/Correct directory into
-# embedded example code. It currently only supports HTML.
-class RichTextProtocolExample < RichTextProtocolHandler
+class TaskJuggler
 
-  def initialize
-    super('example')
-  end
+  # This class is a specialized RichTextProtocolHandler that turns references to
+  # TJP example code in the test/TestSuite/Syntax/Correct directory into
+  # embedded example code. It currently only supports HTML.
+  class RichTextProtocolExample < RichTextProtocolHandler
 
-  # Not supported for this protocol
-  def to_s(path, args)
-    ''
-  end
-
-  # Return a XMLElement tree that represents the example file as HTML code.
-  def to_html(path, args)
-    if args.length > 1
-      raise "The example protocol may only take upto one argument."
-    elsif args.length == 1
-      tag = args[0]
-    else
-      tag = nil
+    def initialize
+      super('example')
     end
 
-    example = TjpExample.new
-    fileName = "test/TestSuite/Syntax/Correct/#{path}.tjp"
-    example.open(fileName)
-    frame = XMLElement.new('div', 'class' => 'codeframe')
-    frame << (pre = XMLElement.new('pre', 'class' => 'code'))
-    unless (text = example.to_s(tag))
-      raise "There is no tag '#{tag}' in file " +
-          "#{fileName}."
+    # Not supported for this protocol
+    def to_s(path, args)
+      ''
     end
-    pre << XMLText.new(text)
-    frame
-  end
 
-  # Not supported for this protocol.
-  def to_tagged(path, args)
-    nil
+    # Return a XMLElement tree that represents the example file as HTML code.
+    def to_html(path, args)
+      if args.length > 1
+        raise "The example protocol may only take upto one argument."
+      elsif args.length == 1
+        tag = args[0]
+      else
+        tag = nil
+      end
+
+      example = TjpExample.new
+      fileName = "test/TestSuite/Syntax/Correct/#{path}.tjp"
+      example.open(fileName)
+      frame = XMLElement.new('div', 'class' => 'codeframe')
+      frame << (pre = XMLElement.new('pre', 'class' => 'code'))
+      unless (text = example.to_s(tag))
+        raise "There is no tag '#{tag}' in file " +
+            "#{fileName}."
+      end
+      pre << XMLText.new(text)
+      frame
+    end
+
+    # Not supported for this protocol.
+    def to_tagged(path, args)
+      nil
+    end
+
   end
 
 end

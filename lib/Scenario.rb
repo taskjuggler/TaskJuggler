@@ -10,14 +10,17 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'PropertyTreeNode'
 
-class Scenario < PropertyTreeNode
+class TaskJuggler
 
-  def initialize(project, id, name, parent)
-    super(project.scenarios, id, name, parent)
-    project.addScenario(self)
+  class Scenario < PropertyTreeNode
+
+    def initialize(project, id, name, parent)
+      super(project.scenarios, id, name, parent)
+      project.addScenario(self)
+    end
+
   end
 
 end

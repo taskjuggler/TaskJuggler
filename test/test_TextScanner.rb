@@ -16,6 +16,8 @@ require 'test/unit'
 require 'TextScanner'
 require 'MessageHandler'
 
+class TaskJuggler
+
 class TestTextScanner < Test::Unit::TestCase
 
   def setup
@@ -87,5 +89,7 @@ EOT
     s.close
 
   end
+end
+
 end
 

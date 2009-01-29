@@ -10,26 +10,29 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
 
-class TaskDependency
+  class TaskDependency
 
-  attr_accessor :onEnd, :gapDuration, :gapLength
-  attr_reader :taskId, :task
+    attr_accessor :onEnd, :gapDuration, :gapLength
+    attr_reader :taskId, :task
 
-  def initialize(taskId, onEnd)
-    @taskId = taskId
-    @task = nil
-    # Specifies whether the dependency is relative to the start or the
-    # end of the dependent task.
-    @onEnd = onEnd
-    # The gap duration is stored in seconds of calendar time.
-    @gapDuration = 0
-    # The gap length is stored in number of scheduling slots.
-    @gapLength = 0
-  end
+    def initialize(taskId, onEnd)
+      @taskId = taskId
+      @task = nil
+      # Specifies whether the dependency is relative to the start or the
+      # end of the dependent task.
+      @onEnd = onEnd
+      # The gap duration is stored in seconds of calendar time.
+      @gapDuration = 0
+      # The gap length is stored in number of scheduling slots.
+      @gapLength = 0
+    end
 
-  def resolve(project)
-    @task = project.task(@taskId)
+    def resolve(project)
+      @task = project.task(@taskId)
+    end
+
   end
 
 end

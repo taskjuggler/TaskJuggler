@@ -10,33 +10,36 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
 
-class Booking
+  class Booking
 
-  attr_reader :resource, :task, :intervals
-  attr_accessor :sourceFileInfo, :overtime, :sloppy
+    attr_reader :resource, :task, :intervals
+    attr_accessor :sourceFileInfo, :overtime, :sloppy
 
-  def initialize(resource, task, intervals)
-    @resource = resource
-    @task = task
-    @intervals = intervals
-    @sourceFileInfo = nil
-    @overtime = 0
-    @sloppy = 0
-  end
-
-  def to_tjp
-    out = "#{@resource.fullId} "
-    first = true
-    @intervals.each do |iv|
-      if first
-        first = false
-      else
-        out += ",\n"
-      end
-      out += "#{iv.start} + #{(iv.end - iv.start) / 3600}h"
+    def initialize(resource, task, intervals)
+      @resource = resource
+      @task = task
+      @intervals = intervals
+      @sourceFileInfo = nil
+      @overtime = 0
+      @sloppy = 0
     end
-    out += ' { overtime 2 }'
+
+    def to_tjp
+      out = "#{@resource.fullId} "
+      first = true
+      @intervals.each do |iv|
+        if first
+          first = false
+        else
+          out += ",\n"
+        end
+        out += "#{iv.start} + #{(iv.end - iv.start) / 3600}h"
+      end
+      out += ' { overtime 2 }'
+    end
+
   end
 
 end

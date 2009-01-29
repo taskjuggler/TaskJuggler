@@ -15,6 +15,8 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'test/unit'
 require 'MacroTable'
 
+class TaskJuggler
+
 class TestMacroTable < Test::Unit::TestCase
 
   def setup
@@ -42,6 +44,8 @@ class TestMacroTable < Test::Unit::TestCase
     assert_equal('This is macro 2 with arg1 and ${2}',
                  @mt.resolve(%w( macro2 arg1), nil)[1])
   end
+
+end
 
 end
 

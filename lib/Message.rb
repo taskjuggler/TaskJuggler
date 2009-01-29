@@ -10,43 +10,46 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'SourceFileInfo'
 
-# The class holds a message object that is passed from the back-end library to
-# the front-end. It can be an informational message, a warning, an error or a
-# fatal event. Every message has an id, a level and a message text. Optional
-# data include the associated source file reference, the property or the
-# scenario.
-class Message
+class TaskJuggler
 
-  attr_reader :id, :level, :text, :sourceFileInfo, :property, :scenario
+  # The class holds a message object that is passed from the back-end library to
+  # the front-end. It can be an informational message, a warning, an error or a
+  # fatal event. Every message has an id, a level and a message text. Optional
+  # data include the associated source file reference, the property or the
+  # scenario.
+  class Message
 
-  def initialize(id, level, text, property = nil, scenario = nil,
-                 sourceFileInfo = nil)
-    @id = id
-    unless %w( info warning error fatal ).include?(level)
-      raise "Unknown message level '#{level}'"
+    attr_reader :id, :level, :text, :sourceFileInfo, :property, :scenario
+
+    def initialize(id, level, text, property = nil, scenario = nil,
+                   sourceFileInfo = nil)
+      @id = id
+      unless %w( info warning error fatal ).include?(level)
+        raise "Unknown message level '#{level}'"
+      end
+      @level = level
+      @text = text
+
+      @property = property
+      @scenario = scenario
+      @sourceFileInfo = sourceFileInfo
     end
-    @level = level
-    @text = text
 
-    @property = property
-    @scenario = scenario
-    @sourceFileInfo = sourceFileInfo
-  end
+    def to_s
+      str = ""
+      if @sourceFileInfo
+        str += "#{@sourceFileInfo.fileName}:#{sourceFileInfo.lineNo}: "
+      end
+      if @scenario
+        str += "#{@level.capitalize} in scenario #{@scenario.id}: "
+      else
+        str += "#{@level.capitalize}: "
+      end
+      str += text
+    end
 
-  def to_s
-    str = ""
-    if @sourceFileInfo
-      str += "#{@sourceFileInfo.fileName}:#{sourceFileInfo.lineNo}: "
-    end
-    if @scenario
-      str += "#{@level.capitalize} in scenario #{@scenario.id}: "
-    else
-      str += "#{@level.capitalize}: "
-    end
-    str += text
   end
 
 end

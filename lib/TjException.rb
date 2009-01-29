@@ -10,14 +10,17 @@
 # published by the Free Software Foundation.
 #
 
+class TaskJuggler
 
-class TjException < RuntimeError
+  class TjException < RuntimeError
 
-  attr_reader :error, :fatal
+    attr_reader :error, :fatal
 
-  def initialize(error = true, fatal = false)
-    @error = error
-    @fatal = fatal
+    def initialize(error = true, fatal = false)
+      @error = error
+      @fatal = fatal
+    end
+
   end
 
 end

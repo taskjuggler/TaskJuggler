@@ -16,6 +16,8 @@ require 'test/unit'
 require 'Project'
 require 'Query'
 
+class TaskJuggler
+
 class TestQuery < Test::Unit::TestCase
 
   def setup
@@ -74,6 +76,8 @@ class TestQuery < Test::Unit::TestCase
       end
     end
   end
+
+end
 
 end
 

@@ -14,47 +14,52 @@
 require 'TjException'
 require 'Message'
 
-class ScenarioData
+class TaskJuggler
 
-  attr_reader :property
+  class ScenarioData
 
-  def initialize(property, idx, attributes)
-    @property = property
-    @project = property.project
-    @scenarioIdx = idx
-    @attributes = attributes
-  end
+    attr_reader :property
 
-  def a(attributeName)
-    @attributes[attributeName].value
-  end
+    def initialize(property, idx, attributes)
+      @property = property
+      @project = property.project
+      @scenarioIdx = idx
+      @attributes = attributes
+    end
 
-  def error(id, text, abort = true, sourceFileInfo = nil)
-    message = Message.new(id, 'error', text, @property,
-                          @project.scenario(@scenarioIdx),
-                          sourceFileInfo.nil? ?
-                          @property.sourceFileInfo : sourceFileInfo)
-    @project.sendMessage(message)
-    raise TjException.new, "Scheduling error" if abort
-  end
+    def a(attributeName)
+      @attributes[attributeName].value
+    end
 
-  def warning(id, text)
-    message = Message.new(id, 'warning', text, @property,
-                          @project.scenario(@scenarioIdx),
-                          @property.sourceFileInfo)
-    @project.sendMessage(message)
-  end
+    def error(id, text, abort = true, sourceFileInfo = nil)
+      message = Message.new(id, 'error', text, @property,
+                            @project.scenario(@scenarioIdx),
+                            sourceFileInfo.nil? ?
+                            @property.sourceFileInfo : sourceFileInfo)
+      @project.sendMessage(message)
+      raise TjException.new, "Scheduling error" if abort
+    end
 
-  def info(id, text, property = nil)
-    property = @property if property.nil?
-    message = Message.new(id, 'info', text, property,
-                          @project.scenario(@scenarioIdx),
-                          property.sourceFileInfo)
-    @project.sendMessage(message)
-  end
+    def warning(id, text)
+      message = Message.new(id, 'warning', text, @property,
+                            @project.scenario(@scenarioIdx),
+                            @property.sourceFileInfo)
+      @project.sendMessage(message)
+    end
 
-  def query_id(query)
-    query.result = query.sortableResult = @property.fullId
+    def info(id, text, property = nil)
+      property = @property if property.nil?
+      message = Message.new(id, 'info', text, property,
+                            @project.scenario(@scenarioIdx),
+                            property.sourceFileInfo)
+      @project.sendMessage(message)
+    end
+
+    def query_id(query)
+      query.result = query.sortableResult = @property.fullId
+    end
+
   end
 
 end
+

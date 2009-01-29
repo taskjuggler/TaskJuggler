@@ -15,6 +15,8 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'test/unit'
 require 'RealFormat'
 
+class TaskJuggler
+
 class TestRealFormat < Test::Unit::TestCase
 
   def setup
@@ -74,6 +76,8 @@ class TestRealFormat < Test::Unit::TestCase
     f = RealFormat.new(['(', ')', ',', '.', 0])
     assert_equal(f.format(-1234.5678901234), '(1,235)')
   end
+
+end
 
 end
 
