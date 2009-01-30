@@ -9,7 +9,6 @@ task :release => [:clobber] do
     puts "Preparing release of #{PROJECT_NAME} version #{PROJECT_VERSION}"
     Rake::Task[:test].invoke
     Rake::Task[:rdoc].invoke
-    Rake::Task[:manual].invoke
     Rake::Task[:package].invoke
 end
 
