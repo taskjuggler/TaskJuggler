@@ -13,15 +13,18 @@
 require 'optparse'
 require 'Tj3Config'
 require 'SyntaxReference'
+require 'UserManual'
 
 AppConfig.appName = 'tj3man'
 
 class Arguments
 
-  attr_reader :keywords
+  attr_reader :keywords, :directory, :manual
 
   def initialize(argv)
-    @keywords = nil
+    @keywords = []
+    @directory = './'
+    @manual = false
 
     opts = OptionParser.new
     opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
@@ -32,15 +35,25 @@ class Arguments
                   "For more info about #{AppConfig.packageName} see " +
                   "#{AppConfig.contact}\n"
     opts.separator ''
-    opts.separator "Usage: #{AppConfig.appName} [options] [<keyword>]"
+    opts.separator "Usage: #{AppConfig.appName} [options] [<keyword> ...]"
     opts.separator 'Options:'
 
+    opts.on('-d', '--dir <directory>', String,
+            'directory to put the manual') do |dir|
+      @directory = dir
+    end
+    opts.on('-m', '--manual',
+            'Generate the user manual into the current directory or ' +
+            'the directory specified with the -d option.') do
+      @manual = true
+    end
     opts.on_tail('-h', '--help', 'Show this message.') do
       puts opts
       exit
     end
     opts.on_tail('--version', 'Show version number.') do
       puts opts.banner
+      exit
     end
 
     @keywords = opts.parse(argv)
@@ -53,12 +66,15 @@ def main
 
   man = TaskJuggler::SyntaxReference.new
   keywords = args.keywords
-  if keywords.empty?
-    keywords = man.all
-  end
 
-  keywords.each do |keyword|
-    puts man.to_s(keyword)
+  if args.manual
+    TaskJuggler::UserManual.new.generate(args.directory)
+  elsif keywords.empty?
+    puts man.all.join("\n")
+  else
+    keywords.each do |keyword|
+      puts man.to_s(keyword)
+    end
   end
 
   #$stderr.puts "#{AppConfig.packageName} v#{AppConfig.version} - " +

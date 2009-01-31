@@ -41,7 +41,8 @@ class TaskJuggler
       end
 
       example = TjpExample.new
-      fileName = "test/TestSuite/Syntax/Correct/#{path}.tjp"
+      fileName = AppConfig.dataDirs('test')[0] +
+                 "TestSuite/Syntax/Correct/#{path}.tjp"
       example.open(fileName)
       frame = XMLElement.new('div', 'class' => 'codeframe')
       frame << (pre = XMLElement.new('pre', 'class' => 'code'))

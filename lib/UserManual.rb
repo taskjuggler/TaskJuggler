@@ -10,7 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'Tj3Config'
 require 'RichTextDocument'
 require 'SyntaxReference'
@@ -32,13 +31,33 @@ class TaskJuggler
       registerProtocolHandler(RichTextProtocolExample.new)
     end
 
-    # Create a table of contents that includes both the sections from the
-    # RichText pages as well as the SyntaxReference.
-    def tableOfContents
-      super
-      # Let's call the reference 'Appendix A'
-      @reference.tableOfContents(@toc, 'A')
-      @snipNames += @reference.all
+    def generate(directory)
+      # Directory where to find the manual RichText sources. Must be relative
+      # to lib directory.
+      srcDir = AppConfig.dataDirs('manual')[0]
+      # Directory where to put the generated HTML files. Must be relative to lib
+      # directory.
+      destDir = directory + (directory[-1] == '/' ? '' : '/')
+      # A list of all source files. The order is important.
+      %w(
+        Intro
+          TaskJuggler_2x_Migration
+          How_To_Contribute
+          Reporting_Bugs
+          Installation
+        Getting_Started
+          Rich_Text_Attributes
+        Tutorial
+        Day_To_Day_Juggling
+        fdl
+      ).each do |file|
+        addSnip(srcDir + file)
+      end
+      # Generate the table of contense
+      tableOfContents
+      # Generate the HTML files.
+      generateHTML(destDir)
+      checkInternalReferences
     end
 
     # Generate the manual in HTML format. _directory_ specifies a directory
@@ -127,8 +146,9 @@ EOT
       div << XMLNamedText.new('Project Management beyond Gantt Chart drawing',
                               'em')
       div << XMLElement.new('br')
-      div << XMLNamedText.new("Copyright (c) #{AppConfig.copyright.join(', ')} " +
-                              "by #{AppConfig.authors.join(', ')}", 'b')
+      div << XMLNamedText.new(
+        "Copyright (c) #{AppConfig.copyright.join(', ')} " +
+        "by #{AppConfig.authors.join(', ')}", 'b')
       div << XMLElement.new('br')
       div << XMLText.new("Generated on #{TjTime.now.strftime('%Y-%m-%d')}")
       div << XMLElement.new('br')
@@ -212,8 +232,6 @@ EOT
       html
     end
 
-  private
-
     # Generate the top-level file for the HTML user manual.
     def generateHTMLindex(directory)
       html = HTMLDocument.new(:frameset)
@@ -235,6 +253,17 @@ EOT
       html.write(directory + 'index.html')
     end
 
+  private
+
+    # Create a table of contents that includes both the sections from the
+    # RichText pages as well as the SyntaxReference.
+    def tableOfContents
+      super
+      # Let's call the reference 'Appendix A'
+      @reference.tableOfContents(@toc, 'A')
+      @snipNames += @reference.all
+    end
+
     # Generate the HTML pages for the syntax reference and a navigation page
     # with links to all generated pages.
     def generateHTMLReference(directory)
@@ -250,31 +279,4 @@ EOT
 
 end
 
-AppConfig.appName = 'UserManual'
-# Directory where to find the manual RichText sources. Must be relative to
-# lib directory.
-srcDir = 'manual/'
-# Directory where to put the generated HTML files. Must be relative to lib
-# directory.
-destDir = 'manual/html/'
-man = TaskJuggler::UserManual.new
-# A list of all source files. The order is important.
-%w(
-  Intro
-    TaskJuggler_2x_Migration
-    How_To_Contribute
-    Reporting_Bugs
-    Installation
-  Getting_Started
-    Rich_Text_Attributes
-  Tutorial
-  Day_To_Day_Juggling
-).each do |file|
-  man.addSnip(srcDir + file)
-end
-# Generate the table of contense
-man.tableOfContents
-# Generate the HTML files.
-man.generateHTML(destDir)
-man.checkInternalReferences
 

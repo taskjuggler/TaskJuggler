@@ -10,7 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-
 require 'rbconfig'
 
 # This class provides central management of configuration data to an
@@ -96,19 +95,24 @@ class AppConfig
     @@license
   end
 
-  def AppConfig.dataDirs
+  def AppConfig.dataDirs(baseDir = 'data')
     siteLibDir = ::Config::CONFIG['sitelibdir']
     siteBaseDir, rubyVersionDir = siteLibDir.scan(/(.*\/)(.*)/)[0]
     dirs = []
     # This is for the development version. We assume that we run the app
-    # from the lib directory.
-    dirs << "../data/"
+    # from the source base directory.
+    dirs << "#{baseDir}/"
+    # Or from the lib directory.
+    dirs << "../#{baseDir}/"
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
     dirs << siteBaseDir + "gems/" + rubyVersionDir + '/gems/' \
-        + @@name + '-' + @@version + '/data/'
-    dirs << '/usr/share/'
-    dirs << '/usr/local/share/'
+        + @@packageName + '-' + @@version + "/#{baseDir}/"
+    # Remove non-existing directories from the list again
+    dirs.delete_if do |dir|
+      !File.exists?(dir)
+    end
+    dirs
   end
 
   def AppConfig.dataFiles(fileName)

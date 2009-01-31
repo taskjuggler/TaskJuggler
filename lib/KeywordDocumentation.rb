@@ -399,8 +399,9 @@ class TaskJuggler
       end
 
       if @pattern.exampleFile
+        exampleDir = AppConfig.dataDirs('test')[0] + "TestSuite/Syntax/Correct/"
         example = TjpExample.new
-        fileName = "test/TestSuite/Syntax/Correct/#{@pattern.exampleFile}.tjp"
+        fileName = "#{exampleDir}/#{@pattern.exampleFile}.tjp"
         example.open(fileName)
         bbox << (frame = XMLElement.new('div', 'class' => 'codeframe'))
         frame << (pre = XMLElement.new('pre', 'class' => 'code'))
