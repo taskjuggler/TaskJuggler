@@ -45,6 +45,9 @@ class TaskJuggler
       @endIsDetermed = nil
       @tentativeStart = @tentativeEnd = nil
 
+      # A list of all allocated leaf resources.
+      @property['candidates', @scenarioIdx] = []
+
       # Inheriting start or end values is a bit tricky. This should really only
       # happen if the task is a leaf task and scheduled away from the specified
       # date. Since the default meachanism inherites all values, we have to
@@ -83,15 +86,16 @@ class TaskJuggler
     end
 
     # The parser only stores the full task IDs for each of the dependencies. This
-    # function resolves them to task references and checks them. In addition to
-    # the 'depends' and 'precedes' property lists we also keep 4 additional lists.
+    # function resolves them to task references and checks them. In addition
+    # to the 'depends' and 'precedes' property lists we also keep 4 additional
+    # lists.
     # startpreds: All precedessors to the start of this task
     # startsuccs: All successors to the start of this task
     # endpreds: All predecessors to the end of this task
     # endsuccs: All successors to the end of this task
-    # Each list element consists of a reference/boolean pair. The reference points
-    # to the dependent task and the boolean specifies whether the dependency
-    # originates from the end of the task or not.
+    # Each list element consists of a reference/boolean pair. The reference
+    # points to the dependent task and the boolean specifies whether the
+    # dependency originates from the end of the task or not.
     def Xref
       @property['depends', @scenarioIdx].each do |dependency|
         depTask = checkDependency(dependency, 'depends')
@@ -111,9 +115,6 @@ class TaskJuggler
     # This function primarily determines implicit milestones and marks them
     # accordingly.
     def implicitXref
-      # TODO: Check if the propagation of implicit dependencies is still
-      # necessary. It might be obsolite in TJ 3.x.
-
       # Automatically detect and mark task as milestones that have no duration
       # criteria but proper start or end specification.
       return if !@property.leaf? || a('milestone')
@@ -411,8 +412,8 @@ class TaskJuggler
 
       if a('milestone') && a('start') != a('end')
         error('milestone_times_equal',
-              "Milestone #{@property.fullId} must have identical start and end " +
-              "date.")
+              "Milestone #{@property.fullId} must have identical start and " +
+              "end date.")
       end
 
       @errors == 0
@@ -442,7 +443,9 @@ class TaskJuggler
       # Used for debugging only
       if false
         pathText = ''
-        path.each { |t, e| pathText += "#{t.fullId}(#{e ? 'end' : 'start'}) -> " }
+        path.each do |t, e|
+          pathText += "#{t.fullId}(#{e ? 'end' : 'start'}) -> "
+        end
         pathText += "#{@property.fullId}(#{atEnd ? 'end' : 'start'})"
         puts pathText
       end
@@ -589,51 +592,56 @@ class TaskJuggler
       end
     end
 
+    # This function does some prep work for other functions like
+    # calcCriticalness. It compiles a list of all allocated leaf resources and
+    # stores it in 'candidates'. It also adds the allocated effort to
+    # the 'alloctdeffort' counter of each resource.
     def countResourceAllocations
       return if a('effort') <= 0
 
-      resources = []
+      @property['candidates', @scenarioIdx] = []
       a('allocate').each do |allocation|
         allocation.candidates.each do |candidate|
           candidate.allLeaves.each do |resource|
-            resources << resource unless resources.include?(resource)
+            unless a('candidates').include?(resource)
+              @property['candidates', @scenarioIdx] << resource
+            end
           end
         end
       end
-      return if resources.empty?
+      return if a('candidates').empty?
 
-      avgEffort = a('effort') / resources.length
-      resources.each do |resource|
+      avgEffort = a('effort') / a('candidates').length
+      a('candidates').each do |resource|
         resource['alloctdeffort', @scenarioIdx] += avgEffort
       end
     end
 
+    # Determine the criticalness of the individual task. This is a measure for
+    # the likelyhood that this task will get the resources that it needs to
+    # complete the effort. Tasks without effort are not cricital. The only
+    # exception are milestones which get an arbitrary value of 1.
     def calcCriticalness
       @property['criticalness', @scenarioIdx] = 0.0
       @property['pathcriticalness', @scenarioIdx] = nil
-
-      return if a('effort') <= 0
 
       # Users feel that milestones are somewhat important. So we use an
       # arbitrary value larger than 0 for them.
       @property['criticalness', @scenarioIdx] = 1.0 if a('milestone')
 
-      resources = []
-      a('allocate').each do |allocation|
-        allocation.candidates.each do |candidate|
-          candidate.allLeaves.each do |resource|
-            resources << resource unless resources.include?(resource)
-          end
-        end
-      end
-      return if resources.empty?
+      # Task without efforts of allocations are not critical.
+      return if a('effort') <= 0 || a('candidates').empty?
 
+      # Determine the average criticalness of all allocated resources.
       criticalness = 0.0
-      resources.each do |resource|
+      a('candidates').each do |resource|
         criticalness += resource['criticalness', @scenarioIdx]
       end
-      @property['criticalness', @scenarioIdx] = a('effort') *
-                                                criticalness / resources.length
+      criticalness /= a('candidates').length
+
+      # The task criticalness is the product of effort and average resource
+      # criticalness.
+      @property['criticalness', @scenarioIdx] = a('effort') * criticalness
     end
 
     # The path criticalness is a measure for the overall criticalness of the
@@ -889,7 +897,8 @@ class TaskJuggler
     end
 
     def hasDurationSpec?
-      (a('length') > 0 || a('duration') > 0 || a('effort') > 0) && !a('milestone')
+      (a('length') > 0 || a('duration') > 0 || a('effort') > 0) &&
+        !a('milestone')
     end
 
     # This function checks if the task has certain dependencies. If _atEnd_ is
@@ -1229,9 +1238,9 @@ class TaskJuggler
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
               @doneEffort += booking.resource['efficiency', @scenarioIdx]
 
-              # Set start and lastSlot if appropriate. The task start will be set
-              # to the begining of the first booked slot. The lastSlot will be set
-              # to the last booked slot
+              # Set start and lastSlot if appropriate. The task start will be
+              # set to the begining of the first booked slot. The lastSlot
+              # will be set to the last booked slot
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
               tEnd = date + @project['scheduleGranularity']
               if a('forward')
@@ -1276,7 +1285,8 @@ class TaskJuggler
         # Remove the broken dependency. It could cause trouble later on.
         @property[depType, @scenarioIdx].delete(dependency)
         error('task_depend_child',
-              "Task #{@property.fullId} cannot depend on child #{depTask.fullId}")
+              "Task #{@property.fullId} cannot depend on child " +
+              "#{depTask.fullId}")
       end
 
       if @property.isChildOf?(depTask)

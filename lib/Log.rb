@@ -84,7 +84,9 @@ class TaskJuggler
         end
         return unless showMessage
       end
-      $stderr.puts ' ' * (@@stack.length - offset) + message
+      if @@stack.length - offset < @@level
+        $stderr.puts ' ' * (@@stack.length - offset) + message
+      end
     end
 
   end

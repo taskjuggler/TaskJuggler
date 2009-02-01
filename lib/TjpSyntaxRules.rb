@@ -1110,7 +1110,7 @@ EOT
       end
     })
     doc('interval2', <<'EOT'
-There are to ways to specify a date interval. The first is the most
+There are two ways to specify a date interval. The first is the most
 obvious. A date interval consists of a start and end DATE. Watch out for end
 dates without a time specification! Date specifications are 0 extended. An
 end date without a time is expanded to midnight that day. So the day of the
@@ -3862,7 +3862,7 @@ EOT
       iv
     })
     doc('interval1', <<'EOT'
-There are to ways to specify a date interval. The start and end date must lie within the specified project period.
+There are two ways to specify a date interval. The start and end date must lie within the specified project period.
 
 The first is the most obvious. A date interval consists of a start and end
 DATE. Watch out for end dates without a time specification! Date

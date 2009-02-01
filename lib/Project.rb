@@ -154,8 +154,10 @@ class TaskJuggler
         [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
         [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
         [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
+        [ 'candidates', 'Candidates',  ResourceListAttribute, false, true, [] ],
         [ 'charge',    'Charges',      ChargeListAttribute, false, true, [] ],
         [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute, true, true, [] ],
+        [ 'competitors', 'Competitors', TaskListAttribute, false, true, [] ],
         [ 'complete',  'Completion',   FloatAttribute,    false, true,  nil ],
         [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
         [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],
@@ -524,6 +526,10 @@ class TaskJuggler
         task.calcPathCriticalness(scIdx)
       end
 
+      findCompetitors(tasks, scIdx)
+
+      findTaskGroups(tasks, scIdx)
+
       # This is used for debugging only
       if false
         resources.each do |resource|
@@ -546,24 +552,53 @@ class TaskJuggler
     end
 
     def scheduleScenario(scIdx)
-      # The scheduler directly only cares for leaf tasks. These are put in the
-      # allWorkItems list.
-      allWorkItems = PropertyList.new(@tasks)
-      allWorkItems.delete_if { |task| !task.leaf? }
+      leafTasksWithAllocations = PropertyList.new(@tasks)
+      leafTasksWithAllocations.delete_if do |task|
+        !task.leaf? || !task['candidates', scIdx].empty?
+      end
+
+      leafTasksWithoutAllocations = PropertyList.new(@tasks)
+      leafTasksWithoutAllocations.delete_if do |task|
+        !task.leaf? || task['candidates', scIdx].empty?
+      end
+
+      loop do
+        taskGroups = findTaskGroups(leafTasksWithAllocations, scIdx)
+        taskGroups << leafTasksWithoutAllocations
+
+        taskGroups.each do |group|
+          threads = []
+          threads << Thread.new do
+            scheduleTaskGroup(group, scIdx)
+          end
+          threads.each { |thread| thread.join }
+        end
+
+        leafTasksWithAllocations.delete_if { |t| t['scheduled', scIdx] }
+        leafTasksWithoutAllocations.delete_if { |t| t['scheduled', scIdx] }
+        if (leafTasksWithAllocations.empty? &&
+            leafTasksWithAllocations.empty?) || @break
+          break
+        end
+      end
+
+    end
+
+    def scheduleTaskGroup(tasks, scIdx)
       # The sorting of the work item list determines which tasks will get their
       # resources first. The first sorting criterium is the user specified task
       # priority. The second criterium is the scheduler determined priority
       # stored in the pathcriticalness attribute. That way, the user can always
       # override the scheduler determined priority. To always have a defined
       # order, the third criterium is the sequence number.
-      allWorkItems.setSorting([ [ 'priority', false, scIdx ],
-                                [ 'pathcriticalness', false, scIdx ],
-                                [ 'seqno', true, -1 ] ])
-      allWorkItems.sort!
+      tasks.setSorting([ [ 'priority', false, scIdx ],
+                         [ 'pathcriticalness', false, scIdx ],
+                         [ 'seqno', true, -1 ] ])
+      tasks.sort!
 
       # The main scheduler loop only needs to look at the tasks that are ready
       # to be scheduled.
-      workItems = Array.new(allWorkItems)
+      workItems = Array.new(tasks)
       workItems.delete_if { |task| !task.readyForScheduling?(scIdx) }
 
       @breakFlag = false
@@ -627,7 +662,7 @@ class TaskJuggler
           if task.schedule(scIdx, slot, @attributes['scheduleGranularity'])
             # If one or more tasks have been scheduled completely, we
   	        # recreate the list of all tasks that are ready to be scheduled.
-            workItems = Array.new(allWorkItems)
+            workItems = Array.new(tasks)
             workItems.delete_if { |t| !t.readyForScheduling?(scIdx) }
             break
           end
@@ -637,6 +672,83 @@ class TaskJuggler
         # flag has been set by another thread.
         break if done || @breakFlag
       end
+    end
+
+    # For all leaf tasks we need to build a list of tasks that compete with
+    # the task on the same resources.
+    def findCompetitors(tasks, scIdx)
+      leafTasks = []
+      # This algorithm only matters for leaf tasks that have candidates.
+      tasks.each do |task|
+        if task.leaf? && !task['candidates', scIdx].empty?
+          leafTasks << task
+        end
+      end
+
+      leafTasks.each do |task|
+        candidates = task['candidates', scIdx]
+        leafTasks.each do |t|
+          # Ignore the task if we already know it as competitor.
+          next if task['competitors', scIdx].include?(t)
+
+          c = t['candidates', scIdx]
+          competitor = false
+          # Look for a resource that is in the candidate list of both tasks.
+          # Then the tasks are competitors.
+          c.each do |r|
+            if candidates.include?(r)
+              competitor = true
+              break
+            end
+          end
+          if competitor
+            # Add the other to the competitor list of both tasks.
+            task['competitors', scIdx] << t
+            t['competitors', scIdx] << task
+          end
+        end
+      end
+    end
+
+    # Sort the list of +tasks+ into groups of tasks that are competitors to
+    # each other, but to no task in another group. Each of the group does not
+    # compete with any other group over the same resources. Such groups can
+    # then safely be scheduled independantly from each other.
+    def findTaskGroups(tasks, scIdx)
+      # The result will be an Array of Arrays of Tasks.
+      groups = []
+      tasks.each do |task|
+        newGroup = true
+        groups.each do |members|
+          if members.include?(task)
+            newGroup = false
+            break
+          end
+        end
+        if newGroup
+          groups << gatherCompetitors(PropertyList.new(@tasks).clear, task,
+                                      scIdx)
+        end
+      end
+
+      Log << "Found #{groups.length} group(s) of non-competing tasks"
+      groups
+    end
+
+    # Competing tasks know about each other. By recursively following this web
+    # of competing tasks, we can put together a list of tasks that have some
+    # direct or inderect resource dependancy on each other. +list+ is the
+    # gathered list. It is returned again. +task+ is the task to look at.
+    # +scIdx+ is the current scenario index.
+    def gatherCompetitors(list, task, scIdx)
+      return list if list.include?(task)
+
+      list << task
+      task['competitors', scIdx].each do |t|
+        list = gatherCompetitors(list, t, scIdx)
+      end
+
+      list
     end
 
   end
