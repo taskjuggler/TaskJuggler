@@ -46,7 +46,7 @@ class TaskJuggler
       @tentativeStart = @tentativeEnd = nil
 
       # A list of all allocated leaf resources.
-      @property['candidates', @scenarioIdx] = []
+      @candidates = []
 
       # Inheriting start or end values is a bit tricky. This should really only
       # happen if the task is a leaf task and scheduled away from the specified
@@ -294,6 +294,9 @@ class TaskJuggler
     # based on the just scheduled values.
     def finishScheduling
       calcCompletion
+      # This list is no longer needed, so let's save some memory. Set it to
+      # nil so we can detect accidental use.
+      @candidates = nil
     end
 
     # This function is not essential but does perform a large number of
@@ -594,25 +597,21 @@ class TaskJuggler
 
     # This function does some prep work for other functions like
     # calcCriticalness. It compiles a list of all allocated leaf resources and
-    # stores it in 'candidates'. It also adds the allocated effort to
+    # stores it in @candidates. It also adds the allocated effort to
     # the 'alloctdeffort' counter of each resource.
     def countResourceAllocations
-      return if a('effort') <= 0
-
-      @property['candidates', @scenarioIdx] = []
+      @candidates = []
       a('allocate').each do |allocation|
         allocation.candidates.each do |candidate|
           candidate.allLeaves.each do |resource|
-            unless a('candidates').include?(resource)
-              @property['candidates', @scenarioIdx] << resource
-            end
+            @candidates << resource unless @candidates.include?(resource)
           end
         end
       end
-      return if a('candidates').empty?
+      return if @candidates.empty? || a('effort') <= 0
 
-      avgEffort = a('effort') / a('candidates').length
-      a('candidates').each do |resource|
+      avgEffort = a('effort') / @candidates.length
+      @candidates.each do |resource|
         resource['alloctdeffort', @scenarioIdx] += avgEffort
       end
     end
@@ -630,14 +629,14 @@ class TaskJuggler
       @property['criticalness', @scenarioIdx] = 1.0 if a('milestone')
 
       # Task without efforts of allocations are not critical.
-      return if a('effort') <= 0 || a('candidates').empty?
+      return if a('effort') <= 0 || @candidates.empty?
 
       # Determine the average criticalness of all allocated resources.
       criticalness = 0.0
-      a('candidates').each do |resource|
+      @candidates.each do |resource|
         criticalness += resource['criticalness', @scenarioIdx]
       end
-      criticalness /= a('candidates').length
+      criticalness /= @candidates.length
 
       # The task criticalness is the product of effort and average resource
       # criticalness.

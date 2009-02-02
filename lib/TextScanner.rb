@@ -595,6 +595,7 @@ class TaskJuggler
     def readMacro
       token = ''
       while (c = nextCharI(false)) != ']'
+        error('unterminated_macro', "Unterminated macro #{token}") unless c
         token << c
       end
       return [ 'MACRO', token ]
