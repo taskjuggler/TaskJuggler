@@ -1,6 +1,0 @@
-#! /bin/sh
-rake clobber || exit 1
-rake gem || exit 1
-mkdir tmp_gem
-tar -O -x -f pkg/*.gem  data.tar.gz | tar xz -C tmp_gem/ || exit 1
-cd tmp_gem && rake rdoc rcov manual clobber && cd .. && rm -fr tmp_gem || exit
