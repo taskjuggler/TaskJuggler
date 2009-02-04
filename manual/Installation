@@ -48,7 +48,7 @@ coverage analysis tool.
 The following command will create an archive file called a gem
 package.
 
- cd taskjuggler3; rake release
+ cd taskjuggler3; rake gem
  
 A gem package is an operating system and architecture independent
 archive file for Ruby programs. You can install it on any system that
