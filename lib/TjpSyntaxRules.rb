@@ -3361,6 +3361,10 @@ EOT
 The end date of the task. When specified for the top-level (default) scenario
 this attributes also implicitly sets the scheduling policy of the tasks to
 alap.
+
+If no end date is given for a task and the end is not specified by a
+dependency on another task, or by a start date plus a duration, the end date
+will be inherited from the enclosing tasks or the project end date.
 EOT
        )
     example('Export', '1')
@@ -3441,7 +3445,8 @@ Turns the task into a special task that has no duration. You may not specify a
 duration, length, effort or subtasks for a milestone task.
 
 A task that only has a start or an end specification and no duration
-specification or sub tasks, will be recognized as milestone automatically.
+specification, inherited start or end dates, no dependencies or sub tasks,
+will be recognized as milestone automatically.
 EOT
        )
 
@@ -3619,6 +3624,10 @@ EOT
 The start date of the task. When specified for the top-level (default)
 scenario this attribute also implicitly sets the scheduling policy of the task
 to asap.
+
+If no start date is given for a task and the start is not specified by a
+dependency on another task, or by an end date plus a duration, the start date
+will be inherited from the enclosing tasks or the project start date.
 EOT
        )
     also(%w( end period.task maxstart minstart scheduling ))

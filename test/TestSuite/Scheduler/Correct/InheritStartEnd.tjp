@@ -1,0 +1,90 @@
+project test "Test" "1.0" 2009-02-04 +4m
+
+macro FixStart [ minstart ${1} maxstart ${1} ]
+macro FixEnd [ minend ${1} maxend ${1} ]
+
+resource r1 "Resource 1"
+resource r2 "Resource 2"
+resource r3 "Resource 3"
+resource r4 "Resource 4"
+
+task p1 "Parent Tasks" {
+  task empty "Only start or end dates" {
+    task t1 "Task 1" {
+      ${FixStart "${projectstart}"}
+      ${FixEnd "${projectend}"}
+    }
+    task t2 "Task 2" {
+      start 2009-02-06
+      ${FixStart "2009-02-06"}
+      ${FixEnd "${projectend}"}
+    }
+    task t3 "Task 3" {
+      end 2009-03-01
+      ${FixStart "${projectstart}"}
+      ${FixEnd "2009-03-01"}
+    }
+  }
+  task empty "Milestones" {
+    task t1 "Task 1" {
+      milestone
+      ${FixStart "${projectstart}"}
+      ${FixEnd "${projectstart}"}
+    }
+    task t2 "Task 2" {
+      milestone
+      scheduling alap
+      ${FixStart "${projectend}"}
+      ${FixEnd "${projectend}"}
+    }
+    task t4 "Task 3" {
+      start 2009-02-06
+      milestone
+      ${FixStart "2009-02-06"}
+      ${FixEnd "2009-02-06"}
+    }
+    task t4 "Task 4" {
+      end 2009-03-01
+      milestone
+      ${FixStart "2009-03-01"}
+      ${FixEnd "2009-03-01"}
+    }
+  }
+  task empty "With effort" {
+    task t1 "Task 1" {
+      allocate r1
+      effort 20d
+      scheduling asap
+      ${FixStart "2009-02-04-09:00"}
+      ${FixEnd "2009-03-03-18:00"}
+    }
+    task t2 "Task 2" {
+      start 2009-02-06
+      effort 20d
+      scheduling asap
+      allocate r2
+      ${FixStart "2009-02-06-09:00"}
+      ${FixEnd "2009-03-05-18:00"}
+    }
+    task t3 "Task 3" {
+      effort 20d
+      allocate r3
+      scheduling alap
+      ${FixStart "2009-05-08-17:00"}
+      ${FixEnd "${projectend}"}
+    }
+    task t4 "Task 4" {
+      end 2009-05-01
+      scheduling alap
+      effort 20d
+      allocate r4
+      ${FixStart "2009-04-03-09:00"}
+      ${FixEnd "2009-04-30-18:00"}
+    }
+  }
+}
+
+htmltaskreport "InheritStartEnd.html" {
+	columns name, id, start, end, chart
+}
+  

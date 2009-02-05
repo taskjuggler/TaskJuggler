@@ -133,8 +133,19 @@ class TaskJuggler
     end
 
     def propagateInitialValues
-      propagateDate(a('start'), false) if a('start')
-      propagateDate(a('end'), true) if a('end')
+      if a('start')
+        propagateDate(a('start'), false)
+      elsif @property.parent.nil? &&
+            @property.canInheritDate?(@scenarioIdx, false)
+        propagateDate(@project['start'], false)
+      end
+
+      if a('end')
+        propagateDate(a('end'), true)
+      elsif @property.parent.nil? &&
+            @property.canInheritDate?(@scenarioIdx, true)
+        propagateDate(@project['end'], true)
+      end
     end
 
     # Before the actual scheduling work can be started, we need to do a few
@@ -830,7 +841,7 @@ class TaskJuggler
     def propagateDate(date, atEnd)
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
-      # puts "Setting #{thisEnd} of #{@property.fullId} to #{date}"
+      #puts "Setting #{thisEnd} of #{@property.fullId} to #{date}"
       @property[thisEnd, @scenarioIdx] = date
       if a('milestone')
         # Start and end date of a milestone are identical.
@@ -849,11 +860,11 @@ class TaskJuggler
       end
 
       # Propagate date to sub tasks which have only an implicit
-      # dependency on the parent task.
+      # dependency on the parent task and no other criteria for this end of
+      # the task.
       @property.children.each do |task|
-        if !task.hasDependencies(@scenarioIdx, !atEnd) &&
-           !task['scheduled', @scenarioIdx]
-          task.propagateDate(@scenarioIdx, a(thisEnd), !atEnd)
+        if task.canInheritDate?(@scenarioIdx, atEnd)
+          task.propagateDate(@scenarioIdx, a(thisEnd), atEnd)
         end
       end
 
@@ -862,7 +873,33 @@ class TaskJuggler
       if !@property.parent.nil?
         @property.parent.scheduleContainer(@scenarioIdx)
       end
+      #puts "Completed #{@property.fullId}"
     end
+
+    # This function determines if a task can inherit the start or end date
+    # from a parent task or the project time frame. +atEnd+ specifies whether
+    # the check should be done for the task end (true) or task start (false).
+    def canInheritDate?(atEnd)
+      thisEnd = atEnd ? 'end' : 'start'
+      # Return false if we already have a date.
+      return false unless a(thisEnd).nil?
+
+      # Containter task can always inherit the date.
+      return true if @property.container?
+
+      # Return false if we have a dependency for this end.
+      return false unless a(thisEnd + 'succs').empty? &&
+                          a(thisEnd + 'preds').empty?
+
+      # If we have a duration, the scheduling needs to be directed towards the
+      # other end.
+      if a('effort') > 0.0 || a('duration') > 0.0 ||
+         a('length') > 0.0 || a('milestone')
+        return a('forward') ^ atEnd
+      end
+
+      true
+     end
 
     # Find the smallest possible interval that encloses all child tasks. Abort
     # the operation if any of the child tasks are not yet scheduled.
@@ -1322,7 +1359,7 @@ class TaskJuggler
         return @endIsDetermed unless @endIsDetermed.nil?
       end
 
-      # Check if this task of any of the parent tasks have a fixed date
+      # Check if this task or any of the parent tasks have a fixed date
       task = @property
       while task do
         if task[checkStart ? 'start' : 'end', @scenarioIdx]

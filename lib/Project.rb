@@ -487,10 +487,10 @@ class TaskJuggler
         task.Xref(scIdx)
       end
       tasks.each do |task|
-        task.implicitXref(scIdx)
+        task.propagateInitialValues(scIdx)
       end
       tasks.each do |task|
-        task.propagateInitialValues(scIdx)
+        task.implicitXref(scIdx)
       end
       tasks.each do |task|
         task.preScheduleCheck(scIdx)
