@@ -323,7 +323,10 @@ class TaskJuggler
       return false if @errors > 0
 
       # Same for runaway tasks. They have already been reported.
-      return false if isRunAway
+      if @isRunAway
+        error('sched_runaway', "Some tasks did not fit into the project time " +
+              "frame.")
+      end
 
       # Make sure the task is marked complete
       unless a('scheduled')
@@ -714,7 +717,7 @@ class TaskJuggler
     # previous slot. If this task has not yet been scheduled at all, @lastSlot
     # is still nil. Otherwise it contains the date of the last scheduled slot.
     def nextSlot(slotDuration)
-      return nil if a('scheduled')
+      return nil if a('scheduled') || @isRunAway
 
       if a('forward')
         @lastSlot.nil? ? a('start') : @lastSlot + slotDuration
@@ -1158,8 +1161,8 @@ class TaskJuggler
     end
 
     def markAsRunaway
-      error('runaway', "Task #{@property.get('id')} does not fit into project " +
-                       "time frame")
+      warning('runaway', "Task #{@property.get('id')} does not fit into " +
+                         "project time frame")
 
       @isRunAway = true
     end
