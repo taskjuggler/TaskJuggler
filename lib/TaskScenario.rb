@@ -1459,6 +1459,11 @@ class TaskJuggler
         return
       end
 
+      if a('start').nil? || a('end').nil?
+        @property['complete', @scenarioIdx] = 0.0
+        return
+      end
+
       if a('milestone')
         @property['complete', @scenarioIdx] =
           @property['end', @scenarioIdx] <= @project['now'] ? 100.0 : 0.0

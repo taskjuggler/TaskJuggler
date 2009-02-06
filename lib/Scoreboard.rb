@@ -29,7 +29,7 @@ class TaskJuggler
       @endDate = endDate
       @resolution = resolution
       @size = ((endDate - startDate) / resolution).ceil + 1
-      @sb = Array.new(@size, initVal)
+      clear(initVal)
     end
 
     # Erase all values and set them to nil or a new initial value.
