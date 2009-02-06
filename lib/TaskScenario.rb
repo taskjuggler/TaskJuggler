@@ -609,11 +609,9 @@ class TaskJuggler
       end
     end
 
-    # This function does some prep work for other functions like
-    # calcCriticalness. It compiles a list of all allocated leaf resources and
-    # stores it in @candidates. It also adds the allocated effort to
-    # the 'alloctdeffort' counter of each resource.
-    def countResourceAllocations
+    # This function must be called before prepareScheduling(). It compiles the
+    # list of leaf resources that are allocated to this task.
+    def candidates
       @candidates = []
       a('allocate').each do |allocation|
         allocation.candidates.each do |candidate|
@@ -622,6 +620,14 @@ class TaskJuggler
           end
         end
       end
+      @candidates
+    end
+
+    # This function does some prep work for other functions like
+    # calcCriticalness. It compiles a list of all allocated leaf resources and
+    # stores it in @candidates. It also adds the allocated effort to
+    # the 'alloctdeffort' counter of each resource.
+    def countResourceAllocations
       return if @candidates.empty? || a('effort') <= 0
 
       avgEffort = a('effort') / @candidates.length

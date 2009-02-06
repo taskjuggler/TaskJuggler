@@ -47,12 +47,17 @@ class TaskJuggler
     # statistically some tasks will not get their resources. A value between
     # 0 and 1 implies no guarantee, though.
     def calcCriticalness
-      freeSlots = 0
-      @scoreboard.each do |slot|
-        freeSlots += 1 if slot.nil?
+      if @scoreboard.nil?
+        # Resources that are not allocated are not critical at all.
+        @property['criticalness', @scenarioIdx] = 0.0
+      else
+        freeSlots = 0
+        @scoreboard.each do |slot|
+          freeSlots += 1 if slot.nil?
+        end
+        @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
+          a('alloctdeffort') / freeSlots
       end
-      @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
-                                                a('alloctdeffort') / freeSlots
     end
 
     # Returns true if the resource is available at the time specified by
@@ -72,6 +77,9 @@ class TaskJuggler
       @scoreboard[sbIdx].is_a?(Task)
     end
 
+    # Book the slot indicated by the scoreboard index +sbIdx+ for Task +task+.
+    # If +force+ is true, overwrite the existing booking for this slot. The
+    # method returns true if the slot was available.
     def book(sbIdx, task, force = false)
       return false if !force && !available?(sbIdx)
 
@@ -100,12 +108,14 @@ class TaskJuggler
     end
 
     def bookBooking(sbIdx, booking)
+      initScoreboard if @scoreboard.nil?
+
       unless @scoreboard[sbIdx].nil?
         if booked?(sbIdx)
           error('booking_conflict',
                 "Resource #{@property.fullId} has multiple conflicting " +
-                "bookings for #{@scoreboard.idxToDate(sbIdx)}. The conflicting " +
-                "tasks are #{@scoreboard[sbIdx].fullId} and " +
+                "bookings for #{@scoreboard.idxToDate(sbIdx)}. The " +
+                "conflicting tasks are #{@scoreboard[sbIdx].fullId} and " +
                 "#{booking.task.fullId}.", true, booking.sourceFileInfo)
         end
         if @scoreboard[sbIdx] > booking.overtime
@@ -191,6 +201,8 @@ class TaskJuggler
           work += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx, task)
         end
       else
+        return 0.0 if @scoreboard.nil?
+
         work = @project.convertToDailyLoad(
                  getAllocatedSlots(startIdx, endIdx, task) *
                  @project['scheduleGranularity']) * a('efficiency')
@@ -210,6 +222,8 @@ class TaskJuggler
           work += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
         end
       else
+        return 0.0 if @scoreboard.nil?
+
         work = @project.convertToDailyLoad(
                  getAllocatedSlots(startIdx, endIdx, task) *
                  @project['scheduleGranularity'])
@@ -229,6 +243,8 @@ class TaskJuggler
           time += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
         end
       else
+        return 0 if @scoreboard.nil?
+
         time = @project.convertToDailyLoad(@project['scheduleGranularity'] *
             getAllocatedSlots(startIdx, endIdx, task))
       end
@@ -248,6 +264,8 @@ class TaskJuggler
           work += resource.getEffectiveFreeWork(@scenarioIdx, startIdx, endIdx)
         end
       else
+        initScoreboard if @scoreboard.nil?
+
         work = @project.convertToDailyLoad(
                  getFreeSlots(startIdx, endIdx) *
                  @project['scheduleGranularity']) * a('efficiency')
@@ -282,6 +300,8 @@ class TaskJuggler
     # the period specified with the Interval _iv_. If task is not nil
     # only allocations to this tasks are respected.
     def allocated?(iv, task = nil)
+      initScoreboard if @scoreboard.nil?
+
       startIdx = @scoreboard.dateToIdx(iv.start, true)
       endIdx = @scoreboard.dateToIdx(iv.end, true)
 
@@ -296,7 +316,7 @@ class TaskJuggler
 
     # Iterate over the scoreboard and turn its content into a set of Bookings.
     def getBookings
-      return {} unless @property.leaf?
+      return {} unless @property.leaf? || @scoreboard.nil?
 
       bookings = {}
       lastTask = nil
@@ -344,6 +364,8 @@ class TaskJuggler
     # and contain only 1 and 2. These values determine off-hours of the
     # resource. The result is an Array of [ start, end ] TjTime values.
     def collectTimeOffIntervals(iv, minDuration)
+      initScoreboard if @scoreboard.nil?
+
       @scoreboard.collectTimeOffIntervals(iv, minDuration, [ 1, 2 ])
     end
 
@@ -384,9 +406,9 @@ class TaskJuggler
         # Mark the vacations from all the shifts the resource is assigned to.
         0.upto(@project.scoreboardSize - 1) do |i|
           v = @shifts.getSbSlot(@scoreboard.idxToDate(i))
-          # Check if the vacation replacement bit is set. In that case we copy the
-          # while interval over to the resource scoreboard overriding any global
-          # vacations.
+          # Check if the vacation replacement bit is set. In that case we copy
+          # the while interval over to the resource scoreboard overriding any
+          # global vacations.
           if (v & (1 << 8)) > 0
             # The ShiftAssignments scoreboard and the ResourceScenario scoreboard
             # unfortunately can't use the same values for a certain meaning. So,
@@ -400,10 +422,6 @@ class TaskJuggler
         end
       end
     end
-
-    #def idxToDate(sbIdx)
-    #  @scoreboard.idxToDate(sbIdx)
-    #end
 
     def onShift?(date)
       # The more redable but slower form would be:

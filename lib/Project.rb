@@ -476,7 +476,16 @@ class TaskJuggler
       resources = PropertyList.new(@resources)
       tasks = PropertyList.new(@tasks)
 
-      resources.each do |resource|
+      # Compile a list of leaf resources that are actually used in this
+      # project.
+      usedResources = []
+      tasks.each do |task|
+        task.candidates(scIdx).each do |resource|
+          usedResources << resource unless usedResources.include?(resource)
+        end
+      end
+
+      usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
       end
       tasks.each do |task|
