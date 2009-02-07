@@ -26,7 +26,7 @@ class TaskJuggler
       @interval = interval
     end
 
-    # Returns true of the ShiftAssignment objects are similar enough.
+    # Returns true if the ShiftAssignment objects are similar enough.
     def ==(sa)
       return @shiftScenario.object_id == sa.shiftScenario.object_id &&
              @interval == sa.interval

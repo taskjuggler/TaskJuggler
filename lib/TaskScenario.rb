@@ -21,6 +21,9 @@ class TaskJuggler
     # Create a new TaskScenario object.
     def initialize(task, scenarioIdx, attributes)
       super
+
+      # A list of all allocated leaf resources.
+      @candidates = []
     end
 
     # Call this function to reset all scheduling related data prior to
@@ -44,9 +47,6 @@ class TaskJuggler
       @startIsDetermed = nil
       @endIsDetermed = nil
       @tentativeStart = @tentativeEnd = nil
-
-      # A list of all allocated leaf resources.
-      @candidates = []
 
       # Inheriting start or end values is a bit tricky. This should really only
       # happen if the task is a leaf task and scheduled away from the specified
@@ -789,6 +789,8 @@ class TaskJuggler
       end
       @lastSlot = slot
 
+      Log.enter('Task::schedule', "Scheduling task #{@property.fullId} at " +
+                "#{slot}")
       if a('length') > 0 || a('duration') > 0
         # The doneDuration counts the number of scheduled slots. It is increased
         # by one with every scheduled slot. The doneLength is only increased for
@@ -808,6 +810,7 @@ class TaskJuggler
           else
             propagateDate(slot, false)
           end
+          Log.exit('Task::schedule', "Task #{@property.fullId} completed")
           return true
         end
       elsif a('effort') > 0
@@ -821,6 +824,7 @@ class TaskJuggler
           else
             propagateDate(@tentativeStart, false)
           end
+          Log.exit('Task::schedule', "Task #{@property.fullId} completed")
           return true
         end
       elsif a('milestone')
@@ -829,6 +833,8 @@ class TaskJuggler
         else
           propagateDate(a('end'), false)
         end
+        Log.exit('Task::scheduled', "Milestone #{@property.fullId} completed")
+        return true
       elsif a('start') && a('end')
         # Task with start and end date but no duration criteria
         bookResources(slot, slotDuration) unless a('allocate').empty?
@@ -838,10 +844,12 @@ class TaskJuggler
         if (a('forward') && slot + slotDuration >= a('end')) ||
            (!a('forward') && slot <= a('start'))
            @property['scheduled', @scenarioIdx] = true
+           Log.exit('Task::schedule', "Milestone #{@property.fullId} completed")
            return true
         end
       end
 
+      Log.exit('Task::schedule', "#{@property.fullId} at #{slot}")
       false
     end
 
@@ -850,7 +858,7 @@ class TaskJuggler
     def propagateDate(date, atEnd)
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
-      #puts "Setting #{thisEnd} of #{@property.fullId} to #{date}"
+      Log << "Setting #{thisEnd} of #{@property.fullId} to #{date}"
       @property[thisEnd, @scenarioIdx] = date
       if a('milestone')
         # Start and end date of a milestone are identical.
@@ -882,7 +890,7 @@ class TaskJuggler
       if !@property.parent.nil?
         @property.parent.scheduleContainer(@scenarioIdx)
       end
-      #puts "Completed #{@property.fullId}"
+      Log << "Completed propagateDate for #{thisEnd} of #{@property.fullId}"
     end
 
     # This function determines if a task can inherit the start or end date
@@ -893,12 +901,12 @@ class TaskJuggler
       # Return false if we already have a date.
       return false unless a(thisEnd).nil?
 
-      # Containter task can always inherit the date.
-      return true if @property.container?
-
       # Return false if we have a dependency for this end.
       return false unless a(thisEnd + 'succs').empty? &&
                           a(thisEnd + 'preds').empty?
+
+      # Containter task can inherit the date if they have no dependencies.
+      return true if @property.container?
 
       # If we have a duration, the scheduling needs to be directed towards the
       # other end.
@@ -908,7 +916,7 @@ class TaskJuggler
       end
 
       true
-     end
+    end
 
     # Find the smallest possible interval that encloses all child tasks. Abort
     # the operation if any of the child tasks are not yet scheduled.
@@ -1065,8 +1073,11 @@ class TaskJuggler
       end
 
       # If the task has shifts to limit the allocations, we check that we are
-      # within a shift interval. If not, abort the booking.
-      return if !a('shifts').nil? && !a('shifts').onShift?(date)
+      # within a defined shift interval. If yes, we need to be on shift to
+      # continue.
+      if (shifts = a('shifts')) && shifts.assigned?(date)
+         return if !shifts.onShift?(date)
+      end
 
       # If the task has allocation limits we need to make sure that none of them
       # is already exceeded.

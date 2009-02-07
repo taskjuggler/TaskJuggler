@@ -22,7 +22,7 @@ task t2 "Task2" {
 }
 
 htmltaskreport "Optimize-1.html" {
-	columns name, start, end, daily
+	columns name, start, end, criticalness, pathcriticalness, daily
 	hideresource 0
 }
 

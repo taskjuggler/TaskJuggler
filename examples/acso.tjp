@@ -5,7 +5,7 @@
  * TaskJuggler. Please see the TaskJuggler manual for a more detailed
  * description of the various syntax elements.
  */
-project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
+project acso "Accounting Software" "1.0" 2002-01-16 - 2002-09-28 {
   # Pick a day during the project that will be reported as 'today' in
   # the project reports. If not specified, the current day will be
   # used, but this will likely be outside of the project range, so it

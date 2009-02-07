@@ -89,9 +89,9 @@ task prj "Project" {
   task work1 "Task with shift morning" {
     start ${projectstart}
     allocate work1
-    effort 1w
+    effort 3w
     shifts morning 2007-09-01 +4w
-    ${Fixend "2007-09-20-10:00"}
+    ${Fixend "2007-10-02-18:00"}
   }
     
 }

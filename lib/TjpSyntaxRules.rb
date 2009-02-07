@@ -3609,10 +3609,9 @@ EOT
       checkContainer('shifts')
     })
     doc('shifts.task', <<'EOT'
-Limits the working time for this task to a defined shift during the specified
-interval. Multiple shifts can be defined, but shift intervals may not overlap.
-If one or more shifts have been assigned to a task, no work is done outside of
-the assigned intervals and the workinghours defined by the shifts. In case no interval is specified the whole project period is assumed.
+Limits the working time for this task during the during the specified
+interval to the working hours of the given shift. Multiple shifts can be
+defined, but shift intervals may not overlap.
 EOT
         )
 

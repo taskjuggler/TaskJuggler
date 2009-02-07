@@ -14,14 +14,15 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
 require 'TaskJuggler'
-require 'test/MessageChecker'
+Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
+require Path + 'MessageChecker'
 
 class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
   def test_syntaxCorrect
-    Dir.glob('TestSuite/Syntax/Correct/*.tjp').each do |f|
+    Dir.glob(Path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
@@ -29,7 +30,7 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_syntaxErrors
-    Dir.glob('TestSuite/Syntax/Errors/*.tjp').each do |f|
+    Dir.glob(Path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)
       assert(!tj.parse([ f ]), "Parser succedded for #{f}")
       checkMessages(tj, f)

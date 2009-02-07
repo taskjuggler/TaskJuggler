@@ -14,7 +14,8 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
 require 'TaskJuggler'
-require 'test/MessageChecker'
+Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
+require Path + 'MessageChecker'
 
 class TestScheduler < Test::Unit::TestCase
 
@@ -27,7 +28,7 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_SchedulerErrors
-    Dir.glob('TestSuite/Scheduler/Errors/*.tjp').each do |f|
+    Dir.glob(Path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       tj.schedule
@@ -36,7 +37,7 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_SchedulerCorrect
-    Dir.glob('TestSuite/Scheduler/Correct/*.tjp').each do |f|
+    Dir.glob(Path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for ${f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
