@@ -25,6 +25,7 @@ class TaskJuggler
     @@level = 0
     @@stack = []
     @@segments = []
+    @@silent = false
 
     # Set the maximum nesting level that should be shown. Segments with a
     # nesting level greater than _l_ will be silently dropped.
@@ -40,13 +41,23 @@ class TaskJuggler
       @@segments = []
     end
 
+    # if +s+ is true, progress information will not be shown.
+    def Log.silent=(s)
+      @@silent = s
+    end
+
+    # Return the @@silent value.
+    def Log.silent
+      @@silent
+    end
+
     # This function is used to open a new segment. +segment+ is the name of
     # the segment and +message+ is a description of it.
     def Log.enter(segment, message)
       return if @@level == 0
 
-      Log.<< ">> [#{segment}] #{message}"
       @@stack << segment
+      Log.<< ">> [#{segment}] #{message}"
     end
 
     # This function is used to close an open segment. To make this mechanism a
@@ -55,13 +66,13 @@ class TaskJuggler
     def Log.exit(segment, message = nil)
       return if @@level == 0
 
+      Log.<< "<< [#{segment}] #{message}" if message
       if @@stack.include?(segment)
         loop do
           m = @@stack.pop
           break if m == segment
         end
       end
-      Log.<< "<< [#{segment}] #{message}" if message
     end
 
     # Use this function to show a log message within the currently active
@@ -87,6 +98,33 @@ class TaskJuggler
       if @@stack.length - offset < @@level
         $stderr.puts ' ' * (@@stack.length - offset) + message
       end
+    end
+
+    def Log.showProgressMeter(name)
+      maxlen = 45
+      name = name.ljust(maxlen)
+      name = name[0..maxlen] if name.length > maxlen
+      @@progressMeter = name
+      progress(0.0)
+    end
+
+    def Log.hideProgressMeter
+      return if @@silent
+      $stdout.print("\n")
+    end
+
+    def Log.progress(percent)
+      return if @@silent
+
+      percent = 0.0 if percent < 0.0
+      percent = 1.0 if percent > 1.0
+
+      length = 30
+      full = (length * percent).to_i
+      bar = '=' * full + ' ' * (length - full)
+      label = (percent * 100.0).to_i.to_s + '%'
+      bar[length / 2 - label.length / 2, label.length] = label
+      $stdout.print("#{@@progressMeter} [#{bar}]\r")
     end
 
   end

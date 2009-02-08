@@ -718,25 +718,11 @@ class TaskJuggler
       @property['pathcriticalness', @scenarioIdx] = maxCriticalness
     end
 
-    # Return the date of the next slot this task wants to have scheduled. This
-    # must either be the first slot ever or it must be directly adjecent to the
-    # previous slot. If this task has not yet been scheduled at all, @lastSlot
-    # is still nil. Otherwise it contains the date of the last scheduled slot.
-    def nextSlot(slotDuration)
-      return nil if a('scheduled') || @isRunAway
-
-      if a('forward')
-        @lastSlot.nil? ? a('start') : @lastSlot + slotDuration
-      else
-        @lastSlot.nil? ? a('end') - slotDuration : @lastSlot - slotDuration
-      end
-    end
-
     # Check if the task is ready to be scheduled. For this it needs to have at
     # least one specified end date and a duration criteria or the other end
     # date.
     def readyForScheduling?
-      return false if a('scheduled')
+      return false if a('scheduled') || @isRunAway
 
       if a('forward')
         if !a('start').nil? &&
@@ -756,101 +742,36 @@ class TaskJuggler
     end
 
     # This function is the entry point for the core scheduling algorithm. It
-    # schedules the task for the time interval specified by _slot_ and
-    # _slotDuration_. _slot_ must be a TjTime. _slotDuration_ must be constant
-    # for a scheduling run.
-    # The function returns true if a start or end date has been determined and
-    # other tasks may be ready for scheduling now.
-    def schedule(slot, slotDuration)
-      # Tasks must always be scheduled in a single contigous fashion. @lastSlot
-      # indicates the slot that was used for the previous call. Depending on the
-      # scheduling direction the next slot must be scheduled either right before
-      # or after this slot. If the current slot is not directly aligned, we'll
-      # wait for another call with a proper slot. The function returns true
-      # only if a slot could be scheduled.
-      if a('forward')
-        # On first call, the @lastSlot is not set yet. We set it to the slot
-        # before the start slot.
-        if @lastSlot.nil?
-          @lastSlot = a('start') - slotDuration
-          @tentativeEnd = slot + slotDuration
-        end
+    # schedules the task to completion.  The function returns true if a start
+    # or end date has been determined and other tasks may be ready for
+    # scheduling now.
+    def schedule
+      # Is the task scheduled from start to end or vice versa?
+      forward = a('forward')
+      # The task may not excede the project interval.
+      limit = @project[forward ? 'end' : 'start']
+      # Number of seconds per time slot.
+      slotDuration = @project['scheduleGranularity']
+      slot = nextSlot(slotDuration)
 
-        return false unless slot == @lastSlot + slotDuration
-      else
-        # On first call, the @lastSlot is not set yet. We set it to the slot
-        # to the end slot.
-        if @lastSlot.nil?
-          @lastSlot = a('end')
-          @tentativeStart = slot
-        end
-
-        return false unless slot == @lastSlot - slotDuration
-      end
-      @lastSlot = slot
-
-      Log.enter('Task::schedule', "Scheduling task #{@property.fullId} at " +
-                "#{slot}")
-      if a('length') > 0 || a('duration') > 0
-        # The doneDuration counts the number of scheduled slots. It is increased
-        # by one with every scheduled slot. The doneLength is only increased for
-        # global working time slots.
-        @doneDuration += 1
-        if @project.isWorkingTime(slot, slot + slotDuration)
-          @doneLength += 1
-        end
-
-        # If we have reached the specified duration or lengths, we set the end
-        # or start date and propagate the value to neighbouring tasks.
-        if (a('length') > 0 && @doneLength >= a('length')) ||
-           (a('duration') > 0 && @doneDuration >= a('duration'))
-          @property['scheduled', @scenarioIdx] = true
-          if a('forward')
-            propagateDate(slot + slotDuration, true)
-          else
-            propagateDate(slot, false)
+      # Schedule all time slots from slot in the scheduling direction until
+      # the task is completed or a problem has been found.
+      while !scheduleSlot(slot, slotDuration)
+        if forward
+          slot += slotDuration
+          if slot > limit
+            markAsRunaway
+            return false
           end
-          Log.exit('Task::schedule', "Task #{@property.fullId} completed")
-          return true
-        end
-      elsif a('effort') > 0
-        bookResources(slot, slotDuration) if @doneEffort < a('effort')
-        if @doneEffort >= a('effort')
-          # The specified effort has been reached. The has been fully scheduled
-          # now.
-          @property['scheduled', @scenarioIdx] = true
-          if a('forward')
-            propagateDate(@tentativeEnd, true)
-          else
-            propagateDate(@tentativeStart, false)
-          end
-          Log.exit('Task::schedule', "Task #{@property.fullId} completed")
-          return true
-        end
-      elsif a('milestone')
-        if a('forward')
-          propagateDate(a('start'), true)
         else
-          propagateDate(a('end'), false)
-        end
-        Log.exit('Task::scheduled', "Milestone #{@property.fullId} completed")
-        return true
-      elsif a('start') && a('end')
-        # Task with start and end date but no duration criteria
-        bookResources(slot, slotDuration) unless a('allocate').empty?
-
-        # Depending on the scheduling direction we can mark the task as
-        # scheduled once we have reached the other end.
-        if (a('forward') && slot + slotDuration >= a('end')) ||
-           (!a('forward') && slot <= a('start'))
-           @property['scheduled', @scenarioIdx] = true
-           Log.exit('Task::schedule', "Milestone #{@property.fullId} completed")
-           return true
+          slot -= slotDuration
+          if slot < limit
+            markAsRunaway
+            return false
+          end
         end
       end
-
-      Log.exit('Task::schedule', "#{@property.fullId} at #{slot}")
-      false
+      true
     end
 
     # Set a new start or end date and propagate the value to all other
@@ -858,7 +779,6 @@ class TaskJuggler
     def propagateDate(date, atEnd)
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
-      Log << "Setting #{thisEnd} of #{@property.fullId} to #{date}"
       @property[thisEnd, @scenarioIdx] = date
       if a('milestone')
         # Start and end date of a milestone are identical.
@@ -890,7 +810,6 @@ class TaskJuggler
       if !@property.parent.nil?
         @property.parent.scheduleContainer(@scenarioIdx)
       end
-      Log << "Completed propagateDate for #{thisEnd} of #{@property.fullId}"
     end
 
     # This function determines if a task can inherit the start or end date
@@ -1272,6 +1191,105 @@ class TaskJuggler
     end
 
   private
+    def scheduleSlot(slot, slotDuration)
+      # Tasks must always be scheduled in a single contigous fashion. @lastSlot
+      # indicates the slot that was used for the previous call. Depending on the
+      # scheduling direction the next slot must be scheduled either right before
+      # or after this slot. If the current slot is not directly aligned, we'll
+      # wait for another call with a proper slot. The function returns true
+      # only if a slot could be scheduled.
+      if a('forward')
+        # On first call, the @lastSlot is not set yet. We set it to the slot
+        # before the start slot.
+        if @lastSlot.nil?
+          @lastSlot = a('start') - slotDuration
+          @tentativeEnd = slot + slotDuration
+        end
+
+        return false unless slot == @lastSlot + slotDuration
+      else
+        # On first call, the @lastSlot is not set yet. We set it to the slot
+        # to the end slot.
+        if @lastSlot.nil?
+          @lastSlot = a('end')
+          @tentativeStart = slot
+        end
+
+        return false unless slot == @lastSlot - slotDuration
+      end
+      @lastSlot = slot
+
+      if a('length') > 0 || a('duration') > 0
+        # The doneDuration counts the number of scheduled slots. It is increased
+        # by one with every scheduled slot. The doneLength is only increased for
+        # global working time slots.
+        @doneDuration += 1
+        if @project.isWorkingTime(slot, slot + slotDuration)
+          @doneLength += 1
+        end
+
+        # If we have reached the specified duration or lengths, we set the end
+        # or start date and propagate the value to neighbouring tasks.
+        if (a('length') > 0 && @doneLength >= a('length')) ||
+           (a('duration') > 0 && @doneDuration >= a('duration'))
+          @property['scheduled', @scenarioIdx] = true
+          if a('forward')
+            propagateDate(slot + slotDuration, true)
+          else
+            propagateDate(slot, false)
+          end
+          return true
+        end
+      elsif a('effort') > 0
+        bookResources(slot, slotDuration) if @doneEffort < a('effort')
+        if @doneEffort >= a('effort')
+          # The specified effort has been reached. The has been fully scheduled
+          # now.
+          @property['scheduled', @scenarioIdx] = true
+          if a('forward')
+            propagateDate(@tentativeEnd, true)
+          else
+            propagateDate(@tentativeStart, false)
+          end
+          return true
+        end
+      elsif a('milestone')
+        if a('forward')
+          propagateDate(a('start'), true)
+        else
+          propagateDate(a('end'), false)
+        end
+        return true
+      elsif a('start') && a('end')
+        # Task with start and end date but no duration criteria
+        bookResources(slot, slotDuration) unless a('allocate').empty?
+
+        # Depending on the scheduling direction we can mark the task as
+        # scheduled once we have reached the other end.
+        if (a('forward') && slot + slotDuration >= a('end')) ||
+           (!a('forward') && slot <= a('start'))
+           @property['scheduled', @scenarioIdx] = true
+           return true
+        end
+      end
+
+      false
+    end
+
+    # Return the date of the next slot this task wants to have scheduled. This
+    # must either be the first slot ever or it must be directly adjecent to the
+    # previous slot. If this task has not yet been scheduled at all, @lastSlot
+    # is still nil. Otherwise it contains the date of the last scheduled slot.
+    def nextSlot(slotDuration)
+      return nil if a('scheduled') || @isRunAway
+
+      if a('forward')
+        @lastSlot.nil? ? a('start') : @lastSlot + slotDuration
+      else
+        @lastSlot.nil? ? a('end') - slotDuration : @lastSlot - slotDuration
+      end
+    end
+
 
     def bookBookings
       a('booking').each do |booking|

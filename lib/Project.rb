@@ -554,6 +554,7 @@ class TaskJuggler
       end
     end
 
+    # Schedule all tasks for the given Scenario with index +scIdx+.
     def scheduleScenario(scIdx)
       tasks = PropertyList.new(@tasks)
       tasks.delete_if { |task| !task.leaf? }
@@ -569,83 +570,40 @@ class TaskJuggler
                          [ 'pathcriticalness', false, scIdx ],
                          [ 'seqno', true, -1 ] ])
       tasks.sort!
+      totalTasks = tasks.length
 
-      # The main scheduler loop only needs to look at the tasks that are ready
-      # to be scheduled.
-      workItems = Array.new(tasks)
-      workItems.delete_if { |task| !task.readyForScheduling?(scIdx) }
-
-      @breakFlag = false
       # Enter the main scheduling loop. This loop is only terminated when all
       # tasks have been scheduled or another thread has set the breakFlag to
       # true.
+      Log.showProgressMeter("Scheduling scenario #{scenario(scIdx).get('name')}")
       loop do
-        # For now, we assume this will be the last iteration.
-        done = true
-        # We don't know what time slot we will be scheduling.
-        slot = nil
-        # The currently handled task priority.
-        priority = 0
-        # The currently handled task criticalness.
-        pathCriticalness = 0.0
-        # The scheduler is advanding forward in time.
-        forward = true
+        # The main scheduler loop only needs to look at the first task that is
+        # ready to be scheduled.
+        workItems = Array.new(tasks)
 
+        # Count the already completed tasks.
+        completedTasks = 0
         workItems.each do |task|
-          if slot.nil?
-            # We don't know what time slot we should schedule next. We check the
-            # tasks for the next slot they like to see scheduled. Tasks that are
-            # not ready to be scheduled, return nil.
-            slot = task.nextSlot(scIdx, @attributes['scheduleGranularity'])
-            # Check the next task if we don't have a slot yet.
-            next if slot.nil?
-
-            if (slot < @attributes['start'] ||
-                slot > @attributes['end'])
-              # When the task asked for time slot outside of the project
-              # interval, we deem it a runaway. It will be ignored for the rest
-              # of the scheduling run and the overall result will be incomplete.
-              task.markAsRunaway(scIdx)
-              slot = nil
-              next
-            end
-
-            # To avoid priority inversions as good as possible, we store the
-            # priority, criticalness and scheduling direction of the task that
-            # provided the slot. These will form a lower barrier for the rest of
-            # the tasks that can be scheduled in this iteration of the outer
-            # loop.
-            priority = task['priority', scIdx]
-            pathCriticalness = task['pathcriticalness', scIdx]
-            forward = task['forward', scIdx]
-            # We have at least one task left to process.
-            done = false
-          else
-            # Stop processing the work item list in case we hit a task that runs
-            # into the opposite direction or has a lower priority or
-            # criticalness.
-            break if (task['forward', scIdx] != forward &&
-                      !task['milestone', scIdx]) ||
-                      task['priority', scIdx] < priority ||
-                      (task['priority', scIdx] == priority &&
-                       task['pathcriticalness', scIdx] < pathCriticalness)
-          end
-
-
-          # Schedule the current task for the current time slot.
-          if task.schedule(scIdx, slot, @attributes['scheduleGranularity'])
-            # If one or more tasks have been scheduled completely, we
-  	        # recreate the list of all tasks that are ready to be scheduled.
-            workItems = Array.new(tasks)
-            workItems.delete_if { |t| !t.readyForScheduling?(scIdx) }
-            break
-          end
+          completedTasks += 1 if task['scheduled', scIdx]
         end
 
-        # Break the outer loop if we have no more tasks left or the interrupt
-        # flag has been set by another thread.
-        break if done || @breakFlag
+        Log.progress(completedTasks.to_f / totalTasks)
+        # Remove all tasks that are not ready for scheduling yet.
+        workItems.delete_if { |task| !task.readyForScheduling?(scIdx) }
+
+        # Check if we are done.
+        break if workItems.empty?
+
+        # The first task in the list is the one with the highes priority and
+        # the largest path criticalness that is ready to be scheduled.
+        task = workItems[0]
+        # Schedule it.
+        task.schedule(scIdx)
+        Log << "Finished task #{task.fullId}, #{workItems.length} tasks left"
       end
+      Log.hideProgressMeter
+      Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
+      true
     end
 
   end

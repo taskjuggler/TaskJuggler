@@ -37,6 +37,9 @@ def processArguments(argv)
           'Restrict debug output to a list of modules') do |arg|
     TaskJuggler::Log.segments = arg.split(',')
   end
+  opts.on('--silent', "Don't show program and progress information") do
+    TaskJuggler::Log.silent = true
+  end
 
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts.to_s
@@ -61,6 +64,14 @@ def processArguments(argv)
     puts opts.to_s
     $stderr.puts "\nNo file name specified!"
     exit 1
+  end
+
+  unless TaskJuggler::Log.silent
+    puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+      "#{AppConfig.packageInfo}\n\n" +
+      "Copyright (c) #{AppConfig.copyright.join(', ')}" +
+      " by #{AppConfig.authors.join(', ')}\n\n" +
+      "#{AppConfig.license}\n"
   end
 
   files

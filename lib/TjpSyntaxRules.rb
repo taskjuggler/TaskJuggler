@@ -3609,9 +3609,12 @@ EOT
       checkContainer('shifts')
     })
     doc('shifts.task', <<'EOT'
-Limits the working time for this task during the during the specified
-interval to the working hours of the given shift. Multiple shifts can be
-defined, but shift intervals may not overlap.
+Limits the working time for this task during the during the specified interval
+to the working hours of the given shift. Multiple shifts can be defined, but
+shift intervals may not overlap. This is an additional working time limit to
+the working hours of the allocated resources. It does not replace the resource
+working hour restrictions. For a resource to be assigned to a time slot, both
+the task shifts as well as the resource working hours must declare the time slot as duty slot.
 EOT
         )
 

@@ -235,7 +235,8 @@ class TaskJuggler
       p = self
       begin
         parent = p.parent
-        idcs.insert(0, parent ? parent.levelSeqNo(p) : @propertySet.levelSeqNo(p))
+        idcs.insert(0, parent ? parent.levelSeqNo(p) :
+                                @propertySet.levelSeqNo(p))
         p = parent
       end while p
       idcs
