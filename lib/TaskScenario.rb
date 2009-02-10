@@ -48,6 +48,11 @@ class TaskJuggler
       @endIsDetermed = nil
       @tentativeStart = @tentativeEnd = nil
 
+      # To avoid multiple calls to propagateDate() we use these flags to know
+      # when we've done it already.
+      @startPropagated = false
+      @endPropagated = false
+
       # Inheriting start or end values is a bit tricky. This should really only
       # happen if the task is a leaf task and scheduled away from the specified
       # date. Since the default meachanism inherites all values, we have to
@@ -83,6 +88,7 @@ class TaskJuggler
       end
 
       bookBookings
+      markMilestone
     end
 
     # The parser only stores the full task IDs for each of the dependencies. This
@@ -112,20 +118,6 @@ class TaskJuggler
       end
     end
 
-    # This function primarily determines implicit milestones and marks them
-    # accordingly.
-    def detectMilestones
-      # Automatically detect and mark task as milestones that have no duration
-      # criteria but proper start or end specification.
-      return if !@property.leaf? || a('milestone')
-
-      hasStartSpec = !(a('start').nil? && a('depends').empty?)
-      hasEndSpec = !(a('end').nil? && a('precedes').empty?)
-
-      @property['milestone', @scenarioIdx] =
-        !hasDurationSpec? && (hasStartSpec ^ hasEndSpec)
-    end
-
     # Return true of this Task has a dependency [ _target_, _onEnd_ ] in the
     # dependency category _depType_.
     def hasDependency?(depType, target, onEnd)
@@ -133,18 +125,22 @@ class TaskJuggler
     end
 
     def propagateInitialValues
-      if a('start')
-        propagateDate(a('start'), false)
-      elsif @property.parent.nil? &&
-            @property.canInheritDate?(@scenarioIdx, false)
-        propagateDate(@project['start'], false)
+      unless @startPropagated
+        if a('start')
+          propagateDate(a('start'), false)
+        elsif @property.parent.nil? &&
+          @property.canInheritDate?(@scenarioIdx, false)
+          propagateDate(@project['start'], false)
+        end
       end
 
-      if a('end')
-        propagateDate(a('end'), true)
-      elsif @property.parent.nil? &&
-            @property.canInheritDate?(@scenarioIdx, true)
-        propagateDate(@project['end'], true)
+      unless @endPropagated
+        if a('end')
+          propagateDate(a('end'), true)
+        elsif @property.parent.nil? &&
+          @property.canInheritDate?(@scenarioIdx, true)
+          propagateDate(@project['end'], true)
+        end
       end
     end
 
@@ -779,6 +775,13 @@ class TaskJuggler
     def propagateDate(date, atEnd)
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
+
+      if atEnd
+        @endPropagated = true
+      else
+        @startPropagated = true
+      end
+
       @property[thisEnd, @scenarioIdx] = date
       if a('milestone')
         # Start and end date of a milestone are identical.
@@ -1297,7 +1300,6 @@ class TaskJuggler
       end
     end
 
-
     def bookBookings
       a('booking').each do |booking|
         unless booking.resource.leaf?
@@ -1344,6 +1346,18 @@ class TaskJuggler
           end
         end
       end
+    end
+
+    # This function determines if a task is really a milestones and marks them
+    # accordingly.
+    def markMilestone
+      return if @property.container? || a('milestone') || !a('booking').empty?
+
+      hasStartSpec = !(a('start').nil? && a('depends').empty?)
+      hasEndSpec = !(a('end').nil? && a('precedes').empty?)
+
+      @property['milestone', @scenarioIdx] =
+        !hasDurationSpec? && (hasStartSpec ^ hasEndSpec)
     end
 
     def checkDependency(dependency, depType)

@@ -485,10 +485,6 @@ class TaskJuggler
         end
       end
 
-      tasks.each do |task|
-        task.detectMilestones(scIdx)
-      end
-
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
       end
