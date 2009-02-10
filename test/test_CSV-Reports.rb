@@ -75,7 +75,7 @@ class TestScheduler < Test::Unit::TestCase
 
   def test_CSV_Reports
     Dir.glob(Path + 'TestSuite/CSV-Reports/*.tjp').each do |f|
-      baseName = f[22 + Path.length, f.length - 26]
+      baseName = f[22 + Path.length, f.length - (Path.length + 26)]
       refFile = Path + "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
