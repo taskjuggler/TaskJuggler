@@ -15,8 +15,9 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'stringio'
 require 'test/unit'
 require 'TaskJuggler'
-require 'test/MessageChecker'
 require 'reports/CSVFile'
+Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
+require Path + 'MessageChecker'
 
 class TestScheduler < Test::Unit::TestCase
 
@@ -39,7 +40,7 @@ class TestScheduler < Test::Unit::TestCase
   # the name fileName.
   def stdoutToFile(fileName)
     oldStdOut = $stdout
-    $stdout = ile.open(fileName, 'w')
+    $stdout = File.open(fileName, 'w')
     begin
       yield
     ensure
@@ -51,10 +52,10 @@ class TestScheduler < Test::Unit::TestCase
   # reference files _refFile_.
   def compareCSVs(outStr, refFile)
     ref = []
-    CSVFile.new(ref).read(refFile)
+    TaskJuggler::CSVFile.new(ref).read(refFile)
 
     out = []
-    CSVFile.new(out).parse(outStr)
+    TaskJuggler::CSVFile.new(out).parse(outStr)
     assert(ref.length == out.length,
            "Line number mismatch (#{out.length} instead of #{ref.length}) " +
            "in #{refFile}")
@@ -73,9 +74,9 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_CSV_Reports
-    Dir.glob('TestSuite/CSV-Reports/*.tjp').each do |f|
-      baseName = f[22, f.length - 26]
-      refFile = "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
+    Dir.glob(Path + 'TestSuite/CSV-Reports/*.tjp').each do |f|
+      baseName = f[22 + Path.length, f.length - 26]
+      refFile = Path + "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")

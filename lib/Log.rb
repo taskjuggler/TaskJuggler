@@ -25,7 +25,7 @@ class TaskJuggler
     @@level = 0
     @@stack = []
     @@segments = []
-    @@silent = false
+    @@silent = true
 
     # Set the maximum nesting level that should be shown. Segments with a
     # nesting level greater than _l_ will be silently dropped.

@@ -21,12 +21,6 @@ class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
-  def setup
-  end
-
-  def teardown
-  end
-
   def test_SchedulerErrors
     Dir.glob(Path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
       tj = TaskJuggler.new(false)

@@ -10,8 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-
-require 'Project'
 require 'TextParser'
 require 'TextScanner'
 require 'TjpSyntaxRules'

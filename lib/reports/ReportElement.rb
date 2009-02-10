@@ -10,7 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'reports/Report'
 require 'TableColumnDefinition'
 require 'LogicalExpression'
 

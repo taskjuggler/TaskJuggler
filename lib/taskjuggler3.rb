@@ -52,6 +52,8 @@ def processArguments(argv)
     exit 0
   end
 
+  # Show some progress information by default
+  TaskJuggler::Log.silent = false
   begin
     files = opts.parse(argv)
   rescue OptionParser::ParseError => msg

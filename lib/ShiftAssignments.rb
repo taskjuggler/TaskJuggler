@@ -72,7 +72,7 @@ class TaskJuggler
   # This class manages a list of ShiftAssignment elements. The intervals of the
   # assignments must not overlap.
   #
-  # Since is fairly costly to determine the onShift and onVacation values
+  # Since it is fairly costly to determine the onShift and onVacation values
   # for a given date we use a scoreboard to cache all computed values.
   # Changes to the assigment set invalidate the cache again.
   #
@@ -117,7 +117,6 @@ class TaskJuggler
     # Some operations require access to the whole project.
     def setProject(project)
       @project = project
-      @scoreboard = newScoreboard
     end
 
     # Add a new assignment to the list. In case there was no overlap the
@@ -205,6 +204,14 @@ class TaskJuggler
       true
     end
 
+    def ShiftAssignments.scoreboards
+      @@scoreboards
+    end
+
+    def ShiftAssignments.sbClear
+      @@scoreboards = []
+    end
+
     # This function is primarily used for debugging purposes.
     def to_s
       return '' if @assignments.empty?
@@ -240,14 +247,14 @@ class TaskJuggler
         end
       end
       # We have not found a matching scoreboard, so we have to create a new one.
-      newScoreboard = Scoreboard.new(@project['start'], @project['end'],
-                                     @project['scheduleGranularity'])
+      newSb = Scoreboard.new(@project['start'], @project['end'],
+                             @project['scheduleGranularity'])
       # Create a new record for it and register the ShiftAssignments object as
       # first user.
-      newRecord = [ [ object_id ], newScoreboard ]
+      newRecord = [ [ object_id ], newSb ]
       # Append the new record to the list.
       @@scoreboards << newRecord
-      return newScoreboard
+      return newSb
     end
 
     # This function is called whenever a ShiftAssignments object gets destroyed
@@ -261,19 +268,12 @@ class TaskJuggler
       # delete the whole record. If not, we'll just remove it form the record.
       @@scoreboards.each do |sbRecord|
         assignmentObjectIDs = sbRecord[0]
-        scoreboard = sbRecord[1]
-        assignmentObjectIDs.each do |id|
-          if id == objId
-            assignmentObjectIDs.delete(id)
-            if assignmentObjectIDs.empty?
-              # No more ShiftAssignments in this record. Delete it from the
-              # list.
-              @@scoreboards.delete(sbRecord)
-              return
-            end
-          end
-        end
+        assignmentObjectIDs.delete_if { |id| id == objId }
+        # No more ShiftAssignments in this record. Delete it from the list.
+        break if assignmentObjectIDs.empty?
       end
+      # Delete all entries which have empty reference lists.
+      @@scoreboards.delete_if { |sbRecord| sbRecord[0].empty? }
       ObjectSpace.undefine_finalizer(self)
     end
 
