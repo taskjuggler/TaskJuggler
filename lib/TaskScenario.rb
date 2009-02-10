@@ -114,7 +114,7 @@ class TaskJuggler
 
     # This function primarily determines implicit milestones and marks them
     # accordingly.
-    def implicitXref
+    def detectMilestones
       # Automatically detect and mark task as milestones that have no duration
       # criteria but proper start or end specification.
       return if !@property.leaf? || a('milestone')
@@ -293,7 +293,7 @@ class TaskJuggler
 
       if !a('booking').empty? && !a('forward') && !a('scheduled')
         error('alap_booking',
-              'An task scheduled in ALAP mode may only have bookings if it ' +
+              'A task scheduled in ALAP mode may only have bookings if it ' +
               'has been marked as fully scheduled. Keep in mind that ' +
               'certain attributes like \'end\' or \'precedes\' automatically ' +
               'switch the task to ALAP mode.')
@@ -1262,7 +1262,14 @@ class TaskJuggler
         return true
       elsif a('start') && a('end')
         # Task with start and end date but no duration criteria
-        bookResources(slot, slotDuration) unless a('allocate').empty?
+        if a('allocate').empty?
+          # For start-end-tasks without allocation, we don't have to do
+          # anything but to set the 'scheduled' flag.
+          @property['scheduled', @scenarioIdx] = true
+          return true
+        end
+
+        bookResources(slot, slotDuration)
 
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.

@@ -485,6 +485,10 @@ class TaskJuggler
         end
       end
 
+      tasks.each do |task|
+        task.detectMilestones(scIdx)
+      end
+
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
       end
@@ -497,9 +501,6 @@ class TaskJuggler
       end
       tasks.each do |task|
         task.propagateInitialValues(scIdx)
-      end
-      tasks.each do |task|
-        task.implicitXref(scIdx)
       end
       tasks.each do |task|
         task.preScheduleCheck(scIdx)
@@ -598,8 +599,10 @@ class TaskJuggler
         # the largest path criticalness that is ready to be scheduled.
         task = workItems[0]
         # Schedule it.
-        task.schedule(scIdx)
-        Log << "Finished task #{task.fullId}, #{workItems.length} tasks left"
+        if task.schedule(scIdx)
+          Log << "Task #{task.fullId}: #{task['start', scIdx]} -> " +
+                 "#{task['end', scIdx]}"
+        end
       end
       Log.hideProgressMeter
       Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
