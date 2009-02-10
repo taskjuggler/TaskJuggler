@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby -w
-
+#!/usr/bin/env ruby
 require 'tj3man'
 
