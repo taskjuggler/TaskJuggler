@@ -16,12 +16,14 @@ task p1 "Parent Tasks" {
     }
     task t2 "Task 2" {
       start 2009-02-06
+      # This is an implicit milestone
       ${FixStart "2009-02-06"}
-      ${FixEnd "${projectend}"}
+      ${FixEnd "2009-02-06"}
     }
     task t3 "Task 3" {
       end 2009-03-01
-      ${FixStart "${projectstart}"}
+      # This is an implicit milestone
+      ${FixStart "2009-03-01"}
       ${FixEnd "2009-03-01"}
     }
   }
