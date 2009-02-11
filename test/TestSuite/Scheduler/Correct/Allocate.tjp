@@ -51,6 +51,34 @@ task mandatory "Mandatory Tests" {
   }
 }
 
+resource r1 "Resource 1"
+resource r2 "Resource 2"
+
+task inheritedAllocs "Inherited Allocations" {
+  allocate r1
+  task t1 "Task 1" {
+    effort 3d
+    ${Fixend "2007-09-04-18:00"}
+  }
+  task t2 "Task 2" {
+    allocate r2
+    task t2_1 "Task 2.1" {
+      effort 2d
+      ${Fixend "2007-09-03-18:00"}
+    }
+    task t2_2 "Task 2.2" {
+      effort 4d
+      depends !!t1
+      ${Fixend "2007-09-06-18:00"}
+    }
+  }
+  task t3 "Task 3" {
+    effort 2d
+    depends !t2
+    ${Fixend "2007-09-10-18:00"}
+  }
+}
+
 htmltaskreport "Allocate.html" {
   columns no, name, end, daily
   hideresource 0

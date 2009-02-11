@@ -393,13 +393,13 @@ class TaskJuggler
           error('task_start_in_parent',
                 "The start date (#{a('start')}) of task #{@property.fullId} " +
                 "is before the start date of the enclosing task " +
-                "#{parent['start', scenarioIdx]}. ")
+                "#{parent['start', @scenarioIdx]}. ")
         end
         if a('end') > parent['end', @scenarioIdx]
           error('task_end_in_parent',
                 "The end date (#{a('end')}) of task #{@property.fullId} " +
                 "is after the end date of the enclosing task " +
-                "#{parent['end', scenarioIdx]}. ")
+                "#{parent['end', @scenarioIdx]}. ")
         end
       end
 
