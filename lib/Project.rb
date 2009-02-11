@@ -311,6 +311,12 @@ class TaskJuggler
         p.index
       end
 
+      if @tasks.empty?
+        message = Message.new('no_tasks', 'error', "No tasks defined")
+        sendMessage(message)
+        return false
+      end
+
       begin
         @scenarios.each do |sc|
           # Skip disabled scenarios

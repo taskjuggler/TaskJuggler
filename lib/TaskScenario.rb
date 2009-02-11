@@ -821,9 +821,7 @@ class TaskJuggler
 
       # If we have a task with a specified duration, the scheduling needs to
       # be directed towards the other end.
-      if hasDurationSpec?
-        return a('forward') ^ atEnd
-      end
+      return a('forward') ^ atEnd if hasDurationSpec?
 
       true
     end
@@ -1422,17 +1420,16 @@ class TaskJuggler
       # Don't propagate if the task already has a date for that end.
       return unless task[atEnd ? 'end' : 'start', @scenarioIdx].nil?
 
+      # Don't propagate if the task has a duration or is a milestone and the
+      # task end to set is in the scheduling direction.
+      return if task.hasDurationSpec?(@scenarioIdx) &&
+                !(atEnd ^ task['forward', @scenarioIdx])
+
       # Check if all other dependencies for that task end have been determined
       # already and use the latest or earliest possible date. Don't propagate
       # if we don't have all dates yet.
       return if (nDate = (atEnd ? task.latestEnd(@scenarioIdx) :
                                   task.earliestStart(@scenarioIdx))).nil?
-
-      # Don't propagate if the task has a duration or is a milestone and the
-      # task end to set is in the scheduling direction.
-      if task.hasDurationSpec?(@scenarioIdx) && !(atEnd ^ task['forward', @scenarioIdx])
-        return
-      end
 
       # Looks like it is ok to propagate the date.
       task.propagateDate(@scenarioIdx, nDate, atEnd)

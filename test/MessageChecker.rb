@@ -22,9 +22,11 @@ module MessageChecker
           "Error in #{file}: Got #{message.level} instead of #{ref[0]}")
       assert_equal(ref[2], message.id,
           "Error in #{file}: Got #{message.id} instead of #{ref[2]}")
-      assert_equal(ref[1], message.sourceFileInfo.lineNo,
-          "Error in #{file}: Got line #{message.sourceFileInfo.lineNo} " +
-          "instead of #{ref[1]}")
+      if message.sourceFileInfo
+        assert_equal(ref[1], message.sourceFileInfo.lineNo,
+                     "Error in #{file}: Got line #{message.sourceFileInfo.lineNo} " +
+                     "instead of #{ref[1]}")
+      end
     end
     # Make sure that all reference messages have been generated.
     assert(refMessages.empty?)

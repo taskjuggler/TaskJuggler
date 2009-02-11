@@ -267,6 +267,11 @@ class TaskJuggler
       @properties.length
     end
 
+    # Return true if the set is empty.
+    def empty?
+      @properties.empty?
+    end
+
     # Return the number of top-level PropertyTreeNode objects. Top-Level items
     # are no children.
     def topLevelItems
