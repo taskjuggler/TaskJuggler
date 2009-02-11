@@ -8,11 +8,22 @@ resource r2 "Resource 2"
 resource r3 "Resource 3"
 resource r4 "Resource 4"
 
+task ms1 "Milestone 1" {
+  ${FixStart "${projectstart}"}
+  milestone
+}
+
+task ms2 "Milestone 2" {
+  milestone
+  scheduling alap
+  ${FixEnd "${projectend}"}
+}
+
 task p1 "Parent Tasks" {
-  task empty "Only start or end dates" {
+  task only_s_e "Only start or end dates" {
     task t1 "Task 1" {
       ${FixStart "${projectstart}"}
-      ${FixEnd "${projectend}"}
+      ${FixEnd "${projectstart}"}
     }
     task t2 "Task 2" {
       start 2009-02-06
@@ -27,7 +38,7 @@ task p1 "Parent Tasks" {
       ${FixEnd "2009-03-01"}
     }
   }
-  task empty "Milestones" {
+  task ms "Milestones" {
     task t1 "Task 1" {
       milestone
       ${FixStart "${projectstart}"}
@@ -39,7 +50,7 @@ task p1 "Parent Tasks" {
       ${FixStart "${projectend}"}
       ${FixEnd "${projectend}"}
     }
-    task t4 "Task 3" {
+    task t3 "Task 3" {
       start 2009-02-06
       milestone
       ${FixStart "2009-02-06"}
@@ -51,8 +62,20 @@ task p1 "Parent Tasks" {
       ${FixStart "2009-03-01"}
       ${FixEnd "2009-03-01"}
     }
+    task t5 "Task 5" {
+      start 2009-02-06
+      depends ms1
+      ${FixStart "2009-02-06"}
+      ${FixEnd "2009-02-06"}
+    }
+    task t6 "Task 6" {
+      end 2009-03-01
+      precedes ms2
+      ${FixStart "2009-03-01"}
+      ${FixEnd "2009-03-01"}
+    }
   }
-  task empty "With effort" {
+  task w_effort "With effort" {
     task t1 "Task 1" {
       allocate r1
       effort 20d
@@ -83,6 +106,20 @@ task p1 "Parent Tasks" {
       ${FixStart "2009-04-03-09:00"}
       ${FixEnd "2009-04-30-18:00"}
     }
+  }
+}
+
+task p2 "Parent Tasks 2" {
+  task t1 "Task1" {
+  }
+  task t2 "Task2" {
+    depends !t1
+  }
+  task t3 "Task3" {
+    scheduling alap
+  }
+  task t4 "Task4" {
+    precedes !t3
   }
 }
 

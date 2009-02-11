@@ -57,14 +57,10 @@ class TaskJuggler
       # happen if the task is a leaf task and scheduled away from the specified
       # date. Since the default meachanism inherites all values, we have to
       # delete the wrong ones again.
-      if a('start') && @property.inherited('start', @scenarioIdx) &&
-         (@property.container? || (@property.leaf? && !a('forward')) ||
-          !a('depends').empty?)
+      unless @property.provided('start', @scenarioIdx)
         @property['start', @scenarioIdx] = nil
       end
-      if a('end') && @property.inherited('end', @scenarioIdx) &&
-         (@property.container? || (@property.leaf? && a('forward')) ||
-          !a('precedes').empty?)
+      unless @property.provided('end', @scenarioIdx)
         @property['end', @scenarioIdx] = nil
       end
 
@@ -235,21 +231,23 @@ class TaskJuggler
       else
         #   Error table for non-container, non-milestone tasks:
         #   AMP: Automatic milestone promotion for underspecified tasks.
-        #   Ref. implicitXref()
+        #   Ref. implicitXref()|
+        #   inhS: Inherit start date from parent task or project
+        #   inhE: Inherit end date from parent task or project
         #
-        #   | x-> -   ok     |D x-> -   ok     - x-> -   err2   -D x-> -   ok
-        #   | x-> |   err1   |D x-> |   err1   - x-> |   err2   -D x-> |   err1
-        #   | x-> -D  ok     |D x-> -D  ok     - x-> -D  err2   -D x-> -D  ok
-        #   | x-> |D  err1   |D x-> |D  err1   - x-> |D  err2   -D x-> |D  err1
-        #   | --> -   AMP    |D --> -   AMP    - --> -   err2   -D --> -   AMP
-        #   | --> |   ok     |D --> |   ok     - --> |   err2   -D --> |   ok
-        #   | --> -D  ok     |D --> -D  ok     - --> -D  err2   -D --> -D  ok
-        #   | --> |D  ok     |D --> |D  ok     - --> |D  err2   -D --> |D  ok
-        #   | <-x -   err3   |D <-x -   err3   - <-x -   err3   -D <-x -   err3
+        #   | x-> -   ok     |D x-> -   ok     - x-> -   inhS   -D x-> -   ok
+        #   | x-> |   err1   |D x-> |   err1   - x-> |   inhS   -D x-> |   err1
+        #   | x-> -D  ok     |D x-> -D  ok     - x-> -D  inhS   -D x-> -D  ok
+        #   | x-> |D  err1   |D x-> |D  err1   - x-> |D  inhS   -D x-> |D  err1
+        #   | --> -   AMP    |D --> -   AMP    - --> -   inhS   -D --> -   AMP
+        #   | --> |   ok     |D --> |   ok     - --> |   inhS   -D --> |   ok
+        #   | --> -D  ok     |D --> -D  ok     - --> -D  inhS   -D --> -D  ok
+        #   | --> |D  ok     |D --> |D  ok     - --> |D  inhS   -D --> |D  ok
+        #   | <-x -   inhE   |D <-x -   inhE   - <-x -   inhE   -D <-x -   inhE
         #   | <-x |   err1   |D <-x |   err1   - <-x |   ok     -D <-x |   ok
         #   | <-x -D  err1   |D <-x -D  err1   - <-x -D  ok     -D <-x -D  ok
         #   | <-x |D  err1   |D <-x |D  err1   - <-x |D  ok     -D <-x |D  ok
-        #   | <-- -   err3   |D <-- -   err3   - <-- -   err3   -D <-- -   err3
+        #   | <-- -   inhE   |D <-- -   inhE   - <-- -   inhE   -D <-- -   inhE
         #   | <-- |   ok     |D <-- |   ok     - <-- |   AMP    -D <-- |   ok
         #   | <-- -D  ok     |D <-- -D  ok     - <-- -D  AMP    -D <-- -D  ok
         #   | <-- |D  ok     |D <-- |D  ok     - <-- |D  AMP    -D <-- |D  ok
@@ -282,9 +280,6 @@ class TaskJuggler
                 "Task #{@property.fullId} has a start, an end and a " +
                 'duration specification.')
         end
-
-        # The err2 and err3 cases are already being taken care of in
-        # checkDetermination().
       end
 
       if !a('booking').empty? && !a('forward') && !a('scheduled')
@@ -593,18 +588,6 @@ class TaskJuggler
       #      "#{fromOutside ? 'outside' : 'inside'}"
     end
 
-    def checkDetermination
-      [ true, false ].each do |b|
-        unless dateCanBeDetermined(b)
-          error(b ? 'start_undetermed' : 'end_undetermed',
-                "The #{b ? 'start' : 'end'} of task " +
-                "#{@property.fullId} " + "is underspecified. You must use " +
-                "more fixed data for this task or its dependencies to solve " +
-                "this problem.")
-        end
-      end
-    end
-
     # This function must be called before prepareScheduling(). It compiles the
     # list of leaf resources that are allocated to this task.
     def candidates
@@ -754,12 +737,14 @@ class TaskJuggler
       # the task is completed or a problem has been found.
       while !scheduleSlot(slot, slotDuration)
         if forward
+          # The task is scheduled from start to end.
           slot += slotDuration
           if slot > limit
             markAsRunaway
             return false
           end
         else
+          # The task is scheduled from end to start.
           slot -= slotDuration
           if slot < limit
             markAsRunaway
@@ -776,19 +761,25 @@ class TaskJuggler
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
 
+      # These flags are just used to avoid duplicate calls of this function
+      # during propagateInitialValues().
       if atEnd
         @endPropagated = true
       else
         @startPropagated = true
       end
 
-      @property[thisEnd, @scenarioIdx] = date
+      # For leaf tasks, propagate start may set the date. Container task dates are
+      # only set in scheduleContainer().
+      @property[thisEnd, @scenarioIdx] = date if @property.leaf?
+
       if a('milestone')
         # Start and end date of a milestone are identical.
         @property['scheduled', @scenarioIdx] = true
         if a(otherEnd).nil?
           propagateDate(a(thisEnd), !atEnd)
         end
+        Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
       end
 
       # Propagate date to all dependent tasks.
@@ -804,15 +795,13 @@ class TaskJuggler
       # the task.
       @property.children.each do |task|
         if task.canInheritDate?(@scenarioIdx, atEnd)
-          task.propagateDate(@scenarioIdx, a(thisEnd), atEnd)
+          task.propagateDate(@scenarioIdx, date, atEnd)
         end
       end
 
       # The date propagation might have completed the date set of the enclosing
       # containter task. If so, we can schedule it as well.
-      if !@property.parent.nil?
-        @property.parent.scheduleContainer(@scenarioIdx)
-      end
+      @property.parent.scheduleContainer(@scenarioIdx) if !@property.parent.nil?
     end
 
     # This function determines if a task can inherit the start or end date
@@ -830,10 +819,9 @@ class TaskJuggler
       # Containter task can inherit the date if they have no dependencies.
       return true if @property.container?
 
-      # If we have a duration, the scheduling needs to be directed towards the
-      # other end.
-      if a('effort') > 0.0 || a('duration') > 0.0 ||
-         a('length') > 0.0 || a('milestone')
+      # If we have a task with a specified duration, the scheduling needs to
+      # be directed towards the other end.
+      if hasDurationSpec?
         return a('forward') ^ atEnd
       end
 
@@ -850,8 +838,7 @@ class TaskJuggler
 
       @property.children.each do |task|
         # Abort if a child has not yet been scheduled.
-        return if task['start', @scenarioIdx].nil? ||
-                  task['end', @scenarioIdx].nil?
+        return unless task['scheduled', @scenarioIdx]
 
         if nStart.nil? || task['start', @scenarioIdx] < nStart
           nStart = task['start', @scenarioIdx]
@@ -861,19 +848,29 @@ class TaskJuggler
         end
       end
 
+      @property['scheduled', @scenarioIdx] = true
+
+      startSet = endSet = false
       # Propagate the dates to other dependent tasks.
       if a('start').nil? || a('start') > nStart
-        propagateDate(nStart, false)
+        @property['start', @scenarioIdx] = nStart
+        startSet = true
       end
       if a('end').nil? || a('end') < nEnd
-        propagateDate(nEnd, true)
+        @property['end', @scenarioIdx] = nEnd
+        endSet = true
       end
-      @property['scheduled', @scenarioIdx] = true
+      Log << "Container task #{@property.fullId}: #{a('start')} -> #{a('end')}"
+
+      # If we have modified the start or end date, we need to communicate this
+      # new date to surrounding tasks.
+      propagateDate(nStart, false) if startSet
+      propagateDate(nEnd, true) if endSet
     end
 
+    # Return true if the task has a effort, length or duration setting.
     def hasDurationSpec?
-      (a('length') > 0 || a('duration') > 0 || a('effort') > 0) &&
-        !a('milestone')
+      a('length') > 0 || a('duration') > 0 || a('effort') > 0 || a('milestone')
     end
 
     # This function checks if the task has certain dependencies. If _atEnd_ is
@@ -1269,6 +1266,7 @@ class TaskJuggler
           # For start-end-tasks without allocation, we don't have to do
           # anything but to set the 'scheduled' flag.
           @property['scheduled', @scenarioIdx] = true
+          @property.parent.scheduleContainer(@scenarioIdx) if @property.parent
           return true
         end
 
@@ -1278,8 +1276,9 @@ class TaskJuggler
         # scheduled once we have reached the other end.
         if (a('forward') && slot + slotDuration >= a('end')) ||
            (!a('forward') && slot <= a('start'))
-           @property['scheduled', @scenarioIdx] = true
-           return true
+          @property['scheduled', @scenarioIdx] = true
+          @property.parent.scheduleContainer(@scenarioIdx) if @property.parent
+          return true
         end
       end
 
@@ -1353,11 +1352,11 @@ class TaskJuggler
     def markMilestone
       return if @property.container? || a('milestone') || !a('booking').empty?
 
-      hasStartSpec = !(a('start').nil? && a('depends').empty?)
-      hasEndSpec = !(a('end').nil? && a('precedes').empty?)
+      hasStartSpec = !a('start').nil? || (!a('depends').empty? && a('forward'))
+      hasEndSpec = !a('end').nil? || (!a('precedes').empty? && !a('forward'))
 
       @property['milestone', @scenarioIdx] =
-        !hasDurationSpec? && (hasStartSpec ^ hasEndSpec)
+        !hasDurationSpec? && !(hasStartSpec & hasEndSpec)
     end
 
     def checkDependency(dependency, depType)
@@ -1405,80 +1404,38 @@ class TaskJuggler
       depTask
     end
 
-    # Check if the start (_checkStart == true) or end of the task can be
-    # determined. This can occur on several ways. This most obvious case is a
-    # fixed start or end date of this task or any of the parent tasks. Container
-    # tasks can be determined when a child task can be determined. Normal tasks
-    # can be determined by a determinable other end and a duration. Or via a
-    # dependency.
-    def dateCanBeDetermined(checkStart)
-      if checkStart
-        return @startIsDetermed unless @startIsDetermed.nil?
-      else
-        return @endIsDetermed unless @endIsDetermed.nil?
-      end
-
-      # Check if this task or any of the parent tasks have a fixed date
-      task = @property
-      while task do
-        if task[checkStart ? 'start' : 'end', @scenarioIdx]
-          return setDetermination(checkStart, true)
-        end
-        task = task.parent
-      end
-
-      if @property.children.empty?
-        # Check if start can be calculated from the other and and a task
-        # duration criteria. This only works in the scheduling direction.
-        if (checkStart ^ a('forward')) &&
-           (a('duration') > 0 || a('length') > 0 || a('effort') > 0 ||
-            a('milestone')) &&
-           dateCanBeDetermined(!checkStart)
-          return setDetermination(checkStart, true)
-        end
-
-        # Check if date depends on a determined other end of another task
-        if checkStart ^ !a('forward')
-          a(checkStart ? 'startpreds' : 'endsuccs').each do |t, targetEnd|
-            if t.dateCanBeDetermined(@scenarioIdx, !targetEnd)
-              return setDetermination(checkStart, true)
-            end
-          end
-          a(checkStart ? 'startsuccs' : 'endpreds').each do |t, targetEnd|
-            if t.dateCanBeDetermined(@scenarioIdx, !targetEnd)
-              return setDetermination(checkStart, true)
-            end
-          end
-        end
-      else
-        # Check if any of the children has a determined date
-        @property.children.each do |t|
-          if t.dateCanBeDetermined(@scenarioIdx, checkStart)
-            return setDetermination(checkStart, true)
-          end
-        end
-      end
-
-      setDetermination(checkStart, false)
-    end
-
     # Set @startIsDetermed or @endIsDetermed (depending on _setStart) to
     # _value_.
     def setDetermination(setStart, value)
       setStart ? @startIsDetermed = value : @endIsDetermed = value
     end
 
+    # This function is called to propagate the start or end date of the
+    # current task to a dependend Task +task+. If +atEnd+ is true, the date
+    # should be propagated to the end of the +task+, otherwise to the start.
     def propagateDateToDep(task, atEnd)
-      # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId}"
-      nDate = nil
-      if task[atEnd ? 'end' : 'start', @scenarioIdx].nil? &&
-         !(nDate = (atEnd ? task.latestEnd(@scenarioIdx) :
-                            task.earliestStart(@scenarioIdx))).nil?
-         !task['scheduled', @scenarioIdx] &&
-         ((atEnd ^ task['forward', @scenarioIdx]) ||
-          !task.hasDurationSpec?(@scenarioIdx))
-        task.propagateDate(@scenarioIdx, nDate, atEnd)
+      #puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId}"
+      # Don't propagate if the task is already completely scheduled or is a
+      # container.
+      return if task['scheduled', @scenarioIdx] || task.container?
+
+      # Don't propagate if the task already has a date for that end.
+      return unless task[atEnd ? 'end' : 'start', @scenarioIdx].nil?
+
+      # Check if all other dependencies for that task end have been determined
+      # already and use the latest or earliest possible date. Don't propagate
+      # if we don't have all dates yet.
+      return if (nDate = (atEnd ? task.latestEnd(@scenarioIdx) :
+                                  task.earliestStart(@scenarioIdx))).nil?
+
+      # Don't propagate if the task has a duration or is a milestone and the
+      # task end to set is in the scheduling direction.
+      if task.hasDurationSpec?(@scenarioIdx) && !(atEnd ^ task['forward', @scenarioIdx])
+        return
       end
+
+      # Looks like it is ok to propagate the date.
+      task.propagateDate(@scenarioIdx, nDate, atEnd)
       # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
     end
 

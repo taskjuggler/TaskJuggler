@@ -13,6 +13,7 @@
 require 'HTMLDocument'
 require 'RichText'
 require 'TjpExample'
+require 'Project'
 
 class TaskJuggler
 
@@ -109,7 +110,7 @@ class TaskJuggler
         end
       end
       if property
-        project = TaskJuggler::Project.new('id', 'dummy', '1.0', nil)
+        project = Project.new('id', 'dummy', '1.0', nil)
         propertySet = case property
                       when 'task'
                         project.tasks

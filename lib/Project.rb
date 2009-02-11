@@ -513,9 +513,6 @@ class TaskJuggler
       tasks.each do |task|
         task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
       end
-      tasks.each do |task|
-        task.checkDetermination(scIdx)
-      end
 
       tasks.each do |task|
         task.countResourceAllocations(scIdx)

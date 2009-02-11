@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2009-02-11 +1m  {
+
+scenario plan "Plan" {  
+  scenario s "First scenario s"
+# MARK: error 6 scenario_exists
+  scenario s "Second scenario s"
+}

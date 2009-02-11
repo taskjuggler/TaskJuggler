@@ -54,11 +54,12 @@ EOT
         @property = @project.task(@accountprefix)
       end
       if @project.account(@val[1])
-        error('account_exists',
-              "Account #{@val[1]} has already been defined.")
+        error('account_exists', "Account #{@val[1]} has already been defined.")
       end
       @property = Account.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
+      @scenarioIdx = 0
     })
     arg(1, 'id', <<'EOT'
 The ID of the account. Accounts have a global name space. The ID must be
@@ -2502,8 +2503,13 @@ EOT
       if @property.nil? && !@resourceprefix.empty?
         @property = @project.task(@resourceprefix)
       end
+      if @project.resource(@val[1])
+        error('resource_exists', "Resource #{@val[1]} has already been defined.")
+      end
       @property = Resource.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
+      @scenarioIdx = 0
     })
     arg(1, 'id', <<'EOT'
 The ID of the resource. Resources have a global name space. The ID must be
@@ -2723,7 +2729,11 @@ EOT
       # If this is the top-level scenario, we must delete the default scenario
       # first.
       @project.scenarios.clearProperties if @property.nil?
+      if @project.scenario(@val[1])
+        error('scenario_exists', "Scenario #{@val[1]} has already been defined.")
+      end
       @property = Scenario.new(@project, @val[1], @val[2], @property)
+      @property.inheritAttributes
     })
     arg(1, 'id', 'The ID of the scenario')
     arg(2, 'name', 'The name of the scenario')
@@ -2812,6 +2822,9 @@ EOT
 
   def rule_shiftHeader
     pattern(%w( _shift $ID $STRING ), lambda {
+      if @project.shift(@val[1])
+        error('shift_exists', "Shift #{@val[1]} has already been defined.")
+      end
       @property = Shift.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
@@ -3142,6 +3155,10 @@ EOT
     pattern(%w( _task $ID $STRING ), lambda {
       if @property.nil? && !@taskprefix.empty?
         @property = @project.task(@taskprefix)
+      end
+      id = (@property ? @property.fullId + '.' : '') + @val[1]
+      if @project.task(id)
+        error('task_exists', "Task #{id} has already been defined.")
       end
       @property = Task.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo

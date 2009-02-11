@@ -25,7 +25,7 @@ task t1 "Task 1" {
   limits { dailymax 3h }
 }
 # *** EXAMPLE: 4 +
-task t1 "Task 1" {
+task t2 "Task 2" {
   start 2007-03-30
   effort 10d
   allocate r2 
@@ -34,7 +34,7 @@ task t1 "Task 1" {
 # *** EXAMPLE: 1 -
 # *** EXAMPLE: 2 +
 # *** EXAMPLE: 4 -
-task t1 "Task 1" {
+task t3 "Task 3" {
   start 2007-03-30
   effort 10d
   allocate r2 
@@ -42,7 +42,7 @@ task t1 "Task 1" {
 }
 # *** EXAMPLE: 2 -
 # *** EXAMPLE: 3 +
-task t1 "Task 1" {
+task t4 "Task 4" {
   start 2007-03-30
   effort 10d
   allocate r2 
@@ -51,13 +51,13 @@ task t1 "Task 1" {
 # *** EXAMPLE: 1 +
 # *** EXAMPLE: 2 +
 # *** EXAMPLE: 4 +
-task t2 "Task 2" {
+task t5 "Task 5" {
   start 2007-03-01
   duration 60d
   # allocation is subject to resource limits
   allocate r1
 }
-task t3 "Task 3" {
+task t6 "Task 6" {
   start 2007-03-01
   duration 60d
   # limits can also be specified per allocation

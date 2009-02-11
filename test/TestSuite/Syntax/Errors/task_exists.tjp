@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2009-02-11 +1m 
+
+task t "First task t"
+
+# MARK: error 6 task_exists
+task t "Second task t"
+

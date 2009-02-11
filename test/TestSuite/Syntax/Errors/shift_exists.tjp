@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2009-02-11 +1m 
+
+shift s "First shift s"
+
+# MARK: error 6 shift_exists
+shift s "Second shift s"
+

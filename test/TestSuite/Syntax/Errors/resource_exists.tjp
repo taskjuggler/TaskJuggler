@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2009-02-11 +1m 
+
+resource r "First resource r"
+
+# MARK: error 6 resource_exists
+resource r "Second resource r"
+
