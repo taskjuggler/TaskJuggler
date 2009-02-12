@@ -1,0 +1,63 @@
+project test "Test" "1.0" 2009-02-12 +4m
+
+macro FixStart [ minstart ${1} maxstart ${1} ]
+macro FixEnd [ minend ${1} maxend ${1} ]
+
+task msStart "Start Milestone" {
+  start ${projectstart}
+  milestone
+}
+
+task msEnd "End Milestone" {
+  end ${projectend}
+  milestone
+}
+
+task ms1 "Milestone 1" {
+  start ${projectstart}
+  ${FixStart "${projectstart}"}
+  ${FixEnd "${projectstart}"}
+}
+
+task ms2 "Milestone 2" {
+  start ${projectstart}
+  depends msStart
+  ${FixStart "${projectstart}"}
+  ${FixEnd "${projectstart}"}
+}
+
+task ms3 "Milestone 3" {
+  depends !msStart
+  ${FixStart "${projectstart}"}
+  ${FixEnd "${projectstart}"}
+}
+
+task ms4 "Milestone 4" {
+  end ${projectend}
+  ${FixStart "${projectend}"}
+  ${FixEnd "${projectend}"}
+}
+
+task ms5 "Milestone 5" {
+  end ${projectend}
+  precedes msEnd
+  ${FixStart "${projectend}"}
+  ${FixEnd "${projectend}"}
+}
+
+task ms6 "Milestone 6" {
+  precedes msEnd
+  ${FixStart "${projectend}"}
+  ${FixEnd "${projectend}"}
+}
+
+task t1 "Task 1" {
+  period ${projectstart} - ${projectend}
+  ${FixStart "${projectstart}"}
+  ${FixEnd "${projectend}"}
+}
+
+htmltaskreport "AutomaticMilestones.html" {
+	columns name, id, start, end, chart
+}
+  

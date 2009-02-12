@@ -109,7 +109,7 @@ class TaskJuggler
       @property['precedes', @scenarioIdx].each do |dependency|
         predTask = checkDependency(dependency, 'precedes')
         a('endsuccs').push([ predTask, dependency.onEnd ])
-        predTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].\
+        predTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].
           push([@property, true ])
       end
     end
@@ -239,7 +239,7 @@ class TaskJuggler
         #   | x-> |   err1   |D x-> |   err1   - x-> |   inhS   -D x-> |   err1
         #   | x-> -D  ok     |D x-> -D  ok     - x-> -D  inhS   -D x-> -D  ok
         #   | x-> |D  err1   |D x-> |D  err1   - x-> |D  inhS   -D x-> |D  err1
-        #   | --> -   AMP    |D --> -   AMP    - --> -   inhS   -D --> -   AMP
+        #   | --> -   AMP    |D --> -   AMP    - --> -   AMP    -D --> -   AMP
         #   | --> |   ok     |D --> |   ok     - --> |   inhS   -D --> |   ok
         #   | --> -D  ok     |D --> -D  ok     - --> -D  inhS   -D --> -D  ok
         #   | --> |D  ok     |D --> |D  ok     - --> |D  inhS   -D --> |D  ok
@@ -247,7 +247,7 @@ class TaskJuggler
         #   | <-x |   err1   |D <-x |   err1   - <-x |   ok     -D <-x |   ok
         #   | <-x -D  err1   |D <-x -D  err1   - <-x -D  ok     -D <-x -D  ok
         #   | <-x |D  err1   |D <-x |D  err1   - <-x |D  ok     -D <-x |D  ok
-        #   | <-- -   inhE   |D <-- -   inhE   - <-- -   inhE   -D <-- -   inhE
+        #   | <-- -   inhE   |D <-- -   inhE   - <-- -   AMP    -D <-- -   inhE
         #   | <-- |   ok     |D <-- |   ok     - <-- |   AMP    -D <-- |   ok
         #   | <-- -D  ok     |D <-- -D  ok     - <-- -D  AMP    -D <-- -D  ok
         #   | <-- |D  ok     |D <-- |D  ok     - <-- |D  AMP    -D <-- |D  ok
@@ -402,7 +402,7 @@ class TaskJuggler
         if limit > a('start')
           error('task_pred_before',
                 "Task #{@property.fullId} must start after " +
-                "#{dependency.onEnd ? 'end' : 'start'} of task #{@task.fullId}.")
+                "#{dependency.onEnd ? 'end' : 'start'} of task #{@property.fullId}.")
         end
       end
 
@@ -704,17 +704,9 @@ class TaskJuggler
       return false if a('scheduled') || @isRunAway
 
       if a('forward')
-        if !a('start').nil? &&
-           (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
-            a('milestone') || !a('end').nil?)
-          return true
-        end
+        return true if !a('start').nil? && (hasDurationSpec? || !a('end').nil?)
       else
-        if !a('end').nil? &&
-           (a('effort') != 0 || a('length') != 0 || a('duration') != 0 ||
-            a('milestone') || !a('start').nil?)
-          return true
-        end
+        return true if !a('end').nil? && (hasDurationSpec? || !a('start').nil?)
       end
 
       false
@@ -752,6 +744,7 @@ class TaskJuggler
           end
         end
       end
+      puts "Incomplete task #{@property.fullId}" unless a('scheduled')
       true
     end
 
@@ -808,22 +801,32 @@ class TaskJuggler
     # from a parent task or the project time frame. +atEnd+ specifies whether
     # the check should be done for the task end (true) or task start (false).
     def canInheritDate?(atEnd)
+      # Inheriting a start or end date from the enclosing task or the project
+      # is allowed for the following scenarios:
+      #   -  x-> -   inhS
+      #   -  x-> |   inhS
+      #   -  x-> -D  inhS
+      #   -  x-> |D  inhS
+      #   -  --> |   inhS
+      #   -  --> -D  inhS
+      #   -  --> |D  inhS
+      #   |  <-x -   inhE
+      #   |D <-x -   inhE
+      #   -  <-x -   inhE
+      #   -D <-x -   inhE
+      #   |  <-- -   inhE
+      #   |D <-- -   inhE
+      #   -D <-- -   inhE
+      # Return false if we already have a date or if we have a dependency for this end.
       thisEnd = atEnd ? 'end' : 'start'
-      # Return false if we already have a date.
-      return false unless a(thisEnd).nil?
-
-      # Return false if we have a dependency for this end.
-      return false unless a(thisEnd + 'succs').empty? &&
-                          a(thisEnd + 'preds').empty?
+      return false unless a(thisEnd).nil? && a(thisEnd + 'succs').empty? &&
+                          a(thisEnd + 'preds').empty? && a('booking').empty?
 
       # Containter task can inherit the date if they have no dependencies.
       return true if @property.container?
 
-      # If we have a task with a specified duration, the scheduling needs to
-      # be directed towards the other end.
-      return a('forward') ^ atEnd if hasDurationSpec?
-
-      true
+      # The scheduling needs to be directed towards the other end.
+      a('forward') ^ atEnd
     end
 
     # Find the smallest possible interval that encloses all child tasks. Abort
@@ -1095,7 +1098,8 @@ class TaskJuggler
     end
 
     def markAsRunaway
-      warning('runaway', "Task #{@property.get('id')} does not fit into " +
+      puts "#{property.fullId} is a runaway"
+      warning('runaway', "Task #{@property.fullId} does not fit into " +
                          "project time frame")
 
       @isRunAway = true
@@ -1310,11 +1314,14 @@ class TaskJuggler
                 "In strict projection mode only forward scheduled tasks " +
                 "may have booking statements.")
         end
+        slotDuration = @project['scheduleGranularity']
         booking.intervals.each do |interval|
           startIdx = @project.dateToIdx(interval.start)
           date = interval.start
           endIdx = @project.dateToIdx(interval.end)
+          tEnd = nil
           startIdx.upto(endIdx - 1) do |idx|
+            tEnd = date + slotDuration
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
               @doneEffort += booking.resource['efficiency', @scenarioIdx]
 
@@ -1323,23 +1330,29 @@ class TaskJuggler
               # will be set to the last booked slot
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
               tEnd = date + @project['scheduleGranularity']
-              if a('forward')
-                @tentativeEnd = tEnd if @tentativeEnd.nil? ||
-                                        @tentativeEnd < tEnd
-                @property['start', @scenarioIdx] = date if a('start').nil? ||
-                                                           date < a('start')
-              else
-                @tentativeStart = date if @tentativeStart.nil? ||
-                                          date < @tentativeStart
-                @property['end', @scenarioIdx] = tEnd if a('end').nil? ||
-                                                         tEnd > a('end')
-              end
+              @tentativeEnd = tEnd if @tentativeEnd.nil? ||
+                @tentativeEnd < tEnd
+              @property['start', @scenarioIdx] = date if a('start').nil? ||
+                date < a('start')
 
               unless a('assignedresources').include?(booking.resource)
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
+            if @project.isWorkingTime(date, tEnd)
+              @doneLength += 1
+              if a('length') > 0 && @doneLength > a('length')
+                @property['end', @scenarioIdx] = tEnd
+                @property['scheduled', @scenarioIdx] = true
+              end
+            end
             date += @project['scheduleGranularity']
+          end
+          @doneDuration = ((@tentativeEnd - a('start')) /
+                           @project['scheduleGranularity']).to_i
+          if a('duration') > 0 && @doneDuration > a('duration')
+            @property['end', @scenarioIdx] = tEnd
+            @property['scheduled', @scenarioIdx] = true
           end
         end
       end
@@ -1348,13 +1361,24 @@ class TaskJuggler
     # This function determines if a task is really a milestones and marks them
     # accordingly.
     def markMilestone
-      return if @property.container? || a('milestone') || !a('booking').empty?
+      return if @property.container? || hasDurationSpec? || !a('booking').empty?
 
-      hasStartSpec = !a('start').nil? || (!a('depends').empty? && a('forward'))
-      hasEndSpec = !a('end').nil? || (!a('precedes').empty? && !a('forward'))
+      # The following cases qualify for an automatic milestone promotion.
+      #   -  --> -
+      #   |  --> -
+      #   |D --> -
+      #   -D --> -
+      #   -  <-- -
+      #   -  <-- |
+      #   -  <-- -D
+      #   -  <-- |D
+      hasStartSpec = !a('start').nil? || !a('depends').empty?
+      hasEndSpec = !a('end').nil? || !a('precedes').empty?
 
       @property['milestone', @scenarioIdx] =
-        !hasDurationSpec? && !(hasStartSpec & hasEndSpec)
+        (hasStartSpec && a('forward') && !hasEndSpec) ||
+        (!hasStartSpec && !a('forward') && hasEndSpec) ||
+        (!hasStartSpec && !hasEndSpec)
     end
 
     def checkDependency(dependency, depType)

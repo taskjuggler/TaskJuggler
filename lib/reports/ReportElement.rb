@@ -139,6 +139,10 @@ class TaskJuggler
                             @project['start'] : task['start', scenarioIdx],
                             task['end', scenarioIdx].nil? ?
                             @project['end'] : task['end', scenarioIdx])
+          # Special case to include milestones at the report end.
+          if iv.start == iv.end && iv.end == @end
+            iv.start = iv.end = iv.start - 1
+          end
           if iv.overlaps?(Interval.new(@start, @end))
             delete = false
             break;
@@ -297,6 +301,8 @@ class TaskJuggler
           @end = date if @end.nil? || date > @end
         end
       end
+      # Make sure we have a minimum width of 1 day
+      @end = @start + 60 * 60 * 24 if @end < @start + 60 * 60 * 24
       padding = ((@end - @start) * 0.10).to_i
       @start -= padding
       @end += padding

@@ -82,7 +82,7 @@ class TaskJuggler
     end
 
     def to_s
-      @value.join(', ')
+      @value.collect{ |x| x.to_s }.join(', ')
     end
 
     def to_tjp

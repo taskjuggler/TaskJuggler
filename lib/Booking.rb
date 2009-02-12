@@ -26,6 +26,19 @@ class TaskJuggler
       @sloppy = 0
     end
 
+    def to_s
+      out = "#{@resource.fullId} "
+      first = true
+      @intervals.each do |iv|
+        if first
+          first = false
+        else
+          out += ", "
+        end
+        out += "#{iv.start} + #{(iv.end - iv.start) / 3600}h"
+      end
+    end
+
     def to_tjp
       out = "#{@resource.fullId} "
       first = true

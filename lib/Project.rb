@@ -479,6 +479,7 @@ class TaskJuggler
   protected
 
     def prepareScenario(scIdx)
+      Log.showProgressMeter("Preparing scenario #{scenario(scIdx).get('name')}")
       resources = PropertyList.new(@resources)
       tasks = PropertyList.new(@tasks)
 
@@ -490,49 +491,47 @@ class TaskJuggler
           usedResources << resource unless usedResources.include?(resource)
         end
       end
-
+      total = usedResources.length
+      i = 0
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
-      end
-      tasks.each do |task|
-        task.prepareScheduling(scIdx)
+        i += 1
+        Log.progress((i.to_f / total) * 0.5)
       end
 
-      tasks.each do |task|
-        task.Xref(scIdx)
-      end
-      tasks.each do |task|
-        task.propagateInitialValues(scIdx)
-      end
-      tasks.each do |task|
-        task.preScheduleCheck(scIdx)
-      end
-      tasks.each do |task|
-        task.resetLoopFlags(scIdx)
-      end
+      tasks.each { |task| task.prepareScheduling(scIdx) }
+      Log.progress(0.6)
+
+      tasks.each { |task| task.Xref(scIdx) }
+      Log.progress(0.65)
+      tasks.each { |task| task.propagateInitialValues(scIdx) }
+      Log.progress(0.70)
+      tasks.each { |task| task.preScheduleCheck(scIdx) }
+      Log.progress(0.75)
+
+      # Check for dependency loops in the task graph.
+      tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
         task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
       end
-      tasks.each do |task|
-        task.resetLoopFlags(scIdx)
-      end
+      Log.progress(0.80)
+      tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
         task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
       end
+      Log.progress(0.85)
 
-      tasks.each do |task|
-        task.countResourceAllocations(scIdx)
-      end
-      resources.each do |resource|
-        resource.calcCriticalness(scIdx)
-      end
-      tasks.each do |task|
-        task.calcCriticalness(scIdx)
-      end
-      tasks.each do |task|
-        task.calcPathCriticalness(scIdx)
-      end
+      # Compute the criticalness of the tasks and their pathes.
+      tasks.each { |task| task.countResourceAllocations(scIdx) }
+      Log.progress(0.86)
+      resources.each { |resource| resource.calcCriticalness(scIdx) }
+      Log.progress(0.9)
+      tasks.each { |task| task.calcCriticalness(scIdx) }
+      Log.progress(0.95)
+      tasks.each { |task| task.calcPathCriticalness(scIdx) }
+      Log.progress(1.0)
 
+      Log.hideProgressMeter
       # This is used for debugging only
       if false
         resources.each do |resource|
@@ -603,6 +602,9 @@ class TaskJuggler
                  "#{task['end', scIdx]}"
         end
       end
+      #tasks.each do |t|
+      #  puts t unless t['scheduled', scIdx]
+      #end
       Log.hideProgressMeter
       Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
       true
