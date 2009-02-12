@@ -704,9 +704,9 @@ class TaskJuggler
       return false if a('scheduled') || @isRunAway
 
       if a('forward')
-        return true if !a('start').nil? && (hasDurationSpec? || !a('end').nil?)
+        return true if a('start') && (hasDurationSpec? || a('end'))
       else
-        return true if !a('end').nil? && (hasDurationSpec? || !a('start').nil?)
+        return true if a('end') && (hasDurationSpec? || a('start'))
       end
 
       false
@@ -1308,11 +1308,9 @@ class TaskJuggler
                 "Booked resources may not be group resources", true,
                 booking.sourceFileInfo)
         end
-        if @project.scenario(@scenarioIdx).get('strict') &&
-           !a('forward')
+        unless a('forward')
           error('booking_forward_only',
-                "In strict projection mode only forward scheduled tasks " +
-                "may have booking statements.")
+                "Only forward scheduled tasks may have booking statements.")
         end
         slotDuration = @project['scheduleGranularity']
         booking.intervals.each do |interval|
@@ -1329,7 +1327,6 @@ class TaskJuggler
               # set to the begining of the first booked slot. The lastSlot
               # will be set to the last booked slot
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
-              tEnd = date + @project['scheduleGranularity']
               @tentativeEnd = tEnd if @tentativeEnd.nil? ||
                 @tentativeEnd < tEnd
               @property['start', @scenarioIdx] = date if a('start').nil? ||
@@ -1339,20 +1336,26 @@ class TaskJuggler
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            if @project.isWorkingTime(date, tEnd)
+            if a('length') > 0 && @project.isWorkingTime(date, tEnd)
+              # For tasks with a 'length' we track the covered work time and
+              # set the task to 'scheduled' when we have enough length.
               @doneLength += 1
-              if a('length') > 0 && @doneLength > a('length')
+              if @doneLength > a('length')
                 @property['end', @scenarioIdx] = tEnd
                 @property['scheduled', @scenarioIdx] = true
               end
             end
-            date += @project['scheduleGranularity']
+            date = tEnd
           end
-          @doneDuration = ((@tentativeEnd - a('start')) /
-                           @project['scheduleGranularity']).to_i
-          if a('duration') > 0 && @doneDuration > a('duration')
-            @property['end', @scenarioIdx] = tEnd
-            @property['scheduled', @scenarioIdx] = true
+          if a('duration') > 0
+            # For tasks with a 'duration' we track the covered duration and
+            # set the task to 'scheduled' when we have enough duration.
+            @doneDuration = ((@tentativeEnd - a('start')) /
+                             @project['scheduleGranularity']).to_i
+            if @doneDuration > a('duration')
+              @property['end', @scenarioIdx] = tEnd
+              @property['scheduled', @scenarioIdx] = true
+            end
           end
         end
       end
