@@ -198,8 +198,6 @@ class TaskJuggler
       # <-x: ALAP task with duration criteria
       # -->: ASAP task without duration criteria
       # <--: ALAP task without duration criteria
-      hasStartDep = hasDependencies(false, false)
-      hasEndDep = hasDependencies(true, false)
 
       if @property.container?
         if durationSpecs > 0
@@ -230,7 +228,11 @@ class TaskJuggler
         end
       else
         #   Error table for non-container, non-milestone tasks:
-        #   AMP: Automatic milestone promotion for underspecified tasks.
+        #   AMP: Automatic milestone promotion for underspecified tasks when
+        #        no bookings or allocations are present.
+        #   AMPi: Automatic milestone promotion when no bookings or
+        #   allocations are present. When no bookings but allocations are
+        #   present the task inherits start and end date.
         #   Ref. implicitXref()|
         #   inhS: Inherit start date from parent task or project
         #   inhE: Inherit end date from parent task or project
@@ -239,7 +241,7 @@ class TaskJuggler
         #   | x-> |   err1   |D x-> |   err1   - x-> |   inhS   -D x-> |   err1
         #   | x-> -D  ok     |D x-> -D  ok     - x-> -D  inhS   -D x-> -D  ok
         #   | x-> |D  err1   |D x-> |D  err1   - x-> |D  inhS   -D x-> |D  err1
-        #   | --> -   AMP    |D --> -   AMP    - --> -   AMP    -D --> -   AMP
+        #   | --> -   AMP    |D --> -   AMP    - --> -   AMPi   -D --> -   AMP
         #   | --> |   ok     |D --> |   ok     - --> |   inhS   -D --> |   ok
         #   | --> -D  ok     |D --> -D  ok     - --> -D  inhS   -D --> -D  ok
         #   | --> |D  ok     |D --> |D  ok     - --> |D  inhS   -D --> |D  ok
@@ -251,6 +253,23 @@ class TaskJuggler
         #   | <-- |   ok     |D <-- |   ok     - <-- |   AMP    -D <-- |   ok
         #   | <-- -D  ok     |D <-- -D  ok     - <-- -D  AMP    -D <-- -D  ok
         #   | <-- |D  ok     |D <-- |D  ok     - <-- |D  AMP    -D <-- |D  ok
+
+        # These cases are normally autopromoted to milestones or inherit their
+        # start or end dates. But this only works for tasks that have no
+        # allocations or bookings.
+        #   -  --> -
+        #   |  --> -
+        #   |D --> -
+        #   -D --> -
+        #   -  <-- -
+        #   -  <-- |
+        #   -  <-- -D
+        #   -  <-- |D
+        if durationSpecs == 0 && ((a('forward') && a('end').nil?) ||
+                                  (!a('forward') && a('start').nil?))
+          error('task_underspecified',
+                "Task #{@property.fullId} has too few specifations to be scheduled.")
+        end
 
         #   err1: Overspecified (12 cases)
         #   |  x-> |
@@ -273,8 +292,8 @@ class TaskJuggler
         startSpeced = @property.provided('start', @scenarioIdx)
         endSpeced = @property.provided('end', @scenarioIdx)
         if ((startSpeced && endSpeced) ||
-            (hasStartDep && a('forward') && endSpeced) ||
-            (hasEndDep && !a('forward') && startSpeced)) &&
+            (hasDependencies(false) && a('forward') && endSpeced) ||
+            (hasDependencies(true) && !a('forward') && startSpeced)) &&
            durationSpecs > 0 && !a('scheduled')
           error('task_overspecified',
                 "Task #{@property.fullId} has a start, an end and a " +
@@ -803,6 +822,9 @@ class TaskJuggler
     def canInheritDate?(atEnd)
       # Inheriting a start or end date from the enclosing task or the project
       # is allowed for the following scenarios:
+      #   -  --> -   inherit start and end when no bookings but allocations present
+      #   -  <-- -   "
+      #
       #   -  x-> -   inhS
       #   -  x-> |   inhS
       #   -  x-> -D  inhS
@@ -810,6 +832,8 @@ class TaskJuggler
       #   -  --> |   inhS
       #   -  --> -D  inhS
       #   -  --> |D  inhS
+      #   -  <-- |   inhS
+      #   |  --> -   inhE
       #   |  <-x -   inhE
       #   |D <-x -   inhE
       #   -  <-x -   inhE
@@ -819,14 +843,31 @@ class TaskJuggler
       #   -D <-- -   inhE
       # Return false if we already have a date or if we have a dependency for this end.
       thisEnd = atEnd ? 'end' : 'start'
-      return false unless a(thisEnd).nil? && a(thisEnd + 'succs').empty? &&
-                          a(thisEnd + 'preds').empty? && a('booking').empty?
+      hasThisDeps = !a(thisEnd + 'preds').empty? || !a(thisEnd + 'succs').empty?
+      hasThisSpec = a(thisEnd) || hasThisDeps
+      return false if hasThisSpec
 
       # Containter task can inherit the date if they have no dependencies.
       return true if @property.container?
 
-      # The scheduling needs to be directed towards the other end.
-      a('forward') ^ atEnd
+      thatEnd = atEnd ? 'start' : 'end'
+      hasThatDeps = !a(thatEnd + 'preds').empty? || !a(thatEnd + 'succs').empty?
+      hasThatSpec = a(thatEnd) || hasThatDeps
+
+      # Check for tasks that have no start and end spec, no duration spec but
+      # allocates. They can inherit the start and end date.
+      return true if hasThatSpec && !hasDurationSpec? && !a('allocate').empty?
+
+      if a('forward') ^ atEnd
+        # the scheduling direction is pointing away from this end
+        return true if hasDurationSpec? || !a('booking').empty?
+
+        return hasThatSpec
+      else
+        # the scheduling direction is pointing towards this end
+        return a(thatEnd) && !hasDurationSpec? &&
+               a('booking').empty? #&& a('allocate').empty?
+      end
     end
 
     # Find the smallest possible interval that encloses all child tasks. Abort
@@ -874,32 +915,12 @@ class TaskJuggler
       a('length') > 0 || a('duration') > 0 || a('effort') > 0 || a('milestone')
     end
 
-    # This function checks if the task has certain dependencies. If _atEnd_ is
-    # true, it checks for end dependencies, otherwise for start dependencies. If
-    # _upwards_ is true, it checks this task and the parent tasks. Otherwise it
-    # checks this task and the sub tasks. If a dependency is found, it returns
-    # true and stops the search. If no dependency is found, it returns false.
-    def hasDependencies(atEnd, upwards = true)
-      if atEnd
-        return true if a('end') ||  a('forward') ||
-                       !a('endsuccs').empty? || !a('endpreds').empty?
-      else
-        return true if a('start') || !a('forward') ||
-                       !a('startpreds').empty? || !a('startsuccs').empty?
-      end
-
-      if upwards
-        p = @property
-        while (p = p.parent) do
-          return true if p.hasDependencies(@scenarioIdx, atEnd, true)
-        end
-      else
-        @property.children.each do |task|
-          return true if task.hasDependencies(@scenarioIdx, atEnd, false)
-        end
-      end
-
-      false
+    # This function checks if the task has a dependency on another task or
+    # fixed date for a certain end. If +atEnd+ is true, the task end will be
+    # checked.  Otherwise the start.
+    def hasDependencies(atEnd)
+      thisEnd = atEnd ? 'end' : 'start'
+      !a(thisEnd + 'succs').empty? || !a(thisEnd + 'preds').empty?
     end
 
     def earliestStart
@@ -1308,7 +1329,7 @@ class TaskJuggler
                 "Booked resources may not be group resources", true,
                 booking.sourceFileInfo)
         end
-        unless a('forward')
+        unless a('forward') || a('scheduled')
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
@@ -1340,7 +1361,7 @@ class TaskJuggler
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1
-              if @doneLength > a('length')
+              if @doneLength >= a('length')
                 @property['end', @scenarioIdx] = tEnd
                 @property['scheduled', @scenarioIdx] = true
               end
@@ -1352,7 +1373,7 @@ class TaskJuggler
             # set the task to 'scheduled' when we have enough duration.
             @doneDuration = ((@tentativeEnd - a('start')) /
                              @project['scheduleGranularity']).to_i
-            if @doneDuration > a('duration')
+            if @doneDuration >= a('duration')
               @property['end', @scenarioIdx] = tEnd
               @property['scheduled', @scenarioIdx] = true
             end
@@ -1364,7 +1385,8 @@ class TaskJuggler
     # This function determines if a task is really a milestones and marks them
     # accordingly.
     def markMilestone
-      return if @property.container? || hasDurationSpec? || !a('booking').empty?
+      return if @property.container? || hasDurationSpec? || !a('booking').empty? ||
+        !a('allocate').empty?
 
       # The following cases qualify for an automatic milestone promotion.
       #   -  --> -

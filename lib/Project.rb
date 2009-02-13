@@ -602,9 +602,31 @@ class TaskJuggler
                  "#{task['end', scIdx]}"
         end
       end
-      #tasks.each do |t|
-      #  puts t unless t['scheduled', scIdx]
-      #end
+      unscheduledTasks = []
+      tasks.each { |t| unscheduledTasks << t unless t['scheduled', scIdx] }
+
+      # Check for unscheduled tasks and report the first 10 of them as
+      # warnings.
+      unless unscheduledTasks.empty?
+        message = Message.new('unscheduled_tasks', 'warning',
+                              "#{unscheduledTasks.length} could not be scheduled")
+        sendMessage(message)
+        i = 0
+        unscheduledTasks.each do |t|
+          message = Message.new('unscheduled_task', 'warning',
+                                "Task #{t.fullId}: " +
+                                "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
+                                "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", t,
+                                scenario(scIdx))
+          sendMessage(message)
+
+          i += 1
+          break if i >= 10
+        end
+        Log.hideProgressMeter
+        return false
+      end
+
       Log.hideProgressMeter
       Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
       true

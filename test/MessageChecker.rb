@@ -29,7 +29,7 @@ module MessageChecker
       end
     end
     # Make sure that all reference messages have been generated.
-    assert(refMessages.empty?)
+    assert(refMessages.empty?, "Error in #{file}: missing #{refMessages.length} errors")
   end
 
   # All files that generate messages have comments in them that specify the

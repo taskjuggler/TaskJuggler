@@ -1,0 +1,9 @@
+project test "Test" "1.0" 2009-02-13 +1m
+
+resource r "R"
+
+# MARK: error 6 task_underspecified
+task t "T" {
+  scheduling alap
+  allocate r
+}

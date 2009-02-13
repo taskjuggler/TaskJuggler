@@ -62,6 +62,8 @@ resource r15 "R15"
 resource r16 "R16"
 resource r17 "R17"
 resource r18 "R18"
+resource r19 "R19"
+resource r20 "R20"
 
 task t10 "Task 10" {
   booking r10 2007-04-23-9:00 +1h
@@ -126,6 +128,30 @@ task t17 "Task 17" {
   booking r17 2007-04-23-9:00 +5h { sloppy 2 }
   ${FixStart "2007-04-23-9:00"}
   ${FixEnd "2007-04-23-16:00"}
+}
+
+task t18 "Task 18" {
+  duration 3h
+  allocate r18
+  booking r18 2007-04-23-9:00 +5h { sloppy 2 }
+  ${FixStart "2007-04-23-9:00"}
+  ${FixEnd "2007-04-23-14:00"}
+}
+
+task t19 "Task 19" {
+  duration 5h
+  allocate r19
+  booking r19 2007-04-23-9:00 +5h { sloppy 2 }
+  ${FixStart "2007-04-23-9:00"}
+  ${FixEnd "2007-04-23-14:00"}
+}
+
+task t20 "Task 20" {
+  duration 6h
+  allocate r20
+  booking r20 2007-04-23-9:00 +5h { sloppy 2 }
+  ${FixStart "2007-04-23-9:00"}
+  ${FixEnd "2007-04-23-15:00"}
 }
 
 htmltaskreport "Booking.html" {
