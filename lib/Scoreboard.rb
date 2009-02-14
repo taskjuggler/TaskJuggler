@@ -69,6 +69,11 @@ class TaskJuggler
       end
     end
 
+    # Assign result of block to each element.
+    def collect!
+      @sb.collect! { |x| yield x }
+    end
+
     # Get the value at index _idx_.
     def [](idx)
       @sb[idx]

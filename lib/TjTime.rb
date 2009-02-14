@@ -21,6 +21,9 @@ class TaskJuggler
 
     attr_reader :time
 
+    # The number of days per month. Leap years are taken care of separately.
+    MON_MAX = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
+
     # call-seq:
     #   TjTime(time) -> Scenario
     #   TjTime(s) -> Scenario
@@ -235,14 +238,13 @@ class TaskJuggler
     def sameTimeNextMonth
       sec, min, hour, day, month, year, wday, yday, isdst, tz =
         @time.localtime.to_a
-      monMax = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
-      monMax[2] = 29 if leapYear?(year)
+      monMax = month == 2 && leapYear?(year) ? 29 : MON_MAX[month]
       month += 1
       if month > 12
         month = 1
         year += 1
       end
-      day = monMax[month] if day >= monMax[month]
+      day = monMax if day >= monMax
       TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0))
     end
 

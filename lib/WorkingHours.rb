@@ -14,6 +14,71 @@ require 'Interval'
 
 class TaskJuggler
 
+  class OnShiftCache
+
+    def initialize
+      @caches = []
+      @workingHoursTable = []
+      @minDate = nil
+      @minDateDelta = 60 * 60
+    end
+
+    def register(wh)
+      0.upto(@workingHoursTable.length - 1) do |i|
+        if @workingHoursTable[i] == wh
+          return @caches[i]
+        end
+      end
+      @workingHoursTable << WorkingHours.new(wh, wh.timezone)
+      @caches << []
+      @caches.last
+    end
+
+    def set(cache, date, value)
+      cache[dateToIndex(date)] = value
+    end
+
+    def get(cache, date)
+      cache[dateToIndex(date)]
+    end
+
+    private
+
+    def resetCaches
+      @caches.each { |c| c.clear }
+    end
+
+    def dateToIndex(date)
+      if date % @minDateDelta != 0
+        resetCaches
+        # We have to guess the timingresolution of the project here. Possible
+        # values are 5, 10, 15, 20, 30 or 60 minutes.
+        case @minDateDelta / 60
+        when 60
+          @minDateDelta = 30
+        when 30
+          @minDateDelta = 20
+        when 20
+          @minDateDelta = 15
+        when 15
+          @minDateDelta = 10
+        when 10
+          @minDateDelta = 5
+        else
+          raise "Illegal timing resolution!"
+        end
+        @minDateDelta *= 60
+      end
+      if @minDate.nil? || date < @minDate
+        @minDate = date
+        resetCaches
+      end
+
+      (date - @minDate) / @minDateDelta
+    end
+
+  end
+
   # Class to store the working hours for each day of the week. The working hours
   # are stored as Arrays of Fixnum intervals for each day of the week. A day off
   # is modelled as empty Array for that week day. The start end end times of
@@ -21,9 +86,12 @@ class TaskJuggler
   class WorkingHours
 
     attr_reader :days
-    attr_writer :timezone
+    attr_accessor :timezone
+
+    @@onShiftCache = OnShiftCache.new
 
     def initialize(wh = nil, tz = nil)
+      @timezone = tz
       # One entry for every day of the week. Sunday === 0.
       @days = Array.new(7, [])
 
@@ -43,7 +111,21 @@ class TaskJuggler
           setWorkingHours(day, hours)
         end
       end
-      @timezone = tz
+      @cache = nil
+    end
+
+    def ==(wh)
+      return false if @timezone != wh.timezone
+
+      0.upto(6) do |d|
+        return false if @days[d].length != wh.days[d].length
+        # Check all working hour intervals
+        0.upto(@days[d].length - 1) do |i|
+          return false if @days[d][i][0] != wh.days[d][i][0] ||
+                          @days[d][i][1] != wh.days[d][i][1]
+        end
+      end
+      true
     end
 
     def setWorkingHours(dayOfWeek, intervals)
@@ -68,6 +150,13 @@ class TaskJuggler
 
     # Return true if _date_ is within the defined working hours.
     def onShift?(date)
+      @cache = @@onShiftCache.register(self) unless @cache
+
+      # If we have the result cached already, return it.
+      unless (os = @@onShiftCache.get(@cache, date)).nil?
+        return os
+      end
+
       # The date is in UTC. The weekday needs to be calculated according to the
       # timezone of the project.
       projectDate = toLocaltime(date)
@@ -78,9 +167,16 @@ class TaskJuggler
       secondsOfDay = localDate.secondsOfDay
 
       @days[dow].each do |iv|
-        return true if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
+        # Check the working hours of that day if they overlap with +date+.
+        if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
+          # Store the result in the cache.
+          @@onShiftCache.set(@cache, date, true)
+          return true
+        end
       end
 
+      # Store the result in the cache.
+      @@onShiftCache.set(@cache, date, false)
       false
     end
 
@@ -130,7 +226,8 @@ class TaskJuggler
           else
             str += ', '
           end
-          str += "#{iv[0] / 3600}:#{iv[0] % 3600 == 0 ? '00' : iv[0] % 3600} - " +
+          str += "#{iv[0] / 3600}:" +
+                 "#{iv[0] % 3600 == 0 ? '00' : iv[0] % 3600} - " +
                  "#{iv[1] / 3600}:#{iv[1] % 3600 == 0 ? '00' : iv[1] % 3600}"
         end
         str += "\n" if day < 6

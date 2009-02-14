@@ -378,10 +378,19 @@ class TaskJuggler
 
       # We'll need this frequently and can savely cache it here.
       @shifts = a('shifts')
+      @workinghours = a('workinghours')
 
       # Change all work time slots to nil (available) again.
-      0.upto(@project.scoreboardSize - 1) do |i|
-        @scoreboard[i] = nil if onShift?(@scoreboard.idxToDate(i))
+      date = @scoreboard.idxToDate(0)
+      delta = @project['scheduleGranularity']
+      #0.upto(@project.scoreboardSize - 1) do |i|
+      #  @scoreboard[i] = nil if onShift?(date)
+      #  date += delta
+      #end
+      @scoreboard.collect! do |slot|
+        os = onShift?(date)
+        date += delta
+        os ? nil : slot
       end
 
       # Mark all resource specific vacation slots as such (2)
@@ -428,12 +437,12 @@ class TaskJuggler
       # if @shifts.assigned?(date)
       #   return @shifts.onShift?(date)
       # else
-      #   a('workinghours').onShift?(date)
+      #   @workinghours.onShift?(date)
       # end
-      if !@shifts.nil? && (v = (@shifts.getSbSlot(date) & 0xFF)) > 0
+      if @shifts && (v = (@shifts.getSbSlot(date) & 0xFF)) > 0
         v == 1
       else
-        a('workinghours').onShift?(date)
+        @workinghours.onShift?(date)
       end
     end
 

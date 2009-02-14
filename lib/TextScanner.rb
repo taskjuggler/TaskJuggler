@@ -39,10 +39,11 @@ class TaskJuggler
         @columnNo = 1
         @line = ""
         @charBuffer = []
+        @fileName = nil
       end
 
       def dirname
-        File.dirname(@fileName)
+        @fileName ? File.dirname(@fileName) : ''
       end
     end
 
@@ -129,6 +130,7 @@ class TaskJuggler
           raise TjException.new, "Cannot open file #{@masterFile}"
         end
       end
+      @masterPath = @cf.dirname + '/'
       @tokenBuffer = @pos = nil
     end
 
@@ -143,13 +145,18 @@ class TaskJuggler
     # where we started with the new file.
     def include(fileName)
       begin
+        if @fileStack.empty?
+          path = @masterPath
+        else
+          path = @fileStack.last[0].dirname + '/'
+          @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
+        end
         if fileName[0] != '/'
           # If the included file is not an absolute name, we interpret the file
           # name relative to the including file.
-          fileName = @fileStack.last[0].dirname + '/' + fileName
+          fileName = path + fileName
         end
 
-        @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
         @tokenBuffer = @pos = nil
         @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
       rescue StandardError
@@ -340,7 +347,7 @@ class TaskJuggler
           @fileStack.pop
           if @fileStack.empty?
             # We are done with the top-level file now.
-            return @cf = @tokenBuffer = @pos = nil
+            @cf = @tokenBuffer = @pos = nil
           else
             @cf, @tokenBuffer, @pos = @fileStack.last
             # We have been called by nextToken() already, so we can't just
@@ -350,9 +357,10 @@ class TaskJuggler
               @tokenBuffer[1].reverse.each_utf8_char do |ch|
                 @cf.charBuffer.push(ch)
               end
-              return @tokenBuffer = nil
+              @tokenBuffer = nil
             end
           end
+          return nil
         end
       end
       unless c.nil?
