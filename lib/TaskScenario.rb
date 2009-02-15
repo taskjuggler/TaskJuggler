@@ -268,7 +268,8 @@ class TaskJuggler
         if durationSpecs == 0 && ((a('forward') && a('end').nil?) ||
                                   (!a('forward') && a('start').nil?))
           error('task_underspecified',
-                "Task #{@property.fullId} has too few specifations to be scheduled.")
+                "Task #{@property.fullId} has too few specifations to be " +
+                "scheduled.")
         end
 
         #   err1: Overspecified (12 cases)
@@ -421,7 +422,8 @@ class TaskJuggler
         if limit > a('start')
           error('task_pred_before',
                 "Task #{@property.fullId} must start after " +
-                "#{dependency.onEnd ? 'end' : 'start'} of task #{@property.fullId}.")
+                "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                "#{@property.fullId}.")
         end
       end
 
@@ -763,7 +765,7 @@ class TaskJuggler
           end
         end
       end
-      puts "Incomplete task #{@property.fullId}" unless a('scheduled')
+
       true
     end
 
@@ -781,8 +783,8 @@ class TaskJuggler
         @startPropagated = true
       end
 
-      # For leaf tasks, propagate start may set the date. Container task dates are
-      # only set in scheduleContainer().
+      # For leaf tasks, propagate start may set the date. Container task dates
+      # are only set in scheduleContainer().
       @property[thisEnd, @scenarioIdx] = date if @property.leaf?
 
       if a('milestone')
@@ -822,8 +824,9 @@ class TaskJuggler
     def canInheritDate?(atEnd)
       # Inheriting a start or end date from the enclosing task or the project
       # is allowed for the following scenarios:
-      #   -  --> -   inherit start and end when no bookings but allocations present
-      #   -  <-- -   "
+      #   -  --> -   inherit start and end when no bookings but allocations
+      #              present
+      #   -  <-- -   dito
       #
       #   -  x-> -   inhS
       #   -  x-> |   inhS
@@ -841,7 +844,8 @@ class TaskJuggler
       #   |  <-- -   inhE
       #   |D <-- -   inhE
       #   -D <-- -   inhE
-      # Return false if we already have a date or if we have a dependency for this end.
+      # Return false if we already have a date or if we have a dependency for
+      # this end.
       thisEnd = atEnd ? 'end' : 'start'
       hasThisDeps = !a(thisEnd + 'preds').empty? || !a(thisEnd + 'succs').empty?
       hasThisSpec = a(thisEnd) || hasThisDeps
@@ -1002,120 +1006,14 @@ class TaskJuggler
       endDate
     end
 
-    def bookResources(date, slotDuration)
-      # In projection mode we do not allow bookings prior to the current date
-      # for any task (in strict mode) or tasks which have user specified
-      # bookings (sloppy mode).
-      if @project.scenario(@scenarioIdx).get('projection') &&
-         date < @project['now'] &&
-         (@project.scenario(@scenarioIdx).get('strict') ||
-          a('assignedresources').empty?)
-        return
-      end
-
-      # If the task has shifts to limit the allocations, we check that we are
-      # within a defined shift interval. If yes, we need to be on shift to
-      # continue.
-      if (shifts = a('shifts')) && shifts.assigned?(date)
-         return if !shifts.onShift?(date)
-      end
-
-      # If the task has allocation limits we need to make sure that none of them
-      # is already exceeded.
-      @limits.each do |limit|
-        return if !limit.ok?(date)
-      end
-
-      sbIdx = @project.dateToIdx(date)
-
-      # We first have to make sure that if there are mandatory resources
-      # that these are all available for the time slot.
-      takenMandatories = []
-      @mandatories.each do |allocation|
-        return unless allocation.onShift?(date)
-
-        # For mandatory allocations with alternatives at least one of the
-        # alternatives must be available.
-        found = false
-        allocation.candidates(@scenarioIdx).each do |candidate|
-          # When a resource group is marked mandatory, all members of the
-          # group must be available.
-          allAvailable = true
-          candidate.allLeaves.each do |resource|
-            if !resource.available?(@scenarioIdx, sbIdx) ||
-               takenMandatories.include?(resource)
-              allAvailable = false
-              break
-            else
-              takenMandatories << resource
-            end
-          end
-          if allAvailable
-            found = true
-            break
-          end
-        end
-
-        # At least one mandatory resource is not available. We cannot continue.
-        return unless found
-      end
-
-      iv = Interval.new(date, date + slotDuration)
-      a('allocate').each do |allocation|
-        next unless allocation.onShift?(date)
-
-        # In case we have a persistent allocation we need to check if there is
-        # already a locked resource and use it.
-        if allocation.persistent && !allocation.lockedResource.nil?
-          bookResource(allocation.lockedResource, sbIdx, date)
-        else
-          # If not, we create a list of candidates in the proper order and
-          # assign the first one available.
-          allocation.candidates(@scenarioIdx).each do |candidate|
-            if bookResource(candidate, sbIdx, date)
-              allocation.lockedResource = candidate
-              break
-            end
-          end
-        end
-      end
-    end
-
-    def bookResource(resource, sbIdx, date)
-      booked = false
-      resource.allLeaves.each do |r|
-        if r.book(@scenarioIdx, sbIdx, @property)
-
-          if a('assignedresources').empty?
-            if a('forward')
-              @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
-            else
-              @property['end', @scenarioIdx] = @project.idxToDate(sbIdx + 1)
-            end
-          end
-
-          @tentativeStart = @project.idxToDate(sbIdx)
-          @tentativeEnd = @project.idxToDate(sbIdx + 1)
-
-          @doneEffort += r['efficiency', @scenarioIdx]
-          # Limits do not take efficiency into account. Limits are usage limits,
-          # not effort limits.
-          @limits.each do |limit|
-            limit.inc(date)
-          end
-
-          unless a('assignedresources').include?(r)
-            @property['assignedresources', @scenarioIdx] << r
-          end
-          booked = true
-        end
-      end
-
-      booked
-    end
-
     def addBooking(booking)
-      @property['booking', @scenarioIdx] = a('booking') + [ booking ]
+      if a('booking').empty?
+        # For the first item use the assignment form so that the 'provided'
+        # attribute is set properly.
+        @property['booking', @scenarioIdx] = [ booking ]
+      else
+        @property['booking', @scenarioIdx] << booking
+      end
     end
 
     def markAsRunaway
@@ -1322,6 +1220,118 @@ class TaskJuggler
       end
     end
 
+    def bookResources(date, slotDuration)
+      # In projection mode we do not allow bookings prior to the current date
+      # for any task (in strict mode) or tasks which have user specified
+      # bookings (sloppy mode).
+      if @project.scenario(@scenarioIdx).get('projection') &&
+         date < @project['now'] &&
+         (@project.scenario(@scenarioIdx).get('strict') ||
+          a('assignedresources').empty?)
+        return
+      end
+
+      # If the task has shifts to limit the allocations, we check that we are
+      # within a defined shift interval. If yes, we need to be on shift to
+      # continue.
+      if (shifts = a('shifts')) && shifts.assigned?(date)
+         return if !shifts.onShift?(date)
+      end
+
+      # If the task has allocation limits we need to make sure that none of them
+      # is already exceeded.
+      @limits.each do |limit|
+        return if !limit.ok?(date)
+      end
+
+      sbIdx = @project.dateToIdx(date)
+
+      # We first have to make sure that if there are mandatory resources
+      # that these are all available for the time slot.
+      takenMandatories = []
+      @mandatories.each do |allocation|
+        return unless allocation.onShift?(date)
+
+        # For mandatory allocations with alternatives at least one of the
+        # alternatives must be available.
+        found = false
+        allocation.candidates(@scenarioIdx).each do |candidate|
+          # When a resource group is marked mandatory, all members of the
+          # group must be available.
+          allAvailable = true
+          candidate.allLeaves.each do |resource|
+            if !resource.available?(@scenarioIdx, sbIdx) ||
+               takenMandatories.include?(resource)
+              allAvailable = false
+              break
+            else
+              takenMandatories << resource
+            end
+          end
+          if allAvailable
+            found = true
+            break
+          end
+        end
+
+        # At least one mandatory resource is not available. We cannot continue.
+        return unless found
+      end
+
+      iv = Interval.new(date, date + slotDuration)
+      a('allocate').each do |allocation|
+        next unless allocation.onShift?(date)
+
+        # In case we have a persistent allocation we need to check if there is
+        # already a locked resource and use it.
+        if allocation.persistent && !allocation.lockedResource.nil?
+          bookResource(allocation.lockedResource, sbIdx, date)
+        else
+          # If not, we create a list of candidates in the proper order and
+          # assign the first one available.
+          allocation.candidates(@scenarioIdx).each do |candidate|
+            if bookResource(candidate, sbIdx, date)
+              allocation.lockedResource = candidate
+              break
+            end
+          end
+        end
+      end
+    end
+
+    def bookResource(resource, sbIdx, date)
+      booked = false
+      resource.allLeaves.each do |r|
+        if r.book(@scenarioIdx, sbIdx, @property)
+
+          if a('assignedresources').empty?
+            if a('forward')
+              @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
+            else
+              @property['end', @scenarioIdx] = @project.idxToDate(sbIdx + 1)
+            end
+          end
+
+          @tentativeStart = @project.idxToDate(sbIdx)
+          @tentativeEnd = @project.idxToDate(sbIdx + 1)
+
+          @doneEffort += r['efficiency', @scenarioIdx]
+          # Limits do not take efficiency into account. Limits are usage limits,
+          # not effort limits.
+          @limits.each do |limit|
+            limit.inc(date)
+          end
+
+          unless a('assignedresources').include?(r)
+            @property['assignedresources', @scenarioIdx] << r
+          end
+          booked = true
+        end
+      end
+
+      booked
+    end
+
     def bookBookings
       a('booking').each do |booking|
         unless booking.resource.leaf?
@@ -1385,8 +1395,8 @@ class TaskJuggler
     # This function determines if a task is really a milestones and marks them
     # accordingly.
     def markMilestone
-      return if @property.container? || hasDurationSpec? || !a('booking').empty? ||
-        !a('allocate').empty?
+      return if @property.container? || hasDurationSpec? ||
+        !a('booking').empty? || !a('allocate').empty?
 
       # The following cases qualify for an automatic milestone promotion.
       #   -  --> -

@@ -46,6 +46,7 @@ class TaskJuggler
       def dirname
         @fileName ? File.dirname(@fileName) : ''
       end
+
     end
 
     # Specialized version of StreamHandle for operations on files.
@@ -60,19 +61,33 @@ class TaskJuggler
         @bytes = 0
         Log << "Parsing file #{@fileName} ..."
         Log.startProgressMeter("Reading file #{fileName}")
+
       end
 
       def close
         @file.close
       end
 
-      def getc
-        c = @file.getc
-        Log.activity if @bytes % 4096 == 0
+      def getc19
+        Log.activity if @bytes & 0x3FFF == 0
         @bytes += 1
+        @file.getc
+      end
+
+      def getc18
+        Log.activity if @bytes & 0x3FFF == 0
+        @bytes += 1
+        c = @file.getc
         return nil if c.nil?
         '' << c
       end
+
+      if RUBY_VERSION < '1.9.0'
+        alias getc getc18
+      else
+        alias getc getc19
+      end
+
     end
 
     # Specialized version of StreamHandle for operations on Strings.
@@ -90,12 +105,26 @@ class TaskJuggler
         @buffer = nil
       end
 
-      def getc
+      def getc18
         return nil if @pos >= @length
 
         c = @buffer[@pos]
         @pos += 1
         '' << c
+      end
+
+      def getc19
+        return nil if @pos >= @length
+
+        c = @buffer[@pos]
+        @pos += 1
+        c
+      end
+
+      if RUBY_VERSION < '1.9.0'
+        alias getc getc18
+      else
+        alias getc getc19
       end
 
       def fileName
@@ -206,7 +235,7 @@ class TaskJuggler
 
       # Start processing characters from the input.
       token = [ '.', '<END>' ]
-      while c = nextChar(true)
+      while c = nextChar
         case c
         when ' ', "\n", "\t"
           if (tok = readBlanks(c))
@@ -307,10 +336,10 @@ class TaskJuggler
     # This function is called by the scanner to get the next character. It
     # features a FIFO buffer that can hold any amount of returned characters.
     # When it has reached the end of the master file it returns nil.
-    def nextChar(eofOk = false)
-      if (c = nextCharI(eofOk)) == '$' && !@ignoreMacros
+    def nextChar
+      if (c = nextCharI) == '$' && !@ignoreMacros
         # Double $ are reduced to a single $.
-        return c if (c = nextCharI(false)) == '$'
+        return c if (c = nextCharI) == '$'
 
         # Macros start with $( or ${. All other $. are ignored.
         if c != '(' && c != '{'
@@ -326,13 +355,13 @@ class TaskJuggler
         rescue TjException
         end
         @ignoreMacros = false
-        return nextCharI(eofOk)
+        return nextCharI
       else
         return c
       end
     end
 
-    def nextCharI(eofOk)
+    def nextCharI
       # This can only happen when a previous call already returned nil.
       return nil if @cf.nil?
 
@@ -390,20 +419,20 @@ class TaskJuggler
     def skipComment
       # Read all characters until line or file end is found
       @ignoreMacros = true
-      while (c = nextChar(true)) && c != "\n"
+      while (c = nextChar) && c != "\n"
       end
       @ignoreMacros = false
       returnChar(c)
     end
 
     def skipCPlusPlusComments
-      if (c = nextChar(false)) == '*'
+      if (c = nextChar) == '*'
         # /* */ style multi-line comment
         @ignoreMacros = true
         begin
-          while (c = nextChar(false)) != '*'
+          while (c = nextChar) != '*'
           end
-        end until (c = nextChar(false)) == '/'
+        end until (c = nextChar) == '/'
         @ignoreMacros = false
       elsif c == '/'
         # // style single line comment
@@ -416,10 +445,10 @@ class TaskJuggler
     def readBlanks(c)
       loop do
         if c == ' '
-          if (c2 = nextChar(true)) == '-'
+          if (c2 = nextChar) == '-'
             # Special case for the dash between period dates. It must be
             # surrounded by blanks.
-            if (c3 = nextChar(true)) == ' '
+            if (c3 = nextChar) == ' '
               return [ 'LITERAL', ' - ']
             end
             returnChar(c3)
@@ -429,14 +458,14 @@ class TaskJuggler
           returnChar(c)
           return nil
         end
-        c = nextChar(true)
+        c = nextChar
       end
     end
 
     def readNumber(c)
       token = ""
       token << c
-      while ('0'..'9') === (c = nextChar(true))
+      while ('0'..'9') === (c = nextChar)
         token << c
       end
       if c == '-'
@@ -501,7 +530,7 @@ class TaskJuggler
         raise TjException.new, "Day must be between 1 and 31"
       end
 
-      if (c = nextChar(true)) != '-'
+      if (c = nextChar) != '-'
         returnChar(c)
         return [ 'DATE', TjTime.local(year, month, day) ]
       end
@@ -520,7 +549,7 @@ class TaskJuggler
         raise TjException.new, "Minutes must be between 0 and 59"
       end
 
-      if (c = nextChar(true)) == ':'
+      if (c = nextChar) == ':'
         seconds = readDigits.to_i
         if seconds < 0 || seconds > 59
           raise TjException.new, "Seconds must be between 0 and 59"
@@ -530,7 +559,7 @@ class TaskJuggler
         returnChar(c)
       end
 
-      if (c = nextChar(true)) != '-'
+      if (c = nextChar) != '-'
         returnChar(c)
         return [ 'DATE', TjTime.local(year, month, day, hour, minutes, seconds) ]
       end
@@ -585,7 +614,7 @@ class TaskJuggler
     def readId(c)
       token = ""
       token << c
-      while (c = nextChar(true)) &&
+      while (c = nextChar) &&
             (('a'..'z') === c || ('A'..'Z') === c || ('0'..'9')  === c ||
              c == '_')
         token << c
@@ -610,7 +639,7 @@ class TaskJuggler
 
     def readMacro
       token = ''
-      while (c = nextCharI(false)) != ']'
+      while (c = nextCharI) != ']'
         error('unterminated_macro', "Unterminated macro #{token}") unless c
         token << c
       end
@@ -620,7 +649,7 @@ class TaskJuggler
     # Read only decimal digits and return the result als Fixnum.
     def readDigits
       token = ""
-      while ('0'..'9') === (c = nextChar(true))
+      while ('0'..'9') === (c = nextChar)
         token << c
       end
       # Make sure that we have read at least one digit.
@@ -634,7 +663,7 @@ class TaskJuggler
 
     def readIdentifier(noDigit = true)
       token = ""
-      while (c = nextChar(true)) &&
+      while (c = nextChar) &&
             (('a'..'z') === c || ('A'..'Z') === c ||
              (!noDigit && (('0'..'9')  === c)) || c == '_')
         token << c
