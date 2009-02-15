@@ -6,8 +6,12 @@ of these files is easy to understand and very intuitive. This chapter
 will walk you step by step through your first project. You create the
 project plan for a made-up accounting software project. Refer to
 Chapter 8 for a full listing of the example. This project
-demonstrates some of the basic features of TaskJuggler; for more
-advanced features please refer to Chapter 6.
+demonstrates some of the commonly used features of TaskJuggler. The
+complete example can be downloaded
+[http://www.taskjuggler.org/tj3/examples/acso.tjp here]. The
+resulting reports can be found
+[http://www.taskjuggler.org/tj3/examples/ProjectPlanOverview.html
+here].
 
 === Starting the project ===
 
@@ -262,9 +266,7 @@ sub tasks.
 Here we use the allocate_developers macro mentioned above. The
 expression ''''${allocate_developers}'''' is simply expanded to 
 
- allocate dev1
- allocate dev2 { limits { dailymax 4h } }
- allocate dev3
+[[example:tutorial expandedmacro]]
 
 If you need to [[allocate]] the same bunch of people to several tasks,
 the macro saves you some typing. You could have written the allocate
@@ -442,13 +444,7 @@ To view a task report in the GUI, you have to add the following lines
 to your project. This will give you a list of all the project's tasks
 and the classical Gantt chart.
 
- taskreport "Gantt Chart" {
-   headline "Project Gantt Chart"
-   columns hierarchindex, name, start, end, effort, duration, chart
-   timeformat "%a %Y-%m-%d"
-   loadunit days
-   hideresource 1
- }
+[[example:tutorial planoverview]]
 
 The GUI requires the name column to be present in the report. If you
 don't specify it, it will be added automatically. It does not support

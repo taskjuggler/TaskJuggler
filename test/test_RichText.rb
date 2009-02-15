@@ -347,7 +347,7 @@ EOT
     # Check tagged output.
     out = newRichText(inp).to_tagged + "\n"
     ref = <<'EOT'
-<div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org">[http://www.taskjuggler.org]</a>[.] [For] [more] [info] [see] <a href="http://www.taskjuggler.org">[the TaskJuggler site]</a>[.]</div>
+<div>[This] [is] [a] [reference] <a href="http://www.taskjuggler.org" target="_blank">[http://www.taskjuggler.org]</a>[.] [For] [more] [info] [see] <a href="http://www.taskjuggler.org" target="_blank">[the TaskJuggler site]</a>[.]</div>
 EOT
     assert_equal(ref, out)
 
@@ -362,7 +362,7 @@ EOT
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
-<div>This is a reference <a href="http://www.taskjuggler.org">http://www.taskjuggler.org</a>. For more info see <a href="http://www.taskjuggler.org">the TaskJuggler site</a>.</div>
+<div>This is a reference <a href="http://www.taskjuggler.org" target="_blank">http://www.taskjuggler.org</a>. For more info see <a href="http://www.taskjuggler.org" target="_blank">the TaskJuggler site</a>.</div>
 EOT
     assert_equal(ref, out)
   end

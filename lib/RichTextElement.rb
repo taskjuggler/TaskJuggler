@@ -241,7 +241,7 @@ class TaskJuggler
         pre = "<ref data=\"#{@data}\">"
         post = '</ref>'
       when :href
-        pre = "<a href=\"#{@data}\">"
+        pre = "<a href=\"#{@data}\" target=\"_blank\">"
         post = '</a>'
       when :italic
         pre = '<i>'
@@ -339,7 +339,7 @@ class TaskJuggler
           XMLElement.new('a', 'href' => "#{@data}.html")
         end
       when :href
-        XMLElement.new('a', 'href' => @data)
+        XMLElement.new('a', 'href' => @data, 'target' => '_blank')
       when :italic
         XMLElement.new('i')
       when :bold

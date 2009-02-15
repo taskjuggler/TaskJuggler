@@ -73,9 +73,11 @@ flags team
 # This is one way to form teams
 # *** EXAMPLE: macro +
 macro allocate_developers [
+# *** EXAMPLE: expandedmacro +
   allocate dev1
-  allocate dev2 #{ limits { dailymax 4h } }
+  allocate dev2
   allocate dev3
+# *** EXAMPLE: expandedmacro -
 ]
 # *** EXAMPLE: macro -
 
@@ -346,6 +348,7 @@ task AcSo "Accounting Software" {
 # results.
 
 # A traditional Gantt chart with a project overview.
+# *** EXAMPLE: planoverview +
 htmltaskreport "ProjectPlanOverview.html" {
   prolog '
 == Accounting Software Project ==
@@ -386,6 +389,7 @@ All effort values are in man days.
 '
 
 }
+# *** EXAMPLE: planoverview -
 
 # A list of tasks showing the resources assigned to each task.
 htmltaskreport "TaskUsage.html" {

@@ -40,6 +40,20 @@ for any serious work. The code base is still in active development
 and the quality and reliability may change daily. You are welcome to try
 it and play with it, but expect it to fail.
 
+TaskJuggler is a commandline tool that you use from a
+[http://en.wikipedia.org/wiki/Shell_(computing) shell]. This does not
+mean that you don't get fancy looking Gantt-charts. It just means
+that for entering your project data you will use one of the most
+versatile and powerful tools there is: your favorite
+[http://en.wikipedia.org/wiki/Text_editor text editor]. To get a
+first impression, you can look at this
+[http://www.taskjuggler.org/tj3/examples/acso.tjp project file]. The
+project description is fairly intuitive, but very powerful as well.
+The [[Tutorial]] will explain this file line by line. Please look at
+the [http://www.taskjuggler.org/tj3/examples/ProjectPlanOverview.html
+resulting reports] that visualize the project.
+
+
 === License and Copyright ===
 
 This program is free software; you can redistribute it and/or modify
@@ -61,27 +75,21 @@ Free Documentation License".
 === Features and Highlights ===
 
 * Manages tasks, resources and costs in one package
-* Automatic resource leveling, tasks conflict resolutions, and task
-filtering
-* Comprehensive and flexible views and reports so you can find the
-information you need when you need it
-* Built-in templates to get you started (you can also save your own
-schedules as templates for future use)
+* Automatic resource leveling and tasks conflict resolution
+* Flexible working hours and vacation handling
+* Multiple timezone support
+* Support for shift working
 * Project tracking and status reporting
 * Unlimited number of scenarios (baselines) of same project for what-if
 analysis
-* CSV data export for exchange with Office Suites
-* Risk analysis
+* CSV data export for exchange with popular office software
 * Project breakdown and management team support
-* Flexible working hours and vacation handling
-* Support for shift working
-* Multiple timezone support
-* Tasks may have initial costs, finishing costs
+* Powerful and flexible filtering functions to provide the right
+amount of detail to the right audience
+* Tasks may have initial costs, finishing costs and run rates
 * Resources may have running costs
 * Support for profit/loss analysis
-* HTML and XML report generation
 * Powerful project description syntax with macro support
-* Support for central resource allocation database
 
 === TaskJuggler on the Web ===
 
