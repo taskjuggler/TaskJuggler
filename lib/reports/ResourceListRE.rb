@@ -50,14 +50,14 @@ class TaskJuggler
       end
 
       # Prepare the resource list.
-      resourceList = TaskJuggler::PropertyList.new(@project.resources)
+      resourceList = PropertyList.new(@project.resources)
       resourceList.setSorting(@sortResources)
       resourceList = filterResourceList(resourceList, nil, @hideResource,
                                         @rollupResource)
       resourceList.sort!
 
       # Prepare the task list.
-      taskList = TaskJuggler::PropertyList.new(@project.tasks)
+      taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@sortTasks)
       taskList = filterTaskList(taskList, nil, @hideTask, @rollupTask)
       taskList.sort!

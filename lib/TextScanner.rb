@@ -33,6 +33,7 @@ class TaskJuggler
     class StreamHandle
 
       attr_accessor :lineNo, :columnNo, :line, :charBuffer
+      attr_reader :fileName
 
       def initialize
         @lineNo = 1
@@ -56,7 +57,9 @@ class TaskJuggler
         super()
         @fileName = fileName
         @file = File.new(fileName, 'r')
+        @bytes = 0
         Log << "Parsing file #{@fileName} ..."
+        Log.startProgressMeter("Reading file #{fileName}")
       end
 
       def close
@@ -65,6 +68,8 @@ class TaskJuggler
 
       def getc
         c = @file.getc
+        Log.activity if @bytes % 4096 == 0
+        @bytes += 1
         return nil if c.nil?
         '' << c
       end
@@ -136,6 +141,8 @@ class TaskJuggler
 
     # Finish processing and reset all data structures.
     def close
+      Log.startProgressMeter("Reading file #{@masterFile}")
+      Log.stopProgressMeter
       @fileStack = []
       @cf = @tokenBuffer = @pos = nil
     end
@@ -350,6 +357,7 @@ class TaskJuggler
             @cf = @tokenBuffer = @pos = nil
           else
             @cf, @tokenBuffer, @pos = @fileStack.last
+            Log << "Parsing file #{@cf.fileName} ..."
             # We have been called by nextToken() already, so we can't just
             # restore @tokenBuffer and be done. We need to feed the token text
             # back into the charBuffer and return the first character.

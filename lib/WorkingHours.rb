@@ -14,40 +14,71 @@ require 'Interval'
 
 class TaskJuggler
 
+  # This cache class is used to speedup accesses to the frequently used
+  # WorkingHours::onShift? function. It saves the result the first time the
+  # function is called for a particular date and working hour set and returns
+  # it on subsequent calls again. Each partucular set of working hours needs
+  # its separate cache. The OnShiftCache object is shared amongst all
+  # WorkingHours objects so that WorkingHours objects with identical working
+  # hours can share the cache.
   class OnShiftCache
 
+    # Create the OnShiftCache object. There should be only one for the
+    # application.
     def initialize
       @caches = []
       @workingHoursTable = []
+      # The cache is an array with entries for each date. To minimize the
+      # necessary storage space, we need to guess the smallest used date
+      # (which gets index 0 then) and the smallest distance between dates.
       @minDate = nil
+      # We assume a timing resolution of 1 hour (the TaskJuggler default)
+      # first.
       @minDateDelta = 60 * 60
     end
 
+    # Register the WorkingHours object with the caches. The function will
+    # return the actual cache used for this particular set of working hours.
+    # The WorkingHours object may not change its working hours after this
+    # call. The returned cache reference is used as a handle for subsequent
+    # OnShiftCache::set and OnShiftCache::get calls.
     def register(wh)
+      # Search the list of already registered caches for an identical set of
+      # WorkingHours. In case one is found, return the reference to this
+      # cache.
       0.upto(@workingHoursTable.length - 1) do |i|
         if @workingHoursTable[i] == wh
           return @caches[i]
         end
       end
-      @workingHoursTable << WorkingHours.new(wh, wh.timezone)
+      # If this is a new set of WorkingHours we create a new cache for it.
+      @workingHoursTable << WorkingHours.new(wh)
       @caches << []
       @caches.last
     end
 
+    # Set the +value+ for a given +cache+ and +date+.
     def set(cache, date, value)
       cache[dateToIndex(date)] = value
     end
 
+    # Get the value for a given +cache+ and +date+.
     def get(cache, date)
       cache[dateToIndex(date)]
     end
 
     private
 
+    # When the @minDate or @minDateDelta values need to be changed, we have to
+    # clear all the caches again.
     def resetCaches
       @caches.each { |c| c.clear }
     end
 
+    # Convert a TjTime +date+ to an index in the cache Array. To optimize the
+    # size of the cache, we have to guess the smallest used date and the
+    # regular distance between the date values. If we have to correct these
+    # guessed values, we have to clear the caches.
     def dateToIndex(date)
       if date % @minDateDelta != 0
         resetCaches
@@ -88,14 +119,21 @@ class TaskJuggler
     attr_reader :days
     attr_accessor :timezone
 
+    # All WorkingHours objects share the same cache to speedup the onShift?
+    # method.
     @@onShiftCache = OnShiftCache.new
 
-    def initialize(wh = nil, tz = nil)
-      @timezone = tz
+    # Create a new WorkingHours object. The method accepts a reference to an
+    # existing WorkingHours object in +wh+. When it's present, the new object
+    # will be a deep copy of the given object.
+    def initialize(wh = nil)
       # One entry for every day of the week. Sunday === 0.
       @days = Array.new(7, [])
+      @cache = nil
 
       if wh.nil?
+        # Create a new object with default working hours.
+        @timezone = nil
         # Set the default working hours. Monday to Friday 9am - 12pm, 1pm - 6pm.
         # Saturday and Sunday are days off.
         1.upto(5) do |day|
@@ -103,6 +141,8 @@ class TaskJuggler
                          [ 13 * 60 * 60, 18 * 60 * 60 ] ]
         end
       else
+        # Copy the values from the given object.
+        @timezone = wh.timezone
         0.upto(6) do |day|
           hours = []
           wh.days[day].each do |hrs|
@@ -111,9 +151,10 @@ class TaskJuggler
           setWorkingHours(day, hours)
         end
       end
-      @cache = nil
     end
 
+    # Return true of the given WorkingHours object +wh+ is identical to this
+    # object.
     def ==(wh)
       return false if @timezone != wh.timezone
 
@@ -128,7 +169,18 @@ class TaskJuggler
       true
     end
 
+    # Set the working hours for a given week day. +dayOfWeek+ must be 0 for
+    # Sunday, 1 for Monday and so on. +intervals+ must be an Array that
+    # contains an Array with 2 Fixnums for each working period. Each value
+    # specifies the time of day as minutes after midnight. The first value is
+    # the start time of the interval, the second the end time.
     def setWorkingHours(dayOfWeek, intervals)
+      if @cache
+        raise 'You cannot change the working hours after onShift? has been ' +
+              'called.'
+      end
+
+      # Legal values range from 0 Sunday to 6 Saturday.
       if dayOfWeek < 0 || dayOfWeek > 6
         raise "dayOfWeek out of range: #{dayOfWeek}"
       end
@@ -144,6 +196,9 @@ class TaskJuggler
       @days[dayOfWeek] = intervals
     end
 
+    # Return the working hour intervals for a given day of the week.
+    # +dayOfWeek+ must 0 for Sunday, 1 for Monday and so on. The result is an
+    # Array that contains Arrays of 2 Fixnums.
     def getWorkingHours(dayOfWeek)
       @days[dayOfWeek]
     end

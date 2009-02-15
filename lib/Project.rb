@@ -479,7 +479,7 @@ class TaskJuggler
   protected
 
     def prepareScenario(scIdx)
-      Log.showProgressMeter("Preparing scenario #{scenario(scIdx).get('name')}")
+      Log.startProgressMeter("Preparing scenario #{scenario(scIdx).get('name')}")
       resources = PropertyList.new(@resources)
       tasks = PropertyList.new(@tasks)
 
@@ -496,34 +496,30 @@ class TaskJuggler
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
         i += 1
-        Log.progress((i.to_f / total) * 0.5)
+        Log.progress((i.to_f / total) * 0.8)
       end
 
       tasks.each { |task| task.prepareScheduling(scIdx) }
-      Log.progress(0.6)
 
       tasks.each { |task| task.Xref(scIdx) }
-      Log.progress(0.65)
       tasks.each { |task| task.propagateInitialValues(scIdx) }
-      Log.progress(0.70)
       tasks.each { |task| task.preScheduleCheck(scIdx) }
-      Log.progress(0.75)
 
       # Check for dependency loops in the task graph.
       tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
         task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
       end
-      Log.progress(0.80)
+      Log.progress(0.85)
       tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
         task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
       end
-      Log.progress(0.85)
+      Log.progress(0.87)
 
       # Compute the criticalness of the tasks and their pathes.
       tasks.each { |task| task.countResourceAllocations(scIdx) }
-      Log.progress(0.86)
+      Log.progress(0.88)
       resources.each { |resource| resource.calcCriticalness(scIdx) }
       Log.progress(0.9)
       tasks.each { |task| task.calcCriticalness(scIdx) }
@@ -531,7 +527,7 @@ class TaskJuggler
       tasks.each { |task| task.calcPathCriticalness(scIdx) }
       Log.progress(1.0)
 
-      Log.hideProgressMeter
+      Log.stopProgressMeter
       # This is used for debugging only
       if false
         resources.each do |resource|
@@ -544,13 +540,22 @@ class TaskJuggler
     end
 
     def finishScenario(scIdx)
+      Log.startProgressMeter("Checking scenario #{scenario(scIdx).get('name')}")
+      total = @tasks.items
+      i = 0
       @tasks.each do |task|
         task.finishScheduling(scIdx)
+        i += 1
+        Log.progress((i.to_f / total) * 0.5)
       end
 
+      i = 0
       @tasks.each do |task|
         task.postScheduleCheck(scIdx) if task.parent.nil?
+        i += 1
+        Log.progress(0.5 + (i.to_f / total) * 0.5)
       end
+      Log.stopProgressMeter
     end
 
     # Schedule all tasks for the given Scenario with index +scIdx+.
@@ -574,7 +579,8 @@ class TaskJuggler
       # Enter the main scheduling loop. This loop is only terminated when all
       # tasks have been scheduled or another thread has set the breakFlag to
       # true.
-      Log.showProgressMeter("Scheduling scenario #{scenario(scIdx).get('name')}")
+      Log.startProgressMeter("Scheduling scenario " +
+                             "#{scenario(scIdx).get('name')}")
       loop do
         # The main scheduler loop only needs to look at the first task that is
         # ready to be scheduled.
@@ -609,25 +615,27 @@ class TaskJuggler
       # warnings.
       unless unscheduledTasks.empty?
         message = Message.new('unscheduled_tasks', 'warning',
-                              "#{unscheduledTasks.length} could not be scheduled")
+                              "#{unscheduledTasks.length} could not be " +
+                              "scheduled")
         sendMessage(message)
         i = 0
         unscheduledTasks.each do |t|
-          message = Message.new('unscheduled_task', 'warning',
-                                "Task #{t.fullId}: " +
-                                "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
-                                "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", t,
-                                scenario(scIdx))
+          message = Message.new(
+            'unscheduled_task', 'warning',
+            "Task #{t.fullId}: " +
+            "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
+            "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", t,
+            scenario(scIdx))
           sendMessage(message)
 
           i += 1
           break if i >= 10
         end
-        Log.hideProgressMeter
+        Log.stopProgressMeter
         return false
       end
 
-      Log.hideProgressMeter
+      Log.stopProgressMeter
       Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
       true
     end

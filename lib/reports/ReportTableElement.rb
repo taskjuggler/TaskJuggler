@@ -200,6 +200,7 @@ class TaskJuggler
       line = nil
       taskList.each do |task|
         no += 1
+        Log.activity if lineNo % 10 == 0
         lineNo += 1
         @scenarios.each do |scenarioIdx|
           # Generate line for each task.
@@ -253,6 +254,7 @@ class TaskJuggler
       line = nil
       resourceList.each do |resource|
         no += 1
+        Log.activity if lineNo % 10 == 0
         lineNo += 1
         @scenarios.each do |scenarioIdx|
           # Generate line for each resource.

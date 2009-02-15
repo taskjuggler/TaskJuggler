@@ -26,6 +26,7 @@ class TaskJuggler
     @@stack = []
     @@segments = []
     @@silent = true
+    @@progress = 0
 
     # Set the maximum nesting level that should be shown. Segments with a
     # nesting level greater than _l_ will be silently dropped.
@@ -100,26 +101,52 @@ class TaskJuggler
       end
     end
 
-    def Log.showProgressMeter(name)
-      maxlen = 45
-      name = name.ljust(maxlen)
-      name = name[0..maxlen] if name.length > maxlen
-      @@progressMeter = name
-      progress(0.0)
-    end
-
-    def Log.hideProgressMeter
+    # The progress meter can be a textual progress bar or some animated
+    # character sequence that informs the user about ongoing activities. Call
+    # this function to start the progress meter display or to change the info
+    # +text+. The the meter is active the text cursor is always returned to
+    # the start of the same line. Consequent output will overwrite the last
+    # meter text.
+    def Log.startProgressMeter(text)
       return if @@silent
-      $stdout.print("\n")
+
+      maxlen = 60
+      text = text.ljust(maxlen)
+      text = text[0..maxlen] if text.length > maxlen
+      @@progressMeter = text
+      $stdout.print("#{@@progressMeter} ...\r")
     end
 
+    # This sets the progress meter status to "done" and puts the cursor into
+    # the next line again.
+    def Log.stopProgressMeter
+      return if @@silent
+
+      $stdout.print("#{@@progressMeter} [      Done      ]\n")
+    end
+
+    # This function may only be called when Log#startProgressMeter has been
+    # called before. It updates the progress indicator to the next symbol to
+    # visualize ongoing activity.
+    def Log.activity
+      return if @@silent
+
+      indicator = %w( - \\ | / )
+      @@progress = (@@progress.to_i + 1) % indicator.length
+      $stdout.print("#{@@progressMeter} [#{indicator[@@progress]}]\r")
+    end
+
+    # This function may only be called when Log#startProgressMeter has been
+    # called before. It updates the progress bar to the given +percent+
+    # completion value. The value should be between 0.0 and 1.0.
     def Log.progress(percent)
       return if @@silent
 
       percent = 0.0 if percent < 0.0
       percent = 1.0 if percent > 1.0
+      @@progress = percent
 
-      length = 30
+      length = 16
       full = (length * percent).to_i
       bar = '=' * full + ' ' * (length - full)
       label = (percent * 100.0).to_i.to_s + '%'
