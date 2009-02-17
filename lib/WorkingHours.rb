@@ -46,7 +46,7 @@ class TaskJuggler
       # Search the list of already registered caches for an identical set of
       # WorkingHours. In case one is found, return the reference to this
       # cache.
-      0.upto(@workingHoursTable.length - 1) do |i|
+      @workingHoursTable.length.times do |i|
         if @workingHoursTable[i] == wh
           return @caches[i]
         end
@@ -143,7 +143,7 @@ class TaskJuggler
       else
         # Copy the values from the given object.
         @timezone = wh.timezone
-        0.upto(6) do |day|
+        7.times do |day|
           hours = []
           wh.days[day].each do |hrs|
             hours << hrs.clone
@@ -158,10 +158,10 @@ class TaskJuggler
     def ==(wh)
       return false if @timezone != wh.timezone
 
-      0.upto(6) do |d|
+      7.times do |d|
         return false if @days[d].length != wh.days[d].length
         # Check all working hour intervals
-        0.upto(@days[d].length - 1) do |i|
+        @days[d].length.times do |i|
           return false if @days[d][i][0] != wh.days[d][i][0] ||
                           @days[d][i][1] != wh.days[d][i][1]
         end
@@ -267,7 +267,7 @@ class TaskJuggler
     def to_s
       dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )
       str = ''
-      0.upto(6) do |day|
+      7.times do |day|
         str += "#{dayNames[day]}: "
         if @days[day].empty?
           str += "off"

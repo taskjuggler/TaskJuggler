@@ -115,7 +115,7 @@ class TaskJuggler
     def sort!
       super do |a, b|
         res = 0
-        0.upto(@sortingLevels - 1) do |i|
+        @sortingLevels.times do |i|
           if @query
             # In case we have a Query reference, we get the two values with this
             # query.
@@ -166,7 +166,7 @@ class TaskJuggler
     # Turn the list into a String. This is only used for debugging.
     def to_s # :nodoc:
       res = "Sorting: "
-      0.upto(@sortingLevels - 1) do |i|
+      @sortingLevels.times do |i|
         res += "#{@sortingCriteria[i]}/#{@sortingUp[i] ? 'up' : 'down'}/" +
                "#{@scenarioIdx[i]}, "
       end

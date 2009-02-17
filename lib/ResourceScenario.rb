@@ -383,7 +383,7 @@ class TaskJuggler
       # Change all work time slots to nil (available) again.
       date = @scoreboard.idxToDate(0)
       delta = @project['scheduleGranularity']
-      0.upto(@project.scoreboardSize - 1) do |i|
+      @project.scoreboardSize.times do |i|
         @scoreboard[i] = nil if onShift?(date)
         date += delta
       end
@@ -408,7 +408,7 @@ class TaskJuggler
 
       unless @shifts.nil?
         # Mark the vacations from all the shifts the resource is assigned to.
-        0.upto(@project.scoreboardSize - 1) do |i|
+        @project.scoreboardSize.times do |i|
           v = @shifts.getSbSlot(@scoreboard.idxToDate(i))
           # Check if the vacation replacement bit is set. In that case we copy
           # the while interval over to the resource scoreboard overriding any

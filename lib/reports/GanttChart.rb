@@ -185,7 +185,7 @@ class TaskJuggler
       end
       # And the corresponsing arrow heads.
       @arrowHeads.each do |x, y|
-        0.upto(5) do |i|
+        6.times do |i|
           div << lineToHTML(x - i, y - i, x - i, y + i, 'depline')
         end
       end
@@ -254,7 +254,7 @@ class TaskJuggler
     # task.
     def generateDepArrow(task, lines)
       # Since we need the line and the index we use an index iterator.
-      0.upto(lines.length - 1) do |lineIndex|
+      lines.length.times do |lineIndex|
         line = lines[lineIndex]
         scenarioIdx = line.scenarioIdx
 

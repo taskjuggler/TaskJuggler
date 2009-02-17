@@ -120,7 +120,7 @@ class TaskJuggler::TextParser
     # Return the pattern of this rule that matches the given +token+. If no
     # pattern matches, return nil.
     def matchingPatternIndex(token)
-      0.upto(@transitions.length - 1) do |i|
+      @transitions.length.times do |i|
         return i if @transitions[i].has_key?(token)
       end
 
@@ -152,7 +152,7 @@ class TaskJuggler::TextParser
     def dump
       puts "Rule: #{name} #{@optional ? "[optional]" : ""} " +
            "#{@repeatable ? "[repeatable]" : ""}"
-      0.upto(@patterns.length - 1) do |i|
+      @patterns.length.times do |i|
         puts "  Pattern: \"#{@patterns[i]}\""
         @transitions[i].each do |key, rule|
           if key[0] == ?_

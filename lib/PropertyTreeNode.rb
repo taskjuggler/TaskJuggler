@@ -73,7 +73,7 @@ class TaskJuggler
 
       @attributes = Hash.new
       @scenarioAttributes = Array.new(@project.scenarioCount)
-      0.upto(@project.scenarioCount - 1) do |i|
+      @project.scenarioCount.times do |i|
         @scenarioAttributes[i] = Hash.new
       end
       # Scenario specific data
@@ -114,7 +114,7 @@ class TaskJuggler
       @propertySet.eachAttributeDefinition do |attrDef|
         next if !attrDef.scenarioSpecific || !attrDef.inheritable
 
-        0.upto(@project.scenarioCount - 1) do |scenarioIdx|
+        @project.scenarioCount.times do |scenarioIdx|
           if parent
             # Inherit scenario specific values from parent property
             if parent.provided(attrDef.id, scenarioIdx) ||
@@ -146,7 +146,7 @@ class TaskJuggler
         # We know that parent scenarios precede their children in the list. So
         # it's safe to iterate over the list instead of recursively descend
         # the tree.
-        0.upto(@project.scenarioCount - 1) do |scenarioIdx|
+        @project.scenarioCount.times do |scenarioIdx|
           scenario = @project.scenario(scenarioIdx)
           next if scenario.parent.nil?
           parentScenarioIdx = scenario.parent.sequenceNo - 1
@@ -282,7 +282,7 @@ class TaskJuggler
     # instances for each scenario.
     def declareAttribute(attributeType)
       if attributeType.scenarioSpecific
-        0.upto(@project.scenarioCount - 1) do |i|
+        @project.scenarioCount.times do |i|
           attribute = newAttribute(attributeType)
           @scenarioAttributes[i][attribute.id] = attribute
         end
@@ -415,7 +415,7 @@ class TaskJuggler
         end
       end
       unless @scenarioAttributes.empty?
-        0.upto(project.scenarioCount - 1) do |sc|
+        project.scenarioCount.times do |sc|
           headerShown = false
           @scenarioAttributes[sc].sort.each do |key, attr|
             if attr.get != @propertySet.defaultValue(key)

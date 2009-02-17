@@ -120,7 +120,7 @@ class TaskJuggler
 
       gridCells = ((items.length / 3) + (items.length % 3 != 0 ? 1 : 0)) * 3
       tr = nil
-      0.upto(gridCells - 1) do |i|
+      gridCells.times do |i|
         # We show no more than 3 items in a row.
         tbody << (tr = XMLElement.new('tr')) if i % 3 == 0
 

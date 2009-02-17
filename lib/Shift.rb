@@ -25,7 +25,7 @@ class TaskJuggler
       project.addShift(self)
 
       @data = Array.new(@project.scenarioCount, nil)
-      0.upto(@project.scenarioCount) do |i|
+      @project.scenarioCount.times do |i|
         @data[i] = ShiftScenario.new(self, i, @scenarioAttributes[i])
       end
     end

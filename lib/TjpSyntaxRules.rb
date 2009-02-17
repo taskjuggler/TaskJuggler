@@ -1337,7 +1337,7 @@ EOT
     pattern(%w( !weekDayInterval !moreListOfDays), lambda {
       weekDays = Array.new(7, false)
       ([ @val[0] ] + @val[1]).each do |dayList|
-        0.upto(6) { |i| weekDays[i] = true if dayList[i] }
+        7.times { |i| weekDays[i] = true if dayList[i] }
       end
       weekDays
     })
@@ -3970,7 +3970,7 @@ EOT
            @property['workinghours', @scenarioIdx]
       wh.timezone = @property.nil? ? @project['timezone'] :
                     @property['timezone', @scenarioIdx]
-      0.upto(6) { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+      7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
   end
 

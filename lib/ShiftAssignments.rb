@@ -198,7 +198,7 @@ class TaskJuggler
       return false if @assignments.size != shiftAssignments.assignments.size ||
                       @project != shiftAssignments.project
 
-      0.upto(@assignments.size - 1) do |i|
+      @assignments.size.times do |i|
         return false if @assignments[i] != shiftAssignments.assignments[i]
       end
       true

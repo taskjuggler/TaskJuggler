@@ -366,7 +366,7 @@ class TaskJuggler
     def indentBlock(text, indent)
       out = ''
       firstSpace = 0
-      0.upto(text.length - 1) do |i|
+      text.length.times do |i|
         if firstSpace == 0 && text[i] == ?\ # There must be a space after ?
           firstSpace = i
         end

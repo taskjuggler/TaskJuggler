@@ -88,12 +88,12 @@ class TaskJuggler
       html << rectToHTML(xStart - @@size, yCenter - @@size,
                          width + 2 * @@size, @@size, 'containerbar')
       # The left jag
-      0.upto(@@size) do |i|
+      (@@size + 1).times do |i|
         html << rectToHTML(xStart - @@size + i, yCenter + i,
                            1 + (@@size - i) * 2, 1, 'containerbar')
       end
       # The right jag
-      0.upto(@@size) do |i|
+      (@@size + 1).times do |i|
         html << rectToHTML(xStart + width - 1 - @@size + i, yCenter + i,
                            1 + (@@size - i) * 2, 1, 'containerbar')
       end

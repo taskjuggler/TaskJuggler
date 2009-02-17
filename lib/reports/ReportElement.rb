@@ -386,7 +386,7 @@ class TaskJuggler
         # Default to days in case they are all the same.
         shortest = 2
         # Find the shortest option.
-        0.upto(5) do |j|
+        6.times do |j|
           shortest = j if options[j] &&
                           options[j].length < options[shortest].length
         end

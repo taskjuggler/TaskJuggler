@@ -186,13 +186,13 @@ class TaskJuggler
         # Find the value that is the closest to the original value. This will be
         # the default if all values have the same length.
         shortest = 2
-        0.upto(delta.length - 1) do |j|
+        delta.length.times do |j|
           shortest = j if options[j] && options[j][0, 2] != '0.' &&
                           delta[j] <= delta[shortest]
         end
 
         # Find the shortest option.
-        0.upto(5) do |j|
+        6.times do |j|
           shortest = j if options[j] && options[j][0, 2] != '0.' &&
                           options[j].length < options[shortest].length
         end

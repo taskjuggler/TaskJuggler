@@ -285,7 +285,7 @@ class TaskJuggler
       crossedNewline = false
       if @pos <= @textLength && @pos >= n
         # Check for newlines and update @lineNo accordingly.
-        0.upto(n - 1) do |i|
+        n.times do |i|
           if @text[@pos - i - 1] == ?\n
             crossedNewline = true
             @lineNo -= 1

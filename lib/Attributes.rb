@@ -448,7 +448,7 @@ class TaskJuggler
     def to_tjp
       dayNames = %w( sun mon tue wed thu fri sat )
       str = 'workinghours '
-      0.upto(6) do |day|
+      7.times do |day|
         str += "#{dayNames[day]} "
         whs = @value.getWorkingHours(day)
         if whs.empty?

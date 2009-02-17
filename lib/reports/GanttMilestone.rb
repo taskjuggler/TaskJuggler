@@ -67,7 +67,7 @@ class TaskJuggler
     # elements.
     def to_html
       html = []
-      0.upto(@@size) do |i|
+      (@@size + 1).times do |i|
         html << rectToHTML(@x - (@@size - 1) + i, (@lineHeight / 2) - i,
                            2 * (@@size - i) + 1, 2 * i + 1, 'milestone')
       end
