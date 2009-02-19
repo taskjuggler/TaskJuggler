@@ -9,13 +9,6 @@
 # *** EXAMPLE: header2 +
 project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
 # *** EXAMPLE: header1 -
-  # Pick a day during the project that will be reported as 'today' in
-  # the project reports. If not specified, the current day will be
-  # used, but this will likely be outside of the project range, so it
-  # can't be seen in the reports.
-# *** EXAMPLE: now +
-  now 2002-03-05-13:00
-# *** EXAMPLE: now -
   # Hide the clock time. Only show the date.
 # *** EXAMPLE: formats +
   timeformat "%Y-%m-%d"
@@ -28,6 +21,13 @@ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
 # *** EXAMPLE: formats +
   currencyformat "(" ")" "," "." 0
 # *** EXAMPLE: formats -
+  # Pick a day during the project that will be reported as 'today' in
+  # the project reports. If not specified, the current day will be
+  # used, but this will likely be outside of the project range, so it
+  # can't be seen in the reports.
+# *** EXAMPLE: now +
+  now 2002-03-05-13:00
+# *** EXAMPLE: now -
   # The currency for all money values is the Euro.
 # *** EXAMPLE: currency +
   currency "USD"
@@ -37,10 +37,6 @@ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
   # delayed start.
 # *** EXAMPLE: scenario +
   scenario plan "Plan" {
-# *** EXAMPLE: scenario -
-    # Mark all paths as critical that have less than 10% slack time.
-    #minslackrate 10.0
-# *** EXAMPLE: scenario +
     scenario delayed "Delayed"
   }
 # *** EXAMPLE: scenario -

@@ -4,8 +4,7 @@ We have mentioned already that TaskJuggler uses plain text files that
 describe the project to schedule it. As you will see now, the syntax
 of these files is easy to understand and very intuitive. This chapter
 will walk you step by step through your first project. You create the
-project plan for a made-up accounting software project. Refer to
-Chapter 8 for a full listing of the example. This project
+project plan for a made-up accounting software project. This project
 demonstrates some of the commonly used features of TaskJuggler. The
 complete example can be downloaded
 [http://www.taskjuggler.org/tj3/examples/acso.tjp here]. The
@@ -29,29 +28,48 @@ longer scheduling times and higher memory consumption.
 All TaskJuggler properties have a certain number of fixed attributes
 and a set of optional attributes. Optional attributes are always
 enclosed in curly braces. If no optional attributes are specified,
-the braces can be omitted as well. In this example we use the optional
-attribute [[now]] to set the current day for the scheduler to another
-value than to the moment your invoke TaskJuggler. We pick a day in the
-specified project period and we will always get the same results of a
-TaskJuggler run, no matter when we process our project file.
+the braces can be omitted as well. In this example we will introduce
+a number of there attributes that may or may not matter to you. If
+you don't see an immediate need for a specific attribute, feel free
+to ignore it for now. You can always come back to them later. A full
+list of the supported attributes can be found in the ''attributes''
+section of the [[project]] property documentation.
 
-[[example:tutorial now]]
+Attributes always start with a keyword that is unique in the context.
+A context is delimited by a set of curly braces that enclose optional
+attributes of a property. The area between properties is called the
+global scope.  Usually, attributes have one or more arguments. These
+arguments can be dates, character strings, numbers or symbols. Strings
+must be enclosed in single or double quotes. The argument types and
+meaning is explained for each keyword in the syntax reference section
+of this manual.
 
 The [[currency]] attribute specifies the unit of currency values.
 
 [[example:tutorial currency]]
 
-Because each culture has it's own way of specifying dates and numbers,
-the format is configurable.  Use the [[timeformat]] attribute to specify
-the default format for dates. This format is used for reports, it
-does not affect the way you specify dates in the project files. Here
-you always need to use the [[date ISO standardized notation]].
+Because each culture has its own way of specifying dates and numbers,
+the format for these are configurable.  Use the [[timeformat]]
+attribute to specify the default format for dates. This format is used
+for reports, it does not affect the way you specify dates in the
+project files. Here you always need to use the [[date ISO standardized
+notation]].
 
 [[example:tutorial formats]]
 
 We also can specify the way numbers or currency values are shown in
 the reports. Use the [[numberformat]] and [[currencyformat]]
 attributes for this.
+
+The optional attribute [[now]] is used to set the current day for the
+scheduler to another value than to the moment your invoke TaskJuggler.
+When this attribute is not present, TaskJuggler will use the current
+moment of time to determine where you are with your tasks. To get a
+defined result for the reports in this example we've picked a specific
+date that fits our purpose here. In your projects, you would use
+[[now]] to generate status reports for the date you specify.
+
+[[example:tutorial now]]
 
 In this tutorial we would like to compare two scenarios of the
 project. The first scenario is the one that we have planned. The
@@ -61,16 +79,13 @@ In reality we assume that the project got delayed, so we call the
 second scenario "Delayed". The scenario property is used to specify
 the scenarios. The delayed scenario is nested into the plan scenario.
 This tells TaskJuggler to use all values from the plan scenario also
-for the delayed scenario unless the delay scenario has it's own
-values. We'll see further below, how to specify values for a scenario.
+for the second scenario unless the second scenario has it's own
+values. This is a very easy but also powerful way to analyze the
+impact of certain changes to the plan of record.  We'll see further
+below, how to specify values for a scenario and how to compare the
+results.
 
 [[example:tutorial scenario]]
-
-Certain attributes are scenario specific. These have to be included in
-the scenario definition.  In this example, we use the minslackrate
-attribute to specify the percentage of slack time a task path must at
-least have before it is considered a critical path. Tasks on critical
-paths are marked with a red frame in the graphical user interface.
 
 To summarize the above, let's look at the complete header again.
 Don't get scared by the wealth of attributes here. They are all
@@ -88,18 +103,19 @@ later, but it illustrates an important concept of TaskJuggler –
 inheritance of attributes. In order to reduce the size of the
 TaskJuggler project file to a readable minimum, properties inherit
 many optional attributes from their enclosing scopes. We'll see
-further below, what this actually means. Here we are at top-level
-scope, so this is the default for all following properties.
+further below, what this actually means. Right after the project
+property we are at top-level scope, so this is the default for all
+following properties.
 
 [[example:tutorial rate]]
 
 The [[rate]] attribute can be used to specify the daily costs of
-resources. All subsequent resources will have this rate unless
-specified differently.
+resources. All subsequent resources will get this rate. But it can be
+changed to a different rate at group or individual resource level.
 
-You might also want to tell TaskJuggler about holidays that affect
-all resources. Global vacations are periods where TaskJuggler does
-not do any resource assignments to tasks.
+You may also want to tell TaskJuggler about holidays that affect
+all resources. Global vacations are time periods where TaskJuggler
+does not do any resource assignments to tasks.
 
 [[example:tutorial vacation]]
 
@@ -107,7 +123,10 @@ Use the [[vacation]] attribute to define a global vacation. Global
 vacations must have a name and a date or date range. This is slightly
 different from vacations of individual resources. They are defined
 with the [[vacation.resource vacation attribute for resources]] where
-the name is optional.
+the name is optional. The vacation name is purely for documentation
+purposes.
+
+=== Macros ===
 
 Macros are another TaskJuggler feature to keep project files small.
 Macros are text patterns that can be defined once and inserted
@@ -156,10 +175,11 @@ having to write the potentially much longer name. The name may
 contain space characters and therefore has to be enclosed with single
 or double quotes.
 
-Accounts can be nested. You can use this feature to create sets of
-accounts. Such sets can then be balanced against each other to create
-a profit and loss analysis. When you have specified accounts in your
-project, you must at least define one default [[balance]].
+Accounts can be grouped by nesting them. You can use this feature to
+create sets of accounts. Such sets can then be balanced against each
+other to create a profit and loss analysis. When you have specified
+accounts in your project, you must at least define one default
+[[balance]].
 
 [[example:tutorial balance]]
 
