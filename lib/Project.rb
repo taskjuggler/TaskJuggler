@@ -26,6 +26,7 @@ require 'reports/Report'
 require 'ShiftAssignments'
 require 'WorkingHours'
 require 'ProjectFileParser'
+require 'BatchProcessor'
 
 class TaskJuggler
 
@@ -349,9 +350,18 @@ class TaskJuggler
 
     # Call this function to generate the reports based on the scheduling result.
     # This function may only be called after Project#schedule has been called.
-    def generateReports
+    def generateReports(maxCpuCores)
       begin
-        @reports.each_value { |report| report.generate }
+        if maxCpuCores == 1
+          @reports.each_value { |report| report.generate }
+        else
+          bp = BatchProcessor.new(maxCpuCores)
+          @reports.each_value { |report| bp.queue(report) { report.generate } }
+          bp.wait do |report|
+            Log.startProgressMeter("Report #{report.tag.name}")
+            Log.stopProgressMeter
+          end
+        end
       rescue TjException
         $stderr.puts "Report Generation Error: #{$!}"
         return false

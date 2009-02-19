@@ -81,12 +81,10 @@ class TaskJuggler
     # report defined by all the class attributes and report elements is
     # generated according the the requested output format(s).
     def generate
-      Log.startProgressMeter("Generating report #{@name}")
       begin
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
         @elements.each do |element|
-          Log.activity
           element.generateIntermediateFormat
         end
 
@@ -110,7 +108,6 @@ class TaskJuggler
                                                  $!.message, nil, nil,
                                                  @sourceFileInfo))
       end
-      Log.stopProgressMeter
     end
 
     # This function should only be called within the library. It's not a user

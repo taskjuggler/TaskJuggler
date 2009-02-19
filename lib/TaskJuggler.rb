@@ -20,12 +20,14 @@ require 'Log'
 class TaskJuggler
 
   attr_reader :messageHandler
+  attr_accessor :maxCpuCores
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
   # whether or not messsages can be written to $stderr.
   def initialize(console)
     @project = nil
     @messageHandler = MessageHandler.new(console)
+    @maxCpuCores = 1
   end
 
   # Read in the files passed as file names in _files_, parse them and
@@ -73,7 +75,7 @@ class TaskJuggler
   # otherwise.
   def generateReports
     Log.enter('reports', 'Generating reports ...')
-    res = @project.generateReports
+    res = @project.generateReports(@maxCpuCores)
     Log.exit('reports')
     res
   end

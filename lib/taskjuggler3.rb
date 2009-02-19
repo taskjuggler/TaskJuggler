@@ -40,7 +40,9 @@ def processArguments(argv)
   opts.on('--silent', "Don't show program and progress information") do
     TaskJuggler::Log.silent = true
   end
-
+  opts.on('-c N', Integer, 'Maximum number of CPU cores to use') do |arg|
+    @maxCpuCores = arg
+  end
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts.to_s
     exit 0
@@ -81,6 +83,7 @@ end
 
 def main
   tj = TaskJuggler.new(files = processArguments(ARGV))
+  tj.maxCpuCores = @maxCpuCores
   unless tj.parse(files)
     exit 1
   end

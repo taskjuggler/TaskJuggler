@@ -48,7 +48,7 @@ class TestProject < Test::Unit::TestCase
 
     p.schedule
     assert_equal(t['end', 0], TjTime.new('2008-07-25 19:00'))
-    p.generateReports
+    p.generateReports(1)
   end
 
 end
