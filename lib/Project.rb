@@ -353,11 +353,17 @@ class TaskJuggler
     def generateReports(maxCpuCores)
       begin
         if maxCpuCores == 1
-          @reports.each_value { |report| report.generate }
+          @reports.each_value  do  |report|
+            Log.startProgressMeter("Report #{report.name}")
+            report.generate
+            Log.stopProgressMeter
+          end
         else
           bp = BatchProcessor.new(maxCpuCores)
           @reports.each_value { |report| bp.queue(report) { report.generate } }
           bp.wait do |report|
+            $stdout.print(report.stdout)
+            $stderr.print(report.stderr)
             Log.startProgressMeter("Report #{report.tag.name}")
             Log.stopProgressMeter
           end

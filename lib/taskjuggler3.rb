@@ -82,6 +82,7 @@ def processArguments(argv)
 end
 
 def main
+  @maxCpuCores = 1
   tj = TaskJuggler.new(files = processArguments(ARGV))
   tj.maxCpuCores = @maxCpuCores
   unless tj.parse(files)

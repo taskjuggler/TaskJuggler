@@ -65,13 +65,15 @@ class TaskJuggler
       while !@queue.empty? || @pendingJobs > 0 do
         sleep(@timeout)
       end
-      @terminate = true
-      @jobs.each_value { |job| yield(job) }
 
+      # Signal threads to stop
+      @terminate = true
       # Wait for treads to finish
       @pusher.join
       @popper.join
       @grabber.join
+
+      @jobs.each_value { |job| yield(job) }
     end
 
     private

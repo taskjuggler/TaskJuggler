@@ -21,8 +21,6 @@ or should be done for TaskJuggler III.
 
 * Legacy sorting modes.
 
-* Map allocation limits to task limits for resources.
-
 * More unit tests for core classes.
 
 * Lots more test cases for the test suite.
@@ -52,4 +50,5 @@ There is currently no plan to port the TaskJuggler 2.x GUI due to
 lack of time/resources. Help in this area will be greatly appretiated.
 
 * XML file reading.
+
 
