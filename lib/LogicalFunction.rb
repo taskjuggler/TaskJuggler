@@ -26,7 +26,8 @@ class TaskJuggler
         'isdutyof' => 2,
         'isleaf' => 0,
         'isresource' => 1,
-        'isoncriticalpath' => 1
+        'isoncriticalpath' => 1,
+        'treelevel' => 0
     }
 
     # Create a new LogicalFunction. _opnd_ is the name of the function.
@@ -89,6 +90,10 @@ class TaskJuggler
     def isoncricitalpath(expr, args)
       # TODO
       false
+    end
+
+    def treelevel(expr, args)
+      expr.property.level + 1
     end
 
   end

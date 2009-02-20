@@ -478,6 +478,7 @@ class TaskJuggler
       if columnDef.cellText
         cell.text = expandMacros(columnDef.cellText, cell.text, query)
       end
+
       setCellURL(cell, columnDef, query)
       true
     end

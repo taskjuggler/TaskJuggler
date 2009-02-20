@@ -203,11 +203,15 @@ class TaskJuggler
           value = property.get(colId)
         end
 
+        type = propertyList.attributeType(colId)
         if value.nil?
-          ''
+          if type == TaskJuggler::DateAttribute
+            '<Error>'
+          else
+            ''
+          end
         else
           # Certain attribute types need special treatment.
-          type = propertyList.attributeType(colId)
           if type == TaskJuggler::DateAttribute
             value.to_s(timeFormat)
           elsif type == TaskJuggler::RichTextAttribute

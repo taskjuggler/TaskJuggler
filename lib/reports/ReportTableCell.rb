@@ -21,7 +21,7 @@ class TaskJuggler
 
     attr_reader :line
     attr_accessor :data, :text, :url, :category, :hidden, :alignment,
-                  :padding, :indent, :fontSize, :bold, :width,
+                  :padding, :indent, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
@@ -49,6 +49,7 @@ class TaskJuggler
       # indicating the indentation level.
       @indent = nil
       @fontSize = nil
+      @fontColor = 0x000000
       @bold = false
       @width = nil
       @rows = 1
@@ -99,6 +100,9 @@ class TaskJuggler
       unless @text.is_a?(TaskJuggler::RichText)
         style += 'font-weight:bold; ' if @bold
         style += "font-size: #{@fontSize}px; " if fontSize
+      end
+      unless @fontColor == 0
+        style += "font-color:#{'%06X' % @fontColor}; "
       end
       style += "width: #{@width}px; " if @width
       if @text.is_a?(TaskJuggler::RichText) && @line && @line.table.equiLines
