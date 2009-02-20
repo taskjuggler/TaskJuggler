@@ -631,7 +631,7 @@ class TaskJuggler
       # warnings.
       unless unscheduledTasks.empty?
         message = Message.new('unscheduled_tasks', 'warning',
-                              "#{unscheduledTasks.length} could not be " +
+                              "#{unscheduledTasks.length} tasks could not be " +
                               "scheduled")
         sendMessage(message)
         i = 0

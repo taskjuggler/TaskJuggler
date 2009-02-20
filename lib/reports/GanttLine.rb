@@ -133,8 +133,9 @@ class TaskJuggler
       # Set the background color
       @category = "taskcell#{(@property.get('index') + 1) % 2 + 1}"
 
-      taskStart = @property['start', @scenarioIdx]
-      taskEnd = @property['end', @scenarioIdx]
+      project = @property.project
+      taskStart = @property['start', @scenarioIdx] || project['start']
+      taskEnd = @property['end', @scenarioIdx] || project['end']
 
       if @scopeProperty
         # The task is nested into a resource. We show the work the resource is
@@ -233,8 +234,11 @@ class TaskJuggler
       # work.
       if @scopeProperty
         categories = [ 'assigned', 'busy', 'free' ]
-        taskStart = @scopeProperty['start', @scenarioIdx]
-        taskEnd = @scopeProperty['end', @scenarioIdx]
+
+        project = @property.project
+        taskStart = @scopeProperty['start', @scenarioIdx] || project['start']
+        taskEnd = @scopeProperty['end', @scenarioIdx] || project['end']
+
         if @chart.table
           @chart.table.legend.addGanttItem('Resource assigned to this task',
                                             'assigned')

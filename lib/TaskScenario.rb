@@ -1017,7 +1017,6 @@ class TaskJuggler
     end
 
     def markAsRunaway
-      puts "#{property.fullId} is a runaway"
       warning('runaway', "Task #{@property.fullId} does not fit into " +
                          "project time frame")
 

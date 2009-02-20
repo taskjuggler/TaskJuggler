@@ -295,9 +295,9 @@ class TaskJuggler
       @start = @end = nil
       scenarios.each do |scenarioIdx|
         tasks.each do |task|
-          date = task['start', scenarioIdx]
+          date = task['start', scenarioIdx] || @project['start']
           @start = date if @start.nil? || date < @start
-          date = task['end', scenarioIdx]
+          date = task['end', scenarioIdx] || @project['end']
           @end = date if @end.nil? || date > @end
         end
       end

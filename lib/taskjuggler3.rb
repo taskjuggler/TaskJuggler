@@ -40,6 +40,10 @@ def processArguments(argv)
   opts.on('--silent', "Don't show program and progress information") do
     TaskJuggler::Log.silent = true
   end
+  opts.on('-f', '--force-reports',
+          'Generate reports despite scheduling errors') do
+    @forceReports = true
+  end
   opts.on('-c N', Integer, 'Maximum number of CPU cores to use') do |arg|
     @maxCpuCores = arg
   end
@@ -83,15 +87,18 @@ end
 
 def main
   @maxCpuCores = 1
+  @forceReports = false
+
+  errors = false
   tj = TaskJuggler.new(files = processArguments(ARGV))
   tj.maxCpuCores = @maxCpuCores
-  unless tj.parse(files)
-    exit 1
+  exit 1 unless tj.parse(files)
+  if !tj.schedule
+    errors = true
+    exit 1 unless @forceReports
   end
+  exit 1 if !tj.generateReports || errors
 
-  if !tj.schedule || !tj.generateReports
-    exit 1
-  end
 end
 
 main()
