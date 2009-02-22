@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2009-02-22 +3m
+
+# MARK: error 4 start_before_end
+vacation "Day off" 2009-02-24 - 2008-02-23
+
+task foo "Foo"
+

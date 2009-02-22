@@ -1,0 +1,6 @@
+project test "Test" "1.0" 2009-02-22 +3m
+
+task foo "Foo" {
+# MARK: error 5 start_before_end
+  period 2009-02-24 - 2008-02-23
+}

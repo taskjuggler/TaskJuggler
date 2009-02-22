@@ -1078,6 +1078,10 @@ EOT
         mode = @val[1][0]
         endSpec = @val[1][1]
         if mode == 0
+          unless @val[0] < endSpec
+            error('start_before_end', "The end date (#{endSpec}) must be " +
+                  "after the start date (#{@val[0]}).")
+          end
           Interval.new(@val[0], endSpec)
         else
           Interval.new(@val[0], @val[0] + endSpec)
@@ -3882,6 +3886,10 @@ EOT
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
+        unless @val[0] < endSpec
+          error('start_before_end', "The end date (#{endSpec}) must be after " +
+                "the start date (#{@val[0]}).")
+        end
         iv = Interval.new(@val[0], endSpec)
       else
         iv = Interval.new(@val[0], @val[0] + endSpec)
