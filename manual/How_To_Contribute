@@ -70,12 +70,10 @@ files.
 When you are done with your changes, it's a good idea to test them. In
 the taskjuggler directory run the following commands. 
 
- cd taskjuggler3/test
- ruby test_all
- cd ../lib
- ruby UserManual.rb
- cd ..
- ./makedist
+ cd taskjuggler3
+ rake test
+ rake manual
+ rake gem
 
 If there are no errors, you can check or test the result. If
 everything works fine, you can lock at your changes again.

@@ -123,6 +123,8 @@ class TaskJuggler
       html = HTMLDocument.new(:transitional)
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
+      head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
+                             'content' => 'text/css')
       head << (style = XMLElement.new('style', 'type' => 'text/css'))
       style << XMLBlob.new(<<'EOT'
   body {

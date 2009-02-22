@@ -206,7 +206,7 @@ class TaskJuggler
         type = propertyList.attributeType(colId)
         if value.nil?
           if type == TaskJuggler::DateAttribute
-            '<Error>'
+            nil
           else
             ''
           end

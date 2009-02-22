@@ -102,7 +102,7 @@ class TaskJuggler
         style += "font-size: #{@fontSize}px; " if fontSize
       end
       unless @fontColor == 0
-        style += "font-color:#{'%06X' % @fontColor}; "
+        style += "color:#{'#%06X' % @fontColor}; "
       end
       style += "width: #{@width}px; " if @width
       if @text.is_a?(TaskJuggler::RichText) && @line && @line.table.equiLines

@@ -48,7 +48,7 @@ class TaskJuggler
       table = XMLElement.new('table', 'class' => 'legendback',
                              'style' => 'width:100%', 'border' => '0',
                              'cellspacing' => '1', 'align' => 'center')
-      table << (tbody = XMLElement.new('thead'))
+      table << (tbody = XMLElement.new('tbody'))
       tbody << (tr = XMLElement.new('tr'))
 
       # Empty line to create a bit of a vertical gap.

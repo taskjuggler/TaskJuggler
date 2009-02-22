@@ -475,8 +475,13 @@ class TaskJuggler
                         'start' => @start, 'end' => @end,
                         'costAccount' => @costAccount,
                         'revenueAccount' => @revenueAccount)
-      if columnDef.cellText
-        cell.text = expandMacros(columnDef.cellText, cell.text, query)
+      if cell.text
+        if columnDef.cellText
+          cell.text = expandMacros(columnDef.cellText, cell.text, query)
+        end
+      else
+        cell.text = '<Error>'
+        cell.fontColor = 0xFF0000
       end
 
       setCellURL(cell, columnDef, query)
