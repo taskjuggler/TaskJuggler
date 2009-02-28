@@ -25,7 +25,9 @@ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-09-28 {
   scenario plan "Plan" {
     # Mark all paths as critical that have less than 10% slack time.
     #minslackrate 10.0
-    scenario delayed "Delayed"
+    scenario delayed "Delayed" {
+      disabled
+    }
   }
 }
 

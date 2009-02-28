@@ -80,7 +80,13 @@ class TaskJuggler
     # regular distance between the date values. If we have to correct these
     # guessed values, we have to clear the caches.
     def dateToIndex(date)
-      if date % @minDateDelta != 0
+      if @minDate.nil? || date < @minDate
+        @minDate = date
+        resetCaches
+      end
+      startDate = date - @minDate
+      div, mod = startDate.divmod(@minDateDelta)
+      if mod != 0
         resetCaches
         # We have to guess the timingresolution of the project here. Possible
         # values are 5, 10, 15, 20, 30 or 60 minutes.
@@ -99,13 +105,10 @@ class TaskJuggler
           raise "Illegal timing resolution!"
         end
         @minDateDelta *= 60
-      end
-      if @minDate.nil? || date < @minDate
-        @minDate = date
-        resetCaches
+        div = startDate / @minDateDelta
       end
 
-      (date - @minDate) / @minDateDelta
+      div
     end
 
   end

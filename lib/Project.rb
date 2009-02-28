@@ -9,6 +9,7 @@
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
+require 'ruby-prof'
 
 require 'TjTime'
 require 'Booking'
@@ -336,7 +337,11 @@ class TaskJuggler
           # as computed.
           AttributeBase.setMode(2)
           # Schedule the scenario.
+          RubyProf.start
           scheduleScenario(scIdx)
+          prof = RubyProf.stop
+          printer = RubyProf::CallTreePrinter.new(prof)
+          printer.print($stderr, 0)
 
           # Complete the data sets, and check the result.
           finishScenario(scIdx)

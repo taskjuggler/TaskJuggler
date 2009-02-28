@@ -2585,7 +2585,7 @@ The booking attribute can be used to report completed work. This can be part
 of the necessary effort or the whole effort. When the scenario is scheduled in
 projection mode, TaskJuggler assumes that only the work reported with bookings
 has been done up to now. It then schedules a plan for the still missing
-effort.
+effort. Task with bookings must be scheduled in ''''asap'''' mode.
 
 This attribute is also used within export reports to describe the details of a
 scheduled project.
@@ -2595,6 +2595,7 @@ other allocations automatically. If it's not given, all bookings must only
 cover working time for the resource.
 EOT
        )
+    also(%w( scheduling ))
     example('Booking')
 
     pattern(%w( !limits ), lambda {

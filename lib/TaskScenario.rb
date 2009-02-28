@@ -1331,6 +1331,9 @@ class TaskJuggler
       booked
     end
 
+    # Register the user provided bookings with the Resource scoreboards. A
+    # booking describes the assignment of a Resource to a certain Task for a
+    # specified Interval.
     def bookBookings
       a('booking').each do |booking|
         unless booking.resource.leaf?
@@ -1351,6 +1354,7 @@ class TaskJuggler
           startIdx.upto(endIdx - 1) do |idx|
             tEnd = date + slotDuration
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
+              # Booking was successful for this time slot.
               @doneEffort += booking.resource['efficiency', @scenarioIdx]
 
               # Set start and lastSlot if appropriate. The task start will be
@@ -1360,7 +1364,7 @@ class TaskJuggler
               @tentativeEnd = tEnd if @tentativeEnd.nil? ||
                 @tentativeEnd < tEnd
               @property['start', @scenarioIdx] = date if a('start').nil? ||
-                date < a('start')
+                                                         date < a('start')
 
               unless a('assignedresources').include?(booking.resource)
                 @property['assignedresources', @scenarioIdx] << booking.resource
