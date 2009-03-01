@@ -87,9 +87,11 @@ class TaskJuggler
       }
       @propertiesByType = {
         # Type                  Indent  Align
-        TaskJuggler::StringAttribute    => [ false,  :left ],
-        TaskJuggler::RichTextAttribute  => [ false,  :left ],
-        TaskJuggler::FloatAttribute     => [ false,  :right ]
+        DateAttribute      => [ false,  :left ],
+        FixnumAttribute    => [ false,  :right ],
+        FloatAttribute     => [ false,  :right ],
+        RichTextAttribute  => [ false,  :left ],
+        StringAttribute    => [ false,  :left ]
       }
     end
 

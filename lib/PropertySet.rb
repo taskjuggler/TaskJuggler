@@ -51,15 +51,15 @@ class TaskJuggler
       # IDs and names of the built-in attributes. TODO: Check performance impact
       # when making them normal attributes.
       @@fixedAttributeNames = {
-        "id" => "ID",
-        "name" => "Name",
-        "seqno" => "Seq. No."
+        'id' => 'ID',
+        'name' => 'Name',
+        'seqno' => 'Seq. No.'
       }
       # And their types.
       @@fixedAttributesTypes = {
-        "id" => :String,
-        "name" => :String,
-        "seqno" => :Fixnum
+        'id' => :String,
+        'name' => :String,
+        'seqno' => :Fixnum
       }
     end
 

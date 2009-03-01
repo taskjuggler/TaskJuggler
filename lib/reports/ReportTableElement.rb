@@ -737,8 +737,7 @@ class TaskJuggler
       end
 
       # Determine the cell alignment
-      cell.alignment = alignment(columnDef.id,
-                                 @project.tasks.attributeType(columnDef.id))
+      cell.alignment = alignment(columnDef.id, attributeType)
 
       # Set background color
       if line.property.is_a?(Task)

@@ -310,8 +310,11 @@ class TaskJuggler
 
     # This function is just a wrapper around Time.strftime(). In case @time is
     # nil, it returns 'unkown'.
-    def to_s(format = "%Y-%m-%d-%H:%M:%S-%z")
+    def to_s(format = nil)
       return 'unknown' if @time.nil?
+      if format.nil?
+        format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%s') + '-%z'
+      end
       # Always report values in local timezone
       @time.clone.localtime.strftime(format)
     end

@@ -52,7 +52,6 @@ class TaskJuggler
 
     # Return the project data in TJP syntax format.
     def to_tjp
-      Log.activity
       # Prepare the resource list.
       @resourceList = PropertyList.new(@project.resources)
       @resourceList.setSorting(@sortResources)
@@ -61,32 +60,23 @@ class TaskJuggler
       @resourceList.sort!
 
       # Prepare the task list.
-      Log.activity
       @taskList = PropertyList.new(@project.tasks)
       @taskList.setSorting(@sortTasks)
       @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
       @taskList.sort!
 
-      Log.activity
       getBookings
 
       @file = ''
 
       if @mainFile
-        Log.activity
         generateProjectProperty
-        Log.activity
         generateFlagDeclaration
-        Log.activity
         generateResourceList
-        Log.activity
         generateTaskList
-        Log.activity
       end
       generateTaskAttributes unless @taskAttrs.empty?
-      Log.activity
       generateResourceAttributes unless @resourceAttrs.empty?
-      Log.activity
 
       @file
     end
@@ -155,6 +145,8 @@ class TaskJuggler
     end
 
     def generateResource(resource, indent)
+      Log.activity if resource.sequenceNo % 100 == 0
+
       @file << ' ' * indent + "resource #{resource.id} \"#{resource.name}\""
       @file << ' {' unless resource.children.empty?
       @file << "\n"
@@ -185,6 +177,8 @@ class TaskJuggler
     # time. All other attributes are declared in subsequent supplement
     # statements.
     def generateTask(task, indent)
+      Log.activity if task.sequenceNo % 100 == 0
+
       @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
 
       if @taskAttrs.include?('depends') || @taskAttrs.include?('all')
@@ -259,6 +253,8 @@ class TaskJuggler
     # the attributes.
     def generateResourceAttributes
       @resourceList.each do |resource|
+        Log.activity if resource.sequenceNo % 100 == 0
+
         @file << "supplement resource #{resource.fullId} {\n"
         @project.resources.eachAttributeDefinition do |attrDef|
           id = attrDef.id
@@ -285,6 +281,8 @@ class TaskJuggler
     # attributes.
     def generateTaskAttributes
       @taskList.each do |task|
+        Log.activity if task.sequenceNo % 100 == 0
+
         @file << "supplement task #{task.fullId} {\n"
         @project.tasks.eachAttributeDefinition do |attrDef|
           id = attrDef.id
