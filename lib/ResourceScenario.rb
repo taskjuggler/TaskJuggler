@@ -316,7 +316,8 @@ class TaskJuggler
 
     # Iterate over the scoreboard and turn its content into a set of Bookings.
     def getBookings
-      return {} unless @property.leaf? || @scoreboard.nil?
+      return {} if @property.container? || @scoreboard.nil? ||
+                   @firstBookedSlot.nil? || @lastBookedSlot.nil?
 
       bookings = {}
       lastTask = nil

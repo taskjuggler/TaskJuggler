@@ -33,3 +33,8 @@ each other using the [[balance]] attribute in the report.
 the sorting direction is no longer mangled with the attribute name.
 What used to be ''''startup'''' is now ''''plan.start.up''''. See
 [[sorttasks]] or [[sortresources]] for details.
+
+* The attribute ''''properties'''' for ''''export'''' reports is no
+longer supported. The naming was inconsistent with TaskJuggler lingo
+and did not handle tasks and resources separately. It has been
+replaced with [[taskattributes]] and [[resourceattributes]].

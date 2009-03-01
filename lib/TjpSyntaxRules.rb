@@ -657,6 +657,7 @@ EOT
 
   def rule_exportableResourceAttribute
     singlePattern('_all')
+    singlePattern('_none')
     singlePattern('_vacation')
     singlePattern('_workinghours')
   end
@@ -675,6 +676,7 @@ EOT
     singlePattern('_maxstart')
     singlePattern('_minend')
     singlePattern('_minstart')
+    singlePattern('_none')
     singlePattern('_note')
     singlePattern('_priority')
     singlePattern('_responsible')
@@ -727,19 +729,21 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @reportElement.resourceAttrs = @val[1]
+      @reportElement.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('resourceattributes', <<"EOT"
 Define a list of resource attributes that should be included in the report. To
-include all supported attributes just use ''''all''''.
+include all supported attributes just use ''''all''''. When ''''none'''' is
+used, no optional resource attributes will be exported.
 EOT
         )
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @reportElement.taskAttrs = @val[1]
+      @reportElement.taskAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('taskattributes', <<"EOT"
 Define a list of task attributes that should be included in the report. To
-include all supported attributes just use ''''all''''.
+include all supported attributes just use ''''all''''. When ''''none'''' is
+used, no optional task attributes will be exported.
 EOT
         )
   end

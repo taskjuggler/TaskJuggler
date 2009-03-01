@@ -52,6 +52,7 @@ class TaskJuggler
 
     # Return the project data in TJP syntax format.
     def to_tjp
+      Log.activity
       # Prepare the resource list.
       @resourceList = PropertyList.new(@project.resources)
       @resourceList.setSorting(@sortResources)
@@ -60,21 +61,32 @@ class TaskJuggler
       @resourceList.sort!
 
       # Prepare the task list.
+      Log.activity
       @taskList = PropertyList.new(@project.tasks)
       @taskList.setSorting(@sortTasks)
       @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
       @taskList.sort!
 
+      Log.activity
       getBookings
 
       @file = ''
 
-      generateProjectProperty if @mainFile
-      generateFlagDeclaration
-      generateResourceList
-      generateTaskList
-      generateTaskAttributes
-      generateResourceAttributes
+      if @mainFile
+        Log.activity
+        generateProjectProperty
+        Log.activity
+        generateFlagDeclaration
+        Log.activity
+        generateResourceList
+        Log.activity
+        generateTaskList
+        Log.activity
+      end
+      generateTaskAttributes unless @taskAttrs.empty?
+      Log.activity
+      generateResourceAttributes unless @resourceAttrs.empty?
+      Log.activity
 
       @file
     end
