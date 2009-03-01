@@ -5,29 +5,25 @@
  * TaskJuggler. Please see the TaskJuggler manual for a more detailed
  * description of the various syntax elements.
  */
-project acso "Accounting Software" "1.0" 2002-01-16 - 2002-09-28 {
-  # Pick a day during the project that will be reported as 'today' in
-  # the project reports. If not specified, the current day will be
-  # used, but this will likely be outside of the project range, so it
-  # can't be seen in the reports.
-  now 2002-03-05-13:00
+project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
   # Use US format for numbers
   numberformat "-" "" "," "." 1
   # Use US financial format for currency values. Don't show pence.
   currencyformat "(" ")" "," "." 0
+  # Pick a day during the project that will be reported as 'today' in
+  # the project reports. If not specified, the current day will be
+  # used, but this will likely be outside of the project range, so it
+  # can't be seen in the reports.
+  now 2002-03-05-13:00
   # The currency for all money values is the Euro.
   currency "USD"
 
   # We want to compare the baseline scenario to one with a slightly
   # delayed start.
   scenario plan "Plan" {
-    # Mark all paths as critical that have less than 10% slack time.
-    #minslackrate 10.0
-    scenario delayed "Delayed" {
-      disabled
-    }
+    scenario delayed "Delayed"
   }
 }
 
@@ -42,14 +38,26 @@ rate 390.0
 # Register Good Friday as a global holiday for all resources.
 vacation "Good Friday" 2002-03-29
 
+flags team
+
 # This is one way to form teams
 macro allocate_developers [
   allocate dev1
-  allocate dev2 #{ limits { dailymax 4h } }
+  allocate dev2
   allocate dev3
 ]
 
-flags team
+# In order to do a simple profit and loss analysis of the project we
+# specify accounts. One for the development costs, one for the
+# documentation costs, and one account to credit the customer payments
+# to.
+account cost "Project Cost" {
+  account dev "Development"
+  account doc "Documentation"
+}
+account rev "Payments"
+# The Profit&Loss analysis should be rev - cost accounts.
+balance cost rev
 
 resource dev "Developers" {
   resource dev1 "Paul Smith" { rate 350.0 }
@@ -64,18 +72,6 @@ resource misc "The Others" {
 
   flags team
 }
-
-# In order to do a simple profit and loss analysis of the project we
-# specify accounts. One for the development costs, one for the
-# documentation costs, and one account to credit the customer payments
-# to.
-account cost "Project Cost" {
-  account dev "Development"
-  account doc "Documentation"
-}
-account rev "Payments"
-# The Profit&Loss analysis should be rev - cost accounts.
-balance cost rev
 
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
@@ -106,10 +102,6 @@ task AcSo "Accounting Software" {
     # means 'in the scope of the enclosing task'. To descent into a task, the
     # fullstop (.) together with the id of the tasks have to be specified.
     depends !deliveries.start
-    note "We need to check these items:
-* What needs to be done?
-* How much effort is it?
-* Who can do the work?"
   }
 
   task software "Software Development" {
@@ -182,17 +174,16 @@ task AcSo "Accounting Software" {
     chargeset doc
   }
 
-   task deliveries "Milestones" {
+  task deliveries "Milestones" {
 
     # Some milestones have customer payments associated with them. We
     # credit these payments to the 'rev' account.
     purge chargeset
     chargeset rev
 
-     task start "Project start" {
+    task start "Project start" {
       # A task that has no duration is a milestone. It only needs a
       # start or end criterion. All other tasks depend on this task.
-      milestone
       start 2002-01-16
       # For some reason the actual start of the project got delayed.
       # We record this, so that we can compare the planned run to the
@@ -205,19 +196,16 @@ task AcSo "Accounting Software" {
     }
 
     task prev "Technology Preview" {
-      milestone
       depends !!software.backend
       startcredit 31000.0
     }
 
     task beta "Beta version" {
-      milestone
       depends !!test.alpha
       charge 13000.0 onstart
     }
 
     task done "Ship Product to Customer" {
-      milestone
       # The next line can be uncommented to trigger a warning about
       # the project being late. For all tasks, limits for the start and
       # end values can be specified. Those limits are checked after the
@@ -276,7 +264,6 @@ The project started off with a delay of 4 days. This slightly affected
 the original schedule. See [[Deliveries]] for the impact on the
 delivery dates.
 '
-
 }
 
 # A list of tasks showing the resources assigned to each task.
@@ -286,7 +273,6 @@ htmltaskreport "Development.html" {
           duration, chart { scale day }
   timeformat "%Y-%m-%d"
   loadunit days
-  taskroot AcSo.software
   hideresource ~isleaf()
   sortresources name.up
 }
@@ -307,7 +293,7 @@ htmltaskreport "Deliveries.html" {
 htmlresourcereport "ResourceGraph.html" {
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly #, utilization, freeload, chart
-  loadunit days
+  loadunit shortauto
   hidetask ~isleaf()
   sorttasks plan.start.up
 }
@@ -317,8 +303,7 @@ htmlresourcereport "ResourceGraph.html" {
 htmlresourcereport "ResourceSheet.html" {
   headline "Resource Sheet"
   columns no, name, id, effort, weekly, rate, cost
-  loadunit shortauto
-  #loadunit days
+  loadunit days
   hidetask ~isleaf()
   sorttasks plan.start.up
   balance cost rev

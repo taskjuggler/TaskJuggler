@@ -354,12 +354,8 @@ htmltaskreport "ProjectPlanOverview.html" {
 The project is structured into 3 phases.
 
 # Specification
-# Development
+# [[Development]]
 # Testing
-
-=== Staffing ===
-
-All project phases are properly staffed.
 
 === Project Plan ===
 '
@@ -378,18 +374,23 @@ All effort values are in man days.
 '
 
   epilog '
-=== More Details ===
+=== Staffing ===
 
-* [[TaskUsage]]
-* [[TrackingGantt]]
+All project phases are properly staffed. See [[ResourceGraph]] for
+detailed resource allocations.
+
+=== Current Status ===
+
+The project started off with a delay of 4 days. This slightly affected
+the original schedule. See [[Deliveries]] for the impact on the
+delivery dates.
 '
-
 }
 # *** EXAMPLE: planoverview -
 
 # A list of tasks showing the resources assigned to each task.
-htmltaskreport "TaskUsage.html" {
-  headline "Task Allocation Report"
+htmltaskreport "Development.html" {
+  headline "Development - Resource Allocation Report"
   columns hierarchindex, name, start, end, effort { title "Work" },
           duration, chart { scale day }
   timeformat "%Y-%m-%d"
@@ -399,11 +400,11 @@ htmltaskreport "TaskUsage.html" {
 }
 
 # A list of all tasks with the percentage completed for each task
-htmltaskreport "TrackingGantt.html" {
-  headline "Tracking Gantt Chart"
-  columns hierarchindex, name, start, end, effort { title "Work" }, duration,
-    complete, chart
+htmltaskreport "Deliveries.html" {
+  headline "Project Deliveries"
+  columns hierarchindex, name, start, end, complete, chart
   timeformat "%a %Y-%m-%d"
+  taskroot AcSo.deliveries
   loadunit days
   hideresource 1
   scenarios plan, delayed
@@ -414,7 +415,7 @@ htmltaskreport "TrackingGantt.html" {
 htmlresourcereport "ResourceGraph.html" {
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly #, utilization, freeload, chart
-  loadunit days
+  loadunit shortauto
   hidetask ~isleaf()
   sorttasks plan.start.up
 }
