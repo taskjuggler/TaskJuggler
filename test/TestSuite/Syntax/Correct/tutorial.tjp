@@ -40,6 +40,12 @@ project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
     scenario delayed "Delayed"
   }
 # *** EXAMPLE: scenario -
+# *** EXAMPLE: extend +
+  extend resource {
+    text Email "Email"
+    text Phone "Phone"
+  }
+# *** EXAMPLE: extend -
 # *** EXAMPLE: header1 +
 }
 # *** EXAMPLE: header1 -
@@ -95,15 +101,36 @@ balance cost rev
 
 # *** EXAMPLE: resources +
 resource dev "Developers" {
-  resource dev1 "Paul Smith" { rate 350.0 }
-  resource dev2 "Sébastien Bono"
-  resource dev3 "Klaus Müller" { vacation 2002-02-01 - 2002-02-05 }
+  resource dev1 "Paul Smith" {
+    Email "paul@crappysoftware.com"
+    Phone "x362"
+    rate 350.0
+  }
+  resource dev2 "Sébastien Bono" {
+    Email "SBono@crappysoftware.com"
+    Phone "x234"
+  }
+  resource dev3 "Klaus Müller" {
+    Email "Klaus.Mueller@crappysoftware.com"
+    Phone "x490"
+    vacation 2002-02-01 - 2002-02-05
+  }
 
   flags team
 }
 resource misc "The Others" {
-  resource test "Peter Murphy" { limits { dailymax 6.4h } rate 310.0 }
-  resource doc "Dim Sung" { rate 300.0 vacation 2002-03-11 - 2002-03-16 }
+  resource test "Peter Murphy" {
+    Email "murphy@crappysoftware.com"
+    Phone "x666"
+    limits { dailymax 6.4h }
+    rate 310.0
+  }
+  resource doc "Dim Sung" { 
+    Email "sung@crappysoftware.com"
+    Phone "x482"
+    rate 300.0 
+    vacation 2002-03-11 - 2002-03-16
+  }
 
   flags team
 }
@@ -410,6 +437,16 @@ htmltaskreport "Deliveries.html" {
   scenarios plan, delayed
 }
 
+# A list of all employees with their contact details.
+htmlresourcereport "ContactList.html" {
+  headline "Contact list and duty plan"
+  columns name, Email { cellurl "mailto:$${Email}" }, Phone,
+          chart { scale day }
+  hideresource ~isleaf()
+  sortresources name.up
+  hidetask 1
+}
+
 # A graph showing resource allocation. It identifies whether each
 # resource is under- or over-allocated for.
 htmlresourcereport "ResourceGraph.html" {
@@ -446,38 +483,3 @@ csvtaskreport "csvtest.csv" {
   loadunit days
 }
 
-# This report looks like a regular calendar that shows the tasks by
-# their dates.
-#htmlweeklycalendar "Calendar.html" {
-#  # Only show work days in the calendar.
-#  weekdays mon - fri
-#}
-
-# This report is a status report for the current week. It also
-# provides an outlook for the next week.
-#htmlstatusreport "Status-Report.html"
-
-
-# A P&L report for the project.
-#htmlaccountreport "Accounting.html" {
-#  # Besides the number of the account and the name we have a column
-#  # with the total values (at the end of the project) and the values
-#  # for each month of the project.
-#  columns no, name, scenario, total, monthly
-#  headline "P&L for the Project"
-#  caption "The table shows the profit and loss analysis as well as
-#           the cashflow situation of the Accounting Software Project."
-#  # Since this is a cashflow calculation, we show accumulated values
-#  # for each account.
-#  accumulate
-#  scenarios plan, delayed
-#}
-
-#xmlreport "XML-Report.tjx" {
-#  version 2
-#  hidetask 0
-#  hideresource 0
-#  scenarios plan, delayed
-#}
-#
-#icalreport "Calendar.ics"
