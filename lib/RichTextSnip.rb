@@ -72,7 +72,7 @@ class TaskJuggler
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new(@name, 'title')
       head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=iso-8859-1')
+                             'content' => 'text/html; charset=utf-8')
       head << @document.generateStyleSheet
 
       html << (body = XMLElement.new('body'))

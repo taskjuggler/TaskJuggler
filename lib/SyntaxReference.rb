@@ -139,7 +139,7 @@ class TaskJuggler
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new('TaskJuggler Syntax Reference Navigator', 'title')
       head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=iso-8859-1')
+                             'content' => 'text/html; charset=utf-8')
       head << XMLElement.new('base', 'target' => 'display')
       html << (body = XMLElement.new('body'))
 
@@ -170,7 +170,7 @@ class TaskJuggler
       html = HTMLDocument.new
       html << (head = XMLElement.new('head'))
       head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=iso-8859-1')
+                             'content' => 'text/html; charset=utf-8')
       head << XMLElement.new('base', 'target' => 'navigator')
       html << (body = XMLElement.new('body'))
 

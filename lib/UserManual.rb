@@ -239,7 +239,7 @@ EOT
       head << (e = XMLNamedText.new("The #{AppConfig.packageName} User Manual",
                                     'title'))
       head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=iso-8859-1')
+                             'content' => 'text/html; charset=utf-8')
 
       html << (frameset = XMLElement.new('frameset', 'cols' => '15%, 85%'))
       frameset << (navFrames = XMLElement.new('frameset', 'rows' => '15%, 85%'))

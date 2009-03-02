@@ -120,7 +120,7 @@ class TaskJuggler
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new('Index', 'title') <<
         XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                       'content' => 'text/html; charset=iso-8859-1')
+                       'content' => 'text/html; charset=utf-8')
       html << (body = XMLElement.new('body'))
 
       body << generateHTMLCover <<
