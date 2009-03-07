@@ -87,9 +87,6 @@ class TaskJuggler
 
     # Inherit values for the attributes from the parent node or the Project.
     def inheritAttributes
-      # These attributes are being inherited from the Project.
-      whitelist = %w( limits priority projectid rate vacation workinghours )
-
       # Inherit non-scenario-specific values
       @propertySet.eachAttributeDefinition do |attrDef|
         next if attrDef.scenarioSpecific || !attrDef.inheritable
@@ -102,7 +99,7 @@ class TaskJuggler
           end
         else
           # Inherit selected values from project if top-level property
-          if whitelist.index(aId)
+          if attrDef.inheritFromProject
             if @project[aId]
               @attributes[aId].inherit(@project[aId])
             end
@@ -124,7 +121,7 @@ class TaskJuggler
             end
           else
             # Inherit selected values from project if top-level property
-            if whitelist.index(attrDef.id)
+            if attrDef.inheritFromProject
               if @project[attrDef.id] &&
                  @scenarioAttributes[scenarioIdx][attrDef.id]
                 @scenarioAttributes[scenarioIdx][attrDef.id].inherit(

@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'PropertyTreeNode'
 require 'reports/ReportElement'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
@@ -23,9 +24,9 @@ class TaskJuggler
   # the scheduled project into a user readable form. A report consists of one or
   # more ReportElement objects and some attributes that are global to all
   # elements.
-  class Report
+  class Report < PropertyTreeNode
 
-    attr_reader :name, :project, :start, :end, :userDefinedPeriod,
+    attr_reader :name, :project, :userDefinedPeriod,
                 :sourceFileInfo
     attr_accessor :costAccount, :currencyformat, :loadUnit, :now,
                   :numberformat, :resourceRoot, :revenueAccount,
@@ -33,10 +34,10 @@ class TaskJuggler
                   :weekstartsmonday
 
     # Create a new report object.
-    def initialize(project, name, format, sourceFileInfo)
-      @project = project
-      @name = name
-      @project.addReport(self)
+    def initialize(project, id, name, parent, format, sourceFileInfo)
+      super(project.reports, id, name, parent)
+      project.addReport(self)
+
       @outputFormats = [ format ]
       @sourceFileInfo = sourceFileInfo
 
@@ -50,7 +51,6 @@ class TaskJuggler
       @resourceRoot = nil
       @revenueAccount = @project['revenueAccount']
       @shorttimeformat = @project['shorttimeformat']
-      @start = @project['start']
       @taskRoot = nil
       @timeformat = @project['timeformat']
       @timezone = @project['timezone']
@@ -58,18 +58,6 @@ class TaskJuggler
       @weekstartsmonday = @project['weekstartsmonday']
 
       @elements = []
-    end
-
-    # Set the start _date_ of the report period and mark it as user defined.
-    def start=(date)
-      @start = date
-      @userDefinedPeriod = true
-    end
-
-    # Set the end _date_ of the report period and mark it as user defined.
-    def end=(date)
-      @end = date
-      @userDefinedPeriod = true
     end
 
     # Add new ouput format request.

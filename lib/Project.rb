@@ -92,109 +92,187 @@ class TaskJuggler
       # definitions to register the attributes with the properties.
       @scenarios = PropertySet.new(self, true)
       attrs = [
-        # ID           Name          Type               Inh.     Scen.  Default
-        [ 'enabled',   'Enabled',    BooleanAttribute,  true,    false, true ],
-        [ 'minslackrate', 'Min. Slack Rate', FloatAttribute, true, false, 0.0 ],
-        [ 'projection', 'Projection Mode', BooleanAttribute, true, false, false ],
-        [ 'strict', 'Strict Bookings', BooleanAttribute, true, false, false ]
+        # ID           Name          Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'enabled',   'Enabled',    BooleanAttribute,
+          true,  false,   false, true ],
+        [ 'minslackrate', 'Min. Slack Rate', FloatAttribute,
+          true,  false,   false, 0.0 ],
+        [ 'projection', 'Projection Mode', BooleanAttribute,
+          true,  false,   false, false ],
+        [ 'strict', 'Strict Bookings', BooleanAttribute,
+          true, false,    false, false ]
       ]
       attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 
       @shifts = PropertySet.new(self, true)
       attrs = [
-        # ID           Name            Type               Inher. Scen.  Default
-        [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
-        [ 'replace',   'Replace',      BooleanAttribute,  true,  true,  false ],
-        [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
-        [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
-        [ 'vacations', 'Vacations',    IntervalListAttribute, true, true, [] ],
-        [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
-        [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-          nil ]
+        # ID           Name            Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'index',     'Index',        FixnumAttribute,
+          false, false,   false, -1 ],
+        [ 'replace',   'Replace',      BooleanAttribute,
+          true,  false,   true,  false ],
+        [ 'timezone',  'Time Zone',    StringAttribute,
+          true,  true,    true,  nil ],
+        [ 'tree',      'Tree Index',   StringAttribute,
+          false, false,   false, "" ],
+        [ 'vacations', 'Vacations',    IntervalListAttribute,
+          true,  true,    true,  [] ],
+        [ 'wbs',       'WBS',          StringAttribute,
+          false, false,   false, "" ],
+        [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
+          true,  true,    true,  nil ]
       ]
       attrs.each { |a| @shifts.addAttributeType(AttributeDefinition.new(*a)) }
 
       @accounts = PropertySet.new(self, true)
       attrs = [
-        # ID           Name            Type               Inher. Scen.  Default
-        [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
-        [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
-        [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
+        # ID           Name            Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'index',     'Index',        FixnumAttribute,
+          false, false,   false, -1 ],
+        [ 'tree',      'Tree Index',   StringAttribute,
+          false, false,   false, "" ],
+        [ 'wbs',       'WBS',          StringAttribute,
+          false, false,   false, "" ]
       ]
       attrs.each { |a| @accounts.addAttributeType(AttributeDefinition.new(*a)) }
 
       @resources = PropertySet.new(self, true)
       attrs = [
-        # ID           Name            Type               Inher. Scen.  Default
-        [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute, false, true, 0.0 ],
-        [ 'criticalness', 'Criticalness', FloatAttribute, false, true, 0.0 ],
-        [ 'duties',    'Duties',       TaskListAttribute, false, true,  [] ],
-        [ 'efficiency','Efficiency',   FloatAttribute,    true,  true, 1.0 ],
-        [ 'effort', 'Total Effort',    FixnumAttribute,   false, true, 0 ],
-        [ 'email',     'Email',        StringAttribute,   true,  false, nil ],
-        [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
-        [ 'fte',       'FTE',          FloatAttribute,    false,  true, 1.0 ],
-        [ 'headcount', 'Headcount',    FixnumAttribute,   false,  true, 1 ],
-        [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
-        [ 'limits',    'Limits',       LimitsAttribute,   true,  true, nil ],
-        [ 'rate',      'Rate',         FloatAttribute,    true,  true, 0.0 ],
-        [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute, true, true,
-          nil ],
-        [ 'timezone',  'Time Zone',    StringAttribute,   true,  true,  nil ],
-        [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
-        [ 'vacations',  'Vacations',   IntervalListAttribute, true, true, [] ],
-        [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ],
-        [ 'workinghours', 'Working Hours', WorkingHoursAttribute, true, true,
-          nil ]
+        # ID           Name            Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute,
+          false, false,   true,  0.0 ],
+        [ 'criticalness', 'Criticalness', FloatAttribute,
+          false, false,   true,  0.0 ],
+        [ 'duties',    'Duties',       TaskListAttribute,
+          false, false,   true,  [] ],
+        [ 'efficiency','Efficiency',   FloatAttribute,
+          true,  false,   true,  1.0 ],
+        [ 'effort', 'Total Effort',    FixnumAttribute,
+          false, false,   true,  0 ],
+        [ 'email',     'Email',        StringAttribute,
+          true,  false,   false, nil ],
+        [ 'flags',     'Flags',        FlagListAttribute,
+          true,  false,   true,  [] ],
+        [ 'fte',       'FTE',          FloatAttribute,
+          false, false,   true,  1.0 ],
+        [ 'headcount', 'Headcount',    FixnumAttribute,
+          false, false,   true,  1 ],
+        [ 'index',     'Index',        FixnumAttribute,
+          false, false,   false, -1 ],
+        [ 'limits',    'Limits',       LimitsAttribute,
+          true,  true,    true,  nil ],
+        [ 'rate',      'Rate',         FloatAttribute,
+          true,  true,    true,  0.0 ],
+        [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
+          true, false,    true,  nil ],
+        [ 'timezone',  'Time Zone',    StringAttribute,
+          true,  false,   true,  nil ],
+        [ 'tree',      'Tree Index',   StringAttribute,
+          false, false,   false, "" ],
+        [ 'vacations',  'Vacations',   IntervalListAttribute,
+          true,  true,    true,  [] ],
+        [ 'wbs',       'WBS',          StringAttribute,
+          false, false,   false, "" ],
+        [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
+          true,  true,    true,  nil ]
       ]
       attrs.each { |a| @resources.addAttributeType(AttributeDefinition.new(*a)) }
 
       @tasks = PropertySet.new(self, false)
       attrs = [
-        # ID           Name            Type               Inher. Scen.  Default
-        [ 'allocate', 'Allocations', AllocationAttribute, true,  true,  [] ],
-        [ 'assignedresources', 'Assigned Resources', ResourceListAttribute, false, true, [] ],
-        [ 'booking',   'Bookings',     BookingListAttribute, false, true, [] ],
-        [ 'charge',    'Charges',      ChargeListAttribute, false, true, [] ],
-        [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute, true, true, [] ],
-        [ 'complete',  'Completion',   FloatAttribute,    false, true,  nil ],
-        [ 'criticalness', 'Criticalness', FloatAttribute, false, true,  0.0 ],
-        [ 'depends',   '-',      DependencyListAttribute, true,  true,  [] ],
-        [ 'duration',  'Duration',     DurationAttribute, false, true,  0 ],
-        [ 'effort',    'Effort',       DurationAttribute, false, true,  0 ],
-        [ 'end',       'End',          DateAttribute,     true,  true,  nil ],
-        [ 'endpreds',  'End Preds.',   TaskListAttribute, false, true,  [] ],
-        [ 'endsuccs',  'End Succs.',   TaskListAttribute, false, true,  [] ],
-        [ 'flags',     'Flags',        FlagListAttribute, true,  true,  [] ],
-        [ 'forward',   'Scheduling',   BooleanAttribute,  true,  true,  true ],
-        [ 'index',     'Index',        FixnumAttribute,   false, false, -1 ],
-        [ 'length',    'Length',       DurationAttribute, false, true,  0 ],
-        [ 'limits',    'Limits',       LimitsAttribute,   false, true,  nil ],
-        [ 'maxend',    'Max. End',     DateAttribute,     true,  true,  nil ],
-        [ 'maxstart',  'Max. Start',   DateAttribute,     true,  true,  nil ],
-        [ 'milestone', 'Milestone',    BooleanAttribute,  false, true,  false ],
-        [ 'minend',    'Min. End',     DateAttribute,     true,  true,  nil ],
-        [ 'minstart',  'Min. Start',   DateAttribute,     true,  true,  nil ],
-        [ 'note',      'Note',         RichTextAttribute, false, false, nil ],
-        [ 'pathcriticalness', 'Path Criticalness', FloatAttribute, false, true, 0.0 ],
-        [ 'precedes',  '-',      DependencyListAttribute, true,  true,  [] ],
-        [ 'priority',  'Priority',     FixnumAttribute,   true,  true,  500 ],
-        [ 'projectid', 'Project ID',   SymbolAttribute,   true,  true,  nil ],
-        [ 'responsible', 'Responsible', ResourceListAttribute, true, true, [] ],
-        [ 'scheduled', 'Scheduled',    BooleanAttribute,  true,  true,  false ],
-        [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute, true, true,
-          nil ],
-        [ 'start',     'Start',        DateAttribute,     true,  true,  nil ],
-        [ 'startpreds', 'Start Preds.', TaskListAttribute, false, true, [] ],
-        [ 'startsuccs', 'Start Succs.', TaskListAttribute, false, true, [] ],
-        [ 'tree',      'Tree Index',   StringAttribute,   false, false, "" ],
-        [ 'wbs',       'WBS',          StringAttribute,   false, false, "" ]
+        # ID           Name            Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'allocate', 'Allocations',   AllocationAttribute,
+          true,  false,   true,  [] ],
+        [ 'assignedresources', 'Assigned Resources', ResourceListAttribute,
+          false, false,   true,  [] ],
+        [ 'booking',   'Bookings',     BookingListAttribute,
+          false, false,   true,  [] ],
+        [ 'charge',    'Charges',      ChargeListAttribute,
+          false, false,   true,  [] ],
+        [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute,
+          true,  false,   true,  [] ],
+        [ 'complete',  'Completion',   FloatAttribute,
+          false, false,   true,  nil ],
+        [ 'criticalness', 'Criticalness', FloatAttribute,
+          false, false,   true,  0.0 ],
+        [ 'depends',   '-',            DependencyListAttribute,
+          true,  false,   true,  [] ],
+        [ 'duration',  'Duration',     DurationAttribute,
+          false, false,   true,  0 ],
+        [ 'effort',    'Effort',       DurationAttribute,
+          false, false,   true,  0 ],
+        [ 'end',       'End',          DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'endpreds',  'End Preds.',   TaskListAttribute,
+          false, false,   true,  [] ],
+        [ 'endsuccs',  'End Succs.',   TaskListAttribute,
+          false, false,   true,  [] ],
+        [ 'flags',     'Flags',        FlagListAttribute,
+          true,  false,   true,  [] ],
+        [ 'forward',   'Scheduling',   BooleanAttribute,
+          true,  false,   true,  true ],
+        [ 'index',     'Index',        FixnumAttribute,
+          false, false,   false, -1 ],
+        [ 'length',    'Length',       DurationAttribute,
+          false, false,   true,  0 ],
+        [ 'limits',    'Limits',       LimitsAttribute,
+          false, false,   true,  nil ],
+        [ 'maxend',    'Max. End',     DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'maxstart',  'Max. Start',   DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'milestone', 'Milestone',    BooleanAttribute,
+          false, false,   true,  false ],
+        [ 'minend',    'Min. End',     DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'minstart',  'Min. Start',   DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'note',      'Note',         RichTextAttribute,
+          false, false,   false, nil ],
+        [ 'pathcriticalness', 'Path Criticalness', FloatAttribute,
+          false, false,   true, 0.0 ],
+        [ 'precedes',  '-',            DependencyListAttribute,
+          true,  false,   true,  [] ],
+        [ 'priority',  'Priority',     FixnumAttribute,
+          true,  true,    true,  500 ],
+        [ 'projectid', 'Project ID',   SymbolAttribute,
+          true,  true,    true,  nil ],
+        [ 'responsible', 'Responsible', ResourceListAttribute,
+          true,  false,   true,  [] ],
+        [ 'scheduled', 'Scheduled',    BooleanAttribute,
+          true,  false,   true,  false ],
+        [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute,
+          true,  false,   true, nil ],
+        [ 'start',     'Start',        DateAttribute,
+          true,  false,   true,  nil ],
+        [ 'startpreds', 'Start Preds.', TaskListAttribute,
+          false, false,   true,  [] ],
+        [ 'startsuccs', 'Start Succs.', TaskListAttribute,
+          false, false,   true,  [] ],
+        [ 'tree',      'Tree Index',   StringAttribute,
+          false, false,   false, "" ],
+        [ 'wbs',       'WBS',          StringAttribute,
+          false, false,   false, "" ]
       ]
       attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
 
-      Scenario.new(self, 'plan', 'Plan Scenario', nil)
+      @reports = PropertySet.new(self, false)
+      attrs = [
+        # ID           Name            Type
+        # Inh.   Inh.Prj  Scen.  Default
+        [ 'end',       'End',          DateAttribute,
+          true,  true,    false, nil ],
+        [ 'start',     'Start',        DateAttribute,
+          true,  true,    false, nil ]
+      ]
+      attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 
-      @reports = { }
+      Scenario.new(self, 'plan', 'Plan Scenario', nil)
     end
 
     # Pass a message (error or warning) to the message handler. _message_ is a
@@ -252,19 +330,13 @@ class TaskJuggler
     # Return the Scenario with the given _id_ or _index_.
     def scenario(arg)
       if arg.is_a?(Fixnum)
-        if $DEBUG && (arg < 0 || arg >= @scenarios.items)
-          raise "Scenario index out of range: #{arg}"
-        end
         @scenarios.each do |sc|
           return sc if sc.sequenceNo - 1 == arg
         end
-        raise "No scenario with index #{arg}"
       else
-        if $DEBUG && @scenarios[arg].nil?
-          raise "No scenario with id '#{arg}'"
-        end
-        @scenarios[arg]
+        return @scenarios[arg]
       end
+      nil
     end
 
     # call-seq:
@@ -300,6 +372,15 @@ class TaskJuggler
     # Return the Resource with the ID _id_ or return nil if it does not exist.
     def resource(id)
       @resources[id]
+    end
+
+    # Return the Report with the name +name+ or return nil if it does not
+    # exist.
+    def reportByName(name)
+      @reports.each do |report|
+        return report if report.name == name
+      end
+      nil
     end
 
     # This function must be called after the Project data structures have been
@@ -353,7 +434,7 @@ class TaskJuggler
     def generateReports(maxCpuCores)
       begin
         if maxCpuCores == 1
-          @reports.each_value  do  |report|
+          @reports.each do |report|
             Log.startProgressMeter("Report #{report.name}")
             report.generate
             Log.stopProgressMeter
@@ -403,7 +484,7 @@ class TaskJuggler
     end
 
     def addReport(report) # :nodoc:
-      @reports[report.name] = report
+      @reports.addProperty(report)
     end
 
     # call-seq:

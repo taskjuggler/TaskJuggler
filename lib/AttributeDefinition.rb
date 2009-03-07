@@ -17,8 +17,8 @@ class TaskJuggler
   # these bits of information, the PropertySet objects generate the attribute
   # lists for each PropertyTreeNode upon creation of the node.
   class AttributeDefinition
-    attr_reader :id, :name, :objClass, :inheritable, :scenarioSpecific,
-                :userDefined, :default
+    attr_reader :id, :name, :objClass, :inheritable, :inheritFromProject,
+                :scenarioSpecific, :userDefined, :default
 
     # Create a new AttributeDefinition. _id_ is the ID of the attribute. It must
     # be unique within the PropertySet where it is used. _name_ is a more
@@ -30,12 +30,13 @@ class TaskJuggler
     # _scenarioSpecific_ is a boolean flag that is set to true if the attribute
     # can have different values for each scenario. _default_ is the default
     # value that is set upon creation of the attribute.
-    def initialize(id, name, objClass, inheritable, scenarioSpecific, default,
-                   userDefined = false)
+    def initialize(id, name, objClass, inheritable, inheritFromProject,
+                   scenarioSpecific, default, userDefined = false)
       @id = id
       @name = name
       @objClass = objClass
       @inheritable = inheritable
+      @inheritFromProject = inheritFromProject
       @scenarioSpecific = scenarioSpecific
       @default = default
       @userDefined = userDefined

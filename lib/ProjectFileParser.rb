@@ -202,6 +202,23 @@ class TaskJuggler
       rText
     end
 
+    # This method is a convenience wrapper around Project.new. It checks if
+    # the report name already exists. It also triggers the attribute
+    # inheritance. +name+ is the name of the report, +type+ is the report
+    # type. +sourceFileInfo+ is a SourceFileInfo of the report definition. The
+    # method returns the newly created Report.
+    def newReport(name, type, sourceFileInfo)
+      if @project.reportByName(name)
+        error('report_redefinition',
+              "A report with the name #{name} has already been defined.")
+      end
+      @report = Report.new(@project, "report#{@reportCounter += 1}",
+                           name, nil, type, sourceFileInfo)
+      @report.inheritAttributes
+      @report
+    end
+
+
     # If the @limitResources list is not empty, we have to create a Limits
     # object for each Resource. Otherwise, one Limits object is enough.
     def setLimit(name, value, interval)

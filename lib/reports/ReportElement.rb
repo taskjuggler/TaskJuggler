@@ -44,7 +44,7 @@ class TaskJuggler
       @columns = []
       @costAccount = @report.costAccount
       @currencyFormat = @report.currencyformat
-      @end = @report.end
+      @end = @report.get('end')
       @epilog = nil
       @ganttBars = true
       @headline = nil
@@ -64,7 +64,7 @@ class TaskJuggler
       @shorttimeformat = @report.shorttimeformat
       @sortResources = [[ 'seqno', true, -1 ]]
       @sortTasks = [[ 'seqno', true, -1 ]]
-      @start = @report.start
+      @start = @report.get('start')
       @taskRoot = @report.taskRoot
       @timeFormat = @report.timeformat
       @timezone = @report.timezone

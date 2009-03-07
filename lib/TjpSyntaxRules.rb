@@ -537,10 +537,6 @@ EOT
         # Strip '.csv' suffix from file name
         name = @val[0][0..-5]
       end
-      if @project.reports[name]
-        error('report_redefinition',
-              "A report with the name #{name} has already been defined.")
-      end
       name
     })
     arg(1, 'file name', <<'EOT'
@@ -562,7 +558,7 @@ EOT
 
   def rule_csvResourceReportHeader
     pattern(%w( _csvresourcereport !csvFileName ), lambda {
-      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @report = newReport(@val[1], :csv, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
   end
@@ -581,7 +577,7 @@ EOT
 
   def rule_csvTaskReportHeader
     pattern(%w( _csvtaskreport !csvFileName ), lambda {
-      @report = Report.new(@project, @val[1], :csv, sourceFileInfo)
+      @report = newReport(@val[1], :csv, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
   end
@@ -709,7 +705,7 @@ EOT
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      @report = Report.new(@project, name, :export, sourceFileInfo)
+      @report = newReport(@val[1], :export, sourceFileInfo)
       @reportElement = TjpExportRE.new(@report, mainFile)
     })
     arg(1, 'file name', <<'EOT'
@@ -972,12 +968,7 @@ EOT
               "Report name must have .html suffix: #{@val[0]}")
       end
       # Strip '.html' suffix from file name
-      name = @val[0][0..-6]
-      if @project.reports[name]
-        error('report_redefinition',
-              "A report with the name #{name} has already been defined.")
-      end
-      name
+      @val[0][0..-6]
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It should end with a .html extension.
@@ -996,7 +987,7 @@ EOT
 
   def rule_htmlResourceReportHeader
     pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
-      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
+      @report = newReport(@val[1], :html, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
   end
@@ -1012,7 +1003,7 @@ EOT
 
   def rule_htmlTaskReportHeader
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
-      @report = Report.new(@project, @val[1], :html, sourceFileInfo)
+      @report = newReport(@val[1], :html, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
   end
@@ -1799,6 +1790,7 @@ EOT
       @project['end'] = @val[4].end
       setGlobalMacros
       @property = nil
+      @reportCounter = 0
       @project
     })
     arg(1, 'id', 'The ID of the project')
@@ -2550,7 +2542,7 @@ EOT
 
   def rule_resourceReportHeader
     pattern(%w( _resourcereport $STRING ), lambda {
-      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
+      @report = newReport(@val[1], :gui, sourceFileInfo)
       @reportElement = ResourceListRE.new(@report)
     })
     arg(1, 'file name', <<'EOT'
@@ -3238,7 +3230,7 @@ EOT
 
   def rule_taskReportHeader
     pattern(%w( _taskreport $STRING ), lambda {
-      @report = Report.new(@project, @val[1], :gui, sourceFileInfo)
+      @report = newReport(@val[1], :gui, sourceFileInfo)
       @reportElement = TaskListRE.new(@report)
     })
     arg(1, 'file name', <<'EOT'
