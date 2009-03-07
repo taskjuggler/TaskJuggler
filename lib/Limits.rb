@@ -174,13 +174,13 @@ class TaskJuggler
         period = 60 * 60 * 24
         upper = false
       when 'weeklymax'
-        interval.start = interval.start.beginOfWeek(@project['weekstartsmonday'])
-        interval.end = interval.end.beginOfWeek(@project['weekstartsmonday'])
+        interval.start = interval.start.beginOfWeek(@project['weekStartsMonday'])
+        interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = true
       when 'weeklymin'
-        interval.start = interval.start.beginOfWeek(@project['weekstartsmonday'])
-        interval.end = interval.end.beginOfWeek(@project['weekstartsmonday'])
+        interval.start = interval.start.beginOfWeek(@project['weekStartsMonday'])
+        interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = false
       when 'monthlymax'

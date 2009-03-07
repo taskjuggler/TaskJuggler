@@ -1620,7 +1620,7 @@ EOT
 
     pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $INTEGER ),
         lambda {
-      @project['currencyformat'] = RealFormat.new(@val.slice(1, 5))
+      @project['currencyFormat'] = RealFormat.new(@val.slice(1, 5))
     })
     doc('currencyformat',
         'These values specify the default format used for all currency ' +
@@ -1686,7 +1686,7 @@ EOT
 
     pattern(%w( _numberformat $STRING $STRING $STRING $STRING $INTEGER ),
         lambda {
-      @project['numberformat'] = RealFormat.new(@val.slice(1, 5))
+      @project['numberFormat'] = RealFormat.new(@val.slice(1, 5))
     })
     doc('numberformat',
         'These values specify the default format used for all numerical ' +
@@ -1699,7 +1699,7 @@ EOT
 
     pattern(%w( !scenario ))
     pattern(%w( _shorttimeformat $STRING ), lambda {
-      @project['shorttimeformat'] = @val[1]
+      @project['shortTimeFormat'] = @val[1]
     })
     doc('shorttimeformat',
         'Specifies time format for time short specifications. This is normal' +
@@ -1707,7 +1707,7 @@ EOT
     arg(1, 'format', 'strftime like format string')
 
     pattern(%w( !timeformat ), lambda {
-      @project['timeformat'] = @val[0]
+      @project['timeFormat'] = @val[0]
     })
 
     pattern(%w( !timezone ), lambda {
@@ -1737,14 +1737,14 @@ EOT
         )
 
     pattern(%w( _weekstartsmonday ), lambda {
-      @project['weekstartsmonday'] = true
+      @project['weekStartsMonday'] = true
     })
     doc('weekstartsmonday',
         'Specify that you want to base all week calculation on weeks ' +
         'starting on Monday. This is common in many European countries.')
 
     pattern(%w( _weekstartssunday ), lambda {
-      @project['weekstartsmonday'] = false
+      @project['weekStartsMonday'] = false
     })
     doc('weekstartssunday',
         'Specify that you want to base all week calculation on weeks ' +

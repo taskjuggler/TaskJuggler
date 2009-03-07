@@ -60,24 +60,24 @@ class TaskJuggler
         'costAccount' => nil,
         'copyright' => nil,
         'currency' => "EUR",
-        'currencyformat' => RealFormat.new([ '-', '', '', ',', 2 ]),
+        'currencyFormat' => RealFormat.new([ '-', '', '', ',', 2 ]),
         'dailyworkinghours' => 8.0,
         'end' => nil,
         'flags' => [],
         'limits' => nil,
-        'loadunit' => :shortauto,
+        'loadUnit' => :shortauto,
         'now' => TjTime.now.align(3600),
-        'numberformat' => RealFormat.new([ '-', '', '', '.', 1]),
+        'numberFormat' => RealFormat.new([ '-', '', '', '.', 1]),
         'priority' => 500,
         'rate' => 0.0,
         'revenueAccount' => nil,
         'scheduleGranularity' => 3600,
-        'shorttimeformat' => "%H:%M",
+        'shortTimeFormat' => "%H:%M",
         'start' => nil,
-        'timeformat' => "%Y-%m-%d",
+        'timeFormat' => "%Y-%m-%d",
         'timezone' => nil,
         'vacations' => [],
-        'weekstartsmonday' => true,
+        'weekStartsMonday' => true,
         'workinghours' => WorkingHours.new,
         'yearlyworkingdays' => 260.714
       }
@@ -265,10 +265,30 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         # Inh.   Inh.Prj  Scen.  Default
+        [ 'costAccount', 'Cost Account', AccountAttribute,
+          true,  true,    false, nil ],
+        [ 'currencyFormat', 'Currency Format', StringAttribute,
+          true,  true,    false, nil ],
         [ 'end',       'End',          DateAttribute,
           true,  true,    false, nil ],
+        [ 'loadUnit',  'Load Unit', StringAttribute,
+          true,  true,    false, nil ],
+        [ 'now',       'Now',          DateAttribute,
+          true,  true,    false, nil ],
+        [ 'numberFormat', 'Number Format', StringAttribute,
+          true,  true,    false, nil ],
+        [ 'revenueAccount', 'Revenue Account', AccountAttribute,
+          true,  true,    false, nil ],
+        [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
+          true,  true,    false, nil ],
         [ 'start',     'Start',        DateAttribute,
-          true,  true,    false, nil ]
+          true,  true,    false, nil ],
+        [ 'timeFormat', 'Time Format', StringAttribute,
+          true,  true,    false, nil ],
+        [ 'timezone', 'Time Zone', StringAttribute,
+          true,  true,    false, nil ],
+        [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
+          true,  true,    false, false ]
       ]
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 

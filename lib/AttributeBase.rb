@@ -55,21 +55,24 @@ class TaskJuggler
     # on.
     def inherit(value)
       @inherited = true
-      if value.is_a?(Fixnum) || value.is_a?(Float) ||
-         value.is_a?(TrueClass) || value.is_a?(FalseClass)
+      case value
+      when Fixnum, Float, TrueClass, FalseClass, Symbol, Account
         @value = value
-      elsif value.is_a?(Limits)
+      when Limits
         @value = Limits.new(value)
-      elsif value.is_a?(ShiftAssignments)
+      when ShiftAssignments
         @value = ShiftAssignments.new(value)
-      elsif value.is_a?(String) || value.is_a?(TjTime)
+      when RealFormat
+        @value = RealFormat.new(value)
+      when String, TjTime
         @value = value.clone
-      elsif value.is_a?(WorkingHours)
+      when WorkingHours
         @value = WorkingHours.new(value)
-      elsif value.is_a?(Array)
+      when Array
         @value = Array.new(value)
       else
-        raise "Don't know how to copy values of class #{value.class}"
+        raise RuntimeError.new, "Don't know how to copy values of class " +
+                                "#{value.class}"
       end
     end
 

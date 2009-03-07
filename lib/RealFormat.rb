@@ -16,20 +16,33 @@ class TaskJuggler
   # rules. These rules determine how negative values are represented, how the
   # fractional part is shown and how to structure the mantissa. The result is
   # always a String.
+  #
+  # The class uses the following parameters to control the formating.
+  # signPrefix: Prefix used for negative numbers. (String)
+  # signSuffix: Suffix used for negative numbers. (String)
+  # thousandsSeparator: Separator used after 3 integer digits. (String)
+  # fractionSeparator: Separator used between the inter part and the
+  #                    fractional part. (String)
+  # fractionDigits: Number of fractional digits to show. (Fixnum)
   class RealFormat
 
     # Create a new RealFormat object and define the formating rules.
     def initialize(args)
-      # Prefix used for negative numbers. (String)
-      @signPrefix = args[0]
-      # Suffix used for negative numbers. (String)
-      @signSuffix = args[1]
-      # Separator used after 3 integer digits. (String)
-      @thousandsSeparator = args[2]
-      # Separator used between the inter part and the fractional part. (String)
-      @fractionSeparator = args[3]
-      # Number of fractional digits to show. (Fixnum)
-      @fractionDigits = args[4]
+      iVars = %w( @signPrefix @signSuffix @thousandsSeparator
+                  @fractionSeparator @fractionDigits )
+      if args.is_a?(RealFormat)
+        # The argument is another RealFormat object.
+        iVars.each do |iVar|
+          instance_variable_set(iVar, args.instance_variable_get(iVar))
+        end
+      elsif args.length == 5
+        # The argument is a list of values.
+        0.upto(4) do |i|
+          instance_variable_set(iVars[i], args[i])
+        end
+      else
+        raise RuntimeError.new, "Bad number of parameters #{args.length}"
+      end
     end
 
     # Converts the Float _number_ into a String representation according to the

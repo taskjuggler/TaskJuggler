@@ -42,34 +42,31 @@ class TaskJuggler
       # The following attributes affect the report content and look.
       @caption = nil
       @columns = []
-      @costAccount = @report.costAccount
-      @currencyFormat = @report.currencyformat
-      @end = @report.get('end')
       @epilog = nil
       @ganttBars = true
       @headline = nil
       @hideResource = nil
       @hideTask = nil
-      @loadUnit = @report.loadUnit
-      @now = @report.now
-      @numberFormat = @report.numberformat
       @prolog = nil
       @rawHead = nil
       @rawTail = nil
-      @resourceRoot = @report.resourceRoot
-      @revenueAccount = @report.revenueAccount
       @rollupResource = nil
       @rollupTask = nil
+      @resourceRoot = @report.resourceRoot
       @scenarios = [ 0 ]
-      @shorttimeformat = @report.shorttimeformat
       @sortResources = [[ 'seqno', true, -1 ]]
       @sortTasks = [[ 'seqno', true, -1 ]]
-      @start = @report.get('start')
       @taskRoot = @report.taskRoot
-      @timeFormat = @report.timeformat
-      @timezone = @report.timezone
-      @userDefinedPeriod = @report.userDefinedPeriod
-      @weekStartsMonday = @report.weekstartsmonday
+
+      # Create instance variables with inherited values from @report.
+      %w( costAccount currencyFormat end loadUnit now numberFormat
+          revenueAccount shortTimeFormat start timeFormat timezone
+          weekStartsMonday
+        ).each do |attribute|
+        instance_variable_set('@' + attribute, @report.get(attribute))
+      end
+      @userDefinedPeriod = !(@report.inherited('end') &&
+                             @report.inherited('start'))
 
       @propertiesById = {
         # ID               Header        Indent  Align   Calced. Scen Spec.

@@ -21,6 +21,25 @@ require 'WorkingHours'
 
 class TaskJuggler
 
+  class AccountAttribute < AttributeBase
+    def initialize(property, type)
+      super(property, type)
+    end
+
+    def AccountAttribute::tjpId
+      'account'
+    end
+
+    def to_s
+      @value ? '' : @value.id
+    end
+
+    def to_tjp
+      @value ? '' : @value.id
+    end
+
+  end
+
   class AllocationAttribute < AttributeBase
     def initialize(property, type)
       super(property, type)

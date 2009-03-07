@@ -31,7 +31,7 @@ class TestQuery < Test::Unit::TestCase
   end
 
   def test_scaleDuration
-    q = Query.new('project' => @p, 'numberFormat' => @p['numberformat'])
+    q = Query.new('project' => @p, 'numberFormat' => @p['numberFormat'])
     units = [ :minutes, :hours, :days, :weeks, :months, :shortauto ]
     vals = [
       # Inp  mins      hours   days   weeks  months  shortauto
@@ -54,7 +54,7 @@ class TestQuery < Test::Unit::TestCase
   end
 
   def test_scaleLoad
-    q = Query.new('project' => @p, 'numberFormat' => @p['numberformat'])
+    q = Query.new('project' => @p, 'numberFormat' => @p['numberFormat'])
     units = [ :minutes, :hours, :days, :weeks, :months, :shortauto ]
     vals = [
       # Inp  mins      hours   days   weeks  months  shortauto

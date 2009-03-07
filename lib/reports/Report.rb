@@ -26,12 +26,8 @@ class TaskJuggler
   # elements.
   class Report < PropertyTreeNode
 
-    attr_reader :name, :project, :userDefinedPeriod,
-                :sourceFileInfo
-    attr_accessor :costAccount, :currencyformat, :loadUnit, :now,
-                  :numberformat, :resourceRoot, :revenueAccount,
-                  :shorttimeformat, :taskRoot, :timeformat, :timezone,
-                  :weekstartsmonday
+    attr_reader :name, :project, :sourceFileInfo
+    attr_accessor :resourceRoot, :taskRoot
 
     # Create a new report object.
     def initialize(project, id, name, parent, format, sourceFileInfo)
@@ -42,20 +38,8 @@ class TaskJuggler
       @sourceFileInfo = sourceFileInfo
 
       # The following attributes determine the content and look of the report.
-      @costAccount = @project['costAccount']
-      @currencyformat = @project['currencyformat']
-      @loadUnit = @project['loadunit']
-      @end = @project['end']
-      @now = @project['now']
-      @numberformat = @project['numberformat']
       @resourceRoot = nil
-      @revenueAccount = @project['revenueAccount']
-      @shorttimeformat = @project['shorttimeformat']
       @taskRoot = nil
-      @timeformat = @project['timeformat']
-      @timezone = @project['timezone']
-      @userDefinedPeriod = false
-      @weekstartsmonday = @project['weekstartsmonday']
 
       @elements = []
     end
