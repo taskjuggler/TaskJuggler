@@ -161,7 +161,7 @@ class TaskJuggler
         begin
           @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil, nil ] ]
         rescue StandardError
-          raise TjException.new, "Cannot open file #{@masterFile}"
+          raise TjException, "Cannot open file #{@masterFile}"
         end
       end
       @masterPath = @cf.dirname + '/'
@@ -328,7 +328,7 @@ class TaskJuggler
         @messageHandler.send(message)
       end
 
-      raise TjException.new, 'Syntax error during parse'
+      raise TjException, 'Syntax error during parse'
     end
 
   private
@@ -478,13 +478,13 @@ class TaskJuggler
         hours = token.to_i
         mins = readDigits.to_i
         if hours < 0 || hours > 24
-          raise TjException.new, "Hour must be between 0 and 23"
+          raise TjException, "Hour must be between 0 and 23"
         end
         if mins < 0 || mins > 59
-          raise TjException.new, "Minutes must be between 0 and 59"
+          raise TjException, "Minutes must be between 0 and 59"
         end
         if hours == 24 && mins != 0
-          raise TjException.new, "Time may not be larger than 24:00"
+          raise TjException, "Time may not be larger than 24:00"
         end
 
         # Return time as seconds of day since midnight.
@@ -503,7 +503,7 @@ class TaskJuggler
         token << c
       end
       unless ('a'..'z') === c || ('A'..'Z') === c || c == '_'
-        raise TjException.new, "Identifier expected"
+        raise TjException, "Identifier expected"
       end
       id = readId(c)
       id[0] = 'RELATIVE_ID'
@@ -514,20 +514,20 @@ class TaskJuggler
     def readDate(token)
       year = token.to_i
       if year < 1970 || year > 2030
-        raise TjException.new, "Year must be between 1970 and 2030"
+        raise TjException, "Year must be between 1970 and 2030"
       end
 
       month = readDigits.to_i
       if month < 1 || month > 12
-        raise TjException.new, "Month must be between 1 and 12"
+        raise TjException, "Month must be between 1 and 12"
       end
       if nextChar != '-'
-        raise TjException.new, "Corrupted date"
+        raise TjException, "Corrupted date"
       end
 
       day = readDigits.to_i
       if day < 1 || day > 31
-        raise TjException.new, "Day must be between 1 and 31"
+        raise TjException, "Day must be between 1 and 31"
       end
 
       if (c = nextChar) != '-'
@@ -537,22 +537,22 @@ class TaskJuggler
 
       hour = readDigits.to_i
       if hour < 0 || hour > 23
-        raise TjException.new, "Hour must be between 0 and 23"
+        raise TjException, "Hour must be between 0 and 23"
       end
 
       if nextChar != ':'
-        raise TjException.new, "Corrupted time. ':' expected."
+        raise TjException, "Corrupted time. ':' expected."
       end
 
       minutes = readDigits.to_i
       if minutes < 0 || minutes > 59
-        raise TjException.new, "Minutes must be between 0 and 59"
+        raise TjException, "Minutes must be between 0 and 59"
       end
 
       if (c = nextChar) == ':'
         seconds = readDigits.to_i
         if seconds < 0 || seconds > 59
-          raise TjException.new, "Seconds must be between 0 and 59"
+          raise TjException, "Seconds must be between 0 and 59"
         end
       else
         seconds = 0
@@ -576,7 +576,7 @@ class TaskJuggler
         timeVal = TjTime.local(year, month, day, hour, minutes, seconds)
         ENV['TZ'] = oldTz
         if timeVal.to_a[9] != tz
-          raise TjException.new, "Unknown time zone #{tz}"
+          raise TjException, "Unknown time zone #{tz}"
         end
         return [ 'DATE', timeVal ]
       end
@@ -584,11 +584,11 @@ class TaskJuggler
       utcDiff = readDigits
       utcHour = utcDiff[0, 2].to_i
       if utcHour < 0 || utcHour > 23
-        raise TjException.new, "Hour must be between 0 and 23"
+        raise TjException, "Hour must be between 0 and 23"
       end
       utcMin = utcDiff[2, 2].to_i
       if utcMin < 0 || utcMin > 59
-        raise TjException.new, "Minutes must be between 0 and 59"
+        raise TjException, "Minutes must be between 0 and 59"
       end
 
       [ 'DATE', TjTime.gm(year, month, day, hour, minutes, seconds) +
@@ -654,7 +654,7 @@ class TaskJuggler
       end
       # Make sure that we have read at least one digit.
       if token == ""
-        raise TjException.new, "Digit (0 - 9) expected"
+        raise TjException, "Digit (0 - 9) expected"
       end
       # Push back the non-digit that terminated the digits.
       returnChar(c)
@@ -671,7 +671,7 @@ class TaskJuggler
       end
       returnChar(c)
       if token == ""
-        raise TjException.new, "Identifier expected"
+        raise TjException, "Identifier expected"
       end
       token
     end

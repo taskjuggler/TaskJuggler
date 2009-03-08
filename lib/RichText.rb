@@ -108,7 +108,7 @@ class TaskJuggler
     # does not exist.
     def protocolHandler(protocol)
       unless @protocolHandlers.include?(protocol)
-        raise TjException.new, "Unsupported protocol #{protocol}"
+        raise TjException, "Unsupported protocol #{protocol}"
       end
       @protocolHandlers[protocol]
     end

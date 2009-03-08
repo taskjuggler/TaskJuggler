@@ -830,7 +830,7 @@ class TaskJuggler
               query.attributeId = macro
               query.process
               unless query.ok || ignoreErrors
-                raise TjException.new, query.errorMessage
+                raise TjException, query.errorMessage
               end
               # This turns RichText into plain ASCII!
               out += query.result

@@ -27,5 +27,5 @@ taskreport "Tasks" {
 
 htmltaskreport "CriticalTasks.html" {
   # Generate a list of all tasks that are on a critical path.
-  hidetask ~isoncriticalpath(plan)
+  #hidetask ~isoncriticalpath(plan)
 }

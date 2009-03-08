@@ -137,7 +137,7 @@ class TaskJuggler
 
     def resolvePropertyId(pType, pId)
       unless @project
-        raise TjException.new, "Need Project reference to process the query"
+        raise TjException, "Need Project reference to process the query"
       end
       case pType
       when :Account
@@ -147,7 +147,7 @@ class TaskJuggler
       when:Resource
         @project.resource[pId]
       else
-        raise TjException.new, "Unknown property type #{pType}"
+        raise TjException, "Unknown property type #{pType}"
       end
     end
 

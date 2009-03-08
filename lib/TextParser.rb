@@ -197,7 +197,7 @@ class TaskJuggler
           if token[0] == ?!
             unless @rules.has_key?(tokenId)
               raise "Fatal Error: Unknown reference to #{tokenId} in pattern " +
-                  "#{pat} + of rule #{rule.name}"
+                    "#{pat} + of rule #{rule.name}"
             end
             refRule = @rules[tokenId]
             # If the referenced rule describes optional content, we need to look

@@ -120,7 +120,9 @@ class TaskJuggler
     # The objects need access to some project specific data like the project
     # period.
     def setProject(project)
-      raise "Cannot change project after limits have been set!" unless @limits.empty?
+      unless @limits.empty?
+        raise "Cannot change project after limits have been set!"
+      end
       @project = project
     end
 

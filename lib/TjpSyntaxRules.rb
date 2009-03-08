@@ -546,7 +546,7 @@ EOT
   end
 
   def rule_csvResourceReport
-    pattern(%w( !csvResourceReportHeader !reportBody ))
+    pattern(%w( !csvResourceReportHeader !legacyReportBody ))
     doc('csvresourcereport', <<'EOT'
 The report lists all resources and their respective values as colon-separated-value (CSV) file. Due to
 the very simple nature of the CSV format, only a small subset of features will
@@ -564,7 +564,7 @@ EOT
   end
 
   def rule_csvTaskReport
-    pattern(%w( !csvTaskReportHeader !reportBody ))
+    pattern(%w( !csvTaskReportHeader !legacyReportBody ))
     doc('csvtaskreport', <<'EOT'
 The report lists all tasks and their respective values as
 colon-separated-value (CSV) file. Due to the very simple nature of the CSV
@@ -977,7 +977,7 @@ EOT
   end
 
   def rule_htmlResourceReport
-    pattern(%w( !htmlResourceReportHeader !reportBody ))
+    pattern(%w( !htmlResourceReportHeader !legacyReportBody ))
     doc('htmlresourcereport', <<'EOT'
 The report lists all resources and their respective values as a HTML page. The
 task that are the resources are allocated to can be listed as well.
@@ -993,7 +993,7 @@ EOT
   end
 
   def rule_htmlTaskReport
-    pattern(%w( !htmlTaskReportHeader !reportBody ))
+    pattern(%w( !htmlTaskReportHeader !legacyReportBody ))
     doc('htmltaskreport', <<'EOT'
 The report lists all tasks and their respective values as a HTML page. The
 resources that are allocated to each task can be listed as well.
@@ -1173,11 +1173,170 @@ EOT
     pattern(%w( !resourceId ), lambda {
       resource = @val[0]
       unless resource.leaf?
-        error('leaf_resource_id_expected', "#{resource.id} is not a leaf resource.")
+        error('leaf_resource_id_expected',
+              "#{resource.id} is not a leaf resource.")
       end
       resource
     })
     arg(0, 'resource', 'The ID of a leaf resource')
+  end
+
+  def rule_legacyReportBody
+    optionsRule('legacyReportAttributes')
+  end
+
+  def rule_legacyReportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !balance ), lambda {
+      @reportElement.costAccount = @val[0][0]
+      @reportElement.revenueAccount = @val[0][1]
+    })
+
+    pattern(%w( _caption $STRING ), lambda {
+      @reportElement.caption = newRichText(@val[1])
+    })
+    doc('caption', <<'EOT'
+The caption will be embedded in the footer of the table or data segment. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+    example('Caption', '1')
+
+    pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
+      columns = [ @val[1] ]
+      columns += @val[2] if @val[2]
+      @reportElement.columns = columns
+    })
+    doc('columns', <<'EOT'
+Specifies which columns shall be included in a report.
+
+All columns support macro expansion. Contrary to the normal macro expansion,
+these macros are expanded during the report generation. So the value of the
+macro is being changed after each table cell or table line. Consequently only
+build in macros can be used. To protect the macro calls against expansion
+during the initial file processing, the report macros must be prefixed with an
+additional ''''$''''.
+EOT
+       )
+
+    pattern(%w( _epilog $STRING ), lambda {
+      @reportElement.epilog = newRichText(@val[1])
+    })
+    doc('epilog', <<'EOT'
+Define a text section that is printed right after the actual report data. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
+    pattern(%w( !reportEnd ))
+
+    pattern(%w( _headline $STRING ), lambda {
+      @reportElement.headline = @val[1]
+    })
+    doc('headline.legacy', <<'EOT'
+Specifies the headline for a report.
+EOT
+       )
+
+    pattern(%w( !hideresource ))
+
+    pattern(%w( !hidetask ))
+
+    pattern(%w( _loadunit !loadunit ), lambda {
+      @reportElement.loadUnit = :"#{@val[1]}"
+    })
+    doc('loadunit.legacy', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
+
+    pattern(%w( _prolog $STRING ), lambda {
+      @reportElement.prolog = newRichText(@val[1])
+    })
+    doc('prolog', <<'EOT'
+Define a text section that is printed right before the actual report data. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
+    pattern(%w( _rawhead $STRING ), lambda {
+      @reportElement.rawHead = @val[1]
+    })
+    doc('rawhead.legacy', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the top of the
+report.
+EOT
+        )
+
+    pattern(%w( _rawtail $STRING ), lambda {
+      @reportElement.rawTail = @val[1]
+    })
+    doc('rawtail.legacy', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the bottom of
+the report.
+EOT
+       )
+
+    pattern(%w( !reportPeriod ))
+
+    pattern(%w( _rolluptask !logicalExpression ), lambda {
+      @reportElement.rollupTask = @val[1]
+    })
+    doc('rolluptask.legacy', <<'EOT'
+Do not show sub-tasks of tasks that match the specified logical expression.
+EOT
+       )
+
+    pattern(%w( _scenarios !scenarioIdList ), lambda {
+      # Don't include disabled scenarios in the report
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      @reportElement.scenarios = @val[1]
+    })
+    doc('scenarios.legacy', <<'EOT'
+List of scenarios that should be included in the report.
+EOT
+       )
+
+    pattern(%w( _sortresources !sortCriteria ), lambda {
+      @reportElement.sortResources = @val[1]
+    })
+    doc('sortresources.legacy', <<'EOT'
+Determines how the resources are sorted in the report. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of resources, the next criteria will be used to sort the resources in
+this group.
+EOT
+       )
+
+    pattern(%w( _sorttasks !sortCriteria ), lambda {
+      @reportElement.sortTasks = @val[1]
+    })
+    doc('sorttasks.legacy', <<'EOT'
+Determines how the tasks are sorted in the report. Multiple criteria can be
+specified as comma separated list. If one criteria is not sufficient to sort a
+group of tasks, the next criteria will be used to sort the tasks within
+this group.
+EOT
+       )
+
+    pattern(%w( !reportStart ))
+
+    pattern(%w( _taskroot !taskId), lambda {
+      @reportElement.taskRoot = @val[1]
+    })
+    doc('taskroot.legacy', <<'EOT'
+Only tasks below the specified root-level tasks are exported. The exported
+tasks will have the id of the root-level task stripped from their ID, so that
+the sub-tasks of the root-level task become top-level tasks in the exported
+file.
+EOT
+       )
+
+    pattern(%w( !timeformat ), lambda {
+      @reportElement.timeFormat = @val[0]
+    })
   end
 
   def rule_limitAttributes
@@ -2057,159 +2216,6 @@ EOT
     optionsRule('referenceAttributes')
   end
 
-  def rule_reportAttributes
-    optional
-    repeatable
-
-    pattern(%w( !balance ), lambda {
-      @reportElement.costAccount = @val[0][0]
-      @reportElement.revenueAccount = @val[0][1]
-    })
-
-    pattern(%w( _caption $STRING ), lambda {
-      @reportElement.caption = newRichText(@val[1])
-    })
-    doc('caption', <<'EOT'
-The caption will be embedded in the footer of the table or data segment. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-    example('Caption', '1')
-
-    pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
-      columns = [ @val[1] ]
-      columns += @val[2] if @val[2]
-      @reportElement.columns = columns
-    })
-    doc('columns', <<'EOT'
-Specifies which columns shall be included in a report.
-
-All columns support macro expansion. Contrary to the normal macro expansion,
-these macros are expanded during the report generation. So the value of the
-macro is being changed after each table cell or table line. Consequently only
-build in macros can be used. To protect the macro calls against expansion
-during the initial file processing, the report macros must be prefixed with an
-additional ''''$''''.
-EOT
-       )
-
-    pattern(%w( _epilog $STRING ), lambda {
-      @reportElement.epilog = newRichText(@val[1])
-    })
-    doc('epilog', <<'EOT'
-Define a text section that is printed right after the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-
-    pattern(%w( !reportEnd ))
-
-    pattern(%w( _headline $STRING ), lambda {
-      @reportElement.headline = @val[1]
-    })
-    doc('headline', <<'EOT'
-Specifies the headline for a report.
-EOT
-       )
-
-    pattern(%w( !hideresource ))
-
-    pattern(%w( !hidetask ))
-
-    pattern(%w( _loadunit !loadunit ), lambda {
-      @reportElement.loadUnit = :"#{@val[1]}"
-    })
-    doc('loadunit', <<'EOT'
-Determines what unit should be used to display all load values in this report.
-EOT
-       )
-
-    pattern(%w( _prolog $STRING ), lambda {
-      @reportElement.prolog = newRichText(@val[1])
-    })
-    doc('prolog', <<'EOT'
-Define a text section that is printed right before the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-
-    pattern(%w( _rawhead $STRING ), lambda {
-      @reportElement.rawHead = @val[1]
-    })
-    doc('rawhead', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the top of the
-report.
-EOT
-        )
-
-    pattern(%w( _rawtail $STRING ), lambda {
-      @reportElement.rawTail = @val[1]
-    })
-    doc('rawtail', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the bottom of
-the report.
-EOT
-       )
-
-    pattern(%w( !reportPeriod ))
-
-    pattern(%w( _rolluptask !logicalExpression ), lambda {
-      @reportElement.rollupTask = @val[1]
-    })
-    doc('rolluptask', <<'EOT'
-Do not show sub-tasks of tasks that match the specified logical expression.
-EOT
-       )
-
-    pattern(%w( _scenarios !scenarioIdList ), lambda {
-      # Don't include disabled scenarios in the report
-      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
-      @reportElement.scenarios = @val[1]
-    })
-    doc('scenrios', <<'EOT'
-List of scenarios that should be included in the report.
-EOT
-       )
-
-    pattern(%w( _sortresources !sortCriteria ), lambda {
-      @reportElement.sortResources = @val[1]
-    })
-    doc('sortresources', <<'EOT'
-Determines how the resources are sorted in the report. Multiple criteria can be
-specified as a comma separated list. If one criteria is not sufficient to sort
-a group of resources, the next criteria will be used to sort the resources in
-this group.
-EOT
-       )
-
-    pattern(%w( _sorttasks !sortCriteria ), lambda {
-      @reportElement.sortTasks = @val[1]
-    })
-    doc('sorttasks', <<'EOT'
-Determines how the tasks are sorted in the report. Multiple criteria can be
-specified as comma separated list. If one criteria is not sufficient to sort a
-group of tasks, the next criteria will be used to sort the tasks within
-this group.
-EOT
-       )
-
-    pattern(%w( !reportStart ))
-
-    pattern(%w( _taskroot !taskId), lambda {
-      @reportElement.taskRoot = @val[1]
-    })
-    doc('taskroot', <<'EOT'
-Only tasks below the specified root-level tasks are exported. The exported
-tasks will have the id of the root-level task stripped from their ID, so that
-the sub-tasks of the root-level task become top-level tasks in the exported
-file.
-EOT
-       )
-
-    pattern(%w( !timeformat ), lambda {
-      @reportElement.timeFormat = @val[0]
-    })
-  end
 
   def rule_reportableAttributes
     singlePattern('_chart')
@@ -2352,6 +2358,115 @@ EOT
 
   end
 
+  def rule_reportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !balance ), lambda {
+      @property.set('costAccount', @val[0][0])
+      @property.set('revenueAccount', @val[0][1])
+    })
+
+    pattern(%w( !reportEnd ))
+
+    pattern(%w( _headline $STRING ), lambda {
+      @property.set('headline', @val[1])
+    })
+    doc('headline', <<'EOT'
+Specifies the headline for a report.
+EOT
+       )
+
+    pattern(%w( !hideresource ))
+
+    pattern(%w( !hidetask ))
+
+    pattern(%w( _loadunit !loadunit ), lambda {
+      @property.set('loadUnit', "#{@val[1]}")
+    })
+    doc('loadunit', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
+
+    pattern(%w( _rawhead $STRING ), lambda {
+      @property.set('rawHead', @val[1])
+    })
+    doc('rawhead', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the top of the
+report.
+EOT
+        )
+
+    pattern(%w( _rawtail $STRING ), lambda {
+      @property.set('rawTail', @val[1])
+    })
+    doc('rawtail', <<'EOT'
+Specifies a section of raw HTML code that will be inserted at the bottom of
+the report.
+EOT
+       )
+
+    pattern(%w( !reportPeriod ))
+
+    pattern(%w( _rolluptask !logicalExpression ), lambda {
+      @property.set('rollupTask', @val[1])
+    })
+    doc('rolluptask', <<'EOT'
+Do not show sub-tasks of tasks that match the specified logical expression.
+EOT
+       )
+
+    pattern(%w( _scenarios !scenarioIdList ), lambda {
+      # Don't include disabled scenarios in the report
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      @property.set(scenarios, @val[1])
+    })
+    doc('scenarios', <<'EOT'
+List of scenarios that should be included in the report.
+EOT
+       )
+
+    pattern(%w( _sortresources !sortCriteria ), lambda {
+      @property.set(sortResources, @val[1])
+    })
+    doc('sortresources', <<'EOT'
+Determines how the resources are sorted in the report. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of resources, the next criteria will be used to sort the resources in
+this group.
+EOT
+       )
+
+    pattern(%w( _sorttasks !sortCriteria ), lambda {
+      @property.set('sortTasks', @val[1])
+    })
+    doc('sorttasks', <<'EOT'
+Determines how the tasks are sorted in the report. Multiple criteria can be
+specified as comma separated list. If one criteria is not sufficient to sort a
+group of tasks, the next criteria will be used to sort the tasks within
+this group.
+EOT
+       )
+
+    pattern(%w( !reportStart ))
+
+    pattern(%w( _taskroot !taskId), lambda {
+      @property.set('taskRoot', @val[1])
+    })
+    doc('taskroot', <<'EOT'
+Only tasks below the specified root-level tasks are exported. The exported
+tasks will have the id of the root-level task stripped from their ID, so that
+the sub-tasks of the root-level task become top-level tasks in the exported
+file.
+EOT
+       )
+
+    pattern(%w( !timeformat ), lambda {
+      @property.set('timeFormat', @val[0])
+    })
+  end
+
   def rule_reportDefinitions
     pattern(%w( !csvResourceReport ))
     pattern(%w( !csvTaskReport ))
@@ -2366,10 +2481,6 @@ EOT
     # This rule is not defining actual syntax. It's only used for the
     # documentation.
     optionsRule('reportDefinitions')
-  end
-
-  def rule_reportBody
-    optionsRule('reportAttributes')
   end
 
   def rule_reportEnd
@@ -2414,6 +2525,24 @@ after this end date are listed.
 EOT
        )
   end
+
+  def rule_report
+    pattern(%w( !reportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+    doc('report', <<'EOT'
+Reports are used to store and vizualize the results of a scheduled project.
+The content, the output format and the appearance of a report can be adjusted
+with report attributes. Reports can be nested to create structured document
+trees. As with other properties, the resource attributes can be inherited from
+the enclosing report or the project.
+EOT
+       )
+  end
+
+  def rule_reportBody
+    optionsRule('reportAttributes')
+  end
   def rule_reports
     # This rule is not defining actual syntax. It's only used for the
     # documentation.
@@ -2425,14 +2554,31 @@ EOT
        )
   end
 
+  def rule_reportHeader
+    pattern(%w( _report $ID $STRING ), lambda {
+      if @property.nil? && !@reportprefix.empty?
+        @property = @project.report(@reportprefix)
+      end
+      id = (@property ? @property.fullId + '.' : '') + @val[1]
+      if @project.report(id)
+        error('report_exists', "report #{id} has already been defined.")
+      end
+      @property = Report.new(@project, @val[1], @val[2], @property)
+      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.inheritAttributes
+    })
+    arg(1, 'id', 'The ID of the report')
+    arg(2, 'name', 'The name of the report')
+  end
 
   def rule_resource
     pattern(%w( !resourceHeader !resourceBody ), lambda {
        @property = @property.parent
     })
     doc('resource', <<'EOT'
-Tasks that have an effort specification need to have resources assigned to do
-the work. Use this property to define resources and groups of resources.
+Tasks that have an effort specification need to have at least one resource
+assigned to do the work. Use this property to define resources or groups of
+resources.
 EOT
        )
   end
@@ -2532,7 +2678,7 @@ EOT
   end
 
   def rule_resourceReport
-    pattern(%w( !resourceReportHeader !reportBody ))
+    pattern(%w( !resourceReportHeader !legacyReportBody ))
     doc('resourcereport', <<'EOT'
 The report lists all resources and their respective values in the GUI. The
 task that are the resources are allocated to can be listed as well. In the commandline version this report is ignored.
@@ -3219,7 +3365,7 @@ EOT
   end
 
   def rule_taskReport
-    pattern(%w( !taskReportHeader !reportBody ))
+    pattern(%w( !taskReportHeader !legacyReportBody ))
     doc('taskreport', <<'EOT'
 The report lists all tasks and their respective values in the GUI. The
 resources that are allocated to each task can be listed as well. In the

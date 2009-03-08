@@ -37,29 +37,29 @@ class TaskJuggler
     # of nil. This will be set in ChargeSet#complete later.
     def addAccount(account, share)
       unless account.leaf?
-        raise TjException.new,
+        raise TjException,
           "Account #{account.fullId} is a group account and cannot be used " +
           "in a chargeset."
       end
       if @set.include?(account)
-        raise TjException.new,
+        raise TjException,
           "Account #{account.fullId} is already a member of the charge set."
       end
       if @master.nil?
         @master = account.root
       elsif @master != account.root
-        raise TjException.new,
+        raise TjException,
           "All members of this charge set must belong to the " +
           "#{@master.fullId} account. #{account.fullId} belongs to " +
           "#{account.root.fullId}."
       end
       if account.container?
-        raise TjException.new,
+        raise TjException,
           "#{account.fullId} is a group account. Only leaf accounts are " +
           "allowed for a charge set."
       end
       if share && (share < 0.0 || share > 1.0)
-        raise TjException.new, "Charge set shares must be between 0 and 100%"
+        raise TjException, "Charge set shares must be between 0 and 100%"
       end
       @set[account] = share
     end
@@ -85,13 +85,13 @@ class TaskJuggler
       end
       # Must be less than 100%.
       if totalPercent > 1.0
-        raise TjException.new,
+        raise TjException,
           "Total share of this set (#{totalPercent * 100}%) excedes 100%."
       end
       if undefined > 0
         commonShare = (1.0 - totalPercent) / undefined
         if commonShare <= 0
-          raise TjException.new,
+          raise TjException,
             "Total share is 100% but #{undefined} account(s) still exist."
         end
         @set.each do |account, share|
@@ -100,7 +100,7 @@ class TaskJuggler
           end
         end
       elsif totalPercent != 1.0
-        raise TjException.new,
+        raise TjException,
           "Total share of this set is #{totalPercent * 100} instead of 100%."
       end
     end

@@ -75,7 +75,7 @@ class TaskJuggler
     def error(id, text, sourceFileInfo)
       message = Message.new(id, 'error', text, nil, nil, sourceFileInfo)
       @messageHandler.send(message)
-      raise TjException.new, 'Macro expasion error'
+      raise TjException, 'Macro expasion error'
     end
 
   end

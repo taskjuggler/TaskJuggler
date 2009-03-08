@@ -71,8 +71,7 @@ class TaskJuggler
       when Array
         @value = Array.new(value)
       else
-        raise RuntimeError.new, "Don't know how to copy values of class " +
-                                "#{value.class}"
+        raise "Don't know how to copy values of class #{value.class}"
       end
     end
 

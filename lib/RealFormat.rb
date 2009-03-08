@@ -41,7 +41,7 @@ class TaskJuggler
           instance_variable_set(iVars[i], args[i])
         end
       else
-        raise RuntimeError.new, "Bad number of parameters #{args.length}"
+        raise RuntimeError, "Bad number of parameters #{args.length}"
       end
     end
 
