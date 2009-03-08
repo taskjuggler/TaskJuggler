@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = ReportTableElement.rb -- The TaskJuggler III Project Management Software
+# = ReportTableBase.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -21,18 +21,52 @@ class TaskJuggler
   # report elements are converted to an abstract (output independent)
   # intermediate form first, before the are turned into the requested output
   # format.
-  class ReportTableElement < ReportElement
+  class ReportTableBase
 
     attr_reader :legend
 
-    # Generate a new ReportTableElement object.
+    # Generate a new ReportTableBase object.
     def initialize(report)
-      super
+      @report = report
+      @report.table = self
+      @project = report.project
 
       # Reference to the intermediate representation.
       @table = nil
+      @start = a('start')
+      @end = a('end')
 
       @legend = ReportTableLegend.new
+      @userDefinedPeriod = !(@report.inherited('end') &&
+                             @report.inherited('start'))
+
+      @propertiesById = {
+        # ID               Header        Indent  Align   Calced. Scen Spec.
+        'complete'    => [ 'Completion', false,  :right, true,   true ],
+        'cost'        => [ 'Cost',       true,   :right, true,   true ],
+        'duration'    => [ 'Duration',   true,   :right, true,   true ],
+        'effort'      => [ 'Effort',     true,   :right, true,   true ],
+        'id'          => [ 'Id',         false,  :left,  true,   false ],
+        'line'        => [ 'Line No.',   false,  :right, true,   false ],
+        'name'        => [ 'Name',       true,   :left,  false,  false ],
+        'no'          => [ 'No.',        false,  :right, true,   false ],
+        'rate'        => [ 'Rate',       true,   :right, true,   true ],
+        'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
+        'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
+      }
+      @propertiesByType = {
+        # Type                  Indent  Align
+        DateAttribute      => [ false,  :left ],
+        FixnumAttribute    => [ false,  :right ],
+        FloatAttribute     => [ false,  :right ],
+        RichTextAttribute  => [ false,  :left ],
+        StringAttribute    => [ false,  :left ]
+      }
+    end
+
+    # Convenience function to access a report attribute
+    def a(attribute)
+      @report.get(attribute)
     end
 
     # This is an abstract member that all sub classes must re-implement. It may
@@ -41,7 +75,7 @@ class TaskJuggler
       raise 'This function must be overriden by derived classes.'
     end
 
-    # Turn the ReportTableElement into an equivalent HTML element tree.
+    # Turn the ReportTableBase into an equivalent HTML element tree.
     def to_html
       html = []
 
@@ -49,9 +83,9 @@ class TaskJuggler
       html << (frame = XMLElement.new('div',
                                       'style' => 'margin: 35px 5% 25px 5%; '))
 
-      if @prolog
-        @prolog.sectionNumbers = false
-        frame << @prolog.to_html
+      if a('prolog')
+        a('prolog').sectionNumbers = false
+        frame << a('prolog').to_html
       end
 
       frame << (table = XMLElement.new('table', 'summary' => 'Report Table',
@@ -60,7 +94,7 @@ class TaskJuggler
                                      'class' => 'tabback'))
 
       # The headline is put in a sub-table to appear bigger.
-      if @headline
+      if a('headline')
         table << (thead = XMLElement.new('thead'))
         thead << (tr = XMLElement.new('tr'))
         tr << (td = XMLElement.new('td'))
@@ -73,7 +107,7 @@ class TaskJuggler
                                      'style' => 'font-size:16px; ' +
                                                 'font-weight:bold',
                                      'class' => 'tabfront'))
-        td1 << XMLNamedText.new(@headline, 'p')
+        td1 << XMLNamedText.new(a('headline'), 'p')
       end
 
       # Now generate the actual table with the data.
@@ -83,13 +117,13 @@ class TaskJuggler
       td << @table.to_html
 
       # Embedd the caption as RichText into the table footer.
-      if @caption
+      if a('caption')
         tbody << (tr = XMLElement.new('tr'))
         tr << (td = XMLElement.new('td', 'class' => 'tabback'))
         td << (div = XMLElement.new('div', 'class' => 'caption',
                                     'style' => 'margin:1px'))
-        @caption.sectionNumbers = false
-        div << @caption.to_html
+        a('caption').sectionNumbers = false
+        div << a('caption').to_html
       end
 
       # A sub-table with the legend.
@@ -110,21 +144,225 @@ class TaskJuggler
                              'href' => "#{AppConfig.contact}")
       td << XMLText.new(" v#{AppConfig.version}")
 
-      if @epilog
-        @epilog.sectionNumbers = false
-        frame << @epilog.to_html
+      if a('epilog')
+        a('epilog').sectionNumbers = false
+        frame << a('epilog').to_html
       end
 
       html
     end
 
-    # Convert the ReportElement into an Array of Arrays. It has one Array for
-    # each line. The nested Arrays have one String for each column.
+    # Convert the table into an Array of Arrays. It has one Array for each
+    # line. The nested Arrays have one String for each column.
     def to_csv
       @table.to_csv
     end
 
+    # Take the complete task list and remove all tasks that are matching the
+    # hide expression, the rollup Expression or are not a descendent of
+    # taskRoot. In case resource is not nil, a task is only included if
+    # the resource is allocated to it in any of the reported scenarios.
+    def filterTaskList(list_, resource, hideExpr, rollupExpr)
+      list = PropertyList.new(list_)
+      if (taskRoot = a('taskRoot'))
+        # Remove all tasks that are not descendents of the taskRoot.
+        list.delete_if { |task| !task.isChildOf?(taskRoot) }
+      end
+
+      if resource
+        # If we have a resource we need to check that the resource is allocated
+        # to the tasks in any of the reported scenarios.
+        list.delete_if do |task|
+          delete = true
+          a('scenarios').each do |scenarioIdx|
+            if task['assignedresources', scenarioIdx].include?(resource)
+              delete = false
+              break;
+            end
+          end
+          delete
+        end
+      end
+
+      # Remove all tasks that don't overlap with the reported interval.
+      list.delete_if do |task|
+        delete = true
+        a('scenarios').each do |scenarioIdx|
+          iv = Interval.new(task['start', scenarioIdx].nil? ?
+                            @project['start'] : task['start', scenarioIdx],
+                            task['end', scenarioIdx].nil? ?
+                            @project['end'] : task['end', scenarioIdx])
+          # Special case to include milestones at the report end.
+          if iv.start == iv.end && iv.end == @end
+            iv.start = iv.end = iv.start - 1
+          end
+          if iv.overlaps?(Interval.new(@start, @end))
+            delete = false
+            break;
+          end
+        end
+        delete
+      end
+
+      standardFilterOps(list, hideExpr, rollupExpr, resource, taskRoot)
+    end
+
+    # Take the complete resource list and remove all resources that are matching
+    # the hide expression, the rollup Expression or are not a descendent of
+    # resourceRoot. In case task is not nil, a resource is only included if
+    # it is assigned to the task in any of the reported scenarios.
+    def filterResourceList(list_, task, hideExpr, rollupExpr)
+      list = PropertyList.new(list_)
+      if (resourceRoot = a('resourceRoot'))
+        # Remove all resources that are not descendents of the resourceRoot.
+        list.delete_if { |resource| !resource.isChildOf?(resourceRoot) }
+      end
+
+      if task
+        # If we have a task we need to check that the resources are assigned
+        # to the task in any of the reported scenarios.
+        iv = Interval.new(@start, @end)
+        list.delete_if do |resource|
+          delete = true
+          a('scenarios').each do |scenarioIdx|
+            if resource.allocated?(scenarioIdx, iv, task)
+              delete = false
+              break;
+            end
+          end
+          delete
+        end
+      end
+
+      standardFilterOps(list, hideExpr, rollupExpr, task, resourceRoot)
+    end
+
+    # This is the default attribute value to text converter. It is used
+    # whenever we need no special treatment.
+    def cellText(property, scenarioIdx, colId)
+      if property.is_a?(Resource)
+        propertyList = @project.resources
+      elsif property.is_a?(Task)
+        propertyList = @project.tasks
+      else
+        raise "Fatal Error: Unknown property #{property.class}"
+      end
+
+      begin
+        # Get the value no matter if it's scenario specific or not.
+        if propertyList.scenarioSpecific?(colId)
+          value = property[colId, scenarioIdx]
+        else
+          value = property.get(colId)
+        end
+
+        type = propertyList.attributeType(colId)
+        if value.nil?
+          if type == DateAttribute
+            nil
+          else
+            ''
+          end
+        else
+          # Certain attribute types need special treatment.
+          if type == DateAttribute
+            value.to_s(a('timeFormat'))
+          elsif type == RichTextAttribute
+            value
+          else
+            value.to_s
+          end
+        end
+      rescue TjException
+        ''
+      end
+    end
+
+    # This function returns true if the values for the _colId_ column need to be
+    # calculated.
+    def calculated?(colId)
+      if @propertiesById.has_key?(colId)
+        return @propertiesById[colId][3]
+      end
+      return false
+    end
+
+    # This functions returns true if the values for the _col_id_ column are
+    # scenario specific.
+    def scenarioSpecific?(colId)
+      if @propertiesById.has_key?(colId)
+        return @propertiesById[colId][4]
+      end
+      return false
+    end
+
+    # Return if the column values should be indented based on the _colId_ or the
+    # _propertyType_.
+    def indent(colId, propertyType)
+      if @propertiesById.has_key?(colId)
+        return @propertiesById[colId][1]
+      elsif @propertiesByType.has_key?(propertyType)
+        return @propertiesByType[propertyType][0]
+      else
+        false
+      end
+    end
+
+    # Return the alignment of the column based on the _colId_ or the
+    # _propertyType_.
+    def alignment(colId, propertyType)
+      if @propertiesById.has_key?(colId)
+        return @propertiesById[colId][2]
+      elsif @propertiesByType.has_key?(propertyType)
+        return @propertiesByType[propertyType][1]
+      else
+        :center
+      end
+    end
+
+    # Returns the default column title for the columns _id_.
+    def defaultColumnTitle(id)
+      # Return an empty string for some special columns that don't have a fixed
+      # title.
+      specials = %w( chart hourly daily weekly monthly quarterly yearly)
+      return '' if specials.include?(id)
+
+      # Return the title for build-in hardwired columns.
+      return @propertiesById[id][0] if @propertiesById.include?(id)
+
+      # Otherwise we have to see if the column id is a task or resource
+      # attribute and return it's value.
+      (name = @project.tasks.attributeName(id)).nil? &&
+      (name = @project.resources.attributeName(id)).nil?
+      name
+    end
+
+    def supportedColumns
+      @propertiesById.keys
+    end
+
   protected
+    # In case the user has not specified the report period, we try to fit all
+    # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
+    # list of scenario indexes.
+    def adjustReportPeriod(tasks, scenarios)
+      return if tasks.empty?
+
+      @start = @end = nil
+      scenarios.each do |scenarioIdx|
+        tasks.each do |task|
+          date = task['start', scenarioIdx] || @project['start']
+          @start = date if @start.nil? || date < @start
+          date = task['end', scenarioIdx] || @project['end']
+          @end = date if @end.nil? || date > @end
+        end
+      end
+      # Make sure we have a minimum width of 1 day
+      @end = @start + 60 * 60 * 24 if @end < @start + 60 * 60 * 24
+      padding = ((@end - @start) * 0.10).to_i
+      @start -= padding
+      @end += padding
+    end
 
     # Generates cells for the table header. _columnDef_ is the
     # TableColumnDefinition object that describes the column. Based on the id of
@@ -135,7 +373,8 @@ class TaskJuggler
         # For the 'chart' column we generate a GanttChart object. The sizes are
         # set so that the lines of the Gantt chart line up with the lines of the
         # table.
-        gantt = GanttChart.new(@now, @weekStartsMonday, self)
+        gantt = GanttChart.new(a('now'),
+                               a('weekStartsMonday'), self)
         gantt.generateByScale(@start, @end, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
         gantt.header.height = @table.headerLineHeight * 2 + 1
@@ -155,7 +394,8 @@ class TaskJuggler
         genCalChartHeader(columnDef, @start.midnight, :sameTimeNextDay,
                           :shortMonthName, :day)
       when 'weekly'
-        genCalChartHeader(columnDef, @start.beginOfWeek(@weekStartsMonday),
+        genCalChartHeader(columnDef,
+                          @start.beginOfWeek(a('weekStartsMonday')),
                           :sameTimeNextWeek, :shortMonthName, :day)
       when 'monthly'
         genCalChartHeader(columnDef, @start.beginOfMonth, :sameTimeNextMonth,
@@ -183,12 +423,12 @@ class TaskJuggler
     # line.
     def generateTaskList(taskList, resourceList, scopeLine)
       queryAttrs = { 'scopeProperty' => scopeLine ? scopeLine.property : nil,
-                     'loadUnit' => @loadUnit,
-                     'numberFormat' => @numberFormat,
-                     'currencyFormat' => @currencyFormat,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
-                     'costAccount' => @costAccount,
-                     'revenueAccount' => @revenueAccount }
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
       taskList.query = Query.new(queryAttrs)
       taskList.sort!
 
@@ -202,17 +442,17 @@ class TaskJuggler
         no += 1
         Log.activity if lineNo % 10 == 0
         lineNo += 1
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           # Generate line for each task.
           line = ReportTableLine.new(@table, task, scopeLine)
 
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, @taskRoot, taskList.treeMode?)
+          setIndent(line, a('taskRoot'), taskList.treeMode?)
 
           # Generate a cell for each column in this line.
-          @columns.each do |columnDef|
+          a('columns').each do |columnDef|
             next unless generateTableCell(line, task, columnDef, scenarioIdx)
           end
         end
@@ -221,9 +461,9 @@ class TaskJuggler
           # If we have a resourceList we generate nested lines for each of the
           # resources that are assigned to this task and pass the user-defined
           # filter.
-          resourceList.setSorting(@sortResources)
+          resourceList.setSorting(a('sortResources'))
           assignedResourceList = filterResourceList(resourceList, task,
-              @hideResource, @rollupResource)
+              a('hideResource'), a('rollupResource'))
           assignedResourceList.sort!
           lineNo = generateResourceList(assignedResourceList, nil, line)
         end
@@ -237,12 +477,12 @@ class TaskJuggler
     # generated resource lines will be within the scope this task line.
     def generateResourceList(resourceList, taskList, scopeLine)
       queryAttrs = { 'scopeProperty' => scopeLine ? scopeLine.property : nil,
-                     'loadUnit' => @loadUnit,
-                     'numberFormat' => @numberFormat,
-                     'currencyFormat' => @currencyFormat,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
-                     'costAccount' => @costAccount,
-                     'revenueAccount' => @revenueAccount }
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
       resourceList.query = Query.new(queryAttrs)
       resourceList.sort!
 
@@ -256,17 +496,17 @@ class TaskJuggler
         no += 1
         Log.activity if lineNo % 10 == 0
         lineNo += 1
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           # Generate line for each resource.
           line = ReportTableLine.new(@table, resource, scopeLine)
 
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, @resourceRoot, resourceList.treeMode?)
+          setIndent(line, a('resourceRoot'), resourceList.treeMode?)
 
           # Generate a cell for each column in this line.
-          @columns.each do |column|
+          a('columns').each do |column|
             next unless generateTableCell(line, resource, column, scenarioIdx)
           end
         end
@@ -275,9 +515,10 @@ class TaskJuggler
           # If we have a taskList we generate nested lines for each of the
           # tasks that the resource is assigned to and pass the user-defined
           # filter.
-          taskList.setSorting(@sortTasks)
+          taskList.setSorting(a('sortTasks'))
           assignedTaskList = filterTaskList(taskList, resource,
-              @hideTask, @rollupTask)
+                                            a('hideTask'),
+                                            a('rollupTask'))
           assignedTaskList.sort!
           lineNo = generateTaskList(assignedTaskList, nil, line)
         end
@@ -286,6 +527,114 @@ class TaskJuggler
     end
 
   private
+
+    # This function implements the generic filtering functionality for all kinds
+    # of lists.
+    def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)
+      # Remove all properties that the user wants to have hidden.
+      if hideExpr
+        list.delete_if do |property|
+          hideExpr.eval(property, scopeProperty)
+        end
+      end
+
+      # Remove all children of properties that the user has rolled-up.
+      if rollupExpr
+        list.delete_if do |property|
+          parent = property.parent
+          delete = false
+          while (parent)
+            if rollupExpr.eval(parent, scopeProperty)
+              delete = true
+              break
+            end
+            parent = parent.parent
+          end
+          delete
+        end
+      end
+
+      # Re-add parents in tree mode
+      if list.treeMode?
+        parents = []
+        list.each do |property|
+          parent = property
+          while (parent = parent.parent)
+            parents << parent unless list.include?(parent) ||
+                                     parents.include?(parent)
+            break if parent == root
+          end
+        end
+        list.append(parents)
+      end
+
+      list
+    end
+
+    # This function converts number to strings that may include a unit. The
+    # unit is determined by @loadUnit. In the automatic modes, the shortest
+    # possible result is shown and the unit is always appended. _value_ is the
+    # value to convert. _factors_ determines the conversion factors for the
+    # different units.
+    # TODO: Delete when all users have been migrated to use Query!
+    def scaleValue(value, factors)
+      loadUnit = a('loadUnit')
+      numberFormat = a('numberFormat')
+
+      if loadUnit == :shortauto || loadUnit == :longauto
+        # We try all possible units and store the resulting strings here.
+        options = []
+        # For each of the units we can define a maximum value that the value
+        # should not exceed. A maximum of 0 means no limit.
+        max = [ 60, 48, 0, 8, 24, 0 ]
+
+        i = 0
+        shortest = nil
+        factors.each do |factor|
+          scaledValue = value * factor
+          str = numberFormat.format(scaledValue)
+          # We ignore results that are 0 or exceed the maximum. To ensure that
+          # we have at least one result the unscaled value is always taken.
+          if (factor != 1.0 && scaledValue == 0) ||
+             (max[i] != 0 && scaledValue > max[i])
+            options << nil
+          else
+            options << str
+          end
+          i += 1
+        end
+
+        # Default to days in case they are all the same.
+        shortest = 2
+        # Find the shortest option.
+        6.times do |j|
+          shortest = j if options[j] &&
+                          options[j].length < options[shortest].length
+        end
+
+        str = options[shortest]
+        if loadUnit == :longauto
+          # For the long units we handle singular and plural properly. For
+          # English we just need to append an 's', but this code will work for
+          # other languages as well.
+          units = []
+          if str == "1"
+            units = %w( minute hour day week month year )
+          else
+            units = %w( minutes hours days weeks months years )
+          end
+          str += ' ' + units[shortest]
+        else
+          str += %w( min h d w m y )[shortest]
+        end
+      else
+        # For fixed units we just need to do the conversion. No unit is
+        # included.
+        units = [ :minutes, :hours, :days, :weeks, :months, :years ]
+        str = numberFormat.format(value * factors[units.index(loadUnit)])
+      end
+      str
+    end
 
     # Generate the header data for calendar tables. They consists of columns for
     # each hour, day, week, etc. _columnDef_ is the definition of the columns.
@@ -320,14 +669,15 @@ class TaskJuggler
         firstColumn = nil
         # The innter loops terminates when the label for the upper scale has
         # changed to the next scale cell.
-        while t < @end && (name1Func.nil? || t.send(name1Func) == currentInterval)
+        while t < @end && (name1Func.nil? ||
+                           t.send(name1Func) == currentInterval)
           # call TjTime::sameTimeNext... function to get the end of the column.
           nextT = t.send(sameTimeNextFunc)
           iv = Interval.new(t, nextT)
           # Create the new column object.
           column = ReportTableColumn.new(table, nil, '')
           # Store the date of the column in the original form.
-          column.cell1.data = t.to_s(@timeFormat)
+          column.cell1.data = t.to_s(a('timeFormat'))
           # The upper scale cells will be merged into one large cell that spans
           # all lower scale cells that belong to this upper cell.
           if firstColumn.nil?
@@ -391,7 +741,7 @@ class TaskJuggler
         start = @start.midnight
         sameTimeNextFunc = :sameTimeNextDay
       when 'weekly'
-        start = @start.beginOfWeek(@weekStartsMonday)
+        start = @start.beginOfWeek(a('weekStartsMonday'))
         sameTimeNextFunc = :sameTimeNextWeek
       when 'monthly'
         start = @start.beginOfMonth
@@ -447,10 +797,10 @@ class TaskJuggler
       end
 
       # Check if we are dealing with multiple scenarios.
-      if @scenarios.length > 1
+      if a('scenarios').length > 1
         # Check if the attribute is not scenario specific
         unless properties.scenarioSpecific?(columnDef.id)
-          if scenarioIdx == @scenarios.first
+          if scenarioIdx == a('scenarios').first
             #  Use a somewhat bigger font.
             cell.fontSize = 15
           else
@@ -458,7 +808,7 @@ class TaskJuggler
             cell.hidden = true
             return false
           end
-          cell.rows = @scenarios.length
+          cell.rows = a('scenarios').length
         end
       end
 
@@ -469,12 +819,13 @@ class TaskJuggler
       query = Query.new('property' => property,
                         'scopeProperty' => scopeProperty,
                         'attributeId' => columnDef.id,
-                        'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
-                        'numberFormat' => @numberFormat,
-                        'currencyFormat' => @currencyFormat,
+                        'scenarioIdx' => scenarioIdx,
+                        'loadUnit' => a('loadUnit'),
+                        'numberFormat' => a('numberFormat'),
+                        'currencyFormat' => a('currencyFormat'),
                         'start' => @start, 'end' => @end,
-                        'costAccount' => @costAccount,
-                        'revenueAccount' => @revenueAccount)
+                        'costAccount' => a('costAccount'),
+                        'revenueAccount' => a('revenueAccount'))
       if cell.text
         if columnDef.cellText
           cell.text = expandMacros(columnDef.cellText, cell.text, query)
@@ -499,11 +850,11 @@ class TaskJuggler
       cell = newCell(line)
 
       unless scenarioSpecific?(columnDef.id)
-        if scenarioIdx != @scenarios.first
+        if scenarioIdx != a('scenarios').first
           cell.hidden = true
           return false
         end
-        cell.rows = @scenarios.length
+        cell.rows = a('scenarios').length
       end
 
       setStandardCellAttributes(cell, columnDef, nil, line)
@@ -515,12 +866,13 @@ class TaskJuggler
       query = Query.new('property' => property,
                         'scopeProperty' => scopeProperty,
                         'attributeId' => columnDef.id,
-                        'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
-                        'numberFormat' => @numberFormat,
-                        'currencyFormat' => @currencyFormat,
+                        'scenarioIdx' => scenarioIdx,
+                        'loadUnit' => a('loadUnit'),
+                        'numberFormat' => a('numberFormat'),
+                        'currencyFormat' => a('currencyFormat'),
                         'start' => @start, 'end' => @end,
-                        'costAccount' => @costAccount,
-                        'revenueAccount' => @revenueAccount)
+                        'costAccount' => a('costAccount'),
+                        'revenueAccount' => a('revenueAccount'))
       query.process
       cell.text = query.result
 
@@ -564,11 +916,12 @@ class TaskJuggler
                             @project['end'] : task['end', scenarioIdx])
 
       query = Query.new('property' => task, 'scopeProperty' => resource,
-                        'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
-                        'numberFormat' => @numberFormat,
-                        'currencyFormat' => @currencyFormat,
-                        'costAccount' => @costAccount,
-                        'revenueAccount' => @revenueAccount)
+                        'scenarioIdx' => scenarioIdx,
+                        'loadUnit' => a('loadUnit'),
+                        'numberFormat' => a('numberFormat'),
+                        'currencyFormat' => a('currencyFormat'),
+                        'costAccount' => a('costAccount'),
+                        'revenueAccount' => a('revenueAccount'))
 
       firstCell = nil
       while t < @end
@@ -637,11 +990,12 @@ class TaskJuggler
       end
 
       query = Query.new('property' => resource,
-                        'scenarioIdx' => scenarioIdx, 'loadUnit' => @loadUnit,
-                        'numberFormat' => @numberFormat,
-                        'currencyFormat' => @currencyFormat,
-                        'costAccount' => @costAccount,
-                        'revenueAccount' => @revenueAccount)
+                        'scenarioIdx' => scenarioIdx,
+                        'loadUnit' => a('loadUnit'),
+                        'numberFormat' => a('numberFormat'),
+                        'currencyFormat' => a('currencyFormat'),
+                        'costAccount' => a('costAccount'),
+                        'revenueAccount' => a('revenueAccount'))
 
       firstCell = nil
       while t < @end

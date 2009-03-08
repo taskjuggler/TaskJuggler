@@ -80,6 +80,11 @@ class TaskJuggler
       out
     end
 
+    def to_s
+      [ @signPrefix, @signSuffix, @thousandsSeparator, @fractionSeparator,
+        @fractionDigits ].collect { |s| "\"#{s}\"" }.join(' ')
+    end
+
   end
 
 end

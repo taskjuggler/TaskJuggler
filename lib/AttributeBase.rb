@@ -44,7 +44,7 @@ class TaskJuggler
       if respond_to?('initValue')
         @value = initValue(@type.default)
       else
-        @value = @type.default
+        @value = copy(@type.default)
       end
       # The mode is flag that controls how value assignements affect the flags.
       @@mode = 0
@@ -55,21 +55,27 @@ class TaskJuggler
     # on.
     def inherit(value)
       @inherited = true
+      @value = copy(value)
+    end
+
+    def copy(value)
       case value
+      when NilClass
+        nil
       when Fixnum, Float, TrueClass, FalseClass, Symbol, Account
-        @value = value
+        value
       when Limits
-        @value = Limits.new(value)
+        Limits.new(value)
       when ShiftAssignments
-        @value = ShiftAssignments.new(value)
+        ShiftAssignments.new(value)
       when RealFormat
-        @value = RealFormat.new(value)
+        RealFormat.new(value)
       when String, TjTime
-        @value = value.clone
+        value.clone
       when WorkingHours
-        @value = WorkingHours.new(value)
+        WorkingHours.new(value)
       when Array
-        @value = Array.new(value)
+        Array.new(value)
       else
         raise "Don't know how to copy values of class #{value.class}"
       end

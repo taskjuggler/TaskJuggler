@@ -248,6 +248,10 @@ task AcSo "Accounting Software" {
 # scheduled. But no reports would be generated to visualize the
 # results.
 
+report index "Overview" {
+  list tasks
+}
+
 # A traditional Gantt chart with a project overview.
 htmltaskreport "ProjectPlanOverview.html" {
   prolog '

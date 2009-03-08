@@ -114,5 +114,38 @@ class TaskJuggler
 
   end
 
+  class LogicalAttribute < LogicalOperation
+
+    def initialize(attribute, scenario)
+      @scenarioIdx = scenario
+      super
+    end
+
+    def LogicalAttribute::tjpId
+      'logical'
+    end
+
+    def eval(expr)
+      expr.property[@operand1, @scenarioIdx]
+    end
+
+  end
+
+  class LogicalFlag < LogicalOperation
+
+    def initialize(opnd)
+      super
+    end
+
+    def eval(expr)
+      expr.property['flags', 0].include?(@operand1)
+    end
+
+    def to_s
+      @operand1
+    end
+
+  end
+
 end
 

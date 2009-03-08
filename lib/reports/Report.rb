@@ -11,7 +11,6 @@
 #
 
 require 'PropertyTreeNode'
-require 'reports/ReportElement'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
@@ -20,28 +19,22 @@ require 'HTMLDocument'
 
 class TaskJuggler
 
-  # The Report class holds the fundamental description and functionality to turn
-  # the scheduled project into a user readable form. A report consists of one or
-  # more ReportElement objects and some attributes that are global to all
-  # elements.
+  # The Report class holds the fundamental description and functionality to
+  # turn the scheduled project into a user readable form. A report may contain
+  # other reports.
   class Report < PropertyTreeNode
 
     attr_reader :name, :project, :sourceFileInfo
-    attr_accessor :resourceRoot, :taskRoot
+    attr_accessor :table
 
     # Create a new report object.
-    def initialize(project, id, name, parent, format, sourceFileInfo)
+    def initialize(project, id, name, parent, format)
       super(project.reports, id, name, parent)
       project.addReport(self)
 
       @outputFormats = [ format ]
-      @sourceFileInfo = sourceFileInfo
 
-      # The following attributes determine the content and look of the report.
-      @resourceRoot = nil
-      @taskRoot = nil
-
-      @elements = []
+      @table = nil
     end
 
     # Add new ouput format request.
@@ -56,9 +49,7 @@ class TaskJuggler
       begin
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
-        @elements.each do |element|
-          element.generateIntermediateFormat
-        end
+        @table.generateIntermediateFormat if @table
 
         # Then generate the actual output format.
         @outputFormats.each do |format|
@@ -80,12 +71,6 @@ class TaskJuggler
                                                  $!.message, nil, nil,
                                                  @sourceFileInfo))
       end
-    end
-
-    # This function should only be called within the library. It's not a user
-    # callable function.
-    def addElement(element) # :nodoc:
-      @elements << element
     end
 
   private
@@ -258,17 +243,17 @@ EOT
                           )
       html << (body = XMLElement.new('body'))
 
-      @elements.each do |element|
-        body << element.to_html
-      end
+      body << @table.to_html if @table
 
       html.write(@name + '.html')
     end
 
     # Generate a CSV version of the report.
     def generateCSV
+      return nil unless @table
+
       # CSV format can only handle the first element.
-      csv = @elements[0].to_csv
+      csv = @table.to_csv
       # Expand nested tables into the outer table.
       columnIdx = 0
       while columnIdx < csv[0].length do
@@ -305,9 +290,9 @@ EOT
 
     # Generate an export report
     def generateExport
-      extension = @elements[0].mainFile ? 'tjp' : 'tji'
+      extension = @table.mainFile ? 'tjp' : 'tji'
       f = @name == '.' ? $stdout : File.new(@name + '.' + extension, 'w')
-      f.puts "#{@elements[0].to_tjp}"
+      f.puts "#{@table.to_tjp}"
     end
 
   end

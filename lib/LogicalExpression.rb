@@ -12,10 +12,10 @@
 
 require 'LogicalOperation'
 require 'Attributes'
-require 'LogicalFlag'
 require 'LogicalFunction'
 
 class TaskJuggler
+
 
   # A LogicalExpression is an object that describes tree of LogicalOperation
   # objects and the context that it should be evaluated in.

@@ -37,7 +37,7 @@ class TaskJuggler
     # more information about the chart before we can actually generate it. _now_
     # is the date that should be used as current date. _weekStartsMonday_ is
     # true if the weeks should start on Mondays instead of Sundays. _table_ is a
-    # reference to the ReportTableElement that the chart is part of.
+    # reference to the ReportTableBase that the chart is part of.
     def initialize(now, weekStartsMonday, table = nil)
       # The start and end dates of the reported interval.
       @start = nil

@@ -172,6 +172,20 @@ class TaskJuggler
 
   end
 
+  class ColumnListAttribute < AttributeBase
+
+    def initialize(property, type)
+      super(property, type)
+
+      @value = Array.new
+    end
+
+    def ColumnListAttribute::tjpId
+      'columns'
+    end
+
+  end
+
   class DateAttribute < AttributeBase
     def initialize(property, type)
       super(property, type)
@@ -313,20 +327,32 @@ class TaskJuggler
 
   end
 
+  class LogicalExpressionAttribute < AttributeBase
 
-  class LogicalAttribute
-
-    def initialize(attribute, scenario)
-      @scenarioIdx = scenario
-      super(attribute)
+    def initialize(property, type)
+      super
     end
 
-    def LogicalAttribute::tjpId
-      'logical'
+    def LogicalExpressionAttribute::tjpId
+      'logicalexpression'
     end
 
-    def eval(expr)
-      expr.property[@operand1, @scenarioIdx]
+  end
+
+  class PropertyAttribute < AttributeBase
+    def initialize(property, type)
+      super
+    end
+
+    def PropertyAttribute::tjpId
+      'property'
+    end
+  end
+
+  class RealFormatAttribute < AttributeBase
+
+    def initialize(property, type)
+      super
     end
 
   end
@@ -381,6 +407,22 @@ class TaskJuggler
 
   end
 
+  class ScenarioListAttribute < AttributeBase
+    def initialize(property, type)
+      super
+    end
+
+    def ScenarioListAttribute::tjpId
+      'scenarios'
+    end
+
+    def to_s
+      @value.join(', ')
+    end
+
+  end
+
+
   class ShiftAssignmentsAttribute < AttributeBase
 
     def initialize(property, type)
@@ -397,6 +439,20 @@ class TaskJuggler
 
     def to_tjp
       'This code is still missing!'
+    end
+
+  end
+
+  class SortListAttribute < AttributeBase
+
+    def initialize(property, type)
+      super(property, type)
+
+      @value = Array.new
+    end
+
+    def SortListAttribute::tjpId
+      'sorting'
     end
 
   end

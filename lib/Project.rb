@@ -97,7 +97,7 @@ class TaskJuggler
         [ 'enabled',   'Enabled',    BooleanAttribute,
           true,  false,   false, true ],
         [ 'minslackrate', 'Min. Slack Rate', FloatAttribute,
-          true,  false,   false, 0.0 ],
+          true,  false,   false, 1.0 ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
           true,  false,   false, false ],
         [ 'strict', 'Strict Bookings', BooleanAttribute,
@@ -265,24 +265,54 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         # Inh.   Inh.Prj  Scen.  Default
+        [ 'caption',   'Caption', RichTextAttribute,
+          false, false,   false, nil ],
+        [ 'columns',   'Columns', ColumnListAttribute,
+          true,  false,   false, [] ],
         [ 'costAccount', 'Cost Account', AccountAttribute,
           true,  true,    false, nil ],
-        [ 'currencyFormat', 'Currency Format', StringAttribute,
+        [ 'currencyFormat', 'Currency Format', RealFormatAttribute,
           true,  true,    false, nil ],
         [ 'end',       'End',          DateAttribute,
           true,  true,    false, nil ],
+        [ 'epilog',    'Epilog',  RichTextAttribute,
+          false, false,   false, nil ],
+        [ 'ganttBars', 'Gantt Bars', BooleanAttribute,
+          true,  false,   false, true ],
+        [ 'headline',  'Headline',   StringAttribute,
+          false, false,   false, '' ],
+        [ 'hideResource', 'Hide Resource', LogicalExpressionAttribute,
+          true,  false,   false, nil ],
+        [ 'hideTask',  'Hide Task', LogicalExpressionAttribute,
+          true,  false,   false, nil ],
         [ 'loadUnit',  'Load Unit', StringAttribute,
           true,  true,    false, nil ],
         [ 'now',       'Now',          DateAttribute,
           true,  true,    false, nil ],
-        [ 'numberFormat', 'Number Format', StringAttribute,
+        [ 'numberFormat', 'Number Format', RealFormatAttribute,
           true,  true,    false, nil ],
+        [ 'prolog',    'Prolog', RichTextAttribute,
+          false, false,   false, nil],
+        [ 'resourceRoot',  'resource Root', PropertyAttribute,
+          true,  false,   false, nil ],
         [ 'revenueAccount', 'Revenue Account', AccountAttribute,
           true,  true,    false, nil ],
+        [ 'rollupResource', 'Rollup Resource', LogicalExpressionAttribute,
+          true,  false,   false, nil ],
+        [ 'rollupTask', 'Rollup Task', LogicalExpressionAttribute,
+          true, false,    false, nil ],
+        [ 'scenarios',  'Scenarios', ScenarioListAttribute,
+          true, false,    false, [ 0 ] ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
           true,  true,    false, nil ],
+        [ 'sortResources', 'Sort Resources', SortListAttribute,
+          true,  false,   false, [[ 'seqno', true, -1 ]] ],
+        [ 'sortTasks', 'Sort Tasks', SortListAttribute,
+          true,  false,   false, [[ 'seqno', true, -1 ]] ],
         [ 'start',     'Start',        DateAttribute,
           true,  true,    false, nil ],
+        [ 'taskRoot',  'Task Root', PropertyAttribute,
+          true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,
           true,  true,    false, nil ],
         [ 'timezone', 'Time Zone', StringAttribute,
@@ -392,6 +422,11 @@ class TaskJuggler
     # Return the Resource with the ID _id_ or return nil if it does not exist.
     def resource(id)
       @resources[id]
+    end
+
+    # Return the Report with the ID +id+ or return nil if it does not exist.
+    def report(id)
+      @reports[id]
     end
 
     # Return the Report with the name +name+ or return nil if it does not

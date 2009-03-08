@@ -13,7 +13,7 @@
 class TaskJuggler
 
   # This class models the output format independent version of a cell in a
-  # ReportTableElement. It belongs to a certain ReportTableLine and
+  # ReportTableBase. It belongs to a certain ReportTableLine and
   # ReportTableColumn. Normally a cell contains text on a colored background.
   # By help of the @special variable it can alternatively contain any object the
   # provides the necessary output methods such as to_html.

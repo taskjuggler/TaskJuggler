@@ -212,10 +212,11 @@ class TaskJuggler
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      @report = Report.new(@project, "report#{@reportCounter += 1}",
-                           name, nil, type, sourceFileInfo)
-      @report.inheritAttributes
-      @report
+      @property = Report.new(@project, "report#{@reportCounter += 1}",
+                             name, nil, type)
+      @property.sourceFileInfo = sourceFileInfo
+      @property.inheritAttributes
+      @property
     end
 
 
@@ -315,7 +316,8 @@ class TaskJuggler
     # return from an included file, we need to restore the old values. This
     # function creates or resets the stack.
     def initFileStack
-      @fileStackVariables = %w( taskprefix resourceprefix accountprefix )
+      @fileStackVariables = %w( taskprefix reportprefix
+                                resourceprefix accountprefix )
       stackEntry = {}
       @fileStackVariables.each do |var|
         stackEntry[var] = ''

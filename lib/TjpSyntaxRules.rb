@@ -450,7 +450,7 @@ EOT
 
   def rule_columnId
     pattern(%w( !reportableAttributes ), lambda {
-      title = @reportElement.defaultColumnTitle(@val[0])
+      title = @property.table.defaultColumnTitle(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })
     doc('columnid', <<'EOT'
@@ -558,8 +558,8 @@ EOT
 
   def rule_csvResourceReportHeader
     pattern(%w( _csvresourcereport !csvFileName ), lambda {
-      @report = newReport(@val[1], :csv, sourceFileInfo)
-      @reportElement = ResourceListRE.new(@report)
+      newReport(@val[1], :csv, sourceFileInfo)
+      @property.table = ResourceListRE.new(@property)
     })
   end
 
@@ -577,8 +577,8 @@ EOT
 
   def rule_csvTaskReportHeader
     pattern(%w( _csvtaskreport !csvFileName ), lambda {
-      @report = newReport(@val[1], :csv, sourceFileInfo)
-      @reportElement = TaskListRE.new(@report)
+      newReport(@val[1], :csv, sourceFileInfo)
+      @property.table = TaskListRE.new(@property)
     })
   end
 
@@ -705,8 +705,8 @@ EOT
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      @report = newReport(@val[1], :export, sourceFileInfo)
-      @reportElement = TjpExportRE.new(@report, mainFile)
+      newReport(@val[1], :export, sourceFileInfo)
+      @property.table = TjpExportRE.new(@property, mainFile)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -725,7 +725,7 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @reportElement.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.set('resourceAttrs', @val[1].include?('none') ? [] : @val[1])
     })
     doc('resourceattributes', <<"EOT"
 Define a list of resource attributes that should be included in the report. To
@@ -734,7 +734,7 @@ used, no optional resource attributes will be exported.
 EOT
         )
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @reportElement.taskAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.set('taskAttrs', @val[1].include?('none') ? [] : @val[1])
     })
     doc('taskattributes', <<"EOT"
 Define a list of task attributes that should be included in the report. To
@@ -939,7 +939,7 @@ EOT
 
   def rule_hideresource
     pattern(%w( _hideresource !logicalExpression ), lambda {
-      @reportElement.hideResource = @val[1]
+      @property.set('hideResource', @val[1])
     })
     doc('hideresource', <<'EOT'
 Do not include resources that match the specified logical expression. If the
@@ -951,7 +951,7 @@ EOT
 
   def rule_hidetask
     pattern(%w( _hidetask !logicalExpression ), lambda {
-      @reportElement.hideTask = @val[1]
+      @property.set('hideTask', @val[1])
     })
     doc('hidetask', <<'EOT'
 Do not include tasks that match the specified logical expression. If the
@@ -987,8 +987,8 @@ EOT
 
   def rule_htmlResourceReportHeader
     pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
-      @report = newReport(@val[1], :html, sourceFileInfo)
-      @reportElement = ResourceListRE.new(@report)
+      newReport(@val[1], :html, sourceFileInfo)
+      @property.table = ResourceListRE.new(@property)
     })
   end
 
@@ -1003,8 +1003,8 @@ EOT
 
   def rule_htmlTaskReportHeader
     pattern(%w( _htmltaskreport !htmlFileName ), lambda {
-      @report = newReport(@val[1], :html, sourceFileInfo)
-      @reportElement = TaskListRE.new(@report)
+      newReport(@val[1], :html, sourceFileInfo)
+      @property.table = TaskListRE.new(@property)
     })
   end
 
@@ -1023,6 +1023,16 @@ EOT
 This attribute can be used to insert the accounts of the included file as
 sub-account of the account specified by ID. The parent account must already be
 defined.
+EOT
+    )
+
+    pattern(%w( _reportprefix !taskId ), lambda {
+      @reportprefix = @val[1].fullId
+    })
+    doc('reportprefix', <<'EOT'
+This attribute can be used to insert the reports of the included file as
+sub-report of the report specified by ID. The parent report must already
+be defined.
 EOT
     )
 
@@ -1190,12 +1200,12 @@ EOT
     repeatable
 
     pattern(%w( !balance ), lambda {
-      @reportElement.costAccount = @val[0][0]
-      @reportElement.revenueAccount = @val[0][1]
+      @property.set('costAccount', @val[0][0])
+      @property.set('revenueAccount', @val[0][1])
     })
 
     pattern(%w( _caption $STRING ), lambda {
-      @reportElement.caption = newRichText(@val[1])
+      @property.set('caption', newRichText(@val[1]))
     })
     doc('caption', <<'EOT'
 The caption will be embedded in the footer of the table or data segment. The
@@ -1207,7 +1217,7 @@ EOT
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
       columns += @val[2] if @val[2]
-      @reportElement.columns = columns
+      @property.set('columns', columns)
     })
     doc('columns', <<'EOT'
 Specifies which columns shall be included in a report.
@@ -1222,7 +1232,7 @@ EOT
        )
 
     pattern(%w( _epilog $STRING ), lambda {
-      @reportElement.epilog = newRichText(@val[1])
+      @property.set('epilog', newRichText(@val[1]))
     })
     doc('epilog', <<'EOT'
 Define a text section that is printed right after the actual report data. The
@@ -1233,7 +1243,7 @@ EOT
     pattern(%w( !reportEnd ))
 
     pattern(%w( _headline $STRING ), lambda {
-      @reportElement.headline = @val[1]
+      @property.set('headline', @val[1])
     })
     doc('headline.legacy', <<'EOT'
 Specifies the headline for a report.
@@ -1245,7 +1255,7 @@ EOT
     pattern(%w( !hidetask ))
 
     pattern(%w( _loadunit !loadunit ), lambda {
-      @reportElement.loadUnit = :"#{@val[1]}"
+      @property.set('loadUnit', :"#{@val[1]}")
     })
     doc('loadunit.legacy', <<'EOT'
 Determines what unit should be used to display all load values in this report.
@@ -1253,7 +1263,7 @@ EOT
        )
 
     pattern(%w( _prolog $STRING ), lambda {
-      @reportElement.prolog = newRichText(@val[1])
+      @property.set('prolog', newRichText(@val[1]))
     })
     doc('prolog', <<'EOT'
 Define a text section that is printed right before the actual report data. The
@@ -1262,7 +1272,7 @@ EOT
        )
 
     pattern(%w( _rawhead $STRING ), lambda {
-      @reportElement.rawHead = @val[1]
+      @property.set('rawHead', @val[1])
     })
     doc('rawhead.legacy', <<'EOT'
 Specifies a section of raw HTML code that will be inserted at the top of the
@@ -1271,7 +1281,7 @@ EOT
         )
 
     pattern(%w( _rawtail $STRING ), lambda {
-      @reportElement.rawTail = @val[1]
+      @property.set('rawTail', @val[1])
     })
     doc('rawtail.legacy', <<'EOT'
 Specifies a section of raw HTML code that will be inserted at the bottom of
@@ -1282,7 +1292,7 @@ EOT
     pattern(%w( !reportPeriod ))
 
     pattern(%w( _rolluptask !logicalExpression ), lambda {
-      @reportElement.rollupTask = @val[1]
+      @property.set('rollupTask', @val[1])
     })
     doc('rolluptask.legacy', <<'EOT'
 Do not show sub-tasks of tasks that match the specified logical expression.
@@ -1292,7 +1302,7 @@ EOT
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
-      @reportElement.scenarios = @val[1]
+      @property.set('scenarios', @val[1])
     })
     doc('scenarios.legacy', <<'EOT'
 List of scenarios that should be included in the report.
@@ -1300,7 +1310,7 @@ EOT
        )
 
     pattern(%w( _sortresources !sortCriteria ), lambda {
-      @reportElement.sortResources = @val[1]
+      @property.set('sortResources', @val[1])
     })
     doc('sortresources.legacy', <<'EOT'
 Determines how the resources are sorted in the report. Multiple criteria can be
@@ -1311,7 +1321,7 @@ EOT
        )
 
     pattern(%w( _sorttasks !sortCriteria ), lambda {
-      @reportElement.sortTasks = @val[1]
+      @property.set('sortTasks', @val[1])
     })
     doc('sorttasks.legacy', <<'EOT'
 Determines how the tasks are sorted in the report. Multiple criteria can be
@@ -1324,7 +1334,7 @@ EOT
     pattern(%w( !reportStart ))
 
     pattern(%w( _taskroot !taskId), lambda {
-      @reportElement.taskRoot = @val[1]
+      @property.set('taskRoot', @val[1])
     })
     doc('taskroot.legacy', <<'EOT'
 Only tasks below the specified root-level tasks are exported. The exported
@@ -1335,7 +1345,7 @@ EOT
        )
 
     pattern(%w( !timeformat ), lambda {
-      @reportElement.timeFormat = @val[0]
+      @property.set('timeFormat', @val[0])
     })
   end
 
@@ -2216,6 +2226,20 @@ EOT
     optionsRule('referenceAttributes')
   end
 
+  def rule_report
+    pattern(%w( !reportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+    doc('report', <<'EOT'
+Reports are used to store and vizualize the results of a scheduled project.
+The content, the output format and the appearance of a report can be adjusted
+with report attributes. Reports can be nested to create structured document
+trees. As with other properties, the resource attributes can be inherited from
+the enclosing report or the project.
+EOT
+       )
+  end
+
 
   def rule_reportableAttributes
     singlePattern('_chart')
@@ -2381,6 +2405,14 @@ EOT
 
     pattern(%w( !hidetask ))
 
+    pattern(%w( _list !tableType ), lambda {
+      case @val[1]
+      when :tasks then TaskListRE.new(@property)
+      when :resources then ResourceListRE.new(@property)
+      end
+    })
+    doc('list', 'Specifies the content of the report table')
+
     pattern(%w( _loadunit !loadunit ), lambda {
       @property.set('loadUnit', "#{@val[1]}")
     })
@@ -2407,6 +2439,7 @@ the report.
 EOT
        )
 
+    pattern(%w( !report ))
     pattern(%w( !reportPeriod ))
 
     pattern(%w( _rolluptask !logicalExpression ), lambda {
@@ -2473,6 +2506,7 @@ EOT
     pattern(%w( !export ))
     pattern(%w( !htmlResourceReport ))
     pattern(%w( !htmlTaskReport ))
+    pattern(%w( !report ))
     pattern(%w( !resourceReport ))
     pattern(%w( !taskReport ))
   end
@@ -2485,11 +2519,11 @@ EOT
 
   def rule_reportEnd
     pattern(%w( _end !date ), lambda {
-      if @val[1] < @reportElement.start
+      if @val[1] < @property.get('start')
         error('report_end',
-              "End date must be before start date #{@reportElement.start}")
+              "End date must be before start date #{@property.get('start')}")
       end
-      @reportElement.end = @val[1]
+      @property.set('end', @val[1])
     })
     doc('end.report', <<'EOT'
 Specifies the end date of the report. In task reports only tasks that start
@@ -2501,8 +2535,8 @@ EOT
 
   def rule_reportPeriod
     pattern(%w( _period !interval ), lambda {
-      @reportElement.start = @val[1].start
-      @reportElement.end = @val[1].end
+      @property.set('start', @val[1].start)
+      @property.set('end', @val[1].end)
     })
     doc('period.report', <<'EOT'
 This property is a shortcut for setting the start and end property at the
@@ -2513,29 +2547,15 @@ EOT
 
   def rule_reportStart
     pattern(%w( _start !date ), lambda {
-      if @val[1] > @reportElement.end
+      if @val[1] > @property.get('end')
         error('report_start',
-              "Start date must be before end date #{@reportElement.end}")
+              "Start date must be before end date #{@property.get('end')}")
       end
-      @reportElement.start = @val[1]
+      @property.set('start', @val[1])
     })
     doc('start.report', <<'EOT'
 Specifies the start date of the report. In task reports only tasks that end
 after this end date are listed.
-EOT
-       )
-  end
-
-  def rule_report
-    pattern(%w( !reportHeader !reportBody ), lambda {
-      @property = @property.parent
-    })
-    doc('report', <<'EOT'
-Reports are used to store and vizualize the results of a scheduled project.
-The content, the output format and the appearance of a report can be adjusted
-with report attributes. Reports can be nested to create structured document
-trees. As with other properties, the resource attributes can be inherited from
-the enclosing report or the project.
 EOT
        )
   end
@@ -2563,7 +2583,7 @@ EOT
       if @project.report(id)
         error('report_exists', "report #{id} has already been defined.")
       end
-      @property = Report.new(@project, @val[1], @val[2], @property)
+      @property = Report.new(@project, @val[1], @val[2], @property, :html)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
     })
@@ -2688,8 +2708,8 @@ EOT
 
   def rule_resourceReportHeader
     pattern(%w( _resourcereport $STRING ), lambda {
-      @report = newReport(@val[1], :gui, sourceFileInfo)
-      @reportElement = ResourceListRE.new(@report)
+      newReport(@val[1], :gui, sourceFileInfo)
+      @property.table = ResourceListRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report.
@@ -3127,6 +3147,16 @@ EOT
     arg(1, 'task ID', 'The ID of an already defined task.')
   end
 
+  def rule_tableType
+    pattern(%w( _tasks ), lambda {
+      :tasks
+    })
+
+    pattern(%w( _resources ), lambda {
+      :resources
+    })
+  end
+
   def rule_task
     pattern(%w( !taskHeader !taskBody ), lambda {
       @property = @property.parent
@@ -3376,8 +3406,8 @@ EOT
 
   def rule_taskReportHeader
     pattern(%w( _taskreport $STRING ), lambda {
-      @report = newReport(@val[1], :gui, sourceFileInfo)
-      @reportElement = TaskListRE.new(@report)
+      newReport(@val[1], :gui, sourceFileInfo)
+      @property.table = TaskListRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report.

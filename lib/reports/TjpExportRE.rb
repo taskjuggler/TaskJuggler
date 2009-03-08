@@ -10,13 +10,13 @@
 # published by the Free Software Foundation.
 #
 
-require 'reports/ReportElement'
+require 'reports/ReportTableBase'
 
 class TaskJuggler
 
-  # This specialization of ReportTableElement implements an export of the
+  # This specialization of ReportTableBase implements an export of the
   # project data in the TJP syntax format.
-  class TjpExportRE < ReportElement
+  class TjpExportRE < ReportTableBase
 
     attr_writer :resourceAttrs, :taskAttrs
     attr_reader :mainFile
@@ -34,16 +34,14 @@ class TaskJuggler
       @supportedResourceAttrs = %w( vacation workinghours )
       @taskAttrs = %w( all )
       @resourceAttrs = %w( all )
-      @scenarios = [ 0 ]
+      @report.set('scenarios', [ 0 ])
 
       # Show all tasks, sorted by seqno-up.
-      @hideTask =
-        LogicalExpression.new(LogicalOperation.new(0))
-      @sortTasks = [ [ 'seqno', true, -1 ] ]
+      @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      @hideResource =
-        LogicalExpression.new(LogicalOperation.new(0))
-      @sortResources = [ [ 'seqno', true, -1 ] ]
+      @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
+      @report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     end
 
     # There is nothing to do here.
@@ -54,15 +52,15 @@ class TaskJuggler
     def to_tjp
       # Prepare the resource list.
       @resourceList = PropertyList.new(@project.resources)
-      @resourceList.setSorting(@sortResources)
-      @resourceList = filterResourceList(@resourceList, nil, @hideResource,
-          @rollupResource)
+      @resourceList.setSorting(a('sortResources'))
+      @resourceList = filterResourceList(@resourceList, nil, a('hideResource'),
+                                         a('rollupResource'))
       @resourceList.sort!
 
       # Prepare the task list.
       @taskList = PropertyList.new(@project.tasks)
-      @taskList.setSorting(@sortTasks)
-      @taskList = filterTaskList(@taskList, nil, @hideTask, @rollupTask)
+      @taskList.setSorting(a('sortTasks'))
+      @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'))
       @taskList.sort!
 
       getBookings
@@ -121,7 +119,7 @@ class TaskJuggler
       properties = @resourceList + @taskList
 
       properties.each do |property|
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           property['flags', scenarioIdx].each do |flag|
             flags << flag unless flags.include?(flag)
           end
@@ -182,7 +180,7 @@ class TaskJuggler
       @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
 
       if @taskAttrs.include?('depends') || @taskAttrs.include?('all')
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           generateTaskDependency(scenarioIdx, task, 'depends', indent + 2)
           generateTaskDependency(scenarioIdx, task, 'precedes', indent + 2)
         end
@@ -208,7 +206,7 @@ class TaskJuggler
 
       # For leaf tasks we put some attributes right here.
       if isLeafTask
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           generateAttribute(task, 'start', indent + 2, scenarioIdx)
           unless task['milestone', scenarioIdx]
             generateAttribute(task, 'end', indent + 2, scenarioIdx)
@@ -265,7 +263,7 @@ class TaskJuggler
                    !@resourceAttrs.include?(id))
 
           if attrDef.scenarioSpecific
-            @scenarios.each do |scenarioIdx|
+            a('scenarios').each do |scenarioIdx|
               generateAttribute(resource, id, 2, scenarioIdx)
             end
           else
@@ -292,7 +290,7 @@ class TaskJuggler
                   (!@taskAttrs.include?('all') && !@taskAttrs.include?(id))
 
           if attrDef.scenarioSpecific
-            @scenarios.each do |scenarioIdx|
+            a('scenarios').each do |scenarioIdx|
               # Some attributes need special treatment.
               case id
               when 'depends'
@@ -339,7 +337,7 @@ class TaskJuggler
       @bookings = {}
       if @taskAttrs.include?('booking') ||
          @taskAttrs.include?('all')
-        @scenarios.each do |scenarioIdx|
+        a('scenarios').each do |scenarioIdx|
           @bookings[scenarioIdx] = {}
           @resourceList.each do |resource|
             # Get the bookings for this resource hashed by task.

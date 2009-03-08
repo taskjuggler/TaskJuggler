@@ -73,9 +73,8 @@ class TaskJuggler
 
       @attributes = Hash.new
       @scenarioAttributes = Array.new(@project.scenarioCount)
-      @project.scenarioCount.times do |i|
-        @scenarioAttributes[i] = Hash.new
-      end
+      @scenarioAttributes.collect! { |sca| sca = Hash.new }
+
       # Scenario specific data
       @data = nil
     end
@@ -407,12 +406,13 @@ class TaskJuggler
       end
       res += '  Children: ' + children + "\n"  unless children.empty?
       @attributes.sort.each do |key, attr|
-        if attr.get != @propertySet.defaultValue(key)
+        #if attr.get != @propertySet.defaultValue(key)
           res += indent("  #{key}: ", attr.to_s)
-        end
+        #end
       end
       unless @scenarioAttributes.empty?
         project.scenarioCount.times do |sc|
+          break if @scenarioAttributes[sc].nil?
           headerShown = false
           @scenarioAttributes[sc].sort.each do |key, attr|
             if attr.get != @propertySet.defaultValue(key)
