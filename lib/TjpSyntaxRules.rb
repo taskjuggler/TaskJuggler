@@ -1641,6 +1641,10 @@ EOT
     commaListRule('!weekDayInterval')
   end
 
+  def rule_moreOutputFormats
+    commaListRule('!outputFormat')
+  end
+
   def rule_moreProjectIDs
     commaListRule('$ID')
   end
@@ -1770,6 +1774,24 @@ EOT
     optional
     pattern(%w( !number _% ), lambda {
       @val[0] / 100.0
+    })
+  end
+
+  def rule_outputFormat
+    pattern(%w( _csv ), lambda {
+      :csv
+    })
+    descr('Generate a colon separated value (CSV) file.')
+
+    pattern(%w( _html ), lambda {
+      :html
+    })
+    descr('Generate a web page (HTML file)')
+  end
+
+  def rule_outputFormats
+    pattern(%w( !outputFormat !moreOutputFormats ), lambda {
+      [ @val[0] ] + @val[1]
     })
   end
 
@@ -2391,7 +2413,50 @@ EOT
       @property.set('revenueAccount', @val[0][1])
     })
 
+    pattern(%w( _caption $STRING ), lambda {
+      @property.set('caption', newRichText(@val[1]))
+    })
+    doc('caption', <<'EOT'
+The caption will be embedded in the footer of the table or data segment. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+    example('Caption', '1')
+
+    pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
+      columns = [ @val[1] ]
+      columns += @val[2] if @val[2]
+      @property.set('columns', columns)
+    })
+    doc('columns', <<'EOT'
+Specifies which columns shall be included in a report.
+
+All columns support macro expansion. Contrary to the normal macro expansion,
+these macros are expanded during the report generation. So the value of the
+macro is being changed after each table cell or table line. Consequently only
+build in macros can be used. To protect the macro calls against expansion
+during the initial file processing, the report macros must be prefixed with an
+additional ''''$''''.
+EOT
+       )
+
     pattern(%w( !reportEnd ))
+
+    pattern(%w( _epilog $STRING ), lambda {
+      @property.set('epilog', newRichText(@val[1]))
+    })
+    doc('epilog', <<'EOT'
+Define a text section that is printed right after the actual report data. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
+    pattern(%w( _formats !outputFormats ), lambda {
+      @val[1].each { |format| @property.get('formats') << format }
+    })
+    doc('formats', <<'EOT'
+EOT
+       )
 
     pattern(%w( _headline $STRING ), lambda {
       @property.set('headline', @val[1])
@@ -2406,10 +2471,7 @@ EOT
     pattern(%w( !hidetask ))
 
     pattern(%w( _list !tableType ), lambda {
-      case @val[1]
-      when :tasks then TaskListRE.new(@property)
-      when :resources then ResourceListRE.new(@property)
-      end
+      @val[1]
     })
     doc('list', 'Specifies the content of the report table')
 
@@ -2418,6 +2480,15 @@ EOT
     })
     doc('loadunit', <<'EOT'
 Determines what unit should be used to display all load values in this report.
+EOT
+       )
+
+    pattern(%w( _prolog $STRING ), lambda {
+      @property.set('prolog', newRichText(@val[1]))
+    })
+    doc('prolog', <<'EOT'
+Define a text section that is printed right before the actual report data. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
 
@@ -2453,7 +2524,7 @@ EOT
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
-      @property.set(scenarios, @val[1])
+      @property.set('scenarios', @val[1])
     })
     doc('scenarios', <<'EOT'
 List of scenarios that should be included in the report.
@@ -2461,7 +2532,7 @@ EOT
        )
 
     pattern(%w( _sortresources !sortCriteria ), lambda {
-      @property.set(sortResources, @val[1])
+      @property.set('sortResources', @val[1])
     })
     doc('sortresources', <<'EOT'
 Determines how the resources are sorted in the report. Multiple criteria can be
@@ -2583,7 +2654,7 @@ EOT
       if @project.report(id)
         error('report_exists', "report #{id} has already been defined.")
       end
-      @property = Report.new(@project, @val[1], @val[2], @property, :html)
+      @property = Report.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
     })
@@ -3149,11 +3220,11 @@ EOT
 
   def rule_tableType
     pattern(%w( _tasks ), lambda {
-      :tasks
+      TaskListRE.new(@property)
     })
 
     pattern(%w( _resources ), lambda {
-      :resources
+      ResourceListRE.new(@property)
     })
   end
 

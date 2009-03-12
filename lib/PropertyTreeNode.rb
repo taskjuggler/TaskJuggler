@@ -79,6 +79,13 @@ class TaskJuggler
       @data = nil
     end
 
+    # We only use deep_clone for attributes, never for properties. Since
+    # attributes may reference properties these references should remain
+    # references.
+    def deep_clone
+      self
+    end
+
     # Return the index of the child _node_.
     def levelSeqNo(node)
       @children.index(node) + 1

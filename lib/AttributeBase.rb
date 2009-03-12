@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'deep_copy'
+
 class TaskJuggler
 
   # This class is the base for all property attribute types. Each property can
@@ -38,14 +40,9 @@ class TaskJuggler
       # Flat that marks whether the value of this attribute was provided by the
       # user (in contrast to being calculated).
       @provided = false
-      # Some types can provide the default value as result of a initValue()
-      # method. If that does not exists, the default value from the
-      # AttributeDefinition.
-      if respond_to?('initValue')
-        @value = initValue(@type.default)
-      else
-        @value = copy(@type.default)
-      end
+      # Create the initial value according to the specified default for this
+      # type.
+      @value = @type.default.deep_clone
       # The mode is flag that controls how value assignements affect the flags.
       @@mode = 0
     end
@@ -55,30 +52,7 @@ class TaskJuggler
     # on.
     def inherit(value)
       @inherited = true
-      @value = copy(value)
-    end
-
-    def copy(value)
-      case value
-      when NilClass
-        nil
-      when Fixnum, Float, TrueClass, FalseClass, Symbol, Account
-        value
-      when Limits
-        Limits.new(value)
-      when ShiftAssignments
-        ShiftAssignments.new(value)
-      when RealFormat
-        RealFormat.new(value)
-      when String, TjTime
-        value.clone
-      when WorkingHours
-        WorkingHours.new(value)
-      when Array
-        Array.new(value)
-      else
-        raise "Don't know how to copy values of class #{value.class}"
-      end
+      @value = value.deep_clone
     end
 
     # Change the @@mode. 0 means values are provided, 1 means values are

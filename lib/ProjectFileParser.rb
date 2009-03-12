@@ -213,8 +213,9 @@ class TaskJuggler
               "A report with the name #{name} has already been defined.")
       end
       @property = Report.new(@project, "report#{@reportCounter += 1}",
-                             name, nil, type)
+                             name, nil)
       @property.sourceFileInfo = sourceFileInfo
+      @property.get('formats') << type
       @property.inheritAttributes
       @property
     end

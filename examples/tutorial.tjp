@@ -250,10 +250,7 @@ task AcSo "Accounting Software" {
 
 report index "Overview" {
   list tasks
-}
-
-# A traditional Gantt chart with a project overview.
-htmltaskreport "ProjectPlanOverview.html" {
+  formats html
   prolog '
 == Accounting Software Project ==
 ----
@@ -293,29 +290,31 @@ The project started off with a delay of 4 days. This slightly affected
 the original schedule. See [[Deliveries]] for the impact on the
 delivery dates.
 '
+
+  # A list of tasks showing the resources assigned to each task.
+  report Development "Development" {
+    list resources
+    headline "Development - Resource Allocation Report"
+    columns hierarchindex, name, start, end, effort { title "Work" },
+            duration, chart { scale day }
+    timeformat "%Y-%m-%d"
+    hideresource ~isleaf()
+    sortresources name.up
+  }
+
+  # A list of all tasks with the percentage completed for each task
+  report Deliveries "Deliveries" {
+    list tasks
+    headline "Project Deliveries"
+    columns hierarchindex, name, start, end, complete, chart
+    timeformat "%a %Y-%m-%d"
+    taskroot AcSo.deliveries
+    loadunit days
+    hideresource 1
+    scenarios plan, delayed
+  }
 }
 
-# A list of tasks showing the resources assigned to each task.
-htmltaskreport "Development.html" {
-  headline "Development - Resource Allocation Report"
-  columns hierarchindex, name, start, end, effort { title "Work" },
-          duration, chart { scale day }
-  timeformat "%Y-%m-%d"
-  loadunit days
-  hideresource ~isleaf()
-  sortresources name.up
-}
-
-# A list of all tasks with the percentage completed for each task
-htmltaskreport "Deliveries.html" {
-  headline "Project Deliveries"
-  columns hierarchindex, name, start, end, complete, chart
-  timeformat "%a %Y-%m-%d"
-  taskroot AcSo.deliveries
-  loadunit days
-  hideresource 1
-  scenarios plan, delayed
-}
 
 # A list of all employees with their contact details.
 htmlresourcereport "ContactList.html" {

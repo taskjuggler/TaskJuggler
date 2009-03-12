@@ -23,7 +23,7 @@ class TaskJuggler
 
   class AccountAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def AccountAttribute::tjpId
@@ -42,7 +42,7 @@ class TaskJuggler
 
   class AllocationAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -112,7 +112,7 @@ class TaskJuggler
 
   class BooleanAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def BooleanAttribute::tjpId
@@ -131,7 +131,7 @@ class TaskJuggler
 
   class ChargeListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def ChargeListAttribute::tjpId
@@ -149,7 +149,7 @@ class TaskJuggler
   class ChargeSetListAttribute < AttributeBase
 
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -175,7 +175,7 @@ class TaskJuggler
   class ColumnListAttribute < AttributeBase
 
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -188,7 +188,7 @@ class TaskJuggler
 
   class DateAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def DateAttribute::tjpId
@@ -198,7 +198,7 @@ class TaskJuggler
 
   class DependencyListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -223,7 +223,7 @@ class TaskJuggler
 
   class DurationAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def DurationAttribute::tjpId
@@ -238,7 +238,7 @@ class TaskJuggler
 
   class FixnumAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def FixnumAttribute::tjpId
@@ -248,7 +248,7 @@ class TaskJuggler
 
   class FlagListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -269,7 +269,7 @@ class TaskJuggler
 
   class FloatAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def FloatAttribute::tjpId
@@ -282,9 +282,17 @@ class TaskJuggler
 
   end
 
+  class FormatListAttribute < AttributeBase
+
+    def initialize(property, type)
+      super
+    end
+
+  end
+
   class IntervalListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -310,7 +318,7 @@ class TaskJuggler
   class LimitsAttribute < AttributeBase
 
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def setProject(project)
@@ -369,7 +377,7 @@ class TaskJuggler
 
   class ResourceListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -394,7 +402,7 @@ class TaskJuggler
 
   class RichTextAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def RichTextAttribute::tjpId
@@ -426,7 +434,7 @@ class TaskJuggler
   class ShiftAssignmentsAttribute < AttributeBase
 
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def setProject(project)
@@ -446,7 +454,7 @@ class TaskJuggler
   class SortListAttribute < AttributeBase
 
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -459,7 +467,7 @@ class TaskJuggler
 
   class StringAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def StringAttribute::tjpId
@@ -474,7 +482,7 @@ class TaskJuggler
 
   class SymbolAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
     end
 
     def SymbolAttribute::tjpId
@@ -484,7 +492,7 @@ class TaskJuggler
 
   class TaskListAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
+      super
 
       @value = Array.new
     end
@@ -509,11 +517,7 @@ class TaskJuggler
 
   class WorkingHoursAttribute < AttributeBase
     def initialize(property, type)
-      super(property, type)
-    end
-
-    def initValue(arg)
-      WorkingHours.new
+      super
     end
 
     def WorkingHoursAttribute::tjpId

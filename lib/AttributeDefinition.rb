@@ -40,6 +40,8 @@ class TaskJuggler
       @scenarioSpecific = scenarioSpecific
       @default = default
       @userDefined = userDefined
+      # Prevent objects from being deep copied.
+      freeze
     end
 
   end

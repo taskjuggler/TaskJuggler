@@ -28,18 +28,11 @@ class TaskJuggler
     attr_accessor :table
 
     # Create a new report object.
-    def initialize(project, id, name, parent, format)
+    def initialize(project, id, name, parent)
       super(project.reports, id, name, parent)
       project.addReport(self)
 
-      @outputFormats = [ format ]
-
       @table = nil
-    end
-
-    # Add new ouput format request.
-    def addFormat(format)
-      @outputFormats << format
     end
 
     # The generate function is where the action happens in this class. The
@@ -52,7 +45,7 @@ class TaskJuggler
         @table.generateIntermediateFormat if @table
 
         # Then generate the actual output format.
-        @outputFormats.each do |format|
+        get('formats').each do |format|
           case format
           when :html
             generateHTML

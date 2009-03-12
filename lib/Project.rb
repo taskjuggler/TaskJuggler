@@ -277,6 +277,8 @@ class TaskJuggler
           true,  true,    false, nil ],
         [ 'epilog',    'Epilog',  RichTextAttribute,
           false, false,   false, nil ],
+        [ 'formats',   'Formats', FormatListAttribute,
+          true,  false,   false, [] ],
         [ 'ganttBars', 'Gantt Bars', BooleanAttribute,
           true,  false,   false, true ],
         [ 'headline',  'Headline',   StringAttribute,
