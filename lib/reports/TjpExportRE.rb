@@ -22,11 +22,11 @@ class TaskJuggler
     attr_reader :mainFile
 
     # Create a new object and set some default values.
-    def initialize(report, mainFile)
+    def initialize(report)
       super(report)
 
       # Indicates whether this is a full .tjp file or just an .tji include file.
-      @mainFile = mainFile
+      @mainFile = a('name')[-4, 4] != '.tji'
 
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority

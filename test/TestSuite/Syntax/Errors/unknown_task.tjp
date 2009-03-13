@@ -4,7 +4,7 @@ task t "T" {
   start 2007-08-19
 }
 
-htmltaskreport "report.html" {
+taskreport report "report.html" {
 # MARK: error 9 unknown_task
 	taskroot foo
 }

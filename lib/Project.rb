@@ -278,7 +278,7 @@ class TaskJuggler
         [ 'epilog',    'Epilog',  RichTextAttribute,
           false, false,   false, nil ],
         [ 'formats',   'Formats', FormatListAttribute,
-          true,  false,   false, [] ],
+          true,  false,   false, [ :html ] ],
         [ 'ganttBars', 'Gantt Bars', BooleanAttribute,
           true,  false,   false, true ],
         [ 'headline',  'Headline',   StringAttribute,

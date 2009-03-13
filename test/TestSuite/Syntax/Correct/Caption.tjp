@@ -24,10 +24,11 @@ task plant "How to plant a tree" {
  }
 }
 
-htmltaskreport "PlantTree.html" {
- caption "This project shows how to plant a tree easily"
- headline "How to plant a tree"
- columns name, start, end, daily
- # Don't hide any resource, thus show them all.
- hideresource 0
+taskreport planttree "PlantTree.html" {
+  formats html
+  caption "This project shows how to plant a tree easily"
+  headline "How to plant a tree"
+  columns name, start, end, daily
+  # Don't hide any resource, thus show them all.
+  hideresource 0
 }

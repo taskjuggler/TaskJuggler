@@ -27,7 +27,8 @@ task t3 "Task3" {
 	allocate tux1, tux2
 }
 
-htmltaskreport "Optimize-4.html" {
+taskreport optimize4 "Optimize-4" {
+  formats html
 	columns name, start, end, criticalness, pathcriticalness, daily
 	hideresource 0
 }

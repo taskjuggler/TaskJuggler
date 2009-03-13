@@ -46,7 +46,7 @@ task items "Room decoration" {
 }
 # *** EXAMPLE: 1 -
 
-# htmlaccountreport "PAndL.html" {
+# accountreport pandl "PAndL.html" {
 #   timeformat "%d-%M-%y"
 #   accumulate
 #   columns index, name, weekly

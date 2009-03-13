@@ -75,7 +75,8 @@ task resource "Resource Limit" {
   ${Fixend "2007-09-25-18:00"}
 }
 
-htmltaskreport "Limits.html" {
+taskreport limits "Limits" {
+  formats html
   columns no, name, start, end, effort, daily
 }
 

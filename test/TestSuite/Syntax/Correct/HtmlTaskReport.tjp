@@ -23,7 +23,8 @@ task items "Project breakdown" {
   }
 }
 
-htmltaskreport "ProjectBreakdown.html" {
+taskreport breakdown "ProjectBreakdown.html" {
+  formats html
   caption "This is the project breakdown"
   headline "Project Breakdown"
   columns name, start, end, daily

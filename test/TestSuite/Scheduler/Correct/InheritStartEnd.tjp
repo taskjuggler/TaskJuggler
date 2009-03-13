@@ -123,7 +123,8 @@ task p2 "Parent Tasks 2" {
   }
 }
 
-htmltaskreport "InheritStartEnd.html" {
+taskreport inherit "InheritStartEnd" {
+  formats html
 	columns name, id, start, end, chart
 }
   

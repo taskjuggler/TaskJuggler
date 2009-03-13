@@ -55,7 +55,8 @@ task t6 "Task6" {
 	${Fixend "2000-01-25-18:00"}
 }
 
-htmltaskreport "Optimize-5.html" {
+taskreport optimize5 "Optimize-5" {
+  formats html
 	columns name, start, end, criticalness, pathcriticalness, daily
 	hideresource 0
 }

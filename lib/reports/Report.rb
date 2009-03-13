@@ -24,7 +24,6 @@ class TaskJuggler
   # other reports.
   class Report < PropertyTreeNode
 
-    attr_reader :name, :project, :sourceFileInfo
     attr_accessor :table
 
     # Create a new report object.
@@ -53,8 +52,6 @@ class TaskJuggler
             generateCSV
           when :export
             generateExport
-          when :gui
-            # TODO: Find a way to hook up the GUI here.
           else
             raise 'Unknown report output format.'
           end
@@ -238,7 +235,7 @@ EOT
 
       body << @table.to_html if @table
 
-      html.write(@name + '.html')
+      html.write(@name + (@name == '.' ? '' : '.html'))
     end
 
     # Generate a CSV version of the report.
@@ -278,13 +275,12 @@ EOT
 
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
-      CSVFile.new(csv, ';').write(@name)
+      CSVFile.new(csv, ';').write(@name + (@name == '.' ? '' : '.csv'))
     end
 
     # Generate an export report
     def generateExport
-      extension = @table.mainFile ? 'tjp' : 'tji'
-      f = @name == '.' ? $stdout : File.new(@name + '.' + extension, 'w')
+      f = @name == '.' ? $stdout : File.new(@name, 'w')
       f.puts "#{@table.to_tjp}"
     end
 

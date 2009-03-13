@@ -12,17 +12,20 @@ task t "Task" {
 }
 # *** EXAMPLE: 1 -
 # Just a very basic report with some standard columns
-htmltaskreport "SimpleReport.html" {
+taskreport simple "SimpleReport" {
+  formats html
   columns hierarchindex, name, start, end, weekly
 }
 
 # Report with custom colum title
-htmltaskreport "CustomTitle.html" {
+taskreport custom "CustomTitle" {
+  formats html
   columns hierarchindex, name { title "Work Item" }, effort
 }
 
 # *** EXAMPLE: 1 +
 # Report with index and task name combined in one single column
-htmltaskreport "CombinedColumn.html" {
+taskreport combined "CombinedColumn" {
+  formats html
   columns name { celltext "$${hierarchno} $${0}"}, start, end, weekly
 }

@@ -24,7 +24,8 @@ task t3 "Task3" {
   allocate tux3
 }
 
-htmltaskreport "LoadUnits.html" {
+taskreport loadunits "LoadUnits" {
+  formats html
   columns no, name, effort, monthly
   loadunit months
 }

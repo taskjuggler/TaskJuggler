@@ -96,7 +96,8 @@ task prj "Project" {
     
 }
   
-htmltaskreport "Shift.html" {
+taskreport shift "Shift" {
+  formats html
   columns name, start, end, daily
 }
   

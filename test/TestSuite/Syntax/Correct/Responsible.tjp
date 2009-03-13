@@ -10,7 +10,7 @@ task someJob "Some Job" {
   responsible ubertux
 }
 
-taskreport "Job List" {
+taskreport joblist "Job List" {
   columns effort, responsible
 }
 

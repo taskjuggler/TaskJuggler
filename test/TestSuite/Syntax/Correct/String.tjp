@@ -8,5 +8,5 @@ task items "Project Plan\\\\Breakdown" {
   allocate tux
 }
 
-taskreport "My Tasks"
+taskreport tasks "My Tasks"
 

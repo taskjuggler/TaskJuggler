@@ -25,5 +25,5 @@ task items "Project breakdown" {
   }
 }
 
-taskreport "My Tasks"
+taskreport tasks "My Tasks"
 # End of project

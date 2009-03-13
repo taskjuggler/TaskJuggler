@@ -43,12 +43,14 @@ task t3 "FooTask3" {
   start 2000-01-01
 }
 
-htmltaskreport "Report_task.html" {
+taskreport task "Report_task" {
+  formats html
   balance a1 a2
   columns hierarchindex, name { title "Task Name" }, daily, effort
   sorttasks tree, plan.start.up, name.up
 }
 
-htmlresourcereport "Report_resource.html" {
+resourcereport resource "Report_resource.html" {
+  formats html
 }
 

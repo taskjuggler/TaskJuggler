@@ -10,7 +10,8 @@ task items "Project breakdown" {
   }
 }
 
-taskreport "My Tasks" {
+taskreport tasks "My Tasks" {
+  formats html
 	period ${now} +1w
 }
 

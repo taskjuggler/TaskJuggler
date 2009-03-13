@@ -154,7 +154,8 @@ task t20 "Task 20" {
   ${FixEnd "2007-04-23-15:00"}
 }
 
-htmltaskreport "Booking.html" {
+taskreport booking "Booking" {
+  formats html
 	columns no, name, effort, hourly
 	hideresource 0
 }

@@ -7,7 +7,8 @@ task items "Project breakdown" {
   start ${projectstart} 
 }
 
-taskreport "My Tasks" {
+taskreport tasks "My Tasks" {
+  formats html
 	start ${now}
 	end ${projectend}
 }	

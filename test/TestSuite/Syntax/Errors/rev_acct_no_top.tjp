@@ -17,7 +17,7 @@ task t "T" {
 	chargeset g1, g2
 }
 
-htmltaskreport "Tasks.html" {
+taskreport tasks "Tasks.html" {
 # MARK: error 22 rev_acct_no_top
   balance group1 g5
 }

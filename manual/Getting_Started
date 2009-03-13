@@ -22,7 +22,7 @@ to ask TaskJuggler to process it.
 
 TaskJuggler will try to schedule all tasks with the specified
 conditions and generate the reports that were requested with the
-[[htmltaskreport]], [[htmlresourcereport]] or other report properties
+[[taskreport]], [[resourcereport]] or other report properties
 in the input file. The report files will be generated in the current
 directory or relative to it.
 
@@ -44,11 +44,11 @@ may be put into include files. The project header must then be
 followed by any number of project properties such as [[account
 accounts]], [[resource resources]] and [[task tasks]]. Each project
 must have at least one task defined and should have at least one
-[[reports report]].  Properties don't have to be listed in a
-particular order, but may have interdependencies that require such an
-order. If you want to assign a resource to work on a task, this
-resource needs to be defined first. It is therefor recommended to
-define them in the following sequence.
+report.  Properties don't have to be listed in a particular order, but
+may have interdependencies that require such an order. If you want to
+assign a resource to work on a task, this resource needs to be defined
+first. It is therefor recommended to define them in the following
+sequence.
 
 * [[macro macros]]
 * [[flags]]
@@ -57,5 +57,6 @@ define them in the following sequence.
 * [[vacation vacations]]
 * [[resource resources]]
 * [[task tasks]]
-* [[reports]]
+* [[report reports]]
+* [[export exports]]
 

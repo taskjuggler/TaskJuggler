@@ -1,7 +1,8 @@
 project test "Test" "1.0" 2007-12-16 +3m
 include "project-1.tji"
 
-csvtaskreport "." {
+taskreport csv "." {
+  formats csv
   columns start, wbs, id
   timeformat "%Y-%m-%d-%H:%M:%S"
   sorttasks plan.start.down, id.up

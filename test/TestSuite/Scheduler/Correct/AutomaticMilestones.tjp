@@ -57,7 +57,8 @@ task t1 "Task 1" {
   ${FixEnd "${projectend}"}
 }
 
-htmltaskreport "AutomaticMilestones.html" {
+taskreport ms "AutomaticMilestones" {
+  formats html
 	columns name, id, start, end, chart
 }
   

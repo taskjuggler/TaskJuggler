@@ -4,7 +4,7 @@ task t "T" {
   start ${projectstart}
 }
 
-htmltaskreport "report.html" {
+taskreport report "report.html" {
 # MARK: error 9 sorting_wbs
 	sorttasks plan.wbs.up
 }

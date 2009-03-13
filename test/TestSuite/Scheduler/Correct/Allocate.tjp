@@ -79,7 +79,8 @@ task inheritedAllocs "Inherited Allocations" {
   }
 }
 
-htmltaskreport "Allocate.html" {
+taskreport allocate "Allocate" {
+  formats html
   columns no, name, end, daily
   hideresource 0
 }

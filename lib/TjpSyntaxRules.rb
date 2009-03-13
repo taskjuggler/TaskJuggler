@@ -524,64 +524,6 @@ EOT
        )
   end
 
-  def rule_csvFileName
-    pattern(%w( $STRING ), lambda {
-      # '.' means 'use $stdout'
-      if @val[0] == '.'
-        name = '.'
-      else
-        unless @val[0][-4,4] == '.csv'
-          error('no_csv_suffix',
-              "Report name must have .csv suffix: #{@val[0]}")
-        end
-        # Strip '.csv' suffix from file name
-        name = @val[0][0..-5]
-      end
-      name
-    })
-    arg(1, 'file name', <<'EOT'
-The name of the report file to generate. It should end with a .html extension.
-EOT
-       )
-  end
-
-  def rule_csvResourceReport
-    pattern(%w( !csvResourceReportHeader !legacyReportBody ))
-    doc('csvresourcereport', <<'EOT'
-The report lists all resources and their respective values as colon-separated-value (CSV) file. Due to
-the very simple nature of the CSV format, only a small subset of features will
-be supported for CSV output. Including tasks or listing multiple scenarios
-will result in very difficult to read reports.
-EOT
-       )
-  end
-
-  def rule_csvResourceReportHeader
-    pattern(%w( _csvresourcereport !csvFileName ), lambda {
-      newReport(@val[1], :csv, sourceFileInfo)
-      @property.table = ResourceListRE.new(@property)
-    })
-  end
-
-  def rule_csvTaskReport
-    pattern(%w( !csvTaskReportHeader !legacyReportBody ))
-    doc('csvtaskreport', <<'EOT'
-The report lists all tasks and their respective values as
-colon-separated-value (CSV) file. Due to the very simple nature of the CSV
-format, only a small subset of features will be supported for CSV output.
-Including resources or listing multiple scenarios will result in very
-difficult to read reports.
-EOT
-       )
-  end
-
-  def rule_csvTaskReportHeader
-    pattern(%w( _csvtaskreport !csvFileName ), lambda {
-      newReport(@val[1], :csv, sourceFileInfo)
-      @property.table = TaskListRE.new(@property)
-    })
-  end
-
   def rule_date
     pattern(%w( $DATE ), lambda {
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
@@ -684,16 +626,9 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export $STRING ), lambda {
-      if @val[1] == '.'
-        mainFile = true
-        name = '.'
-      else
-        extension = @val[1][-4, 4]
-        if extension == '.tjp'
-          mainFile = true
-        elsif extension == '.tji'
-          mainFile = false
-        else
+      if @val[1] != '.'
+        suffix = @val[1][-4, 4]
+        if suffix != '.tjp' && suffix != '.tji'
           error('export_bad_extn',
               'Export report files must have a .tjp or .tji extension.')
         end
@@ -701,12 +636,12 @@ EOT
         name = @val[1][0..-5]
       end
 
-      if @project.reports[name]
+      if @project.reports[@val[1]]
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
       newReport(@val[1], :export, sourceFileInfo)
-      @property.table = TjpExportRE.new(@property, mainFile)
+      @property.table = TjpExportRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -961,53 +896,6 @@ EOT
        )
   end
 
-  def rule_htmlFileName
-    pattern(%w( $STRING ), lambda {
-      unless @val[0][-5,5] == '.html'
-        error('no_html_suffix',
-              "Report name must have .html suffix: #{@val[0]}")
-      end
-      # Strip '.html' suffix from file name
-      @val[0][0..-6]
-    })
-    arg(1, 'file name', <<'EOT'
-The name of the report file to generate. It should end with a .html extension.
-EOT
-       )
-  end
-
-  def rule_htmlResourceReport
-    pattern(%w( !htmlResourceReportHeader !legacyReportBody ))
-    doc('htmlresourcereport', <<'EOT'
-The report lists all resources and their respective values as a HTML page. The
-task that are the resources are allocated to can be listed as well.
-EOT
-       )
-  end
-
-  def rule_htmlResourceReportHeader
-    pattern(%w( _htmlresourcereport !htmlFileName ), lambda {
-      newReport(@val[1], :html, sourceFileInfo)
-      @property.table = ResourceListRE.new(@property)
-    })
-  end
-
-  def rule_htmlTaskReport
-    pattern(%w( !htmlTaskReportHeader !legacyReportBody ))
-    doc('htmltaskreport', <<'EOT'
-The report lists all tasks and their respective values as a HTML page. The
-resources that are allocated to each task can be listed as well.
-EOT
-       )
-  end
-
-  def rule_htmlTaskReportHeader
-    pattern(%w( _htmltaskreport !htmlFileName ), lambda {
-      newReport(@val[1], :html, sourceFileInfo)
-      @property.table = TaskListRE.new(@property)
-    })
-  end
-
   def rule_includeAttributes
     optionsRule('includeAttributesBody')
   end
@@ -1189,164 +1077,6 @@ EOT
       resource
     })
     arg(0, 'resource', 'The ID of a leaf resource')
-  end
-
-  def rule_legacyReportBody
-    optionsRule('legacyReportAttributes')
-  end
-
-  def rule_legacyReportAttributes
-    optional
-    repeatable
-
-    pattern(%w( !balance ), lambda {
-      @property.set('costAccount', @val[0][0])
-      @property.set('revenueAccount', @val[0][1])
-    })
-
-    pattern(%w( _caption $STRING ), lambda {
-      @property.set('caption', newRichText(@val[1]))
-    })
-    doc('caption', <<'EOT'
-The caption will be embedded in the footer of the table or data segment. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-    example('Caption', '1')
-
-    pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
-      columns = [ @val[1] ]
-      columns += @val[2] if @val[2]
-      @property.set('columns', columns)
-    })
-    doc('columns', <<'EOT'
-Specifies which columns shall be included in a report.
-
-All columns support macro expansion. Contrary to the normal macro expansion,
-these macros are expanded during the report generation. So the value of the
-macro is being changed after each table cell or table line. Consequently only
-build in macros can be used. To protect the macro calls against expansion
-during the initial file processing, the report macros must be prefixed with an
-additional ''''$''''.
-EOT
-       )
-
-    pattern(%w( _epilog $STRING ), lambda {
-      @property.set('epilog', newRichText(@val[1]))
-    })
-    doc('epilog', <<'EOT'
-Define a text section that is printed right after the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-
-    pattern(%w( !reportEnd ))
-
-    pattern(%w( _headline $STRING ), lambda {
-      @property.set('headline', @val[1])
-    })
-    doc('headline.legacy', <<'EOT'
-Specifies the headline for a report.
-EOT
-       )
-
-    pattern(%w( !hideresource ))
-
-    pattern(%w( !hidetask ))
-
-    pattern(%w( _loadunit !loadunit ), lambda {
-      @property.set('loadUnit', :"#{@val[1]}")
-    })
-    doc('loadunit.legacy', <<'EOT'
-Determines what unit should be used to display all load values in this report.
-EOT
-       )
-
-    pattern(%w( _prolog $STRING ), lambda {
-      @property.set('prolog', newRichText(@val[1]))
-    })
-    doc('prolog', <<'EOT'
-Define a text section that is printed right before the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-
-    pattern(%w( _rawhead $STRING ), lambda {
-      @property.set('rawHead', @val[1])
-    })
-    doc('rawhead.legacy', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the top of the
-report.
-EOT
-        )
-
-    pattern(%w( _rawtail $STRING ), lambda {
-      @property.set('rawTail', @val[1])
-    })
-    doc('rawtail.legacy', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the bottom of
-the report.
-EOT
-       )
-
-    pattern(%w( !reportPeriod ))
-
-    pattern(%w( _rolluptask !logicalExpression ), lambda {
-      @property.set('rollupTask', @val[1])
-    })
-    doc('rolluptask.legacy', <<'EOT'
-Do not show sub-tasks of tasks that match the specified logical expression.
-EOT
-       )
-
-    pattern(%w( _scenarios !scenarioIdList ), lambda {
-      # Don't include disabled scenarios in the report
-      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
-      @property.set('scenarios', @val[1])
-    })
-    doc('scenarios.legacy', <<'EOT'
-List of scenarios that should be included in the report.
-EOT
-       )
-
-    pattern(%w( _sortresources !sortCriteria ), lambda {
-      @property.set('sortResources', @val[1])
-    })
-    doc('sortresources.legacy', <<'EOT'
-Determines how the resources are sorted in the report. Multiple criteria can be
-specified as a comma separated list. If one criteria is not sufficient to sort
-a group of resources, the next criteria will be used to sort the resources in
-this group.
-EOT
-       )
-
-    pattern(%w( _sorttasks !sortCriteria ), lambda {
-      @property.set('sortTasks', @val[1])
-    })
-    doc('sorttasks.legacy', <<'EOT'
-Determines how the tasks are sorted in the report. Multiple criteria can be
-specified as comma separated list. If one criteria is not sufficient to sort a
-group of tasks, the next criteria will be used to sort the tasks within
-this group.
-EOT
-       )
-
-    pattern(%w( !reportStart ))
-
-    pattern(%w( _taskroot !taskId), lambda {
-      @property.set('taskRoot', @val[1])
-    })
-    doc('taskroot.legacy', <<'EOT'
-Only tasks below the specified root-level tasks are exported. The exported
-tasks will have the id of the root-level task stripped from their ID, so that
-the sub-tasks of the root-level task become top-level tasks in the exported
-file.
-EOT
-       )
-
-    pattern(%w( !timeformat ), lambda {
-      @property.set('timeFormat', @val[0])
-    })
   end
 
   def rule_limitAttributes
@@ -1781,7 +1511,14 @@ EOT
     pattern(%w( _csv ), lambda {
       :csv
     })
-    descr('Generate a colon separated value (CSV) file.')
+    descr(<<'EOT'
+The report lists the resources and their respective values as
+colon-separated-value (CSV) format. Due to the very simple nature of the CSV
+format, only a small subset of features will be supported for CSV output.
+Including tasks or listing multiple scenarios will result in very difficult to
+read reports.
+EOT
+         )
 
     pattern(%w( _html ), lambda {
       :html
@@ -2098,6 +1835,8 @@ EOT
       @project['revenueAccount'] = @val[0][1]
     })
 
+    pattern(%w( !export ))
+
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
@@ -2152,7 +1891,7 @@ Set the default rate for all subsequently defined resources. The rate describes 
 EOT
         )
 
-    pattern(%w( !reportDefinitions ))
+    pattern(%w( !report ))
     pattern(%w( !resource ))
     pattern(%w( !shift ))
 
@@ -2452,7 +2191,7 @@ EOT
        )
 
     pattern(%w( _formats !outputFormats ), lambda {
-      @val[1].each { |format| @property.get('formats') << format }
+      @property.set('formats', @val[1])
     })
     doc('formats', <<'EOT'
 EOT
@@ -2571,23 +2310,6 @@ EOT
     })
   end
 
-  def rule_reportDefinitions
-    pattern(%w( !csvResourceReport ))
-    pattern(%w( !csvTaskReport ))
-    pattern(%w( !export ))
-    pattern(%w( !htmlResourceReport ))
-    pattern(%w( !htmlTaskReport ))
-    pattern(%w( !report ))
-    pattern(%w( !resourceReport ))
-    pattern(%w( !taskReport ))
-  end
-
-  def rule_reportDefinitionsBody
-    # This rule is not defining actual syntax. It's only used for the
-    # documentation.
-    optionsRule('reportDefinitions')
-  end
-
   def rule_reportEnd
     pattern(%w( _end !date ), lambda {
       if @val[1] < @property.get('start')
@@ -2634,19 +2356,9 @@ EOT
   def rule_reportBody
     optionsRule('reportAttributes')
   end
-  def rule_reports
-    # This rule is not defining actual syntax. It's only used for the
-    # documentation.
-    pattern(%w( !reportDefinitionsBody ))
-    doc('reports', <<'EOT'
-The report definitions. In order to see the results of your scheduled project
-you need to define at least one report.
-EOT
-       )
-  end
 
   def rule_reportHeader
-    pattern(%w( _report $ID $STRING ), lambda {
+    pattern(%w( !reportType $ID $STRING ), lambda {
       if @property.nil? && !@reportprefix.empty?
         @property = @project.report(@reportprefix)
       end
@@ -2657,9 +2369,40 @@ EOT
       @property = Report.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
+      case @val[0]
+      when 'taskreport'
+        @property.table = TaskListRE.new(@property)
+      when 'resourcereport'
+        @property.table = ResourceListRE.new(@property)
+      else
+        raise "Unsupported report type #{@val[0]}"
+      end
     })
-    arg(1, 'id', 'The ID of the report')
-    arg(2, 'name', 'The name of the report')
+    arg(1, 'id', <<'EOT'
+The ID of the report.
+EOT
+       )
+    arg(2, 'name', <<'EOT'
+The name of the report. This will be the base name for generated output files.
+The suffix will depend on the specified [[formats]].It will also be used in
+navigation bars.
+EOT
+       )
+  end
+
+  def rule_reportType
+    singlePattern('_resourcereport')
+    doc('resourcereport', <<'EOT'
+The report lists resources and their respective values in a table. The task
+that are the resources are allocated to can be listed as well.
+EOT
+       )
+    singlePattern('_taskreport')
+    doc('taskreport', <<'EOT'
+The report lists tasks and their respective values in a table. The
+resources that are allocated to each task can be listed as well.
+EOT
+       )
   end
 
   def rule_resource
@@ -2766,26 +2509,6 @@ EOT
     pattern(%w( !resourceId !moreResources ), lambda {
       [ @val[0] ] + @val[1]
     })
-  end
-
-  def rule_resourceReport
-    pattern(%w( !resourceReportHeader !legacyReportBody ))
-    doc('resourcereport', <<'EOT'
-The report lists all resources and their respective values in the GUI. The
-task that are the resources are allocated to can be listed as well. In the commandline version this report is ignored.
-EOT
-       )
-  end
-
-  def rule_resourceReportHeader
-    pattern(%w( _resourcereport $STRING ), lambda {
-      newReport(@val[1], :gui, sourceFileInfo)
-      @property.table = ResourceListRE.new(@property)
-    })
-    arg(1, 'file name', <<'EOT'
-The name of the report.
-EOT
-       )
   end
 
   def rule_resourceScenarioAttributes
@@ -3463,27 +3186,6 @@ EOT
     pattern(%w( !taskPred !morePredTasks ), lambda {
       [ @val[0] ] + @val[1]
     })
-  end
-
-  def rule_taskReport
-    pattern(%w( !taskReportHeader !legacyReportBody ))
-    doc('taskreport', <<'EOT'
-The report lists all tasks and their respective values in the GUI. The
-resources that are allocated to each task can be listed as well. In the
-commandline version it is simply ignored.
-EOT
-       )
-  end
-
-  def rule_taskReportHeader
-    pattern(%w( _taskreport $STRING ), lambda {
-      newReport(@val[1], :gui, sourceFileInfo)
-      @property.table = TaskListRE.new(@property)
-    })
-    arg(1, 'file name', <<'EOT'
-The name of the report.
-EOT
-       )
   end
 
   def rule_taskScenarioAttributes

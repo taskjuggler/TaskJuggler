@@ -372,7 +372,9 @@ task AcSo "Accounting Software" {
 
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
-htmltaskreport "ProjectPlanOverview.html" {
+taskreport index "Overview" {
+  list tasks
+  formats html
   prolog '
 == Accounting Software Project ==
 ----
@@ -412,74 +414,34 @@ The project started off with a delay of 4 days. This slightly affected
 the original schedule. See [[Deliveries]] for the impact on the
 delivery dates.
 '
+
+  # A list of tasks showing the resources assigned to each task.
+  taskreport Development "Development" {
+    headline "Development - Resource Allocation Report"
+    columns hierarchindex, name, start, end, effort { title "Work" },
+            duration, chart { scale day }
+    timeformat "%Y-%m-%d"
+    hideresource ~isleaf()
+    sortresources name.up
+  }
+
+  # A list of all tasks with the percentage completed for each task
+  taskreport Deliveries "Deliveries" {
+    headline "Project Deliveries"
+    columns hierarchindex, name, start, end, complete, chart
+    taskroot AcSo.deliveries
+    loadunit days
+    hideresource 1
+    scenarios plan, delayed
+  }
+  # A graph showing resource allocation. It identifies whether each
+  # resource is under- or over-allocated for.
+  resourcereport ResourceGraph "Resource Graph" {
+    headline "Resource Allocation Graph"
+    columns no, name, effort, rate, weekly #, utilization, freeload, chart
+    loadunit shortauto
+    hidetask ~isleaf()
+    sorttasks plan.start.up
+  }
 }
 # *** EXAMPLE: planoverview -
-
-# A list of tasks showing the resources assigned to each task.
-htmltaskreport "Development.html" {
-  headline "Development - Resource Allocation Report"
-  columns hierarchindex, name, start, end, effort { title "Work" },
-          duration, chart { scale day }
-  timeformat "%Y-%m-%d"
-  loadunit days
-  hideresource ~isleaf()
-  sortresources name.up
-}
-
-# A list of all tasks with the percentage completed for each task
-htmltaskreport "Deliveries.html" {
-  headline "Project Deliveries"
-  columns hierarchindex, name, start, end, complete, chart
-  timeformat "%a %Y-%m-%d"
-  taskroot AcSo.deliveries
-  loadunit days
-  hideresource 1
-  scenarios plan, delayed
-}
-
-# A list of all employees with their contact details.
-htmlresourcereport "ContactList.html" {
-  headline "Contact list and duty plan"
-  columns name, Email { cellurl "mailto:$${Email}" }, Phone,
-          chart { scale day }
-  hideresource ~isleaf()
-  sortresources name.up
-  hidetask 1
-}
-
-# A graph showing resource allocation. It identifies whether each
-# resource is under- or over-allocated for.
-htmlresourcereport "ResourceGraph.html" {
-  headline "Resource Allocation Graph"
-  columns no, name, effort, rate, weekly #, utilization, freeload, chart
-  loadunit shortauto
-  hidetask ~isleaf()
-  sorttasks plan.start.up
-}
-
-# A list of all project resources, both human and material resources,
-# together with the associated costs.
-htmlresourcereport "ResourceSheet.html" {
-  headline "Resource Sheet"
-  columns no, name, id, effort, weekly, rate, cost
-  loadunit days
-  hidetask ~isleaf()
-  sorttasks plan.start.up
-  balance cost rev
-}
-
-# A list of resources and each task associated with each resource.
-htmlresourcereport "ResourceUsage.html" {
-  headline "Resource Usage Report"
-  columns no, name, chart { scale day } #, utilization, freeload, cost, chart
-  loadunit days
-  sorttasks plan.start.up
-  hidetask ~isleaf()
-  end 2002-02-10
-}
-
-csvtaskreport "csvtest.csv" {
-  columns no, name, id, effort, revenue, cost
-  loadunit days
-}
-

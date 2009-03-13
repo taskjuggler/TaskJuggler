@@ -1,7 +1,8 @@
 project test "Test" "1.0" 2007-12-16 +3m
 include "project-1.tji"
 
-csvtaskreport "." {
+taskreport csv "." {
+  formats csv
   columns wbs, name { celltext "$${name} ($${id})" }
 }
 

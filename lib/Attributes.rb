@@ -288,6 +288,10 @@ class TaskJuggler
       super
     end
 
+    def to_s
+      @value.join(', ')
+    end
+
   end
 
   class IntervalListAttribute < AttributeBase

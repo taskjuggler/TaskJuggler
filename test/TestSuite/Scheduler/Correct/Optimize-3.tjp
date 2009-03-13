@@ -26,7 +26,8 @@ task t3 "Task3" {
 	allocate tux1 { alternative tux2 persistent }
 }
 
-htmltaskreport "Optimize-3.html" {
+taskreport optimize3 "Optimize-3" {
+  formats html
 	columns name, start, end, daily
 	hideresource 0
 }

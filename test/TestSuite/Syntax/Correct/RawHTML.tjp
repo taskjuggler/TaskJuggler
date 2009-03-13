@@ -18,12 +18,14 @@ task t3 "Task3" {
   allocate tux
 }
 
-htmltaskreport "RawTask.html" {
+taskreport rawtasks "RawTask" {
+  formats html
   rawhead '<h1>This is a line of text</h1>'
   rawtail '<h2>This is another line of text with "double qoutes"</h2>'
 }
 
-htmlresourcereport "RawResource.html" {
+resourcereport rawresource "RawResource" {
+  formats html
   rawhead '<h1>This is a line of text</h1>'
   rawtail '<h2>This is another line of text with "double qoutes"</h2>'
 }

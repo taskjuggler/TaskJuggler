@@ -28,7 +28,8 @@ task duration "Duration Tasks" {
 	}
 }
   
-htmltaskreport "Duration.html" {
+taskreport duration "Duration" {
+  formats html
 	columns name, start, end, daily
 }
   
