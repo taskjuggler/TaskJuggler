@@ -7,10 +7,7 @@ or should be done for TaskJuggler III.
 
 * Add missing functions for logical expressions.
 
-* Missing reports: htmlaccountreport, htmlstatusreport, htmlweeklycalendar,
-  htmlmonthlycalendar, xmlreport, some csv-reports
-
-* Export reports still have less content than 2.x version.
+* Missing reports (calendar, status, csv)
 
 * Column attributes like hidecelltext,
   hidecellurl, subtitle, subtitleurl, titleurl
@@ -18,8 +15,6 @@ or should be done for TaskJuggler III.
 * Critical path detection after scheduling.
 
 * Many dynamic report columns are still missing.
-
-* Legacy sorting modes.
 
 * More unit tests for core classes.
 
