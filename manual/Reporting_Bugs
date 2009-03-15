@@ -19,7 +19,7 @@ and a patch or workaround exists.
 reproduces the bug.
 
 * Send the test project and a detailed description of the problem to
-the [http://www.taskjuggler.org/FUDforum2 TaskJuggler Developer
+the [http://www.taskjuggler.org/forum.php TaskJuggler Developer
 Forum].  Not sending a test project is the most common mistake when
 reporting bugs. This usually triggers requests or leads to bug reports
 being ignored.
