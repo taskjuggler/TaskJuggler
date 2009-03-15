@@ -127,8 +127,7 @@ create the patch or patch-set.
 
 This will generate a number of files starting with 5-digit file names.
 You then need to attach these files to a posting in the
-[http://www.taskjuggler.org/FUDforum2/index.php?t=thread&frm_id=5
-TaskJuggler Developer Forum].
+[http://www.taskjuggler.org/forum.php TaskJuggler Developer Forum].
 
 ==== Contributing to the User Manual ====
 
@@ -172,8 +171,7 @@ should be documented in the [[TaskJuggler_2x_Migration]] section.
 In general, patches are very welcome. Please follow the coding style
 and naming conventions used in the existing code. Larger changes
 should be preceded by a discussion in the
-[http://www.taskjuggler.org/FUDforum2/index.php?t=thread&frm_id=5
-TaskJuggler Developer Forum].
+[http://www.taskjuggler.org/forum.php TaskJuggler Developer Forum].
 
 ==== Some final words to Contributors ====
 
