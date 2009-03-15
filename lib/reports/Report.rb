@@ -193,7 +193,7 @@ class TaskJuggler
     position:absolute;
   }
   .free {
-    background-color:#a5ffb4;
+    background-color:#a5ffb5;
     position:absolute;
   }
   .busy {
