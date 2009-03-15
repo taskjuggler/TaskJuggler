@@ -16,6 +16,8 @@ or should be done for TaskJuggler III.
 
 * Many dynamic report columns are still missing.
 
+* Fix handling of non-hour-aligned timezones.
+
 * More unit tests for core classes.
 
 * Lots more test cases for the test suite.
