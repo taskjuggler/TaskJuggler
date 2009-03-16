@@ -62,7 +62,7 @@ class TaskJuggler
       else
         str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
       end
-      raise TjException, str
+      raise TjException.new, str
     end
 
   end

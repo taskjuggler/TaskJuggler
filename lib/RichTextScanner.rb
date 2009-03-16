@@ -233,7 +233,7 @@ class TaskJuggler
     # Return the last issued token to the token buffer.
     def returnToken(token)
       unless @tokenBuffer.nil?
-        raise TjException, 'Token buffer overflow!'
+        raise TjException.new, 'Token buffer overflow!'
       end
       @tokenBuffer = token
     end

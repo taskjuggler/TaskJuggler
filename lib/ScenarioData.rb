@@ -37,7 +37,7 @@ class TaskJuggler
                             sourceFileInfo.nil? ?
                             @property.sourceFileInfo : sourceFileInfo)
       @project.sendMessage(message)
-      raise TjException, "Scheduling error" if abort
+      raise TjException.new, "Scheduling error" if abort
     end
 
     def warning(id, text)

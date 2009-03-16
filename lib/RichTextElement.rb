@@ -39,7 +39,7 @@ class TaskJuggler
           @children = arg
         else
           unless arg.is_a?(RichTextElement) || arg.is_a?(String)
-            raise TjException,
+            raise TjException.new,
               "Element must be of type RichTextElement instead of #{arg.class}"
           end
           @children = [ arg ]
@@ -167,7 +167,7 @@ class TaskJuggler
       when :code
       when :text
       else
-        raise TjException, "Unknown RichTextElement category #{@category}"
+        raise TjException.new, "Unknown RichTextElement category #{@category}"
       end
 
       pre + children_to_s + post
@@ -256,7 +256,7 @@ class TaskJuggler
         pre = '['
         post = ']'
       else
-        raise TjException, "Unknown RichTextElement category #{@category}"
+        raise TjException.new, "Unknown RichTextElement category #{@category}"
       end
 
       out = ''
@@ -329,9 +329,9 @@ class TaskJuggler
       when :ref
         if @data.include?(':')
           protocol, path = @data.split(':')
-          raise TjException, "Reference protocol empty." if protocol.empty?
+          raise TjException.new, "Reference protocol empty." if protocol.empty?
           if path.empty?
-            raise TjException, "Reference path may not be empty."
+            raise TjException.new, "Reference path may not be empty."
           end
           args = children_to_s.split(' ')
           return @richText.protocolHandler(protocol).to_html(path, args)
@@ -349,7 +349,7 @@ class TaskJuggler
       when :text
         XMLText.new(@children[0])
       else
-        raise TjException, "Unknown RichTextElement category #{@category}"
+        raise TjException.new, "Unknown RichTextElement category #{@category}"
       end
 
       # Some elements never have leaves.

@@ -313,7 +313,7 @@ class TaskJuggler
         @sequenceNo
       else
         unless @attributes.has_key?(attributeId)
-          raise TjException, "Unknown attribute #{attributeId}"
+          raise TjException.new, "Unknown attribute #{attributeId}"
         end
         @attributes[attributeId].get
       end
@@ -334,7 +334,7 @@ class TaskJuggler
     # In case the attribute does not exist, an exception is raised.
     def set(attributeId, value)
       unless @attributes.has_key?(attributeId)
-        raise TjException, "Unknown attribute #{attributeId}"
+        raise TjException.new, "Unknown attribute #{attributeId}"
       end
       @attributes[attributeId].set(value)
     end
@@ -348,7 +348,7 @@ class TaskJuggler
       elsif @attributes.has_key?(attributeId)
         @attributes[attributeId].set(value)
       else
-        raise TjException, "Unknown attribute #{attributeId}"
+        raise TjException.new, "Unknown attribute #{attributeId}"
       end
       @scenarioAttributes[scenario][attributeId].set(value)
     end

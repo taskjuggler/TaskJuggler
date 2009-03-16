@@ -441,7 +441,7 @@ delivery dates.
     columns no, name, effort, rate, weekly #, utilization, freeload, chart
     loadunit shortauto
     hidetask ~isleaf()
-    sorttasks plan.start.up
+    sorttasks start.up
   }
 }
 # *** EXAMPLE: planoverview -

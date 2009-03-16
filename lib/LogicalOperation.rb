@@ -74,7 +74,7 @@ class TaskJuggler
           return coerceBoolean(@operand1.eval(expr)) ||
                  coerceBoolean(@operand2.eval(expr))
         else
-          raise TjException,
+          raise TjException.new,
                 "Unknown operator #{@operator} in logical expression"
         end
       rescue TjException
@@ -106,7 +106,7 @@ class TaskJuggler
     # Force the _val_ into a number. In case this fails, an exception is raised.
     def coerceNumber(val)
       unless val.is_a?(Fixnum) || val.is_a?(Float) || val.is_a?(Bignum)
-        raise TjException,
+        raise TjException.new,
           "Operand #{val} of type #{val.class} must be a number"
       end
       val
