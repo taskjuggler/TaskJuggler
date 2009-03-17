@@ -67,7 +67,6 @@ rate 390.0
 # *** EXAMPLE: vacation +
 vacation "Good Friday" 2002-03-29
 # *** EXAMPLE: vacation -
-
 # *** EXAMPLE: flags +
 flags team
 # *** EXAMPLE: flags -
@@ -441,7 +440,7 @@ delivery dates.
     columns no, name, effort, rate, weekly #, utilization, freeload, chart
     loadunit shortauto
     hidetask ~isleaf()
-    sorttasks start.up
+    sorttasks plan.start.up
   }
 }
 # *** EXAMPLE: planoverview -

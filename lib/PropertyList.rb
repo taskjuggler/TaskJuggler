@@ -91,7 +91,8 @@ class TaskJuggler
       end
       if scIdx == -1
         if @propertySet.scenarioSpecific?(criteria)
-          raise TjException.new, "Attribute #{criteria} is scenario specific"
+          raise TjException.new, "Attribute #{criteria} is scenario specific." +
+                "You must specify a scenario id."
         end
       else
         if !@propertySet.scenarioSpecific?(criteria)
