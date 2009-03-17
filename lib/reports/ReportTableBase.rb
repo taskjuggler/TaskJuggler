@@ -79,16 +79,12 @@ class TaskJuggler
     def to_html
       html = []
 
-      # Make sure we have some margins around the report.
-      html << (frame = XMLElement.new('div',
-                                      'style' => 'margin: 35px 5% 25px 5%; '))
-
       if a('prolog')
         a('prolog').sectionNumbers = false
-        frame << a('prolog').to_html
+        html << a('prolog').to_html
       end
 
-      frame << (table = XMLElement.new('table', 'summary' => 'Report Table',
+      html << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                      'cellspacing' => '2', 'border' => '0',
                                      'cellpadding' => '0', 'align' => 'center',
                                      'class' => 'tabback'))
@@ -146,7 +142,7 @@ class TaskJuggler
 
       if a('epilog')
         a('epilog').sectionNumbers = false
-        frame << a('epilog').to_html
+        html << a('epilog').to_html
       end
 
       html

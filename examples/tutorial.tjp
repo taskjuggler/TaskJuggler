@@ -251,6 +251,7 @@ task AcSo "Accounting Software" {
 taskreport index "Overview" {
   list tasks
   formats html
+  menu 1
   prolog '
 == Accounting Software Project ==
 ----

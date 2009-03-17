@@ -2222,6 +2222,16 @@ Determines what unit should be used to display all load values in this report.
 EOT
        )
 
+    pattern(%w( _menu !logicalExpression ), lambda {
+      @property.set('menu', @val[1])
+    })
+    doc('menu', <<'EOT'
+This attributes causes the inclusion of a navigation menu for those reports
+that match the logical expression. It only has an effect on report formats
+that support the inclusion of a navigation menu.
+EOT
+       )
+
     pattern(%w( _prolog $STRING ), lambda {
       @property.set('prolog', newRichText(@val[1]))
     })

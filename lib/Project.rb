@@ -265,9 +265,9 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         # Inh.   Inh.Prj  Scen.  Default
-        [ 'caption',   'Caption', RichTextAttribute,
+        [ 'caption',   'Caption',      RichTextAttribute,
           false, false,   false, nil ],
-        [ 'columns',   'Columns', ColumnListAttribute,
+        [ 'columns',   'Columns',      ColumnListAttribute,
           true,  false,   false, [] ],
         [ 'costAccount', 'Cost Account', AccountAttribute,
           true,  true,    false, nil ],
@@ -275,21 +275,25 @@ class TaskJuggler
           true,  true,    false, nil ],
         [ 'end',       'End',          DateAttribute,
           true,  true,    false, nil ],
-        [ 'epilog',    'Epilog',  RichTextAttribute,
+        [ 'epilog',    'Epilog',       RichTextAttribute,
           false, false,   false, nil ],
-        [ 'formats',   'Formats', FormatListAttribute,
+        [ 'formats',   'Formats',      FormatListAttribute,
           true,  false,   false, [ :html ] ],
-        [ 'ganttBars', 'Gantt Bars', BooleanAttribute,
+        [ 'ganttBars', 'Gantt Bars',   BooleanAttribute,
           true,  false,   false, true ],
-        [ 'headline',  'Headline',   StringAttribute,
+        [ 'headline',  'Headline',    StringAttribute,
           false, false,   false, '' ],
         [ 'hideResource', 'Hide Resource', LogicalExpressionAttribute,
           true,  false,   false, nil ],
-        [ 'hideTask',  'Hide Task', LogicalExpressionAttribute,
+        [ 'hideTask',  'Hide Task',   LogicalExpressionAttribute,
           true,  false,   false, nil ],
-        [ 'loadUnit',  'Load Unit', StringAttribute,
+        [ 'index',     'Index',        FixnumAttribute,
+          false, false,   false, -1 ],
+        [ 'loadUnit',  'Load Unit',   StringAttribute,
           true,  true,    false, nil ],
-        [ 'now',       'Now',          DateAttribute,
+        [ 'menu',      'Menu',        LogicalExpressionAttribute,
+          true,  false,   false, nil ],
+        [ 'now',       'Now',         DateAttribute,
           true,  true,    false, nil ],
         [ 'numberFormat', 'Number Format', RealFormatAttribute,
           true,  true,    false, nil ],
@@ -311,14 +315,18 @@ class TaskJuggler
           true,  false,   false, [[ 'seqno', true, -1 ]] ],
         [ 'sortTasks', 'Sort Tasks', SortListAttribute,
           true,  false,   false, [[ 'seqno', true, -1 ]] ],
-        [ 'start',     'Start',        DateAttribute,
+        [ 'start',     'Start',       DateAttribute,
           true,  true,    false, nil ],
-        [ 'taskRoot',  'Task Root', PropertyAttribute,
+        [ 'taskRoot',  'Task Root',   PropertyAttribute,
           true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,
           true,  true,    false, nil ],
-        [ 'timezone', 'Time Zone', StringAttribute,
+        [ 'timezone', 'Time Zone',    StringAttribute,
           true,  true,    false, nil ],
+        [ 'tree',      'Tree Index',  StringAttribute,
+          false, false,   false, "" ],
+        [ 'wbs',       'WBS',         StringAttribute,
+          false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
           true,  true,    false, false ]
       ]
@@ -444,7 +452,7 @@ class TaskJuggler
     # filled with data. It schedules all scenario and stores the result in the
     # data structures again.
     def schedule
-      [ @shifts, @resources, @tasks ].each do |p|
+      [ @shifts, @resources, @tasks, ].each do |p|
         p.inheritAttributesFromScenario
         # Set all index counters to their proper values.
         p.index
@@ -490,6 +498,7 @@ class TaskJuggler
     # This function may only be called after Project#schedule has been called.
     def generateReports(maxCpuCores)
       begin
+        @reports.index
         if maxCpuCores == 1
           @reports.each do |report|
             Log.startProgressMeter("Report #{report.name}")
