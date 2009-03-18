@@ -25,22 +25,26 @@ class TaskJuggler
 
       first = true
       html = []
+      html << (div = XMLElement.new('div'))
       @reports.each do |report|
+        next unless report.get('formats').include?(:html)
+
         if first
           first = false
         else
-          html << XMLText.new('|')
+          div << XMLText.new('|')
         end
         if report == @report
-          html << (span = XMLElement.new('span',
+          div << (span = XMLElement.new('span',
                                          'style' => 'class:menu_current'))
           span << XMLText.new(report.name)
         else
-          html << (span = XMLElement.new('span', 'style' => 'class:menu_other'))
+          div << (span = XMLElement.new('span', 'style' => 'class:menu_other'))
           span << (a = XMLElement.new('a', 'href' => report.name + '.html'))
           a << XMLText.new(report.name)
         end
       end
+      html << XMLElement.new('hr')
       html
     end
 

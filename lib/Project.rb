@@ -452,7 +452,7 @@ class TaskJuggler
     # filled with data. It schedules all scenario and stores the result in the
     # data structures again.
     def schedule
-      [ @shifts, @resources, @tasks, ].each do |p|
+      [ @shifts, @resources, @tasks ].each do |p|
         p.inheritAttributesFromScenario
         # Set all index counters to their proper values.
         p.index
