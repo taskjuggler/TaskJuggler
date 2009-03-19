@@ -247,9 +247,9 @@ class TaskJuggler
       begin
         # Get the value no matter if it's scenario specific or not.
         if propertyList.scenarioSpecific?(colId)
-          value = property[colId, scenarioIdx]
+          value = property.getAttr(colId, scenarioIdx)
         else
-          value = property.get(colId)
+          value = property.getAttr(colId)
         end
 
         type = propertyList.attributeType(colId)
@@ -262,9 +262,9 @@ class TaskJuggler
         else
           # Certain attribute types need special treatment.
           if type == DateAttribute
-            value.to_s(a('timeFormat'))
+            value.value.to_s(a('timeFormat'))
           elsif type == RichTextAttribute
-            value
+            value.value
           else
             value.to_s
           end

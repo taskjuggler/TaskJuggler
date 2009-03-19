@@ -2035,6 +2035,9 @@ EOT
     singlePattern('_daily')
     descr('A group of columns with one column for each day')
 
+    singlePattern('_depends')
+    descr('A comma separated list of tasks that have to precede this task.')
+
     singlePattern('_duration')
     descr('The duration of a task')
 
@@ -2106,6 +2109,9 @@ EOT
     singlePattern('_pathcriticalness')
     descr('The criticalness of the task with respect to all the paths that ' +
           'it is a part of.')
+
+    singlePattern('_precedes')
+    descr('A comma separated list of tasks that have to follow this task.')
 
     singlePattern('_priority')
     descr('The priority of a task')

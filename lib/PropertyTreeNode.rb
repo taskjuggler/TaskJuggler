@@ -324,7 +324,16 @@ class TaskJuggler
     # _scenarioIdx_.
     def getAttr(attributeId, scenarioIdx = nil)
       if scenarioIdx.nil?
-        @attributes[attributeId]
+        case attributeId
+        when 'id'
+          @id
+        when 'name'
+          @name
+        when 'seqno'
+          @sequenceNo
+        else
+          @attributes[attributeId]
+        end
       else
         @scenarioAttributes[scenarioIdx][attributeId]
       end
