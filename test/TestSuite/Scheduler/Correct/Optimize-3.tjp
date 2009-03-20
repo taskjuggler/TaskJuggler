@@ -1,4 +1,7 @@
-project test "Test" "1.0" 2000-01-01-0:00 +1m
+project test "Test" "1.0" 2000-01-01-0:00 +1m {
+	timezone "UTC"
+}
+
 
 macro Fixend [ minend ${1} maxend ${1} ]
 

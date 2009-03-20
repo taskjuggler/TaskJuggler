@@ -1,0 +1,7 @@
+project test "Test" "1.0" 2007-08-26 +1w {
+  timezone "Asia/Kolkata"
+# MARK: error 4 too_large_timing_res
+  timingresolution 60 min
+}
+
+task foo "Foo"

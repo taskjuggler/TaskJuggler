@@ -23,6 +23,7 @@ class TestScheduler < Test::Unit::TestCase
 
   def test_SchedulerErrors
     Dir.glob(Path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
+      ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       tj.schedule
@@ -32,6 +33,7 @@ class TestScheduler < Test::Unit::TestCase
 
   def test_SchedulerCorrect
     Dir.glob(Path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
+      ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for ${f}")
       assert(tj.schedule, "Scheduler failed for #{f}")

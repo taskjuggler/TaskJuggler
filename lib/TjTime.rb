@@ -60,6 +60,21 @@ class TaskJuggler
       TjTime.new(Time.local(*args).gmtime)
     end
 
+    # Check if +zone+ is a valid time zone.
+    def TjTime.checkTimeZone(zone)
+      return true if zone == 'UTC'
+
+      tz = ENV['TZ']
+      ENV['TZ'] = zone
+      newZone = Time.new.zone
+      # If the time zone is valid, the OS can convert a zone like
+      # 'America/Denver' into 'MST'. Unknown time zones are either not
+      # converted or cause a fallback to UTC.
+      res = (newZone != zone && newZone != 'UTC')
+      ENV['TZ'] = tz if tz
+      res
+    end
+
     # Align the date to a time grid. The grid distance is determined by _clock_.
     def align(clock)
       TjTime.new((@time.to_i / clock) * clock)

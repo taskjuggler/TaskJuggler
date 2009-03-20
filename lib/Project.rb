@@ -71,7 +71,7 @@ class TaskJuggler
         'priority' => 500,
         'rate' => 0.0,
         'revenueAccount' => nil,
-        'scheduleGranularity' => 3600,
+        'scheduleGranularity' => Project.maxScheduleGranularity,
         'shortTimeFormat' => "%H:%M",
         'start' => nil,
         'timeFormat' => "%Y-%m-%d",
@@ -628,6 +628,29 @@ class TaskJuggler
       # Calculate the corresponding index.
       ((date - @attributes['start']) / @attributes['scheduleGranularity']).to_i
     end
+
+    # TaskJuggler keeps all times in UTC. All time values must be multiples of
+    # the used scheduling granularity. If the local time zone is not
+    # hour-aligned to UTC, the maximum allowed schedule granularity is
+    # reduced.
+    def Project.maxScheduleGranularity
+      refTime = Time.gm(2000, 1, 1, 0, 0, 0)
+      case (min = refTime.getlocal.min)
+      when 0
+        # We are hour-aligned to UTC; scheduleGranularity is 1 hour
+        60 * 60
+      when 30
+        # We are half-hour off from UTC; scheduleGranularity is 30 minutes
+        30 * 60
+      when 15, 45
+        # We are 15 or 45 minutes off from UTC; scheduleGranularity is 15
+        # minutes
+        15 * 60
+      else
+        raise "Unknown Time zone alignment #{min}"
+      end
+    end
+
 
     # Print the attribute values. It's used for debugging only.
     def to_s

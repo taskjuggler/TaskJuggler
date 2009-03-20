@@ -1,4 +1,7 @@
-project test "Test" "1.0" 2000-01-01-0:00 +1m
+project test "Test" "1.0" 2000-01-01-0:00 +1m {
+	timezone "UTC"
+}
+
 
 macro Fixend [ minend ${1} maxend ${1} ]
 
@@ -28,6 +31,7 @@ task t3 "Task3" {
 
 taskreport optimize2 "Optimize-2" {
   formats html
+  timeformat "%Y-%m-%d %H:%M"
 	columns name, start, end, daily
 	hideresource 0
 }

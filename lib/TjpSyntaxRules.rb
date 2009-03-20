@@ -526,7 +526,8 @@ EOT
 
   def rule_date
     pattern(%w( $DATE ), lambda {
-      resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
+      resolution = @project.nil? ? Project.maxScheduleGranularity :
+                                   @project['scheduleGranularity']
       if @val[0] % resolution != 0
         error('misaligned_date',
               "The date must be aligned to the timing resolution (" +
@@ -1648,6 +1649,11 @@ EOT
         error('bad_timing_res',
               "Timing resolution must be one of #{goodValues.join(', ')} min.")
       end
+      if @val[1] > (Project.maxScheduleGranularity / 60)
+        error('too_large_timing_res',
+              'The maximum allowed timing resolution for the timezone is ' +
+              "#{Project.maxScheduleGranularity / 60} minutes.")
+      end
       @project['scheduleGranularity'] = @val[1] * 60
     })
     doc('timingresolution', <<'EOT'
@@ -2747,7 +2753,9 @@ EOT
       @property = @property.parent
     })
     doc('shift', <<'EOT'
-A shift combines several workhours related settings in a reusable entity. Besides the weekly working hours it can also hold information such as vacations and a timezone.
+A shift combines several workhours related settings in a reusable entity.
+Besides the weekly working hours it can also hold information such as
+vacations and a time zone.
 EOT
        )
   end
@@ -2830,17 +2838,20 @@ Use this attribute if the vacation definition for the shift should replace the v
 EOT
        )
 
-    pattern(%w( _timezone $STRING ), lambda {
+    pattern(%w( _timezone !validTimeZone ), lambda {
       @property['timezone', @scenarioIdx] = @val[1]
     })
     doc('timezone.shift', <<'EOT'
-Sets the timezone of the shift. The working hours of the shift are assumed to be within the specified time zone. The timezone does not effect the vaction interval. The latter is assumed to be within the project time zone.
+Sets the time zone of the shift. The working hours of the shift are assumed to
+be within the specified time zone. The time zone does not effect the vaction
+interval. The latter is assumed to be within the project time zone.
 EOT
         )
     arg(1, 'zone', <<'EOT'
 Time zone to use. E. g. 'Europe/Berlin' or 'America/Denver'. Don't use the 3
-letter acronyms.  Linux systems have a command line utility called tzselect to
-lookup possible values.
+letter acronyms. See
+[http://en.wikipedia.org/wiki/List_of_zoneinfo_time_zones Wikipedia] for
+possible values.
 EOT
        )
 
@@ -3772,24 +3783,32 @@ EOT
   end
 
   def rule_timezone
-    pattern(%w( _timezone $STRING ), lambda{
-      # TODO
+    pattern(%w( _timezone !validTimeZone ), lambda{
+      ENV['TZ'] = @project['timezone'] = @val[1]
     })
     doc('timezone', <<'EOT'
-Sets the default timezone of the project. All times that have no time
-zones specified will be assumed to be in this timezone. The value must be a
+Sets the default time zone of the project. All times that have no time
+zones specified will be assumed to be in this time zone. The value must be a
 string just like those used for the TZ environment variable. Most
 Linux systems have a command line utility called tzselect to lookup
 possible values.
 
 The project start and end time are not affected by this setting. You
-have to explicitly state the timezone for those dates or the system
-defaults are assumed.
+have to explicitly state the time zone for those dates or the system defaults
+are assumed. Using the TZ environment variable is the recommended way to
+specify the time zone for your project. If you use this attribute within the
+project, it should be the very first thing you set. It must be set before you
+set the [[timingresolution]] or any attribute with a time or date.
+
+In case the specified time zone is not hour-aligned with UTC, the
+[[timingresolution]] will automatically be decreased.
 EOT
         )
     arg(1, 'zone', <<'EOT'
 Time zone to use. E. g. 'Europe/Berlin' or 'America/Denver'. Don't use the 3
-letter acronyms.
+letter acronyms. See
+[http://en.wikipedia.org/wiki/List_of_zoneinfo_time_zones Wikipedia] for
+possible values.
 EOT
        )
   end
@@ -3805,6 +3824,15 @@ EOT
       if @val[0] < @project['start'] || @val[0] > @project['end']
         error('date_in_range', "Date must be within the project time frame " +
               "#{@project['start']} +  - #{@project['end']}")
+      end
+      @val[0]
+    })
+  end
+
+  def rule_validTimeZone
+    pattern(%w( $STRING ), lambda {
+      unless TjTime.checkTimeZone(@val[0])
+        error('bad_time_zone', "#{@val[0]} is not a known time zone")
       end
       @val[0]
     })
