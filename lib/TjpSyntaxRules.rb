@@ -642,6 +642,7 @@ EOT
               "A report with the name #{name} has already been defined.")
       end
       newReport(@val[1], :export, sourceFileInfo)
+      @property.set('formats', [ :export ])
       @property.table = TjpExportRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
@@ -661,7 +662,7 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @property.set('resourceAttrs', @val[1].include?('none') ? [] : @val[1])
+      @property.table.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('resourceattributes', <<"EOT"
 Define a list of resource attributes that should be included in the report. To
@@ -670,7 +671,7 @@ used, no optional resource attributes will be exported.
 EOT
         )
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @property.set('taskAttrs', @val[1].include?('none') ? [] : @val[1])
+      @property.table.taskAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('taskattributes', <<"EOT"
 Define a list of task attributes that should be included in the report. To

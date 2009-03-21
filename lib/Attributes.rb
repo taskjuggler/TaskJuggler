@@ -530,13 +530,13 @@ class TaskJuggler
 
     def to_tjp
       dayNames = %w( sun mon tue wed thu fri sat )
-      str = 'workinghours '
+      str = ''
       7.times do |day|
-        str += "#{dayNames[day]} "
+        str += "workinghours #{dayNames[day]} "
         whs = @value.getWorkingHours(day)
         if whs.empty?
           str += "off"
-          str += ",\n" if day < 6
+          str += "\n" if day < 6
           next
         end
         first = true
