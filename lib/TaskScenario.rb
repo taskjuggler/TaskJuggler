@@ -1527,7 +1527,7 @@ class TaskJuggler
     # specified completion value.
     def calcCompletion
       # If the user provided a completion degree we are not touching it.
-      if property.provided('complete')
+      if @property.provided('complete', @scenarioIdx)
         return
       end
 
