@@ -23,6 +23,7 @@ class TestScheduler < Test::Unit::TestCase
 
   def test_syntaxCorrect
     Dir.glob(Path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
+      ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
@@ -31,6 +32,7 @@ class TestScheduler < Test::Unit::TestCase
 
   def test_syntaxErrors
     Dir.glob(Path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
+      ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(!tj.parse([ f ]), "Parser succedded for #{f}")
       checkMessages(tj, f)
