@@ -168,12 +168,13 @@ for the customer payments.
 [[example:tutorial accounts]]
 
 Like all TaskJuggler properties, the account needs an ID and a name.
-IDs may only consist of ASCII characters, numbers and the underline
-character. All global TaskJuggler properties have IDs. The ID is
-necessary so that we can reference the property again later without
-having to write the potentially much longer name. The name may
-contain space characters and therefore has to be enclosed with single
-or double quotes.
+IDs may only consist of the characters a to z, A to Z and the
+underscore. All but the first character may also be digits 0 to 9.
+All global TaskJuggler properties have IDs. The ID is necessary so
+that we can reference the property again later without having to write
+the potentially much longer name. The name may contain space
+characters and therefore has to be enclosed with single or double
+quotes.
 
 Accounts can be grouped by nesting them. You can use this feature to
 create sets of accounts. Such sets can then be balanced against each
