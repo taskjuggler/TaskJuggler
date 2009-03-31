@@ -13,19 +13,4 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 $:.unshift File.dirname(__FILE__)
 
-require 'test_CSV-Reports.rb'
-require 'test_Query.rb'
-require 'test_TextScanner.rb'
-require 'test_Limits.rb'
-require 'test_RealFormat.rb'
-require 'test_TjpExample.rb'
-require 'test_LogicalExpression.rb'
-require 'test_RichText.rb'
-require 'test_TjTime.rb'
-require 'test_MacroTable.rb'
-require 'test_Scheduler.rb'
-require 'test_Project.rb'
-require 'test_ShiftAssignments.rb'
-require 'test_PropertySet.rb'
-require 'test_Syntax.rb'
-require 'test_UTF8String.rb'
+Dir.glob(File.dirname(__FILE__) + '/test_*.rb').each { |f| require f }
