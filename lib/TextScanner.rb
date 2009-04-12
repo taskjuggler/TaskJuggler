@@ -351,7 +351,7 @@ class TaskJuggler
         returnChar(c)
         macroParser = MacroParser.new(self, @messageHandler)
         begin
-          macroParser.parse('macroCall', false)
+          macroParser.parse('macroCall')
         rescue TjException
         end
         @ignoreMacros = false

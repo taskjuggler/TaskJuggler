@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = ReportTableBase.rb -- The TaskJuggler III Project Management Software
+# = Navigator.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,23 +10,29 @@
 # published by the Free Software Foundation.
 #
 
+require 'reports/ReportContext'
+
 class TaskJuggler
 
-  class Menu
+  class Navigator
 
-    def initialize(report, showReports)
-      @report = report
+    attr_reader :id
+    attr_accessor :hideReport, :context
 
-      @reports = filterReports(showReports)
+    def initialize(id)
+      @id = id
+      @hideReport = LogicalExpression.new(LogicalOperation.new(0))
+      @context = nil
     end
 
     def to_html
-      return nil if @reports.empty?
+      reports = filterReports
+      return nil if reports.empty?
 
       first = true
       html = []
       html << (div = XMLElement.new('div'))
-      @reports.each do |report|
+      reports.each do |report|
         next unless report.get('formats').include?(:html)
 
         if first
@@ -34,12 +40,12 @@ class TaskJuggler
         else
           div << XMLText.new('|')
         end
-        if report == @report
+        if report == @context.report
           div << (span = XMLElement.new('span',
-                                         'style' => 'class:menu_current'))
+                                         'style' => 'class:navbar_current'))
           span << XMLText.new(report.name)
         else
-          div << (span = XMLElement.new('span', 'style' => 'class:menu_other'))
+          div << (span = XMLElement.new('span', 'style' => 'class:navbar_other'))
           span << (a = XMLElement.new('a', 'href' => report.name + '.html'))
           a << XMLText.new(report.name)
         end
@@ -50,13 +56,13 @@ class TaskJuggler
 
     private
 
-    def filterReports(showReports)
-      list = PropertyList.new(@report.project.reports)
+    def filterReports
+      list = PropertyList.new(@context.project.reports)
       list.setSorting([[ 'seqno', true, -1 ]])
       list.sort!
       # Remove all reports that the user doesn't want to have include.
       list.delete_if do |property|
-        !showReports.eval(property, nil)
+        @hideReport.eval(property, nil)
       end
       list
     end

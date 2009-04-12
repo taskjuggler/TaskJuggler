@@ -140,7 +140,7 @@ class TaskJuggler
     # To parse the input this function needs to be called with the name of the
     # rule to start with. It returns the result of the processing function of
     # the top-level parser rule that was specified by _ruleName_.
-    def parse(ruleName, enforceEndOfFile = true)
+    def parse(ruleName)
       @stack = []
       @@expectedTokens = []
       updateParserTables

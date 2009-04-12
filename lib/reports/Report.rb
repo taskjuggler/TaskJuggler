@@ -15,7 +15,7 @@ require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
 require 'reports/CSVFile'
-require 'reports/Menu'
+require 'reports/Navigator'
 require 'HTMLDocument'
 
 class TaskJuggler
@@ -32,7 +32,6 @@ class TaskJuggler
       super(project.reports, id, name, parent)
       project.addReport(self)
 
-      @menu = nil
       @table = nil
     end
 
@@ -43,9 +42,9 @@ class TaskJuggler
       begin
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
-        @menu = Menu.new(self, get('menu')) if get('menu')
         @table.generateIntermediateFormat if @table
 
+        @project.reportContext.report = self
         # Then generate the actual output format.
         get('formats').each do |format|
           case format
@@ -240,7 +239,6 @@ EOT
       body << (frame = XMLElement.new('div',
                                       'style' => 'margin: 35px 5% 25px 5%; '))
 
-      frame << @menu.to_html if @menu
       frame << @table.to_html if @table
 
       html.write(@name + (@name == '.' ? '' : '.html'))
@@ -291,10 +289,6 @@ EOT
       f = @name == '.' ? $stdout : File.new(@name, 'w')
       f.puts "#{@table.to_tjp}"
     end
-
-  end
-
-  def generateHTMLMenu
 
   end
 

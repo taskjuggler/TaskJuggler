@@ -44,7 +44,7 @@ class TaskJuggler
   class Project
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
-                :reports, :messageHandler
+                :reportContext, :reports, :messageHandler
 
     # Create a project with the specified +id+, +name+ and +version+.
     # +messageHandler+ is a MessageHandler reference that is used to handle
@@ -66,6 +66,7 @@ class TaskJuggler
         'flags' => [],
         'limits' => nil,
         'loadUnit' => :shortauto,
+        'navigators' => {},
         'now' => TjTime.now.align(3600),
         'numberFormat' => RealFormat.new([ '-', '', '', '.', 1]),
         'priority' => 500,
@@ -291,8 +292,6 @@ class TaskJuggler
           false, false,   false, -1 ],
         [ 'loadUnit',  'Load Unit',   StringAttribute,
           true,  true,    false, nil ],
-        [ 'menu',      'Menu',        LogicalExpressionAttribute,
-          true,  false,   false, nil ],
         [ 'now',       'Now',         DateAttribute,
           true,  true,    false, nil ],
         [ 'numberFormat', 'Number Format', RealFormatAttribute,
@@ -333,6 +332,7 @@ class TaskJuggler
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
+      @reportContext = ReportContext.new(self)
     end
 
     # Pass a message (error or warning) to the message handler. _message_ is a

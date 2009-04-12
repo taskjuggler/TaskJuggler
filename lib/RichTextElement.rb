@@ -329,10 +329,12 @@ class TaskJuggler
       when :ref
         if @data.include?(':')
           protocol, path = @data.split(':')
-          raise TjException.new, "Reference protocol empty." if protocol.empty?
-          if path.empty?
-            raise TjException.new, "Reference path may not be empty."
+          if protocol.nil? || protocol.empty?
+            raise TjException.new, "Reference protocol name expected."
           end
+          #if path.nil? || path.empty?
+          #  raise TjException.new, "Reference path missing."
+          #end
           args = children_to_s.split(' ')
           return @richText.protocolHandler(protocol).to_html(path, args)
         else

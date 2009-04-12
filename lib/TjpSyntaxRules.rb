@@ -1397,6 +1397,42 @@ EOT
     commaListRule('!timeInterval')
   end
 
+  def rule_navigator
+    pattern(%w( !navigatorHeader !navigatorBody ), lambda {
+      @project['navigators'][@navigator.id] = @navigator
+    })
+    doc('navigator', <<'EOT'
+Defines a navigator object with the specified ID. This object can be used in
+reports to include a navigation bar with references to other reports.
+EOT
+          )
+  end
+
+  def rule_navigatorAttributes
+    optional
+    repeatable
+    pattern(%w( _hidereport !logicalExpression ), lambda {
+      @navigator.hideReport = @val[1]
+    })
+    doc('hidereport', <<'EOT'
+This attribute can be used to exclude the reports that match the specified
+expression from the navigation bar.
+EOT
+          )
+  end
+
+  def rule_navigatorBody
+    optional
+    pattern(%w( _{ !navigatorAttributes _} ))
+  end
+
+  def rule_navigatorHeader
+    pattern(%w( _navigator $ID ), lambda {
+      @navigator = Navigator.new(@val[1])
+      @navigator.context = @project.reportContext
+    })
+  end
+
   def rule_number
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')
@@ -1868,6 +1904,8 @@ EOT
 
     pattern(%w( !macro ))
 
+    pattern(%w( !navigator ))
+
     pattern(%w( _projectid $ID ), lambda {
       @project['projectids'] << @val[1]
       @project['projectids'].uniq!
@@ -2232,16 +2270,6 @@ EOT
     })
     doc('loadunit', <<'EOT'
 Determines what unit should be used to display all load values in this report.
-EOT
-       )
-
-    pattern(%w( _menu !logicalExpression ), lambda {
-      @property.set('menu', @val[1])
-    })
-    doc('menu', <<'EOT'
-This attributes causes the inclusion of a navigation menu for those reports
-that match the logical expression. It only has an effect on report formats
-that support the inclusion of a navigation menu.
 EOT
        )
 

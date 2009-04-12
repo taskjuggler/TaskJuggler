@@ -369,6 +369,10 @@ task AcSo "Accounting Software" {
 # scheduled. But no reports would be generated to visualize the
 # results.
 
+navigator navbar {
+  hidereport 0
+}
+
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
 taskreport index "Overview" {
@@ -376,6 +380,8 @@ taskreport index "Overview" {
   formats html
   prolog '
 == Accounting Software Project ==
+----
+[[navigator:navbar]]
 ----
 === Project Overview ===
 
