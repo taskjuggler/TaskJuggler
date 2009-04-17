@@ -17,12 +17,12 @@ class TaskJuggler
   class Navigator
 
     attr_reader :id
-    attr_accessor :hideReport, :context
+    attr_accessor :hideReport
 
-    def initialize(id)
+    def initialize(id, project)
       @id = id
+      @project = project
       @hideReport = LogicalExpression.new(LogicalOperation.new(0))
-      @context = nil
     end
 
     def to_html
@@ -40,7 +40,7 @@ class TaskJuggler
         else
           div << XMLText.new('|')
         end
-        if report == @context.report
+        if report == @project.reportContext.report
           div << (span = XMLElement.new('span',
                                          'style' => 'class:navbar_current'))
           span << XMLText.new(report.name)
@@ -50,14 +50,13 @@ class TaskJuggler
           a << XMLText.new(report.name)
         end
       end
-      html << XMLElement.new('hr')
       html
     end
 
     private
 
     def filterReports
-      list = PropertyList.new(@context.project.reports)
+      list = PropertyList.new(@project.reports)
       list.setSorting([[ 'seqno', true, -1 ]])
       list.sort!
       # Remove all reports that the user doesn't want to have include.

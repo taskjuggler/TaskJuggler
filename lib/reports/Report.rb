@@ -40,11 +40,12 @@ class TaskJuggler
     # generated according the the requested output format(s).
     def generate
       begin
+        @project.reportContext.report = self
+
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
         @table.generateIntermediateFormat if @table
 
-        @project.reportContext.report = self
         # Then generate the actual output format.
         get('formats').each do |format|
           case format
@@ -66,6 +67,11 @@ class TaskJuggler
     end
 
   private
+    # Convenience function to access a report attribute
+    def a(attribute)
+      get(attribute)
+    end
+
 
     # Generate an HTML version of the report.
     def generateHTML
@@ -239,7 +245,11 @@ EOT
       body << (frame = XMLElement.new('div',
                                       'style' => 'margin: 35px 5% 25px 5%; '))
 
+      frame << generateRichTextElement('header')
+      frame << generateRichTextElement('prolog')
       frame << @table.to_html if @table
+      frame << generateRichTextElement('epilog')
+      frame << generateRichTextElement('footer')
 
       html.write(@name + (@name == '.' ? '' : '.html'))
     end
@@ -288,6 +298,13 @@ EOT
     def generateExport
       f = @name == '.' ? $stdout : File.new(@name, 'w')
       f.puts "#{@table.to_tjp}"
+    end
+
+    def generateRichTextElement(name)
+      return unless a(name)
+
+      a(name).sectionNumbers = false
+      a(name).to_html
     end
 
   end

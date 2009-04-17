@@ -1428,8 +1428,11 @@ EOT
 
   def rule_navigatorHeader
     pattern(%w( _navigator $ID ), lambda {
-      @navigator = Navigator.new(@val[1])
-      @navigator.context = @project.reportContext
+      if @project['navigators'][@val[1]]
+        error('navigator_exists',
+              "The navigator #{@val[1]} has already been defined.")
+      end
+      @navigator = Navigator.new(@val[1], @project)
     })
   end
 
@@ -2240,6 +2243,17 @@ Define a text section that is printed right after the actual report data. The
 text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
+    also(%w( footer header prolog ))
+
+    pattern(%w( _footer $STRING ), lambda {
+      @property.set('footer', newRichText(@val[1]))
+    })
+    doc('footer', <<'EOT'
+Define a text section that is put at the bottom of the report. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+    also(%w( epilog header prolog ))
 
     pattern(%w( _formats !outputFormats ), lambda {
       @property.set('formats', @val[1])
@@ -2247,6 +2261,16 @@ EOT
     doc('formats', <<'EOT'
 EOT
        )
+
+    pattern(%w( _header $STRING ), lambda {
+      @property.set('header', newRichText(@val[1]))
+    })
+    doc('header', <<'EOT'
+Define a text section that is put at the top of the report. The
+text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+    also(%w( epilog footer prolog ))
 
     pattern(%w( _headline $STRING ), lambda {
       @property.set('headline', @val[1])
@@ -2281,6 +2305,7 @@ Define a text section that is printed right before the actual report data. The
 text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
+    also(%w( epilog footer header ))
 
     pattern(%w( _rawhead $STRING ), lambda {
       @property.set('rawHead', @val[1])

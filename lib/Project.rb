@@ -278,25 +278,29 @@ class TaskJuggler
           true,  true,    false, nil ],
         [ 'epilog',    'Epilog',       RichTextAttribute,
           false, false,   false, nil ],
+        [ 'footer',    'Footer',       RichTextAttribute,
+          true,  false,   false, nil ],
         [ 'formats',   'Formats',      FormatListAttribute,
           true,  false,   false, [ :html ] ],
         [ 'ganttBars', 'Gantt Bars',   BooleanAttribute,
           true,  false,   false, true ],
-        [ 'headline',  'Headline',    StringAttribute,
+        [ 'header',    'Header',       RichTextAttribute,
+          true,  false,   false, nil ],
+        [ 'headline',  'Headline',     StringAttribute,
           false, false,   false, '' ],
         [ 'hideResource', 'Hide Resource', LogicalExpressionAttribute,
           true,  false,   false, nil ],
-        [ 'hideTask',  'Hide Task',   LogicalExpressionAttribute,
+        [ 'hideTask',  'Hide Task',    LogicalExpressionAttribute,
           true,  false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
           false, false,   false, -1 ],
-        [ 'loadUnit',  'Load Unit',   StringAttribute,
+        [ 'loadUnit',  'Load Unit',    StringAttribute,
           true,  true,    false, nil ],
-        [ 'now',       'Now',         DateAttribute,
+        [ 'now',       'Now',          DateAttribute,
           true,  true,    false, nil ],
         [ 'numberFormat', 'Number Format', RealFormatAttribute,
           true,  true,    false, nil ],
-        [ 'prolog',    'Prolog', RichTextAttribute,
+        [ 'prolog',    'Prolog',       RichTextAttribute,
           false, false,   false, nil],
         [ 'resourceRoot',  'resource Root', PropertyAttribute,
           true,  false,   false, nil ],
@@ -306,25 +310,25 @@ class TaskJuggler
           true,  false,   false, nil ],
         [ 'rollupTask', 'Rollup Task', LogicalExpressionAttribute,
           true, false,    false, nil ],
-        [ 'scenarios',  'Scenarios', ScenarioListAttribute,
+        [ 'scenarios',  'Scenarios',   ScenarioListAttribute,
           true, false,    false, [ 0 ] ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
           true,  true,    false, nil ],
         [ 'sortResources', 'Sort Resources', SortListAttribute,
           true,  false,   false, [[ 'seqno', true, -1 ]] ],
-        [ 'sortTasks', 'Sort Tasks', SortListAttribute,
+        [ 'sortTasks', 'Sort Tasks',   SortListAttribute,
           true,  false,   false, [[ 'seqno', true, -1 ]] ],
-        [ 'start',     'Start',       DateAttribute,
+        [ 'start',     'Start',        DateAttribute,
           true,  true,    false, nil ],
-        [ 'taskRoot',  'Task Root',   PropertyAttribute,
+        [ 'taskRoot',  'Task Root',    PropertyAttribute,
           true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,
           true,  true,    false, nil ],
-        [ 'timezone', 'Time Zone',    StringAttribute,
+        [ 'timezone', 'Time Zone',     StringAttribute,
           true,  true,    false, nil ],
-        [ 'tree',      'Tree Index',  StringAttribute,
+        [ 'tree',      'Tree Index',   StringAttribute,
           false, false,   false, "" ],
-        [ 'wbs',       'WBS',         StringAttribute,
+        [ 'wbs',       'WBS',          StringAttribute,
           false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
           true,  true,    false, false ]
@@ -333,6 +337,12 @@ class TaskJuggler
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
       @reportContext = ReportContext.new(self)
+    end
+
+    # Overload the deep_clone function so that references to the project don't
+    # lead to deep copying of the whole project.
+    def deep_clone
+      self
     end
 
     # Pass a message (error or warning) to the message handler. _message_ is a

@@ -378,11 +378,14 @@ navigator navbar {
 taskreport index "Overview" {
   list tasks
   formats html
-  prolog '
+  header '
 == Accounting Software Project ==
 ----
 [[navigator:navbar]]
 ----
+'
+
+  prolog '
 === Project Overview ===
 
 The project is structured into 3 phases.

@@ -79,11 +79,6 @@ class TaskJuggler
     def to_html
       html = []
 
-      if a('prolog')
-        a('prolog').sectionNumbers = false
-        html << a('prolog').to_html
-      end
-
       html << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                      'cellspacing' => '2', 'border' => '0',
                                      'cellpadding' => '0', 'align' => 'center',
@@ -139,11 +134,6 @@ class TaskJuggler
       td << XMLNamedText.new("#{AppConfig.packageName}", 'a',
                              'href' => "#{AppConfig.contact}")
       td << XMLText.new(" v#{AppConfig.version}")
-
-      if a('epilog')
-        a('epilog').sectionNumbers = false
-        html << a('epilog').to_html
-      end
 
       html
     end
