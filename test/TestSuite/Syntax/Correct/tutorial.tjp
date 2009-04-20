@@ -339,11 +339,13 @@ task AcSo "Accounting Software" {
     task prev "Technology Preview" {
       depends !!software.backend
       startcredit 31000.0
+      note "All '''major''' features should be usable."
     }
 
     task beta "Beta version" {
       depends !!test.alpha
       charge 13000.0 onstart
+      note "Fully functional, may contain bugs."
     }
 
     task done "Ship Product to Customer" {
@@ -357,6 +359,7 @@ task AcSo "Accounting Software" {
       # maxend 2002-04-17
       depends !!test.beta, !!manual
       charge 33000.0 onstart
+      note "All priority 1 and 2 bugs must be fixed."
     }
 # *** EXAMPLE: task1 +
   }
@@ -436,12 +439,22 @@ delivery dates.
   # A list of all tasks with the percentage completed for each task
   taskreport Deliveries "Deliveries" {
     headline "Project Deliveries"
-    columns hierarchindex, name, start, end, complete, chart
+    columns hierarchindex, name, start, end, note, complete, chart
     taskroot AcSo.deliveries
     loadunit days
     hideresource 1
     scenarios plan, delayed
   }
+  # A list of all employees with their contact details.
+  resourcereport contactList "ContactList" {
+    headline "Contact list and duty plan"
+    columns name, Email { cellurl "mailto:$${Email}" }, Phone,
+            chart { scale day }
+    hideresource ~isleaf()
+    sortresources name.up
+    hidetask 1
+  }
+
   # A graph showing resource allocation. It identifies whether each
   # resource is under- or over-allocated for.
   resourcereport ResourceGraph "Resource Graph" {

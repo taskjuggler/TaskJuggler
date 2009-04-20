@@ -41,7 +41,6 @@ rate 390.0
 
 # Register Good Friday as a global holiday for all resources.
 vacation "Good Friday" 2002-03-29
-
 flags team
 
 # This is one way to form teams
@@ -251,13 +250,22 @@ task AcSo "Accounting Software" {
 # scheduled. But no reports would be generated to visualize the
 # results.
 
+navigator navbar {
+  hidereport 0
+}
+
+# A traditional Gantt chart with a project overview.
 taskreport index "Overview" {
   list tasks
   formats html
-  menu 1
-  prolog '
+  header '
 == Accounting Software Project ==
 ----
+[[navigator:navbar]]
+----
+'
+
+  prolog '
 === Project Overview ===
 
 The project is structured into 3 phases.
@@ -323,6 +331,7 @@ delivery dates.
     sortresources name.up
     hidetask 1
   }
+
   # A graph showing resource allocation. It identifies whether each
   # resource is under- or over-allocated for.
   resourcereport ResourceGraph "Resource Graph" {
@@ -333,32 +342,3 @@ delivery dates.
     sorttasks plan.start.up
   }
 }
-
-taskreport csvtest "csvtest" {
-  formats csv
-  columns no, name, id, effort, revenue, cost
-  loadunit days
-}
-
-#
-#
-## A list of all project resources, both human and material resources,
-## together with the associated costs.
-#htmlresourcereport "ResourceSheet.html" {
-#  headline "Resource Sheet"
-#  columns no, name, id, effort, weekly, rate, cost
-#  loadunit days
-#  hidetask ~isleaf()
-#  sorttasks plan.start.up
-#  balance cost rev
-#}
-#
-## A list of resources and each task associated with each resource.
-#htmlresourcereport "ResourceUsage.html" {
-#  headline "Resource Usage Report"
-#  columns no, name, chart { scale day } #, utilization, freeload, cost, chart
-#  loadunit days
-#  sorttasks plan.start.up
-#  hidetask ~isleaf()
-#  end 2002-02-10
-#}
