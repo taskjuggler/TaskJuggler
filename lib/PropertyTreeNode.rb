@@ -95,7 +95,7 @@ class TaskJuggler
     def inheritAttributes
       # Inherit non-scenario-specific values
       @propertySet.eachAttributeDefinition do |attrDef|
-        next if attrDef.scenarioSpecific || !attrDef.inheritable
+        next if attrDef.scenarioSpecific || !attrDef.inheritedFromParent
 
         aId = attrDef.id
         if parent
@@ -105,7 +105,7 @@ class TaskJuggler
           end
         else
           # Inherit selected values from project if top-level property
-          if attrDef.inheritFromProject
+          if attrDef.inheritedFromProject
             if @project[aId]
               @attributes[aId].inherit(@project[aId])
             end
@@ -115,7 +115,7 @@ class TaskJuggler
 
       # Inherit scenario-specific values
       @propertySet.eachAttributeDefinition do |attrDef|
-        next if !attrDef.scenarioSpecific || !attrDef.inheritable
+        next if !attrDef.scenarioSpecific || !attrDef.inheritedFromParent
 
         @project.scenarioCount.times do |scenarioIdx|
           if parent
@@ -127,7 +127,7 @@ class TaskJuggler
             end
           else
             # Inherit selected values from project if top-level property
-            if attrDef.inheritFromProject
+            if attrDef.inheritedFromProject
               if @project[attrDef.id] &&
                  @scenarioAttributes[scenarioIdx][attrDef.id]
                 @scenarioAttributes[scenarioIdx][attrDef.id].inherit(

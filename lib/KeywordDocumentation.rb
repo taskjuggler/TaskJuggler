@@ -30,8 +30,8 @@ class TaskJuggler
   class KeywordDocumentation
 
     attr_reader :keyword, :pattern, :references
-    attr_accessor :contexts, :scenarioSpecific, :inheritable,
-                  :predecessor, :successor
+    attr_accessor :contexts, :scenarioSpecific, :inheritedFromProject,
+                  :inheritedFromParent, :predecessor, :successor
 
     # Construct a new KeywordDocumentation object. _rule_ is the
     # TextParser::Rule and _pattern_ is the corresponding TextParser::Pattern.
@@ -53,7 +53,8 @@ class TaskJuggler
       # keyword documentation of the optional attribute.
       @optionalAttributes = []
       @scenarioSpecific = false
-      @inheritable = false
+      @inheritedFromProject= false
+      @inheritedFromParent = false
       @contexts = []
       @seeAlso = []
       # The following are references to the neighboring keyword in an
@@ -123,7 +124,10 @@ class TaskJuggler
                       when 'scenario'
                         project.scenarios
                       end
-        @inheritable = propertySet.inheritable?(keyword)
+        keyword = @keyword
+        keyword = keyword.split('.')[0] if keyword.include?('.')
+        @inheritedFromProject = propertySet.inheritedFromProject?(keyword)
+        @inheritedFromParent = propertySet.inheritedFromParent?(keyword)
       end
     end
 
@@ -148,7 +152,7 @@ class TaskJuggler
       # Top line with multiple elements
       str = "Keyword:     #{@keyword}     " +
             "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
-            "Inheritable: #{@inheritable ? 'Yes' : 'No'}\n\n"
+            "Inherited: #{@inheritedFromParent ? 'Yes' : 'No'}\n\n"
 
       str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
                                     textW)}\n\n"
@@ -203,12 +207,37 @@ class TaskJuggler
         @optionalAttributes.sort! do |a, b|
           a.keyword <=> b.keyword
         end
+        showLegend = false
         @optionalAttributes.each do |attr|
           unless attrStr.empty?
             attrStr += ', '
           end
-          attrStr += '[sc:]' if attr.scenarioSpecific
           attrStr += attr.keyword
+          if attr.scenarioSpecific || attr.inheritedFromProject ||
+             attr.inheritedFromParent
+            first = true
+            showLegend = true
+            attrStr += '['
+            if attr.scenarioSpecific
+              attrStr += 'sc'
+              first = false
+            end
+            if attr.inheritedFromProject
+              attrStr += ':' unless first
+              attrStr += 'ig'
+              first = false
+            end
+            if attr.inheritedFromParent
+              attrStr += ':' unless first
+              attrStr += 'ip'
+            end
+            attrStr += ']'
+          end
+        end
+        if showLegend
+          attrStr += "\n\n[sc] : Attribute is scenario specific" +
+                     "\n[ig] : Attribute is inherited from global attribute" +
+                     "\n[ip] : Attribute is inherited from parent property"
         end
         str += format(tagW, attrStr, textW)
         str += "\n"
@@ -340,52 +369,55 @@ class TaskJuggler
         @optionalAttributes.sort! do |a, b|
           a.keyword <=> b.keyword
         end
-        hasScenSpec = hasInheritable = false
-        none = []
-        scenSpec = []
-        inheritable = []
-        scenSpecInheritable = []
+
+        showDetails = false
         @optionalAttributes.each do |attr|
-          if attr.inheritable
-            hasInheritable = true
-            if attr.scenarioSpecific
-              hasScenSpec = true
-              scenSpecInheritable << attr
-            else
-              inheritable << attr
-            end
-          else
-            if attr.scenarioSpecific
-              hasScenSpec = true
-              scenSpec << attr
-            else
-              none << attr
-            end
+          if attr.scenarioSpecific || attr.inheritedFromProject ||
+             attr.inheritedFromParent
+            showDetails = true
+            break
           end
         end
+
         bbox << (p = XMLElement.new('p'))
         p << (tab = XMLElement.new('table', 'align' => 'center',
-                                 'class' => 'table'))
+                                   'class' => 'table'))
         tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-        tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
-                               'style' => 'width:15%')
-        if hasScenSpec || hasInheritable
-          tr << XMLNamedText.new('Scenario specific', 'td', 'class' => 'tag',
-                                 'style' => 'width:42%')
-          tr << XMLNamedText.new('Not scenario specific', 'td', 'class' => 'tag',
-                                 'style' => 'width:43%')
-          tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-          tr << XMLNamedText.new('Inheritable', 'td', 'class' => 'tag',
+        if showDetails
+          # Table of all attributes with checkmarks for being scenario
+          # specific, inherited from parent and inherited from global scope.
+          tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
+                                 'rowspan' =>
+                                 "#{@optionalAttributes.length + 1}",
                                  'style' => 'width:15%')
-          tr << listHTMLAttributes(scenSpecInheritable, 42)
-          tr << listHTMLAttributes(inheritable, 43)
-          tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-          tr << XMLNamedText.new('Not inheritable', 'td', 'class' => 'tag',
+          tr << XMLNamedText.new('Name', 'td', 'class' => 'tag',
+                                 'style' => 'width:40%')
+          tr << XMLNamedText.new('Scen. spec.', 'td', 'class' => 'tag',
                                  'style' => 'width:15%')
-          tr << listHTMLAttributes(scenSpec, 42)
-          tr << listHTMLAttributes(none, 43)
+          tr << XMLNamedText.new('Inh. fm. Global', 'td', 'class' => 'tag',
+                                 'style' => 'width:15%')
+          tr << XMLNamedText.new('Inh. fm. Parent', 'td', 'class' => 'tag',
+                                 'style' => 'width:15%')
+          @optionalAttributes.each do |attr|
+            tab << (tr = XMLElement.new('tr', 'align' => 'left'))
+            tr << (td = XMLElement.new('td', 'class' => 'descr'))
+            keywordHTMLRef(td, attr)
+            tr << (td = XMLElement.new('td', 'align' => 'center',
+                                       'class' => 'descr'))
+            td << XMLText.new('x') if attr.scenarioSpecific
+            tr << (td = XMLElement.new('td', 'align' => 'center',
+                                       'class' => 'descr'))
+            td << XMLText.new('x') if attr.inheritedFromProject
+            tr << (td = XMLElement.new('td', 'align' => 'center',
+                                       'class' => 'descr'))
+            td << XMLText.new('x') if attr.inheritedFromParent
+          end
         else
-          tr << (td = XMLElement.new('td', 'class' => 'descr'))
+          # Comma separated list of all attributes.
+          tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
+                                 'style' => 'width:15%')
+          tr << (td = XMLElement.new('td', 'class' => 'descr',
+                                     'style' => 'width:85%'))
           first = true
           @optionalAttributes.each do |attr|
             if first
@@ -393,7 +425,6 @@ class TaskJuggler
             else
               td << XMLText.new(', ')
             end
-            td << XMLText.new('[sc:]') if attr.scenarioSpecific
             keywordHTMLRef(td, attr)
           end
         end

@@ -23,8 +23,8 @@ class TaskJuggler
   # The class can track wheter the attribute value was provided by the project
   # file, inherited from another property or computed during scheduling.
   #
-  # Attributes that are of an inheritable type will be copied from a parent
-  # property.
+  # Attributes that are of an inherited type will be copied from a parent
+  # property or the global scope.
   class AttributeBase
     attr_reader :property, :type, :provided, :inherited, :value
 

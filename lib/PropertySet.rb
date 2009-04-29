@@ -101,12 +101,21 @@ class TaskJuggler
       @attributeDefinitions[attrId].scenarioSpecific
     end
 
-    # Return whether the attribute with _attrId_ is scenario specific or not.
-    def inheritable?(attrId)
-      # All hardwired attributes are not inheritable.
+    # Return whether the attribute with _attrId_ is inherited from the global
+    # scope.
+    def inheritedFromProject?(attrId)
+      # All hardwired attributes are not inherited.
       return false if @attributeDefinitions[attrId].nil?
 
-      @attributeDefinitions[attrId].inheritable
+      @attributeDefinitions[attrId].inheritedFromProject
+    end
+
+    # Return whether the attribute with _attrId_ is inherited from parent.
+    def inheritedFromParent?(attrId)
+      # All hardwired attributes are not inherited.
+      return false if @attributeDefinitions[attrId].nil?
+
+      @attributeDefinitions[attrId].inheritedFromParent
     end
 
     # Return whether or not the attribute was user defined.
