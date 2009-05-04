@@ -1,0 +1,18 @@
+project journal "Project with Journal" "1.0" 2009-05-04 +1m {
+  journalentry 2009-05-05 "The project started."
+  journalentry 2009-05-10 "We made some progress." {
+    intro "All jobs have been assigned. The crew is working away."
+    more "Let's hope, we can keep the good spirit."
+  }
+}
+
+resource tux "Tux" {
+  journalentry 2009-05-07 "This guy is a bummer."
+}
+
+task t1 "Task1" {
+  journalentry 2009-05-08 "Probably will be done sooner."
+  journalentry 2009-05-12 "Maybe not."
+  start 2009-05-05
+}
+

@@ -27,6 +27,7 @@ require 'ShiftAssignments'
 require 'WorkingHours'
 require 'ProjectFileParser'
 require 'BatchProcessor'
+require 'Journal'
 
 class TaskJuggler
 
@@ -64,6 +65,7 @@ class TaskJuggler
         'dailyworkinghours' => 8.0,
         'end' => nil,
         'flags' => [],
+        'journal' => Journal.new,
         'limits' => nil,
         'loadUnit' => :shortauto,
         'navigators' => {},

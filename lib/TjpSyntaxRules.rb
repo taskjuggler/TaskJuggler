@@ -1069,6 +1069,61 @@ EOT
     singlePattern('!intervals')
   end
 
+  def rule_journalEntry
+    pattern(%w( !journalEntryHeader !journalEntryBody ), lambda {
+      @val[0]
+    })
+    doc('journalentry', <<'EOT'
+This attribute adds an entry to the journal of the project. A journal can be used to record events, decisions or news that happened at a particular moment during the project. Depending on the context, a journal entry may or may not be associated with a specific property.
+
+A journal entry consists of three parts. The headline is mandatory and should be only 5 to 10 words long. The introduction is optional and should be only one or two sentences long. All other details should be put into the third part.
+
+Depending on the context, journal entries are listed with headlines only, as headlines plus introduction or in full.
+EOT
+       )
+  end
+
+  def rule_journalEntryAttributes
+    optional
+    repeatable
+
+    pattern(%w( _intro $STRING ), lambda {
+      @journalEntry.intro = newRichText(@val[1])
+    })
+    doc('intro', <<'EOT'
+This is the introductory part of the journal entry. It should summarize the
+full entry but should contain more details than the headline.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
+    pattern(%w( _more $STRING ), lambda {
+      @journalEntry.more = newRichText(@val[1])
+    })
+    doc('more', <<'EOT'
+This is a continuation of the [[intro introduction]] of the journal entry. It
+is usually several paragraphs long.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+  end
+
+  def rule_journalEntryBody
+    optionsRule('journalEntryAttributes')
+  end
+
+  def rule_journalEntryHeader
+    pattern(%w( _journalentry !valDate $STRING ), lambda {
+      @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
+                                      @property)
+    })
+  end
   def rule_leafResourceId
     pattern(%w( !resourceId ), lambda {
       resource = @val[0]
@@ -1638,6 +1693,8 @@ EOT
     example('CustomAttributes')
 
     pattern(%w( !projectBodyInclude ))
+
+    pattern(%w( !journalEntry ))
 
     pattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
@@ -2496,6 +2553,7 @@ EOT
   def rule_resourceAttributes
     repeatable
     optional
+    pattern(%w( !journalEntry ))
     pattern(%w( !purge ))
     pattern(%w( !resource ))
     pattern(%w( !resourceScenarioAttributes ))
@@ -3049,6 +3107,9 @@ EOT
   def rule_taskAttributes
     repeatable
     optional
+
+    pattern(%w( !journalEntry ))
+
     pattern(%w( _note $STRING ), lambda {
       @property.set('note', newRichText(@val[1]))
     })

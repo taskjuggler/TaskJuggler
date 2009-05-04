@@ -105,7 +105,7 @@ class TaskJuggler
     def computeInheritance(keywords, rules)
       property = nil
       @contexts.each do |kwd|
-        if %w( task resource account shift scenario).include?(kwd.keyword)
+        if %w( task resource account report shift scenario).include?(kwd.keyword)
           property = kwd.keyword
           break
         end
@@ -119,6 +119,8 @@ class TaskJuggler
                         project.resources
                       when 'account'
                         project.accounts
+                      when 'report'
+                        project.reports
                       when 'shift'
                         project.shifts
                       when 'scenario'
