@@ -1381,13 +1381,15 @@ class TaskJuggler
             end
             date = tEnd
           end
-          if a('duration') > 0
+          if a('duration') > 0 && @tentativeEnd
             # For tasks with a 'duration' we track the covered duration and
             # set the task to 'scheduled' when we have enough duration.
+            endDate = @project.scenario(@scenarioIdx).get('projection') ?
+                      @project['now'] : @tentativeEnd
             @doneDuration = ((@tentativeEnd - a('start')) /
                              @project['scheduleGranularity']).to_i
             if @doneDuration >= a('duration')
-              @property['end', @scenarioIdx] = tEnd
+              @property['end', @scenarioIdx] = @tentativeEnd
               @property['scheduled', @scenarioIdx] = true
             end
           end
