@@ -39,7 +39,8 @@ macro tasktree [
 ${tasktree "0"}
 ${tasktree "1"}
 
-htmltaskreport "htmltaskreport.html" {
+taskreport taskreport "htmltaskreport" {
+  formats html
   columns no, name, start, end, chart
 }
 

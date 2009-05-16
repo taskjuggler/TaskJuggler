@@ -107,6 +107,7 @@ ${depends "t0.s7.l7" "t0.s5.l9"}
 ${depends "t0.s5.l2" "t0.s1.l4"}
 ${depends "t1.s2.l1" "t0.s7.l7"}
 
-htmltaskreport "depends.html" {
+taskreport depends "depends" {
+  formats html
   columns no, name, id, chart { scale week }
 }

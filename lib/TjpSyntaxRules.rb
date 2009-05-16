@@ -1872,7 +1872,7 @@ EOT
     # documentation.
     pattern(%w( !projectPropertiesBody ))
     doc('properties', <<'EOT'
-The project properties. Every project must consists of at least one task.
+The project properties. Every project must consists of at least one task. The other properties are optional. To save the scheduled data at least one output generating property should be used.
 EOT
        )
   end
