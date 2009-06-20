@@ -159,8 +159,8 @@ class TaskJuggler
               inherited(attrDef.id, parentScenarioIdx)) &&
              !(provided(attrDef.id, scenarioIdx) ||
                inherited(attrDef.id, scenarioIdx))
-            @scenarioAttributes[scenarioIdx][attrDef.id].inherit(
-                @scenarioAttributes[parentScenarioIdx][attrDef.id].get)
+            @scenarioAttributes[scenarioIdx][attrDef.id] =
+              @scenarioAttributes[parentScenarioIdx][attrDef.id].deep_clone
           end
         end
       end

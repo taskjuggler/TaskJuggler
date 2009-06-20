@@ -43,13 +43,13 @@ class TaskJuggler
       # Create the initial value according to the specified default for this
       # type.
       @value = @type.default.deep_clone
-      # The mode is flag that controls how value assignements affect the flags.
+      # The mode is flag that controls how value assignments affect the flags.
       @@mode = 0
     end
 
-    # Call this function to inherit _value_ from another property. It is very
-    # important that the values are deep copied as they may be modified later
-    # on.
+    # Call this function to inherit _value_ from the parent property. It is
+    # very important that the values are deep copied as they may be modified
+    # later on.
     def inherit(value)
       @inherited = true
       @value = value.deep_clone
