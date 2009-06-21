@@ -376,6 +376,14 @@ navigator navbar {
   hidereport 0
 }
 
+textreport main "Main" {
+  header "This is the header"
+  left "Some text on the left"
+  center "This is the center text"
+  right "Some text on the right"
+  footer "This is the footer"
+}
+
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
 taskreport index "Overview" {

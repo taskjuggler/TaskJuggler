@@ -34,8 +34,8 @@ class TaskJuggler
       @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @report.set('sortTasks',
                   [ [ 'tree', true, -1 ],
-                  [ 'start', true, 0 ],
-                  [ 'seqno', true, -1 ] ])
+                    [ 'start', true, 0 ],
+                    [ 'seqno', true, -1 ] ])
       # Show no resources, but set sorting to id-up.
       @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(1)))
       @report.set('sortResources', [ [ 'id', true, -1 ] ])

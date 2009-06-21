@@ -10,13 +10,13 @@
 # published by the Free Software Foundation.
 #
 
-require 'reports/ReportTableBase'
+require 'reports/ReportBase'
 
 class TaskJuggler
 
   # This specialization of ReportTableBase implements an export of the
   # project data in the TJP syntax format.
-  class TjpExportRE < ReportTableBase
+  class TjpExportRE < ReportBase
 
     attr_writer :resourceAttrs, :taskAttrs
     attr_reader :mainFile

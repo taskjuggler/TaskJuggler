@@ -11,6 +11,7 @@
 #
 
 require 'PropertyTreeNode'
+require 'reports/TextReport'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
@@ -25,14 +26,14 @@ class TaskJuggler
   # other reports.
   class Report < PropertyTreeNode
 
-    attr_accessor :table
+    attr_accessor :content
 
     # Create a new report object.
     def initialize(project, id, name, parent)
       super(project.reports, id, name, parent)
       project.addReport(self)
 
-      @table = nil
+      @content = nil
     end
 
     # The generate function is where the action happens in this class. The
@@ -44,7 +45,7 @@ class TaskJuggler
 
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
-        @table.generateIntermediateFormat if @table
+        @content.generateIntermediateFormat if @content
 
         # Then generate the actual output format.
         get('formats').each do |format|
@@ -245,21 +246,17 @@ EOT
       body << (frame = XMLElement.new('div',
                                       'style' => 'margin: 35px 5% 25px 5%; '))
 
-      frame << generateRichTextElement('header')
-      frame << generateRichTextElement('prolog')
-      frame << @table.to_html if @table
-      frame << generateRichTextElement('epilog')
-      frame << generateRichTextElement('footer')
+      frame << @content.to_html if @content
 
       html.write(@name + (@name == '.' ? '' : '.html'))
     end
 
     # Generate a CSV version of the report.
     def generateCSV
-      return nil unless @table
+      return nil unless @content
 
       # CSV format can only handle the first element.
-      csv = @table.to_csv
+      csv = @content.to_csv
       # Expand nested tables into the outer table.
       columnIdx = 0
       while columnIdx < csv[0].length do
@@ -297,14 +294,7 @@ EOT
     # Generate an export report
     def generateExport
       f = @name == '.' ? $stdout : File.new(@name, 'w')
-      f.puts "#{@table.to_tjp}"
-    end
-
-    def generateRichTextElement(name)
-      return unless a(name)
-
-      a(name).sectionNumbers = false
-      a(name).to_html
+      f.puts "#{@content.to_tjp}"
     end
 
   end

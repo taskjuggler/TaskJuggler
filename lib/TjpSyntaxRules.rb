@@ -450,7 +450,7 @@ EOT
 
   def rule_columnId
     pattern(%w( !reportableAttributes ), lambda {
-      title = @property.table.defaultColumnTitle(@val[0])
+      title = @property.content.defaultColumnTitle(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })
     doc('columnid', <<'EOT'
@@ -643,7 +643,7 @@ EOT
       end
       newReport(@val[1], :export, sourceFileInfo)
       @property.set('formats', [ :export ])
-      @property.table = TjpExportRE.new(@property)
+      @property.content = TjpExportRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -662,7 +662,7 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @property.table.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.content.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('resourceattributes', <<"EOT"
 Define a list of resource attributes that should be included in the report. To
@@ -671,7 +671,7 @@ used, no optional resource attributes will be exported.
 EOT
         )
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @property.table.taskAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.content.taskAttrs = @val[1].include?('none') ? [] : @val[1]
     })
     doc('taskattributes', <<"EOT"
 Define a list of task attributes that should be included in the report. To
@@ -2273,6 +2273,15 @@ EOT
        )
     example('Caption', '1')
 
+    pattern(%w( _center $STRING ), lambda {
+      @property.set('center', newRichText(@val[1]))
+    })
+    doc('center', <<'EOT'
+This attribute defines the center section of the [[textreport]]. The text will
+be interpreted as [[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
       columns += @val[2] if @val[2]
@@ -2341,6 +2350,16 @@ EOT
 
     pattern(%w( !hidetask ))
 
+    pattern(%w( _left $STRING ), lambda {
+      @property.set('left', newRichText(@val[1]))
+    })
+    doc('left', <<'EOT'
+This attribute defines the left margin section of the [[textreport]]. The text
+will be interpreted as [[Rich_Text_Attributes Rich Text]]. The margin will not
+span the [[header]] or [[footer]] sections.
+EOT
+       )
+
     pattern(%w( _list !tableType ), lambda {
       @val[1]
     })
@@ -2384,6 +2403,16 @@ EOT
 
     pattern(%w( !report ))
     pattern(%w( !reportPeriod ))
+
+    pattern(%w( _right $STRING ), lambda {
+      @property.set('right', newRichText(@val[1]))
+    })
+    doc('right', <<'EOT'
+This attribute defines the right margin section of the [[textreport]]. The text
+will be interpreted as [[Rich_Text_Attributes Rich Text]]. The margin will not
+span the [[header]] or [[footer]] sections.
+EOT
+       )
 
     pattern(%w( _rolluptask !logicalExpression ), lambda {
       @property.set('rollupTask', @val[1])
@@ -2504,9 +2533,11 @@ EOT
       @property.inheritAttributes
       case @val[0]
       when 'taskreport'
-        @property.table = TaskListRE.new(@property)
+        @property.content = TaskListRE.new(@property)
       when 'resourcereport'
-        @property.table = ResourceListRE.new(@property)
+        @property.content = ResourceListRE.new(@property)
+      when 'textreport'
+        @property.content = TextReport.new(@property)
       else
         raise "Unsupported report type #{@val[0]}"
       end
@@ -2534,6 +2565,11 @@ EOT
     doc('taskreport', <<'EOT'
 The report lists tasks and their respective values in a table. The
 resources that are allocated to each task can be listed as well.
+EOT
+       )
+    singlePattern('_textreport')
+    doc('textreport', <<'EOT'
+This report consists of 5 RichText sections, a header, a center section with a left and right margin and a footer. The sections may contain the output of other defined reports.
 EOT
        )
   end
