@@ -74,7 +74,7 @@ class TaskJuggler
                        :hour)
       when 'day'
         genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,
-                       :shortMonthName)
+                       :monthAndYear)
         genHeaderScale(@smallScale, h + 1, h, :midnight, :sameTimeNextDay, :day)
       when 'week'
         genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,

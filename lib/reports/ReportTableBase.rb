@@ -294,11 +294,11 @@ class TaskJuggler
                           :weekdayAndDate, :hour)
       when 'daily'
         genCalChartHeader(columnDef, @start.midnight, :sameTimeNextDay,
-                          :shortMonthName, :day)
+                          :monthAndYear, :day)
       when 'weekly'
         genCalChartHeader(columnDef,
                           @start.beginOfWeek(a('weekStartsMonday')),
-                          :sameTimeNextWeek, :shortMonthName, :day)
+                          :sameTimeNextWeek, :monthAndYear, :day)
       when 'monthly'
         genCalChartHeader(columnDef, @start.beginOfMonth, :sameTimeNextMonth,
                           :year, :shortMonthName)
