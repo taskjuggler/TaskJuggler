@@ -45,6 +45,8 @@ class TaskJuggler
 
     # Generate the table in the intermediate format.
     def generateIntermediateFormat
+      setReportPeriod
+
       # Prepare the task list.
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
@@ -60,9 +62,7 @@ class TaskJuggler
                                         @report.get('rollupResource'))
       resourceList.sort!
 
-      unless @userDefinedPeriod
-        adjustReportPeriod(taskList, @report.get('scenarios'))
-      end
+      adjustReportPeriod(taskList, @report.get('scenarios'))
 
       # Generate the table header.
       @report.get('columns').each do |columnDescr|

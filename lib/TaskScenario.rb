@@ -64,6 +64,14 @@ class TaskJuggler
         @property['end', @scenarioIdx] = nil
       end
 
+      # Milestones may only have start or end date even when the 'scheduled'
+      # attribute is set. For further processing, we need to add the missing
+      # date.
+      if a('milestone') && a('scheduled')
+        @property['end', @scenarioIdx] = a('start') if a('start') && !a('end')
+        @property['start', @scenarioIdx] = a('end') if !a('start') && a('end')
+      end
+
       # Collect the limits of this task and all parent tasks into a single
       # Array.
       @limits = []

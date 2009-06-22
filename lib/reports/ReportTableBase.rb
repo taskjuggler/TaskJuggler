@@ -32,12 +32,9 @@ class TaskJuggler
 
       # Reference to the intermediate representation.
       @table = nil
-      @start = a('start')
-      @end = a('end')
+      @start = @end = nil
 
       @legend = ReportTableLegend.new
-      @userDefinedPeriod = !(@report.inherited('end') &&
-                             @report.inherited('start'))
 
       @propertiesById = {
         # ID               Header        Indent  Align   Calced. Scen Spec.
@@ -238,11 +235,20 @@ class TaskJuggler
     end
 
   protected
+
+    # These can't be determined during initialization as they have have been
+    # changed afterwards.
+    def setReportPeriod
+      @start = a('start')
+      @end = a('end')
+    end
+
     # In case the user has not specified the report period, we try to fit all
     # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
     # list of scenario indexes.
     def adjustReportPeriod(tasks, scenarios)
-      return if tasks.empty?
+      return if tasks.empty? ||
+        !(@report.inherited('end') && @report.inherited('start'))
 
       @start = @end = nil
       scenarios.each do |scenarioIdx|

@@ -31,11 +31,11 @@ class TaskJuggler
     end
 
     def to_s
-      @value ? '' : @value.id
+      @value ? @value.id : ''
     end
 
     def to_tjp
-      @value ? '' : @value.id
+      @value ? @value.id : ''
     end
 
   end
@@ -184,6 +184,9 @@ class TaskJuggler
       'columns'
     end
 
+    def to_s
+      "TODO"
+    end
   end
 
   class DateAttribute < AttributeBase

@@ -704,7 +704,6 @@ class TaskJuggler
       end
 
       tasks.each { |task| task.prepareScheduling(scIdx) }
-
       tasks.each { |task| task.Xref(scIdx) }
       tasks.each { |task| task.propagateInitialValues(scIdx) }
       tasks.each { |task| task.preScheduleCheck(scIdx) }
