@@ -248,7 +248,7 @@ class TaskJuggler
     # list of scenario indexes.
     def adjustReportPeriod(tasks, scenarios)
       return if tasks.empty? ||
-        !(@report.inherited('end') && @report.inherited('start'))
+        a('start') != @project['start'] || a('end') != @project['end']
 
       @start = @end = nil
       scenarios.each do |scenarioIdx|
