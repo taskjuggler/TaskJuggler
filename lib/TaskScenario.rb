@@ -1371,8 +1371,9 @@ class TaskJuggler
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
               @tentativeEnd = tEnd if @tentativeEnd.nil? ||
                 @tentativeEnd < tEnd
-              @property['start', @scenarioIdx] = date if a('start').nil? ||
-                                                         date < a('start')
+              if !a('scheduled') && (a('start').nil? || date < a('start'))
+                @property['start', @scenarioIdx] = date
+              end
 
               unless a('assignedresources').include?(booking.resource)
                 @property['assignedresources', @scenarioIdx] << booking.resource
@@ -1382,7 +1383,7 @@ class TaskJuggler
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1
-              if @doneLength >= a('length')
+              if !a('scheduled') && @doneLength >= a('length')
                 @property['end', @scenarioIdx] = tEnd
                 @property['scheduled', @scenarioIdx] = true
               end
@@ -1392,7 +1393,7 @@ class TaskJuggler
           if a('duration') > 0 && @tentativeEnd
             @doneDuration = ((@tentativeEnd - a('start')) /
                              @project['scheduleGranularity']).to_i
-            if @doneDuration >= a('duration')
+            if !a('scheduled') && @doneDuration >= a('duration')
               @property['end', @scenarioIdx] = @tentativeEnd
               @property['scheduled', @scenarioIdx] = true
             end

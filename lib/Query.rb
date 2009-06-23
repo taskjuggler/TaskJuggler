@@ -73,7 +73,8 @@ class TaskJuggler
         end
         # Same for the scope property.
         if !@scopeProperty.nil? && !@scopePropertyId.nil?
-          @scopeProperty = resolvePropertyId(@scopePropertyType, @scopePropertyId)
+          @scopeProperty = resolvePropertyId(@scopePropertyType,
+                                             @scopePropertyId)
         end
         # Make sure the have a reference to the project.
         @project = @property.project unless @project
