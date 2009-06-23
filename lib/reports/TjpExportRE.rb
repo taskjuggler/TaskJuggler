@@ -18,7 +18,6 @@ class TaskJuggler
   # project data in the TJP syntax format.
   class TjpExportRE < ReportBase
 
-    attr_writer :resourceAttrs, :taskAttrs
     attr_reader :mainFile
 
     # Create a new object and set some default values.
@@ -32,8 +31,6 @@ class TaskJuggler
                                 maxstart minend minstart note priority
                                 responsible )
       @supportedResourceAttrs = %w( vacation workinghours )
-      @taskAttrs = %w( all )
-      @resourceAttrs = %w( all )
       @report.set('scenarios', [ 0 ])
 
       # Show all tasks, sorted by seqno-up.
@@ -73,8 +70,8 @@ class TaskJuggler
         generateResourceList
         generateTaskList
       end
-      generateTaskAttributes unless @taskAttrs.empty?
-      generateResourceAttributes unless @resourceAttrs.empty?
+      generateTaskAttributes unless a('taskAttributes').empty?
+      generateResourceAttributes unless a('resourceAttributes').empty?
 
       @file
     end
@@ -86,8 +83,9 @@ class TaskJuggler
                "\"#{@project['version']}\" #{@project['start']} - " +
                "#{@project['end']} {\n"
       generateCustomAttributeDeclarations('resource', @project.resources,
-                                          @resourceAttrs)
-      generateCustomAttributeDeclarations('task', @project.tasks, @taskAttrs)
+                                          a('resourceAttributes'))
+      generateCustomAttributeDeclarations('task', @project.tasks,
+                                          a('taskAttributes'))
       @file << "}\n\n"
     end
 
@@ -179,7 +177,8 @@ class TaskJuggler
 
       @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
 
-      if @taskAttrs.include?('depends') || @taskAttrs.include?('all')
+      if a('taskAttributes').include?('depends') ||
+         a('taskAttributes').include?('all')
         a('scenarios').each do |scenarioIdx|
           generateTaskDependency(scenarioIdx, task, 'depends', indent + 2)
           generateTaskDependency(scenarioIdx, task, 'precedes', indent + 2)
@@ -229,7 +228,8 @@ class TaskJuggler
 
     # Generate 'depends' or 'precedes' attributes for a task.
     def generateTaskDependency(scenarioIdx, task, tag, indent)
-      return unless @taskAttrs.include?('depends') || !@taskAttrs.include?('all')
+      return unless a('taskAttributes').include?('depends') ||
+        !a('taskAttributes').include?('all')
 
       taskDeps = task[tag, scenarioIdx]
       unless taskDeps.empty?
@@ -259,8 +259,8 @@ class TaskJuggler
           attr = resource.getAttr(id)
           next if (!@supportedResourceAttrs.include?(id) &&
                    ! attrDef.userDefined) ||
-                  (!@resourceAttrs.include?('all') &&
-                   !@resourceAttrs.include?(id))
+                  (!a('resourceAttributes').include?('all') &&
+                   !a('resourceAttributes').include?(id))
 
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
@@ -287,7 +287,8 @@ class TaskJuggler
           attr = task.getAttr(id)
           next if (!@supportedTaskAttrs.include?(id) &&
                    ! attrDef.userDefined) ||
-                  (!@taskAttrs.include?('all') && !@taskAttrs.include?(id))
+                  (!a('taskAttributes').include?('all') &&
+                   !a('taskAttributes').include?(id))
 
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
@@ -335,8 +336,8 @@ class TaskJuggler
     # report.
     def getBookings
       @bookings = {}
-      if @taskAttrs.include?('booking') ||
-         @taskAttrs.include?('all')
+      if a('taskAttributes').include?('booking') ||
+         a('taskAttributes').include?('all')
         a('scenarios').each do |scenarioIdx|
           @bookings[scenarioIdx] = {}
           @resourceList.each do |resource|

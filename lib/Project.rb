@@ -308,6 +308,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'prolog',    'Prolog',       RichTextAttribute,
               false, false,   false, nil],
+        [ 'resourceAttributes', 'Resource Attributes', FormatListAttribute,
+              true,  false,   false, [ 'all' ] ],
         [ 'resourceRoot',  'resource Root', PropertyAttribute,
               true,  false,   false, nil ],
         [ 'revenueAccount', 'Revenue Account', AccountAttribute,
@@ -328,6 +330,8 @@ class TaskJuggler
               true,  false,   false, [[ 'seqno', true, -1 ]] ],
         [ 'start',     'Start',        DateAttribute,
               true,  true,    false, nil ],
+        [ 'taskAttributes', 'Task Attributes', FormatListAttribute,
+              true,  false,   false, [ 'all' ] ],
         [ 'taskRoot',  'Task Root',    PropertyAttribute,
               true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,
@@ -668,6 +672,18 @@ class TaskJuggler
         raise "Unknown Time zone alignment #{min}"
       end
     end
+
+    # Return the name of the attribute _id_. Since we don't know whether we
+    # are looking for a task, resource, etc. attribute, we prefer tasks over
+    # resources here.
+    def attributeName(id)
+      # We have to see if the attribute id is a task or resource attribute and
+      # return it's name.
+      (name = @tasks.attributeName(id)).nil? &&
+      (name = @resources.attributeName(id)).nil?
+      name
+    end
+
 
 
     # Print the attribute values. It's used for debugging only.

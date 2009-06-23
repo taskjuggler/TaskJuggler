@@ -25,21 +25,6 @@ class TaskJuggler
     # Create a new object and set some default values.
     def initialize(report)
       super
-      # Set the default columns for this report.
-      %w( wbs name start end effort chart ).each do |col|
-        @report.get('columns') <<
-          TableColumnDefinition.new(col, defaultColumnTitle(col))
-      end
-      # Show all tasks, sorted by tree, start-up, seqno-up.
-      @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortTasks',
-                  [ [ 'tree', true, -1 ],
-                    [ 'start', true, 0 ],
-                    [ 'seqno', true, -1 ] ])
-      # Show no resources, but set sorting to id-up.
-      @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(1)))
-      @report.set('sortResources', [ [ 'id', true, -1 ] ])
-
       @table = ReportTable.new
     end
 

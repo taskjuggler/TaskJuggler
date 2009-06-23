@@ -387,7 +387,6 @@ textreport main "Main" {
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
 taskreport index "Overview" {
-  list tasks
   formats html
   header '
 == Accounting Software Project ==

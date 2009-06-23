@@ -25,22 +25,6 @@ class TaskJuggler
     # Create a new object and set some default values.
     def initialize(report)
       super
-      # Set the default columns for this report.
-      %w( no name ).each do |col|
-        @report.get('columns') <<
-          TableColumnDefinition.new(col, defaultColumnTitle(col))
-      end
-      # Show all resources, sorted by tree and id-up.
-      @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortResources', [ [ 'tree', true, -1 ],
-                                   [ 'id', true, -1 ] ])
-      # Hide all resources, but set sorting to tree, start-up, seqno-up.
-      @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(1)))
-      @report.set('sortTasks',
-                  [ [ 'tree', true, -1 ],
-                  [ 'start', true, 0 ],
-                  [ 'seqno', true, -1 ] ])
-
       @table = ReportTable.new
     end
 
