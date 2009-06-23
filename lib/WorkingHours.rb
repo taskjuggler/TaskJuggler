@@ -159,7 +159,7 @@ class TaskJuggler
     # Return true of the given WorkingHours object +wh+ is identical to this
     # object.
     def ==(wh)
-      return false if @timezone != wh.timezone
+      return false if wh.nil? || @timezone != wh.timezone
 
       7.times do |d|
         return false if @days[d].length != wh.days[d].length

@@ -169,7 +169,7 @@ class TaskJuggler
       # Register the new Attribute type with the Property set it should belong
       # to.
       @propertySet.addAttributeType(AttributeDefinition.new(
-        @val[1], @val[2], type, inherit, scenarioSpecific, default, true))
+        @val[1], @val[2], type, inherit, false, scenarioSpecific, default, true))
 
       # Add the new user-defined attribute as reportable attribute to the parser
       # rule.
