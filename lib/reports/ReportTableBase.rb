@@ -25,6 +25,28 @@ class TaskJuggler
 
     attr_reader :legend
 
+    @@propertiesById = {
+      # ID               Header        Indent  Align   Calced. Scen Spec.
+      'complete'    => [ 'Completion', false,  :right, true,   true ],
+      'cost'        => [ 'Cost',       true,   :right, true,   true ],
+      'duration'    => [ 'Duration',   true,   :right, true,   true ],
+      'effort'      => [ 'Effort',     true,   :right, true,   true ],
+      'id'          => [ 'Id',         false,  :left,  true,   false ],
+      'line'        => [ 'Line No.',   false,  :right, true,   false ],
+      'name'        => [ 'Name',       true,   :left,  false,  false ],
+      'no'          => [ 'No.',        false,  :right, true,   false ],
+      'rate'        => [ 'Rate',       true,   :right, true,   true ],
+      'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
+      'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
+    }
+    @@propertiesByType = {
+      # Type                  Indent  Align
+      DateAttribute      => [ false,  :left ],
+      FixnumAttribute    => [ false,  :right ],
+      FloatAttribute     => [ false,  :right ],
+      RichTextAttribute  => [ false,  :left ],
+      StringAttribute    => [ false,  :left ]
+    }
     # Generate a new ReportTableBase object.
     def initialize(report)
       super
@@ -36,28 +58,6 @@ class TaskJuggler
 
       @legend = ReportTableLegend.new
 
-      @propertiesById = {
-        # ID               Header        Indent  Align   Calced. Scen Spec.
-        'complete'    => [ 'Completion', false,  :right, true,   true ],
-        'cost'        => [ 'Cost',       true,   :right, true,   true ],
-        'duration'    => [ 'Duration',   true,   :right, true,   true ],
-        'effort'      => [ 'Effort',     true,   :right, true,   true ],
-        'id'          => [ 'Id',         false,  :left,  true,   false ],
-        'line'        => [ 'Line No.',   false,  :right, true,   false ],
-        'name'        => [ 'Name',       true,   :left,  false,  false ],
-        'no'          => [ 'No.',        false,  :right, true,   false ],
-        'rate'        => [ 'Rate',       true,   :right, true,   true ],
-        'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
-        'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
-      }
-      @propertiesByType = {
-        # Type                  Indent  Align
-        DateAttribute      => [ false,  :left ],
-        FixnumAttribute    => [ false,  :right ],
-        FloatAttribute     => [ false,  :right ],
-        RichTextAttribute  => [ false,  :left ],
-        StringAttribute    => [ false,  :left ]
-      }
     end
 
 
@@ -174,8 +174,8 @@ class TaskJuggler
     # This function returns true if the values for the _colId_ column need to be
     # calculated.
     def calculated?(colId)
-      if @propertiesById.has_key?(colId)
-        return @propertiesById[colId][3]
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][3]
       end
       return false
     end
@@ -183,8 +183,8 @@ class TaskJuggler
     # This functions returns true if the values for the _col_id_ column are
     # scenario specific.
     def scenarioSpecific?(colId)
-      if @propertiesById.has_key?(colId)
-        return @propertiesById[colId][4]
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][4]
       end
       return false
     end
@@ -192,10 +192,10 @@ class TaskJuggler
     # Return if the column values should be indented based on the _colId_ or the
     # _propertyType_.
     def indent(colId, propertyType)
-      if @propertiesById.has_key?(colId)
-        return @propertiesById[colId][1]
-      elsif @propertiesByType.has_key?(propertyType)
-        return @propertiesByType[propertyType][0]
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][1]
+      elsif @@propertiesByType.has_key?(propertyType)
+        return @@propertiesByType[propertyType][0]
       else
         false
       end
@@ -204,34 +204,28 @@ class TaskJuggler
     # Return the alignment of the column based on the _colId_ or the
     # _propertyType_.
     def alignment(colId, propertyType)
-      if @propertiesById.has_key?(colId)
-        return @propertiesById[colId][2]
-      elsif @propertiesByType.has_key?(propertyType)
-        return @propertiesByType[propertyType][1]
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][2]
+      elsif @@propertiesByType.has_key?(propertyType)
+        return @@propertiesByType[propertyType][1]
       else
         :center
       end
     end
 
     # Returns the default column title for the columns _id_.
-    def defaultColumnTitle(id)
+    def ReportTableBase::defaultColumnTitle(id)
       # Return an empty string for some special columns that don't have a fixed
       # title.
       specials = %w( chart hourly daily weekly monthly quarterly yearly)
       return '' if specials.include?(id)
 
       # Return the title for build-in hardwired columns.
-      return @propertiesById[id][0] if @propertiesById.include?(id)
-
-      # Otherwise we have to see if the column id is a task or resource
-      # attribute and return it's value.
-      (name = @project.tasks.attributeName(id)).nil? &&
-      (name = @project.resources.attributeName(id)).nil?
-      name
+      @@propertiesById.include?(id) ? @@propertiesById[id][0] : nil
     end
 
     def supportedColumns
-      @propertiesById.keys
+      @@propertiesById.keys
     end
 
   protected

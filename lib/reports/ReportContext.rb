@@ -17,12 +17,15 @@ class TaskJuggler
   class ReportContext
 
     attr_reader :project
-    attr_accessor :report
+    attr_accessor :report, :start, :end
 
     def initialize(project)
       @project = project
       # The currently generated report.
       @report = nil
+
+      @start = @end = nil
+      @tasks = @resources = nil
     end
 
   end

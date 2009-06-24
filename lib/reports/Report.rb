@@ -26,12 +26,16 @@ class TaskJuggler
   # other reports.
   class Report < PropertyTreeNode
 
-    attr_accessor :content
+    attr_accessor :typeSpec, :content
 
     # Create a new report object.
     def initialize(project, id, name, parent)
       super(project.reports, id, name, parent)
       project.addReport(self)
+
+      # The type specifier must be set for every report. It tells whether this
+      # is a task, resource, text or other report.
+      @typeSpec = nil
 
       @content = nil
     end
@@ -42,6 +46,19 @@ class TaskJuggler
     def generate
       begin
         @project.reportContext.report = self
+
+        case @typeSpec
+        when :export
+          # Does not have an intermediate representation. Nothing to do here.
+        when :resourcereport
+          @content = ResourceListRE.new(self)
+        when :textreport
+          @content = TextReport.new(self)
+        when :taskreport
+          @content = TaskListRE.new(self)
+        else
+          raise "Unknown report type"
+        end
 
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
@@ -293,6 +310,7 @@ EOT
 
     # Generate an export report
     def generateExport
+      @content = TjpExportRE.new(self)
       f = @name == '.' ? $stdout : File.new(@name, 'w')
       f.puts "#{@content.to_tjp}"
     end

@@ -216,8 +216,9 @@ class TaskJuggler
       end
       @property = Report.new(@project, "report#{@reportCounter += 1}",
                              name, nil)
+      @property.typeSpec = type
       @property.sourceFileInfo = sourceFileInfo
-      @property.get('formats') << type
+      @property.set('formats', [ type ])
       @property.inheritAttributes
       @property
     end
@@ -312,6 +313,13 @@ class TaskJuggler
     def example(file, tag = nil)
       @cr.setExample(file, tag)
     end
+    # Determine the title of the column with the ID _colId_. The title may be
+    # from the static set or be from a user defined attribute.
+    def columnTitle(colId)
+      ReportTableBase.defaultColumnTitle(colId) ||
+        @project.attributeName(colId)
+    end
+
 
     # To manage certain variables that have file scope throughout a hierachie
     # of nested include files, we use a @fileStack to track those variables.

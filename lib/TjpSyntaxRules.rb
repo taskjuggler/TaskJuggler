@@ -450,7 +450,8 @@ EOT
 
   def rule_columnId
     pattern(%w( !reportableAttributes ), lambda {
-      title = @property.content.defaultColumnTitle(@val[0])
+      title = ReportTableBase.defaultColumnTitle(@val[0]) ||
+              @project.attributeName(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })
     doc('columnid', <<'EOT'
@@ -642,8 +643,6 @@ EOT
               "A report with the name #{name} has already been defined.")
       end
       newReport(@val[1], :export, sourceFileInfo)
-      @property.set('formats', [ :export ])
-      @property.content = TjpExportRE.new(@property)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -662,7 +661,8 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @property.content.resourceAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.set('resourceAttributes',
+                    @val[1].include?('none') ? [] : @val[1])
     })
     doc('resourceattributes', <<"EOT"
 Define a list of resource attributes that should be included in the report. To
@@ -671,7 +671,7 @@ used, no optional resource attributes will be exported.
 EOT
         )
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @property.content.taskAttrs = @val[1].include?('none') ? [] : @val[1]
+      @property.set('taskAttributes', @val[1].include?('none') ? [] : @val[1])
     })
     doc('taskattributes', <<"EOT"
 Define a list of task attributes that should be included in the report. To
@@ -2360,11 +2360,6 @@ span the [[header]] or [[footer]] sections.
 EOT
        )
 
-    pattern(%w( _list !tableType ), lambda {
-      @val[1]
-    })
-    doc('list', 'Specifies the content of the report table')
-
     pattern(%w( _loadunit !loadunit ), lambda {
       @property.set('loadUnit', "#{@val[1]}")
     })
@@ -2533,11 +2528,42 @@ EOT
       @property.inheritAttributes
       case @val[0]
       when 'taskreport'
-        @property.content = TaskListRE.new(@property)
+        @property.typeSpec = :taskreport
+        # Set the default columns for this report.
+        %w( wbs name start end effort chart ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+        # Show all tasks, sorted by tree, start-up, seqno-up.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortTasks',
+                    [ [ 'tree', true, -1 ],
+                      [ 'start', true, 0 ],
+                      [ 'seqno', true, -1 ] ])
+        # Show no resources, but set sorting to id-up.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(1)))
+        @property.set('sortResources', [ [ 'id', true, -1 ] ])
       when 'resourcereport'
-        @property.content = ResourceListRE.new(@property)
+        @property.typeSpec = :resourcereport
+        # Set the default columns for this report.
+        %w( no name ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+        # Show all resources, sorted by tree and id-up.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortResources', [ [ 'tree', true, -1 ],
+                    [ 'id', true, -1 ] ])
+        # Hide all resources, but set sorting to tree, start-up, seqno-up.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(1)))
+        @property.set('sortTasks',
+                    [ [ 'tree', true, -1 ],
+                      [ 'start', true, 0 ],
+                      [ 'seqno', true, -1 ] ])
       when 'textreport'
-        @property.content = TextReport.new(@property)
+        @property.typeSpec = :textreport
       else
         raise "Unsupported report type #{@val[0]}"
       end
@@ -3114,16 +3140,6 @@ EOT
       @property = @val[1]
     })
     arg(1, 'task ID', 'The ID of an already defined task.')
-  end
-
-  def rule_tableType
-    pattern(%w( _tasks ), lambda {
-      TaskListRE.new(@property)
-    })
-
-    pattern(%w( _resources ), lambda {
-      ResourceListRE.new(@property)
-    })
   end
 
   def rule_task
