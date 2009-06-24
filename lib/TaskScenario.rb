@@ -1343,6 +1343,7 @@ class TaskJuggler
     # booking describes the assignment of a Resource to a certain Task for a
     # specified Interval.
     def bookBookings
+      scheduled = a('scheduled')
       a('booking').each do |booking|
         unless booking.resource.leaf?
           error('booking_resource_not_leaf',
@@ -1383,7 +1384,7 @@ class TaskJuggler
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1
-              if !a('scheduled') && @doneLength >= a('length')
+              if !scheduled && @doneLength >= a('length')
                 @property['end', @scenarioIdx] = tEnd
                 @property['scheduled', @scenarioIdx] = true
               end
@@ -1393,7 +1394,7 @@ class TaskJuggler
           if a('duration') > 0 && @tentativeEnd
             @doneDuration = ((@tentativeEnd - a('start')) /
                              @project['scheduleGranularity']).to_i
-            if !a('scheduled') && @doneDuration >= a('duration')
+            if !scheduled && @doneDuration >= a('duration')
               @property['end', @scenarioIdx] = @tentativeEnd
               @property['scheduled', @scenarioIdx] = true
             end
