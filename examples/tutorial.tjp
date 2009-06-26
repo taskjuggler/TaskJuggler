@@ -5,63 +5,100 @@
  * TaskJuggler. Please see the TaskJuggler manual for a more detailed
  * description of the various syntax elements.
  */
+# *** EXAMPLE: header1 +
+# *** EXAMPLE: header2 +
 project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
+# *** EXAMPLE: header1 -
   # Hide the clock time. Only show the date.
+# *** EXAMPLE: formats +
   timeformat "%Y-%m-%d"
+# *** EXAMPLE: formats -
   # Use US format for numbers
+# *** EXAMPLE: formats +
   numberformat "-" "" "," "." 1
+# *** EXAMPLE: formats -
   # Use US financial format for currency values. Don't show pence.
+# *** EXAMPLE: formats +
   currencyformat "(" ")" "," "." 0
+# *** EXAMPLE: formats -
   # Pick a day during the project that will be reported as 'today' in
   # the project reports. If not specified, the current day will be
   # used, but this will likely be outside of the project range, so it
   # can't be seen in the reports.
+# *** EXAMPLE: now +
   now 2002-03-05-13:00
+# *** EXAMPLE: now -
   # The currency for all money values is the Euro.
+# *** EXAMPLE: currency +
   currency "USD"
+# *** EXAMPLE: currency -
 
   # We want to compare the baseline scenario to one with a slightly
   # delayed start.
+# *** EXAMPLE: scenario +
   scenario plan "Plan" {
     scenario delayed "Delayed"
   }
+# *** EXAMPLE: scenario -
+# *** EXAMPLE: extend +
   extend resource {
     text Email "Email"
     text Phone "Phone"
   }
+# *** EXAMPLE: extend -
+# *** EXAMPLE: header1 +
 }
+# *** EXAMPLE: header1 -
+# *** EXAMPLE: header2 -
 
 # This is not a real copyright for this file. It's just used as an example.
+# *** EXAMPLE: copyright +
 copyright "© 2002 Crappy Software, Inc."
+# *** EXAMPLE: copyright -
 
 # The daily default rate of all resources. This can be overridden for each
 # resource. We specify this, so that we can do a good calculation of
 # the costs of the project.
+# *** EXAMPLE: rate +
 rate 390.0
+# *** EXAMPLE: rate -
 
 # Register Good Friday as a global holiday for all resources.
+# *** EXAMPLE: vacation +
 vacation "Good Friday" 2002-03-29
+# *** EXAMPLE: vacation -
+# *** EXAMPLE: flags +
 flags team
+# *** EXAMPLE: flags -
 
 # This is one way to form teams
+# *** EXAMPLE: macro +
 macro allocate_developers [
+# *** EXAMPLE: expandedmacro +
   allocate dev1
   allocate dev2
   allocate dev3
+# *** EXAMPLE: expandedmacro -
 ]
+# *** EXAMPLE: macro -
 
 # In order to do a simple profit and loss analysis of the project we
 # specify accounts. One for the development costs, one for the
 # documentation costs, and one account to credit the customer payments
 # to.
+# *** EXAMPLE: accounts +
 account cost "Project Cost" {
   account dev "Development"
   account doc "Documentation"
 }
 account rev "Payments"
+# *** EXAMPLE: accounts -
 # The Profit&Loss analysis should be rev - cost accounts.
+# *** EXAMPLE: balance +
 balance cost rev
+# *** EXAMPLE: balance -
 
+# *** EXAMPLE: resources +
 resource dev "Developers" {
   resource dev1 "Paul Smith" {
     Email "paul@crappysoftware.com"
@@ -96,28 +133,47 @@ resource misc "The Others" {
 
   flags team
 }
+# *** EXAMPLE: resources -
 
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
 # into smaller tasks and so on. The innermost tasks describe the real
 # work and have resources allocated to them. Many attributes of tasks
 # are inherited from the enclosing task. This saves you a lot of typing.
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: charge +
 task AcSo "Accounting Software" {
+# *** EXAMPLE: task1 -
+# *** EXAMPLE: charge -
 
   # All work-related costs will be booked to this account unless the
   # subtasks specify something different.
+# *** EXAMPLE: charge +
   chargeset dev
+# *** EXAMPLE: charge -
   # For the duration of the project we have running cost that are not
   # included in the labor cost.
+# *** EXAMPLE: charge +
   charge 170 perday
+# *** EXAMPLE: charge -
 
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: spec +
+# *** EXAMPLE: charge +
   task spec "Specification" {
+# *** EXAMPLE: charge -
+# *** EXAMPLE: task1 -
+# *** EXAMPLE: spec -
     # The effort to finish this task is 20 man-days.
+# *** EXAMPLE: spec +
     effort 20d
+# *** EXAMPLE: spec -
     # Now we use the macro declared above to allocate the resources
     # for this task. Because they can work in parallel, they may finish this
     # task earlier than in 20 working-days.
+# *** EXAMPLE: spec +
     ${allocate_developers}
+# *** EXAMPLE: spec -
     # Each task without subtasks must have a start or an end
     # criterion and a duration. For this task we use a reference to a
     # milestone defined further below as the start criterion. So this task
@@ -125,59 +181,100 @@ task AcSo "Accounting Software" {
     # References to other tasks may be relative. Each exclamation mark (!)
     # means 'in the scope of the enclosing task'. To descent into a task, the
     # fullstop (.) together with the id of the tasks have to be specified.
+# *** EXAMPLE: spec +
     depends !deliveries.start
+# *** EXAMPLE: task1 +
   }
+# *** EXAMPLE: task1 -
+# *** EXAMPLE: spec -
 
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: software +
   task software "Software Development" {
+# *** EXAMPLE: task1 -
+# *** EXAMPLE: software -
 
     # The software is the most critical task of the project. So we set
     # the priority of this task (and all its subtasks) to 1000, the top
     # priority. The higher the priority, the more likely the task will
     # get the requested resources.
+# *** EXAMPLE: software +
     priority 1000
+# *** EXAMPLE: software -
 
     # All subtasks depend on the specification task.
     depends !spec
 
+# *** EXAMPLE: software +
+# *** EXAMPLE: database +
     task database "Database coupling" {
+# *** EXAMPLE: software -
       effort 20d
       allocate dev1, dev2
+# *** EXAMPLE: software +
     }
+# *** EXAMPLE: database -
+# *** EXAMPLE: software -
 
+# *** EXAMPLE: software +
+# *** EXAMPLE: gui +
     task gui "Graphical User Interface" {
+# *** EXAMPLE: software -
       effort 35d
+# *** EXAMPLE: gui -
       # This task has taken 5 man-days more than originally planned.
       # We record this as well, so that we can generate reports that
       # compare the delayed schedule of the project to the original plan.
+# *** EXAMPLE: gui +
       delayed:effort 40d
       depends !database, !backend
       allocate dev2, dev3
+# *** EXAMPLE: software +
     }
+# *** EXAMPLE: gui -
+# *** EXAMPLE: software -
 
+# *** EXAMPLE: software +
+# *** EXAMPLE: backend +
     task backend "Back-End Functions" {
+# *** EXAMPLE: software -
       effort 30d
+# *** EXAMPLE: backend -
       # This task is behind schedule, because it should have been
       # finished already. To document this, we specify that the task
       # is 95% completed. If nothing is specified, TaskJuggler assumes
       # that the task is on schedule and computes the completion rate
       # according to the current day and the plan data.
+# *** EXAMPLE: backend +
       complete 95
       depends !database
       allocate dev1, dev2
+# *** EXAMPLE: software +
     }
+# *** EXAMPLE: backend -
+# *** EXAMPLE: task1 +
   }
+# *** EXAMPLE: task1 -
+# *** EXAMPLE: software -
 
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: test +
   task test "Software testing" {
+# *** EXAMPLE: task1 -
 
     task alpha "Alpha Test" {
+# *** EXAMPLE: test -
       # Efforts can not only be specified as man-days, but also as
       # man-weeks, man-hours, etc. By default, TaskJuggler assumes
       # that a man-week is 5 man-days or 40 man-hours. These values
       # can be changed, of course.
+# *** EXAMPLE: test +
       effort 1w
+# *** EXAMPLE: test -
       # This task depends on a task in the scope of the enclosing
       # task's enclosing task. So we need two exclamation marks (!!)
       # to get there.
+# *** EXAMPLE: test +
       depends !!software
       allocate test, dev2
       note "Hopefully most bugs will be found and fixed here."
@@ -188,34 +285,54 @@ task AcSo "Accounting Software" {
       depends !alpha
       allocate test, dev1
     }
+# *** EXAMPLE: task1 +
   }
+# *** EXAMPLE: test -
+# *** EXAMPLE: task1 -
 
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: manual +
   task manual "Manual" {
+# *** EXAMPLE: task1 -
     effort 10w
     depends !deliveries.start
     allocate doc, dev3
     purge chargeset
     chargeset doc
+# *** EXAMPLE: task1 +
   }
+# *** EXAMPLE: manual -
+# *** EXAMPLE: task1 -
 
+# *** EXAMPLE: task1 +
+# *** EXAMPLE: deliveries +
   task deliveries "Milestones" {
+# *** EXAMPLE: deliveries -
+# *** EXAMPLE: task1 -
 
     # Some milestones have customer payments associated with them. We
     # credit these payments to the 'rev' account.
+# *** EXAMPLE: deliveries +
     purge chargeset
     chargeset rev
 
     task start "Project start" {
+# *** EXAMPLE: deliveries -
       # A task that has no duration is a milestone. It only needs a
       # start or end criterion. All other tasks depend on this task.
+# *** EXAMPLE: deliveries +
       start 2002-01-16
+# *** EXAMPLE: deliveries -
       # For some reason the actual start of the project got delayed.
       # We record this, so that we can compare the planned run to the
       # delayed run of the project.
+# *** EXAMPLE: deliveries +
       delayed:start 2002-01-20
+# *** EXAMPLE: deliveries -
       # At the beginning of this task we receive a payment from the
       # customer. This is credited to the account associated with this
       # task when the task starts.
+# *** EXAMPLE: deliveries +
       charge 21000.0 onstart
     }
 
@@ -232,18 +349,23 @@ task AcSo "Accounting Software" {
     }
 
     task done "Ship Product to Customer" {
+# *** EXAMPLE: deliveries -
       # The next line can be uncommented to trigger a warning about
       # the project being late. For all tasks, limits for the start and
       # end values can be specified. Those limits are checked after the
       # project has been scheduled. For all violated limits a warning
       # is issued.
+# *** EXAMPLE: deliveries +
       # maxend 2002-04-17
       depends !!test.beta, !!manual
       charge 33000.0 onstart
       note "All priority 1 and 2 bugs must be fixed."
     }
+# *** EXAMPLE: task1 +
   }
 }
+# *** EXAMPLE: deliveries -
+# *** EXAMPLE: task1 -
 
 # Now the project has been specified completely. Stopping here would
 # result in a valid TaskJuggler file that could be processed and
@@ -254,9 +376,17 @@ navigator navbar {
   hidereport 0
 }
 
+textreport main "Main" {
+  header "This is the header"
+  left "Some text on the left"
+  center "This is the center text"
+  right "Some text on the right"
+  footer "This is the footer"
+}
+
 # A traditional Gantt chart with a project overview.
+# *** EXAMPLE: planoverview +
 taskreport index "Overview" {
-  list tasks
   formats html
   header '
 == Accounting Software Project ==
@@ -342,3 +472,4 @@ delivery dates.
     sorttasks plan.start.up
   }
 }
+# *** EXAMPLE: planoverview -
