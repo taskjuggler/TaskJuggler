@@ -15,6 +15,7 @@ require 'TextScanner'
 require 'TjpSyntaxRules'
 require 'RichText'
 require 'RTPNavigator'
+require 'RTPReport'
 
 class TaskJuggler
 
@@ -192,6 +193,7 @@ class TaskJuggler
       begin
         rText = RichText.new(text)
         rText.registerProtocol(RTPNavigator.new(@project))
+        rText.registerProtocol(RTPReport.new(@project))
       rescue RichTextException => msg
         sfi = sourceFileInfo
         correctSFI = SourceFileInfo.new(sfi.fileName,

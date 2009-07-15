@@ -84,6 +84,12 @@ class TaskJuggler
       end
     end
 
+    # Render the content of the report as HTML (without the framing).
+    def to_html
+      @content ? @content.to_html : nil
+    end
+
+
   private
     # Convenience function to access a report attribute
     def a(attribute)

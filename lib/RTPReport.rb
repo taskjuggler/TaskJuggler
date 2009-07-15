@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = RTPNavigator.rb -- The TaskJuggler III Project Management Software
+# = RTPReport.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -12,17 +12,15 @@
 
 require 'RichTextProtocolHandler'
 require 'XMLElement'
-require 'reports/Navigator'
 
 class TaskJuggler
 
-  # This class is a specialized RichTextProtocolHandler that generates a
-  # navigation bar for all reports that match the specified LogicalExpression.
-  # It currently only supports HTML.
-  class RTPNavigator < RichTextProtocolHandler
+  # This class is a specialized RichTextProtocolHandler that includes a
+  # report into the RichText output for supported formats.
+  class RTPReport < RichTextProtocolHandler
 
     def initialize(project)
-      super('navigator')
+      super('report')
       @project = project
     end
 
@@ -31,16 +29,16 @@ class TaskJuggler
       ''
     end
 
-    # Return a XMLElement tree that represents the navigator in HTML code.
+    # Return a HTML tree for the report.
     def to_html(path, args)
       if args.length > 1
-        raise "The navigator protocol does not support any arguments"
+        raise "The report protocol does not support any arguments"
       end
-      navBar = @project['navigators'][path]
-      unless navBar
-        raise "Unknown navigator #{path}"
+      report = @project.report(path)
+      unless report
+        raise "Unknown report #{path}"
       end
-      navBar.to_html
+      report.to_html
     end
 
     # Not supported for this protocol.
