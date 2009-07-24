@@ -64,7 +64,7 @@ class TaskJuggler
         table << (tr = XMLElement.new('tr'))
 
         %w( left center right).each do |i|
-          width = instance_variable_get('@' + i[0] + 'Width')
+          width = instance_variable_get('@' + i[0].chr + 'Width')
           if width > 0
             tr << (td = XMLElement.new('td', 'width' => "#{width}%"))
             td << rt_to_html(i)
