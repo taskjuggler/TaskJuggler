@@ -11,13 +11,14 @@
 #
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
+$:.unshift File.dirname(__FILE__)
 
 require 'stringio'
 require 'test/unit'
 require 'TaskJuggler'
 require 'reports/CSVFile'
-Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
-require Path + 'MessageChecker'
+require 'MessageChecker'
+
 
 class TestScheduler < Test::Unit::TestCase
 
@@ -74,9 +75,11 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_CSV_Reports
-    Dir.glob(Path + 'TestSuite/CSV-Reports/*.tjp').each do |f|
-      baseName = f[22 + Path.length, f.length - (Path.length + 26)]
-      refFile = Path + "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
+    path = File.dirname(__FILE__)
+
+    Dir.glob(path + 'TestSuite/CSV-Reports/*.tjp').each do |f|
+      baseName = f[22 + path.length, f.length - (path.length + 26)]
+      refFile = path + "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")

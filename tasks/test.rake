@@ -1,5 +1,8 @@
+$:.unshift File.join(File.dirname(__FILE__), '..', 'test')
 
 require 'rake/testtask'
+
+REQUIRE_PATHS.unshift File.join(File.dirname(__FILE__), '..')
 
 # TEST TASK
 test_task_name = HAVE_EXT ? :test_ext : :test

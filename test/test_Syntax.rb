@@ -11,18 +11,19 @@
 #
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
+$:.unshift File.dirname(__FILE__)
 
 require 'test/unit'
 require 'TaskJuggler'
-Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
-require Path + 'MessageChecker'
+require 'MessageChecker'
 
 class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
   def test_syntaxCorrect
-    Dir.glob(Path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
+    path = File.dirname(__FILE__)
+    Dir.glob(path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
@@ -31,7 +32,8 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_syntaxErrors
-    Dir.glob(Path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
+    path = File.dirname(__FILE__)
+    Dir.glob(path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(!tj.parse([ f ]), "Parser succedded for #{f}")

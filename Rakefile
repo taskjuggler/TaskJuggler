@@ -1,3 +1,4 @@
+$:.unshift File.join(File.dirname(__FILE__))
 
 require 'rake/clean'
 require 'rake/gempackagetask'

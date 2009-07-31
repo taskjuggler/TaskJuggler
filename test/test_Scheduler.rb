@@ -11,11 +11,13 @@
 #
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
+$:.unshift File.dirname(__FILE__)
 
 require 'test/unit'
 require 'TaskJuggler'
-Path = File.exists?('test') ? 'test/' : '' unless defined?(Path)
-require Path + 'MessageChecker'
+require 'MessageChecker'
+
+Path = File.dirname(__FILE__)
 
 class TestScheduler < Test::Unit::TestCase
 
