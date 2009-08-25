@@ -165,7 +165,7 @@ class TaskJuggler
         end
       end
       @masterPath = @cf.dirname + '/'
-      @tokenBuffer = @pos = nil
+      @tokenBuffer = @pos = @lastPos = nil
     end
 
     # Finish processing and reset all data structures.
@@ -173,7 +173,7 @@ class TaskJuggler
       Log.startProgressMeter("Reading file #{@masterFile}")
       Log.stopProgressMeter
       @fileStack = []
-      @cf = @tokenBuffer = @pos = nil
+      @cf = @tokenBuffer = nil
     end
 
     # Continue processing with a new file specified by _fileName_. When this
@@ -193,7 +193,7 @@ class TaskJuggler
           fileName = path + fileName
         end
 
-        @tokenBuffer = @pos = nil
+        @tokenBuffer = nil
         @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
       rescue StandardError
         error('bad_include', "Cannot open include file #{fileName}")
@@ -229,11 +229,13 @@ class TaskJuggler
       # If we have a pushed-back token, return that first.
       unless @tokenBuffer.nil?
         res = @tokenBuffer
-        @tokenBuffer = @pos = nil
+        @tokenBuffer = nil
+        @pos = @tokenBufferPos
         return res
       end
 
       # Start processing characters from the input.
+      startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
       token = [ '.', '<END>' ]
       while c = nextChar
         case c
@@ -242,10 +244,13 @@ class TaskJuggler
             token = tok
             break
           end
+          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
         when '#'
           skipComment
+          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
         when '/'
           skipCPlusPlusComments
+          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
         when '0'..'9'
           token = readNumber(c)
           break
@@ -254,6 +259,9 @@ class TaskJuggler
           break
         when '"'
           token = readString(c)
+          break
+        when '-'
+          token = handleDash
           break
         when '!'
           token = readRelativeId(c)
@@ -274,8 +282,7 @@ class TaskJuggler
           break
         end
       end
-      @lastPos = @pos
-      @pos = SourceFileInfo.new(fileName, lineNo, columnNo)
+      @pos = startOfToken
       return token
     end
 
@@ -287,6 +294,7 @@ class TaskJuggler
         raise "Fatal Error: Cannot return more than 1 token in a row"
       end
       @tokenBuffer = token
+      @tokenBufferPos = @pos
       @pos = @lastPos
     end
 
@@ -315,20 +323,23 @@ class TaskJuggler
 
     # Call this function to report any errors related to the parsed input.
     def error(id, text, property = nil)
-      message = Message.new(id, 'error', text + "\n" + line.to_s,
-                            property, nil, sourceFileInfo)
-      @messageHandler.send(message)
-
-      until @macroStack.empty?
-        macro, args = @macroStack.pop
-        args.collect! { |a| '"' + a + '"' }
-        message = Message.new('macro_stack', 'info',
-                              "   #{macro.name} #{args.join(' ')}", nil, nil,
-                              macro.sourceFileInfo)
+      unless text.empty?
+        message = Message.new(id, 'error', text + "\n" + line.to_s,
+                              property, nil, sourceFileInfo)
         @messageHandler.send(message)
+
+        until @macroStack.empty?
+          macro, args = @macroStack.pop
+          args.collect! { |a| '"' + a + '"' }
+          message = Message.new('macro_stack', 'info',
+                                "   #{macro.name} #{args.join(' ')}", nil, nil,
+                                macro.sourceFileInfo)
+          @messageHandler.send(message)
+        end
       end
 
-      raise TjException.new, 'Syntax error during parse'
+      # An empty strings signals an already reported error
+      raise TjException.new, ''
     end
 
   private
@@ -337,6 +348,14 @@ class TaskJuggler
     # features a FIFO buffer that can hold any amount of returned characters.
     # When it has reached the end of the master file it returns nil.
     def nextChar
+      # We've started to find the next token. @pos no longer marks the
+      # position of the current token. Since we also store the EOF position in
+      # @pos, don't reset it if we have processed all files completely.
+      if @pos && @cf
+        @lastPos = @pos
+        @pos = nil
+      end
+
       if (c = nextCharI) == '$' && !@ignoreMacros
         # Double $ are reduced to a single $.
         return c if (c = nextCharI) == '$'
@@ -379,13 +398,17 @@ class TaskJuggler
         # If EOF has been reached, try the parent file until even the master
         # file has been processed completely.
         if (c = @cf.getc).nil?
+          # Safe current position so an EOF related error can be properly
+          # reported.
+          @pos = sourceFileInfo
+
           @cf.close
           @fileStack.pop
           if @fileStack.empty?
             # We are done with the top-level file now.
-            @cf = @tokenBuffer = @pos = nil
+            @cf = @tokenBuffer = nil
           else
-            @cf, @tokenBuffer, @pos = @fileStack.last
+            @cf, @tokenBuffer, @lastPos = @fileStack.last
             Log << "Parsing file #{@cf.fileName} ..."
             # We have been called by nextToken() already, so we can't just
             # restore @tokenBuffer and be done. We need to feed the token text
@@ -440,6 +463,26 @@ class TaskJuggler
       else
         error('bad_comment', "'/' or '*' expected after start of comment")
       end
+    end
+
+    def handleDash
+      if (c1 = nextChar) == '8'
+        if (c2 = nextChar) == '<'
+          if (c3 = nextChar) == '-'
+            return readIndentedString
+          else
+            returnChar(c3)
+            returnChar(c2)
+            returnChar(c1)
+          end
+        else
+          returnChar(c2)
+          returnChar(c1)
+        end
+      else
+        returnChar(c1)
+      end
+      return [ 'LITERAL', ' - ']
     end
 
     def readBlanks(c)
@@ -609,6 +652,86 @@ class TaskJuggler
       end
 
       [ 'STRING', token ]
+    end
+
+    def readIndentedString
+      state = 0
+      indent = ''
+      token = ''
+      while true
+        case state
+        when 0 # Determining indent
+          if nextChar != "\n"
+            error('junk_after_cut',
+                  'The cut mark -8<- must be immediately followed by a ' +
+                  'line break.')
+          end
+          while (c = nextChar) == ' ' || c == "\t"
+            indent << c
+          end
+          returnChar(c)
+          state = 1
+        when 1 # reading '-' or first content line character
+          if (c = nextChar) == '-'
+            state = 3
+          elsif c.nil?
+            error('eof_in_istring1', 'Unexpected end of file in string')
+          else
+            token << c
+            state = 2
+          end
+        when 2 # reading content line
+          while (c = nextChar) != "\n"
+            error('eof_in_istring2',
+                  'Unexpected end of file in string') if c.nil?
+            token << c
+          end
+          token << c
+          state = 6
+        when 3 # reading '>' of '->8-'
+          if (c = nextChar) == '>'
+            state = 4
+          else
+            error('eof_in_istring3',
+                  'Unexpected end of file in string') if c.nil?
+            token << c
+            state = 2
+          end
+        when 4 # reading '8' of '->8-'
+          if (c = nextChar) == '8'
+            state = 5
+          else
+            error('eof_in_istring4',
+                  'Unexpected end of file in string') if c.nil?
+            token << c
+            state = 2
+          end
+        when 5 # reading '-' of '->8-'
+          if (c = nextChar) == '-'
+            return [ 'STRING', token ]
+          else
+            error('eof_in_istring5',
+                  'Unexpected end of file in string') if c.nil?
+            token << c
+            state = 2
+          end
+        when 6 # reading indentation
+          state = 1
+          indent.each_char do |ci|
+            if ci != (c = nextChar)
+              if c == '-'
+                state = 3
+                break
+              else
+                error('bad_indent',
+                      'All string lines must have the exact same indentation.')
+              end
+            end
+          end
+        else
+          raise "State machine error"
+        end
+      end
     end
 
     def readId(c)

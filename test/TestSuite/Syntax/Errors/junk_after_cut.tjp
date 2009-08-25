@@ -1,0 +1,6 @@
+project test "Test" "1.0" 2007-08-19 +2m 
+
+# MARK: error 4 junk_after_cut
+task t -8<- ->8- {
+  start 2007-08-19
+}

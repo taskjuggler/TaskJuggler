@@ -450,7 +450,7 @@ EOT
 
   def rule_columnId
     pattern(%w( !reportableAttributes ), lambda {
-      title = ReportTableBase.defaultColumnTitle(@val[0]) ||
+      title = TableReport.defaultColumnTitle(@val[0]) ||
               @project.attributeName(@val[0])
       @column = TableColumnDefinition.new(@val[0], title)
     })

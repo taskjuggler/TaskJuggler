@@ -14,7 +14,7 @@ require 'reports/ReportBase'
 
 class TaskJuggler
 
-  # This specialization of ReportTableBase implements an export of the
+  # This specialization of ReportBase implements an export of the
   # project data in the TJP syntax format.
   class TjpExportRE < ReportBase
 

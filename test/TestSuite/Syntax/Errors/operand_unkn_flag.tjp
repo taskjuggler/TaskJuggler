@@ -5,7 +5,7 @@ task t "T" {
 }
 
 export "report.tji" {
-# MARK: error 10 operand_unkn_flag
+# MARK: error 9 operand_unkn_flag
 	hidetask foo
 }
 

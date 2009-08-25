@@ -45,6 +45,12 @@ class TaskJuggler
       if arg.is_a?(XMLElement)
         @children << arg
       elsif arg.is_a?(Array)
+        # Delete all nil entries
+        arg.delete_if { |i| i.nil? }
+        # Check that the rest are really all XMLElement objects.
+        arg.each do |i|
+          raise 'Element must be of type XMLElement' unless i.is_a?(XMLElement)
+        end
         @children += arg
       elsif arg.nil?
         # do nothing

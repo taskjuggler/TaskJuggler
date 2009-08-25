@@ -10,17 +10,17 @@
 # published by the Free Software Foundation.
 #
 
-require 'reports/ReportTableBase'
+require 'reports/TableReport'
 require 'reports/ReportTable'
 require 'TableColumnDefinition'
 require 'LogicalExpression'
 
 class TaskJuggler
 
-  # This specialization of ReportTableBase implements a task listing. It
+  # This specialization of TableReport implements a task listing. It
   # generates a list of tasks that can optionally have the allocated resources
   # nested underneath each task line.
-  class TaskListRE < ReportTableBase
+  class TaskListRE < TableReport
 
     # Create a new object and set some default values.
     def initialize(report)

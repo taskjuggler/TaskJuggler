@@ -81,15 +81,6 @@ class TaskJuggler
       nil
     end
 
-    private
-
-    def rt_to_html(name)
-      return unless a(name)
-
-      a(name).sectionNumbers = false
-      a(name).to_html
-    end
-
   end
 
 end

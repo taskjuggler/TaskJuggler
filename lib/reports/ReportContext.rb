@@ -16,16 +16,25 @@ class TaskJuggler
   # report generation. It is a container for global state.
   class ReportContext
 
-    attr_reader :project
-    attr_accessor :report, :start, :end
+    attr_reader :project, :report
+    attr_accessor :start, :end, :tasks, :resources
 
-    def initialize(project)
+    def initialize(project, report)
       @project = project
-      # The currently generated report.
-      @report = nil
+      @report = report
 
-      @start = @end = nil
-      @tasks = @resources = nil
+      if (parent = @project.reportContext)
+        # If the new ReportContext is created from within an existing context,
+        # this is used as parent context and all attribute values are copied
+        # as default initial values.
+        @start = parent.start
+        @end = parent.end
+        @tasks = parent.tasks
+        @resources = parent.resources
+      else
+        @start = @end = nil
+        @tasks = @resources = nil
+      end
     end
 
   end

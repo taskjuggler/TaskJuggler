@@ -120,6 +120,14 @@ class TaskJuggler
 
     private
 
+    # Convert the RichText object _name_ into a HTML form.
+    def rt_to_html(name)
+      return unless a(name)
+
+      a(name).sectionNumbers = false
+      a(name).to_html
+    end
+
     # This function implements the generic filtering functionality for all kinds
     # of lists.
     def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)

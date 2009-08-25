@@ -45,7 +45,8 @@ class TaskJuggler
   class Project
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
-                :reportContext, :reports, :messageHandler
+                :reports, :messageHandler
+    attr_accessor :reportContext
 
     # Create a project with the specified +id+, +name+ and +version+.
     # +messageHandler+ is a MessageHandler reference that is used to handle
@@ -285,7 +286,7 @@ class TaskJuggler
         [ 'footer',    'Footer',       RichTextAttribute,
               true,  false,   false, nil ],
         [ 'formats',   'Formats',      FormatListAttribute,
-              true,  false,   false, [ :html ] ],
+              true,  false,   false, [] ],
         [ 'ganttBars', 'Gantt Bars',   BooleanAttribute,
               true,  false,   false, true ],
         [ 'header',    'Header',       RichTextAttribute,
@@ -348,7 +349,8 @@ class TaskJuggler
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
-      @reportContext = ReportContext.new(self)
+
+      @reportContext = nil
     end
 
     # Overload the deep_clone function so that references to the project don't
@@ -523,13 +525,18 @@ class TaskJuggler
         @reports.index
         if maxCpuCores == 1
           @reports.each do |report|
+            next if report.get('formats').empty?
             Log.startProgressMeter("Report #{report.name}")
+            @reportContext = ReportContext.new(self, report)
             report.generate
             Log.stopProgressMeter
           end
         else
           bp = BatchProcessor.new(maxCpuCores)
-          @reports.each_value { |report| bp.queue(report) { report.generate } }
+          @reports.each_value do |report|
+            next if report.get('formats').empty?
+            bp.queue(report) { report.generate }
+          end
           bp.wait do |report|
             $stdout.print(report.stdout)
             $stderr.print(report.stderr)

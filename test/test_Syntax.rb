@@ -22,7 +22,7 @@ class TestScheduler < Test::Unit::TestCase
   include MessageChecker
 
   def test_syntaxCorrect
-    path = File.dirname(__FILE__)
+    path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
@@ -32,7 +32,7 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_syntaxErrors
-    path = File.dirname(__FILE__)
+    path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)

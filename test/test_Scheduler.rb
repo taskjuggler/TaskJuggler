@@ -17,14 +17,13 @@ require 'test/unit'
 require 'TaskJuggler'
 require 'MessageChecker'
 
-Path = File.dirname(__FILE__)
-
 class TestScheduler < Test::Unit::TestCase
 
   include MessageChecker
 
   def test_SchedulerErrors
-    Dir.glob(Path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
+    path = File.dirname(__FILE__) + '/'
+    Dir.glob(path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
@@ -34,7 +33,8 @@ class TestScheduler < Test::Unit::TestCase
   end
 
   def test_SchedulerCorrect
-    Dir.glob(Path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
+    path = File.dirname(__FILE__) + '/'
+    Dir.glob(path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for ${f}")

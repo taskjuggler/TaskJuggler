@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = ReportTableBase.rb -- The TaskJuggler III Project Management Software
+# = TableReport.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -21,7 +21,7 @@ class TaskJuggler
   # This is base class for all types of tabular reports. All tabular reports
   # are converted to an abstract (output independent) intermediate form first,
   # before the are turned into the requested output format.
-  class ReportTableBase < ReportBase
+  class TableReport < ReportBase
 
     attr_reader :legend
 
@@ -47,7 +47,7 @@ class TaskJuggler
       RichTextAttribute  => [ false,  :left ],
       StringAttribute    => [ false,  :left ]
     }
-    # Generate a new ReportTableBase object.
+    # Generate a new TableReport object.
     def initialize(report)
       super
       @report.content = self
@@ -61,10 +61,11 @@ class TaskJuggler
     end
 
 
-    # Turn the ReportTableBase into an equivalent HTML element tree.
+    # Turn the TableReport into an equivalent HTML element tree.
     def to_html
       html = []
 
+      html << rt_to_html('header')
       html << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                      'cellspacing' => '2', 'border' => '0',
                                      'cellpadding' => '0', 'align' => 'center',
@@ -121,6 +122,7 @@ class TaskJuggler
                              'href' => "#{AppConfig.contact}")
       td << XMLText.new(" v#{AppConfig.version}")
 
+      html << rt_to_html('footer')
       html
     end
 
@@ -214,7 +216,7 @@ class TaskJuggler
     end
 
     # Returns the default column title for the columns _id_.
-    def ReportTableBase::defaultColumnTitle(id)
+    def TableReport::defaultColumnTitle(id)
       # Return an empty string for some special columns that don't have a fixed
       # title.
       specials = %w( chart hourly daily weekly monthly quarterly yearly)

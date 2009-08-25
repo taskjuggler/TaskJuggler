@@ -1,0 +1,6 @@
+project test "Test" "1.0" 2009-08-25 +2m 
+
+# MARK: error 6 eof_in_istring4
+task t -8<-
+  foo
+  ->

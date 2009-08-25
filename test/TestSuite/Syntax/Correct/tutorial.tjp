@@ -376,26 +376,37 @@ navigator navbar {
   hidereport 0
 }
 
-textreport main "Main" {
-  header "This is the header"
-  left "Some text on the left"
-  center "This is the center text"
-  right "Some text on the right"
-  footer "This is the footer"
+textreport index "Overview" {
+  header -8<-
+    == Accounting Software Project ==
+    ----
+    [[navigator:navbar]]
+    ----
+  ->8-
+  formats html
+  center '[[report:tab_overview]]'
+
+  textreport development "Development" {
+    formats html
+    center '[[report:tab_development]]'
+  }
+
+  textreport deliveries "Deliveries" {
+    center '[[report:tab_development]]'
+  }
+
+  textreport contactList "ContactList" {
+    center '[[report:tab_contactList]]'
+  }
+  textreport resoruceGraph "Resource Graph" {
+    center '[[report_tab_resourceGraph]]'
+  }
 }
 
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
-taskreport index "Overview" {
-  formats html
-  header '
-== Accounting Software Project ==
-----
-[[navigator:navbar]]
-----
-'
-
-  prolog '
+taskreport tab_overview "Overview1" {
+    header '
 === Project Overview ===
 
 The project is structured into 3 phases.
@@ -406,7 +417,6 @@ The project is structured into 3 phases.
 
 === Project Plan ===
 '
-
   headline "Project Plan Overview"
   columns hierarchindex, name, start, end, effort, duration, cost,
           revenue, chart
@@ -420,7 +430,7 @@ The project is structured into 3 phases.
 All effort values are in man days.
 '
 
-  epilog '
+  footer '
 === Staffing ===
 
 All project phases are properly staffed. See [[ResourceGraph]] for
@@ -432,44 +442,44 @@ The project started off with a delay of 4 days. This slightly affected
 the original schedule. See [[Deliveries]] for the impact on the
 delivery dates.
 '
+}
 
-  # A list of tasks showing the resources assigned to each task.
-  taskreport Development "Development" {
-    headline "Development - Resource Allocation Report"
-    columns hierarchindex, name, start, end, effort { title "Work" },
-            duration, chart { scale day }
-    timeformat "%Y-%m-%d"
-    hideresource ~isleaf()
-    sortresources name.up
-  }
+# A list of tasks showing the resources assigned to each task.
+taskreport tab_development "Development" {
+  headline "Development - Resource Allocation Report"
+  columns hierarchindex, name, start, end, effort { title "Work" },
+          duration, chart { scale day }
+  timeformat "%Y-%m-%d"
+  hideresource ~isleaf()
+  sortresources name.up
+}
 
-  # A list of all tasks with the percentage completed for each task
-  taskreport Deliveries "Deliveries" {
-    headline "Project Deliveries"
-    columns hierarchindex, name, start, end, note, complete, chart
-    taskroot AcSo.deliveries
-    loadunit days
-    hideresource 1
-    scenarios plan, delayed
-  }
-  # A list of all employees with their contact details.
-  resourcereport contactList "ContactList" {
-    headline "Contact list and duty plan"
-    columns name, Email { cellurl "mailto:$${Email}" }, Phone,
-            chart { scale day }
-    hideresource ~isleaf()
-    sortresources name.up
-    hidetask 1
-  }
+# A list of all tasks with the percentage completed for each task
+taskreport tab_deliveries "Deliveries" {
+  headline "Project Deliveries"
+  columns hierarchindex, name, start, end, note, complete, chart
+  taskroot AcSo.deliveries
+  loadunit days
+  hideresource 1
+  scenarios plan, delayed
+}
+# A list of all employees with their contact details.
+resourcereport tab_contactList "ContactList" {
+  headline "Contact list and duty plan"
+  columns name, Email { cellurl "mailto:$${Email}" }, Phone,
+          chart { scale day }
+  hideresource ~isleaf()
+  sortresources name.up
+  hidetask 1
+}
 
-  # A graph showing resource allocation. It identifies whether each
-  # resource is under- or over-allocated for.
-  resourcereport ResourceGraph "Resource Graph" {
-    headline "Resource Allocation Graph"
-    columns no, name, effort, rate, weekly #, utilization, freeload, chart
-    loadunit shortauto
-    hidetask ~isleaf()
-    sorttasks plan.start.up
-  }
+# A graph showing resource allocation. It identifies whether each
+# resource is under- or over-allocated for.
+resourcereport tab_resourceGraph "Resource Graph" {
+  headline "Resource Allocation Graph"
+  columns no, name, effort, rate, weekly #, utilization, freeload, chart
+  loadunit shortauto
+  hidetask ~isleaf()
+  sorttasks plan.start.up
 }
 # *** EXAMPLE: planoverview -

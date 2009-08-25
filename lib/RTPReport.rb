@@ -34,11 +34,20 @@ class TaskJuggler
       if args.length > 1
         raise "The report protocol does not support any arguments"
       end
-      report = @project.report(path)
-      unless report
+      unless (report = @project.report(path))
         raise "Unknown report #{path}"
       end
-      report.to_html
+      # Save the old report context record
+      oldReportContext = @project.reportContext
+      # Create a new context for the report.
+      @project.reportContext = ReportContext.new(@project, report)
+      # Generate the report with the new context
+      report.generate
+      html = report.to_html
+      # Restore the global report context record again.
+      @project.reportContext = oldReportContext
+
+      html
     end
 
     # Not supported for this protocol.

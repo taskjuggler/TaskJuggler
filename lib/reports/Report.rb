@@ -17,6 +17,7 @@ require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
 require 'reports/CSVFile'
 require 'reports/Navigator'
+require 'reports/ReportContext'
 require 'HTMLDocument'
 
 class TaskJuggler
@@ -36,8 +37,6 @@ class TaskJuggler
       # The type specifier must be set for every report. It tells whether this
       # is a task, resource, text or other report.
       @typeSpec = nil
-
-      @content = nil
     end
 
     # The generate function is where the action happens in this class. The
@@ -45,8 +44,7 @@ class TaskJuggler
     # generated according the the requested output format(s).
     def generate
       begin
-        @project.reportContext.report = self
-
+        @content = nil
         case @typeSpec
         when :export
           # Does not have an intermediate representation. Nothing to do here.
@@ -95,7 +93,6 @@ class TaskJuggler
     def a(attribute)
       get(attribute)
     end
-
 
     # Generate an HTML version of the report.
     def generateHTML
