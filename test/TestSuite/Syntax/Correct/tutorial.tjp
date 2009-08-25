@@ -406,17 +406,17 @@ textreport index "Overview" {
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: planoverview +
 taskreport tab_overview "Overview1" {
-    header '
-=== Project Overview ===
-
-The project is structured into 3 phases.
-
-# Specification
-# [[Development]]
-# Testing
-
-=== Project Plan ===
-'
+    header -8<-
+      === Project Overview ===
+      
+      The project is structured into 3 phases.
+      
+      # Specification
+      # [[Development]]
+      # Testing
+      
+      === Project Plan ===
+    ->8-
   headline "Project Plan Overview"
   columns hierarchindex, name, start, end, effort, duration, cost,
           revenue, chart
@@ -426,22 +426,20 @@ The project is structured into 3 phases.
   loadunit days
   hideresource 1
   balance cost rev
-  caption '
-All effort values are in man days.
-'
+  caption 'All effort values are in man days.'
 
-  footer '
-=== Staffing ===
-
-All project phases are properly staffed. See [[ResourceGraph]] for
-detailed resource allocations.
-
-=== Current Status ===
-
-The project started off with a delay of 4 days. This slightly affected
-the original schedule. See [[Deliveries]] for the impact on the
-delivery dates.
-'
+  footer -8<-
+    === Staffing ===
+    
+    All project phases are properly staffed. See [[ResourceGraph]] for
+    detailed resource allocations.
+    
+    === Current Status ===
+    
+    The project started off with a delay of 4 days. This slightly affected
+    the original schedule. See [[Deliveries]] for the impact on the
+    delivery dates.
+  ->8-
 }
 
 # A list of tasks showing the resources assigned to each task.

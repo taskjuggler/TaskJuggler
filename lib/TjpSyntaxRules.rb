@@ -915,6 +915,7 @@ sub-account of the account specified by ID. The parent account must already be
 defined.
 EOT
     )
+    arg(1, 'account ID', 'The absolute ID of an already defined account')
 
     pattern(%w( _reportprefix !taskId ), lambda {
       @reportprefix = @val[1].fullId
@@ -925,6 +926,7 @@ sub-report of the report specified by ID. The parent report must already
 be defined.
 EOT
     )
+    arg(1, 'report ID', 'The absolute ID of an already defined report.')
 
     pattern(%w( _resourceprefix !taskId ), lambda {
       @resourceprefix = @val[1].fullId
@@ -935,6 +937,7 @@ sub-resource of the resource specified by ID. The parent resource must already
 be defined.
 EOT
     )
+    arg(1, 'resource ID', 'The ID of an already defined resource')
 
     pattern(%w( _taskprefix !taskId ), lambda {
       @taskprefix = @val[1].fullId
@@ -944,6 +947,7 @@ This attribute can be used to insert the tasks of the included file as
 sub-task of the task specified by ID. The parent task must already be defined.
 EOT
     )
+    arg(1, 'task ID', 'The absolute ID of an already defined task.')
   end
 
   def rule_includeFile
@@ -2271,6 +2275,7 @@ The caption will be embedded in the footer of the table or data segment. The
 text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
+    arg(1, 'text', 'The caption text.')
     example('Caption', '1')
 
     pattern(%w( _center $STRING ), lambda {
@@ -2281,6 +2286,7 @@ This attribute defines the center section of the [[textreport]]. The text will
 be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
+    arg(1, 'text', 'The text')
 
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
@@ -3436,7 +3442,7 @@ duration of the task. The accounts to be charged are determined by the
 [[chargeset]] setting of the task.
 EOT
        )
-    arg(0, 'amount', 'The amount to charge')
+    arg(1, 'amount', 'The amount to charge')
 
     pattern(%w( !chargeset ))
 

@@ -60,3 +60,53 @@ sequence.
 * [[report reports]]
 * [[export exports]]
 
+=== Types of variable Syntax Elements ===
+
+==== ABSOLUTE_ID ====
+
+An absolute identifier is composed of identifiers that are
+concatenated by dots, e. g. ''''foo.bar''''. It is used to reference
+a TaskJuggler property that lives in a hierarchical name space.
+Accounts, Tasks, Reports are examples for such hierarchical name
+spaces. To reference the sub-task ''''bar'''' of task ''''foo'''' the
+absolute ID ''''foo.bar'''' is used.
+
+==== ID ====
+
+An identifier is composed of the letters ''''a'''' to ''''z'''',
+''''A'''' to ''''Z'''', the underscore and the digits ''''0'''' to
+''''9''''. There are no limits for the number of characters, but it
+may not begin with a digit.
+
+==== INTEGER ====
+
+An integer is any natural number, e. g. ''''0'''', ''''1'''',
+''''2'''' and so on.
+
+==== STRING ====
+
+Strings are character sequences that are enclosed by special
+character marks. There are three different marks supported. For
+short strings that fit on one lines, you can either use single or
+double quotes.
+
+ 'This is a single quoted string.'
+ "This is a double quoted string."
+
+Single quoted strings may contain double quotes and vice versa.
+
+For multi-line strings cut mark strings are recommended. A
+cut-mark-string starts with ''''-8<-'''' (scissor on a dotted line) and
+ends with ''''->8-''''. The start mark must be immediately followed
+by a line break. The indentation of the first line must be repeated
+for all following lines of the string and is not included in the
+resulting strings. The terminating cut mark must only be preceeded by
+white spaces by may not be indented more than the first line indentation.
+
+ -8<-
+   This is a
+   multi-line
+   string.
+   ->8-
+
+

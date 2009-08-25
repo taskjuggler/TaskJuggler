@@ -191,7 +191,7 @@ class TaskJuggler
             returnChar
             return [ 'SPACE', ' ' ]
           end
-        elsif c == '<'
+        elsif c == '<' && !ignoreInlineMarkup
           if peekMatch('nowiki>')
             # Turn most wiki markup interpretation off.
             @pos += 'nowiki>'.length
@@ -203,6 +203,7 @@ class TaskJuggler
             @wikiEnabled = true
             next
           else
+            ignoreInlineMarkup = true
             returnChar
           end
         else
@@ -317,7 +318,7 @@ class TaskJuggler
     def peekMatch(word)
       # Since Ruby 1.9 is returning Strings for String#[] we need to emulate
       # this for Ruby 1.8.
-      '' << @text[@pos, word.length] == word
+      ('' << @text[@pos, word.length]) == word
     end
 
     # Read a sequence of characters that are all contained in the _chars_ Array.

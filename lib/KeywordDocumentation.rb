@@ -319,10 +319,14 @@ class TaskJuggler
               tr1 << XMLNamedText.new("#{arg.name}", 'td', 'width' => '30%')
             else
               typeSpec = arg.typeSpec
+              typeName = typeSpec[1..-2]
               typeSpec[0] = '['
               typeSpec[-1] = ']'
-              tr1 << XMLNamedText.new("#{arg.name} #{typeSpec}", 'td',
-                                    'width' => '30%')
+              tr1 << (td = XMLElement.new('td', 'width' => '30%'))
+              td << XMLText.new("#{arg.name} [")
+              td << XMLNamedText.new(
+                typeName, 'a', 'href' => "Getting_Started.html\##{typeName}")
+              td << XMLText.new(']')
             end
             tr1 << (td = XMLElement.new('td',
               'style' => 'margin-top:2px; margin-bottom:2px;'))
