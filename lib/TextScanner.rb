@@ -717,7 +717,7 @@ class TaskJuggler
           end
         when 6 # reading indentation
           state = 1
-          indent.each_char do |ci|
+          indent.each_utf8_char do |ci|
             if ci != (c = nextChar)
               if c == '-'
                 state = 3
