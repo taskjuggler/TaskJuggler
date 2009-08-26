@@ -676,6 +676,9 @@ class TaskJuggler
             state = 3
           elsif c.nil?
             error('eof_in_istring1', 'Unexpected end of file in string')
+          elsif c == "\n"
+            token << c
+            state = 6
           else
             token << c
             state = 2
@@ -694,6 +697,7 @@ class TaskJuggler
           else
             error('eof_in_istring3',
                   'Unexpected end of file in string') if c.nil?
+            token << '-'
             token << c
             state = 2
           end

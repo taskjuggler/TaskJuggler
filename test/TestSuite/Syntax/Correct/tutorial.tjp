@@ -398,7 +398,7 @@ textreport index "Overview" {
     center '[[report:tab_contactList]]'
   }
   textreport resoruceGraph "Resource Graph" {
-    center '[[report_tab_resourceGraph]]'
+    center '[[report:tab_resourceGraph]]'
   }
 }
 
