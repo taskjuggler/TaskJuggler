@@ -273,6 +273,7 @@ class TaskJuggler
 
     # Convert the intermediate representation into HTML elements.
     def to_html
+      noChilds = false
       html =
       case @category
       when :richtext
@@ -296,10 +297,12 @@ class TaskJuggler
         end
         el
       when :hline
+        noChilds = true
         XMLElement.new('hr')
       when :paragraph
         XMLElement.new('p')
       when :pre
+        noChilds = true
         pre = XMLElement.new('pre')
         pre << XMLText.new(@children[0])
       when :bulletlist1
@@ -335,8 +338,9 @@ class TaskJuggler
           #if path.nil? || path.empty?
           #  raise TjException.new, "Reference path missing."
           #end
+          noChilds = true
           args = children_to_s.split(' ')
-          return @richText.protocolHandler(protocol).to_html(path, args)
+          @richText.protocolHandler(protocol).to_html(path, args)
         else
           XMLElement.new('a', 'href' => "#{@data}.html")
         end
@@ -349,13 +353,14 @@ class TaskJuggler
       when :code
         XMLElement.new('code')
       when :text
+        noChilds = true
         XMLText.new(@children[0])
       else
         raise TjException.new, "Unknown RichTextElement category #{@category}"
       end
 
       # Some elements never have leaves.
-      return html if [ :text, :pre, :hline ].include?(@category)
+      return html if noChilds
 
       @children.each do |el_i|
         html << el_i.to_html

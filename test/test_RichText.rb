@@ -856,6 +856,39 @@ EOT
     assert_equal(ref, out)
   end
 
+  def test_hline_and_link
+    inp = <<EOT
+----
+[[foo bar]]
+EOT
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = <<EOT
+<div><hr>----</hr>
+<p><ref data=\"foo\">[bar]</ref></p>
+
+</div>
+EOT
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+--------------------------------------------------------
+bar
+
+EOT
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = "<div>\n <hr/>\n <p><a href=\"foo.html\">bar</a></p>\n</div>\n"
+    assert_equal(ref, out)
+  end
+
   def newRichText(text)
     begin
       rText = TaskJuggler::RichText.new(text)
