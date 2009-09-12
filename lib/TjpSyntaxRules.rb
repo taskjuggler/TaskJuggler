@@ -595,37 +595,6 @@ EOT
     example('Export')
   end
 
-  def rule_exportableResourceAttribute
-    singlePattern('_all')
-    singlePattern('_none')
-    singlePattern('_vacation')
-    singlePattern('_workinghours')
-  end
-
-  def rule_exportableResourceAttributes
-    listRule('moreExportableResourceAttributes', '!exportableResourceAttribute')
-  end
-
-  def rule_exportableTaskAttribute
-    singlePattern('_all')
-    singlePattern('_booking')
-    singlePattern('_complete')
-    singlePattern('_depends')
-    singlePattern('_flags')
-    singlePattern('_maxend')
-    singlePattern('_maxstart')
-    singlePattern('_minend')
-    singlePattern('_minstart')
-    singlePattern('_none')
-    singlePattern('_note')
-    singlePattern('_priority')
-    singlePattern('_responsible')
-  end
-
-  def rule_exportableTaskAttributes
-    listRule('moreExportableTaskAttributes', '!exportableTaskAttribute')
-  end
-
   def rule_exportHeader
     pattern(%w( _export $STRING ), lambda {
       if @val[1] != '.'
@@ -655,30 +624,54 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _definitions !exportDefinitions ), lambda {
+      @property.set('definitions', @val[1])
+    })
+    doc('definitions', <<"EOT"
+This attributes controls what definitions will be contained in the report. By default, '.tjp' reports have all definitions included and '.tji' reports have no definitions included.
+EOT
+       )
+    allOrNothingListRule('exportDefinitions',
+                         { 'flags' => 'Include flag definitions',
+                           'projecids' => 'Include project IDs',
+                           'tasks' => 'Include task definitions',
+                           'resources' => 'Include resource definitions' })
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
+
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
-      @property.set('resourceAttributes',
-                    @val[1].include?('none') ? [] : @val[1])
+      @property.set('resourceAttributes', @val[1])
     })
     doc('resourceattributes', <<"EOT"
-Define a list of resource attributes that should be included in the report. To
-include all supported attributes just use ''''all''''. When ''''none'''' is
-used, no optional resource attributes will be exported.
+Define a list of resource attributes that should be included in the report.
 EOT
-        )
+       )
+    allOrNothingListRule('exportableResourceAttributes',
+                         { 'vacation' => 'Include vacations',
+                           'workinghours' => 'Include working hours' })
+
     pattern(%w( _taskattributes !exportableTaskAttributes ), lambda {
-      @property.set('taskAttributes', @val[1].include?('none') ? [] : @val[1])
+      @property.set('taskAttributes', @val[1])
     })
     doc('taskattributes', <<"EOT"
-Define a list of task attributes that should be included in the report. To
-include all supported attributes just use ''''all''''. When ''''none'''' is
-used, no optional task attributes will be exported.
+Define a list of task attributes that should be included in the report.
 EOT
-        )
+       )
+    allOrNothingListRule('exportableTaskAttributes',
+                         { 'booking' => 'Include bookings',
+                           'complete' => 'Include completion values',
+                           'depends' => 'Include dependencies',
+                           'flags' => 'Include flags',
+                           'maxend' => 'Include maximum end dates',
+                           'maxstart' => 'Include maximum start dates',
+                           'minend' =>  'Include minimum end dates',
+                           'minstart' => 'Include minimum start dates',
+                           'note' => 'Include notes',
+                           'priority' => 'Include priorities',
+                           'responsible' => 'Include responsible resource' })
   end
 
   def rule_exportBody

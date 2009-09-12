@@ -77,7 +77,7 @@ class TaskJuggler
           if iv.start == iv.end && iv.end == @end
             iv.start = iv.end = iv.start - 1
           end
-          if iv.overlaps?(Interval.new(@start, @end))
+          if iv.overlaps?(Interval.new(a('start'), a('end')))
             delete = false
             break;
           end
@@ -102,7 +102,7 @@ class TaskJuggler
       if task
         # If we have a task we need to check that the resources are assigned
         # to the task in any of the reported scenarios.
-        iv = Interval.new(@start, @end)
+        iv = Interval.new(a('start'), a('end'))
         list.delete_if do |resource|
           delete = true
           a('scenarios').each do |scenarioIdx|

@@ -64,12 +64,13 @@ class TaskJuggler
 
       @file = ''
 
-      if @mainFile
-        generateProjectProperty
-        generateFlagDeclaration
-        generateResourceList
-        generateTaskList
-      end
+      generateProjectProperty if @mainFile
+
+      generateFlagDeclaration if a('definitions').include?('flags')
+      generateProjectIDs if a('definitions').include?('projectids')
+      generateResourceList if a('definitions').include?('resources')
+      generateTaskList if a('definitions').include?('tasks')
+
       generateTaskAttributes unless a('taskAttributes').empty?
       generateResourceAttributes unless a('resourceAttributes').empty?
 
@@ -103,8 +104,7 @@ class TaskJuggler
       # taskAttributes list.
       @file << '  extend ' + tag + "{\n"
         propertySet.eachAttributeDefinition do |ad|
-          next unless ad.userDefined &&
-                      (attributes.include?(ad.id) || attributes.include?('all'))
+          next unless ad.userDefined && attributes.include?(ad.id)
 
           @file << "    #{ad.objClass.tjpId} #{ad.id} \"#{ad.name}\"\n"
         end
@@ -127,6 +127,19 @@ class TaskJuggler
       unless flags.empty?
         @file << "flags #{flags.join(', ')}\n\n"
       end
+    end
+
+    def generateProjectIDs
+      # Compile a list of all projectIDs from the tasks in the taskList.
+      projectIDs = []
+      a('scenarios').each do |scenarioIdx|
+        @taskList.each do |task|
+          pid = task['projectid', scenarioIdx]
+          projectIDs << pid unless projectIDs.include?(pid)
+        end
+      end
+
+      @file << "projectids #{projectIDs.join(', ')}\n\n"
     end
 
     def generateResourceList
@@ -177,8 +190,7 @@ class TaskJuggler
 
       @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
 
-      if a('taskAttributes').include?('depends') ||
-         a('taskAttributes').include?('all')
+      if a('taskAttributes').include?('depends')
         a('scenarios').each do |scenarioIdx|
           generateTaskDependency(scenarioIdx, task, 'depends', indent + 2)
           generateTaskDependency(scenarioIdx, task, 'precedes', indent + 2)
@@ -228,8 +240,7 @@ class TaskJuggler
 
     # Generate 'depends' or 'precedes' attributes for a task.
     def generateTaskDependency(scenarioIdx, task, tag, indent)
-      return unless a('taskAttributes').include?('depends') ||
-        !a('taskAttributes').include?('all')
+      return unless a('taskAttributes').include?('depends')
 
       taskDeps = task[tag, scenarioIdx]
       unless taskDeps.empty?
@@ -259,8 +270,7 @@ class TaskJuggler
           attr = resource.getAttr(id)
           next if (!@supportedResourceAttrs.include?(id) &&
                    ! attrDef.userDefined) ||
-                  (!a('resourceAttributes').include?('all') &&
-                   !a('resourceAttributes').include?(id))
+                   !a('resourceAttributes').include?(id)
 
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
@@ -287,8 +297,7 @@ class TaskJuggler
           attr = task.getAttr(id)
           next if (!@supportedTaskAttrs.include?(id) &&
                    ! attrDef.userDefined) ||
-                  (!a('taskAttributes').include?('all') &&
-                   !a('taskAttributes').include?(id))
+                  !a('taskAttributes').include?(id)
 
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
@@ -312,11 +321,9 @@ class TaskJuggler
     end
 
     def generateAttribute(property, attrId, indent, scenarioIdx = nil)
-      if scenarioIdx.nil?
-        return if property.getAttr(attrId).nil?
-      else
-        return if property[attrId, scenarioIdx].nil?
-      end
+      val = scenarioIdx.nil? ? property.getAttr(attrId) :
+                               property[attrId, scenarioIdx]
+      return if val.nil? || (val.is_a?(Array) && val.empty?)
 
       generateAttributeText(property.getAttr(attrId, scenarioIdx).to_tjp,
                             indent, scenarioIdx)
@@ -336,8 +343,7 @@ class TaskJuggler
     # report.
     def getBookings
       @bookings = {}
-      if a('taskAttributes').include?('booking') ||
-         a('taskAttributes').include?('all')
+      if a('taskAttributes').include?('booking')
         a('scenarios').each do |scenarioIdx|
           @bookings[scenarioIdx] = {}
           @resourceList.each do |resource|

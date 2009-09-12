@@ -109,5 +109,19 @@ class TaskJuggler
 
   end
 
-end
+  # The ListAttributeBase is a specialized form of AttributeBase for a list of
+  # values instead of a single value. It will be used as a base class for all
+  # attributes that hold lists.
+  class ListAttributeBase < AttributeBase
 
+    def initialize(property, type)
+      super
+    end
+
+    def to_s
+      @value.join(', ')
+    end
+
+  end
+
+end

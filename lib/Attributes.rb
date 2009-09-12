@@ -199,6 +199,12 @@ class TaskJuggler
     end
   end
 
+  class DefinitionListAttribute < ListAttributeBase
+    def initialize(property, type)
+      super
+    end
+  end
+
   class DependencyListAttribute < AttributeBase
     def initialize(property, type)
       super

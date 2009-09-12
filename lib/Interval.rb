@@ -45,6 +45,8 @@ class TaskJuggler
         # Two arguments, a start and end date
         @start = args[0]
         @end = args[1]
+        raise "Interval start must be a date" unless @start.is_a?(TjTime)
+        raise "Interval end must be a date" unless @end.is_a?(TjTime)
         if @end < @start
           raise "Invalid interval"
         end

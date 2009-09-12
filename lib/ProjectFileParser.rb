@@ -242,12 +242,53 @@ class TaskJuggler
     # syntax tree definition. The *Rule functions may only be used in _rule
     # functions. And only one function call per _rule function is allowed.
 
+    # This function creates a set of rules to describe a list of keywords.
+    # _name_ is the name of the top-level rule and _items_ can be a Hash or
+    # Array. The array just contains the allowed keywords, the Hash contains
+    # keyword/description pairs. The description is used to describe
+    # the keyword in the manual. The syntax supports two special cases. A '*'
+    # means all items in the list and '-' means the list is empty.
+    def allOrNothingListRule(name, items)
+      newRule(name) {
+        # A '*' means all possible items should be in the list.
+        pattern(%w( _* ), lambda {
+          KeywordArray.new([ '*' ])
+        })
+        descr('A shortcut for all items')
+        # A '-' means the list should be empty.
+        pattern([ '_ - ' ], lambda {
+          KeywordArray.new
+        })
+        descr('No items')
+        # Or the list consists of one or more comma separated keywords.
+        pattern([ "!#{name}_AoN_ruleItems" ], lambda {
+          KeywordArray.new(@val)
+        })
+      }
+      # Create the rule for the comma separated list.
+      newRule("#{name}_AoN_ruleItems") {
+        listRule("more#{name}_AoN_ruleItems", "!#{name}_AoN_ruleItem")
+      }
+      # Create the rule for the keywords with their description.
+      newRule("#{name}_AoN_ruleItem") {
+        if items.is_a?(Array)
+          items.each { |keyword| singlePattern('_' + keyword) }
+        else
+          items.each do |keyword, description|
+            singlePattern('_' + keyword)
+            descr(description) if description
+          end
+        end
+      }
+    end
+
     def listRule(name, listItem)
       pattern([ "#{listItem}", "!#{name}" ], lambda {
         [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
       })
-      newRule(name)
-      commaListRule(listItem)
+      newRule(name) {
+        commaListRule(listItem)
+      }
     end
 
     def commaListRule(listItem)

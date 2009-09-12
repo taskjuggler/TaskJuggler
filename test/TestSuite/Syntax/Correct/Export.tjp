@@ -27,12 +27,14 @@ task t2 "Task 2" {
 # *** EXAMPLE: 2 +
 # Export the project as fully scheduled project.
 export "FullProject.tjp" {
-  taskattributes all
+  definitions *
+  taskattributes *
   hideresource 0
 }
 
 # Export only bookings for 1st week as resource supplements
 export "Week1Bookings.tji" {
+  definitions -
   start 2007-01-01
   end 2007-01-08
   taskattributes booking

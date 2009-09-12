@@ -28,6 +28,7 @@ require 'WorkingHours'
 require 'ProjectFileParser'
 require 'BatchProcessor'
 require 'Journal'
+require 'KeywordArray'
 
 class TaskJuggler
 
@@ -279,6 +280,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'currencyFormat', 'Currency Format', RealFormatAttribute,
               true,  true,    false, nil ],
+        [ 'definitions', 'Definitions', DefinitionListAttribute,
+              true,  false,   false, KeywordArray.new([ '*' ]) ],
         [ 'end',       'End',          DateAttribute,
               true,  true,    false, nil ],
         [ 'epilog',    'Epilog',       RichTextAttribute,
@@ -310,7 +313,7 @@ class TaskJuggler
         [ 'prolog',    'Prolog',       RichTextAttribute,
               false, false,   false, nil],
         [ 'resourceAttributes', 'Resource Attributes', FormatListAttribute,
-              true,  false,   false, [ 'all' ] ],
+              true,  false,   false, KeywordArray.new([ '*' ]) ],
         [ 'resourceRoot',  'resource Root', PropertyAttribute,
               true,  false,   false, nil ],
         [ 'revenueAccount', 'Revenue Account', AccountAttribute,
@@ -332,7 +335,7 @@ class TaskJuggler
         [ 'start',     'Start',        DateAttribute,
               true,  true,    false, nil ],
         [ 'taskAttributes', 'Task Attributes', FormatListAttribute,
-              true,  false,   false, [ 'all' ] ],
+              true,  false,   false, KeywordArray.new([ '*' ]) ],
         [ 'taskRoot',  'Task Root',    PropertyAttribute,
               true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,

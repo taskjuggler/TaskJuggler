@@ -97,7 +97,14 @@ class TaskJuggler
     def newRule(name)
       raise "Fatal Error: Rule #{name} already exists" if @rules.has_key?(name)
 
-      @rules[name] = @cr = TextParser::Rule.new(name)
+      if block_given?
+        saveCr = @cr
+        @rules[name] = @cr = TextParser::Rule.new(name)
+        yield
+        @cr = saveCr
+      else
+        @rules[name] = @cr = TextParser::Rule.new(name)
+      end
     end
 
     # Add a new pattern to the most recently added rule. _tokens_ is an array of
