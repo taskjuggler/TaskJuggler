@@ -1,0 +1,23 @@
+project resourceprefix "Resource Prefix Example" "1.0" 2009-09-13 +1m
+
+resource team "Team" {
+  resource foo "Foo"
+}
+
+include "ResourcePrefix.tji" {
+  resourceprefix team
+}
+
+supplement resource bar {
+  workinghours mon-fri 8:00-15:00
+  workinghours sat, sun off
+}
+  
+task t "Task" {
+  effort 10d
+  allocate foo, bar
+}
+
+resourcereport rp "ResourcePrefix" {
+  formats html
+}
