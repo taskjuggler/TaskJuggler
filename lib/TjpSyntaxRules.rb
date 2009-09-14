@@ -51,7 +51,7 @@ EOT
   def rule_accountHeader
     pattern(%w( _account $ID $STRING ), lambda {
       if @property.nil? && !@accountprefix.empty?
-        @property = @project.task(@accountprefix)
+        @property = @project.accout(@accountprefix)
       end
       if @project.account(@val[1])
         error('account_exists', "Account #{@val[1]} has already been defined.")
@@ -2676,7 +2676,7 @@ EOT
   def rule_resourceHeader
     pattern(%w( _resource $ID $STRING ), lambda {
       if @property.nil? && !@resourceprefix.empty?
-        @property = @project.task(@resourceprefix)
+        @property = @project.resource(@resourceprefix)
       end
       if @project.resource(@val[1])
         error('resource_exists', "Resource #{@val[1]} has already been defined.")
