@@ -921,7 +921,7 @@ EOT
     )
     arg(1, 'report ID', 'The absolute ID of an already defined report.')
 
-    pattern(%w( _resourceprefix !taskId ), lambda {
+    pattern(%w( _resourceprefix !resourceId ), lambda {
       @resourceprefix = @val[1].fullId
     })
     doc('resourceprefix', <<'EOT'
