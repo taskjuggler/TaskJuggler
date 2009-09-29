@@ -2234,6 +2234,9 @@ revenue account has been set for the report using the [[balance]] attribute.
 EOT
          )
 
+    singlePattern('_scenario')
+    descr('The name of the scenario')
+
     singlePattern('_seqno')
     descr('The index of the item based on the declaration order')
 

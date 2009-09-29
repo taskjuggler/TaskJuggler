@@ -37,6 +37,7 @@ class TaskJuggler
       'no'          => [ 'No.',        false,  :right, true,   false ],
       'rate'        => [ 'Rate',       true,   :right, true,   true ],
       'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
+      'scenario'    => [ 'Scenario',   false,  :left,  true,   true ],
       'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
     }
     @@propertiesByType = {
@@ -674,6 +675,8 @@ class TaskJuggler
         cell.text = line.no.to_s
       when 'wbs'
         cell.indent = 2 if line.scopeLine
+      when 'scenario'
+        cell.text = @project.scenario(scenarioIdx).name
       end
 
       if columnDef.cellText
