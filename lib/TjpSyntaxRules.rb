@@ -2200,7 +2200,7 @@ EOT
     descr('A group of columns with one column for each month')
 
     singlePattern('_no')
-    descr('The object line number in the report')
+    descr('The object line number in the report (Cannot be used for sorting!)')
 
     singlePattern('_name')
     descr('The name or description of the item')

@@ -1,0 +1,37 @@
+project prj "My Project" "1.0" 2009-01-01 - 2009-01-31
+
+include "checks.tji"
+
+task C0 "C0" {
+  task T0 "T0" {
+    duration 6d
+    ${FixTask "2009-01-01" "2009-01-07"}
+  }
+  ${FixTask "2009-01-01" "2009-01-07"}
+}
+
+task T1 "T1" {
+  depends C0
+  duration 1d
+  ${FixTask "2009-01-07" "2009-01-08"}
+}
+
+task M1 "M1" {
+  milestone
+  start 2009-01-10
+  depends T1
+  depends C0
+  ${FixMS "2009-01-10"}
+}
+
+task M2 "M2" {
+  milestone
+  depends C0
+  ${FixMS "2009-01-07"}
+}
+
+taskreport tr "Container-2" {
+  formats html
+  columns name,start,end,chart { scale day }
+  sorttasks tree, seqno.up
+}

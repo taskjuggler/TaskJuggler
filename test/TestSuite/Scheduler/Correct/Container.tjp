@@ -1,14 +1,6 @@
 project prj "Project" "1.0" 2009-01-01 +1m
 
-macro Fixstart [
-  minstart ${1}
-  maxstart ${1}
-]
-
-macro Fixend [
-  minend ${1}
-  maxend ${1}
-]
+include "checks.tji"
 
 task S "start" {
   milestone
@@ -21,23 +13,20 @@ task E "end" {
 task C0 "C0" {
   depends S
   precedes E
-  ${Fixstart "2009-01-10-0:00"}
-  ${Fixend "2009-01-20-0:00"}
+  ${FixTask "2009-01-10-0:00" "2009-01-20-0:00"}
   task C1 "C1" {
-    ${Fixend "2009-01-16-18:00"}
+    ${FixEnd "2009-01-16-18:00"}
     task T1 "T1" {
-      ${Fixstart "2009-01-10-0:00"}
-      ${Fixend "2009-01-16-18:00"}
+      ${FixTask "2009-01-10-0:00" "2009-01-16-18:00"}
       start 2009-1-10
       length 1w
     }
   }
   task C2 "C2" {
-    ${Fixstart "2009-01-13-9:00"}
+    ${FixStart "2009-01-13-9:00"}
     scheduling alap
     task T2 "T2" {
-      ${Fixstart "2009-01-13-9:00"}
-      ${Fixend "2009-01-20-0:00"}
+      ${FixTask "2009-01-13-9:00" "2009-01-20-0:00"}
       end 2009-1-20
       length 1w
     }

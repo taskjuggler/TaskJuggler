@@ -1,0 +1,4 @@
+macro FixStart [ minstart ${1} maxstart ${1} ]
+macro FixEnd [ minend ${1} maxend ${1} ]
+macro FixMS [ ${FixStart "${1}"} ${FixEnd "${1}"}]
+macro FixTask [ ${FixStart "${1}"} ${FixEnd "${2}"}]

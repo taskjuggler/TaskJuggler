@@ -1,9 +1,6 @@
 project test "Test" "1.0" 2007-08-29 +6m
 
-macro Fixend [
-  minend ${1}
-  maxend ${1}
-]
+include "checks.tji"
 
 resource a "A"
 resource b "B"
@@ -20,25 +17,25 @@ task tasks "Tasks" {
     effort 40h
     allocate a
     limits { dailymax 4h }
-    ${Fixend "2007-09-11-14:00"}
+    ${FixEnd "2007-09-11-14:00"}
   }
   task t2 "30d with 3d weekly limit" {
     effort 30d
     allocate b
     limits { weeklymax 3d }
-    ${Fixend "2007-10-31-18:00"}
+    ${FixEnd "2007-10-31-18:00"}
   }
   task t3 "45d with 15d monthly limit" {
     effort 45d
     allocate c
     limits { monthlymax 15d }
-    ${Fixend "2007-11-15-18:00"}
+    ${FixEnd "2007-11-15-18:00"}
   }
   task t4 "7h/day 4d/week 15d/months" {
     effort 50d
     allocate d
     limits { dailymax 7h weeklymax 4d monthlymax 15d }
-    ${Fixend "2007-12-04-15:00"}
+    ${FixEnd "2007-12-04-15:00"}
   }
 }
 
@@ -48,14 +45,14 @@ task nested "Nested Tasks (20h/week limit)" {
   task a "Task A" {
     allocate e
     effort 30d
-    ${Fixend "2008-02-06-14:00"}
+    ${FixEnd "2008-02-06-14:00"}
   }
   task b "Task B (7h/day limit)" {
     effort 30d
     allocate f
     priority 600
     limits { dailymax 7h }
-    ${Fixend "2007-11-14-16:00"}
+    ${FixEnd "2007-11-14-16:00"}
   }
 }
 
@@ -64,7 +61,7 @@ task interval "Interval Limit" {
   effort 20d
   allocate g
   limits { weeklymax 8h { period 2007-09-05 +8d }}
-  ${Fixend "2007-10-01-18:00"}
+  ${FixEnd "2007-10-01-18:00"}
 }
 
 task resource "Resource Limit" {
@@ -72,7 +69,7 @@ task resource "Resource Limit" {
   effort 10d
   allocate h
   limits { weeklymax 16h { resources h }}
-  ${Fixend "2007-09-25-18:00"}
+  ${FixEnd "2007-09-25-18:00"}
 }
 
 taskreport limits "Limits" {

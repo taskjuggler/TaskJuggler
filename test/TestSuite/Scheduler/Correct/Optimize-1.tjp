@@ -2,21 +2,21 @@ project test "Test" "1.0" 2000-01-01-0:00 +1m {
 	timezone "UTC"
 }
 
-macro Fixend [ minend ${1} maxend ${1} ]
+include "checks.tji"
 
 resource tux1 "Tux1"
 resource tux2 "Tux2"
 
 task t1 "Task1" {
   start 2000-01-01
-	${Fixend "2000-01-04-18:00"}
+	${FixEnd "2000-01-04-18:00"}
 	effort 2d
 	allocate tux1 { alternative tux2 persistent }
 }
 
 task t2 "Task2" {
 	start 2000-01-01
-	${Fixend "2000-01-06-18:00"}
+	${FixEnd "2000-01-06-18:00"}
 	effort 4d
 	allocate tux1
 }

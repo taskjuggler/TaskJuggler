@@ -1,7 +1,6 @@
 project test "Test" "1.0" 2009-02-12 +4m
 
-macro FixStart [ minstart ${1} maxstart ${1} ]
-macro FixEnd [ minend ${1} maxend ${1} ]
+include "checks.tji"
 
 task msStart "Start Milestone" {
   start ${projectstart}

@@ -1,6 +1,6 @@
 project test "Test" "1.0" 2007-08-22 +2m
 
-macro Fixend [ minend ${1} maxend ${1} ]
+include "checks.tji"
 
 shift odd_days "Odd Days" {
   workinghours mon, wed, fri 10:00 - 16:00
@@ -58,32 +58,32 @@ task prj "Project" {
   task mdf "MDF Task" {
     effort 4w
     allocate mdf
-    ${Fixend "2007-10-01-16:00"}
+    ${FixEnd "2007-10-01-16:00"}
   }
   
   task ttss "TTSS Task" {
     effort 5w
     allocate ttss
-    ${Fixend "2007-10-05-11:00"}
+    ${FixEnd "2007-10-05-11:00"}
   }
 
   task tt "TT Task" {
     effort 4w
     allocate tt
-    ${Fixend "2007-10-03-11:00"}
+    ${FixEnd "2007-10-03-11:00"}
   }
 
   task default "Default Task" {
     effort 7w
     allocate default
-    ${Fixend "2007-10-09-18:00"}
+    ${FixEnd "2007-10-09-18:00"}
   }
 
   task vac_test "Vacation on Thursday" {
     start 2007-09-01
     effort 4d
     allocate wed_vac
-    ${Fixend "2007-09-07-18:00"}
+    ${FixEnd "2007-09-07-18:00"}
   }
 
   task work1 "Task with shift morning" {
@@ -91,7 +91,7 @@ task prj "Project" {
     allocate work1
     effort 3w
     shifts morning 2007-09-01 +4w
-    ${Fixend "2007-10-02-18:00"}
+    ${FixEnd "2007-10-02-18:00"}
   }
     
 }

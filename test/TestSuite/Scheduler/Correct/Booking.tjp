@@ -5,8 +5,7 @@ project test "Test" "1.0" 2007-04-22 +5w {
 	}
 }
 
-macro FixStart [ minstart ${1} maxstart ${1} ]
-macro FixEnd [ minend ${1} maxend ${1} ]
+include "checks.tji"
 
 resource tux1 "Tux 1"
 resource tux2 "Tux 2" {

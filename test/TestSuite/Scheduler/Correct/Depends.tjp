@@ -1,47 +1,41 @@
 project test "Test" "1.0" 2007-04-02 +3m
 
-macro Fixstart [ minstart ${1} maxstart ${1} ]
-macro Fixend [ minend ${1} maxend ${1} ]
+include "checks.tji"
 
 task t1 "T1" {
 	start ${projectstart}
 	duration 1w
-	${Fixend "2007-04-09"}
+	${FixEnd "2007-04-09"}
 }
 
 task t2 "T2" {
 	depends t1
 	duration 1w
-	${Fixstart "2007-04-09"}
-	${Fixend "2007-04-16"}
+	${FixTask "2007-04-09" "2007-04-16"}
 }
 
 task t3 "T3" {
 	depends t2 { gapduration 1w }
 	duration 1w
-	${Fixstart "2007-04-23"}
-	${Fixend "2007-04-30"}
+	${FixTask "2007-04-23" "2007-04-30"}
 }
 
 task t4 "T4" {
 	depends t3 { onend gaplength 1w }
 	duration 1w
-	${Fixstart "2007-05-04-18:00"}
-  ${Fixend "2007-05-11-18:00"}
+	${FixTask "2007-05-04-18:00" "2007-05-11-18:00"}
 }
 
 task t5 "T5" {
 	depends t4 { onstart }
 	duration 1w
-	${Fixstart "2007-05-04-18:00"}
-  ${Fixend "2007-05-11-18:00"}
+	${FixTask "2007-05-04-18:00" "2007-05-11-18:00"}
 }
 
 task t6 "T6" {
 	depends t4 { onstart gaplength 1w }
 	duration 1w
-	${Fixstart "2007-05-11-18:00"}
-  ${Fixend "2007-05-18-18:00"}
+	${FixTask "2007-05-11-18:00" "2007-05-18-18:00"}
 }
 
 taskreport depends "Depends" {
