@@ -62,60 +62,9 @@ class TaskJuggler
         return tok
       end
 
-      # Some characters have only a special meaning at the start of the line.
-      # When the last token pushed the cursor into a new line, this flag is set
-      # to true.
       if @beginOfLine && @wikiEnabled
-        # Reset the flag again.
-        @beginOfLine = false
-
-        # We already know that the last newline was a real linebreak. Further
-        # newlines can safely be ignored.
-        readSequence("\n")
-
-        case (c = nextChar)
-        when '='
-          # Headings start with 2 or more = and must be followed by a space.
-          level = readSequenceMax('=', 4)
-          if level == 1
-            # 1 = does not mean anything. Push it back and process it as normal
-            # text further down.
-            returnChar
-          else
-            # Between the = characters and the title text must be exactly one
-            # space.
-            return [ "TITLE#{level - 1}", '=' * level ] if nextChar == ' '
-            # If that's missing, The = are treated as normal text further down.
-            returnChar(level + 1)
-          end
-        when '-'
-          # Horizontal ruler. Must have exactly 4 -.
-          level = readSequenceMax('-', 4)
-          return [ "HLINE", '-' * 4 ] if level == 4
-          returnChar(level)
-        when '*'
-          # Bullet lists start with one to three * characters.
-          level = readSequenceMax('*')
-          # Between the * characters and the bullet text must be exactly one
-          # space.
-          return [ "BULLET#{level}", '*' * level ] if nextChar == ' '
-          # If that's missing, The # are treated as normal text further down.
-          returnChar(level + 1)
-        when '#'
-          # Numbered list start with one to three # characters.
-          level = readSequenceMax('#')
-          # Between the # characters and the bullet text must be exactly one
-          # space.
-          return [ "NUMBER#{level}", '#' * level ] if nextChar == ' '
-          # If that's missing, The # are treated as normal text further down.
-          returnChar(level + 1)
-        when ' '
-          # Lines that start with a space are treated as verbatim text.
-          return [ "PRE", readCode ] if (c = peek) && c != "\n"
-        else
-          # If the character is not a known control character we push it back
-          # and treat it as normal text further down.
-          returnChar
+        if (res = nextTokenWikiBOL)
+          return res
         end
       end
 
@@ -262,6 +211,66 @@ class TaskJuggler
     end
 
   private
+
+    def nextTokenWikiBOL
+      # Some characters have only a special meaning at the start of the line.
+      # When the last token pushed the cursor into a new line, this flag is set
+      # to true.
+
+      # Reset the flag again.
+      @beginOfLine = false
+
+      # We already know that the last newline was a real linebreak. Further
+      # newlines can safely be ignored.
+      readSequence("\n")
+
+      case (c = nextChar)
+      when '='
+        # Headings start with 2 or more = and must be followed by a space.
+        level = readSequenceMax('=', 4)
+        if level == 1
+          # 1 = does not mean anything. Push it back and process it as normal
+          # text further down.
+          returnChar
+        else
+          # Between the = characters and the title text must be exactly one
+          # space.
+          return [ "TITLE#{level - 1}", '=' * level ] if nextChar == ' '
+          # If that's missing, The = are treated as normal text further down.
+          returnChar(level + 1)
+        end
+      when '-'
+        # Horizontal ruler. Must have exactly 4 -.
+        level = readSequenceMax('-', 4)
+        return [ "HLINE", '-' * 4 ] if level == 4
+        returnChar(level)
+      when '*'
+        # Bullet lists start with one to three * characters.
+        level = readSequenceMax('*')
+        # Between the * characters and the bullet text must be exactly one
+        # space.
+        return [ "BULLET#{level}", '*' * level ] if nextChar == ' '
+        # If that's missing, The # are treated as normal text further down.
+        returnChar(level + 1)
+      when '#'
+        # Numbered list start with one to three # characters.
+        level = readSequenceMax('#')
+        # Between the # characters and the bullet text must be exactly one
+        # space.
+        return [ "NUMBER#{level}", '#' * level ] if nextChar == ' '
+        # If that's missing, The # are treated as normal text further down.
+        returnChar(level + 1)
+      when ' '
+        # Lines that start with a space are treated as verbatim text.
+        return [ "PRE", readCode ] if (c = peek) && c != "\n"
+      else
+        # If the character is not a known control character we push it back
+        # and treat it as normal text further down.
+        returnChar
+      end
+
+      return nil
+    end
 
     # Deliver the next character. Keep track of the cursor position. In case we
     # reach the end, nil is returned.
