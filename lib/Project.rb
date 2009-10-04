@@ -56,10 +56,10 @@ class TaskJuggler
     def initialize(id, name, version, messageHandler)
       @messageHandler = messageHandler
       @attributes = {
-        'projectid' => id,
+        'projectid' => id || "prj",
         'projectids' => [ id ],
         'name' => name,
-        'version' => version,
+        'version' => version || "1.0",
         'costAccount' => nil,
         'copyright' => nil,
         'currency' => "EUR",

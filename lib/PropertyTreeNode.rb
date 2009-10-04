@@ -40,6 +40,11 @@ class TaskJuggler
     # specified by a hierachical _id_ (e. g. 'father.son').
     def initialize(propertySet, id, name, parent)
       @propertySet = propertySet
+      # If _id_ is still nil, we generate a unique id.
+      unless id
+        id = '_' + propertySet.class.to_s + '_' + (propertySet.items + 1).to_s
+        id = parent.id + '.' + id if !@propertySet.flatNamespace && parent
+      end
       if !@propertySet.flatNamespace && id.include?('.')
         parentId = id[0..(id.rindex('.') - 1)]
         # Set parent to the parent property if it's still nil.

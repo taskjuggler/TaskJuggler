@@ -28,6 +28,8 @@ be used to track turnover. When the cost of a task is split over multiple
 accounts they all must have the same top-level group account. Top-level
 accounts can be used for profit/loss calculations. The sub-account structure
 of a top-level account should be organized accordingly.
+
+Accounts have a global name space. All IDs must be unique within the accounts of the project.
 EOT
        )
     example('Account', '1')
@@ -49,11 +51,11 @@ EOT
   end
 
   def rule_accountHeader
-    pattern(%w( _account $ID $STRING ), lambda {
+    pattern(%w( _account !optionalID $STRING ), lambda {
       if @property.nil? && !@accountprefix.empty?
         @property = @project.accout(@accountprefix)
       end
-      if @project.account(@val[1])
+      if @val[1] && @project.account(@val[1])
         error('account_exists', "Account #{@val[1]} has already been defined.")
       end
       @property = Account.new(@project, @val[1], @val[2], @property)
@@ -61,11 +63,6 @@ EOT
       @property.inheritAttributes
       @scenarioIdx = 0
     })
-    arg(1, 'id', <<'EOT'
-The ID of the account. Accounts have a global name space. The ID must be
-unique within the whole project.
-EOT
-       )
     arg(2, 'name', 'A name or short description of the account')
   end
 
@@ -1593,11 +1590,37 @@ EOT
     descr('The \'smaller-or-equal\' operator')
   end
 
+  def rule_optionalID
+    optional
+    pattern(%w( $ID ), lambda {
+      @val[0]
+    })
+    arg(0, 'id', <<"EOT"
+An optional ID. If you ever want to reference this property, you must specify
+your own unique ID. If no ID is specified one will be automatically generated.
+These IDs may become visible in reports, but may change at any time. You may
+never rely on automatically generated IDs.
+EOT
+       )
+  end
+
   def rule_optionalPercent
     optional
     pattern(%w( !number _% ), lambda {
       @val[0] / 100.0
     })
+  end
+
+  def rule_optionalVersion
+    optional
+    pattern(%w( $STRING ), lambda {
+      @val[0]
+    })
+    arg(0, 'version', <<"EOT"
+An optional version ID. This can be something simple as "4.2" or an ID tag of
+a revision control system. If not specified, it defaults to "1.0".
+EOT
+       )
   end
 
   def rule_outputFormat
@@ -1811,7 +1834,7 @@ EOT
   end
 
   def rule_projectHeader
-    pattern(%w( _project $ID $STRING $STRING !interval ), lambda {
+    pattern(%w( _project !optionalID $STRING !optionalVersion !interval ), lambda {
       @project = Project.new(@val[1], @val[2], @val[3],
                                           @messageHandler)
       @project['start'] = @val[4].start
@@ -1821,9 +1844,7 @@ EOT
       @reportCounter = 0
       @project
     })
-    arg(1, 'id', 'The ID of the project')
     arg(2, 'name', 'The name of the project')
-    arg(3, 'version', 'The version of the project plan')
   end
 
   def rule_projectIDs
@@ -2099,6 +2120,9 @@ The content, the output format and the appearance of a report can be adjusted
 with report attributes. Reports can be nested to create structured document
 trees. As with other properties, the resource attributes can be inherited from
 the enclosing report or the project.
+
+Reports have a local name space. All IDs must be unique within the reports
+that belong to the same enclosing report.
 EOT
        )
   end
@@ -2517,13 +2541,15 @@ EOT
   end
 
   def rule_reportHeader
-    pattern(%w( !reportType $ID $STRING ), lambda {
+    pattern(%w( !reportType !optionalID $STRING ), lambda {
       if @property.nil? && !@reportprefix.empty?
         @property = @project.report(@reportprefix)
       end
-      id = (@property ? @property.fullId + '.' : '') + @val[1]
-      if @project.report(id)
-        error('report_exists', "report #{id} has already been defined.")
+      if @val[1]
+        id = (@property ? @property.fullId + '.' : '') + @val[1]
+        if @project.report(id)
+          error('report_exists', "report #{id} has already been defined.")
+        end
       end
       @property = Report.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
@@ -2570,10 +2596,6 @@ EOT
         raise "Unsupported report type #{@val[0]}"
       end
     })
-    arg(1, 'id', <<'EOT'
-The ID of the report.
-EOT
-       )
     arg(2, 'name', <<'EOT'
 The name of the report. This will be the base name for generated output files.
 The suffix will depend on the specified [[formats]].It will also be used in
@@ -2610,6 +2632,9 @@ EOT
 Tasks that have an effort specification need to have at least one resource
 assigned to do the work. Use this property to define resources or groups of
 resources.
+
+Resources have a global name space. All IDs must be unique within the resources
+of the project.
 EOT
        )
   end
@@ -2677,11 +2702,11 @@ EOT
   end
 
   def rule_resourceHeader
-    pattern(%w( _resource $ID $STRING ), lambda {
+    pattern(%w( _resource !optionalID $STRING ), lambda {
       if @property.nil? && !@resourceprefix.empty?
         @property = @project.resource(@resourceprefix)
       end
-      if @project.resource(@val[1])
+      if @val[1] && @project.resource(@val[1])
         error('resource_exists', "Resource #{@val[1]} has already been defined.")
       end
       @property = Resource.new(@project, @val[1], @val[2], @property)
@@ -2689,11 +2714,11 @@ EOT
       @property.inheritAttributes
       @scenarioIdx = 0
     })
-    arg(1, 'id', <<'EOT'
-The ID of the resource. Resources have a global name space. The ID must be
-unique within the whole project.
-EOT
-       )
+#    arg(1, 'id', <<'EOT'
+#The ID of the resource. Resources have a global name space. The ID must be
+#unique within the whole project.
+#EOT
+#       )
     arg(2, 'name', 'The name of the resource')
   end
 
@@ -2932,6 +2957,9 @@ EOT
 A shift combines several workhours related settings in a reusable entity.
 Besides the weekly working hours it can also hold information such as
 vacations and a time zone.
+
+Shifts have a global name space. All IDs must be unique within the shifts of
+the project.
 EOT
        )
   end
@@ -2982,8 +3010,8 @@ EOT
   end
 
   def rule_shiftHeader
-    pattern(%w( _shift $ID $STRING ), lambda {
-      if @project.shift(@val[1])
+    pattern(%w( _shift !optionalID $STRING ), lambda {
+      if @val[1] && @project.shift(@val[1])
         error('shift_exists', "Shift #{@val[1]} has already been defined.")
       end
       @property = Shift.new(@project, @val[1], @val[2], @property)
@@ -2991,7 +3019,6 @@ EOT
       @property.inheritAttributes
       @scenarioIdx = 0
     })
-    arg(1, 'id', 'The ID of the shift')
     arg(2, 'name', 'The name of the shift')
   end
 
@@ -3154,6 +3181,9 @@ various steps and phases of the project. Depending on the attributes of that
 task, a task can be a container task, a milestone or a regular leaf task. The
 latter may have resources assigned. By specifying dependencies the user can
 force a certain sequence of tasks.
+
+Tasks have a local name space. All IDs must be unique within the tasks
+that belong to the same enclosing task.
 EOT
        )
   end
@@ -3319,20 +3349,21 @@ EOT
   end
 
   def rule_taskHeader
-    pattern(%w( _task $ID $STRING ), lambda {
+    pattern(%w( _task !optionalID $STRING ), lambda {
       if @property.nil? && !@taskprefix.empty?
         @property = @project.task(@taskprefix)
       end
-      id = (@property ? @property.fullId + '.' : '') + @val[1]
-      if @project.task(id)
-        error('task_exists', "Task #{id} has already been defined.")
+      if @val[1]
+        id = (@property ? @property.fullId + '.' : '') + @val[1]
+        if @project.task(id)
+          error('task_exists', "Task #{id} has already been defined.")
+        end
       end
       @property = Task.new(@project, @val[1], @val[2], @property)
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
       @scenarioIdx = 0
     })
-    arg(1, 'id', 'The ID of the task')
     arg(2, 'name', 'The name of the task')
   end
 

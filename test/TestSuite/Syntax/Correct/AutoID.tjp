@@ -1,0 +1,21 @@
+project "Simple Project" 2009-10-04 +1m
+
+account "Foo" {
+  account "Bar"
+}
+
+shift "Foo" {
+  shift "bar"
+}
+
+resource "Foo" {
+  resource "Bar"
+}
+
+task "Foo" {
+  task "Bar"
+}
+
+taskreport "Foo" {
+  taskreport "Bar"
+}
