@@ -15,25 +15,27 @@ here].
 === Starting the project ===
 
 To start a TaskJuggler project file you need to use the [[project]]
-property. It tells TaskJuggler the default project ID, a short name
-for your project, a version number and a start and end date. The start
-and end dates don't need to be exact, but must fit all tasks of the
-project.  It is the time interval the TaskJuggler scheduler will use
-to fit the tasks in. So, make it large enough for all your tasks to
-fit in. But don't make it too large, because this will result in
-longer scheduling times and higher memory consumption.
+property. It tells TaskJuggler the name of your project and a start
+and end date. The start and end dates don't need to be exact, but must
+fit all tasks of the project.  It is the time interval the TaskJuggler
+scheduler will use to fit the tasks in. So, make it large enough for
+all your tasks to fit in. But don't make it too large, because this
+will result in longer scheduling times and higher memory consumption.
 
 [[example:tutorial header1]]
 
-All TaskJuggler properties have a certain number of fixed attributes
-and a set of optional attributes. Optional attributes are always
-enclosed in curly braces. If no optional attributes are specified,
-the braces can be omitted as well. In this example we will introduce
-a number of there attributes that may or may not matter to you. If
-you don't see an immediate need for a specific attribute, feel free
-to ignore it for now. You can always come back to them later. A full
-list of the supported attributes can be found in the ''attributes''
-section of the [[project]] property documentation.
+All TaskJuggler properties have two required attributes, a unique ID
+and a name, and a set of optional attributes. The name must always be
+specified. The ID can be omitted if you never have to reference the
+property from another context. If you omit the ID, TaskJuggler will
+automatically generate a unique ID. The other optional attributes are
+always enclosed in curly braces. If no optional attributes are
+specified, the braces can be omitted as well. In this example we will
+introduce a number of there attributes that may or may not matter to
+you. If you don't see an immediate need for a specific attribute, feel
+free to ignore it for now. You can always come back to them later. A
+full list of the supported attributes can be found in the
+''attributes'' section of the [[project]] property documentation.
 
 Attributes always start with a keyword that is unique in the context.
 A context is delimited by a set of curly braces that enclose optional

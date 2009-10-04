@@ -5,7 +5,7 @@
  * TaskJuggler. Please see the TaskJuggler manual for a more detailed
  * description of the various syntax elements.
  */
-project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
+project "Accounting Software"  2002-01-16 +4m {
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
   # Use US format for numbers

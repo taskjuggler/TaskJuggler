@@ -7,7 +7,7 @@
  */
 # *** EXAMPLE: header1 +
 # *** EXAMPLE: header2 +
-project acso "Accounting Software" "1.0" 2002-01-16 - 2002-04-28 {
+project "Accounting Software"  2002-01-16 +4m {
 # *** EXAMPLE: header1 -
   # Hide the clock time. Only show the date.
 # *** EXAMPLE: formats +
