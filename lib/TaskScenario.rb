@@ -273,8 +273,9 @@ class TaskJuggler
         #   -  <-- |
         #   -  <-- -D
         #   -  <-- |D
-        if durationSpecs == 0 && ((a('forward') && a('end').nil?) ||
-                                  (!a('forward') && a('start').nil?))
+        if durationSpecs == 0 &&
+           ((a('forward') && a('end').nil? && !hasDependencies(true)) ||
+            (!a('forward') && a('start').nil? && !hasDependencies(false)))
           error('task_underspecified',
                 "Task #{@property.fullId} has too few specifations to be " +
                 "scheduled.")
@@ -383,7 +384,6 @@ class TaskJuggler
                "The start time (#{a('start')}) of task #{@property.fullId} " +
                "is too late. Must be before #{a('maxstart')}.")
       end
-
       # Check if the end time is ok
       error('task_end_undef',
             "Task #{@property.fullId} has undefined end time") if a('end').nil?
@@ -403,6 +403,13 @@ class TaskJuggler
                 "The end time (#{a('end')}) of task #{@property.fullId} " +
                 "is too late. Must be before #{a('maxend')}.")
       end
+      # Make sure the start is before the end
+      if a('start') > a('end')
+        error('start_after_end',
+              "The start time (#{a('start')}) of task #{@property.fullId} " +
+              "is after the end time (#{a('end')}).")
+      end
+
 
       # Check that tasks fits into parent task.
       unless (parent = @property.parent).nil? ||
@@ -927,22 +934,18 @@ class TaskJuggler
       a('length') > 0 || a('duration') > 0 || a('effort') > 0 || a('milestone')
     end
 
-    # This function checks if the task has a dependency on another task or
-    # fixed date for a certain end. If +atEnd+ is true, the task end will be
-    # checked.  Otherwise the start.
-    def hasDependencies(atEnd)
-      thisEnd = atEnd ? 'end' : 'start'
-      !a(thisEnd + 'succs').empty? || !a(thisEnd + 'preds').empty?
-    end
-
+    # Find the earliest possible start date for the task. This date must be
+    # after the end date of all the task that this task depends on.
+    # Dependencies may also require a minimum gap between the tasks.
     def earliestStart
-      # puts "Finding earliest start date for #{@property.fullId}"
+      # This is the date that we will return.
       startDate = nil
       a('depends').each do |dependency|
         potentialStartDate =
           dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         return nil if potentialStartDate.nil?
 
+        # Determine the end date of a 'length' gap.
         dateAfterLengthGap = potentialStartDate
         gapLength = dependency.gapLength
         while gapLength > 0 && dateAfterLengthGap < @project['end'] do
@@ -952,6 +955,7 @@ class TaskJuggler
           dateAfterLengthGap += @project['scheduleGranularity']
         end
 
+        # Determine the end date of a 'duration' gap.
         if dateAfterLengthGap > potentialStartDate + dependency.gapDuration
           potentialStartDate = dateAfterLengthGap
         else
@@ -968,21 +972,37 @@ class TaskJuggler
       while (task = task.parent) do
         if task['start', @scenarioIdx] &&
            (startDate.nil? || task['start', @scenarioIdx] > startDate)
-          return task['start', @scenarioIdx]
+          startDate = task['start', @scenarioIdx]
+          break
         end
+      end
+
+      # When the computed start date is after the already determined end date
+      # of the task, the start dependencies were too weak. This happens when
+      # task B depends on A and they are specified this way:
+      # task A: | --> D-
+      # task B: -D <-- |
+      if a('end') && startDate > a('end')
+        error('weak_start_dep',
+              "Task #{@property.fullId} has a too weak start dependencies " +
+              "to be scheduled properly.")
       end
 
       startDate
     end
 
+    # Find the latest possible end date for the task. This date must be
+    # before the start date of all the task that this task precedes.
+    # Dependencies may also require a minimum gap between the tasks.
     def latestEnd
-      # puts "Finding latest end date for #{@property.fullId}"
+      # This is the date that we will return.
       endDate = nil
       a('precedes').each do |dependency|
         potentialEndDate =
           dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         return nil if potentialEndDate.nil?
 
+        # Determine the end date of a 'length' gap.
         dateBeforeLengthGap = potentialEndDate
         gapLength = dependency.gapLength
         while gapLength > 0 && dateBeforeLengthGap > @project['start'] do
@@ -992,6 +1012,8 @@ class TaskJuggler
           end
           dateBeforeLengthGap -= @project['scheduleGranularity']
         end
+
+        # Determine the end date of a 'duration' gap.
         if dateBeforeLengthGap < potentialEndDate - dependency.gapDuration
           potentialEndDate = dateBeforeLengthGap
         else
@@ -1007,8 +1029,20 @@ class TaskJuggler
       while (task = task.parent) do
         if task['end', @scenarioIdx] &&
            (endDate.nil? || task['end', @scenarioIdx] < endDate)
-          return task['end', @scenarioIdx]
+          endDate = task['end', @scenarioIdx]
+          break
         end
+      end
+
+      # When the computed end date is before the already determined start date
+      # of the task, the end dependencies were too weak. This happens when
+      # task A precedes B and they are specified this way:
+      # task A: | --> D-
+      # task B: -D <-- |
+      if a('start') && endDate > a('start')
+        error('weak_end_dep',
+              "Task #{@property.fullId} has a too weak end dependencies " +
+              "to be scheduled properly.")
       end
 
       endDate
@@ -1022,13 +1056,6 @@ class TaskJuggler
       else
         @property['booking', @scenarioIdx] << booking
       end
-    end
-
-    def markAsRunaway
-      warning('runaway', "Task #{@property.fullId} does not fit into " +
-                         "project time frame")
-
-      @isRunAway = true
     end
 
     def query_complete(query)
@@ -1401,6 +1428,21 @@ class TaskJuggler
           end
         end
       end
+    end
+
+    # This function checks if the task has a dependency on another task or
+    # fixed date for a certain end. If +atEnd+ is true, the task end will be
+    # checked.  Otherwise the start.
+    def hasDependencies(atEnd)
+      thisEnd = atEnd ? 'end' : 'start'
+      !a(thisEnd + 'succs').empty? || !a(thisEnd + 'preds').empty?
+    end
+
+    def markAsRunaway
+      warning('runaway', "Task #{@property.fullId} does not fit into " +
+                         "project time frame")
+
+      @isRunAway = true
     end
 
     # This function determines if a task is really a milestones and marks them

@@ -1,0 +1,16 @@
+project prj "Project" "1.0" 2009-10-04 +6m
+
+task T1 "T1" {
+  end 2009-12-31
+  duration 2w
+}
+# MARK: error 8 weak_end_dep
+task T2 "T2" {
+  precedes !T1
+  start 2009-12-01
+}
+task T3 "T3" {
+  precedes !T2
+  duration 1w
+}
+
