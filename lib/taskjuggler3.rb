@@ -44,6 +44,10 @@ def processArguments(argv)
           'Generate reports despite scheduling errors') do
     @forceReports = true
   end
+  opts.on('-o', '--output-dir <directory>', String,
+          'Directory the reports should go into') do |arg|
+    @outputDir = arg + '/'
+  end
   opts.on('-c N', Integer, 'Maximum number of CPU cores to use') do |arg|
     @maxCpuCores = arg
   end
@@ -88,6 +92,7 @@ end
 def main
   @maxCpuCores = 1
   @forceReports = false
+  @outputDir = ''
 
   errors = false
   tj = TaskJuggler.new(files = processArguments(ARGV))
@@ -97,7 +102,7 @@ def main
     errors = true
     exit 1 unless @forceReports
   end
-  exit 1 if !tj.generateReports || errors
+  exit 1 if !tj.generateReports(@outputDir) || errors
 
 end
 

@@ -268,7 +268,8 @@ EOT
 
       frame << @content.to_html if @content
 
-      html.write(@name + (@name == '.' ? '' : '.html'))
+      html.write((@name[0] == '/' ? '' : @project.outputDir) +
+                 @name + (@name == '.' ? '' : '.html'))
     end
 
     # Generate a CSV version of the report.
@@ -308,13 +309,16 @@ EOT
 
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
-      CSVFile.new(csv, ';').write(@name + (@name == '.' ? '' : '.csv'))
+      CSVFile.new(csv, ';').write((@name[0] == '/' ? '' : @project.outputDir) +
+                                  @name + (@name == '.' ? '' : '.csv'))
     end
 
     # Generate an export report
     def generateExport
       @content = TjpExportRE.new(self)
-      f = @name == '.' ? $stdout : File.new(@name, 'w')
+      f = @name == '.' ? $stdout :
+                         File.new((@name[0] == '/' ? '' : @project.outputDir) +
+                                  @name, 'w')
       f.puts "#{@content.to_tjp}"
     end
 

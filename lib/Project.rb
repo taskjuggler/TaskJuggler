@@ -47,7 +47,7 @@ class TaskJuggler
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
                 :reports, :messageHandler
-    attr_accessor :reportContext
+    attr_accessor :reportContext, :outputDir
 
     # Create a project with the specified +id+, +name+ and +version+.
     # +messageHandler+ is a MessageHandler reference that is used to handle
@@ -354,6 +354,7 @@ class TaskJuggler
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
 
       @reportContext = nil
+      @outputDir = ''
     end
 
     # Overload the deep_clone function so that references to the project don't

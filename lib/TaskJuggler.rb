@@ -73,7 +73,8 @@ class TaskJuggler
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
-  def generateReports
+  def generateReports(outputDir)
+    @project.outputDir = outputDir
     Log.enter('reports', 'Generating reports ...')
     res = @project.generateReports(@maxCpuCores)
     Log.exit('reports')
