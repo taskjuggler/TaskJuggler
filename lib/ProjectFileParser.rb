@@ -52,6 +52,11 @@ class TaskJuggler
     def open(masterFile)
       begin
         @scanner = TextScanner.new(masterFile, @messageHandler)
+        # We need the TextScanner object for error reporting.
+        if masterFile != '.' && masterFile[-4, 4] != '.tjp'
+          error('illegal_extension', "Project file name must end with " +
+                '\'.tjp\' extension')
+        end
         @scanner.open
       rescue StandardError
         error('file_open', $!.message)

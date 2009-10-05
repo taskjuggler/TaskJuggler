@@ -71,13 +71,21 @@ class TaskJuggler
       def getc19
         Log.activity if @bytes & 0x3FFF == 0
         @bytes += 1
-        @file.getc
+        begin
+          @file.getc
+        rescue
+          nil
+        end
       end
 
       def getc18
         Log.activity if @bytes & 0x3FFF == 0
         @bytes += 1
-        c = @file.getc
+        begin
+          c = @file.getc
+        rescue
+          return nil
+        end
         return nil if c.nil?
         '' << c
       end
