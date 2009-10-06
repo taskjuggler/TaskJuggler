@@ -1,0 +1,7 @@
+project "Test" 2009-10-06 +2m 
+
+# The following error really happens in the included file, but the
+# testing scripts look for the MARK in this file.
+# MARK: error 1 include_recursion 
+include "include_recursion.tji"
+

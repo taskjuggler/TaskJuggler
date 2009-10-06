@@ -188,20 +188,32 @@ class TaskJuggler
     # file is finished, we will continue in the old file after the location
     # where we started with the new file.
     def include(fileName)
-      begin
-        if @fileStack.empty?
-          path = @masterPath
-        else
-          path = @fileStack.last[0].dirname + '/'
-          @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
-        end
-        if fileName[0] != '/'
-          # If the included file is not an absolute name, we interpret the file
-          # name relative to the including file.
-          fileName = path + fileName
-        end
+      if @fileStack.empty?
+        path = @masterPath
+      else
+        path = @fileStack.last[0].dirname + '/'
+        @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
+      end
+      if fileName[0] != '/'
+        # If the included file is not an absolute name, we interpret the file
+        # name relative to the including file.
+        fileName = path + fileName
+      end
 
-        @tokenBuffer = nil
+      @tokenBuffer = nil
+
+      # Check the current file stack to find recusions.
+      if @pos && fileName == @pos.fileName
+        error('include_recursion', "Recursive inclusion of #{fileName} detected")
+      else
+        @fileStack.each do |entry|
+          if fileName == entry[0].fileName
+            error('include_recursion', "Recursive inclusion of #{fileName} " +
+                  "detected")
+          end
+        end
+      end
+      begin
         @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
       rescue StandardError
         error('bad_include', "Cannot open include file #{fileName}")
