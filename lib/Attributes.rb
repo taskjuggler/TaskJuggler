@@ -388,11 +388,11 @@ class TaskJuggler
     end
 
     def url
-      @value[0]
+      @value ? @value[0] : nil
     end
 
     def label
-      @value[1][0]
+      @value ? @value[1][0] : nil
     end
   end
 
