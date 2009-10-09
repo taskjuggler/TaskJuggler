@@ -68,114 +68,14 @@ class TaskJuggler
         end
       end
 
-      # Not all sequences of inline markup characters are control sequences. In
-      # case we detect a sequence that has not the right number of characters,
-      # we push them back and start over with this flag set to true.
-      ignoreInlineMarkup = false
-
+      # Many inline control character sequences consit of multiple characters.
+      # In case of incomplete sequences, we roll back to the start character
+      # and set the ignoreInlineMarkup flag to simply treat them as normal
+      # text.
+      @ignoreInlineMarkup = false
       loop do
-        c = nextChar
-        if c.nil?
-          # We've reached the end of the text.
-          return [ '.', '<END>' ]
-        elsif c == ' ' || c == "\t"
-          # Sequences of tabs or spaces are treated as token boundaries, but
-          # otherwise they are ignored.
-          readSequence(' ', "\t")
-          return [ 'SPACE', ' ' ]
-        elsif c == "'" && !ignoreInlineMarkup && @wikiEnabled
-          # Sequence of 2 ' means italic, 3 ' means bold, 4 ' means monospaced
-          # code, 5 ' means italic and bold. Anything else is just normal text.
-          level = readSequenceMax("'", 5)
-          if level == 2
-            return [ 'ITALIC', "'" * level ]
-          elsif level == 3
-            return [ 'BOLD', "'" * level ]
-          elsif level == 4
-            return [ 'CODE', "'" * level ]
-          elsif level == 5
-            return [ 'BOLDITALIC', "'" * level ]
-          else
-            # We have not found the right syntax. Treat the found characters as
-            # normal text.  Push all ' back and start again but ignoring the '
-            # code for once.
-            returnChar(level)
-            ignoreInlineMarkup = true
-            next
-          end
-        elsif c == '=' && !ignoreInlineMarkup && @wikiEnabled
-          level = readSequenceMax('=', 4)
-          if level > 1
-            return [ "TITLE#{level - 1}END", '=' * level ]
-          else
-            # We have not found the right syntax. Treat found characters as
-            # normal text.  Push all = back and start again but ignoring the =
-            # code for once.
-            returnChar(level)
-            ignoreInlineMarkup = true
-            next
-          end
-        elsif c == '[' && @wikiEnabled
-          level = readSequenceMax('[', 2)
-          return [ level == 1 ? 'HREF' : 'REF', '[' * level ]
-        elsif c == ']' && @wikiEnabled
-          level = readSequenceMax(']', 2)
-          return [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
-        elsif c == "\n"
-          # Newlines are pretty important as they can terminate blocks and turn
-          # the next character into the start of a control sequence.
-          # Hard linebreaks consist of a newline followed by another newline or
-          # any of the begin-of-line control characters.
-          if (c = nextChar) && "\n*# =-".include?(c)
-            returnChar if c != "\n"
-            # The next character may be a control character.
-            @beginOfLine = true
-            return [ 'LINEBREAK', "\n" ]
-          elsif c.nil?
-            # We hit the end of the text.
-            return [ '.', '<END>' ]
-          else
-            # Single line breaks are treated as spaces. Return the char after
-            # the newline and start with this one again.
-            returnChar
-            return [ 'SPACE', ' ' ]
-          end
-        elsif c == '<' && !ignoreInlineMarkup
-          if peekMatch('nowiki>')
-            # Turn most wiki markup interpretation off.
-            @pos += 'nowiki>'.length
-            @wikiEnabled = false
-            next
-          elsif peekMatch('/nowiki>')
-            # Turn most wiki markup interpretation on.
-            @pos += '/nowiki>'.length
-            @wikiEnabled = true
-            next
-          else
-            ignoreInlineMarkup = true
-            returnChar
-          end
-        else
-          # Reset this flag again.
-          ignoreInlineMarkup = false
-          str = ''
-          str << c
-          # Now we can collect characters of a word until we hit a whitespace.
-          while (c = nextChar) && !" \n\t".include?(c)
-            if @wikiEnabled
-              # Or at least to ' characters in a row.
-              break if c == "'" && peek == "'"
-              # Or a ] or <
-              break if ']<'.include?(c)
-            else
-              # Make sure we find the </nowiki> tag even within a word.
-              break if c == '<'
-            end
-            str << c
-          end
-          # Return the character that indicated the word end.
-          returnChar
-          return [ 'WORD', str ]
+        if res = (@wikiEnabled ? nextTokenWikiInline : nextTokenNoWikiInline)
+          return res
         end
       end
     end
@@ -270,6 +170,149 @@ class TaskJuggler
       end
 
       return nil
+    end
+
+    def nextTokenWikiInline
+      c = nextChar
+      if c.nil?
+        # We've reached the end of the text.
+        [ '.', '<END>' ]
+      elsif c == ' ' || c == "\t"
+        # Sequences of tabs or spaces are treated as token boundaries, but
+        # otherwise they are ignored.
+        readSequence(' ', "\t")
+        [ 'SPACE', ' ' ]
+      elsif c == "'" && !@ignoreInlineMarkup
+        # Sequence of 2 ' means italic, 3 ' means bold, 4 ' means monospaced
+        # code, 5 ' means italic and bold. Anything else is just normal text.
+        level = readSequenceMax("'", 5)
+        if level == 2
+          [ 'ITALIC', "'" * level ]
+        elsif level == 3
+          [ 'BOLD', "'" * level ]
+        elsif level == 4
+          [ 'CODE', "'" * level ]
+        elsif level == 5
+          [ 'BOLDITALIC', "'" * level ]
+        else
+          # We have not found the right syntax. Treat the found characters as
+          # normal text.  Push all ' back and start again but ignoring the '
+          # code for once.
+          returnChar(level)
+          @ignoreInlineMarkup = true
+          nil
+        end
+      elsif c == '=' && !@ignoreInlineMarkup
+        level = readSequenceMax('=', 4)
+        if level > 1
+          [ "TITLE#{level - 1}END", '=' * level ]
+        else
+          # We have not found the right syntax. Treat found characters as
+          # normal text.  Push all = back and start again but ignoring the =
+          # code for once.
+          returnChar(level)
+          @ignoreInlineMarkup = true
+          nil
+        end
+      elsif c == '['
+        level = readSequenceMax('[', 2)
+        [ level == 1 ? 'HREF' : 'REF', '[' * level ]
+      elsif c == ']'
+        level = readSequenceMax(']', 2)
+        [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
+      elsif c == "\n"
+        nextTokenNewline
+      elsif c == '<' && !@ignoreInlineMarkup
+        nextTokenOpenAngle
+      else
+        nextTokenWord(c)
+      end
+    end
+
+    def nextTokenNoWikiInline
+      c = nextChar
+      if c.nil?
+        # We've reached the end of the text.
+        [ '.', '<END>' ]
+      elsif c == ' ' || c == "\t"
+        # Sequences of tabs or spaces are treated as token boundaries, but
+        # otherwise they are ignored.
+        readSequence(' ', "\t")
+        [ 'SPACE', ' ' ]
+      elsif c == "\n"
+        nextTokenNewline
+      elsif c == '<' && !@ignoreInlineMarkup
+        nextTokenOpenAngle
+      else
+        nextTokenWord(c)
+      end
+    end
+
+    # We've just read a newline. Now we need to figure out whether this is a
+    # LINEBREAK or just a SPACE. This is determined by looking at the next
+    # character.
+    def nextTokenNewline
+      # Newlines are pretty important as they can terminate blocks and turn
+      # the next character into the start of a control sequence.
+      # Hard linebreaks consist of a newline followed by another newline or
+      # any of the begin-of-line control characters.
+      if (c = nextChar) && "\n*# =-".include?(c)
+        returnChar if c != "\n"
+        # The next character may be a control character.
+        @beginOfLine = true
+        [ 'LINEBREAK', "\n" ]
+      elsif c.nil?
+        # We hit the end of the text.
+        [ '.', '<END>' ]
+      else
+        # Single line breaks are treated as spaces. Return the char after
+        # the newline and start with this one again.
+        returnChar
+        [ 'SPACE', ' ' ]
+      end
+    end
+
+    def nextTokenOpenAngle
+      if peekMatch('nowiki>')
+        # Turn most wiki markup interpretation off.
+        @pos += 'nowiki>'.length
+        @wikiEnabled = false
+      elsif peekMatch('/nowiki>')
+        # Turn most wiki markup interpretation on.
+        @pos += '/nowiki>'.length
+        @wikiEnabled = true
+      else
+        # We've not found a valid control sequence. Push back the character
+        # and make sure we treat it as a normal character.
+        @ignoreInlineMarkup = true
+        returnChar
+      end
+      nil
+    end
+
+    # _c_ does not match any start of a control sequence, so we read
+    # characters until we find the end of the word.
+    def nextTokenWord(c)
+      # Reset this flag again.
+      @ignoreInlineMarkup = false
+      str = ''
+      str << c
+      # Now we can collect characters of a word until we hit a whitespace.
+      while (c = nextChar) && !" \n\t".include?(c)
+        if @wikiEnabled
+          # Or at least to ' characters in a row.
+          break if c == "'" && peek == "'"
+          # Or a ] or <
+          break if ']<'.include?(c)
+        else
+          # Make sure we find the </nowiki> tag even within a word.
+          break if c == '<'
+        end
+        str << c
+      end
+      # Return the character that indicated the word end.
+      returnChar
+      [ 'WORD', str ]
     end
 
     # Deliver the next character. Keep track of the cursor position. In case we
