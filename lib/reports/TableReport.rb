@@ -135,24 +135,8 @@ class TaskJuggler
 
     # This is the default attribute value to text converter. It is used
     # whenever we need no special treatment.
-    def cellText(property, scenarioIdx, colId)
-      if property.is_a?(Resource)
-        propertyList = @project.resources
-      elsif property.is_a?(Task)
-        propertyList = @project.tasks
-      else
-        raise "Fatal Error: Unknown property #{property.class}"
-      end
-
+    def cellText(value, type)
       begin
-        # Get the value no matter if it's scenario specific or not.
-        if propertyList.scenarioSpecific?(colId)
-          value = property.getAttr(colId, scenarioIdx)
-        else
-          value = property.getAttr(colId)
-        end
-
-        type = propertyList.attributeType(colId)
         if value.nil?
           if type == DateAttribute
             nil
@@ -165,6 +149,8 @@ class TaskJuggler
             value.value.to_s(a('timeFormat'))
           elsif type == RichTextAttribute
             value.value
+          elsif type == ReferenceAttribute
+            value.label
           else
             value.to_s
           end
@@ -576,15 +562,29 @@ class TaskJuggler
     # hidden cell.
     def genStandardCell(scenarioIdx, line, columnDef)
       property = line.property
-      # Create a new cell
-      cell = newCell(line, cellText(property, scenarioIdx, columnDef.id))
 
+      # Find out, what type of PropertyTreeNode we are dealing with.
       if property.is_a?(Task)
-        properties = @project.tasks
+        propertyList = @project.tasks
       elsif property.is_a?(Resource)
-        properties = @project.resources
+        propertyList = @project.resources
       else
         raise "Unknown property type #{property.class}"
+      end
+      colId = columnDef.id
+      # Get the value no matter if it's scenario specific or not.
+      if propertyList.scenarioSpecific?(colId)
+        value = property.getAttr(colId, scenarioIdx)
+      else
+        value = property.getAttr(colId)
+      end
+      # Get the type of the property
+      type = propertyList.attributeType(colId)
+
+      # Create a new cell
+      cell = newCell(line, cellText(value, type))
+      if type == ReferenceAttribute
+        cell.url = value.url
       end
 
       # Check if we are dealing with multiple scenarios.
@@ -604,7 +604,7 @@ class TaskJuggler
       end
 
       setStandardCellAttributes(cell, columnDef,
-                                properties.attributeType(columnDef.id), line)
+                                propertyList.attributeType(columnDef.id), line)
 
       scopeProperty = line.scopeLine ? line.scopeLine.property : nil
       query = Query.new('property' => property,

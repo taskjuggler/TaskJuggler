@@ -386,6 +386,14 @@ class TaskJuggler
     def ReferenceAttribute::tjpId
       'reference'
     end
+
+    def url
+      @value[0]
+    end
+
+    def label
+      @value[1][0]
+    end
   end
 
   class ResourceListAttribute < AttributeBase
