@@ -42,7 +42,8 @@ class TaskJuggler
       @propertySet = propertySet
       # If _id_ is still nil, we generate a unique id.
       unless id
-        id = '_' + propertySet.class.to_s + '_' + (propertySet.items + 1).to_s
+        tag = self.class.to_s.gsub(/TaskJuggler::/, '')
+        id = '_' + tag + '_' + (propertySet.items + 1).to_s
         id = parent.id + '.' + id if !@propertySet.flatNamespace && parent
       end
       if !@propertySet.flatNamespace && id.include?('.')
