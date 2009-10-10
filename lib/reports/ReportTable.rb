@@ -21,6 +21,10 @@ class TaskJuggler
   # appropriate format.
   class ReportTable
 
+    # The height in pixels of a horizontal scrollbar on an HTML page. This
+    # value should be large enough to work for all browsers.
+    SCROLLBARHEIGHT = 20
+
     attr_reader :maxIndent, :headerLineHeight, :headerFontSize
     attr_accessor :equiLines
 
@@ -93,9 +97,10 @@ class TaskJuggler
 
       # In case we have columns with scrollbars, we generate an extra line with
       # cells for all columns that don't have a scrollbar. The scrollbar must
-      # have a height of 18 pixels or less.
+      # have a height of SCROLLBARHEIGHT pixels or less.
       if hasScrollbar?
-        tbody << (tr = XMLElement.new('tr', 'style' => 'height:18px'))
+        tbody << (tr = XMLElement.new('tr',
+                                      'style' => "height:#{SCROLLBARHEIGHT}px"))
         @columns.each do |column|
           unless column.scrollbar
             tr << XMLElement.new('td')

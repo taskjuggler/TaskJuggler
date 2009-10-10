@@ -27,6 +27,10 @@ class TaskJuggler
   # created, the user must call generateByWidth or generateByResolution.
   class GanttChart
 
+    # The height in pixels of a horizontal scrollbar on an HTML page. This
+    # value should be large enough to work for all browsers.
+    SCROLLBARHEIGHT = 20
+
     include HTMLGraphics
 
     attr_reader :start, :end, :now, :weekStartsMonday, :header, :width,
@@ -146,15 +150,17 @@ class TaskJuggler
         'style' => 'padding:0px; vertical-align:top;')
       # Now we generate two 'div's nested into each other. The first div is the
       # view. It may contain a scrollbar if the second div is wider than the
-      # first one. In case we need a scrollbar The outer div is 18 pixels
-      # heigher to hold the scrollbar. Unfortunately this must be a hardcoded
-      # value even though the height of the scrollbar varies from system to
-      # system. This value should be good enough for most systems.
-      td << (scrollDiv = XMLElement.new('div',
+      # first one. In case we need a scrollbar The outer div is
+      # SCROLLBARHEIGHT pixels heigher to hold the scrollbar. Unfortunately
+      # this must be a hardcoded value even though the height of the scrollbar
+      # varies from system to system. This value should be good enough for
+      # most systems.
+      td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
         'style' => 'position:relative; ' +
                    "overflow:auto; " +
                    "width:#{hasScrollbar? ? @viewWidth : @width}px; " +
-                   "height:#{@height + (hasScrollbar? ? 18 : 0)}px;"))
+                   "height:#{@height +
+                             (hasScrollbar? ? SCROLLBARHEIGHT : 0)}px;"))
       scrollDiv << (div = XMLElement.new('div',
         'style' => "margin:0px; padding:0px; " +
                    "position:absolute; " +

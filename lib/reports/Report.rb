@@ -156,6 +156,7 @@ class TaskJuggler
   .tabline { color:#000000 }
   .tabcell {
     white-space:nowrap;
+    overflow:hidden;
     padding:0px;
   }
   .taskcell1 {
