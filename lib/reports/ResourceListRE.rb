@@ -47,7 +47,8 @@ class TaskJuggler
                                 @report.get('rollupTask'))
       taskList.sort!
 
-      adjustReportPeriod(taskList, @report.get('scenarios'))
+      adjustReportPeriod(taskList, @report.get('scenarios'),
+                         @report.get('columns'))
 
       # Generate the table header.
       @report.get('columns').each do |columnDescr|

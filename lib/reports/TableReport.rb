@@ -229,7 +229,7 @@ class TaskJuggler
     # In case the user has not specified the report period, we try to fit all
     # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
     # list of scenario indexes.
-    def adjustReportPeriod(tasks, scenarios)
+    def adjustReportPeriod(tasks, scenarios, columns)
       return if tasks.empty? ||
         a('start') != @project['start'] || a('end') != @project['end']
 
@@ -242,11 +242,58 @@ class TaskJuggler
           @end = date if @end.nil? || date > @end
         end
       end
-      # Make sure we have a minimum width of 1 day
-      @end = @start + 60 * 60 * 24 if @end < @start + 60 * 60 * 24
-      padding = ((@end - @start) * 0.10).to_i
-      @start -= padding
-      @end += padding
+      # We want to add at least 5% on both ends.
+      margin = 0
+      minWidth = @end - @start + 1
+      columns.each do |column|
+        case column.id
+        when 'chart'
+          # In case we have a 'chart' column, we enforce certain minimum width
+          # of the chart. The width depends on the selected scale.
+          # The following table contains an entry for each scale. The entry
+          # consists of the triple 'seconds per unit', 'minimum width units'
+          # and 'margin units'. The minimum with does not include the margins
+          # since they are always added.
+          mwMap = {
+            'hour' =>    [ 60 * 60,            18, 2 ],
+            'day' =>     [ 60 * 60 * 24,       18, 2 ],
+            'week' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
+            'month' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
+            'quarter' => [ 60 * 60 * 24 * 90,   6, 1 ],
+            'year' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
+          }
+          entry = mwMap[column.scale]
+          raise "Unknown scale #{column.scale}" unless entry
+          margin = entry[0] * entry[2]
+          # If the with determined by start and end dates of the task is below
+          # the minimum width, we increase the width to the value provided by
+          # the table.
+          minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
+          break
+        when 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+          # For the calendar columns we use a similar approach as we use for
+          # the 'chart' column.
+          mwMap = {
+            'hourly' =>    [ 60 * 60,            18, 2 ],
+            'daily' =>     [ 60 * 60 * 24,       18, 2 ],
+            'weekly' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
+            'monthly' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
+            'quarterly' => [ 60 * 60 * 24 * 90,   6, 1 ],
+            'yearly' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
+          }
+          entry = mwMap[column.id]
+          raise "Unknown scale #{column.id}" unless entry
+          margin = entry[0] * entry[2]
+          minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
+          break
+        end
+      end
+
+      if minWidth > (@end - @start + 1)
+        margin += (minWidth - (@end - @start + 1)) / 2
+      end
+      @start -= margin
+      @end += margin
     end
 
     # Generates cells for the table header. _columnDef_ is the
@@ -590,7 +637,7 @@ class TaskJuggler
       # Check if we are dealing with multiple scenarios.
       if a('scenarios').length > 1
         # Check if the attribute is not scenario specific
-        unless properties.scenarioSpecific?(columnDef.id)
+        unless propertyList.scenarioSpecific?(columnDef.id)
           if scenarioIdx == a('scenarios').first
             #  Use a somewhat bigger font.
             cell.fontSize = 15

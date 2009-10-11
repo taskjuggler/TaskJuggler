@@ -1,0 +1,72 @@
+project "Dependency Arrows" 2009-10-10 +2m
+
+macro endSuccTask [
+task "${1}" {
+  depends ${2} { gapduration ${3}d }
+}
+]
+macro startSuccTask [
+task "${1}" {
+  depends bt { onstart gapduration ${2}d }
+}
+]
+
+task at "atask" {
+  duration 2d
+}
+${endSuccTask "as3" "at" "2"}
+${endSuccTask "as1" "at" "0"}
+${endSuccTask "as2" "at" "1"}
+${endSuccTask "au2" "at" "1"}
+${endSuccTask "au1" "at" "2"}
+${endSuccTask "au3" "at" "0"}
+
+task bt "btask" {
+  start ${projectstart}
+  duration 3d
+}
+${startSuccTask "bs3" "2"}
+${startSuccTask "bu2" "1"}
+${startSuccTask "bu3" "0"}
+${startSuccTask "bu1" "2"}
+${startSuccTask "bs1" "0"}
+${startSuccTask "bs2" "1"}
+
+task ct "ctask" {
+  start ${projectstart}
+  duration 3d
+}
+${endSuccTask "cs1" "ct" "0"}
+${endSuccTask "cu2" "ct" "4"}
+${endSuccTask "cs2" "ct" "1"}
+${endSuccTask "cu1" "ct" "3"}
+${endSuccTask "cu3" "ct" "5"}
+${endSuccTask "cs3" "ct" "2"}
+
+task dt "dtask" {
+  start ${projectstart}
+  duration 1d
+}
+${endSuccTask "du1" "dt" "0"}
+${endSuccTask "du2" "dt" "1"}
+${endSuccTask "du3" "dt" "2"}
+${endSuccTask "du4" "dt" "3"}
+${endSuccTask "du5" "dt" "4"}
+${endSuccTask "du6" "dt" "5"}
+
+task et "etask" {
+  start ${projectstart}
+  duration 1d
+}
+${endSuccTask "es1" "et" "0"}
+${endSuccTask "es2" "et" "0"}
+${endSuccTask "es3" "et" "0"}
+${endSuccTask "eu4" "et" "0"}
+${endSuccTask "eu5" "et" "0"}
+${endSuccTask "eu6" "et" "0"}
+
+taskreport "depArrows" {
+  formats html
+  columns name, chart { scale day }
+  sorttasks name.up
+}

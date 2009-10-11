@@ -1356,6 +1356,9 @@ EOT
 
   def rule_macro
     pattern(%w( _macro $ID $MACRO ), lambda {
+      if @scanner.macroDefined?(@val[1])
+        warning('marco_redefinition', "Redefining macro #{@val[1]}")
+      end
       @scanner.addMacro(Macro.new(@val[1], @val[2], @scanner.sourceFileInfo))
     })
     doc('macro', <<'EOT'

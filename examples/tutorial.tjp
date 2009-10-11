@@ -10,7 +10,7 @@ project "Accounting Software"  2002-01-16 +4m {
   timeformat "%Y-%m-%d"
   # Use US format for numbers
   numberformat "-" "" "," "." 1
-  # Use US financial format for currency values. Don't show pence.
+  # Use US financial format for currency values. Don't show cents.
   currencyformat "(" ")" "," "." 0
   # Pick a day during the project that will be reported as 'today' in
   # the project reports. If not specified, the current day will be
@@ -254,7 +254,7 @@ navigator navbar {
   hidereport 0
 }
 
-textreport index "Overview" {
+textreport "Overview" {
   header -8<-
     == Accounting Software Project ==
     ----
@@ -262,26 +262,26 @@ textreport index "Overview" {
     ----
   ->8-
   formats html
-  center '[[report:tab_overview]]'
+  center '[[report:overview]]'
 
-  textreport development "Development" {
-    center '[[report:tab_development]]'
+  textreport "Development" {
+    center '[[report:development]]'
   }
 
-  textreport deliveries "Deliveries" {
-    center '[[report:tab_development]]'
+  textreport "Deliveries" {
+    center '[[report:deliveries]]'
   }
 
-  textreport contactList "ContactList" {
-    center '[[report:tab_contactList]]'
+  textreport "ContactList" {
+    center '[[report:contactList]]'
   }
-  textreport resoruceGraph "Resource Graph" {
-    center '[[report:tab_resourceGraph]]'
+  textreport "Resource Graph" {
+    center '[[report:resourceGraph]]'
   }
 }
 
 # A traditional Gantt chart with a project overview.
-taskreport tab_overview "Overview1" {
+taskreport overview "Overview1" {
   header -8<-
     === Project Overview ===
     
@@ -319,7 +319,7 @@ taskreport tab_overview "Overview1" {
 }
 
 # A list of tasks showing the resources assigned to each task.
-taskreport tab_development "Development" {
+taskreport development "" {
   headline "Development - Resource Allocation Report"
   columns hierarchindex, name, start, end, effort { title "Work" },
           duration, chart { scale day }
@@ -329,7 +329,7 @@ taskreport tab_development "Development" {
 }
 
 # A list of all tasks with the percentage completed for each task
-taskreport tab_deliveries "Deliveries" {
+taskreport deliveries "" {
   headline "Project Deliveries"
   columns hierarchindex, name, start, end, note, complete, chart
   taskroot AcSo.deliveries
@@ -338,7 +338,7 @@ taskreport tab_deliveries "Deliveries" {
   scenarios plan, delayed
 }
 # A list of all employees with their contact details.
-resourcereport tab_contactList "ContactList" {
+resourcereport contactList "" {
   headline "Contact list and duty plan"
   columns name, Email { cellurl "mailto:$${Email}" }, Phone,
           chart { scale day }
@@ -349,7 +349,7 @@ resourcereport tab_contactList "ContactList" {
 
 # A graph showing resource allocation. It identifies whether each
 # resource is under- or over-allocated for.
-resourcereport tab_resourceGraph "Resource Graph" {
+resourcereport resourceGraph "" {
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly #, utilization, freeload, chart
   loadunit shortauto

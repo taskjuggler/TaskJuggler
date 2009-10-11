@@ -93,7 +93,8 @@ class TaskJuggler
         #                     2------X end Point
         #                     |endGap|
         #
-        xSeg = placeLine([ startPoint[1], endPoint[1] ],
+        xSeg = placeLine([ startPoint[1] + (startPoint[1] < endPoint[1] ?
+                                            1 : -1), endPoint[1] ],
                          false, startPoint[0] + startGap, 1)
         if xSeg && xSeg < endPoint[0] - endGap
           addLineTo(points, xSeg, startPoint[1])  # Point 1
@@ -108,7 +109,7 @@ class TaskJuggler
       #
       #                     x1
       #            |startGap|
-      # startPoint X--------1
+      # startPoint X--------1 yLS
       #                     |
       #     3---------------2 ySeg
       #     |
@@ -119,11 +120,12 @@ class TaskJuggler
       # Place horizontal segue. We don't know the width yet, so we have to
       # assume full width. That's acceptable for horizontal lines.
       ySeg = placeLine([ 0, @width - 1 ], true, startPoint[1],
-                       startPoint[1] < endPoint[1] ? 1 : -1)
+                        startPoint[1] < endPoint[1] ? 1 : -1)
       raise "Routing failed" unless ySeg
 
       # Place 1st vertical
-      x1 = placeLine([ startPoint[1], ySeg ], false, startPoint[0] + startGap, 1)
+      x1 = placeLine([ startPoint[1] + (startPoint[1] < endPoint[1] ? 1 : -1),
+                       ySeg ], false, startPoint[0] + startGap, 1)
       raise "Routing failed" unless x1
 
       # Place 2nd vertical
@@ -297,7 +299,7 @@ class TaskJuggler
       segment.sort!
       lines = horizontal ? @hLines : @vLines
       # TODO: Remove this check once the code becomes stable.
-      checkLines(lines)
+      #checkLines(lines)
       while collision?(lines[pos], segment)
         pos += delta
         # Check if we have exceded the chart area towards top/left.

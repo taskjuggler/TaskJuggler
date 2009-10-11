@@ -343,8 +343,16 @@ class TaskJuggler
 
     # Call this function to report any errors related to the parsed input.
     def error(id, text, property = nil)
+      message('error', id, text, property)
+    end
+
+    def warning(id, text, property = nil)
+      message('warning', id, text, property)
+    end
+
+    def message(type, id, text, property)
       unless text.empty?
-        message = Message.new(id, 'error', text + "\n" + line.to_s,
+        message = Message.new(id, type, text + "\n" + line.to_s,
                               property, nil, sourceFileInfo)
         @messageHandler.send(message)
 
@@ -359,7 +367,7 @@ class TaskJuggler
       end
 
       # An empty strings signals an already reported error
-      raise TjException.new, ''
+      raise TjException.new, '' if type == 'error'
     end
 
   private

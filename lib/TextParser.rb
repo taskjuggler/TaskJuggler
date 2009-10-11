@@ -182,6 +182,10 @@ class TaskJuggler
       @scanner.error(id, text, property)
     end
 
+    def warning(id, text, property = nil)
+      @scanner.warning(id, text, property)
+    end
+
   private
 
     # getTransitions recursively determines all possible target tokens
