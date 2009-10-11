@@ -265,12 +265,12 @@ class TaskJuggler
         scenarioIdx = line.scenarioIdx
 
         # Generate the dependencies on the start of the task.
-        collectAndSortArrows(*line.getTask.startDepLineStart, 'startsuccs',
-                             task, scenarioIdx, lineIndex)
+        collectAndSortArrows('startsuccs', task, scenarioIdx, lineIndex,
+                             *line.getTask.startDepLineStart)
 
         # Generate the dependencies on the end of the task.
-        collectAndSortArrows(*line.getTask.endDepLineStart, 'endsuccs',
-                             task, scenarioIdx, lineIndex)
+        collectAndSortArrows('endsuccs', task, scenarioIdx, lineIndex,
+                             *line.getTask.endDepLineStart)
       end
     end
 
@@ -279,7 +279,7 @@ class TaskJuggler
     # and _startY_ are the graphic coordinates for the begin of the arrow
     # line. _task_ references the Task in question and _scenarioIdx_ the
     # scenario. _lineIndex_ specifies the line number in the chart.
-    def collectAndSortArrows(startX, startY, kind, task, scenarioIdx, lineIndex)
+    def collectAndSortArrows(kind, task, scenarioIdx, lineIndex, startX, startY)
       # We need to sort the arrows. This is an Array that holds 6 values for
       # each entry: The x and y coordinates for start and end points, the
       # sinus value of the angle between a vertical and the line specified by
