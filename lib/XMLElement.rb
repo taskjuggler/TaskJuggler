@@ -49,13 +49,15 @@ class TaskJuggler
         arg.delete_if { |i| i.nil? }
         # Check that the rest are really all XMLElement objects.
         arg.each do |i|
-          raise 'Element must be of type XMLElement' unless i.is_a?(XMLElement)
+          unless i.is_a?(XMLElement)
+            raise "Element must be of type XMLElement not #{i.class}"
+          end
         end
         @children += arg
       elsif arg.nil?
         # do nothing
       else
-        raise 'Elements must be of type XMLElement'
+        raise "Elements must be of type XMLElement not #{arg.class}"
       end
       self
     end
@@ -63,8 +65,8 @@ class TaskJuggler
     # Return the element and all sub elements as properly formatted XML.
     def to_s(indent = 0)
       out = '<' + @name
-      @attributes.each do |attrName, attrValue|
-        out << ' ' + attrName + '="' + quoteAttr(attrValue) + '"'
+      @attributes.keys.sort.each do |attrName|
+        out << " #{attrName}=\"#{quoteAttr(@attributes[attrName])}\""
       end
       if @children.empty? && !@mayNotBeEmpty
         out << '/>'

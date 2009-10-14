@@ -19,24 +19,25 @@ class TaskJuggler
   # report into the RichText output for supported formats.
   class RTPReport < RichTextProtocolHandler
 
-    def initialize(project)
-      super('report')
-      @project = project
+    def initialize(project, sourceFileInfo)
+      super(project, 'report', sourceFileInfo)
     end
 
     # Not supported for this protocol
-    def to_s(path, args)
+    def to_s(args)
       ''
     end
 
     # Return a HTML tree for the report.
-    def to_html(path, args)
-      if args.length > 1
-        raise "The report protocol does not support any arguments"
+    def to_html(args)
+      if args.nil? || (id = args['id']).nil?
+        error('rtp_report_id',
+              "Argument 'id' missing to specify the report to be used.")
       end
-      unless (report = @project.report(path))
-        raise "Unknown report #{path}"
+      unless (report = @project.report(id))
+        error('rtp_report_unknown_id', "Unknown report #{id}")
       end
+
       # Save the old report context record
       oldReportContext = @project.reportContext
       # Create a new context for the report.
@@ -51,7 +52,7 @@ class TaskJuggler
     end
 
     # Not supported for this protocol.
-    def to_tagged(path, args)
+    def to_tagged(args)
       nil
     end
 

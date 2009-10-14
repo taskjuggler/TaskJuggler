@@ -25,8 +25,18 @@ class TaskJuggler
 
     attr_reader :protocol
 
-    def initialize(protocol)
+    def initialize(project, protocol, sourceFileInfo = nil)
+      @project = project
       @protocol = protocol
+      @sourceFileInfo = sourceFileInfo
+    end
+
+    def error(id, text)
+      message = Message.new(id, 'error', text, nil, nil, @sourceFileInfo)
+      @project.sendMessage(message)
+
+      # An empty strings signals an already reported error
+      raise TjException.new, ''
     end
 
   end

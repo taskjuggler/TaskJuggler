@@ -59,6 +59,9 @@ class TaskJuggler
         @numberListCounter = [ 0, 0, 0 ]
         RichTextElement.new(@richText, :numberlist1, @val[0])
       })
+      pattern(%w( !blockFunction !blankLines ), lambda {
+        @val[0]
+      })
     end
 
     def rule_headlines
@@ -257,6 +260,27 @@ class TaskJuggler
       repeatable
       pattern(%w( $LINEBREAK ))
       pattern(%w( $SPACE ))
+    end
+
+    def rule_blockFunction
+      pattern(%w( $BLOCKFUNCSTART $ID !functionArguments $BLOCKFUNCEND ),
+              lambda {
+        args = {}
+        @val[2].each { |arg| args[arg[0]] = arg[1] }
+        el = RichTextElement.new(@richText, :blockfunc)
+        # Data is a 2 element Array with the function name and a Hash for the
+        # arguments.
+        el.data = [@val[1], args ]
+        el
+      })
+    end
+
+    def rule_functionArguments
+      optional
+      repeatable
+      pattern(%w( $ID _= $STRING ), lambda {
+        [ @val[0], @val[2] ]
+      })
     end
 
   end

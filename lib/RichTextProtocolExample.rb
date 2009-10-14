@@ -22,27 +22,24 @@ class TaskJuggler
   class RichTextProtocolExample < RichTextProtocolHandler
 
     def initialize
-      super('example')
+      super(nil, 'example')
     end
 
     # Not supported for this protocol
-    def to_s(path, args)
+    def to_s(args)
       ''
     end
 
     # Return a XMLElement tree that represents the example file as HTML code.
-    def to_html(path, args)
-      if args.length > 1
-        raise "The example protocol may only take upto one argument."
-      elsif args.length == 1
-        tag = args[0]
-      else
-        tag = nil
+    def to_html(args)
+      unless (file = args['file'])
+        raise "'file' argument missing"
       end
+      tag = args['tag']
 
       example = TjpExample.new
       fileName = AppConfig.dataDirs('test')[0] +
-                 "TestSuite/Syntax/Correct/#{path}.tjp"
+                 "TestSuite/Syntax/Correct/#{file}.tjp"
       example.open(fileName)
       frame = XMLElement.new('div', 'class' => 'codeframe')
       frame << (pre = XMLElement.new('pre', 'class' => 'code'))
@@ -55,7 +52,7 @@ class TaskJuggler
     end
 
     # Not supported for this protocol.
-    def to_tagged(path, args)
+    def to_tagged(args)
       nil
     end
 

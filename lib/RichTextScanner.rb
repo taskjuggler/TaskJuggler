@@ -39,9 +39,13 @@ class TaskJuggler
       # This is the position of the start of the currently processed line.
       # It's only used for error reporting.
       @lineStart = 0
-      # Most of the wiki markup interpretation can be turned on/off by using
-      # <nowiki>...</nowiki> in the text. This flag keeps this state.
-      @wikiEnabled = true
+      # This variable stores the mode that the parser is operating in. The
+      # following modes are supported:
+      # :wiki : accept supported MediaWiki subset plus TJ extensions
+      # :nowiki : ignore most markup except for the </nowiki> token
+      # :funcarg : parse name and parameters of an block  or inline parser
+      # function.
+      @mode = :wiki
       # Enable to trigger printout instead of exception.
       @debug = false
     end
@@ -62,7 +66,10 @@ class TaskJuggler
         return tok
       end
 
-      if @beginOfLine && @wikiEnabled
+      if @mode == :funcarg
+        return nextTokenFuncArg
+      end
+      if @beginOfLine && @mode == :wiki
         if (res = nextTokenWikiBOL)
           return res
         end
@@ -74,7 +81,7 @@ class TaskJuggler
       # text.
       @ignoreInlineMarkup = false
       loop do
-        if res = (@wikiEnabled ? nextTokenWikiInline : nextTokenNoWikiInline)
+        if res = (@mode == :wiki ? nextTokenWikiInline : nextTokenNoWikiInline)
           return res
         end
       end
@@ -112,6 +119,42 @@ class TaskJuggler
 
   private
 
+    # Function arguments have the following formats:
+    #  <[blockfunc par1="value1" par2='value2']>
+    #  <-inlinefunc par1="value1" ... ->
+    def nextTokenFuncArg
+      token = [ '.', '<END>' ]
+      while c = nextChar
+        case c
+        when ' ', "\n", "\t"
+          if (tok = readBlanks(c))
+            token = tok
+            break
+          end
+        when '='
+          return [ '_=', '=' ]
+        when "'"
+          return readString(c)
+        when '"'
+          return readString(c)
+        when 'a'..'z', 'A'..'Z', '_'
+          return readId(c)
+        when ']'
+          if nextChar == '>'
+            @mode = :wiki
+            return [ 'BLOCKFUNCEND', ']>' ]
+          end
+          returnChar
+        when '-'
+          if nextChar == '>'
+            @mode = :wiki
+            return [ 'INLINEFUNCEND', '->' ]
+          end
+          returnChar
+        end
+      end
+    end
+
     def nextTokenWikiBOL
       # Some characters have only a special meaning at the start of the line.
       # When the last token pushed the cursor into a new line, this flag is set
@@ -124,6 +167,8 @@ class TaskJuggler
       # newlines can safely be ignored.
       readSequence("\n")
 
+      # All the lead characters of a token here also need to be registered
+      # with nextTokenNewline!
       case (c = nextChar)
       when '='
         # Headings start with 2 or more = and must be followed by a space.
@@ -160,6 +205,15 @@ class TaskJuggler
         return [ "NUMBER#{level}", '#' * level ] if nextChar == ' '
         # If that's missing, The # are treated as normal text further down.
         returnChar(level + 1)
+      when '<'
+        # This may be the start of a block generating function.
+        if nextChar == '['
+          # Switch the parser to block function argument parsing mode.
+          @mode = :funcarg
+          return [ 'BLOCKFUNCSTART', '<[' ]
+        end
+        # Maybe not.
+        returnChar(2)
       when ' '
         # Lines that start with a space are treated as verbatim text.
         return [ "PRE", readCode ] if (c = peek) && c != "\n"
@@ -256,7 +310,7 @@ class TaskJuggler
       # the next character into the start of a control sequence.
       # Hard linebreaks consist of a newline followed by another newline or
       # any of the begin-of-line control characters.
-      if (c = nextChar) && "\n*# =-".include?(c)
+      if (c = nextChar) && "\n*#< =-".include?(c)
         returnChar if c != "\n"
         # The next character may be a control character.
         @beginOfLine = true
@@ -276,11 +330,11 @@ class TaskJuggler
       if peekMatch('nowiki>')
         # Turn most wiki markup interpretation off.
         @pos += 'nowiki>'.length
-        @wikiEnabled = false
+        @mode = :nowiki
       elsif peekMatch('/nowiki>')
         # Turn most wiki markup interpretation on.
         @pos += '/nowiki>'.length
-        @wikiEnabled = true
+        @mode = :wiki
       else
         # We've not found a valid control sequence. Push back the character
         # and make sure we treat it as a normal character.
@@ -299,7 +353,7 @@ class TaskJuggler
       str << c
       # Now we can collect characters of a word until we hit a whitespace.
       while (c = nextChar) && !" \n\t".include?(c)
-        if @wikiEnabled
+        if @mode == :wiki
           # Or at least to ' characters in a row.
           break if c == "'" && peek == "'"
           # Or a ] or <
@@ -421,6 +475,43 @@ class TaskJuggler
       tok
     end
 
+    def readBlanks(c)
+      loop do
+        if c != ' ' && c != "\n" && c != "\t"
+          returnChar
+          return nil
+        end
+        c = nextChar
+      end
+    end
+
+    def readId(c)
+      token = ""
+      token << c
+      while (c = nextChar) &&
+            (('a'..'z') === c || ('A'..'Z') === c || ('0'..'9')  === c ||
+             c == '_')
+        token << c
+      end
+      returnChar
+      return [ 'ID', token ]
+    end
+
+    def readString(terminator)
+      token = ""
+      while (c = nextChar) && c != terminator
+        if c == "\\"
+          # Terminators can be used as regular characters when prefixed by a \.
+          if (c = nextChar) && c != terminator
+            # \ followed by non-terminator. Just add both.
+            token << "\\"
+          end
+        end
+        token << c
+      end
+
+      [ 'STRING', token ]
+    end
   end
 
   # Exception raised by the RichTextScanner in case of processing errors. Its

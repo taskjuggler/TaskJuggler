@@ -162,6 +162,7 @@ class TaskJuggler
         post = "\n\n"
       when :ref
       when :href
+      when :blockfunc
       when :italic
       when :bold
       when :code
@@ -243,6 +244,14 @@ class TaskJuggler
       when :href
         pre = "<a href=\"#{@data}\" target=\"_blank\">"
         post = '</a>'
+      when :blockfunc
+        pre = "<blockfunc:#{@data[0]}"
+        if @data[1]
+          @data[1].keys.sort.each do |key|
+            pre += " #{key}=\"#{@data[1][key]}\""
+          end
+        end
+        post = "/>"
       when :italic
         pre = '<i>'
         post = '</i>'
@@ -330,22 +339,12 @@ class TaskJuggler
       when :numberitem3
         XMLElement.new('li')
       when :ref
-        if @data.include?(':')
-          protocol, path = @data.split(':')
-          if protocol.nil? || protocol.empty?
-            raise TjException.new, "Reference protocol name expected."
-          end
-          #if path.nil? || path.empty?
-          #  raise TjException.new, "Reference path missing."
-          #end
-          noChilds = true
-          args = children_to_s.split(' ')
-          @richText.protocolHandler(protocol).to_html(path, args)
-        else
-          XMLElement.new('a', 'href' => "#{@data}.html")
-        end
+        XMLElement.new('a', 'href' => "#{@data}.html")
       when :href
         XMLElement.new('a', 'href' => @data, 'target' => '_blank')
+      when :blockfunc
+        noChilds = true
+        @richText.protocolHandler(@data[0]).to_html(@data[1])
       when :italic
         XMLElement.new('i')
       when :bold

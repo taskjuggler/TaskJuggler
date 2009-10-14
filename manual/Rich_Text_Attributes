@@ -88,3 +88,44 @@ in nowiki tags.
 
  <nowiki> This is not '''bold''' text. </nowiki>
 
+==== Block and Inline Generators ====
+
+Block and inline generators are a very powerful extension that allow
+you to insert arbitrarily complex content. Block generators create a
+text block whereas inline generators generate an element that fits
+inside a text paragraph.
+
+Block generators use the following syntax:
+
+ <[generator_name parameter1="value1" ... ]>
+
+Inline generators have a very similar syntax:
+
+ <-generator_name parameter1="value1" ... ->
+
+Each generator is identified by a name. See the following list for
+supported generators and their functionality. Generators can have one or
+more optional parameters. Some parameters are mandatory, other are
+optional. The value of a parameter must be enclosed in single or
+double quotes. Since your rich text content must already be enclosed
+by double or single quotes, make sure you don't use the same quoting
+marks for the parameter value. Alternatively you can put a backslash
+in front of the quote mark to escape it.
+
+'''Block Generator''' ''''navigator''''
+
+Parameters:
+
+* id : ID of a defined [[navigator]]
+
+''The navigator generator inserts the referenced navigator.''
+
+'''Block Generator''' ''''report''''
+
+Paramters:
+
+* id : ID of a defined [[report]]
+
+''The report generator inserts the referenced report as a new block
+of this text. The referenced report inherits some context such as the
+report period and the property set from the referencing report.''

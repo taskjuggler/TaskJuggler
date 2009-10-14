@@ -21,30 +21,29 @@ class TaskJuggler
   # It currently only supports HTML.
   class RTPNavigator < RichTextProtocolHandler
 
-    def initialize(project)
-      super('navigator')
-      @project = project
+    def initialize(project, sourceFileInfo)
+      super(project, 'navigator', sourceFileInfo)
     end
 
     # Not supported for this protocol
-    def to_s(path, args)
+    def to_s(args)
       ''
     end
 
     # Return a XMLElement tree that represents the navigator in HTML code.
-    def to_html(path, args)
-      if args.length > 1
-        raise "The navigator protocol does not support any arguments"
+    def to_html(args)
+      if args.nil? || (id = args['id']).nil?
+        error('rtp_nav_id_missing',
+              "Argument 'id' missing to specify the navigator to be used.")
       end
-      navBar = @project['navigators'][path]
-      unless navBar
-        raise "Unknown navigator #{path}"
+      unless (navBar = @project['navigators'][id])
+        error('rtp_nav_unknown_id', "Unknown navigator #{id}")
       end
       navBar.to_html
     end
 
     # Not supported for this protocol.
-    def to_tagged(path, args)
+    def to_tagged(args)
       nil
     end
 

@@ -380,25 +380,25 @@ textreport "Overview" {
   header -8<-
     == Accounting Software Project ==
     ----
-    [[navigator:navbar]]
+    <[navigator id="navbar"]>
     ----
   ->8-
   formats html
-  center '[[report:overview]]'
+  center '<[report id="overview"]>'
 
   textreport "Development" {
-    center '[[report:development]]'
+    center '<[report id="development"]>'
   }
 
   textreport "Deliveries" {
-    center '[[report:deliveries]]'
+    center '<[report id="deliveries"]>'
   }
 
   textreport "ContactList" {
-    center '[[report:contactList]]'
+    center '<[report id="contactList"]>'
   }
   textreport "Resource Graph" {
-    center '[[report:resourceGraph]]'
+    center '<[report id="resourceGraph"]>'
   }
 }
 

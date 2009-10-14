@@ -14,6 +14,21 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
 require 'RichText'
+require 'RichTextProtocolHandler'
+
+  class RTPDummy < TaskJuggler::RichTextProtocolHandler
+
+    def initialize()
+      super(nil, 'dummy')
+    end
+
+    # Return a XMLElement tree that represents the navigator in HTML code.
+    def to_html(args)
+      s = ''
+      TaskJuggler::XMLElement.new('blockfunc:dummy', args)
+    end
+  end
+
 
 class TestRichText < Test::Unit::TestCase
 
@@ -889,9 +904,56 @@ EOT
     assert_equal(ref, out)
   end
 
+  def test_blockFunction
+    inp = <<EOT
+<[dummy id="foo" arg1="bar"]>
+=== Header ===
+<[dummy]>
+some text
+<[dummy]>
+EOT
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = <<EOT
+<div><blockfunc:dummy arg1="bar" id="foo"/><h2>0.1 [Header]</h2>
+
+<blockfunc:dummy/><p>[some] [text]</p>
+
+<blockfunc:dummy/></div>
+EOT
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+0.1 Header
+
+some text
+
+EOT
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = <<EOT
+<div>
+ <blockfunc:dummy arg1=\"bar\" id=\"foo\"/>
+ <h2 id="Header">0.1 Header</h2>
+ <blockfunc:dummy/>
+ <p>some text</p>
+ <blockfunc:dummy/>
+</div>
+EOT
+    assert_equal(ref, out)
+  end
+
   def newRichText(text)
     begin
       rText = TaskJuggler::RichText.new(text)
+      rText.registerProtocol(RTPDummy.new)
     rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"

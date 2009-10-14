@@ -195,16 +195,15 @@ class TaskJuggler
     # actual input file. So we have to map the error location in the RichText
     # input stream back to the position in the project file.
     def newRichText(text)
+      sfi = sourceFileInfo
       begin
         rText = RichText.new(text)
-        rText.registerProtocol(RTPNavigator.new(@project))
-        rText.registerProtocol(RTPReport.new(@project))
+        rText.registerProtocol(RTPNavigator.new(@project, sfi))
+        rText.registerProtocol(RTPReport.new(@project, sfi))
       rescue RichTextException => msg
-        sfi = sourceFileInfo
-        correctSFI = SourceFileInfo.new(sfi.fileName,
-                                        sfi.lineNo + msg.lineNo - 1, 0)
+        sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)
         message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,
-                              @property, nil, correctSFI)
+                              @property, nil, sfi)
         @messageHandler.send(message)
 
       end
