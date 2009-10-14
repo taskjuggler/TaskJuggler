@@ -22,7 +22,7 @@ scheduler will use to fit the tasks in. So, make it large enough for
 all your tasks to fit in. But don't make it too large, because this
 will result in longer scheduling times and higher memory consumption.
 
-[[example:tutorial header1]]
+<[example file="tutorial" tag="header1"]>
 
 All TaskJuggler properties have two required attributes, a unique ID
 and a name, and a set of optional attributes. The name must always be
@@ -48,7 +48,7 @@ of this manual.
 
 The [[currency]] attribute specifies the unit of currency values.
 
-[[example:tutorial currency]]
+<[example file="tutorial" tag="currency"]>
 
 Because each culture has its own way of specifying dates and numbers,
 the format for these are configurable.  Use the [[timeformat]]
@@ -57,7 +57,7 @@ for reports, it does not affect the way you specify dates in the
 project files. Here you always need to use the [[date ISO standardized
 notation]].
 
-[[example:tutorial formats]]
+<[example file="tutorial" tag="formats"]>
 
 We also can specify the way numbers or currency values are shown in
 the reports. Use the [[numberformat]] and [[currencyformat]]
@@ -71,7 +71,7 @@ defined result for the reports in this example we've picked a specific
 date that fits our purpose here. In your projects, you would use
 [[now]] to generate status reports for the date you specify.
 
-[[example:tutorial now]]
+<[example file="tutorial" tag="now"]>
 
 In this tutorial we would like to compare two scenarios of the
 project. The first scenario is the one that we have planned. The
@@ -87,13 +87,13 @@ impact of certain changes to the plan of record.  We'll see further
 below, how to specify values for a scenario and how to compare the
 results.
 
-[[example:tutorial scenario]]
+<[example file="tutorial" tag="scenario"]>
 
 To summarize the above, let's look at the complete header again.
 Don't get scared by the wealth of attributes here. They are all
 optional and mostly used to illustrate the flexibility of TaskJuggler.
 
-[[example:tutorial header2]]
+<[example file="tutorial" tag="header2"]>
 
 === Global Attributes ===
 
@@ -109,7 +109,7 @@ further below, what this actually means. Right after the project
 property we are at top-level scope, so this is the default for all
 following properties.
 
-[[example:tutorial rate]]
+<[example file="tutorial" tag="rate"]>
 
 The [[rate]] attribute can be used to specify the daily costs of
 resources. All subsequent resources will get this rate. But it can be
@@ -119,7 +119,7 @@ You may also want to tell TaskJuggler about holidays that affect
 all resources. Global vacations are time periods where TaskJuggler
 does not do any resource assignments to tasks.
 
-[[example:tutorial vacation]]
+<[example file="tutorial" tag="vacation"]>
 
 Use the [[vacation]] attribute to define a global vacation. Global
 vacations must have a name and a date or date range. This is slightly
@@ -135,7 +135,7 @@ Macros are text patterns that can be defined once and inserted
 multiple times in the project file. A [[macro]] always has a name and the
 text pattern is enclosed by square brackets. 
 
-[[example:tutorial macro]]
+<[example file="tutorial" tag="macro"]>
 
 To use the macro you simply have to write
 ''''${allocate_developers}'''' and TaskJuggler will replace the term
@@ -151,7 +151,7 @@ generate reports of the TaskJuggler results, you can use the flags to
 filter out information and limit the report to exactly those details
 that you want to have included.
 
-[[example:tutorial flags]]
+<[example file="tutorial" tag="flags"]>
 
 This is flag declaration. All [[flags]] need to be declared, before they
 can be used to avoid hard to find errors due to misspelled flag
@@ -167,7 +167,7 @@ In order not to get lost with all the various amounts, we declare 3
 for the development costs, one for the documentation costs, and one
 for the customer payments.
 
-[[example:tutorial accounts]]
+<[example file="tutorial" tag="accounts"]>
 
 Like all TaskJuggler properties, the account needs an ID and a name.
 IDs may only consist of the characters a to z, A to Z and the
@@ -184,7 +184,7 @@ other to create a profit and loss analysis. When you have specified
 accounts in your project, you must at least define one default
 [[balance]].
 
-[[example:tutorial balance]]
+<[example file="tutorial" tag="balance"]>
 
 === Declaring Resources ===
 
@@ -192,7 +192,7 @@ While the above introduced account property is only needed if you
 want to do a P&L analysis, resources are usually found in almost any
 project.
 
-[[example:tutorial resources]]
+<[example file="tutorial" tag="resources"]>
 
 This snippet of the example shows the use of the [[resource
 resource property]]. Just like accounts, resources always have an ID
@@ -245,7 +245,7 @@ complicated, we break it down into several subtasks. We need to do a
 specification, develop the software, test the software, and write a
 manual. Using the [[task task property]], thiis would look as follows:
 
-[[example:tutorial task1]]
+<[example file="tutorial" tag="task1"]>
 
 Similar to resources, tasks are declared by using the task keyword
 followed by an ID and a name string. All TaskJuggler properties have
@@ -266,7 +266,7 @@ some subtasks later on.
 We consider the specification task simple enough, so we don't have to
 break it into further subtasks. So let's add some more details to it.
 
-[[example:tutorial spec]]
+<[example file="tutorial" tag="spec"]>
 
 The [[effort]] to complete the task is specified with 20 man-days.
 Alternatively we could have used the [[length]] attribute or
@@ -289,7 +289,7 @@ sub tasks.
 Here we use the allocate_developers macro mentioned above. The
 expression ''''${allocate_developers}'''' is simply expanded to 
 
-[[example:tutorial expandedmacro]]
+<[example file="tutorial" tag="expandedmacro"]>
 
 If you need to [[allocate]] the same bunch of people to several tasks,
 the macro saves you some typing. You could have written the allocate
@@ -331,7 +331,7 @@ dependency specifications of relative IDs.
 The software development task is still too complex to specify it
 directly. So we split it further into subtasks.
 
-[[example:tutorial software]]
+<[example file="tutorial" tag="software"]>
 
 We use the [[priority]] attribute to mark the importance of
 the tasks. 500 is the default priority of top-level tasks. Setting the
@@ -342,7 +342,7 @@ if specified before the subtasks' declaration. So all subtasks of
 software have a priority of 1000 as well, unless they have their own
 priority definition.
 
-[[example:tutorial database]]
+<[example file="tutorial" tag="database"]>
 
 The work on the database coupling should not start before the
 specification has been finished. So we again use the [[depends]]
@@ -352,7 +352,7 @@ scope of the enclosing software task. The second one is to get into
 the AcSo scope that contains the spec tasks. For a change, we
 [[allocate]] resources directly without using a macro.
 
-[[example:tutorial gui]]
+<[example file="tutorial" tag="gui"]>
 
 TaskJuggler can schedule your project for two different [[scenario
 scenarios]]. We have called the first scenario ''''plan'''' scenario
@@ -369,7 +369,7 @@ man-days. It turned out that we actually needed 40 man-days. By
 prefixing the [[effort]] attribute with ''''delayed:'''', the
 effort value for the ''''delayed'''' scenario can be specified.
 
-[[example:tutorial backend]]
+<[example file="tutorial" tag="backend"]>
 
 By default, TaskJuggler assumes that all tasks are on schedule.
 Sometimes you want to generate reports that show how much of a task
@@ -381,7 +381,7 @@ of the task have been completed up to the current date. In our case
 the back-end implementation is slightly ahead of schedule as we will
 see from the report.
 
-[[example:tutorial test]]
+<[example file="tutorial" tag="test"]>
 
 The software testing task has been split up into an alpha and
 a beta test task. The interesting thing here is, that efforts can not
@@ -401,7 +401,7 @@ for the lease on the building and the equipment. To compensate this,
 we charge a daily rate of USD 170 per day using the [[charge]]
 attribute.
 
-[[example:tutorial charge]]
+<[example file="tutorial" tag="charge"]>
 
 Since we specify the attribute for the top-level task before we
 declare any subtasks, this attribute will be inherited by all subtasks
@@ -409,7 +409,7 @@ and their subtasks and so on. The only exception is the writing of the
 manual. We need to change the chargeset for this task again, as it is
 also a subtask of AcSo and we want to use a different account for it.
 
-[[example:tutorial manual]]
+<[example file="tutorial" tag="manual"]>
 
 === Specifying Milestones ===
 
@@ -423,7 +423,7 @@ progress of the project.
 TaskJuggler has support for milestones as well. Milestones are leaf
 tasks that don't have a duration specification.
 
-[[example:tutorial deliveries]]
+<[example file="tutorial" tag="deliveries"]>
 
 We have put all important milestones of the project as subtasks of the
 deliveries task. This way they show up nicely grouped in the reports.
@@ -467,7 +467,7 @@ To view a task report in the GUI, you have to add the following lines
 to your project. This will give you a list of all the project's tasks
 and the classical Gantt chart.
 
-[[example:tutorial planoverview]]
+<[example file="tutorial" tag="planoverview"]>
 
 The GUI requires the name column to be present in the report. If you
 don't specify it, it will be added automatically. It does not support
