@@ -9,7 +9,7 @@ demonstrates some of the commonly used features of TaskJuggler. The
 complete example can be downloaded
 [http://www.taskjuggler.org/tj3/examples/tutorial.tjp here]. The
 resulting reports can be found
-[http://www.taskjuggler.org/tj3/examples/Overview.html
+[http://www.taskjuggler.org/tj3/examples/index.html
 here].
 
 === Starting the project ===
@@ -455,128 +455,171 @@ Now the project has been completely specified. Stopping here would
 result in a valid TaskJuggler file that could be processed and
 scheduled. But no reports would be generated to visualize the results.
 
-=== Generating Reports of the scheduled Project ===
+=== Visualizing the Project ===
 
-TaskJuggler offers a number of report types. Probably the most popular ones are interactive reports and HTML reports.
+To see and share the project data you reports can be generated. You
+can generate any number of reports and you can select from a variety
+of report types and output formats. To have a report generated after
+the project scheduling has been completed, you need include a report
+definition into the project description. Report definitions are
+properties that are very similar to the task and resource properties
+that you are already familiar with. Just like these, report
+definitions can be nested to take advantage of the attribute
+inheritance mechanism. Every report definition starts with the type
+of the report. Each type of report has a particular focus. A
+[[taskreport]] lists the project data in the form of a task list.
+A [[resourcereport]] does the same in form of a resource list. For a
+more generic report, you can use the [[textreport]].
 
-==== Generating Interactive Reports ====
+A ''''textreport'''' does not directly present the data in form of a
+task or resource list. It just consists of text building blocks that
+are described by [[Rich_Text_Attributes Rich Text]]. There can be a
+building block at the top and bottom, as well as three columns in
+the center. The column are called ''''left'''', ''''center'''' and
+''''right''''.
 
-Interactive reports are only available in the TaskJuggler GUI. The
-command line version will just ignore interactive report definitions.
-To view a task report in the GUI, you have to add the following lines
-to your project. This will give you a list of all the project's tasks
-and the classical Gantt chart.
+For our first report, we'll just use the center column for now. Like
+every property, you need to specify a name. This name will be the
+base name of the generated report file. Depending on the output
+format, the proper suffix is appended. For this report, we only chose
+to generate a web page in HTML format. There is no default format
+defined for reports. If the [[formats]] attribute is not specified,
+no output file will be generated for the report specification.
 
-<[example file="tutorial" tag="planoverview"]>
+This may seem odd at first glance since TaskJuggler syntax always
+tries to use the most compact and readable syntax for the common
+case. As you will see in a minute, reports may be composed of several
+report specifications. One report specification can include the
+output of another report specification as well. In this case, the
+included report does not need to generate it's own file. The output
+will be included within the output of another report specification.
+In case of such composed reports, the output format specification of
+the top-level format will be used for all included reports as well.
 
-The GUI requires the name column to be present in the report. If you
-don't specify it, it will be added automatically. It does not support
-any of the index columns. They will not be shown in the GUI.
-Nonetheless, it's a good idea to request it, as the printed version of
-the interactive reports behave like the other reports. They only show
-specified columns. The printed reports repeat the first column on
-every page in case it does not fit on a single page. To print a report
-from the GUI just select File->Print from the menu or click the
-printer icon in the toolbar.
+<[example file="tutorial" tag="index1"]>
 
-For this report we like to have the abbreviated weekday in front of
-the date. %a is the tag for this. See the manual for a complete list
-of all options.
+Web browsers usually look for a file called ''''index.html'''' when
+they are pointed to a directory. To generate such a file, we have
+chosen the name ''''index'''' and the format ''''html''''.
 
-We don't want to see any resources in this report, so we hide them
-all. 1 means always hide a resource. To show all resources we could
-write a 0, which means never hide a resource. Or we could write a
-logical expression that only shows the leaf resources and sorts them
-by name as we did for the next report. It's a list of all tasks
-showing the resources assigned to each task.
+As we've mentioned before, the sections of a ''''textreport'''' are
+defined in Rich Text format. Here we use a so called block generator
+to include the HTML output of another report definition. The
+''''report'''' block generator allows us to compose reports by
+combining their output into a single report. You must provide the
+''''id'''' parameter to specify which report definition you would
+like to use. In this case, it is a report definition with the ID
+''''overview''''. Note that generator parameters need to be enclosed
+in single or double quotes. We are essentially marking a string
+within a string. This can only work out, if we don't use the same
+parameter for both. Let's define this report first.
 
- taskreport "Task Usage" {
-   headline "Task Usage Report"
-   columns hierarchindex, name, start, end, effort { title "Work" }, duration,
-     cost, revenue
-   timeformat "%Y-%m-%d"
-   loadunit days
-   hideresource ~isLeaf()
-   sortresources nameup
- }
+<[example file="tutorial" tag="overview1"]>
 
-The default title for the effort column is replaced with a custom
-title. Additionally we show the cost and revenue of all tasks and
-resources. All loads are shown as resource-days.  The next report is
-similar to the first one, but has the completion degree as additional
-column.
+Instead of another [[textreport]] definition we are now using a
+[[taskreport]]. A task report contains a list of tasks in a table
+structure. By default, it contains all tasks of the project. As we
+will see later on, we can use filter expressions to limit the content
+to a well defined subset of tasks. The table contains a line for each
+task and comes by default with a few columns like the name of the
+task, and the start and end dates. For this project overview report,
+we like to have also the effort for each task, the duration, the
+effort, the cost and revenue numbers included. To top it off, we also
+include a column with a Gantt chart.
 
- # A list of all tasks with the percentage complete for each task
- taskreport "Tracking Gantt" {
-   headline "Tracking Gantt Chart"
-   columns hierarchindex, name, start, end, effort { title "Work" }, duration,
-     completed, chart
-   timeformat "%a %Y-%m-%d"
-   loadunit days
-   hideresource 1
- }
+By including the cost and revenue column, we are able to do a simple
+profit and loss analysis on the project. This P&L is computed from
+the accounts that we have provided above. For this to work, we need
+to tell TaskJuggler which accounts are cost accounts and which are
+revenue accounts. We have already conveniently grouped the accounts
+and the [[balance]] attribute specifies which accounts are used for
+the P&L in this report.
 
-We can also have resource-centric reports. This is done with the
-report type resourcereport. The following report is showing resource
-allocation. It identifies whether each resource is under- or
-over-allocated for.
+<[example file="tutorial" tag="overview2"]>
 
- resourcereport "Resource Graph" {
-   headline "Resource Allocation Graph"
-   columns no, name, rate, utilization, freeload, chart
-   loadunit days
-   hidetask 1
- }
+We have chosen to include the start and end date of each task in the
+report. By default, TaskJuggler lists dates as day, month and year.
+We like the format to be similar to the format that the project
+syntax uses, but also like to include the weekday. To change the date
+format, the [[timeformat]] attribute can be used.
 
-The next report is a list of all project resources, both human and
-material resources, together with the associated costs.
+The project will last a few weeks. The most convenient unit to list
+efforts in is man or resource days. The [[loadunit]] attribute tells
+TaskJuggler to list the load of each task or resource in man days.
+Since this will just be a number without a unit, it is advisable to
+include a small hint for the reader that these values are indeed man
+or resource days. The caption of the table is a convenient place to
+put this information by using the [[caption]] attribute.
 
- resourcereport "Resource Sheet" {
-   headline "Resource Sheet"
-   columns no, name, efficiency, id, maxeffort, rate
-   loadunit days
-   hidetask 1
- }
+<[example file="tutorial" tag="overview3"]>
 
-The next report is similar to the previous one, but also lists the
-tasks for each of the resources. It also provides details about the
-cost for each resource and task.
+The ''''taskreport'''' can contain more than just the table. It is
+not as flexible as the ''''textreport'''', but still has support for
+a header and footer. Let's look at the header first. We not only
+like to put a headline here, but several paragraphs of text. The
+[[header]] attribute is a [[Rich_Text_Attributes Rich Text]]
+attribute just like [[center]]. We could enclose it in single or
+double quotes again. But for Strings that span multiple lines and
+potentially include single or double quotes as well, scissor-marks or
+cut-here-marks are recommended. These marks look like a pair of
+scissors that cut along a dashed line. Use ''''-8<-'''' to begin a
+string and ''''->8-'''' to terminate it. The opening cut mark must be
+immediately followed by a line break. The indentation of the
+following line defines the indentation that will be ignored for all
+lines of the string. The following lines must have at least the same
+indentation. The indentation that exceeds the indentation of the
+first line will be kept in the resulting string. With this feature,
+you can define multi-line Rich Text strings without disturbing the
+indentation structure of your project file.
 
- # A list of resources and each task associated with each resource.
- resourcereport "Resource Usage" {
-   headline "Resource Usage Report"
-   columns no, name, utilization, freeload, cost
-   loadunit days
-   hidetask 0
- }
+<[example file="tutorial" tag="overview4"]>
 
-==== Generating HTML Reports ====
+Section headers are surrounded by ''''<nowiki>==</nowiki>''''. The
+number of equal signs, define the section level. You need to start
+with two equal characters for the first level. Text that is surrounded
+by blank lines will create a paragraph. Bullet lists can be made by
+starting a line with a ''''#'''' character. Remember that the
+indentation of cut-mark strings will be ignored. Your ''''#''''
+character must not be the first character in the line as long it is
+only preceded by the exact same number of blanks as the first line of
+the cut-mark string.
 
-In addition to the interactive reports, TaskJuggler also provides HTML
-reports. These reports have the benefit that you can create report
-files that you can publish on a web server. TaskJuggler supports a
-variety of HTML reports. Please refer to the manual for a full list.
-In this tutorial we will only cover a subset of them.
+If you want to reference other reports from this report, you can
+include the file name of this report by ''''<nowiki>[[</nowiki>''''
+and ''''<nowiki>]]</nowiki>''''.  Don't include the extension of the
+file name, it will be automatically appended. The actual
+representation of the reference depends on the chosen output format.
+For HTML output, the reference is a click-able link to the referenced
+report file.
 
-To conclude the HTML reports, a report is generated that shows how
-poorly the project is calculated. The company won't get rich with this
-project. Due to the slip, it actually needs a loan from the bank to
-pay the salaries.
+For the [[footer]] we can proceed accordingly. We just add a few more
+paragraphs of text the describe certain aspects of the project. By
+putting it all together, we end up with the following report
+definition.
 
- htmlaccountreport "Accounting.html" {
-   columns no, name, scenario, total, monthly
-   headline "P&L for the Project"
-   caption "The table shows the profit and loss analysis as well as
-            the cashflow situation of the Accounting Software Project."
-   accumulate
-   scenarios plan, delayed
- }
+<[example file="tutorial" tag="overview"]>
 
-The htmlaccountreport property produces similar reports as the ones
-shown above, but it lists accounts instead of tasks or resources. The
-total column shows the value of the account at the end of the reported
-time interval. The accumulate attribute puts the calendar in
-accumulation mode. The monthly columns list the value of the account
-at the end of the month. Normally the amount that has been added or
-subtracted from the account would be listed.
+The generated report can be found
+[http://www.taskjuggler.org/tj3/examples/index.html
+here]. It servers as an entry page for the other reports. While it
+already contains some references, a navigator bar would be handy as
+well. Fortunately, there is a block generator called 'navigator' to
+take care of this. But before we can include the navigator in the
+report, we need to define it first.
+
+<[example file="tutorial" tag="navigator"]>
+
+[[hidereport]] is a filter attribute. The logical expression
+determines which reports will be included in the navigator bar. A
+logical expression of 0 means hide no reports, so all are included.
+
+The best place to put a navigator bar in the report is right at the
+top. We use two horizontal lines to separate the navigator from the
+main headline and the rest of the report.
+''''<nowiki>----</nowiki>'''' at the begin of the line create such a
+horizontal separation line.
+
+<[example file="tutorial" tag="index2"]>
+
+
 

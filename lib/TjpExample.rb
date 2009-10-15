@@ -89,7 +89,7 @@ class TaskJuggler
             end
             snippetState[tag] = false
           else
-            raise "Bad indicator: #{line}"
+            raise "Bad indicator #{indicator}. Must be '+' or '-': #{line}"
           end
         else
           # Process the regular lines and add them to all currently active

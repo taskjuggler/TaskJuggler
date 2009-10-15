@@ -372,19 +372,27 @@ task AcSo "Accounting Software" {
 # scheduled. But no reports would be generated to visualize the
 # results.
 
+# *** EXAMPLE: navigator +
 navigator navbar {
   hidereport 0
 }
+# *** EXAMPLE: navigator -
 
-textreport "Overview" {
+# *** EXAMPLE: index1 +
+# *** EXAMPLE: index2 +
+textreport "index" {
+  formats html
+# *** EXAMPLE: index1 -
   header -8<-
     == Accounting Software Project ==
     ----
     <[navigator id="navbar"]>
     ----
   ->8-
-  formats html
+# *** EXAMPLE: index1 +
   center '<[report id="overview"]>'
+# *** EXAMPLE: index1 -
+# *** EXAMPLE: index2 -
 
   textreport "Development" {
     center '<[report id="development"]>'
@@ -400,11 +408,18 @@ textreport "Overview" {
   textreport "Resource Graph" {
     center '<[report id="resourceGraph"]>'
   }
+# *** EXAMPLE: index1 +
+# *** EXAMPLE: index2 +
 }
+# *** EXAMPLE: index1 -
+# *** EXAMPLE: index2 -
 
 # A traditional Gantt chart with a project overview.
-# *** EXAMPLE: planoverview +
-taskreport overview "Overview1" {
+# *** EXAMPLE: overview +
+# *** EXAMPLE: overview1 +
+taskreport overview "" {
+# *** EXAMPLE: overview1 -
+# *** EXAMPLE: overview4 +
   header -8<-
     === Project Overview ===
     
@@ -416,16 +431,24 @@ taskreport overview "Overview1" {
     
     === Project Plan ===
   ->8-
-  headline "Project Plan Overview"
+# *** EXAMPLE: overview4 -
+# *** EXAMPLE: overview1 +
   columns hierarchindex, name, start, end, effort, duration, cost,
           revenue, chart
+# *** EXAMPLE: overview1 -
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
+# *** EXAMPLE: overview3 +
   timeformat "%a %Y-%m-%d"
   loadunit days
+# *** EXAMPLE: overview3 -
   hideresource 1
+# *** EXAMPLE: overview2 +
   balance cost rev
+# *** EXAMPLE: overview2 -
+# *** EXAMPLE: overview3 +
   caption 'All effort values are in man days.'
+# *** EXAMPLE: overview3 -
 
   footer -8<-
     === Staffing ===
@@ -439,7 +462,10 @@ taskreport overview "Overview1" {
     the original schedule. See [[Deliveries]] for the impact on the
     delivery dates.
   ->8-
+# *** EXAMPLE: overview1 +
 }
+# *** EXAMPLE: overview1 -
+# *** EXAMPLE: overview -
 
 # A list of tasks showing the resources assigned to each task.
 taskreport development "" {
@@ -479,4 +505,3 @@ resourcereport resourceGraph "" {
   hidetask ~isleaf()
   sorttasks plan.start.up
 }
-# *** EXAMPLE: planoverview -
