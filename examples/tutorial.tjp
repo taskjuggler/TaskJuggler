@@ -254,14 +254,14 @@ navigator navbar {
   hidereport 0
 }
 
-textreport "Overview" {
+textreport "index" {
+  formats html
   header -8<-
     == Accounting Software Project ==
     ----
     <[navigator id="navbar"]>
     ----
   ->8-
-  formats html
   center '<[report id="overview"]>'
 
   textreport "Development" {
@@ -281,7 +281,7 @@ textreport "Overview" {
 }
 
 # A traditional Gantt chart with a project overview.
-taskreport overview "Overview1" {
+taskreport overview "" {
   header -8<-
     === Project Overview ===
     
@@ -293,7 +293,6 @@ taskreport overview "Overview1" {
     
     === Project Plan ===
   ->8-
-  headline "Project Plan Overview"
   columns hierarchindex, name, start, end, effort, duration, cost,
           revenue, chart
   # For this report we like to have the abbreviated weekday in front
