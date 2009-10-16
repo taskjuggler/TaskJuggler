@@ -9,7 +9,7 @@ demonstrates some of the commonly used features of TaskJuggler. The
 complete example can be downloaded
 [http://www.taskjuggler.org/tj3/examples/tutorial.tjp here]. The
 resulting reports can be found
-[http://www.taskjuggler.org/tj3/examples/index.html
+[http://www.taskjuggler.org/tj3/examples/Overview.html
 here].
 
 === Starting the project ===
@@ -496,9 +496,9 @@ will be included within the output of another report specification.
 In case of such composed reports, the output format specification of
 the top-level format will be used for all included reports as well.
 
-<[example file="tutorial" tag="index1"]>
+<[example file="tutorial" tag="overview1"]>
 
-Web browsers usually look for a file called ''''index.html'''' when
+Web browsers usually look for a file called ''''Overview.html'''' when
 they are pointed to a directory. To generate such a file, we have
 chosen the name ''''index'''' and the format ''''html''''.
 
@@ -600,7 +600,7 @@ definition.
 <[example file="tutorial" tag="overview"]>
 
 The generated report can be found
-[http://www.taskjuggler.org/tj3/examples/index.html
+[http://www.taskjuggler.org/tj3/examples/Overview.html
 here]. It servers as an entry page for the other reports. While it
 already contains some references, a navigator bar would be handy as
 well. Fortunately, there is a block generator called 'navigator' to
@@ -619,7 +619,7 @@ main headline and the rest of the report.
 ''''<nowiki>----</nowiki>'''' at the begin of the line create such a
 horizontal separation line.
 
-<[example file="tutorial" tag="index2"]>
+<[example file="tutorial" tag="overview2"]>
 
 
 

@@ -254,7 +254,7 @@ navigator navbar {
   hidereport 0
 }
 
-textreport "index" {
+textreport "Overview" {
   formats html
   header -8<-
     == Accounting Software Project ==
