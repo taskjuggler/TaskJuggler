@@ -51,12 +51,14 @@ class TaskJuggler
       mWidth = @maxWidth if mWidth > @maxWidth
       td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
         'style' => 'position:relative; overflow:auto; ' +
-                   "max-width:#{@maxWidth}px; " +
-                   "min-width:#{mWidth}px; " +
+                   "width:#{mWidth}px; " +
                    'margin-top:-1px; margin-bottom:-1px; ' +
                    "height:#{height + SCROLLBARHEIGHT + 2}px;"))
 
-      scrollDiv << super
+      scrollDiv << (contentDiv = XMLElement.new('div',
+        'style' => 'margin: 0px; padding: 0px; position: absolute; top: 0px;' +
+                   "left: 0px; width: #{@maxWidth}px; height: #{height}px; "))
+      contentDiv << super
       td
     end
 
