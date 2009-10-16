@@ -49,11 +49,11 @@ class TaskJuggler
 
     # Call this function with the master file to start processing a TJP file or
     # a set of TJP files.
-    def open(masterFile)
+    def open(file, master)
       begin
-        @scanner = TextScanner.new(masterFile, @messageHandler)
+        @scanner = TextScanner.new(file, @messageHandler)
         # We need the TextScanner object for error reporting.
-        if masterFile != '.' && masterFile[-4, 4] != '.tjp'
+        if master && file != '.' && file[-4, 4] != '.tjp'
           error('illegal_extension', "Project file name must end with " +
                 '\'.tjp\' extension')
         end

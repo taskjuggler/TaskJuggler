@@ -41,7 +41,7 @@ class TaskJuggler
     parser = ProjectFileParser.new(@messageHandler)
     files.each do |file|
       begin
-        parser.open(file)
+        parser.open(file, master)
       rescue TjException
         Log.exit('parser')
         return false
