@@ -493,6 +493,15 @@ cell. If it evaluates to true, the cell will have no content.
 EOT
         )
 
+    pattern(%w( _hidecellurl !logicalExpression ), lambda {
+      @column.hideCellURL = @val[1]
+    })
+    doc('hidecellurl', <<'EOT'
+This logical expression is evaluated during report generation for each report
+cell. If it evaluates to true, the cell will have no URL attached.
+EOT
+        )
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })
@@ -808,7 +817,7 @@ EOT
   def rule_flag
     pattern(%w( $ID ), lambda {
       unless @project['flags'].include?(@val[0])
-        error('undecl_flag', "Undeclared flag #{@val[0]}")
+        error('undecl_flag', "Undeclared flag '#{@val[0]}'")
       end
       @val[0]
     })
@@ -1521,7 +1530,7 @@ EOT
     pattern(%w( $ID !argumentList ), lambda {
       if @val[1].nil?
         unless @project['flags'].include?(@val[0])
-          error('operand_unkn_flag', "Undeclared flag #{@val[0]}")
+          error('operand_unkn_flag', "Undeclared flag '#{@val[0]}'")
         end
         LogicalFlag.new(@val[0])
       else

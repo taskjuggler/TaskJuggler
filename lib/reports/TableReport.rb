@@ -971,8 +971,13 @@ class TaskJuggler
     def setCellURL(cell, columnDef, query)
       return unless columnDef.cellURL
 
-      url = expandMacros(columnDef.cellURL, cell.text, query)
-      cell.url = url unless url.empty?
+      if columnDef.hideCellURL &&
+         columnDef.hideCellURL.eval(query.property, query.scopeProperty)
+        url = nil
+      else
+        url = expandMacros(columnDef.cellURL, cell.text, query)
+      end
+      cell.url = url unless url.nil? || url.empty?
     end
 
     # Try to merge equal cells without text to multi-column cells.

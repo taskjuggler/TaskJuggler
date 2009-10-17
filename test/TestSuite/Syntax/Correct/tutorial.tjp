@@ -378,21 +378,21 @@ navigator navbar {
 }
 # *** EXAMPLE: navigator -
 
-# *** EXAMPLE: overview1 +
-# *** EXAMPLE: overview2 +
+# *** EXAMPLE: overview_report1 +
+# *** EXAMPLE: overview_report2 +
 textreport "Overview" {
   formats html
-# *** EXAMPLE: overview1 -
+# *** EXAMPLE: overview_report1 -
   header -8<-
     == Accounting Software Project ==
     ----
     <[navigator id="navbar"]>
     ----
   ->8-
-# *** EXAMPLE: overview1 +
+# *** EXAMPLE: overview_report1 +
   center '<[report id="overview"]>'
-# *** EXAMPLE: overview1 -
-# *** EXAMPLE: overview2 -
+# *** EXAMPLE: overview_report1 -
+# *** EXAMPLE: overview_report2 -
 
   textreport "Development" {
     center '<[report id="development"]>'
@@ -408,11 +408,11 @@ textreport "Overview" {
   textreport "Resource Graph" {
     center '<[report id="resourceGraph"]>'
   }
-# *** EXAMPLE: overview1 +
-# *** EXAMPLE: overview2 +
+# *** EXAMPLE: overview_report1 +
+# *** EXAMPLE: overview_report2 +
 }
-# *** EXAMPLE: overview1 -
-# *** EXAMPLE: overview2 -
+# *** EXAMPLE: overview_report1 -
+# *** EXAMPLE: overview_report2 -
 
 # A traditional Gantt chart with a project overview.
 # *** EXAMPLE: overview +

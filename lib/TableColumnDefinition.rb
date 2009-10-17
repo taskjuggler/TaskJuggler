@@ -18,7 +18,8 @@ class TaskJuggler
   class TableColumnDefinition
 
     attr_reader :id
-    attr_accessor :cellText, :hideCellText, :cellURL, :title, :scale, :width,
+    attr_accessor :cellText, :hideCellText, :cellURL, :hideCellURL,
+                  :title, :scale, :width,
                   :content, :column
 
     def initialize(id, title)
@@ -34,6 +35,9 @@ class TaskJuggler
       @hideCellText = nil
       # The cell text can be associated with a hyperlink.
       @cellURL = nil
+      # A LogicalExpression that is evaluated for every cell. If the result is
+      # true, the cellURL will be ignored.
+      @hideCellURL = nil
       # The content attribute is only used for calendar columns. It specifies
       # what content should be displayed in the colendar columns.
       @content = 'load'
