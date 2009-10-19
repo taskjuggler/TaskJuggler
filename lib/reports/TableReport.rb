@@ -36,6 +36,7 @@ class TaskJuggler
       'name'        => [ 'Name',       true,   :left,  false,  false ],
       'no'          => [ 'No.',        false,  :right, true,   false ],
       'rate'        => [ 'Rate',       true,   :right, true,   true ],
+      'resources'   => [ 'Resources',  false,  :left,  true,   true ],
       'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
       'scenario'    => [ 'Scenario',   false,  :left,  true,   true ],
       'wbs'         => [ 'WBS',        false,  :left,  true,   false ]

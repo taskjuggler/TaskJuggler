@@ -2260,6 +2260,10 @@ EOT
     singlePattern('_rate')
     descr('The daily cost of a resource.')
 
+    singlePattern('_resources')
+    descr('A list of resources that are assigned to the task in the report ' +
+          'time frame.')
+
     singlePattern('_responsible')
     descr('The responsible people for this task')
 

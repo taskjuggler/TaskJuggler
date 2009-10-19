@@ -289,6 +289,9 @@ class TaskJuggler
         when 'a'..'z', 'A'..'Z', '_'
           token = readId(c)
           break
+        when '<', '>', '='
+          token = readOperator(c)
+          break
         when '['
           token = readMacro
           break
@@ -799,6 +802,24 @@ class TaskJuggler
         token << c
       end
       return [ 'MACRO', token ]
+    end
+
+    # Read operators of logical expressions.
+    def readOperator(c)
+      case c
+      when '='
+        return [ 'LITERAL', '=' ]
+      when '>'
+        return [ 'LITERAL', '>=' ] if (c = nextChar) == '='
+        returnChar(c)
+        return [ 'LITERAL', '>' ]
+      when '<'
+        return [ 'LITERAL', '<=' ] if (c = nextChar) == '='
+        returnChar(c)
+        return [ 'LITERAL', '<' ]
+      else
+        raise "Unsupported operator #{c}"
+      end
     end
 
     # Read only decimal digits and return the result als Fixnum.

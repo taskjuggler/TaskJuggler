@@ -1,0 +1,16 @@
+project "LogExp" 2009-10-19 +2m
+
+task "T"
+
+macro rep [
+taskreport  "LogExp${1}" {
+  hidetask 1 ${2} 0
+}
+]
+
+${rep "1" ">"}
+${rep "2" "<"}
+${rep "3" "<="}
+${rep "4" ">="}
+${rep "5" "="}
+
