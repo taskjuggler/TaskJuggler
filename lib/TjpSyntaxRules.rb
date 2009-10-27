@@ -2133,10 +2133,20 @@ with report attributes. Reports can be nested to create structured document
 trees. As with other properties, the resource attributes can be inherited from
 the enclosing report or the project.
 
+By default, report definitions do not generate any files. With more complex
+projects, most report definitions will be used to describe elements of
+composed reports. If you want to generate a file from this report, you must
+specify the list of [[formats]] that you want to generate. The report name
+will then be used as a base name to create the file. The suffix will be
+appended based on the generated format.
+
 Reports have a local name space. All IDs must be unique within the reports
-that belong to the same enclosing report.
+that belong to the same enclosing report. To reference a report for inclusion
+into another report, you need to specify the full report ID. This is composed
+of the report ID, prefixed by a dot-separated list of all parent report IDs.
 EOT
        )
+    also(%w( resourcereport taskreport textreport ))
   end
 
 
@@ -2624,18 +2634,22 @@ EOT
     singlePattern('_resourcereport')
     doc('resourcereport', <<'EOT'
 The report lists resources and their respective values in a table. The task
-that are the resources are allocated to can be listed as well.
+that are the resources are allocated to can be listed as well. See [[report]]
+for further details.
 EOT
        )
     singlePattern('_taskreport')
     doc('taskreport', <<'EOT'
-The report lists tasks and their respective values in a table. The
-resources that are allocated to each task can be listed as well.
+The report lists tasks and their respective values in a table. The resources
+that are allocated to each task can be listed as well. See [[report]] for
+further details.
 EOT
        )
     singlePattern('_textreport')
     doc('textreport', <<'EOT'
-This report consists of 5 RichText sections, a header, a center section with a left and right margin and a footer. The sections may contain the output of other defined reports.
+This report consists of 5 RichText sections, a header, a center section with a
+left and right margin and a footer. The sections may contain the output of
+other defined reports. See [[report]] for further details.
 EOT
        )
   end
