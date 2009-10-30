@@ -31,6 +31,7 @@ class TaskJuggler
       'cost'        => [ 'Cost',       true,   :right, true,   true ],
       'duration'    => [ 'Duration',   true,   :right, true,   true ],
       'effort'      => [ 'Effort',     true,   :right, true,   true ],
+      'freetime'    => [ 'Free Time',  true,   :right, true,   true ],
       'id'          => [ 'Id',         false,  :left,  true,   false ],
       'line'        => [ 'Line No.',   false,  :right, true,   false ],
       'name'        => [ 'Name',       true,   :left,  false,  false ],
@@ -39,6 +40,7 @@ class TaskJuggler
       'resources'   => [ 'Resources',  false,  :left,  true,   true ],
       'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
       'scenario'    => [ 'Scenario',   false,  :left,  true,   true ],
+      'status'      => [ 'Status',     false,  :left,  true,   true ],
       'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
     }
     @@propertiesByType = {

@@ -23,6 +23,7 @@ class TaskJuggler
     # A map with the names of the supported functions and the number of
     # arguments they require.
     @@functions = {
+        'isdependencyof' => 3,
         'isdutyof' => 2,
         'isleaf' => 0,
         'isresource' => 1,
@@ -66,6 +67,20 @@ class TaskJuggler
     end
 
   private
+
+    def isdependencyof(expr, args)
+      # The result can only be true when called for a Task property.
+      return false unless expr.property.is_a?(Task)
+      project = expr.property.project
+      # 1st arg must be a task ID.
+      return false if (task = project.task(args[0])).nil?
+      # 2nd arg must be a scenario index.
+      return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
+      # 3rd arg must be an integer number.
+      return false unless args[2].is_a?(Fixnum)
+
+      expr.property.isDependencyOf(scenarioIdx, task, args[2])
+    end
 
     def isdutyof(expr, args)
       # The result can only be true when called for a Task property.

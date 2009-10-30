@@ -247,12 +247,11 @@ EOT
   end
 
   def rule_argument
-    pattern(%w( $ID ), lambda {
-      @val[0]
-    })
-    pattern(%w( $DATE ), lambda {
-      @val[0]
-    })
+    singlePattern('$ABSOLUTE_ID')
+    singlePattern('$DATE')
+    singlePattern('$ID')
+    singlePattern('$INTEGER')
+    singlePattern('$FLOAT')
   end
 
   def rule_argumentList
@@ -1551,11 +1550,19 @@ EOT
   end
 
   def rule_operation
-    pattern(%w( !operand !operatorAndOperand ), lambda {
+    pattern(%w( !operand !operatorAndOperand !operationChain ), lambda {
       operation = LogicalOperation.new(@val[0])
       unless @val[1].nil?
         operation.operator = @val[1][0]
         operation.operand2 = @val[1][1]
+      end
+      if @val[2]
+        # Further operators/operands create an operation tree.
+        @val[2].each do |ops|
+          operation = LogicalOperation.new(operation)
+          operation.operator = ops[0]
+          operation.operand2 = ops[1]
+        end
       end
       operation
     })
@@ -1566,6 +1573,14 @@ operand by prefixing a ~ charater or it can be another logical expression
 enclosed in braces.
 EOT
         )
+  end
+
+  def rule_operationChain
+    optional
+    repeatable
+    pattern(%w( !operatorAndOperand), lambda {
+      @val[0]
+    })
   end
 
   def rule_operatorAndOperand
@@ -2207,6 +2222,16 @@ EOT
     singlePattern('_flags')
     descr('List of attached flags')
 
+    singlePattern('_freetime')
+    descr('The amount of unallocated work time of a resource.')
+
+    singlePattern('_freework')
+    descr(<<'EOT'
+The amount of unallocated work capacity of a resource. This is the product of
+unallocated work time times the efficiency of the resource.
+EOT
+         )
+
     singlePattern('_fte')
     descr('The Full-Time-Equivalent of a resource or group')
 
@@ -2292,6 +2317,13 @@ EOT
 
     singlePattern('_start')
     descr('The start date of the task')
+
+    singlePattern('_status')
+    descr(<<'EOT'
+The status of a task. It is determined based on the current date or the date
+specified by [[now]].
+EOT
+         )
 
     singlePattern('_wbs')
     descr('The hierarchical or work breakdown structure index')

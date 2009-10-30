@@ -259,6 +259,8 @@ class TaskJuggler
               false, false,   true,  [] ],
         [ 'startsuccs', 'Start Succs.', TaskListAttribute,
               false, false,   true,  [] ],
+        [ 'status',    'Task Status',  StringAttribute,
+              false, false,   true,  "" ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'wbs',       'WBS',          StringAttribute,

@@ -161,7 +161,14 @@ class TaskJuggler
       query.result = query.scaleLoad(query.sortableResult)
     end
 
-    # The unallocated effort of the Resource in the specified interval.
+    # The unallocated work time of the Resource during the specified interval.
+    def query_freetime(query)
+      query.sortableResult = query.numericalResult =
+        getEffectiveFreeTime(query.startIdx, query.endIdx)
+      query.result = query.scaleDuration(query.sortableResult)
+    end
+
+    # The unallocated effort of the Resource during the specified interval.
     def query_freework(query)
       query.sortableResult = query.numericalResult =
         getEffectiveFreeWork(query.startIdx, query.endIdx)
@@ -251,7 +258,29 @@ class TaskJuggler
       time
     end
 
-    # Return the unallocated work of the resource and its children wheighted by
+    # Return the unallocated work time (in seconds) of the resource and its
+    # children.
+    def getEffectiveFreeTime(startIdx, endIdx)
+      # Convert the interval dates to indexes if needed.
+      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
+      freeTime = 0
+      if @property.container?
+        @property.children.each do |resource|
+          freeTime += resource.getEffectiveFreeTime(@scenarioIdx, startIdx,
+                                                    endIdx)
+        end
+      else
+        initScoreboard if @scoreboard.nil?
+
+        freeTime = getFreeSlots(startIdx, endIdx) *
+          @project['scheduleGranularity']
+      end
+      freeTime
+    end
+
+    # Return the unallocated work of the resource and its children weighted by
     # their efficiency.
     def getEffectiveFreeWork(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
