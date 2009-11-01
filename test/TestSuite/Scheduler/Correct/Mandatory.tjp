@@ -1,0 +1,34 @@
+project "Mandatory" 2009-10-31 +2m
+
+include "checks.tji"
+
+resource a "A" {
+  workinghours mon, wed, fri off
+}
+resource b "B"
+resource c "C" {
+  workinghours tue, thu off
+}
+resource d "D" {
+  workinghours wed off
+}
+resource e "E"
+
+task "T1" {
+  effort 16d
+  allocate a { mandatory}, b
+  ${FixTask "2009-11-03-9:00" "2009-11-26-18:00"}
+}
+
+task "T2" {
+  effort 24d
+  allocate c { mandatory}, d { mandatory}, e
+  ${FixTask "2009-11-02-9:00" "2009-11-27-18:00"}
+}
+
+taskreport "Mandatory" {
+  formats html
+  timeformat "%Y-%m-%d %H:%M"
+  columns no, name, start, end, chart { scale day }
+  hideresource 0
+}
