@@ -15,19 +15,35 @@ particular, you should check the
 [http://groups.google.com/group/taskjuggler-bugs/topics existing bug
 reports].
 
-* Possibly the bug was already found
-and a patch or workaround exists.
+* Possibly the bug was already found and a patch or workaround exists.
 
 * Try to create a test project that is as small as possible but still
 reproduces the bug.
 
 * If TaskJuggler has crashed you will usually get some debug output. This
 may not make any sense to you but it is vital information to analyze
-the bug. Please include it completely in your bug report.
+the bug. Please include it completely in your bug report. Use the
+following command to store the messages into a file.
+
+ tj3 yourproject.tjp 2> error_message
 
 * Send the test project and a detailed description of the problem to
-the [http://www.taskjuggler.org/forum.php TaskJuggler Developer
-Forum].  Not sending a test project is the most common mistake when
-reporting bugs. This usually triggers requests or leads to bug reports
-being ignored.
+the TaskJuggler developers. If you are pretty confident, that you've
+found a new bug, please post it to the
+[http://groups.google.com/group/taskjuggler-bugs TaskJuggler Bug
+Group]. If you aren't sure or want to provide patches or feedback,
+please use the [http://groups.google.com/group/taskjuggler-dev
+TaskJuggler Developer Group].
+
+* When posting complete files, make sure you attach them. Don't paste
+them into the body of the email. Some email servers and clients have
+a habit of converting the body into HTML which will corrupt the file
+contents. Unfortunately, the Google Groups web interface does not
+support attachments. Please use a regular email program instead. The
+posting addresses can be found on the above mentioned pages.
+
+* Not attaching a test case will severely limit our abilities to help
+you. Please make sure you provide meaningful descriptions and a small
+but complete test project.  Not providing this information usually
+triggers requests or leads to bug reports being ignored.
 
