@@ -21,8 +21,8 @@ class TaskJuggler
 
     attr_reader :line
     attr_accessor :data, :text, :url, :category, :hidden, :alignment,
-                  :padding, :indent, :fontSize, :fontColor, :bold, :width,
-                  :rows, :columns, :special
+                  :padding, :indent, :icon, :fontSize, :fontColor, :bold,
+                  :width, :rows, :columns, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
     # default values. _line_ is the ReportTableLine this cell belongs to. _text_
@@ -48,6 +48,8 @@ class TaskJuggler
       # Whether or not to indent the cell. If not nil, it is a Fixnum
       # indicating the indentation level.
       @indent = nil
+      # The basename of the icon file
+      @icon = nil
       @fontSize = nil
       @fontColor = 0x000000
       @bold = false
@@ -110,6 +112,11 @@ class TaskJuggler
       end
       cell << (div = XMLElement.new('div',
         'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
+
+      if @icon
+        div << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                     'style' => 'margin-right:3px')
+      end
 
       if url
         div << (a = XMLElement.new('a', 'href' => @url))

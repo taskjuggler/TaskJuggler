@@ -26,6 +26,7 @@ BIN_DIR         = 'bin'
 LIB_DIR         = 'lib'
 EXT_DIR         = 'ext'
 TEST_DIR        = 'test'
+DATA_DIR        = 'data'
 RDOC_DIR        = 'doc'
 RCOV_DIR        = 'rcov'
 RAKE_DIR        = 'tasks'
@@ -39,5 +40,5 @@ RAKEFILE        = 'Rakefile'
 SETUP_FILE      = 'setup.rb'
 PRJ_FILE        = 'prj_cfg.rb'
 GEM_SPEC_FILE   = 'gem_spec.rb'
-DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/*", "test/all.rb", "test/MessageChecker.rb", "test/TestSuite/**/*" ]
+DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/*", "test/all.rb", "test/MessageChecker.rb", "test/TestSuite/**/*", "data/**/*"]
 

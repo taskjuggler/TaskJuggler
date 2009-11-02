@@ -637,6 +637,24 @@ class TaskJuggler
         cell.url = value.url
       end
 
+      if colId == 'name'
+        cell.icon =
+          if property.is_a?(Task)
+            if property.container?
+              'taskgroup'
+            else
+              'task'
+            end
+          elsif property.is_a?(Resource)
+            if property.container?
+              'resourcegroup'
+            else
+              'resource'
+            end
+          else
+            nil
+          end
+      end
       # Check if we are dealing with multiple scenarios.
       if a('scenarios').length > 1
         # Check if the attribute is not scenario specific

@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'fileutils'
 require 'PropertyTreeNode'
 require 'reports/TextReport'
 require 'reports/TaskListRE'
@@ -67,6 +68,7 @@ class TaskJuggler
           case format
           when :html
             generateHTML
+            copyAuxiliaryFiles
           when :csv
             generateCSV
           when :export
@@ -76,9 +78,7 @@ class TaskJuggler
           end
         end
       rescue TjException
-        @project.messageHandler.send(Message.new('reporting_failed', 'error',
-                                                 $!.message, nil, nil,
-                                                 @sourceFileInfo))
+        error('reporting_failed', $!.message)
       end
     end
 
@@ -321,6 +321,31 @@ EOT
                          File.new((@name[0] == '/' ? '' : @project.outputDir) +
                                   @name, 'w')
       f.puts "#{@content.to_tjp}"
+    end
+
+    def copyAuxiliaryFiles
+      return if @name == '.' # Don't copy files if output is stdout.
+
+      # The icons directory needs to be in the same directory as the HTML report.
+      auxDstDir = File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
+                               @name) + '/icons'
+      # Don't copy the directory if it already exists. We assume it is
+      # up-to-date. TODO: Check that all icons are there and current.
+      return if File.exists?(auxDstDir)
+
+      # Find the icons directory that came with the TaskJuggler installation.
+      auxSrcDir = AppConfig.dataDirs('data/icons')[0]
+      unless File.exists?(auxSrcDir)
+        error('no_icons', 'Cannot find icon directory')
+      end
+
+      # Recursively copy the icons directory and all content.
+      FileUtils.cp_r(auxSrcDir, auxDstDir)
+    end
+
+    def error(id, message)
+        @project.messageHandler.send(Message.new(id, 'error', message, nil, nil,
+                                                 @sourceFileInfo))
     end
 
   end

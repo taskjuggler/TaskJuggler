@@ -257,49 +257,49 @@ class TaskJuggler
         end
       end
 
+      endDate = nil
       @chart.header.cellStartDates.each do |date|
-        if x.nil?
-          x = @chart.dateToX(endDate = date).to_i
-        else
-          xNew = @chart.dateToX(date).to_i
-          w = xNew - x
-          startDate = endDate
+        if endDate.nil?
           endDate = date
-          if @scopeProperty
-            # If we have a scope limiting task, we only want to generate load
-            # stacks that overlap with the task interval.
-            next if endDate <= taskStart || taskEnd <= startDate
-            if startDate < taskStart && endDate > taskStart
-              # Make sure the left edge of the first stack aligns with the
-              # start of the scope task.
-              startDate = taskStart
-              x = @chart.dateToX(startDate)
-              w = xNew - x + 1
-            elsif startDate < taskEnd && endDate > taskEnd
-              # Make sure the right edge of the last stack aligns with the end
-              # of the scope task.
-              endDate = taskEnd
-              w = @chart.dateToX(endDate) - x
-            end
-            taskWork = @property.getEffectiveWork(@scenarioIdx,
-                                                  startDate, endDate,
-                                                  @scopeProperty)
-            overallWork = @property.getEffectiveWork(@scenarioIdx,
-                                                     startDate, endDate)
-            freeWork = @property.getEffectiveFreeWork(@scenarioIdx,
-                                                     startDate, endDate)
-            values = [ taskWork, overallWork - taskWork, freeWork ]
-          else
-            values = []
-            values << @property.getEffectiveWork(@scenarioIdx,
-                                                 startDate, endDate)
-            values << @property.getEffectiveFreeWork(@scenarioIdx,
-                                                     startDate, endDate)
-          end
-          @content << GanttLoadStack.new(self, x + 1, w - 2, values, categories)
-
-          x = xNew
+          next
         end
+
+        startDate = endDate
+        endDate = date
+
+        if @scopeProperty
+          # If we have a scope limiting task, we only want to generate load
+          # stacks that overlap with the task interval.
+          next if endDate <= taskStart || taskEnd <= startDate
+          if startDate < taskStart
+            # Make sure the left edge of the first stack aligns with the
+            # start of the scope task.
+            startDate = taskStart
+          end
+          if endDate > taskEnd
+            # Make sure the right edge of the last stack aligns with the end
+            # of the scope task.
+            endDate = taskEnd
+          end
+          taskWork = @property.getEffectiveWork(@scenarioIdx,
+                                                startDate, endDate,
+                                                @scopeProperty)
+          overallWork = @property.getEffectiveWork(@scenarioIdx,
+                                                   startDate, endDate)
+          freeWork = @property.getEffectiveFreeWork(@scenarioIdx,
+                                                    startDate, endDate)
+          values = [ taskWork, overallWork - taskWork, freeWork ]
+        else
+          values = []
+          values << @property.getEffectiveWork(@scenarioIdx,
+                                               startDate, endDate)
+          values << @property.getEffectiveFreeWork(@scenarioIdx,
+                                                   startDate, endDate)
+        end
+
+        x = @chart.dateToX(startDate)
+        w = @chart.dateToX(endDate) - x + 1
+        @content << GanttLoadStack.new(self, x + 1, w - 2, values, categories)
       end
 
     end

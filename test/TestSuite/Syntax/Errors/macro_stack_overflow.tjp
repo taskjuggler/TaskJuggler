@@ -1,0 +1,28 @@
+project "Macro Stack Overflow" 2009-11-01 +2m
+
+macro foo [ task "bar" { ${foo} } ]
+
+# MARK: error 27 macro_stack_overflow
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+# MARK: info 3 macro_stack
+${foo}
+

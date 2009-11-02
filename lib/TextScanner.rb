@@ -335,6 +335,9 @@ class TaskJuggler
       macro, text = @macroTable.resolve(args, sourceFileInfo)
       return if text == ''
 
+      if @macroStack.length > 20
+        error('macro_stack_overflow', "Too many nested macro calls.")
+      end
       @macroStack << [ macro, args ]
       # Mark end of macro with a 0 element
       @cf.charBuffer << 0
