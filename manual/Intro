@@ -72,6 +72,11 @@ no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
 A copy of the license is included in the section entitled "GNU
 Free Documentation License".
 
+The HTML reports use icons from the
+[http://www.kde.org/people/credits/ KDE Icon Team]. The icons are
+licensed under the [http://www.fsf.org/licenses/lgpl.html GNU Lesser
+General Public License].
+
 === Features and Highlights ===
 
 * Manages tasks, resources and costs in one package
