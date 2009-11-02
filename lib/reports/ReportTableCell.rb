@@ -115,7 +115,9 @@ class TaskJuggler
 
       if @icon
         div << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                     'style' => 'margin-right:3px')
+                                     'align' => 'top',
+                                     'style' => 'margin-right:3px;' +
+                                                'margin-bottom:2px')
       end
 
       if url
