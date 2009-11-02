@@ -27,12 +27,12 @@ class Arguments
     @manual = false
 
     opts = OptionParser.new
-    opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
+    opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                   "#{AppConfig.packageInfo}\n\n" +
                   "Copyright (c) #{AppConfig.copyright.join(', ')}" +
                   " by #{AppConfig.authors.join(', ')}\n\n" +
                   "#{AppConfig.license}\n" +
-                  "For more info about #{AppConfig.packageName} see " +
+                  "For more info about #{AppConfig.softwareName} see " +
                   "#{AppConfig.contact}\n"
     opts.separator ''
     opts.separator "Usage: #{AppConfig.appName} [options] [<keyword> ...]"
@@ -77,7 +77,7 @@ def main
     end
   end
 
-  #$stderr.puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+  #$stderr.puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
   #             "#{AppConfig.packageInfo}\n\n"
   #puts man.to_s(args.keyword)
 

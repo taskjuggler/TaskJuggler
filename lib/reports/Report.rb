@@ -335,8 +335,8 @@ EOT
 
       # Find the icons directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs('data/icons')[0]
-      unless auxSrcDir && File.exists?(auxSrcDir)
-        error('no_icons', 'Cannot find icon directory')
+      if auxSrcDir.nil? || !File.exists?(auxSrcDir)
+        raise 'Cannot find icon directory'
       end
 
       # Recursively copy the icons directory and all content.

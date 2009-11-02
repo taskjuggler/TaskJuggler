@@ -14,7 +14,8 @@ require 'UTF8String'
 require 'AppConfig'
 
 AppConfig.version = '0.0.3'
-AppConfig.packageName = 'TaskJuggler III'
+AppConfig.packageName = 'taskjuggler'
+AppConfig.softwareName = 'TaskJuggler III'
 AppConfig.packageInfo = 'A Project Mangement Software'
 AppConfig.copyright = [ (2006..2009).to_a ]
 AppConfig.authors = [ 'Chris Schlaeger <cs(a)kde.org>' ]

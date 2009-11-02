@@ -20,12 +20,12 @@ AppConfig.appName = 'taskjuggler3'
 def processArguments(argv)
   opts = OptionParser.new
 
-  opts.banner = "#{AppConfig.packageName} v#{AppConfig.version} - " +
+  opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                 "#{AppConfig.packageInfo}\n\n" +
                 "Copyright (c) #{AppConfig.copyright.join(', ')}" +
                 " by #{AppConfig.authors.join(', ')}\n\n" +
                 "#{AppConfig.license}\n" +
-                "For more info about #{AppConfig.packageName} see " +
+                "For more info about #{AppConfig.softwareName} see " +
                 "#{AppConfig.contact}\n\n" +
                 "Usage: #{AppConfig.appName} [options] file.tjp " +
                 "[ file1.tji ... ]"
@@ -57,7 +57,7 @@ def processArguments(argv)
   end
 
   opts.on_tail('--version', 'Show version info') do
-    puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+    puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
       "#{AppConfig.packageInfo}"
     exit 0
   end
@@ -79,7 +79,7 @@ def processArguments(argv)
   end
 
   unless TaskJuggler::Log.silent
-    puts "#{AppConfig.packageName} v#{AppConfig.version} - " +
+    puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
       "#{AppConfig.packageInfo}\n\n" +
       "Copyright (c) #{AppConfig.copyright.join(', ')}" +
       " by #{AppConfig.authors.join(', ')}\n\n" +

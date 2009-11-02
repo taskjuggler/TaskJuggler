@@ -23,6 +23,7 @@ class AppConfig
   def initialize
     @@version = '0.0.0'
     @@packageName = 'unnamed'
+    @@softwareName = 'unnamed'
     @@packageInfo = 'no info'
     @@appName = 'unnamed'
     @@authors = []
@@ -45,6 +46,14 @@ class AppConfig
 
   def AppConfig.packageName
     @@packageName
+  end
+
+  def AppConfig.softwareName=(name)
+    @@softwareName = name
+  end
+
+  def AppConfig.softwareName
+    @@softwareName
   end
 
   def AppConfig.packageInfo=(info)
@@ -110,6 +119,7 @@ class AppConfig
         + @@packageName + '-' + @@version + "/#{baseDir}/"
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|
+      puts "#{dir}: #{File.exists?(dir)}"
       !File.exists?(dir)
     end
     dirs

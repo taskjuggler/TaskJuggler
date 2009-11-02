@@ -141,7 +141,7 @@ EOT
       html = []
       html << (div = XMLElement.new('div', 'align' => 'center',
         'style' => 'margin-top:40px; margin-botton:40px'))
-      div << XMLNamedText.new("The #{AppConfig.packageName} User Manual",
+      div << XMLNamedText.new("The #{AppConfig.softwareName} User Manual",
                               'h1')
       div << XMLNamedText.new('Project Management beyond Gantt Chart drawing',
                               'em')
@@ -152,7 +152,7 @@ EOT
       div << XMLElement.new('br')
       div << XMLText.new("Generated on #{TjTime.now.strftime('%Y-%m-%d')}")
       div << XMLElement.new('br')
-      div << XMLNamedText.new("This manual covers #{AppConfig.packageName} " +
+      div << XMLNamedText.new("This manual covers #{AppConfig.softwareName} " +
                               "version #{AppConfig.version}.", 'h3')
       html << XMLElement.new('br')
       html << XMLElement.new('hr')
@@ -167,7 +167,7 @@ EOT
       html = []
       html << (headline = XMLElement.new('div', 'align' => 'center'))
       headline << XMLNamedText.new(
-        "The #{AppConfig.packageName} User Manual", 'h3',
+        "The #{AppConfig.softwareName} User Manual", 'h3',
         'align' => 'center')
       headline << XMLNamedText.new(
         'Project Management beyond Gantt Chart Drawing', 'em',
@@ -236,7 +236,7 @@ EOT
     def generateHTMLindex(directory)
       html = HTMLDocument.new(:frameset)
       html << (head = XMLElement.new('head'))
-      head << (e = XMLNamedText.new("The #{AppConfig.packageName} User Manual",
+      head << (e = XMLNamedText.new("The #{AppConfig.softwareName} User Manual",
                                     'title'))
       head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
                              'content' => 'text/html; charset=utf-8')
