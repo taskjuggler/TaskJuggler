@@ -11,6 +11,7 @@
 #
 
 require 'rbconfig'
+require 'rbconfig/datadir'
 
 # This class provides central management of configuration data to an
 # application. It stores the version number, the name of the application and
@@ -105,8 +106,10 @@ class AppConfig
   end
 
   def AppConfig.dataDirs(baseDir = 'data')
-    siteLibDir = ::Config::CONFIG['sitelibdir']
-    siteBaseDir, rubyVersionDir = siteLibDir.scan(/(.*\/)(.*)/)[0]
+    version = RbConfig::CONFIG['ruby_version']
+    rubyLibDir = RbConfig::CONFIG['rubylibdir']
+    rubyBaseDir, versionDir = rubyLibDir.scan(/(.*\/)(.*)/)[0]
+
     dirs = []
     # This is for the development version. We assume that we run the app
     # from the source base directory.
@@ -115,7 +118,7 @@ class AppConfig
     dirs << "../#{baseDir}/"
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
-    dirs << siteBaseDir + "gems/" + rubyVersionDir + '/gems/' \
+    dirs << rubyBaseDir + "gems/" + versionDir + '/gems/' \
         + @@packageName + '-' + @@version + "/#{baseDir}/"
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|

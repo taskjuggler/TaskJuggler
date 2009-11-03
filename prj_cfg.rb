@@ -36,6 +36,10 @@ MANUAL_DIR      = 'manual/html'
 README          = FileList['README']
 CHANGES         = ''#'CHANGES'
 LICENSE         = 'COPYING'
+DESCRIPTION     = <<'EOT'
+TaskJuggler is a project management software that goes far beyond the commonly
+known Gantt chart editors.
+EOT
 RAKEFILE        = 'Rakefile'
 SETUP_FILE      = 'setup.rb'
 PRJ_FILE        = 'prj_cfg.rb'
