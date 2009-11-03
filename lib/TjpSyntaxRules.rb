@@ -1391,7 +1391,9 @@ Macros may call other macros.
 User defined macro IDs must have at least one uppercase letter as all
 lowercase letter IDs are reserved for built-in macros.
 
-Macro definitions may contain ']' as long as each ']' is preceeded by a corresponding '['.
+Macro definitions may contain ''''<nowiki>]</nowiki>'''' as long as each
+''''<nowiki>]</nowiki>'''' is preceeded by a corresponding
+''''<nowiki>[</nowiki>''''.
 
 In macro calls the macro names can be prefixed by a question mark. In this
 case the macro will expand to nothing if the macro is not defined. Otherwise
