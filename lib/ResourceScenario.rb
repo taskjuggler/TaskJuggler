@@ -358,13 +358,13 @@ class TaskJuggler
       endIdx = @lastBookedSlot + 1
 
       # In case the index markers are still uninitialized, we have no bookings.
-      return [] if startIdx.nil? || endIdx.nil?
+      return {} if startIdx.nil? || endIdx.nil?
 
-      startIdx.upto(endIdx - 1) do |idx|
+      startIdx.upto(endIdx) do |idx|
         task = @scoreboard[idx]
         # Now we watch for task changes.
         if task != lastTask || (lastTask == nil && task.is_a?(Task)) ||
-           (task.is_a?(Task) && idx == endIdx - 1)
+           (task.is_a?(Task) && idx == endIdx)
           unless lastTask.nil?
             # If we don't have a Booking for the task yet, we create one.
             if bookings[lastTask].nil?
@@ -372,7 +372,7 @@ class TaskJuggler
             end
 
             # Make sure the index is correct even for the last task block.
-            idx += 1 if idx == endIdx - 1
+            idx += 1 if idx == endIdx
             # Append the new interval to the Booking.
             bookings[lastTask].intervals <<
               Interval.new(@scoreboard.idxToDate(bookingStart),
