@@ -2215,7 +2215,13 @@ EOT
     descr('Measure for how efficient a resource can perform tasks')
 
     singlePattern('_effort')
-    descr('The total allocated effort')
+    descr('The allocated effort during the reporting period')
+
+    singlePattern('_effortdone')
+    descr('The already completed effort as of now')
+
+    singlePattern('_effortleft')
+    descr('The remaining allocated effort as of now')
 
     singlePattern('_email')
     descr('The email address of a resource')
@@ -2227,12 +2233,16 @@ EOT
     descr('List of attached flags')
 
     singlePattern('_freetime')
-    descr('The amount of unallocated work time of a resource.')
+    descr(<<'EOT'
+The amount of unallocated work time of a resource during the reporting period.
+EOT
+         )
 
     singlePattern('_freework')
     descr(<<'EOT'
-The amount of unallocated work capacity of a resource. This is the product of
-unallocated work time times the efficiency of the resource.
+The amount of unallocated work capacity of a resource during the reporting
+period. This is the product of unallocated work time times the efficiency of
+the resource.
 EOT
          )
 

@@ -1089,6 +1089,33 @@ class TaskJuggler
       query.result = query.scaleDuration(query.sortableResult)
     end
 
+    # The completed (as of 'now') effort allocated for the task in the
+    # specified interval.  In case a Resource is given as scope property only
+    # the effort allocated for this resource is taken into account.
+    def query_effortdone(query)
+      # For this query, we always override the query period.
+      query.sortableResult = query.numericalResult =
+        getEffectiveWork(@project.dateToIdx(@project['start']),
+                         @project.dateToIdx(@project['now']),
+                         query.scopeProperty)
+      query.result = query.scaleLoad(query.sortableResult)
+    end
+
+
+    # The remaining (as of 'now') effort allocated for the task in the
+    # specified interval.  In case a Resource is given as scope property only
+    # the effort allocated for this resource is taken into account.
+    def query_effortleft(query)
+      # For this query, we always override the query period.
+      query.start = @project['now']
+      query.end = @project['end']
+      query.sortableResult = query.numericalResult =
+        getEffectiveWork(@project.dateToIdx(@project['now']),
+                         @project.dateToIdx(@project['end']),
+                         query.scopeProperty)
+      query.result = query.scaleLoad(query.sortableResult)
+    end
+
     # The effort allocated for the task in the specified interval. In case a
     # Resource is given as scope property only the effort allocated for this
     # resource is taken into account.

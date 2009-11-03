@@ -26,22 +26,24 @@ class TaskJuggler
     attr_reader :legend
 
     @@propertiesById = {
-      # ID               Header        Indent  Align   Calced. Scen Spec.
-      'complete'    => [ 'Completion', false,  :right, true,   true ],
-      'cost'        => [ 'Cost',       true,   :right, true,   true ],
-      'duration'    => [ 'Duration',   true,   :right, true,   true ],
-      'effort'      => [ 'Effort',     true,   :right, true,   true ],
-      'freetime'    => [ 'Free Time',  true,   :right, true,   true ],
-      'id'          => [ 'Id',         false,  :left,  true,   false ],
-      'line'        => [ 'Line No.',   false,  :right, true,   false ],
-      'name'        => [ 'Name',       true,   :left,  false,  false ],
-      'no'          => [ 'No.',        false,  :right, true,   false ],
-      'rate'        => [ 'Rate',       true,   :right, true,   true ],
-      'resources'   => [ 'Resources',  false,  :left,  true,   true ],
-      'revenue'     => [ 'Revenue',    true,   :right, true,   true ],
-      'scenario'    => [ 'Scenario',   false,  :left,  true,   true ],
-      'status'      => [ 'Status',     false,  :left,  true,   true ],
-      'wbs'         => [ 'WBS',        false,  :left,  true,   false ]
+      # ID               Header         Indent  Align   Calced. Scen Spec.
+      'complete'    => [ 'Completion',  false,  :right, true,   true ],
+      'cost'        => [ 'Cost',        true,   :right, true,   true ],
+      'duration'    => [ 'Duration',    true,   :right, true,   true ],
+      'effort'      => [ 'Effort',      true,   :right, true,   true ],
+      'effortdone'  => [ 'Effort Done', true,   :right, true,   true ],
+      'effortleft'  => [ 'Effort Left', true,   :right, true,   true ],
+      'freetime'    => [ 'Free Time',   true,   :right, true,   true ],
+      'id'          => [ 'Id',          false,  :left,  true,   false ],
+      'line'        => [ 'Line No.',    false,  :right, true,   false ],
+      'name'        => [ 'Name',        true,   :left,  false,  false ],
+      'no'          => [ 'No.',         false,  :right, true,   false ],
+      'rate'        => [ 'Rate',        true,   :right, true,   true ],
+      'resources'   => [ 'Resources',   false,  :left,  true,   true ],
+      'revenue'     => [ 'Revenue',     true,   :right, true,   true ],
+      'scenario'    => [ 'Scenario',    false,  :left,  true,   true ],
+      'status'      => [ 'Status',      false,  :left,  true,   true ],
+      'wbs'         => [ 'WBS',         false,  :left,  true,   false ]
     }
     @@propertiesByType = {
       # Type                  Indent  Align
