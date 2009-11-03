@@ -116,13 +116,16 @@ class AppConfig
     dirs << "#{baseDir}/"
     # Or from the lib directory.
     dirs << "../#{baseDir}/"
+
+    if ENV['TASKJUGGLER_DATA_PATH']
+      dirs << ENV['TASKJUGGLER_DATA_PATH']
+    end
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
     dirs << rubyBaseDir + "gems/" + versionDir + '/gems/' \
         + @@packageName + '-' + @@version + "/#{baseDir}/"
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|
-      puts "#{dir}: #{File.exists?(dir)}"
       !File.exists?(dir)
     end
     dirs

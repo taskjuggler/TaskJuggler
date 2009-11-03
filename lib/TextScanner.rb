@@ -799,10 +799,20 @@ class TaskJuggler
     end
 
     def readMacro
+      # We can deal with ']' inside of the macro as long as each ']' is
+      # preceeded by a corresponding '['.
       token = ''
-      while (c = nextCharI) != ']'
-        error('unterminated_macro', "Unterminated macro #{token}") unless c
-        token << c
+      bracketLevel = 1
+      while bracketLevel > 0
+        case (c = nextCharI)
+        when nil
+          error('unterminated_macro', "Unterminated macro #{token}")
+        when '['
+          bracketLevel += 1
+        when ']'
+          bracketLevel -= 1
+        end
+        token << c unless bracketLevel == 0
       end
       return [ 'MACRO', token ]
     end
