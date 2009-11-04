@@ -206,6 +206,8 @@ class TaskJuggler
                               @property, nil, sfi)
         @messageHandler.send(message)
 
+        # An empty strings signals an already reported error
+        raise TjException.new, ''
       end
       rText
     end

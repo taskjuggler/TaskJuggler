@@ -61,7 +61,6 @@ class TaskJuggler
         @bytes = 0
         Log << "Parsing file #{@fileName} ..."
         Log.startProgressMeter("Reading file #{fileName}")
-
       end
 
       def close

@@ -124,7 +124,7 @@ class TaskJuggler
     #  <-inlinefunc par1="value1" ... ->
     def nextTokenFuncArg
       token = [ '.', '<END>' ]
-      while c = nextChar
+      while (c = nextChar)
         case c
         when ' ', "\n", "\t"
           if (tok = readBlanks(c))
@@ -153,6 +153,7 @@ class TaskJuggler
           returnChar
         end
       end
+      token
     end
 
     def nextTokenWikiBOL
@@ -372,7 +373,12 @@ class TaskJuggler
     # Deliver the next character. Keep track of the cursor position. In case we
     # reach the end, nil is returned.
     def nextChar
-      return nil if @pos >= @textLength
+      if @pos >= @textLength
+        # Correct @pos so that returnChar works properly but mutliple reads of
+        # EOT are ignored.
+        @pos = @textLength + 1
+        return nil
+      end
       c = @text[@pos]
       @pos += 1
       if c == ?\n
