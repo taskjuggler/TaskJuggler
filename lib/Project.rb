@@ -348,6 +348,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'timezone', 'Time Zone',     StringAttribute,
               true,  true,    false, nil ],
+        [ 'title',    'Title',         StringAttribute,
+              false, false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'wbs',       'WBS',          StringAttribute,

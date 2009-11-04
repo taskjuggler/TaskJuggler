@@ -406,9 +406,11 @@ textreport "Overview" {
   }
 
   textreport "ContactList" {
+    title "Contact List"
     center '<[report id="contactList"]>'
   }
-  textreport "Resource Graph" {
+  textreport "ResourceGraph" {
+    title "Resource Graph"
     center '<[report id="resourceGraph"]>'
   }
 # *** EXAMPLE: overview_report1 +

@@ -2578,6 +2578,15 @@ EOT
     pattern(%w( !timeformat ), lambda {
       @property.set('timeFormat', @val[0])
     })
+
+    pattern(%w( _title $STRING ), lambda {
+      @property.set('title', @val[1])
+    })
+    doc('title', <<'EOT'
+The title of the report will be used in external references to the report. It
+will not show up in the reports directly. It's used e. g. by [[navigator]].
+EOT
+       )
   end
 
   def rule_reportEnd
