@@ -91,6 +91,14 @@ EOT
     example('Account', '1')
     arg(2, 'description', 'Short description of the transaction')
     arg(3, 'amount', 'Amount to be booked.')
+
+    pattern(%w( !flags ))
+    doc('flags.account', <<'EOT'
+Attach a set of flags. The flags can be used in logical expressions to filter
+properties from the reports.
+EOT
+       )
+
     # Other attributes will be added automatically.
   end
 
@@ -2408,6 +2416,13 @@ text will be interpreted as [[Rich_Text_Attributes Rich Text]].
 EOT
        )
     also(%w( footer header prolog ))
+
+    pattern(%w( !flags ))
+    doc('flags.report', <<'EOT'
+Attach a set of flags. The flags can be used in logical expressions to filter
+properties from the reports.
+EOT
+       )
 
     pattern(%w( _footer $STRING ), lambda {
       @property.set('footer', newRichText(@val[1]))

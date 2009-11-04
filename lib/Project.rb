@@ -137,6 +137,8 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
+        [ 'flags',     'Flags',        FlagListAttribute,
+              true,  false,   true,  [] ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'wbs',       'WBS',          StringAttribute,
@@ -288,6 +290,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'epilog',    'Epilog',       RichTextAttribute,
               false, false,   false, nil ],
+        [ 'flags',     'Flags',        FlagListAttribute,
+              true,  false,   true,  [] ],
         [ 'footer',    'Footer',       RichTextAttribute,
               true,  false,   false, nil ],
         [ 'formats',   'Formats',      FormatListAttribute,
