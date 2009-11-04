@@ -12,6 +12,7 @@
 
 require 'thread'
 require 'monitor'
+require 'deep_copy'
 
 class TaskJuggler
 
@@ -74,6 +75,8 @@ class TaskJuggler
       @terminate = false
       # Sleep time of the threads when no data is pending.
       @timeout = 0.05
+      # Job counter used to generate job IDs.
+      @jobCounter = 0
 
       Thread.abort_on_exception = true
       # The JobInfo objects in the @queue are processed by the pusher thread.
@@ -93,9 +96,10 @@ class TaskJuggler
     # executed in a separate process.
     def queue(tag = nil, &block)
       # Create a new JobInfo object for the job and push it to the @queue.
-      jobInfo = JobInfo.new(@queue.length, block, tag)
-      @queue.push(jobInfo)
+      jobInfo = JobInfo.new(@jobCounter, block, tag)
       @lock.synchronize do
+        # Increase job counter
+        @jobCounter += 1
         # Add the receiver end of the pipe to the @pipes Array.
         @pipes << jobInfo.stdoutP
         # Map the pipe end to this JobInfo object.
@@ -104,6 +108,7 @@ class TaskJuggler
         @pipes << jobInfo.stderrP
         @pipeToJob[jobInfo.stderrP] = jobInfo
       end
+      @queue.push(jobInfo)
     end
 
     # Wait for all jobs to complete. The code block will get the JobInfo
@@ -112,6 +117,9 @@ class TaskJuggler
       while !@queue.empty? || @pendingJobs > 0 do
         sleep(@timeout)
       end
+      # Wait for 250ms to increase the chances that all process have delivered
+      # their $stdout and $stderr to this process.
+      sleep(0.25)
 
       # Signal threads to stop
       @terminate = true
@@ -137,7 +145,7 @@ class TaskJuggler
         else
           # Get a new job from the @queue
           job = @queue.pop
-          job.pid = fork do
+          pid = fork do
             # This is the child process now. Connect $stdout and $stderr to
             # the pipes.
             $stdout.reopen(job.stdoutC)
@@ -148,8 +156,9 @@ class TaskJuggler
             job.block.call
           end
           @lock.synchronize do
+            job.pid = pid
             # Save the process ID in the PID to JobInfo hash.
-            @jobs[job.pid] = job
+            @jobs[pid] = job
             # Increase the jobs-in-flight counter.
             @pendingJobs += 1
           end
@@ -171,9 +180,9 @@ class TaskJuggler
           @lock.synchronize do
             # Get the JobInfo object that corresponds to the process ID.
             job = @jobs[pid]
-            raise "Unknown job" if pid.nil?
+            raise "Unknown pid #{pid}" if job.nil?
             # Save the return value.
-            job.retVal = retVal
+            job.retVal = retVal.deep_clone
             # We have one less job to worry about.
             @pendingJobs -= 1
           end

@@ -18,16 +18,28 @@ require 'BatchProcessor'
 class TestProject < Test::Unit::TestCase
 
   def test_simple
-    bp = TaskJuggler::BatchProcessor.new(2)
-    @i = 0
-    6.times { |i| bp.queue("job #{i}") { job(i) } }
-    bp.wait { |j| postprocess(j) }
-    assert_equal(6, @i, "Not all threads terminated propertly (#{@i})")
+    doRun(1, 1)
+    doRun(1, 2)
+    doRun(1, 7)
+    doRun(2, 1)
+    doRun(2, 2)
+    doRun(2, 33)
+    doRun(3, 1)
+    doRun(3, 3)
+    doRun(3, 67)
   end
 
-  def job(n)
+  def doRun(maxCPUs, jobs)
+    bp = TaskJuggler::BatchProcessor.new(maxCPUs)
+    @i = 0
+    jobs.times { |i| bp.queue("job #{i}") { runJob(i, 0.07**(i % 5)) } }
+    bp.wait { |j| postprocess(j) }
+    assert_equal(jobs, @i, "Not all threads terminated propertly (#{@i})")
+  end
+
+  def runJob(n, pause)
     puts "Job #{n} started"
-    sleep(1)
+    sleep(pause)
     $stderr.puts "Error #{n}" if n % 2 == 0
     puts "Job #{n} finished"
     exit n
@@ -35,8 +47,8 @@ class TestProject < Test::Unit::TestCase
 
   def postprocess(job)
     @i += 1
-    assert_equal(job.retVal.exitstatus, job.jobId)
-    assert_equal(job.retVal.pid, job.pid)
+    assert_equal(job.retVal.exitstatus, job.jobId, 'JobID mismatch')
+    assert_equal(job.retVal.pid, job.pid, 'PID mismatch')
     assert_equal("job #{job.jobId}", job.tag)
     text = <<"EOT"
 Job #{job.jobId} started
