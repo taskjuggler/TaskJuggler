@@ -40,15 +40,16 @@ class TaskJuggler
         else
           div << XMLText.new('|')
         end
-        if report == @project.reportContext.report
+        label = report.get('title') || report.name
+        reportContext = @project.reportContext
+        if report == reportContext.report
           div << (span = XMLElement.new('span',
                                          'style' => 'class:navbar_current'))
-          span << XMLText.new(report.name)
+          span << XMLText.new(label)
         else
           div << (span = XMLElement.new('span', 'style' => 'class:navbar_other'))
-          label = report.get('title') || report.name
           url = report.name + '.html'
-          url = normalizeURL(url, @project.reportContext.report.name)
+          url = normalizeURL(url, reportContext.report.name)
           span << (a = XMLElement.new('a', 'href' => url))
           a << XMLText.new(label)
         end

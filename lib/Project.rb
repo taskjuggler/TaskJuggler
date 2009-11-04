@@ -361,6 +361,7 @@ class TaskJuggler
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
 
+      # This holds a reference to the ReportContext for each Thread.
       @reportContext = nil
       @outputDir = ''
     end
@@ -545,9 +546,12 @@ class TaskJuggler
           end
         else
           bp = BatchProcessor.new(maxCpuCores)
-          @reports.each_value do |report|
+          @reports.each do |report|
             next if report.get('formats').empty?
-            bp.queue(report) { report.generate }
+            bp.queue(report) {
+              @reportContext = ReportContext.new(self, report)
+              report.generate
+            }
           end
           bp.wait do |report|
             $stdout.print(report.stdout)

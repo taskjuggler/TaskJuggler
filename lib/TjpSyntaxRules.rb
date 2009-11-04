@@ -2653,39 +2653,45 @@ EOT
       case @val[0]
       when 'taskreport'
         @property.typeSpec = :taskreport
-        # Set the default columns for this report.
-        %w( wbs name start end effort chart ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+        unless @property.parent.nil?
+          # Set the default columns for this report.
+          %w( wbs name start end effort chart ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
+          # Show all tasks, sorted by tree, start-up, seqno-up.
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+          @property.set('sortTasks',
+                        [ [ 'tree', true, -1 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
+          # Show no resources, but set sorting to id-up.
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+          @property.set('sortResources', [ [ 'id', true, -1 ] ])
         end
-        # Show all tasks, sorted by tree, start-up, seqno-up.
-        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-        @property.set('sortTasks',
-                    [ [ 'tree', true, -1 ],
-                      [ 'start', true, 0 ],
-                      [ 'seqno', true, -1 ] ])
-        # Show no resources, but set sorting to id-up.
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(1)))
-        @property.set('sortResources', [ [ 'id', true, -1 ] ])
       when 'resourcereport'
         @property.typeSpec = :resourcereport
-        # Set the default columns for this report.
-        %w( no name ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+        unless @property.parent.nil?
+          # Set the default columns for this report.
+          %w( no name ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
+          # Show all resources, sorted by tree and id-up.
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+          @property.set('sortResources', [ [ 'tree', true, -1 ],
+                        [ 'id', true, -1 ] ])
+          # Hide all resources, but set sorting to tree, start-up, seqno-up.
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+          @property.set('sortTasks',
+                        [ [ 'tree', true, -1 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
         end
-        # Show all resources, sorted by tree and id-up.
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-        @property.set('sortResources', [ [ 'tree', true, -1 ],
-                    [ 'id', true, -1 ] ])
-        # Hide all resources, but set sorting to tree, start-up, seqno-up.
-        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(1)))
-        @property.set('sortTasks',
-                    [ [ 'tree', true, -1 ],
-                      [ 'start', true, 0 ],
-                      [ 'seqno', true, -1 ] ])
       when 'textreport'
         @property.typeSpec = :textreport
       else
