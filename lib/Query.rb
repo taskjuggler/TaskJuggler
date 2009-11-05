@@ -108,7 +108,7 @@ class TaskJuggler
                                         @result.is_a?(Float)
         end
       rescue TjException
-        @errorMessage = $!
+        @errorMessage = $!.message
         @result = ''
         return @ok = false
       end

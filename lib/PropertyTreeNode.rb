@@ -415,6 +415,17 @@ class TaskJuggler
       end
     end
 
+    def modified?(attributeId, scenarioIdx = nil)
+      if scenarioIdx
+        return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
+        @scenarioAttributes[scenarioIdx][attributeId].provided ||
+        @scenarioAttributes[scenarioIdx][attributeId].inherited
+      else
+        return false if @attributes[attributeId].nil?
+        @attributes[attributeId].provided || @attributes[attributeId].inherited
+      end
+    end
+
     # Dump the class data in human readable form. Used for debugging only.
     def to_s # :nodoc:
       res = "#{self.class} #{fullId} \"#{@name}\"\n" +
