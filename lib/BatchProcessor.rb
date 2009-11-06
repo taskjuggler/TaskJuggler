@@ -61,6 +61,8 @@ class TaskJuggler
       @maxCpuCores = maxCpuCores
       # The job queue.
       @queue = Queue.new
+      # The completed job queue
+      @doneJobs = Queue.new
       # A semaphore to guard accesses to shared data structures.`
       @lock = Monitor.new
       # A hash that maps process ids to JobInfo objects.
@@ -115,7 +117,17 @@ class TaskJuggler
     # objects for each job to pick up the results.
     def wait
       while !@queue.empty? || @pendingJobs > 0 do
-        sleep(@timeout)
+        if !@doneJobs.empty?
+          # We have completed jobs.
+          while !@doneJobs.empty?
+            # Pop a job from the doneJob queue and call the block with it.
+            yield(job = @doneJobs.pop)
+            # Remove the job to free the JobInfo object.
+            @jobs.delete(job.pid)
+          end
+        else
+          sleep(@timeout)
+        end
       end
       # Wait for 250ms to increase the chances that all process have delivered
       # their $stdout and $stderr to this process.
@@ -127,9 +139,6 @@ class TaskJuggler
       @pusher.join
       @popper.join
       @grabber.join
-
-      # Pass the results of the jobs to the caller.
-      @jobs.each_value { |job| yield(job) }
     end
 
     private
@@ -185,6 +194,9 @@ class TaskJuggler
             job.retVal = retVal.deep_clone
             # We have one less job to worry about.
             @pendingJobs -= 1
+            # Push the job to the completed job queue for further post
+            # processing.
+            @doneJobs.push(job)
           end
         end
       end
