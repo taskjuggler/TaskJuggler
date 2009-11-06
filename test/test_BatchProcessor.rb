@@ -31,10 +31,14 @@ class TestProject < Test::Unit::TestCase
 
   def doRun(maxCPUs, jobs)
     bp = TaskJuggler::BatchProcessor.new(maxCPUs)
-    @i = 0
     jobs.times { |i| bp.queue("job #{i}") { runJob(i, 0.07**(i % 5)) } }
-    bp.wait { |j| postprocess(j) }
-    assert_equal(jobs, @i, "Not all threads terminated propertly (#{@i})")
+    @cnt = 0
+    lock = Monitor.new
+    bp.wait do |j|
+      postprocess(j)
+      lock.synchronize { @cnt += 1 }
+    end
+    assert_equal(jobs, @cnt, "Not all threads terminated propertly (#{@cnt})")
   end
 
   def runJob(n, pause)
@@ -46,7 +50,6 @@ class TestProject < Test::Unit::TestCase
   end
 
   def postprocess(job)
-    @i += 1
     assert_equal(job.retVal.exitstatus, job.jobId, 'JobID mismatch')
     assert_equal(job.retVal.pid, job.pid, 'PID mismatch')
     assert_equal("job #{job.jobId}", job.tag)
