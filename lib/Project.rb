@@ -270,7 +270,7 @@ class TaskJuggler
       ]
       attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
 
-      @reports = PropertySet.new(self, true)
+      @reports = PropertySet.new(self, false)
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default

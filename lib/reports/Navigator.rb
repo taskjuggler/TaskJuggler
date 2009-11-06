@@ -14,47 +14,153 @@ require 'reports/ReportContext'
 
 class TaskJuggler
 
-  class Navigator
+  class NavigatorElement
 
-    attr_reader :id
-    attr_accessor :hideReport
+    attr_reader :parent, :label
+    attr_accessor :url, :elements, :current
 
-    def initialize(id, project)
-      @id = id
-      @project = project
-      @hideReport = LogicalExpression.new(LogicalOperation.new(0))
+    def initialize(parent, label = nil, url = nil)
+      @parent = parent
+      @label = label
+      @url = url
+      @elements = []
+      # True if the current report is included in this NavigatorElement or any
+      # of its sub elements.
+      @current = false
     end
 
     def to_html
-      reports = filterReports
-      return nil if reports.empty?
-
       first = true
-      html = []
-      html << (div = XMLElement.new('div'))
-      reports.each do |report|
-        next unless report.get('formats').include?(:html)
+      html = (div = XMLElement.new('div'))
+
+      @elements.each do |element|
+        next unless label
 
         if first
           first = false
         else
           div << XMLText.new('|')
         end
-        label = report.get('title') || report.name
-        reportContext = @project.reportContext
-        if report == reportContext.report
+
+        url = element.url
+        if !url
+          nEl = element
+          while nEl.elements[0]
+            break if nEl.current
+
+            if nEl.elements[0].url
+              url = nEl.elements[0].url
+              break
+            end
+            nEl = nEl.elements[0]
+          end
+        end
+        if url && url != currentUrl
+          div << (span = XMLElement.new('span', 'style' => 'class:navbar_other'))
+          span << (a = XMLElement.new('a', 'href' => url))
+          a << XMLText.new(element.label)
+        else
           div << (span = XMLElement.new('span',
                                          'style' => 'class:navbar_current'))
-          span << XMLText.new(label)
-        else
-          div << (span = XMLElement.new('span', 'style' => 'class:navbar_other'))
-          url = report.name + '.html'
-          url = normalizeURL(url, reportContext.report.name)
-          span << (a = XMLElement.new('a', 'href' => url))
-          a << XMLText.new(label)
+          span << XMLText.new(element.label)
+        end
+      end
+      @elements.each do |element|
+        if element.current && !element.elements.empty?
+          html << XMLElement.new('hr') unless first
+          html << element.to_html
         end
       end
       html
+    end
+
+    # Return a text version of the tree. Currently used for debugging only.
+    def to_s(indent = 0)
+      @elements.each do |element|
+        puts "#{' ' * indent}#{element.current ? '<' : ''}" +
+             "#{element.label}#{element.current ? '>' : ''}" +
+             " -> #{element.url}"
+        element.to_s(indent + 1)
+      end
+    end
+
+    # Store the URL for the current report. Since the URL entry in the root
+    # node of the NavigatorElement tree is never used, we use it to store the
+    # current URL there.
+    def currentUrl=(url)
+      root.url = url
+    end
+
+    # Get the URL of the current report from the root node.
+    def currentUrl
+      root.url
+    end
+
+    # Traverse the tree all the way to the top and return the root element.
+    def root
+      p = self
+      while p.parent
+        p = p.parent
+      end
+      p
+    end
+
+  end
+
+  # A Navigator is an automatically generated menu to navigate a list of
+  # reports. The hierarchical structure of the reports will be reused to
+  # group them. The actual structure of the Navigator depends on the output
+  # format.
+  class Navigator
+
+    attr_reader :id
+    attr_accessor :hideReport, :reportRoot
+
+    def initialize(id, project)
+      @id = id
+      @project = project
+      @hideReport = LogicalExpression.new(LogicalOperation.new(0))
+      @reportRoot = nil
+      @elements = []
+    end
+
+    # Generate an output format independant version of the navigator. This is
+    # a tree of NavigatorElement objects.
+    def generate(reports, reportRoot, parentElement)
+      reports.each do |report|
+        hasURL = report.get('formats').include?(:html)
+        next if (report.parent != reportRoot) ||
+                (report.leaf? && !hasURL)
+
+        label = report.get('title') || report.name
+        # Determine the URL for this element.
+        if hasURL
+          url = report.name + '.html'
+          url = normalizeURL(url, @project.reportContext.report.name)
+        end
+        parentElement.elements <<
+          (element =  NavigatorElement.new(parentElement, label, url))
+
+        if report == @project.reportContext.report
+          element.currentUrl = url
+          # Mark this element and all its parents as current.
+          nEl = element
+          while nEl
+            nEl.current = true
+            nEl = nEl.parent
+          end
+        end
+
+        generate(reports, report, element)
+      end
+    end
+
+    def to_html
+      reports = filterReports
+      return nil if reports.empty?
+
+      generate(reports, nil, content = NavigatorElement.new(nil))
+      content.to_html
     end
 
     private
@@ -76,7 +182,7 @@ class TaskJuggler
       cut = 0
       0.upto(url1.length - 1) do |i|
         return url1[cut, url1.length - cut] if url1[i] != url2[i]
-        cut = i + 1 if url1[i] == '/'
+        cut = i + 1 if url1[i] == ?/
       end
 
       url1

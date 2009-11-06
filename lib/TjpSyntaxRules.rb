@@ -2604,6 +2604,24 @@ EOT
        )
     example('Export', '2')
   end
+  def rule_reportId
+    pattern(%w( !reportIdUnverifd ), lambda {
+      id = @val[0]
+      id = @reportprefix + '.' + id unless @reportprefix.empty?
+      # In case we have a nested supplement, we need to prepend the parent ID.
+      id = @property.fullId + '.' + id if @property && @property.is_a?(Report)
+      if (report = @project.report(id)).nil?
+        error('report_id_expected', "#{id} is not a defined report.")
+      end
+      report
+    })
+    arg(0, 'report', 'The ID of a defined report')
+  end
+
+  def rule_reportIdUnverifd
+    singlePattern('$ABSOLUTE_ID')
+    singlePattern('$ID')
+  end
 
   def rule_reportPeriod
     pattern(%w( _period !interval ), lambda {
@@ -3264,6 +3282,9 @@ EOT
     pattern(%w( !supplementAccount !accountBody ), lambda {
       @property = nil
     })
+    pattern(%w( !supplementReport !reportBody ), lambda {
+      @property = nil
+    })
     pattern(%w( !supplementResource !resourceBody ), lambda {
       @property = nil
     })
@@ -3277,6 +3298,13 @@ EOT
       @property = @val[1]
     })
     arg(1, 'account ID', 'The ID of an already defined account.')
+  end
+
+  def rule_supplementReport
+    pattern(%w( _report !reportId ), lambda {
+      @property = @val[1]
+    })
+    arg(1, 'report ID', 'The ID of an already defined report.')
   end
 
   def rule_supplementResource

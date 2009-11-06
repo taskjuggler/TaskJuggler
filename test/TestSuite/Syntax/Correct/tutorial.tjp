@@ -383,8 +383,7 @@ navigator navbar {
 
 # *** EXAMPLE: overview_report1 +
 # *** EXAMPLE: overview_report2 +
-textreport "Overview" {
-  formats html
+textreport "" {
 # *** EXAMPLE: overview_report1 -
   header -8<-
     == Accounting Software Project ==
@@ -393,23 +392,30 @@ textreport "Overview" {
     ----
   ->8-
 # *** EXAMPLE: overview_report1 +
-  center '<[report id="overview"]>'
+  textreport "Overview" {
+    formats html
+    center '<[report id="overview"]>'
+  }
 # *** EXAMPLE: overview_report1 -
 # *** EXAMPLE: overview_report2 -
 
   textreport "Development" {
+    formats html
     center '<[report id="development"]>'
   }
 
   textreport "Deliveries" {
+    formats html
     center '<[report id="deliveries"]>'
   }
 
   textreport "ContactList" {
+    formats html
     title "Contact List"
     center '<[report id="contactList"]>'
   }
   textreport "ResourceGraph" {
+    formats html
     title "Resource Graph"
     center '<[report id="resourceGraph"]>'
   }

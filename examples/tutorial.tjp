@@ -257,29 +257,35 @@ navigator navbar {
   hidereport 0
 }
 
-textreport "Overview" {
-  formats html
+textreport "" {
   header -8<-
     == Accounting Software Project ==
     ----
     <[navigator id="navbar"]>
     ----
   ->8-
-  center '<[report id="overview"]>'
+  textreport "Overview" {
+    formats html
+    center '<[report id="overview"]>'
+  }
 
   textreport "Development" {
+    formats html
     center '<[report id="development"]>'
   }
 
   textreport "Deliveries" {
+    formats html
     center '<[report id="deliveries"]>'
   }
 
   textreport "ContactList" {
+    formats html
     title "Contact List"
     center '<[report id="contactList"]>'
   }
   textreport "ResourceGraph" {
+    formats html
     title "Resource Graph"
     center '<[report id="resourceGraph"]>'
   }
