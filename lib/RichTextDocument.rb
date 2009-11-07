@@ -12,7 +12,7 @@
 
 require 'RichTextSnip'
 require 'TableOfContents'
-require 'RichTextProtocolHandler'
+require 'RichTextFunctionHandler'
 
 class TaskJuggler
 
@@ -24,20 +24,20 @@ class TaskJuggler
   # and generateHTMLFooter.
   class RichTextDocument
 
-    attr_reader :protocolHandlers
+    attr_reader :functionHandlers
 
     # Create a new empty RichTextDocument object.
     def initialize
-      @protocolHandlers = {}
+      @functionHandlers = {}
       @snippets = []
       @dirty = false
       @sectionCounter = [ 0, 0, 0 ]
       @toc = nil
     end
 
-    # Register a new RichTextProtocolHandler for this document.
-    def registerProtocolHandler(handler)
-      @protocolHandlers[handler.protocol] = handler
+    # Register a new RichTextFunctionHandler for this document.
+    def registerFunctionHandler(handler)
+      @functionHandlers[handler.function] = handler
     end
 
     # Add a new structured text file to the document. _file_ must be the name of

@@ -63,7 +63,7 @@ class TaskJuggler
   #  [[item]] site internal internal reference (in HTML .html gets appended
   #                                             automatically)
   #  [[item An item]] another internal reference
-  #  [[protocol:path arg1 arg2 ...]]
+  #  [[function:path arg1 arg2 ...]]
   #
   #  <nowiki> ... </nowiki> Disable markup interpretation for the enclosed
   #  portion of text.
@@ -80,9 +80,9 @@ class TaskJuggler
       @sectionNumbers = true
       # Set this to the width of your text area. Needed for horizonal lines.
       @lineWidth = 80
-      # These are the RichTextProtocolHandler objects to handle references with
-      # a protocol specification.
-      @protocolHandlers = {}
+      # These are the RichTextFunctionHandler objects to handle references with
+      # a function specification.
+      @functionHandlers = {}
       parser = RichTextParser.new(self, sectionCounter)
       parser.open(text)
       # Parse the input text and convert it to the intermediate representation.
@@ -92,25 +92,25 @@ class TaskJuggler
       @richText.cleanUp
     end
 
-    # Use this function to register new RichTextProtocolHandler objects with
+    # Use this function to register new RichTextFunctionHandler objects with
     # this class.
-    def registerProtocol(protocolHandler)
-      @protocolHandlers[protocolHandler.protocol] = protocolHandler
+    def registerFunction(functionHandler)
+      @functionHandlers[functionHandler.function] = functionHandler
     end
 
-    # Use this function to register a set of RichTextProtocolHandler objects
+    # Use this function to register a set of RichTextFunctionHandler objects
     # with this class. This will replace any previously registered handlers.
-    def setProtocolHandlers(protocolHandlers)
-      @protocolHandlers = protocolHandlers
+    def setProtocolHandlers(functionHandlers)
+      @functionHandlers = functionHandlers
     end
 
-    # Return the handler for the given _protocol_ or raise an exception if it
+    # Return the handler for the given _function_ or raise an exception if it
     # does not exist.
-    def protocolHandler(protocol)
-      unless @protocolHandlers.include?(protocol)
-        raise TjException.new, "Unsupported protocol #{protocol}"
+    def functionHandler(function)
+      unless @functionHandlers.include?(function)
+        raise TjException.new, "Unsupported function #{function}"
       end
-      @protocolHandlers[protocol]
+      @functionHandlers[function]
     end
 
     # Return a TableOfContents for the section headings.

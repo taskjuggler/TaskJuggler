@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = RichTextProtocolExample.rb -- The TaskJuggler III Project Management Software
+# = RichTextFunctionExample.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,22 +10,22 @@
 # published by the Free Software Foundation.
 #
 
-require 'RichTextProtocolHandler'
+require 'RichTextFunctionHandler'
 require 'TjpExample'
 require 'XMLElement'
 
 class TaskJuggler
 
-  # This class is a specialized RichTextProtocolHandler that turns references to
+  # This class is a specialized RichTextFunctionHandler that turns references to
   # TJP example code in the test/TestSuite/Syntax/Correct directory into
   # embedded example code. It currently only supports HTML.
-  class RichTextProtocolExample < RichTextProtocolHandler
+  class RichTextFunctionExample < RichTextFunctionHandler
 
     def initialize
       super(nil, 'example')
     end
 
-    # Not supported for this protocol
+    # Not supported for this function
     def to_s(args)
       ''
     end
@@ -51,7 +51,7 @@ class TaskJuggler
       frame
     end
 
-    # Not supported for this protocol.
+    # Not supported for this function.
     def to_tagged(args)
       nil
     end

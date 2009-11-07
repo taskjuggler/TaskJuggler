@@ -14,9 +14,9 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
 require 'RichText'
-require 'RichTextProtocolHandler'
+require 'RichTextFunctionHandler'
 
-  class RTPDummy < TaskJuggler::RichTextProtocolHandler
+  class RTPDummy < TaskJuggler::RichTextFunctionHandler
 
     def initialize()
       super(nil, 'dummy')
@@ -953,7 +953,7 @@ EOT
   def newRichText(text)
     begin
       rText = TaskJuggler::RichText.new(text)
-      rText.registerProtocol(RTPDummy.new)
+      rText.registerFunction(RTPDummy.new)
     rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"

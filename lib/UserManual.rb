@@ -14,7 +14,7 @@ require 'Tj3Config'
 require 'RichTextDocument'
 require 'SyntaxReference'
 require 'TjTime'
-require 'RichTextProtocolExample'
+require 'RichTextFunctionExample'
 
 class TaskJuggler
 
@@ -28,7 +28,7 @@ class TaskJuggler
       super
       # Don't confuse this with RichTextDocument#references
       @reference = SyntaxReference.new(self)
-      registerProtocolHandler(RichTextProtocolExample.new)
+      registerFunctionHandler(RichTextFunctionExample.new)
     end
 
     def generate(directory)

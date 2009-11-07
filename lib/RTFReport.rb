@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = RTPReport.rb -- The TaskJuggler III Project Management Software
+# = RTFReport.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -10,20 +10,20 @@
 # published by the Free Software Foundation.
 #
 
-require 'RichTextProtocolHandler'
+require 'RichTextFunctionHandler'
 require 'XMLElement'
 
 class TaskJuggler
 
-  # This class is a specialized RichTextProtocolHandler that includes a
+  # This class is a specialized RichTextFunctionHandler that includes a
   # report into the RichText output for supported formats.
-  class RTPReport < RichTextProtocolHandler
+  class RTFReport < RichTextFunctionHandler
 
     def initialize(project, sourceFileInfo)
       super(project, 'report', sourceFileInfo)
     end
 
-    # Not supported for this protocol
+    # Not supported for this function
     def to_s(args)
       ''
     end
@@ -51,7 +51,7 @@ class TaskJuggler
       html
     end
 
-    # Not supported for this protocol.
+    # Not supported for this function.
     def to_tagged(args)
       nil
     end

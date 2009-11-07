@@ -344,7 +344,7 @@ class TaskJuggler
         XMLElement.new('a', 'href' => @data, 'target' => '_blank')
       when :blockfunc
         noChilds = true
-        @richText.protocolHandler(@data[0]).to_html(@data[1])
+        @richText.functionHandler(@data[0]).to_html(@data[1])
       when :italic
         XMLElement.new('i')
       when :bold

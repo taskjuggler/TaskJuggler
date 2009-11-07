@@ -47,7 +47,7 @@ class TaskJuggler
                      "#{msg.line}"
         exit
       end
-      @richText.setProtocolHandlers(@document.protocolHandlers)
+      @richText.setProtocolHandlers(@document.functionHandlers)
 
       @prevSnip = @nextSnip = nil
     end
