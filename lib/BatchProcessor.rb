@@ -22,8 +22,8 @@ class TaskJuggler
   class JobInfo
 
     attr_reader :jobId, :block, :tag
-    attr_accessor :pid, :retVal, :stdoutP, :stdoutC, :stdout,
-                  :stderrP, :stderrC, :stderr
+    attr_accessor :pid, :retVal, :stdoutP, :stdoutC, :stdout, :stdoutEOT,
+                  :stderrP, :stderrC, :stderr, :stderrEOT
 
     def initialize(jobId, block, tag)
       # The job id. A unique number that is used by the BatchProcessor objects
@@ -38,10 +38,14 @@ class TaskJuggler
       @stdoutP, @stdoutC = IO.pipe
       # The stdout output of the child
       @stdout = ''
+      # This flag is set to true when the EOT character has been received.
+      @stdoutEOF = false
       # The pipe to transfer stderr data from the child to the parent.
       @stderrP, @stderrC = IO.pipe
       # The stderr output of the child
       @stderr = ''
+      # This flag is set to true when the EOT character has been received.
+      @stderrEOT = false
     end
 
   end
@@ -65,16 +69,18 @@ class TaskJuggler
       @toRunQueue = Queue.new
       # A hash that maps the JobInfo objects of running jobs by their PID.
       @runningJobs = { }
-      # Finished jobs are pushed into the @toGrabQueue Queue to make sure we
-      # get all their output. The grabber Thread picks them up and pushes them
-      # into the @toDropQueue.
-      @toGrabQueue = Queue.new
+      # A list of jobs that wait to complete their writing.
+      @spoolingJobs = [ ]
       # The wait() method will then clean the @toDropQueue, executes the post
       # processing block and removes all JobInfo related objects.
       @toDropQueue = Queue.new
 
-      # A semaphore to guard accesses to following shared data structures.
+      # A semaphore to guard accesses to @runningJobs, @spoolingJobs and
+      # following shared data structures.
       @lock = Monitor.new
+      # We count the submitted and completed jobs. The @jobsIn counter also
+      # doubles as a unique job ID.
+      @jobsIn = @jobsOut = 0
       # An Array that holds all the IO objects to receive data from.
       @pipes = []
       # A hash that maps IO objects to JobInfo objects
@@ -82,33 +88,42 @@ class TaskJuggler
 
       # This global flag is set to true to signal the threads to terminate.
       @terminate = false
-      # Sleep time of the threads when no data is pending.
+      # Sleep time of the threads when no data is pending. This value must be
+      # large enough to allow for a context switch between the sending
+      # (forked-off) process and this process. If the value is too small, it
+      # will cause lost characters at the end of the process output. If it's
+      # too large, throughput will suffer.
       @timeout = 0.02
-      # Job counter used to generate unique job IDs.
-      @jobCounter = 0
 
       Thread.abort_on_exception = true
-      # The JobInfo objects in the @toRunQueue are processed by the pusher
-      # thread.  It forkes off processes to execute the code block associated
-      # with the JobInfo.
-      @pusher = Thread.new { pusher }
-      # The popper thread waits for terminated childs and picks up the
-      # results.
-      @popper = Thread.new { popper }
-      # The grabber thread collects $stdout and $stderr data from each child
-      # process and stores them in the corresponding JobInfo.
-      @grabber = Thread.new { grabber }
     end
 
     # Add a new job the job queue. +tag+ is some data that the caller can use
     # to identify the job upon completion. +block+ is a Ruby code block to be
     # executed in a separate process.
     def queue(tag = nil, &block)
+      raise 'You cannot call queue() while wait() is running!' if @jobsOut > 0
+
+      # If this is the first queued job for this run, we have to start the
+      # helper threads.
+      if @jobsIn == 0
+        # The JobInfo objects in the @toRunQueue are processed by the pusher
+        # thread.  It forkes off processes to execute the code block associated
+        # with the JobInfo.
+        @pusher = Thread.new { pusher }
+        # The popper thread waits for terminated childs and picks up the
+        # results.
+        @popper = Thread.new { popper }
+        # The grabber thread collects $stdout and $stderr data from each child
+        # process and stores them in the corresponding JobInfo.
+        @grabber = Thread.new { grabber }
+      end
+
       # Create a new JobInfo object for the job and push it to the @toRunQueue.
-      jobInfo = JobInfo.new(@jobCounter, block, tag)
+      jobInfo = JobInfo.new(@jobsIn, block, tag)
       # Increase job counter
-      @jobCounter += 1
       @lock.synchronize do
+        @jobsIn += 1
         # Add the receiver end of the pipe to the @pipes Array.
         @pipes << jobInfo.stdoutP
         # Map the pipe end to this JobInfo object.
@@ -123,24 +138,26 @@ class TaskJuggler
     # Wait for all jobs to complete. The code block will get the JobInfo
     # objects for each job to pick up the results.
     def wait
-      # Check processing queues in reverse order to avoid missing a job when
-      # testing when a job is migrating from one to another.
-      while !@toDropQueue.empty? || !@toGrabQueue.empty? ||
-            !@runningJobs.empty? || !@toRunQueue.empty? do
+      # When we have received as many jobs in the @toDropQueue than we have
+      # started then we're done.
+      while !@lock.synchronize { @jobsIn == @jobsOut }
         if @toDropQueue.empty?
           sleep(@timeout)
         else
           # We have completed jobs.
           while !@toDropQueue.empty?
-            # Pop a job from the doneJob queue and call the block with it.
+            # Pop a job from the @toDropQueue and call the block with it.
             job = @toDropQueue.pop
             # Remove the job related entries from the housekeeping tables.
             @lock.synchronize do
+              @jobsOut += 1
               @pipes.delete(job.stdoutP)
               @pipeToJob.delete(job.stdoutP)
               @pipes.delete(job.stderrP)
               @pipeToJob.delete(job.stderrP)
             end
+            # Call the post-processing block that was passed to wait() with
+            # the JobInfo object as argument.
             yield(job)
           end
         end
@@ -152,6 +169,13 @@ class TaskJuggler
       @pusher.join
       @popper.join
       @grabber.join
+
+      # Reset some variables so we can reuse the object for further job runs.
+      @jobsIn = @jobsOut = 0
+      @terminate = false
+
+      # Make sure all data structures are empty and clean.
+      check
     end
 
     private
@@ -176,7 +200,13 @@ class TaskJuggler
               $stderr.reopen(job.stderrC)
               job.stderrC.close
               # Call the Ruby code block
-              job.block.call
+              retVal = job.block.call
+              # Send EOT character to mark the end of the text.
+              $stdout.putc 4
+              $stderr.putc 4
+              # Now exit the child process and return the return value of the
+              # block as process return value.
+              exit retVal
             end
             job.pid = pid
             # Save the process ID in the PID to JobInfo hash.
@@ -202,15 +232,14 @@ class TaskJuggler
             # Get the JobInfo object that corresponds to the process ID.
             job = @runningJobs[pid]
             raise "Unknown pid #{pid}" if job.nil?
-            # Remove the job from the @runningJobs Hash. It will be
-            # transferred to the grabber Queue now.
+            # Remove the job from the @runningJobs Hash.
             @runningJobs.delete(pid)
             # Save the return value.
             job.retVal = retVal.deep_clone
+            # Push the job into the @spoolingJobs list to wait for it to
+            # finish writing IO.
+            @spoolingJobs << job
           end
-          # Push the job to the completed job queue for further post
-          # processing.
-          @toGrabQueue.push(job)
         end
       end
     end
@@ -225,29 +254,59 @@ class TaskJuggler
         # times out.
         res = nil
         begin
-          if (res = select(@pipes, nil, nil, @timeout))
-            # We have output data from at least one child. Check which pipe
-            # actually triggered the select.
-            res[0].each do |pipe|
-              # Find the corresponding JobInfo object.
-              job = @pipeToJob[pipe]
-              # Store the output.
-              if pipe == job.stdoutP
-                job.stdout << pipe.getc
-              else
-                job.stderr << pipe.getc
+          @lock.synchronize do
+            if (res = select(@pipes, nil, @pipes, @timeout))
+              # We have output data from at least one child. Check which pipe
+              # actually triggered the select.
+              res[0].each do |pipe|
+                # Find the corresponding JobInfo object.
+                job = @pipeToJob[pipe]
+                # Store the output.
+                if pipe == job.stdoutP
+                  # Look for the EOT character to signal the end of the text.
+                  if (c = pipe.getc) == "\004"
+                    job.stdoutEOT = true
+                  else
+                    job.stdout << c
+                  end
+                else
+                  if (c = pipe.getc) == "\004"
+                    job.stderrEOT = true
+                  else
+                    job.stderr << c
+                  end
+                end
               end
             end
           end
+          sleep(@timeout) unless res
         end while res
-        # After a job has completed, the JobInfo record is put into the
-        # @toGrabQueue Queue. Only when we have found the record here are we
-        # sure we have received all output. Then we can put it into the
-        # @toDropQueue Queue.
-        while !@toGrabQueue.empty?
-          @toDropQueue.push(@toGrabQueue.pop)
+
+        # Search the @spoolingJobs list for jobs that have completed IO and
+        # push them to the @toDropQueue.
+        @lock.synchronize do
+          @spoolingJobs.each do |job|
+            # Both stdout and stderr need to have reached the end of text.
+            if job.stdoutEOT && job.stderrEOT
+              @spoolingJobs.delete(job)
+              @toDropQueue.push(job)
+              # Since we deleted a list item during an iterator run, we
+              # terminate the iterator.
+              break
+            end
+          end
         end
       end
+    end
+
+    def check
+      raise "toRunQueue not empty!" unless @toRunQueue.empty?
+      raise "runningJobs list not empty!" unless @runningJobs.empty?
+      raise "spoolingJobs list not empty!" unless @spoolingJobs.empty?
+      raise "toDropQueue not empty!" unless @toDropQueue.empty?
+
+      raise "pipe list not empty!" unless @pipes.empty?
+      raise "pipe map not empty!" unless @pipeToJob.empty?
     end
 
   end

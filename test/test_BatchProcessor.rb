@@ -46,7 +46,7 @@ class TestProject < Test::Unit::TestCase
     sleep(pause)
     $stderr.puts "Error #{n}" if n % 2 == 0
     puts "Job #{n} finished"
-    exit n
+    n
   end
 
   def postprocess(job)
