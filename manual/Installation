@@ -54,6 +54,7 @@ A gem package is an operating system and architecture independent
 archive file for Ruby programs. You can install it on any system that
 has Ruby and ruby-gems installed.  Normally, you should be logged-in
 as root or administrator to run the following installation command.
+Replace the X.X.X with the actual version that you have downloaded.
 
  gem install pkg/taskjuggler-X.X.X.gem 
 
