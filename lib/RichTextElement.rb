@@ -163,6 +163,7 @@ class TaskJuggler
       when :ref
       when :href
       when :blockfunc
+      when :inlinefunc
       when :italic
       when :bold
       when :code
@@ -246,6 +247,14 @@ class TaskJuggler
         post = '</a>'
       when :blockfunc
         pre = "<blockfunc:#{@data[0]}"
+        if @data[1]
+          @data[1].keys.sort.each do |key|
+            pre += " #{key}=\"#{@data[1][key]}\""
+          end
+        end
+        post = "/>"
+      when :inlinefunc
+        pre = "<inlinefunc:#{@data[0]}"
         if @data[1]
           @data[1].keys.sort.each do |key|
             pre += " #{key}=\"#{@data[1][key]}\""
@@ -343,6 +352,9 @@ class TaskJuggler
       when :href
         XMLElement.new('a', 'href' => @data, 'target' => '_blank')
       when :blockfunc
+        noChilds = true
+        @richText.functionHandler(@data[0]).to_html(@data[1])
+      when :inlinefunc
         noChilds = true
         @richText.functionHandler(@data[0]).to_html(@data[1])
       when :italic

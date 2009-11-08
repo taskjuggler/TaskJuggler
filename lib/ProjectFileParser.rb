@@ -15,6 +15,7 @@ require 'TextScanner'
 require 'TjpSyntaxRules'
 require 'RichText'
 require 'RTFNavigator'
+require 'RTFQuery'
 require 'RTFReport'
 
 class TaskJuggler
@@ -199,6 +200,7 @@ class TaskJuggler
       begin
         rText = RichText.new(text)
         rText.registerFunction(RTFNavigator.new(@project, sfi))
+        rText.registerFunction(RTFQuery.new(@project, sfi))
         rText.registerFunction(RTFReport.new(@project, sfi))
       rescue RichTextException => msg
         sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)

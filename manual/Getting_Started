@@ -96,12 +96,13 @@ double quotes.
 Single quoted strings may contain double quotes and vice versa.
 
 For multi-line strings cut mark strings are recommended. A
-cut-mark-string starts with ''''-8<-'''' (scissor on a dotted line) and
-ends with ''''->8-''''. The start mark must be immediately followed
-by a line break. The indentation of the first line must be repeated
-for all following lines of the string and is not included in the
-resulting strings. The terminating cut mark must only be preceeded by
-white spaces by may not be indented more than the first line indentation.
+cut-mark-string starts with ''''<nowiki>-8<-</nowiki>'''' (scissor on
+a dotted line) and ends with ''''->8-''''. The start mark must be
+immediately followed by a line break. The indentation of the first
+line must be repeated for all following lines of the string and is not
+included in the resulting strings. The terminating cut mark must only
+be preceeded by white spaces by may not be indented more than the
+first line indentation.
 
  -8<-
    This is a

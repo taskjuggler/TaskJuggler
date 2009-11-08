@@ -311,14 +311,24 @@ class TaskJuggler
       # the next character into the start of a control sequence.
       # Hard linebreaks consist of a newline followed by another newline or
       # any of the begin-of-line control characters.
-      if (c = nextChar) && "\n*#< =-".include?(c)
+      if (c = nextChar).nil?
+        # We hit the end of the text.
+        [ '.', '<END>' ]
+      elsif c == '<' && peekMatch('[')
+        # the '<' can be a start of a block (BLOCKFUNCSTART) or inline text
+        # (INLINEFUNCSTART). Only for the first case the linebreak is real.
         returnChar if c != "\n"
         # The next character may be a control character.
         @beginOfLine = true
         [ 'LINEBREAK', "\n" ]
-      elsif c.nil?
-        # We hit the end of the text.
-        [ '.', '<END>' ]
+      elsif "\n*# =-".include?(c)
+        # These characters correspond to the first characters of a block
+        # element. When they are found at the begin of the line, the newline
+        # was really a line break.
+        returnChar if c != "\n"
+        # The next character may be a control character.
+        @beginOfLine = true
+        [ 'LINEBREAK', "\n" ]
       else
         # Single line breaks are treated as spaces. Return the char after
         # the newline and start with this one again.
@@ -336,6 +346,11 @@ class TaskJuggler
         # Turn most wiki markup interpretation on.
         @pos += '/nowiki>'.length
         @mode = :wiki
+      elsif peekMatch('-') && @mode == :wiki
+        nextChar
+        # Switch the parser to function argument parsing mode.
+        @mode = :funcarg
+        return [ 'INLINEFUNCSTART', '<-' ]
       else
         # We've not found a valid control sequence. Push back the character
         # and make sure we treat it as a normal character.

@@ -19,7 +19,8 @@ class TaskJuggler
   # run has been completed, but it only produces good results for static
   # attributes. And for such queries, the PropertyTreeNode.get and [] functions
   # are a lot more efficient.
-  # # When constructing a Query, a set of variables need to be set that is
+  #
+  # When constructing a Query, a set of variables need to be set that is
   # sufficient enough to identify a unique attribute. Some attribute are
   # computed dynamically and further variables such as a start and end time will
   # be incorporated into the result computation.
@@ -42,7 +43,8 @@ class TaskJuggler
     # uniquely identify an attribute.
     def initialize(parameters = { })
       ps = %w( project propertyType propertyId property scopePropertyId
-               scopeProperty attributeId scenarioIdx start end startIdx endIdx
+               scopeProperty attributeId scenario scenarioIdx
+               start end startIdx endIdx
                loadUnit numberFormat currencyFormat costAccount revenueAccount)
       ps.each do |p|
         instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
@@ -68,9 +70,14 @@ class TaskJuggler
     def process
       begin
         # Resolve property reference from property ID.
-        if !@property.nil? && !@propertyId.nil?
+        if @property.nil? && !@propertyId.nil?
           @property = resolvePropertyId(@propertyType, @propertyId)
         end
+        unless @property
+          raise "Query cannot resolve property '#{propertyId}' of type " +
+            "'#{propertyType}'"
+        end
+
         # Same for the scope property.
         if !@scopeProperty.nil? && !@scopePropertyId.nil?
           @scopeProperty = resolvePropertyId(@scopePropertyType,
@@ -79,6 +86,12 @@ class TaskJuggler
         # Make sure the have a reference to the project.
         @project = @property.project unless @project
 
+        if @scenario && !@scenarioIdx
+          @scenarioIdx = @project.scenarioIdx(@scenario)
+          unless @scenarioIdx
+            raise "Query cannot resolve scenario '#{@scenario}'"
+          end
+        end
         @startIdx = @project.dateToIdx(@start, true) if @startIdx.nil? && @start
         @endIdx = @project.dateToIdx(@end, true) - 1 if @endIdx.nil? && @end
 
@@ -142,11 +155,11 @@ class TaskJuggler
       end
       case pType
       when :Account
-        @project.account[pId]
+        @project.account(pId)
       when :Task
-        @project.task[pId]
+        @project.task(pId)
       when:Resource
-        @project.resource[pId]
+        @project.resource(pId)
       else
         raise TjException.new, "Unknown property type #{pType}"
       end

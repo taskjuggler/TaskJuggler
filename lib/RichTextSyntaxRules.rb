@@ -186,6 +186,9 @@ class TaskJuggler
       pattern(%w( !plainTextWithLinks ), lambda {
         @val[0]
       })
+      pattern(%w( !inlineFunction ), lambda {
+        @val[0]
+      })
       pattern(%w( $ITALIC !plainTextWithLinks $ITALIC !space ), lambda {
         el = RichTextElement.new(@richText, :italic, @val[1])
         el.appendSpace = !@val[3].empty?
@@ -271,6 +274,21 @@ class TaskJuggler
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.
         el.data = [@val[1], args ]
+        el
+      })
+    end
+
+    def rule_inlineFunction
+      pattern(%w( $INLINEFUNCSTART $ID !functionArguments $INLINEFUNCEND
+                  !space ),
+              lambda {
+        args = {}
+        @val[2].each { |arg| args[arg[0]] = arg[1] }
+        el = RichTextElement.new(@richText, :inlinefunc)
+        # Data is a 2 element Array with the function name and a Hash for the
+        # arguments.
+        el.data = [@val[1], args ]
+        el.appendSpace = !@val[4].empty?
         el
       })
     end

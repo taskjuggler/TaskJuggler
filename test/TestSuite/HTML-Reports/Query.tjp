@@ -1,0 +1,18 @@
+project query "Query Test" 2009-11-08 +1m
+
+resource foo "Foo"
+
+task bar "Bar" {
+  effort 1w
+  allocate foo 
+}
+
+textreport "Query" {
+  formats html
+  center -8<-
+    The task <-query family="task" property="bar"
+    attribute="name"-> has an effort of
+    <-query family="task" property="bar" attribute="effort"->.
+    ->8-
+}
+

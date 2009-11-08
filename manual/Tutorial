@@ -562,15 +562,16 @@ attribute just like [[center]]. We could enclose it in single or
 double quotes again. But for Strings that span multiple lines and
 potentially include single or double quotes as well, scissor-marks or
 cut-here-marks are recommended. These marks look like a pair of
-scissors that cut along a dashed line. Use ''''-8<-'''' to begin a
-string and ''''->8-'''' to terminate it. The opening cut mark must be
-immediately followed by a line break. The indentation of the
-following line defines the indentation that will be ignored for all
-lines of the string. The following lines must have at least the same
-indentation. The indentation that exceeds the indentation of the
-first line will be kept in the resulting string. With this feature,
-you can define multi-line Rich Text strings without disturbing the
-indentation structure of your project file.
+scissors that cut along a dashed line. Use
+''''<nowiki>-8<-</nowiki>'''' to begin a string and ''''->8-'''' to
+terminate it. The opening cut mark must be immediately followed by a
+line break. The indentation of the following line defines the
+indentation that will be ignored for all lines of the string. The
+following lines must have at least the same indentation. The
+indentation that exceeds the indentation of the first line will be
+kept in the resulting string. With this feature, you can define
+multi-line Rich Text strings without disturbing the indentation
+structure of your project file.
 
 <[example file="tutorial" tag="overview4"]>
 
