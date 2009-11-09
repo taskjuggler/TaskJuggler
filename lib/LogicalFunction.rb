@@ -23,6 +23,7 @@ class TaskJuggler
     # A map with the names of the supported functions and the number of
     # arguments they require.
     @@functions = {
+        'isactive' => 1,
         'isdependencyof' => 3,
         'isdutyof' => 2,
         'isleaf' => 0,
@@ -68,6 +69,20 @@ class TaskJuggler
 
   private
 
+    def isactive(expr, args)
+      # The result can only be true when called for a Task property.
+      return false unless (property = expr.property).is_a?(Task)
+      scopeProperty = expr.scopeProperty
+      project = property.project
+      # 1st arg must be a scenario index.
+      return false if (scenarioIdx = project.scenarioIdx(args[0])).nil?
+
+      property.getAllocatedTime(scenarioIdx,
+                                project.reportContext.report.get('start'),
+                                project.reportContext.report.get('end'),
+                                scopeProperty) > 0.0
+    end
+
     def isdependencyof(expr, args)
       # The result can only be true when called for a Task property.
       return false unless expr.property.is_a?(Task)
@@ -84,14 +99,14 @@ class TaskJuggler
 
     def isdutyof(expr, args)
       # The result can only be true when called for a Task property.
-      return false unless expr.property.is_a?(Task)
-      project = expr.property.project
+      return false unless (task = expr.property).is_a?(Task)
+      project = task.project
       # 1st arg must be a resource ID.
       return false if (resource = project.resource(args[0])).nil?
       # 2nd arg must be a scenario index.
       return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
 
-      expr.property['assignedresources', scenarioIdx].include?(resource)
+      task['assignedresources', scenarioIdx].include?(resource)
     end
 
     def isleaf(expr, args)

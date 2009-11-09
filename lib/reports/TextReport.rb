@@ -66,8 +66,9 @@ class TaskJuggler
         %w( left center right).each do |i|
           width = instance_variable_get('@' + i[0].chr + 'Width')
           if width > 0
-            tr << (td = XMLElement.new('td', 'width' => "#{width}%"))
-            td << rt_to_html(i)
+            tr << (td = XMLElement.new('td', 'width' => "#{width}%",
+                                       'style' => 'vertical-align:top'))
+            td << (el = rt_to_html(i))
           end
         end
 

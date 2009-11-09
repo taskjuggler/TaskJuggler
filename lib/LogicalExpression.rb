@@ -21,7 +21,7 @@ class TaskJuggler
   # objects and the context that it should be evaluated in.
   class LogicalExpression
 
-    attr_reader :property, :sourceFileInfo
+    attr_reader :property, :scopeProperty, :sourceFileInfo
 
     # Create a new LogicalExpression object. _op_ must be a LogicalOperation.
     # _sourceFileInfo_ is the file position where expression started. It may be

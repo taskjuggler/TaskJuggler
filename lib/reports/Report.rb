@@ -80,6 +80,7 @@ class TaskJuggler
       rescue TjException
         error('reporting_failed', $!.message)
       end
+      0
     end
 
     # Render the content of the report as HTML (without the framing).
