@@ -2452,7 +2452,7 @@ EOT
     also(%w( epilog footer prolog ))
 
     pattern(%w( _headline $STRING ), lambda {
-      @property.set('headline', @val[1])
+      @property.set('headline', newRichText(@val[1]))
     })
     doc('headline', <<'EOT'
 Specifies the headline for a report.

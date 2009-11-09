@@ -118,7 +118,7 @@ class AppConfig
     dirs << "../#{baseDir}/"
 
     if ENV['TASKJUGGLER_DATA_PATH']
-      dirs << ENV['TASKJUGGLER_DATA_PATH']
+      dirs << ENV['TASKJUGGLER_DATA_PATH'] + "/#{baseDir}/"
     end
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
