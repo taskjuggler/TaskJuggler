@@ -91,7 +91,7 @@ class TaskJuggler
                                      'style' => 'font-size:16px; ' +
                                                 'font-weight:bold',
                                      'class' => 'tabfront'))
-        td1 << XMLNamedText.new(a('headline'), 'p')
+        td1 << a('headline').to_html
       end
 
       # Now generate the actual table with the data.
