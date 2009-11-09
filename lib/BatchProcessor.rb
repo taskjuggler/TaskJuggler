@@ -264,13 +264,13 @@ class TaskJuggler
                 # Store the output.
                 if pipe == job.stdoutP
                   # Look for the EOT character to signal the end of the text.
-                  if (c = pipe.getc) == "\004"
+                  if (c = pipe.getc) == ?\004
                     job.stdoutEOT = true
                   else
                     job.stdout << c
                   end
                 else
-                  if (c = pipe.getc) == "\004"
+                  if (c = pipe.getc) == ?\004
                     job.stderrEOT = true
                   else
                     job.stderr << c
