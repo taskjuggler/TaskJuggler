@@ -41,13 +41,14 @@ class TaskJuggler
       # A list of all source files. The order is important.
       %w(
         Intro
-          TaskJuggler_2x_Migration
-          How_To_Contribute
-          Reporting_Bugs
-          Installation
+        TaskJuggler_2x_Migration
+        How_To_Contribute
+        Reporting_Bugs
+        Installation
         Getting_Started
-          Rich_Text_Attributes
+        Rich_Text_Attributes
         Tutorial
+        The_TaskJuggler_Syntax
         Day_To_Day_Juggling
         fdl
       ).each do |file|
