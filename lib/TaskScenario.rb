@@ -1219,8 +1219,12 @@ class TaskJuggler
     def isDependencyOf(task, depth)
       return true if task == @property
 
-      @property.children.each do |t|
+      # Check if any of the parent tasks is a dependency of _task_.
+      t = @property.parent
+      while t
+        # If the parent is a dependency, than all childs are as well.
         return true if t.isDependencyOf(@scenarioIdx, task, depth)
+        t = t.parent
       end
 
 
