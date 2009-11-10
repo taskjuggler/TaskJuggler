@@ -164,7 +164,7 @@ class TaskJuggler
     # The unallocated work time of the Resource during the specified interval.
     def query_freetime(query)
       query.sortableResult = query.numericalResult =
-        getEffectiveFreeTime(query.startIdx, query.endIdx)
+        getEffectiveFreeTime(query.startIdx, query.endIdx) / (60 * 60 * 24)
       query.result = query.scaleDuration(query.sortableResult)
     end
 

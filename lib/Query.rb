@@ -128,9 +128,9 @@ class TaskJuggler
       @ok = true
     end
 
-    # Convert a duration to the format specified by @loadUnit.  _work_ is the
-    # effort in man days. The return value is the converted value with optional
-    # unit as a String.
+    # Convert a duration to the format specified by @loadUnit.  _value_ is the
+    # duration effort in days. The return value is the converted value with
+    # optional unit as a String.
     def scaleDuration(value)
       scaleValue(value, [ 24 * 60, 24, 1, 1.0 / 7, 1.0 / 30.42, 1.0 / 365 ])
     end
