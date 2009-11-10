@@ -245,7 +245,9 @@ class TaskJuggler
           wbs += idx.to_s
         end
         p.set('wbs', wbs)
-        p.set('tree', tree)
+        # All elements of a node should have the same 'tree' value. So we
+        # delete the last 5 digits again.
+        p.set('tree', tree[0.. - 6])
       end
     end
 
