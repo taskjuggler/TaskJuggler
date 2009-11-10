@@ -675,8 +675,11 @@ class TaskJuggler
 
       setStandardCellAttributes(cell, columnDef,
                                 propertyList.attributeType(columnDef.id), line)
-
       scopeProperty = line.scopeLine ? line.scopeLine.property : nil
+
+      return true if columnDef.hideCellText &&
+                     columnDef.hideCellText.eval(property, scopeProperty)
+
       query = Query.new('property' => property,
                         'scopeProperty' => scopeProperty,
                         'attributeId' => columnDef.id,
