@@ -99,32 +99,3 @@ with the [[now]] keyword, the moment of the processing of the file
 will be inserted. Keep in mind that this will change every time you
 process your project. 
 
-=== Logical Expression Functions ===
-
-==== isactive(scenario) ====
-
-Can evaluate to true for tasks and resources if they have bookings in
-the scenario during the report time frame.
-
-==== isdependencyof(task, scenario, distance) ====
-
-Can evaluate to true for tasks that depend on the specified task in
-the specified scenario and are no more than distance tasks away. If
-distance is 0, all dependencies are considered independent of their
-distance.
-
-==== isdutyof(resource, scenario) ====
-
-Can evaluate to true for tasks that have the specified resource
-assigned to it in the specified scenario.
-
-==== isleaf() ====
-
-Will evaluate to true for all properties that have no child
-properties.
-
-==== treelevel() ====
-
-Returns the nesting level of a property in the property tree.
-Top level properties have a level of 1, their children 2 and so on.
-

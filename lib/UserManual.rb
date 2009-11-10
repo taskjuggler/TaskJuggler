@@ -46,9 +46,9 @@ class TaskJuggler
         Reporting_Bugs
         Installation
         Getting_Started
-        Rich_Text_Attributes
         Tutorial
         The_TaskJuggler_Syntax
+        Rich_Text_Attributes
         Day_To_Day_Juggling
         fdl
       ).each do |file|

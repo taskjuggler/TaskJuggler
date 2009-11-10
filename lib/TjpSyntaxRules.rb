@@ -869,15 +869,44 @@ EOT
 
   def rule_functionPatterns
     # This rule is not used by the parser. It's only for the documentation.
+    pattern(%w( _isactive _( $ID _) ))
+    doc('isactive', <<'EOT'
+Will evaluate to true for tasks and resources if they have bookings in
+the scenario during the report time frame.
+EOT
+       )
+    arg(2, 'ID', 'A scenario ID')
+
+    pattern(%w( _isdependencyof _( $ID _, $ID _, $INTEGER _) ))
+    doc('isdependencyof', <<'EOT'
+Will evaluate to true for tasks that depend on the specified task in
+the specified scenario and are no more than distance tasks away. If
+distance is 0, all dependencies are considered independent of their
+distance.
+EOT
+       )
+    arg(2, 'Task ID', 'The ID of a defined task')
+    arg(4, 'Scenario ID', 'A scenario ID')
+    arg(6, 'Distance', 'The maximum task distance to be considered')
+
+    pattern(%w( _isdutyof _( $ID _, $ID _) ))
+    doc('isdutyof', <<'EOT'
+Will evaluate to true for tasks that have the specified resource
+assigned to it in the specified scenario.
+EOT
+       )
+    arg(2, 'Resource ID', 'The ID of a defined resource')
+    arg(4, 'Scenario ID', 'A scenario ID')
+
     pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
 
-    pattern(['_isresource', '_(', '$ID', '_)' ])
-    doc('isresource', <<'EOT'
-The result is true if the property is a resource with the specified ID.
+    pattern(%w( _treelevel _( _) ))
+    doc('treelevel', <<'EOT'
+Returns the nesting level of a property in the property tree.
+Top level properties have a level of 1, their children 2 and so on.
 EOT
        )
-    arg(2, 'ID', 'A resource ID')
   end
 
   def rule_hideresource
@@ -1133,6 +1162,11 @@ EOT
       @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
                                       @property)
     })
+    arg(2, 'headline', <<'EOT'
+The headline of the journal entry. It will be interpreted as
+[[Rich_Text_Attributes Rich Text]].
+EOT
+       )
   end
   def rule_leafResourceId
     pattern(%w( !resourceId ), lambda {
@@ -2456,6 +2490,11 @@ EOT
     })
     doc('headline', <<'EOT'
 Specifies the headline for a report.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text used for the headline. It is interpreted as
+[[Rich_Text_Attributes Rich Text]].
 EOT
        )
 
