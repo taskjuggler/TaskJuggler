@@ -327,7 +327,7 @@ class TaskJuggler
 
     # Return the set of PropertyTreeNode objects as flat Array.
     def to_ary
-      @properties.clone
+      @properties.dup
     end
 
     def to_s

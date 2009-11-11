@@ -59,7 +59,7 @@ class TaskJuggler
         end
       end
 
-      args = args.clone
+      args = args.dup
       args['project'] = @project
       setPropertyType(args)
       setProperties(args)

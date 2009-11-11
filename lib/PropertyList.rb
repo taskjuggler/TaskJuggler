@@ -59,6 +59,10 @@ class TaskJuggler
       @items.method(func).call(*args, &block)
     end
 
+    def to_ary
+      @items.dup
+    end
+
     # Set all sorting levels as Array of triplets.
     def setSorting(modes)
       resetSorting

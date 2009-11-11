@@ -200,7 +200,7 @@ class TaskJuggler::TextParser
         if @args[i]
           # The argument is documented in the syntax definition. We copy the
           # entry as we need to modify it.
-          argDoc = @args[i].clone
+          argDoc = @args[i].dup
 
           # A documented argument without a name is a terminal token. We use the
           # terminal symbol as name.

@@ -331,7 +331,7 @@ class TaskJuggler
         format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%s') + '-%z'
       end
       # Always report values in local timezone
-      @time.clone.localtime.strftime(format)
+      @time.dup.localtime.strftime(format)
     end
 
     # Return the seconds since Epoch.

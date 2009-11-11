@@ -149,7 +149,7 @@ class TaskJuggler
         7.times do |day|
           hours = []
           wh.days[day].each do |hrs|
-            hours << hrs.clone
+            hours << hrs.dup
           end
           setWorkingHours(day, hours)
         end
@@ -306,7 +306,7 @@ class TaskJuggler
         ENV['tz'] = @timezone
       end
 
-      localDate = date.clone
+      localDate = date.dup
       localDate.localtime
 
       # Restore environment

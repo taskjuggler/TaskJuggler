@@ -197,7 +197,7 @@ class TaskJuggler
     def getTransitions(rule)
       # If we have processed this rule before we can just return a copy
       # of the transitions of this rule. This avoids endless recursions.
-      return rule.transitions.clone unless rule.transitions.empty?
+      return rule.transitions.dup unless rule.transitions.empty?
 
       rule.transitions = []
       rule.patterns.each do |pat|
@@ -241,7 +241,7 @@ class TaskJuggler
         end
         rule.transitions << transitions
       end
-      rule.transitions.clone
+      rule.transitions.dup
     end
 
     def checkRule(rule)

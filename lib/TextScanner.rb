@@ -221,7 +221,7 @@ class TaskJuggler
 
     # Return SourceFileInfo for the current processing prosition.
     def sourceFileInfo
-      @pos ? @pos.clone : SourceFileInfo.new(fileName, lineNo, columnNo)
+      @pos ? @pos.dup : SourceFileInfo.new(fileName, lineNo, columnNo)
     end
 
     # Return the name of the currently processed file. If we are working on a

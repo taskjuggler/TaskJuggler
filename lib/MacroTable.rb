@@ -62,7 +62,7 @@ class TaskJuggler
     # unchanged. No error is generated.
     def resolve(args, sourceFileInfo)
       name = args[0]
-      resolved = @macros[name].value.clone
+      resolved = @macros[name].value.dup
       i = 0
       args.each do |arg|
         resolved.gsub!("${#{i}}", arg)
