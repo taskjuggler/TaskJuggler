@@ -144,7 +144,7 @@ class TaskJuggler
         # The update the 'index' attributes of the PropertyTreeNodes.
         index
         # An then the 'tree' attributes.
-        @propertySet.indexTree(@items)
+        indexTree
 
         # Restore the 'tree' sorting mode again.
         @sortingCriteria.insert(0, sc)
@@ -183,6 +183,24 @@ class TaskJuggler
     end
 
     private
+
+    # Update the 'tree' indicies that are needed for the 'tree' sorting mode.
+    def indexTree
+      @items.each do |property|
+        # The indicies are an Array if the 'index' attributes for this
+        # property and all its parents.
+        treeIdcs = property.getIndicies
+        # Now convert them to a String.
+        tree = ''
+        treeIdcs.each do |idx|
+          # Prefix the level index with zeros so that we always have a 6
+          # digit long String. 6 digits should be large enough for all
+          # real-world projects.
+          tree += idx.to_s.rjust(6, '0')
+        end
+        property.set('tree', tree)
+      end
+    end
 
     def sortInternal
       @items.sort! do |a, b|

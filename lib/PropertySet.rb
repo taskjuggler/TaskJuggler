@@ -243,39 +243,6 @@ class TaskJuggler
       end
     end
 
-    # Update the 'tree' indicies that are needed for the 'tree' sorting mode.
-    def indexTree(list)
-      level = 0
-      # Since we don't know the number of nested levels upfront, we continue
-      # to increase them until we don't find any more PropertyTreeNodes on
-      # that level.
-      levelHasItems = true
-      while levelHasItems
-        levelHasItems = false
-        # Now search the list for items on that level.
-        list.each do |property|
-          if property.level == level
-            levelHasItems = true
-            # The indicies are an Array if the 'index' attributes for this
-            # property and all its parents.
-            wbsIdcs = property.getIndicies
-            # Now convert them to a String.
-            tree = ''
-            wbsIdcs.each do |idx|
-              # Prefix the level index with zeros so that we always have a 5
-              # digit long String. 5 digits should be large enough for all
-              # real-world projects.
-              tree += idx.to_s.rjust(5, '0')
-            end
-            # All elements of a node should have the same 'tree' value. So we
-            # delete the last 5 digits again.
-            property.set('tree', tree)
-          end
-        end
-        level += 1
-      end
-    end
-
     # Return the index of the top-level _property_ in the set.
     def levelSeqNo(property)
       seqNo = 1
