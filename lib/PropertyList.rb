@@ -19,7 +19,7 @@ class TaskJuggler
   # be used for sorting, a scenario index if necessary and the sorting
   # direction (up/down). All nodes in the PropertyList must belong to the same
   # PropertySet.
-  class PropertyList < Array
+  class PropertyList
 
     attr_writer :query
     attr_reader :propertySet, :query, :sortingLevels, :sortingCriteria,
@@ -28,7 +28,7 @@ class TaskJuggler
     # A PropertyList is always bound to a certain PropertySet. All properties
     # in the list must be of that set.
     def initialize(arg)
-      super(arg.to_ary)
+      @items = arg.to_ary
       if arg.is_a?(PropertySet)
         # Create a PropertyList from the given PropertySet.
         @propertySet = arg
@@ -40,7 +40,7 @@ class TaskJuggler
         @query = nil
         resetSorting
         addSortingCriteria('seqno', true, -1)
-        self.sort!
+        sort!
       else
         # Create a PropertyList from a given other PropertyList.
         @propertySet = arg.propertySet
@@ -50,6 +50,13 @@ class TaskJuggler
         @sortingUp = arg.sortingUp.dup
         @scenarioIdx = arg.scenarioIdx.dup
       end
+    end
+
+    # This class should be a derived class of Array. But since it re-defines
+    # sort!() and still needs to call Array::sort!() I took a different route.
+    # All missing methods will be propagated to the @items Array.
+    def method_missing(func, *args, &block)
+      @items.method(func).call(*args, &block)
     end
 
     # Set all sorting levels as Array of triplets.
@@ -68,8 +75,8 @@ class TaskJuggler
       @scenarioIdx = []
     end
 
-    # Append another Array of Tasks or a PropertyList to this. The list will be
-    # sorted again.
+    # Append another Array of PropertyTreeNodes or a PropertyList to this. The
+    # list will be sorted again.
     def append(list)
       if $DEBUG
         list.each do |node|
@@ -79,8 +86,8 @@ class TaskJuggler
         end
       end
 
-      concat(list)
-      self.sort!
+      @items.concat(list)
+      sort!
     end
 
     # Append a new sorting level to the existing levels.
@@ -95,6 +102,9 @@ class TaskJuggler
                 "You must specify a scenario id."
         end
       else
+        if @propertySet.project.scenario(scIdx).nil?
+          raise TjException.new, "Unknown scenario index #{scIdx} used."
+        end
         if !@propertySet.scenarioSpecific?(criteria)
           raise TjException.new, "Attribute #{criteria} is not scenario specific"
         end
@@ -114,7 +124,64 @@ class TaskJuggler
 
     # Sort the properties according to the currently defined sorting criteria.
     def sort!
-      super do |a, b|
+      if treeMode?
+        # Tree sorting is somewhat complex. It will be based on the 'tree'
+        # attribute of the PropertyTreeNodes but we have to update them first
+        # based on the other sorting criteria.
+
+        # Remove the tree sorting mode first.
+        sc = @sortingCriteria.delete_at(0)
+        su = @sortingUp.delete_at(0)
+        si = @scenarioIdx.delete_at(0)
+        @sortingLevels -= 1
+
+        # Sort the list based on the rest of the modes.
+        sortInternal
+        # The update the 'index' attributes of the PropertyTreeNodes.
+        index
+        # An then the 'tree' attributes.
+        @propertySet.indexTree(@items)
+
+        # Restore the 'tree' sorting mode again.
+        @sortingCriteria.insert(0, sc)
+        @sortingUp.insert(0, su)
+        @scenarioIdx.insert(0, si)
+        @sortingLevels += 1
+
+        # Sort again, now based on the updated 'tree' attributes.
+        sortInternal
+      else
+        sortInternal
+      end
+      # Update indexes.
+      index
+    end
+
+    # This function sets the index attribute of all the properties in the list.
+    # The index starts with 0 and increases for each property.
+    def index
+      i = 0
+      @items.each do |p|
+        p.set('index', i += 1)
+      end
+    end
+
+    # Turn the list into a String. This is only used for debugging.
+    def to_s # :nodoc:
+      res = "Sorting: "
+      @sortingLevels.times do |i|
+        res += "#{@sortingCriteria[i]}/#{@sortingUp[i] ? 'up' : 'down'}/" +
+               "#{@scenarioIdx[i]}, "
+      end
+      res += "\n#{@items.length} properties:"
+      @items.each { |i| res += "#{i.get('id')}: #{i.get('name')}\n" }
+      res
+    end
+
+    private
+
+    def sortInternal
+      @items.sort! do |a, b|
         res = 0
         @sortingLevels.times do |i|
           if @query
@@ -151,29 +218,6 @@ class TaskJuggler
         end
         res
       end
-      # Update indexes.
-      index
-    end
-
-    # This function sets the index attribute of all the properties in the list.
-    # The index starts with 0 and increases for each property.
-    def index
-      i = 0
-      each do |p|
-        p.set('index', i += 1)
-      end
-    end
-
-    # Turn the list into a String. This is only used for debugging.
-    def to_s # :nodoc:
-      res = "Sorting: "
-      @sortingLevels.times do |i|
-        res += "#{@sortingCriteria[i]}/#{@sortingUp[i] ? 'up' : 'down'}/" +
-               "#{@scenarioIdx[i]}, "
-      end
-      res += "\n"
-      each { |i| res += "#{i.get('id')}: #{i.get('name')}\n" }
-      res
     end
 
   end

@@ -44,7 +44,7 @@ class TaskJuggler
       unless id
         tag = self.class.to_s.gsub(/TaskJuggler::/, '')
         id = '_' + tag + '_' + (propertySet.items + 1).to_s
-        id = parent.id + '.' + id if !@propertySet.flatNamespace && parent
+        id = parent.fullId + '.' + id if !@propertySet.flatNamespace && parent
       end
       if !@propertySet.flatNamespace && id.include?('.')
         parentId = id[0..(id.rindex('.') - 1)]
@@ -246,6 +246,19 @@ class TaskJuggler
         parent = p.parent
         idcs.insert(0, parent ? parent.levelSeqNo(p) :
                                 @propertySet.levelSeqNo(p))
+        p = parent
+      end while p
+      idcs
+    end
+
+    # Return the 'index' attributes of this property, prefixed by the 'index'
+    # attributes of all its parents. The result is an Array of Fixnums.
+    def getIndicies
+      idcs = []
+      p = self
+      begin
+        parent = p.parent
+        idcs.insert(0, p.get('index'))
         p = parent
       end while p
       idcs

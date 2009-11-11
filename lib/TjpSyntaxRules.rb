@@ -2381,8 +2381,6 @@ specified by [[now]].
 EOT
          )
 
-    singlePattern('_tree')
-
     singlePattern('_wbs')
     descr('The hierarchical or work breakdown structure index')
 
