@@ -826,7 +826,7 @@ class TaskJuggler
       loop do
         # The main scheduler loop only needs to look at the first task that is
         # ready to be scheduled.
-        workItems = Array.new(tasks)
+        workItems = Array.new(tasks.to_ary)
 
         # Count the already completed tasks.
         completedTasks = 0
