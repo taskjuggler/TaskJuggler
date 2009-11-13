@@ -12,7 +12,6 @@
 
 require 'thread'
 require 'monitor'
-require 'deep_copy'
 
 class TaskJuggler
 
@@ -35,17 +34,22 @@ class TaskJuggler
       # to uniquely identify the job.
       @tag = tag
       # The pipe to transfer stdout data from the child to the parent.
-      @stdoutP, @stdoutC = IO.pipe
+      @stdoutP, @stdoutC = nil
       # The stdout output of the child
       @stdout = ''
       # This flag is set to true when the EOT character has been received.
       @stdoutEOF = false
       # The pipe to transfer stderr data from the child to the parent.
-      @stderrP, @stderrC = IO.pipe
+      @stderrP, @stderrC = nil
       # The stderr output of the child
       @stderr = ''
       # This flag is set to true when the EOT character has been received.
       @stderrEOT = false
+    end
+
+    def openPipes
+      @stdoutP, @stdoutC = IO.pipe
+      @stderrP, @stderrC = IO.pipe
     end
 
   end
@@ -55,7 +59,7 @@ class TaskJuggler
   # executed in parallel. The number of CPU cores to use is limited at object
   # creation time. The submitted jobs will be queued and scheduled to the
   # given number of CPUs. The usage model is simple. Create an BatchProcessor
-  # object. use BatchProcessor#queue to submit all the jobs and then use
+  # object. Use BatchProcessor#queue to submit all the jobs and then use
   # BatchProcessor#wait to wait for completion and to process the results.
   class BatchProcessor
 
@@ -90,9 +94,8 @@ class TaskJuggler
       @terminate = false
       # Sleep time of the threads when no data is pending. This value must be
       # large enough to allow for a context switch between the sending
-      # (forked-off) process and this process. If the value is too small, it
-      # will cause lost characters at the end of the process output. If it's
-      # too large, throughput will suffer.
+      # (forked-off) process and this process. If it's too large, throughput
+      # will suffer.
       @timeout = 0.02
 
       Thread.abort_on_exception = true
@@ -120,19 +123,10 @@ class TaskJuggler
       end
 
       # Create a new JobInfo object for the job and push it to the @toRunQueue.
-      jobInfo = JobInfo.new(@jobsIn, block, tag)
+      job = JobInfo.new(@jobsIn, block, tag)
       # Increase job counter
-      @lock.synchronize do
-        @jobsIn += 1
-        # Add the receiver end of the pipe to the @pipes Array.
-        @pipes << jobInfo.stdoutP
-        # Map the pipe end to this JobInfo object.
-        @pipeToJob[jobInfo.stdoutP] = jobInfo
-        # Same for $stderr.
-        @pipes << jobInfo.stderrP
-        @pipeToJob[jobInfo.stderrP] = jobInfo
-      end
-      @toRunQueue.push(jobInfo)
+      @lock.synchronize { @jobsIn += 1 }
+      @toRunQueue.push(job)
     end
 
     # Wait for all jobs to complete. The code block will get the JobInfo
@@ -149,13 +143,8 @@ class TaskJuggler
             # Pop a job from the @toDropQueue and call the block with it.
             job = @toDropQueue.pop
             # Remove the job related entries from the housekeeping tables.
-            @lock.synchronize do
-              @jobsOut += 1
-              @pipes.delete(job.stdoutP)
-              @pipeToJob.delete(job.stdoutP)
-              @pipes.delete(job.stderrP)
-              @pipeToJob.delete(job.stderrP)
-            end
+            @lock.synchronize { @jobsOut += 1 }
+
             # Call the post-processing block that was passed to wait() with
             # the JobInfo object as argument.
             yield(job)
@@ -191,6 +180,16 @@ class TaskJuggler
         else
           # Get a new job from the @toRunQueue
           job = @toRunQueue.pop
+
+          job.openPipes
+          # Add the receiver end of the pipe to the @pipes Array.
+          @pipes << job.stdoutP
+          # Map the pipe end to this JobInfo object.
+          @pipeToJob[job.stdoutP] = job
+          # Same for $stderr.
+          @pipes << job.stderrP
+          @pipeToJob[job.stderrP] = job
+
           @lock.synchronize do
             pid = fork do
               # This is the child process now. Connect $stdout and $stderr to
@@ -203,7 +202,9 @@ class TaskJuggler
               retVal = job.block.call
               # Send EOT character to mark the end of the text.
               $stdout.putc 4
+              $stdout.close
               $stderr.putc 4
+              $stderr.close
               # Now exit the child process and return the return value of the
               # block as process return value.
               exit retVal
@@ -235,10 +236,17 @@ class TaskJuggler
             # Remove the job from the @runningJobs Hash.
             @runningJobs.delete(pid)
             # Save the return value.
-            job.retVal = retVal.deep_clone
-            # Push the job into the @spoolingJobs list to wait for it to
-            # finish writing IO.
-            @spoolingJobs << job
+            job.retVal = retVal.dup
+            if retVal.signaled?
+              cleanPipes(job)
+              # Aborted jobs will probably not send an EOT. So we fastrack
+              # them to the toDropQueue.
+              @toDropQueue.push(job)
+            else
+              # Push the job into the @spoolingJobs list to wait for it to
+              # finish writing IO.
+              @spoolingJobs << job
+            end
           end
         end
       end
@@ -289,6 +297,7 @@ class TaskJuggler
             # Both stdout and stderr need to have reached the end of text.
             if job.stdoutEOT && job.stderrEOT
               @spoolingJobs.delete(job)
+              cleanPipes(job)
               @toDropQueue.push(job)
               # Since we deleted a list item during an iterator run, we
               # terminate the iterator.
@@ -297,6 +306,19 @@ class TaskJuggler
           end
         end
       end
+    end
+
+    def cleanPipes(job)
+      @pipes.delete(job.stdoutP)
+      @pipeToJob.delete(job.stdoutP)
+      @pipes.delete(job.stderrP)
+      @pipeToJob.delete(job.stderrP)
+      job.stdoutC.close
+      job.stdoutP.close
+      job.stderrC.close
+      job.stderrP.close
+      job.stdoutC = job.stderrC = nil
+      job.stdoutP = job.stderrP = nil
     end
 
     def check

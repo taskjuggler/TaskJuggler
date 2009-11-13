@@ -18,32 +18,46 @@ require 'BatchProcessor'
 class TestProject < Test::Unit::TestCase
 
   def test_simple
-    doRun(1, 1)
-    doRun(1, 2)
-    doRun(1, 7)
-    doRun(2, 1)
-    doRun(2, 2)
-    doRun(2, 33)
-    doRun(3, 1)
-    doRun(3, 3)
-    doRun(3, 67)
+    doRun(1, 1) { sleep 0.1 }
+    doRun(1, 2) { sleep 0.1 }
+    doRun(1, 7) { sleep 0.1 }
+    doRun(2, 1) { sleep 0.1 }
+    doRun(2, 2) { sleep 0.1 }
+    doRun(2, 33) { sleep 0.1 }
+    doRun(3, 1) { sleep 0.1 }
+    doRun(3, 3) { sleep 0.1 }
+    doRun(3, 67) { sleep 0.1 }
   end
 
-  def doRun(maxCPUs, jobs)
+  # This test case triggers a Ruby 1.9.x mutex bug
+  #def test_fileIO
+  #  doRun(3, 200) do
+  #    fname = "test#{$$}.txt"
+  #    f = File.new(fname, 'w')
+  #    0.upto(10000) { |i| f.puts "#{i} Hello, world!" }
+  #    f.close
+  #    File.delete(fname)
+  #  end
+  #end
+
+  def doRun(maxCPUs, jobs, &block)
     bp = TaskJuggler::BatchProcessor.new(maxCPUs)
-    jobs.times { |i| bp.queue("job #{i}") { runJob(i, 0.07**(i % 5)) } }
+    jobs.times do |i|
+      bp.queue("job #{i}") { runJob(i, &block) }
+    end
     @cnt = 0
     lock = Monitor.new
     bp.wait do |j|
+      puts "Signal error" if j.retVal.signaled?
       postprocess(j)
       lock.synchronize { @cnt += 1 }
     end
     assert_equal(jobs, @cnt, "Not all threads terminated propertly (#{@cnt})")
   end
 
-  def runJob(n, pause)
+  def runJob(n, &block)
     puts "Job #{n} started"
-    sleep(pause)
+    yield
     $stderr.puts "Error #{n}" if n % 2 == 0
     puts "Job #{n} finished"
     n

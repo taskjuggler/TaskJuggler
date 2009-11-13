@@ -554,9 +554,15 @@ class TaskJuggler
             }
           end
           bp.wait do |report|
+            Log.startProgressMeter("Report #{report.tag.name}")
             $stdout.print(report.stdout)
             $stderr.print(report.stderr)
-            Log.startProgressMeter("Report #{report.tag.name}")
+            if report.retVal.signaled?
+              raise TjException.new, "Signal raised"
+            end
+            unless report.retVal.success?
+              raise TjException.new, "Process aborted"
+            end
             Log.stopProgressMeter
           end
         end
