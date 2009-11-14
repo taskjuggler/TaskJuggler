@@ -264,6 +264,10 @@ EOT
                           )
       html << (body = XMLElement.new('body'))
 
+      body << (script = XMLElement.new('script', 'type' => 'text/javascript',
+                                       'src' => 'scripts/wz_tooltip.js'))
+      script.mayNotBeEmpty = true
+
       # Make sure we have some margins around the report.
       body << (frame = XMLElement.new('div',
                                       'style' => 'margin: 35px 5% 25px 5%; '))
@@ -327,15 +331,20 @@ EOT
     def copyAuxiliaryFiles
       return if @name == '.' # Don't copy files if output is stdout.
 
+      copyDirectory('icons')
+      copyDirectory('scripts')
+    end
+
+    def copyDirectory(dirName)
       # The icons directory needs to be in the same directory as the HTML report.
       auxDstDir = File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
-                               @name) + '/icons'
+                               @name) + "/#{dirName}"
       # Don't copy the directory if it already exists. We assume it is
-      # up-to-date. TODO: Check that all icons are there and current.
+      # up-to-date. TODO: Check that all files are there and current.
       return if File.exists?(auxDstDir)
 
-      # Find the icons directory that came with the TaskJuggler installation.
-      auxSrcDir = AppConfig.dataDirs('data/icons')[0]
+      # Find the data directory that came with the TaskJuggler installation.
+      auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
       if auxSrcDir.nil? || !File.exists?(auxSrcDir)
         raise TjException.new, <<'EOT'
 Cannot find the icon directory. This is usually
@@ -345,7 +354,7 @@ location.
 EOT
       end
 
-      # Recursively copy the icons directory and all content.
+      # Recursively copy the directory and all content.
       FileUtils.cp_r(auxSrcDir, auxDstDir)
     end
 

@@ -19,10 +19,10 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line
-    attr_accessor :data, :text, :url, :category, :hidden, :alignment,
-                  :padding, :indent, :icon, :fontSize, :fontColor, :bold,
-                  :width, :rows, :columns, :special
+    attr_reader :line, :shortText, :longText
+    attr_accessor :data, :url, :category, :hidden, :alignment, :padding,
+                  :indent, :icon, :fontSize, :fontColor, :bold, :width,
+                  :rows, :columns, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
     # default values. _line_ is the ReportTableLine this cell belongs to. _text_
@@ -33,8 +33,15 @@ class TaskJuggler
       @line.addCell(self) if line
 
       @headerCell = headerCell
-      # The printable form of the cell content
-      @text = text
+      # A short version of the cell textual content that can fit in a single
+      # line.
+      @shortText = nil
+      # An option longer version of the textual content in RichText format.
+      # This may consists of multiple or long lines that do not fit into the
+      # single line tables. Depending on the output format, the short or long
+      # or both versions will be used.
+      @longText = nil
+      self.text = text
       # A URL that is associated with the content of the cell.
       @url = nil
       # The original data of the cell content (optional, nil if not provided)
@@ -60,11 +67,17 @@ class TaskJuggler
       @special = nil
     end
 
+    def text=(text)
+      @shortText = text.is_a?(RichText) ? shortVersion(text) : text
+      @longText = text.is_a?(RichText) ? text : nil
+    end
+
     # Return true if two cells are similar enough so that they can be merged in
     # the report to a single, wider cell. _c_ is the cell to compare this cell
     # with.
     def ==(c)
-      @text == c.text &&
+      @shortText == c.shortText &&
+      @longText == c.longText &&
       @alignment == c.alignment &&
       @padding == c.padding &&
       @indent == c.indent &&
@@ -99,15 +112,14 @@ class TaskJuggler
       elsif @padding != 3
         style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
       end
-      unless @text.is_a?(TaskJuggler::RichText)
-        style += 'font-weight:bold; ' if @bold
-        style += "font-size: #{@fontSize}px; " if fontSize
-      end
+      style += 'font-weight:bold; ' if @bold
+      style += "font-size: #{@fontSize}px; " if fontSize
       unless @fontColor == 0
         style += "color:#{'#%06X' % @fontColor}; "
       end
       style += "min-width: #{@width}px; " if @width
-      if @text.is_a?(TaskJuggler::RichText) && @line && @line.table.equiLines
+      if @shortText.is_a?(TaskJuggler::RichText) &&
+         @line && @line.table.equiLines
         style += "height:#{@line.height - 3}px; "
       end
       cell << (div = XMLElement.new('div',
@@ -120,12 +132,37 @@ class TaskJuggler
                                                 'margin-bottom:2px')
       end
 
-      if url
-        div << (a = XMLElement.new('a', 'href' => @url))
-        a << XMLText.new(@text.is_a?(TaskJuggler::RichText) ?  @text.to_s : text)
+      if (@line && @line.table.equiLines) || !@category
+        # All lines of the table must have the same height. So we can't put
+        # the full RichText diretly in here.
+        if url
+          div << (a = XMLElement.new('a', 'href' => @url))
+          a << XMLText.new(@shortText)
+        else
+          div << XMLText.new(@shortText)
+        end
+        if @longText && @category
+          div << (ltDiv = XMLElement.new('div',
+                                         'id' => "#{@longText.object_id}"))
+          ltDiv << @longText.to_html
+          div << XMLElement.new('img', 'src' => 'icons/details.png',
+                                'align' => 'top',
+                                'style' => 'margin-left:3px;' +
+                                'margin-bottom:2px')
+          div['onmouseover'] = "TagToTip('#{@longText.object_id}')"
+          div['onmouseout'] = 'UnTip()'
+        end
       else
-        div << (@text.is_a?(TaskJuggler::RichText) ?
-                @text.to_html : XMLText.new(@text))
+        if @longText
+          div << @longText.to_html
+        else
+          if url
+            div << (a = XMLElement.new('a', 'href' => @url))
+            a << XMLText.new(@shortText)
+          else
+            div << XMLText.new(@shortText)
+          end
+        end
       end
 
       cell
@@ -140,9 +177,20 @@ class TaskJuggler
         csv[-1] << @special.to_csv
       elsif @data && @data.is_a?(String)
         csv[-1] << indent + @data
-      elsif @text
-        csv[-1] << indent + @text
+      elsif @shortText
+        csv[-1] << indent + @shortText
       end
+    end
+
+    private
+
+    # Convert a RichText String into a small one-line plain text version that
+    # fits the column.
+    def shortVersion(text)
+      text = text.to_s
+      text = text[0, text.index("\n")] if text.include?("\n")
+      text = text[0, @width / 10] if @width
+      text
     end
 
   end

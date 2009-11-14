@@ -89,7 +89,8 @@ class TaskJuggler
         table1 << (tr1 = XMLElement.new('tr'))
         tr1 << (td1 = XMLElement.new('td', 'align' => 'center',
                                      'style' => 'font-size:16px; ' +
-                                                'font-weight:bold',
+                                                'font-weight:bold; ' +
+                                                'padding:5px',
                                      'class' => 'tabfront'))
         td1 << a('headline').to_html
       end
@@ -693,9 +694,10 @@ class TaskJuggler
                         'start' => @start, 'end' => @end,
                         'costAccount' => a('costAccount'),
                         'revenueAccount' => a('revenueAccount'))
-      if cell.text
+      if cell.shortText
         if columnDef.cellText
-          cell.text = expandMacros(columnDef.cellText, cell.text, query)
+          cell.text = expandMacros(columnDef.cellText, cell.shortText,
+                                        query)
         end
       else
         cell.text = '<Error>'
@@ -756,7 +758,7 @@ class TaskJuggler
       end
 
       if columnDef.cellText
-        cell.text = expandMacros(columnDef.cellText, cell.text, query)
+        cell.text = expandMacros(columnDef.cellText, cell.shortText, query)
       end
       setCellURL(cell, columnDef, query)
     end
@@ -994,8 +996,9 @@ class TaskJuggler
       line.indentation += level if treeMode
     end
 
-    # Set the URL associated with the cell text. _cell_ is the ReportTableCell.
-    # _columnDef_ is the user specified definition for the cell content and
+    # Set the URL associated with the cell.shortText. _cell_ is the
+    # ReportTableCell.  _columnDef_ is the user specified definition for the
+    # cell content and
     # look. _query_ is the query used to resolve dynamic macros in the cellURL.
     def setCellURL(cell, columnDef, query)
       return unless columnDef.cellURL
@@ -1004,14 +1007,14 @@ class TaskJuggler
          columnDef.hideCellURL.eval(query.property, query.scopeProperty)
         url = nil
       else
-        url = expandMacros(columnDef.cellURL, cell.text, query)
+        url = expandMacros(columnDef.cellURL, cell.shortText, query)
       end
       cell.url = url unless url.nil? || url.empty?
     end
 
     # Try to merge equal cells without text to multi-column cells.
     def tryCellMerging(cell, line, firstCell)
-      if cell.text == '' && firstCell && (c = line.last(1)) && c == cell
+      if cell.shortText == '' && firstCell && (c = line.last(1)) && c == cell
         cell.hidden = true
         c.columns += 1
       end

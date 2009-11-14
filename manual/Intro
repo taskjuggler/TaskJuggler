@@ -77,6 +77,11 @@ The HTML reports use icons from the
 licensed under the [http://www.fsf.org/licenses/lgpl.html GNU Lesser
 General Public License].
 
+The HTML reports use Java Script code from [http://www.walterzorn.com
+Walter Zorn]. The code is licensed under the
+[http://www.fsf.org/licenses/lgpl.html GNU Lesser General Public
+License].
+
 === Features and Highlights ===
 
 * Manages tasks, resources and costs in one package
