@@ -260,6 +260,25 @@ class TaskJuggler
      white-space:normal;
      font-size:13px
   }
+
+  .navbar_current {
+    background-color:#606060;
+    font-size:13px;
+    font-weight:bold;
+    color:#FFFFFF;
+    padding:5px;
+  }
+  .navbar_others {
+    background-color:#FFFFFF;
+    font-size:13px;
+    padding:5px;
+  }
+  .copyright {
+    font-size:9px;
+    color:#101010;
+    text-align:center;
+    margin-top:20px;
+  }
 EOT
                           )
       html << (body = XMLElement.new('body'))
@@ -273,6 +292,17 @@ EOT
                                       'style' => 'margin: 35px 5% 25px 5%; '))
 
       frame << @content.to_html if @content
+
+      # The footer with some administrative information.
+      frame << (div = XMLElement.new('div', 'class' => 'copyright'))
+      div << XMLText.new(@project['copyright'] + " - ") if @project['copyright']
+      div << XMLText.new("Project: #{@project['name']} " +
+                        "Version: #{@project['version']} - " +
+                        "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} " +
+                        "with ")
+      div << XMLNamedText.new("#{AppConfig.softwareName}", 'a',
+                             'href' => "#{AppConfig.contact}")
+      div << XMLText.new(" v#{AppConfig.version}")
 
       html.write((@name[0] == '/' ? '' : @project.outputDir) +
                  @name + (@name == '.' ? '' : '.html'))

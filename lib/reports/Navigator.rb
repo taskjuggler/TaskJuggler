@@ -56,12 +56,12 @@ class TaskJuggler
           end
         end
         if url && url != currentUrl
-          div << (span = XMLElement.new('span', 'style' => 'class:navbar_other'))
+          div << (span = XMLElement.new('span', 'class' => 'navbar_other'))
           span << (a = XMLElement.new('a', 'href' => url))
           a << XMLText.new(element.label)
         else
           div << (span = XMLElement.new('span',
-                                         'style' => 'class:navbar_current'))
+                                        'class' => 'navbar_current'))
           span << XMLText.new(element.label)
         end
       end

@@ -71,9 +71,6 @@ vacation "Good Friday" 2002-03-29
 flags team
 # *** EXAMPLE: flags -
 
-macro footer [ 
-  footer '[https://osrc.amd.com/wiki/Schedules Back to front page]'
-]
 # This is one way to form teams
 # *** EXAMPLE: macro +
 macro allocate_developers [
@@ -486,7 +483,6 @@ taskreport development "" {
   timeformat "%Y-%m-%d"
   hideresource ~isleaf()
   sortresources name.up
-  ${footer}
 }
 
 # A list of all tasks with the percentage completed for each task

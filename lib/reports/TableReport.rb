@@ -117,18 +117,6 @@ class TaskJuggler
                                  'padding-left:1px; padding-right:1px;'))
       td << @legend.to_html
 
-      # The footer with some administrative information.
-      tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:9px'))
-      tr << (td = XMLElement.new('td', 'class' => 'tabfooter'))
-      td << XMLText.new(@project['copyright'] + " - ") if @project['copyright']
-      td << XMLText.new("Project: #{@project['name']} " +
-                        "Version: #{@project['version']} - " +
-                        "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} " +
-                        "with ")
-      td << XMLNamedText.new("#{AppConfig.packageName}", 'a',
-                             'href' => "#{AppConfig.contact}")
-      td << XMLText.new(" v#{AppConfig.version}")
-
       html << rt_to_html('footer')
       html
     end
