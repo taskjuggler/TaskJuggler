@@ -3,23 +3,15 @@
 This is a possibly still incomplete list of things that still could
 or should be done for TaskJuggler III.
 
-* Fix syntactical problem with list values inherited from parent
-  scenarios. There is no way to purge them.
-
 == Missing features for 2.x compatibility
 
 * Add missing functions for logical expressions.
 
-* Missing reports (calendar, status, csv)
+* Missing reports (calendar, journal)
 
-* Column attributes like hidecelltext,
-  hidecellurl, subtitle, subtitleurl, titleurl
+* Column attributes like subtitle, subtitleurl, titleurl
 
-* Critical path detection after scheduling.
-
-* Many dynamic report columns are still missing.
-
-* Fix handling of non-hour-aligned timezones.
+* Some dynamic report columns are still missing.
 
 * More unit tests for core classes.
 
@@ -27,10 +19,14 @@ or should be done for TaskJuggler III.
 
 == New features (probably after first stable release)
 
+* Web server to serve dynamic report pages
+
 * Hammock tasks
 
 * Delta reports that show only the differences between 2 arbitrary
   scenarios.
+
+* Critical path detection after scheduling.
 
 * SVG reports
 
@@ -49,4 +45,8 @@ lack of time/resources. Help in this area will be greatly appretiated.
 
 * XML file reading.
 
+* htmlstatusreport. This report can now be created with composed
+reports.
+
+* The syntax for reports has changed somewhat. See manual for details.
 
