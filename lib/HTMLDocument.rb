@@ -25,7 +25,7 @@ class TaskJuggler
     def initialize(docType = :transitional)
       super()
 
-      @elements << XMLBlob.new('<?xml version="1.0" encoding="utf8"?>')
+      @elements << XMLBlob.new('<?xml version="1.0" encoding="utf-8"?>')
       case docType
       when :strict
         dtdRef = 'Strict'
