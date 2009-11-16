@@ -144,7 +144,7 @@ class TaskJuggler
     padding-left:3px;
     padding-bottom:0px;
     white-space:nowrap;
-    overflow:visible;
+    overflow:hidden;
   }
   .celldiv {
     padding-top:3px;
@@ -152,7 +152,7 @@ class TaskJuggler
     padding-left:3px;
     padding-bottom:0px;
     white-space:nowrap;
-    overflow:visible;
+    overflow:hidden;
   }
   .tabline { color:#000000 }
   .tabcell {

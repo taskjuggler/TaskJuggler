@@ -68,7 +68,7 @@ class TaskJuggler
     end
 
     def text=(text)
-      @shortText = text.is_a?(RichText) ? shortVersion(text) : text
+      @shortText = text.is_a?(RichText) ? text.to_s : text
       @longText = text.is_a?(RichText) ? text : nil
     end
 
@@ -100,26 +100,28 @@ class TaskJuggler
       alignSymbols = [ :left, :center, :right ]
       aligns = %w( left center right)
       style = "text-align:#{aligns[alignSymbols.index(@alignment)]}; "
+      paddingLeft = paddingRight = 0
       if @indent && @alignment != :center
         if @alignment == :left
-          style += "padding-left:#{@padding + @indent * 8}px; "
-          style += "padding-right:#{@padding}px; " unless @padding == 3
+          paddingLeft = @padding + @indent * 8
+          paddingRight = @padding
         elsif @alignment == :right
-          style += "padding-left:#{@padding}px; " unless @padding == 3
-          style += "padding-right:#{@padding +
-                                    (@line.table.maxIndent - @indent) * 8}px; "
+          paddingLeft = @padding
+          paddingRight = @padding + (@line.table.maxIndent - @indent) * 8
         end
+        style += "padding-left:#{paddingLeft}px; " unless paddingLeft == 3
+        style += "padding-right:#{paddingRight}px; " unless paddingRight == 3
       elsif @padding != 3
         style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
+        paddingLeft = paddingRight = @padding
       end
+      style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
       style += 'font-weight:bold; ' if @bold
       style += "font-size: #{@fontSize}px; " if fontSize
       unless @fontColor == 0
         style += "color:#{'#%06X' % @fontColor}; "
       end
-      style += "min-width: #{@width}px; " if @width
-      if @shortText.is_a?(TaskJuggler::RichText) &&
-         @line && @line.table.equiLines
+      if @longText && @line && @line.table.equiLines
         style += "height:#{@line.height - 3}px; "
       end
       cell << (div = XMLElement.new('div',
@@ -139,12 +141,13 @@ class TaskJuggler
         # the full RichText diretly in here.
         if url
           div << (a = XMLElement.new('a', 'href' => @url))
-          a << XMLText.new(@shortText)
+          a << XMLText.new(shortVersion(@shortText))
         else
-          div << XMLText.new(@shortText)
+          div << XMLText.new(shortVersion(@shortText))
         end
         if @longText && @category
           div << (ltDiv = XMLElement.new('div',
+                                         'style' => 'visibility:hidden',
                                          'id' => "#{@longText.object_id}"))
           ltDiv << @longText.to_html
           div << XMLElement.new('img', 'src' => 'icons/details.png',
@@ -160,9 +163,9 @@ class TaskJuggler
         else
           if url
             div << (a = XMLElement.new('a', 'href' => @url))
-            a << XMLText.new(@shortText)
+            a << XMLText.new(shortVersion(@shortText))
           else
-            div << XMLText.new(@shortText)
+            div << XMLText.new(shortVersion(@shortText))
           end
         end
       end
@@ -195,8 +198,9 @@ class TaskJuggler
         text = text[0, text.index("\n")]
         modified = true
       end
-      if @width && text.length > (@width / 10)
-        text = text[0, @width / 10]
+      # Assuming an average character width of 9 pixels
+      if @width && (text.length > (@width / 9))
+        text = text[0, @width / 9]
         modified = true
       end
       # Add three dots to show that there is more info available.
