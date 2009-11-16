@@ -132,6 +132,8 @@ class TaskJuggler
                                                 'margin-bottom:2px')
       end
 
+      return cell unless @shortText
+
       if (@line && @line.table.equiLines) || !@category
         # All lines of the table must have the same height. So we can't put
         # the full RichText diretly in here.
@@ -188,8 +190,17 @@ class TaskJuggler
     # fits the column.
     def shortVersion(text)
       text = text.to_s
-      text = text[0, text.index("\n")] if text.include?("\n")
-      text = text[0, @width / 10] if @width
+      modified = false
+      if text.include?("\n")
+        text = text[0, text.index("\n")]
+        modified = true
+      end
+      if @width && text.length > (@width / 10)
+        text = text[0, @width / 10]
+        modified = true
+      end
+      # Add three dots to show that there is more info available.
+      text += "..." if modified
       text
     end
 

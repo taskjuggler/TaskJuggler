@@ -286,6 +286,16 @@ EOT
       body << (script = XMLElement.new('script', 'type' => 'text/javascript',
                                        'src' => 'scripts/wz_tooltip.js'))
       script.mayNotBeEmpty = true
+      body << (noscript = XMLElement.new('noscript'))
+      noscript << (nsdiv = XMLElement.new('div',
+                                          'style' => 'text-align:center; ' +
+                                                     'color:#FF0000'))
+      nsdiv << XMLText.new(<<'EOT'
+This page requires Javascript for full functionality. Please enable it
+in your browser settings!
+EOT
+                             )
+
 
       # Make sure we have some margins around the report.
       body << (frame = XMLElement.new('div',

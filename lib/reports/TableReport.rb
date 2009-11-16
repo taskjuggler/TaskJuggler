@@ -243,7 +243,6 @@ class TaskJuggler
         case column.id
         when 'chart'
           # In case we have a 'chart' column, we enforce certain minimum width
-          # of the chart. The width depends on the selected scale.
           # The following table contains an entry for each scale. The entry
           # consists of the triple 'seconds per unit', 'minimum width units'
           # and 'margin units'. The minimum with does not include the margins
@@ -307,7 +306,7 @@ class TaskJuggler
         # The maximum width of the chart. In case it needs more space, a
         # scrollbar is shown or the chart gets truncated depending on the output
         # format.
-        gantt.viewWidth = columnDef.width
+        gantt.viewWidth = columnDef.width ? columnDef.width : 450
         column = ReportTableColumn.new(@table, columnDef, '')
         column.cell1.special = gantt
         column.cell2.hidden = true
@@ -960,6 +959,9 @@ class TaskJuggler
         cell.category = line.property.get('index') % 2 == 1 ?
           'resourcecell1' : 'resourcecell2'
       end
+
+      # Set column width
+      cell.width = columnDef.width if columnDef.width
     end
 
     # Create a new ReportTableCell object and initialize some common values.

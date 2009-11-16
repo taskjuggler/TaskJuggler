@@ -174,7 +174,7 @@ class TaskJuggler
     def pusher
       # Run until the terminate flag is set.
       until @terminate
-        if @toRunQueue.empty? || @runningJobs.count >= @maxCpuCores
+        if @toRunQueue.empty? || @runningJobs.length >= @maxCpuCores
           # We have no jobs in the @toRunQueue or all CPU cores in use already.
           sleep(@timeout)
         else

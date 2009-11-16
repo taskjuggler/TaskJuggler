@@ -48,7 +48,7 @@ class TaskJuggler
       # Due to Firefoxes broken table rendering we have to specify a minimum
       # width. It may not excede the maxWidth value.
       mWidth = minWidth
-      mWidth = @maxWidth if mWidth > @maxWidth
+      mWidth = @maxWidth if @maxWidth && mWidth > @maxWidth
       td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
         'style' => 'position:relative; overflow:auto; ' +
                    "width:#{mWidth}px; " +

@@ -44,8 +44,8 @@ class TaskJuggler
       # The scale attribute is only used for Gantt chart columns. It specifies
       # the minimum resolution of the chart.
       @scale = 'week'
-      # The default maximum width of columns.
-      @width = 450
+      # The width of columns.
+      @width = nil
 
       # Reference to the ReportTableColumn object that was created based on this
       # definition.
