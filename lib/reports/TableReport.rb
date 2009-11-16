@@ -43,6 +43,7 @@ class TaskJuggler
       'revenue'     => [ 'Revenue',     true,   :right, true,   true ],
       'scenario'    => [ 'Scenario',    false,  :left,  true,   true ],
       'status'      => [ 'Status',      false,  :left,  true,   true ],
+      'targets'     => [ 'Targets',     false,  :left,  true,   true ],
       'wbs'         => [ 'WBS',         false,  :left,  true,   false ]
     }
     @@propertiesByType = {

@@ -2381,6 +2381,9 @@ specified by [[now]].
 EOT
          )
 
+    singlePattern('_targets')
+    descr('A list of tasks that depend in the current task.')
+
     singlePattern('_wbs')
     descr('The hierarchical or work breakdown structure index')
 

@@ -27,8 +27,8 @@ class TaskJuggler
 
     # A PropertyList is always bound to a certain PropertySet. All properties
     # in the list must be of that set.
-    def initialize(arg)
-      @items = arg.to_ary
+    def initialize(arg, copyItems = true)
+      @items = copyItems ? arg.to_ary : []
       if arg.is_a?(PropertySet)
         # Create a PropertyList from the given PropertySet.
         @propertySet = arg
