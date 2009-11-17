@@ -539,15 +539,15 @@ EOT
     rt = newRichText(inp)
     out = rt.to_s + "\n"
     ref = <<'EOT'
-1 This is item 1
+1. This is item 1
 
-2 This is item 2
+2. This is item 2
 
-3 This is item 3
+3. This is item 3
 
 Normal text.
 
-1 This is item 1
+1. This is item 1
 
 1.1 This is item 1.1
 
@@ -555,7 +555,7 @@ Normal text.
 
 1.3 This is item 1.3
 
-2 This is item 2
+2. This is item 2
 
 2.1 This is item 2.1
 
@@ -565,19 +565,19 @@ Normal text.
 
 2.2.2 This is item 2.2.2
 
-3 This is item 3
+3. This is item 3
 
 3.1 This is item 3.1
 
 3.1.1 This is item 3.1.1
 
-4 This is item 4
+4. This is item 4
 
 4.0.1 This is item 4.0.1
 
 Normal text.
 
-1 This is item 1
+1. This is item 1
 
 
 EOT
@@ -728,7 +728,7 @@ Not sure what to put here. Maybe just some silly text.
 
  * Another bullet
 
-1 A number item
+1. A number item
 
 * A bullet
 
@@ -829,7 +829,7 @@ Not sure ''what'' to put here. Maybe just some silly text.
 
  * Another bullet
 
-1 A number item
+1. A number item
 
 * A bullet
 
