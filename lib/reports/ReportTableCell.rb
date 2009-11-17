@@ -146,16 +146,16 @@ class TaskJuggler
           div << XMLText.new(shortVersion(@shortText))
         end
         if @longText && @category
-          div << (ltDiv = XMLElement.new('div',
-                                         'style' => 'visibility:hidden',
-                                         'id' => "#{@longText.object_id}"))
-          ltDiv << @longText.to_html
           div << XMLElement.new('img', 'src' => 'icons/details.png',
                                 'align' => 'top',
                                 'style' => 'margin-left:3px;' +
                                 'margin-bottom:2px')
           div['onmouseover'] = "TagToTip('#{@longText.object_id}')"
           div['onmouseout'] = 'UnTip()'
+          div << (ltDiv = XMLElement.new('div',
+                                         'style' => 'visibility:hidden',
+                                         'id' => "#{@longText.object_id}"))
+          ltDiv << @longText.to_html
         end
       else
         if @longText
