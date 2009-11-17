@@ -134,7 +134,7 @@ class TaskJuggler
                                                 'margin-bottom:2px')
       end
 
-      return cell unless @shortText
+      return cell if @shortText.nil? || @shortText.empty?
 
       if (@line && @line.table.equiLines) || !@category
         # All lines of the table must have the same height. So we can't put

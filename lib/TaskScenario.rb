@@ -1135,7 +1135,7 @@ class TaskJuggler
           list += "#{resource.name} (#{resource.fullId})\n"
         end
       end
-      query.result = RichText.new(list)
+      query.result = list.empty? ? '' : RichText.new(list)
       query.sortableResult = query.result.to_s
     end
 
@@ -1166,7 +1166,7 @@ class TaskJuggler
         date = task['start', @scenarioIdx].to_s(@property.project['timeFormat'])
         res += "# #{task.name} (#{task.fullId}) #{date}\n"
       end
-      query.result = RichText.new(res)
+      query.result = res.empty? ? '' : RichText.new(res)
       query.sortableResult = query.result.to_s
     end
 
