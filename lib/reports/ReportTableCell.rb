@@ -136,7 +136,7 @@ class TaskJuggler
 
       return cell if @shortText.nil? || @shortText.empty?
 
-      if (@line && @line.table.equiLines) || !@category
+      if (@line && @line.table.equiLines) || !@category || @width
         # All lines of the table must have the same height. So we can't put
         # the full RichText diretly in here.
         if url

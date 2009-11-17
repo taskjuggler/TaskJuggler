@@ -150,7 +150,7 @@ class TaskJuggler
         post = "\n\n"
       when :numberlist1
       when :numberitem1
-        pre = "#{@data[0]} "
+        pre = "#{@data[0]}. "
         post = "\n\n"
       when :numberlist2
       when :numberitem2
