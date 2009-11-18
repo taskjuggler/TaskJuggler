@@ -1113,11 +1113,18 @@ EOT
       @val[0]
     })
     doc('journalentry', <<'EOT'
-This attribute adds an entry to the journal of the project. A journal can be used to record events, decisions or news that happened at a particular moment during the project. Depending on the context, a journal entry may or may not be associated with a specific property.
+This attribute adds an entry to the journal of the project. A journal can be
+used to record events, decisions or news that happened at a particular moment
+during the project. Depending on the context, a journal entry may or may not
+be associated with a specific property or author.
 
-A journal entry consists of three parts. The headline is mandatory and should be only 5 to 10 words long. The introduction is optional and should be only one or two sentences long. All other details should be put into the third part.
+A journal entry can consists of up to three parts. The headline is mandatory
+and should be only 5 to 10 words long. The introduction is optional and should
+be only one or two sentences long. All other details should be put into the
+third part.
 
-Depending on the context, journal entries are listed with headlines only, as headlines plus introduction or in full.
+Depending on the context, journal entries are listed with headlines only, as
+headlines plus introduction or in full.
 EOT
        )
   end
@@ -1125,6 +1132,35 @@ EOT
   def rule_journalEntryAttributes
     optional
     repeatable
+
+    pattern(%w( _alert $ID ), lambda {
+      level = @project.alertLevelIndex(@val[1])
+      unless level
+        error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
+              'green, yellow or red')
+      end
+      @journalEntry.alertLevel = level
+    })
+    doc('alert', <<'EOT'
+Specify the alert level for this entry. Supported values are green, yellow and
+red. The default value is green. This attribute is inteded to be used for
+status reporting. When used for a journal entry that is associated with a
+property, the value can be reported in the alert column. When multiple entries
+have been specified for the property, the entry with the date closest to the
+report end date will be used. Container properties will inherit the highest
+alert level of all its sub properties unless it has an own journal entry dated
+closer to the report end than all of its sub properties.
+EOT
+       )
+
+    pattern(%w( _author !resourceId ), lambda {
+      @journalEntry.author = @val[1]
+    })
+    doc('author', <<'EOT'
+This attribute can be used to capture the authorship or source of the
+information in the journal entry.
+EOT
+       )
 
     pattern(%w( _intro $STRING ), lambda {
       @journalEntry.intro = newRichText(@val[1])
@@ -1161,6 +1197,7 @@ EOT
     pattern(%w( _journalentry !valDate $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
                                       @property)
+      @project['journal'].addEntry(@journalEntry)
     })
     arg(2, 'headline', <<'EOT'
 The headline of the journal entry. It will be interpreted as
@@ -2212,6 +2249,16 @@ EOT
 
 
   def rule_reportableAttributes
+    singlePattern('_alert')
+    descr(<<'EOT'
+The alert level of the property that was reported with the date closest to the
+end date of the report. Container properties that don't have their own alert
+level reported with a date equal or newer than the alert levels of all their
+sub properties will get the highest alert level of their direct sub
+properties.
+EOT
+         )
+
     singlePattern('_chart')
     descr(<<'EOT'
 A Gantt chart. This column type requires all lines to have the same fixed

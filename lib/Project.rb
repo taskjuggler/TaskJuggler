@@ -56,12 +56,10 @@ class TaskJuggler
     def initialize(id, name, version, messageHandler)
       @messageHandler = messageHandler
       @attributes = {
-        'projectid' => id || "prj",
-        'projectids' => [ id ],
-        'name' => name,
-        'version' => version || "1.0",
-        'costAccount' => nil,
+        'alertLevels' => [ [ 'green', 0x00FF00 ], [ 'yellow', 0xFFFF00 ],
+                           [ 'red', 0xFF0000 ] ],
         'copyright' => nil,
+        'costAccount' => nil,
         'currency' => "EUR",
         'currencyFormat' => RealFormat.new([ '-', '', '', ',', 2 ]),
         'dailyworkinghours' => 8.0,
@@ -70,10 +68,13 @@ class TaskJuggler
         'journal' => Journal.new,
         'limits' => nil,
         'loadUnit' => :shortauto,
+        'name' => name,
         'navigators' => {},
         'now' => TjTime.now.align(3600),
         'numberFormat' => RealFormat.new([ '-', '', '', '.', 1]),
         'priority' => 500,
+        'projectid' => id || "prj",
+        'projectids' => [ id ],
         'rate' => 0.0,
         'revenueAccount' => nil,
         'scheduleGranularity' => Project.maxScheduleGranularity,
@@ -82,6 +83,7 @@ class TaskJuggler
         'timeFormat' => "%Y-%m-%d",
         'timezone' => nil,
         'vacations' => [],
+        'version' => version || "1.0",
         'weekStartsMonday' => true,
         'workinghours' => WorkingHours.new,
         'yearlyworkingdays' => 260.714
@@ -397,6 +399,17 @@ class TaskJuggler
     # Return the number of defined scenarios for the project.
     def scenarioCount
       @scenarios.items
+    end
+
+    # Try to match _levelName_ to a defined alert level name and return the
+    # index of it. If no level is found, nil is returned.
+    def alertLevelIndex(levelName)
+      0.upto(@attributes['alertLevels'].count - 1) do |i|
+        if @attributes['alertLevels'][i][0] == levelName
+          return i
+        end
+      end
+      nil
     end
 
     # Return the average number of working hours per day. This defaults to 8 but

@@ -376,13 +376,9 @@ EOT
     end
 
     def copyDirectory(dirName)
-      # The icons directory needs to be in the same directory as the HTML report.
+      # The directory needs to be in the same directory as the HTML report.
       auxDstDir = File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
-                               @name) + "/#{dirName}"
-      # Don't copy the directory if it already exists. We assume it is
-      # up-to-date. TODO: Check that all files are there and current.
-      return if File.exists?(auxDstDir)
-
+                               @name) + '/'
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
       if auxSrcDir.nil? || !File.exists?(auxSrcDir)
@@ -393,9 +389,25 @@ you can use the TASKJUGGLER_DATA_PATH environment variable to specify the
 location.
 EOT
       end
+      # Don't copy directory if all files are up-to-date.
+      return if directoryUpToDate?(auxSrcDir, auxDstDir + dirName)
 
       # Recursively copy the directory and all content.
       FileUtils.cp_r(auxSrcDir, auxDstDir)
+    end
+
+    def directoryUpToDate?(auxSrcDir, auxDstDir)
+      return false unless File.exists?(auxDstDir)
+
+      Dir.entries(auxSrcDir).each do |file|
+        next if file == '.' || file == '..'
+
+        srcFile = auxSrcDir + '/' + file
+        dstFile = auxDstDir + '/' + file
+        return false if !File.exist?(dstFile) ||
+                        File.mtime(srcFile) > File.mtime(dstFile)
+      end
+      true
     end
 
     def error(id, message)

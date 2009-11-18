@@ -1058,6 +1058,13 @@ class TaskJuggler
       end
     end
 
+    def query_alert(query)
+      journal = @project['journal']
+      endDate = query.end
+      query.sortableResult = journal.alertLevel(endDate, @property)
+      query.result = @project['alertLevels'][query.sortableResult][0]
+    end
+
     def query_complete(query)
       if @property.leaf?
         query.sortableResult = query.numericalResult = a('complete').to_i

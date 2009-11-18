@@ -329,7 +329,7 @@ taskreport overview "" {
 taskreport development "" {
   headline "Development - Resource Allocation Report"
   columns hierarchindex, name, start, end, effort { title "Work" },
-          duration, chart { scale day }
+          duration, chart { scale day width 500 }
   timeformat "%Y-%m-%d"
   hideresource ~isleaf()
   sortresources name.up
@@ -338,7 +338,7 @@ taskreport development "" {
 # A list of all tasks with the percentage completed for each task
 taskreport deliveries "" {
   headline "Project Deliveries"
-  columns hierarchindex, name, start, end, note, complete, chart
+  columns hierarchindex, name, start, end, note { width 150 }, complete, chart
   taskroot AcSo.deliveries
   loadunit days
   hideresource 1

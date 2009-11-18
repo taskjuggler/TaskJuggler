@@ -1,0 +1,75 @@
+project "Alerts" 2009-11-18 +2m
+
+task "Green" {
+  journalentry 2009-11-20 "Green"
+}
+
+task "Yellow" {
+  journalentry 2009-11-20 "Yellow" { alert yellow }
+}
+
+task "Red" {
+  journalentry 2009-11-20 "Red" { alert red }
+}
+
+task "Inherit Yellow" {
+  task "Green" {
+  }
+  task "Yellow" {
+    journalentry 2009-11-22 "Yellow" { alert yellow }
+  }
+}
+
+task "Inherit Red" {
+  task "Inherit Yellow" {
+    task "Green" {
+    }
+    task "Yellow" {
+      journalentry 2009-11-23 "Yellow" { alert yellow }
+    }
+  }
+  task "Inherit Green" {
+    task "Green" {
+    }
+  }
+  task "Inherit Red" {
+    task "Green" {
+    }
+    task "Red" {
+      journalentry 2009-11-20 "Yellow" { alert yellow }
+      journalentry 2009-11-21 "Green" { alert green }
+      journalentry 2009-11-22 "Red" { alert red }
+    }
+  }
+}
+
+task "Overwrite Yellow" {
+  journalentry 2009-11-23 "Yellow" { alert yellow }
+  task "Inherit Yellow" {
+    task "Green" {
+    }
+    task "Yellow" {
+      journalentry 2009-11-23 "Yellow" { alert yellow }
+    }
+  }
+  task "Overwrite Red" {
+    journalentry 2009-11-22 "Red" { alert red }
+    task "Green" {
+    }
+  }
+  task "Inherit Red" {
+    task "Green" {
+    }
+    task "Red" {
+      journalentry 2009-11-20 "Yellow" { alert yellow }
+      journalentry 2009-11-21 "Green" { alert green }
+      journalentry 2009-11-22 "Red" { alert red }
+    }
+  }
+}
+
+taskreport "Alerts" {
+  formats html
+  columns name, alert
+}
+

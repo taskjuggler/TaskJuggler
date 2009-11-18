@@ -111,12 +111,6 @@ class AppConfig
     rubyBaseDir, versionDir = rubyLibDir.scan(/(.*\/)(.*)/)[0]
 
     dirs = []
-    # This is for the development version. We assume that we run the app
-    # from the source base directory.
-    dirs << "#{baseDir}/"
-    # Or from the lib directory.
-    dirs << "../#{baseDir}/"
-
     if ENV['TASKJUGGLER_DATA_PATH']
       dirs << ENV['TASKJUGGLER_DATA_PATH'] + "/#{baseDir}/"
     end
