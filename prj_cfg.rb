@@ -30,7 +30,7 @@ DATA_DIR        = 'data'
 RDOC_DIR        = 'doc'
 RCOV_DIR        = 'rcov'
 RAKE_DIR        = 'tasks'
-MANUAL_DIR      = 'manual/html'
+MANUAL_DIR      = 'manual'
 
 # FILES
 README          = FileList['README']
