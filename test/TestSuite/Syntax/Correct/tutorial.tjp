@@ -508,7 +508,7 @@ resourcereport contactList "" {
 # resource is under- or over-allocated for.
 resourcereport resourceGraph "" {
   headline "Resource Allocation Graph"
-  columns no, name, effort, rate, weekly #, utilization, freeload, chart
+  columns no, name, effort, rate, weekly
   loadunit shortauto
   hidetask ~isleaf()
   sorttasks plan.start.up

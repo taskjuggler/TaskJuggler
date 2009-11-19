@@ -475,7 +475,7 @@ class TaskJuggler
       tableColumn.cell1.special = table = ColumnTable.new
       table.equiLines = true
       tableColumn.cell2.hidden = true
-      table.maxWidth = columnDef.width
+      table.viewWidth = columnDef.width ? columnDef.width : 450
 
       # Iterate over the report interval until we hit the end date. The
       # iteration is done with 2 nested loops. The outer loops generates the

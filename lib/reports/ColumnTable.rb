@@ -19,12 +19,13 @@ class TaskJuggler
   # ReportTables must have the same number of lines.
   class ColumnTable < ReportTable
 
-    attr_writer :maxWidth
+    attr_writer :viewWidth
 
     # Create a new ColumnTable object.
     def initialize
       super
-      @maxWidth = nil
+      # The user requested width of the column (chart)
+      @viewWidth = nil
       # The header will have 2 lines. So, use a smaller font. This should match
       # the font size used for the GanttChart header.
       @headerFontSize = 10
@@ -45,19 +46,18 @@ class TaskJuggler
       # height that fits all lines but has a maximum width. In case the embedded
       # table is larger, a scrollbar will appear. We assume that the scrollbar
       # has a height of SCROLLBARHEIGHT pixels or less.
-      # Due to Firefoxes broken table rendering we have to specify a minimum
-      # width. It may not excede the maxWidth value.
-      mWidth = minWidth
-      mWidth = @maxWidth if @maxWidth && mWidth > @maxWidth
+      # If there is a user specified with, use it. Otherwise use the
+      # calculated minimum with.
+      width = @viewWidth ? @viewWidth : minWidth
       td << (scrollDiv = XMLElement.new('div', 'class' => 'tabback',
         'style' => 'position:relative; overflow:auto; ' +
-                   "width:#{mWidth}px; " +
+                   "width:#{width}px; " +
                    'margin-top:-1px; margin-bottom:-1px; ' +
                    "height:#{height + SCROLLBARHEIGHT + 2}px;"))
 
       scrollDiv << (contentDiv = XMLElement.new('div',
         'style' => 'margin: 0px; padding: 0px; position: absolute; top: 0px;' +
-                   "left: 0px; width: #{@maxWidth}px; height: #{height}px; "))
+                   "left: 0px; width: #{@viewWidth}px; height: #{height}px; "))
       contentDiv << super
       td
     end
