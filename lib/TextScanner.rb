@@ -283,7 +283,12 @@ class TaskJuggler
           token = handleDash
           break
         when '!'
-          token = readRelativeId(c)
+          if (c = nextChar) == '='
+            token = [ 'LITERAL', '!=' ]
+          else
+            returnChar(c)
+            token = [ 'LITERAL', '!' ]
+          end
           break
         when 'a'..'z', 'A'..'Z', '_'
           token = readId(c)
@@ -570,21 +575,6 @@ class TaskJuggler
       end
 
       [ 'INTEGER', token.to_i ]
-    end
-
-    def readRelativeId(c)
-      token = ""
-      token << c
-      while (c = nextChar) && c == '!'
-        token << c
-      end
-      unless ('a'..'z') === c || ('A'..'Z') === c || c == '_'
-        raise TjException.new, "Identifier expected"
-      end
-      id = readId(c)
-      id[0] = 'RELATIVE_ID'
-      id[1] = token + id[1]
-      id
     end
 
     def readDate(token)

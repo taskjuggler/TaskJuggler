@@ -67,6 +67,9 @@ class TaskJuggler
         when '<='
           return coerceNumber(@operand1.eval(expr)) <=
                  coerceNumber(@operand2.eval(expr))
+        when '!='
+          return coerceNumber(@operand1.eval(expr)) !=
+                 coerceNumber(@operand2.eval(expr))
         when '&'
           return coerceBoolean(@operand1.eval(expr)) &&
                  coerceBoolean(@operand2.eval(expr))

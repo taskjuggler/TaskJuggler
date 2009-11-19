@@ -933,6 +933,11 @@ EOT
        )
   end
 
+  def rule_idOrAbsoluteId
+    singlePattern('$ID')
+    singlePattern('$ABSOLUTE_ID')
+  end
+
   def rule_includeAttributes
     optionsRule('includeAttributesBody')
   end
@@ -1488,6 +1493,12 @@ EOT
     example('Macro-1')
   end
 
+  def rule_moreBangs
+    optional
+    repeatable
+    singlePattern('_!')
+  end
+
   def rule_moreAlternatives
     commaListRule('!resourceId')
   end
@@ -1698,6 +1709,9 @@ EOT
 
     singlePattern('_<=')
     descr('The \'smaller-or-equal\' operator')
+
+    singlePattern('_!=')
+    descr('The \'not-equal\' operator')
   end
 
   def rule_optionalID
@@ -2218,6 +2232,15 @@ EOT
 
   def rule_referenceBody
     optionsRule('referenceAttributes')
+  end
+
+  def rule_relativeId
+    pattern(%w( _! !moreBangs !idOrAbsoluteId ), lambda {
+      str = '!'
+      @val[1].each { |bang| str += bang }
+      str += @val[2]
+      str
+    })
   end
 
   def rule_report
@@ -3546,7 +3569,7 @@ EOT
 
   def rule_taskDepId
     singlePattern('$ABSOLUTE_ID')
-    descr(<<'EOT'
+    arg(0, 'ABSOLUTE ID', <<'EOT'
 A reference using the full qualified ID of a task. The IDs of all enclosing
 parent tasks must be prepended to the task ID and separated with a dot, e.g.
 ''''proj.plan.doc''''.
@@ -3554,9 +3577,9 @@ EOT
          )
 
     singlePattern('$ID')
-    descr('Just the ID of the task without and parent IDs.')
+    arg(0, 'ID', 'Just the ID of the task without and parent IDs.')
 
-    pattern(%w( $RELATIVE_ID ), lambda {
+    pattern(%w( !relativeId ), lambda {
       task = @property
       id = @val[0]
       while task && id[0] == ?!
@@ -3572,7 +3595,7 @@ EOT
         id
       end
     })
-    descr(<<'EOT'
+    arg(0, 'RELATIVE ID', <<'EOT'
 A relative task ID always starts with one or more exclamation marks and is
 followed by a task ID. Each exclamation mark lifts the scope where the ID is
 looked for to the enclosing task. The ID may contain some of the parent IDs

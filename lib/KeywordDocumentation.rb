@@ -325,7 +325,8 @@ class TaskJuggler
               tr1 << (td = XMLElement.new('td', 'width' => '30%'))
               td << XMLText.new("#{arg.name} [")
               td << XMLNamedText.new(
-                typeName, 'a', 'href' => "Getting_Started.html\##{typeName}")
+                typeName, 'a', 'href' =>
+                               "The_TaskJuggler_Syntax.html\##{typeName}")
               td << XMLText.new(']')
             end
             tr1 << (td = XMLElement.new('td',
