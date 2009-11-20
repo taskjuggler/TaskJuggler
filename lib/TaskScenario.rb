@@ -1273,6 +1273,20 @@ class TaskJuggler
       false
     end
 
+    # Returns true of the _resource_ is assigned to this task or any of its
+    # children.
+    def hasResourceAllocated?(interval, resource)
+      if @property.leaf?
+        return resource.allocated?(@scenarioIdx, interval, @property)
+      else
+        @property.children.each do |t|
+          return true if t.hasResourceAllocated?(@scenarioIdx, interval,
+                                                 resource)
+        end
+      end
+      false
+    end
+
   private
     def scheduleSlot(slot, slotDuration)
       # Tasks must always be scheduled in a single contigous fashion. @lastSlot
