@@ -17,7 +17,7 @@ class TaskJuggler
   class ReportContext
 
     attr_reader :project, :report
-    attr_accessor :start, :end, :tasks, :resources
+    attr_accessor :query, :start, :end, :tasks, :resources
 
     def initialize(project, report)
       @project = project
@@ -27,13 +27,18 @@ class TaskJuggler
         # If the new ReportContext is created from within an existing context,
         # this is used as parent context and all attribute values are copied
         # as default initial values.
-        @start = parent.start
-        @end = parent.end
-        @tasks = parent.tasks
-        @resources = parent.resources
+        instance_variables.each do |var|
+          next if var.to_s == '@project' || var.to_s == '@report'
+
+          instance_variable_set(var, parent.instance_variable_get(var))
+        end
       else
-        @start = @end = nil
-        @tasks = @resources = nil
+        instance_variables.each do |var|
+          next if var.to_s == '@project' || var.to_s == '@report'
+          puts "var: #{var}"
+
+          instance_variable_set(var, nil)
+        end
       end
     end
 

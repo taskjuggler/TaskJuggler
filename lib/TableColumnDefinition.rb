@@ -19,7 +19,7 @@ class TaskJuggler
 
     attr_reader :id
     attr_accessor :cellText, :hideCellText, :cellURL, :hideCellURL,
-                  :title, :scale, :width,
+                  :title, :tooltip, :scale, :width,
                   :content, :column
 
     def initialize(id, title)
@@ -41,6 +41,9 @@ class TaskJuggler
       # The content attribute is only used for calendar columns. It specifies
       # what content should be displayed in the colendar columns.
       @content = 'load'
+      # An alternative content for the tooltip message. It should be a
+      # RichText object.
+      @tooltip = nil
       # The scale attribute is only used for Gantt chart columns. It specifies
       # the minimum resolution of the chart.
       @scale = 'week'

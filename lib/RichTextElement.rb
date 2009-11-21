@@ -66,9 +66,9 @@ class TaskJuggler
     end
 
     # Recursively extract the section headings from the RichTextElement and
-    # build fill the TableOfContents _toc_ with the gathered sections.
-    # _fileName_ is the base name (without .html or other suffix) of the file
-    # the TOCEntries should point to.
+    # build the TableOfContents _toc_ with the gathered sections.  _fileName_
+    # is the base name (without .html or other suffix) of the file the
+    # TOCEntries should point to.
     def tableOfContents(toc, fileName)
       number = nil
       case @category

@@ -127,6 +127,8 @@ class TaskJuggler
     # Generate an output format independant version of the navigator. This is
     # a tree of NavigatorElement objects.
     def generate(reports, reportRoot, parentElement)
+      raise "Report context missing" unless @project.reportContext.report
+
       reports.each do |report|
         hasURL = report.get('formats').include?(:html)
         next if (report.parent != reportRoot) ||

@@ -526,14 +526,27 @@ EOT
        )
     arg(1, 'text', 'The new column title.')
 
+    pattern(%w( _tooltip $STRING ), lambda {
+      @column.tooltip = newRichText(@val[1])
+    })
+    doc('tooltip.column', <<'EOT'
+Specifies an alternative content for the tooltip. This will replace the
+original content of the tooltip that would be available for columns with text
+that does not fit the column with. The text is interpreted as
+[[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+    arg(1, 'text', 'The content of the tooltip.')
+
     pattern(%w( _width !number ), lambda {
       @column.width = @val[1]
     })
     doc('width.column', <<'EOT'
 Specifies the width of the column in screen pixels. If the content of the
 column does not fit into this width, it will be cut off. In some cases a
-scrollbar is added or a popup window is shown when the mouse is moved over the
-column. The latter is only supported in interactive output formats.
+scrollbar is added or a tooltip window with the complete content is shown when
+the mouse is moved over the column. The latter is only supported in
+interactive output formats.
 EOT
        )
   end

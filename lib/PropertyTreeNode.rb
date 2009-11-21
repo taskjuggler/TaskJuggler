@@ -332,7 +332,8 @@ class TaskJuggler
         @sequenceNo
       else
         unless @attributes.has_key?(attributeId)
-          raise TjException.new, "Unknown attribute #{attributeId}"
+          raise TjException.new,
+                "Unknown attribute #{attributeId} for class #{self.class}"
         end
         @attributes[attributeId].get
       end

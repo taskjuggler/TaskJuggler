@@ -19,16 +19,16 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line, :shortText, :longText
+    attr_reader :line, :shortText, :longText, :query
     attr_accessor :data, :url, :category, :hidden, :alignment, :padding,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
-                  :rows, :columns, :special
+                  :rows, :columns, :tooltip, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
     # default values. _line_ is the ReportTableLine this cell belongs to. _text_
     # is the text that should appear in the cell. _headerCell_ is a flag that
     # must be true only for table header cells.
-    def initialize(line, text = '', headerCell = false)
+    def initialize(line, text = '', query = nil, headerCell = false)
       @line = line
       @line.addCell(self) if line
 
@@ -41,6 +41,11 @@ class TaskJuggler
       # single line tables. Depending on the output format, the short or long
       # or both versions will be used.
       @longText = nil
+      # A copy of a Query object that is needed to access project data via the
+      # query function.
+      @query = query ? query.dup : nil
+      # A custom text for the tooltip.
+      @tooltip = nil
       self.text = text
       # A URL that is associated with the content of the cell.
       @url = nil
@@ -136,6 +141,8 @@ class TaskJuggler
 
       return cell if @shortText.nil? || @shortText.empty?
 
+      query.project.reportContext.query = query if query
+      tooltip = nil
       if (@line && @line.table.equiLines) || !@category || @width
         # All lines of the table must have the same height. So we can't put
         # the full RichText diretly in here.
@@ -145,18 +152,7 @@ class TaskJuggler
         else
           div << XMLText.new(shortVersion(@shortText))
         end
-        if @longText && @category
-          div << XMLElement.new('img', 'src' => 'icons/details.png',
-                                'align' => 'top',
-                                'style' => 'margin-left:3px;' +
-                                'margin-bottom:2px')
-          div['onmouseover'] = "TagToTip('#{@longText.object_id}')"
-          div['onmouseout'] = 'UnTip()'
-          div << (ltDiv = XMLElement.new('div',
-                                         'style' => 'visibility:hidden',
-                                         'id' => "#{@longText.object_id}"))
-          ltDiv << @longText.to_html
-        end
+        tooltip = @longText if @longText && @category
       else
         if @longText
           div << @longText.to_html
@@ -168,6 +164,22 @@ class TaskJuggler
             div << XMLText.new(shortVersion(@shortText))
           end
         end
+        query.project.reportContext.query = nil if query
+      end
+
+      # Overwrite the tooltip if the user has specified a custom tooltip.
+      tooltip = @tooltip if @tooltip
+      if tooltip
+        div << XMLElement.new('img', 'src' => 'icons/details.png',
+                              'align' => 'top',
+                              'style' => 'margin-left:3px;' +
+                              'margin-bottom:2px')
+        div['onmouseover'] = "TagToTip('#{cell.object_id}')"
+        div['onmouseout'] = 'UnTip()'
+        div << (ltDiv = XMLElement.new('div',
+                                       'style' => 'visibility:hidden',
+                                       'id' => "#{cell.object_id}"))
+        ltDiv << tooltip.to_html
       end
 
       cell

@@ -66,9 +66,13 @@ class TaskJuggler
       if args['attribute']
         args['attributeId'] = args['attribute']
         args.delete('attribute')
-      else
-        error('query_no_attribute',
-              'You must provide an attribute parameter to the query.')
+      elsif @project.reportContext.nil?
+        error('query_no_report_context',
+              'Need a report context or an attribute ID for the query.')
+        if @project.reportContext.query.attributeId.nil?
+          error('query_no_attribute',
+                'You must provide an attribute parameter to the query.')
+        end
       end
       args['start'] = @project['start'] unless args.include?('start')
       args['end'] = @project['end'] unless args.include?('end')
@@ -79,7 +83,15 @@ class TaskJuggler
                                @project['currencyFormat']
       args['scenarioIdx'] = 0 unless args['scenario']
 
-      q = Query.new(args)
+      if @project.reportContext
+        q = @project.reportContext.query.dup
+        args.each do |key, value|
+          q.instance_variable_set('@' + key, value)
+        end
+      else
+        q = Query.new(args)
+      end
+
       q.process
       q
     end

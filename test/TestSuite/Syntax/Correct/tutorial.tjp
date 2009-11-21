@@ -441,7 +441,9 @@ taskreport overview "" {
   ->8-
 # *** EXAMPLE: overview4 -
 # *** EXAMPLE: overview1 +
-  columns hierarchindex, name, start, end, effort, duration, cost,
+  columns hierarchindex,
+          name { tooltip "''''ID'''': <-query attribute='id'->" },
+          start, end, effort, duration, cost,
           revenue, chart
 # *** EXAMPLE: overview1 -
   # For this report we like to have the abbreviated weekday in front
