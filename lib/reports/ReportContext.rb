@@ -12,34 +12,45 @@
 
 class TaskJuggler
 
-  # Each Project has a single ReportContext object that is used during the
-  # report generation. It is a container for global state.
+  # The ReportContext objects provide some settings that are used during the
+  # generation of a report. Reports can be nested, so multiple objects can
+  # exist at a time. But there is only one current ReportContext that is
+  # always accessable via Project.reportContext.
   class ReportContext
 
     attr_reader :project, :report
-    attr_accessor :query, :start, :end, :tasks, :resources
+    attr_accessor :query, :tasks, :resources
 
     def initialize(project, report)
       @project = project
       @report = report
 
-      if (parent = @project.reportContext)
+      if (@parent = @project.reportContext)
         # If the new ReportContext is created from within an existing context,
-        # this is used as parent context and all attribute values are copied
-        # as default initial values.
-        instance_variables.each do |var|
-          next if var.to_s == '@project' || var.to_s == '@report'
-
-          instance_variable_set(var, parent.instance_variable_get(var))
-        end
+        # this is used as parent context and the settings are copied as
+        # default initial values.
+        @query = @parent.query.dup
+        @tasks = @parent.tasks.dup
+        @resources = @parent.resources.dup
       else
-        instance_variables.each do |var|
-          next if var.to_s == '@project' || var.to_s == '@report'
-          puts "var: #{var}"
-
-          instance_variable_set(var, nil)
-        end
+        # There is no existing ReportContext yet, so we create one based on
+        # the settings of the report.
+        queryAttrs = {
+          'project' => @project,
+          'loadUnit' => @report.get('loadUnit'),
+          'numberFormat' => @report.get('numberFormat'),
+          'currencyFormat' => @report.get('currencyFormat'),
+          'start' => @report.get('start'),
+          'end' => @report.get('end'),
+          'costAccount' => @report.get('costAccount'),
+          'revenueAccount' => @report.get('revenueAccount')
+        }
+        @query = Query.new(queryAttrs)
+        @tasks = @project.tasks.dup
+        @resources = @project.resources.dup
       end
+
+      @project.reportContext = self
     end
 
   end

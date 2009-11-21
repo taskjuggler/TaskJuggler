@@ -53,21 +53,11 @@ class TaskJuggler
       reset
     end
 
-    # Queries object can be reused. Calling this function will clear the query
-    # result data.
-    def reset
-      @result = nil
-      @numericalResult = nil
-      @sortableResult = nil
-      @loadUnit = :days
-      @ok = nil
-      @errorMessage = nil
-    end
-
     # This method tries to resolve the query and return a result. In case it
     # finds an attribute that matches the query, it returns true; false
     # otherwise. The actual result data is put into the Query object.
     def process
+      reset
       begin
         # Resolve property reference from property ID.
         if @property.nil? && !@propertyId.nil?
@@ -233,6 +223,19 @@ class TaskJuggler
         str = @numberFormat.format(value * factors[units.index(@loadUnit)])
       end
       str
+    end
+
+    private
+
+    # Queries object can be reused. Calling this function will clear the query
+    # result data.
+    def reset
+      @result = nil
+      @numericalResult = nil
+      @sortableResult = nil
+      @loadUnit = :days
+      @ok = nil
+      @errorMessage = nil
     end
 
   end

@@ -170,16 +170,17 @@ class TaskJuggler
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
       if tooltip
-        div << XMLElement.new('img', 'src' => 'icons/details.png',
-                              'align' => 'top',
-                              'style' => 'margin-left:3px;' +
-                              'margin-bottom:2px')
         div['onmouseover'] = "TagToTip('#{cell.object_id}')"
         div['onmouseout'] = 'UnTip()'
         div << (ltDiv = XMLElement.new('div',
                                        'style' => 'visibility:hidden',
                                        'id' => "#{cell.object_id}"))
         ltDiv << tooltip.to_html
+        div << XMLElement.new('img', 'src' => 'icons/details.png',
+                              'width' => '6px',
+                              'style' => 'vertical-align:top; ' +
+                                         'margin:2px; ' +
+                                         'top:5px')
       end
 
       cell

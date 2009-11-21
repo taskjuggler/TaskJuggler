@@ -735,7 +735,6 @@ class TaskJuggler
       return if columnDef.hideCellText &&
                 columnDef.hideCellText.eval(property, scopeProperty)
 
-      query.reset
       query.process
       cell.text = query.result
 
@@ -798,7 +797,6 @@ class TaskJuggler
           query.attributeId = 'effort'
           query.startIdx = t
           query.endIdx = nextT
-          query.reset
           query.process
           # To increase readability, we don't show 0.0 values.
           cell.text = query.result if query.numericalResult > 0.0
@@ -864,14 +862,12 @@ class TaskJuggler
         query.attributeId = 'effort'
         query.startIdx = @project.dateToIdx(t, true)
         query.endIdx = @project.dateToIdx(nextT, true) - 1
-        query.reset
         query.process
         workLoad = query.numericalResult
         scaledWorkLoad = query.result
         if task
           # Get work load for the particular task.
           query.scopeProperty = task
-          query.reset
           query.process
           workLoadTask = query.numericalResult
           scaledWorkLoad = query.result
@@ -880,7 +876,6 @@ class TaskJuggler
         end
         # Get unassigned work load.
         query.attributeId = 'freework'
-        query.reset
         query.process
         freeLoad = query.numericalResult
         case columnDef.content
@@ -1048,7 +1043,6 @@ class TaskJuggler
                 ignoreErrors = false
               end
               query.attributeId = macro
-              query.reset
               query.process
               unless query.ok || ignoreErrors
                 raise TjException.new, query.errorMessage

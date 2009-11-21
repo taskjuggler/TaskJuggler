@@ -33,7 +33,11 @@ class TaskJuggler
     def to_html(args)
       q = query(args)
       if q.ok
-        XMLText.new(q.result)
+        if q.result.respond_to?('to_html')
+          q.to_html
+        else
+          XMLText.new(q.result.to_s)
+        end
       else
         error('query_error', q.errorMessage)
         font = XMLElement.new('font', 'color' => '#FF0000')
@@ -50,6 +54,11 @@ class TaskJuggler
     private
 
     def query(args)
+      unless @project.reportContext.query
+        raise 'RTFQuery has no query.'
+      end
+
+      # Check the user provided arguments. Only the following list is allowed.
       validArgs = %w( family property scopeproperty attribute scenario
                       start end loadunit numberformat currencyformat )
       args.each_key do |arg|
@@ -59,81 +68,65 @@ class TaskJuggler
         end
       end
 
-      args = args.dup
-      args['project'] = @project
-      setPropertyType(args)
-      setProperties(args)
-      if args['attribute']
-        args['attributeId'] = args['attribute']
-        args.delete('attribute')
-      elsif @project.reportContext.nil?
-        error('query_no_report_context',
-              'Need a report context or an attribute ID for the query.')
-        if @project.reportContext.query.attributeId.nil?
-          error('query_no_attribute',
-                'You must provide an attribute parameter to the query.')
-        end
-      end
-      args['start'] = @project['start'] unless args.include?('start')
-      args['end'] = @project['end'] unless args.include?('end')
+      # Create a copy of the query context since we will probably modify it.
+      query = @project.reportContext.query.dup
 
-      setLoadUnit(args)
-      args['numberFormat'] = args['numberformat'] || @project['numberFormat']
-      args['currencyFormat'] = args['currencyformat'] ||
-                               @project['currencyFormat']
-      args['scenarioIdx'] = 0 unless args['scenario']
+      # Every provided query parameter will overwrite the corresponding value
+      # in the Query that was provided by the ReportContext.  The name of the
+      # arguments don't always exactly match the Query variables Let's start
+      # with the easy ones.
+      query.propertyId = args['property'] if args['property']
+      query.scopeProperty = args['scopeproperty'] if args['scopeproperty']
+      query.attributeId = args['attribute'] if args['attribute']
+      query.start = args['start'] if args['start']
+      query.end = args['end'] if args['end']
+      query.numberFormat = args['numberformat'] if args['numberformat']
+      query.currencyFormat = args['currencyformat'] if args['currencyformat']
 
-      if @project.reportContext
-        q = @project.reportContext.query.dup
-        args.each do |key, value|
-          q.instance_variable_set('@' + key, value)
-        end
-      else
-        q = Query.new(args)
-      end
+      # And now the slighly more complicated ones.
+      setScenarioIdx(args, query)
+      setPropertyType(args, query)
+      setLoadUnit(args, query)
 
-      q.process
-      q
+      # Now that we have put together the Query, we can process it and return
+      # the Query object for result extraction.
+      query.process
+      query
     end
 
-    def setPropertyType(args)
+    def setPropertyType(args, query)
       validTypes = { 'account' => :Account,
                      'task' => :Task,
                      'resource' => :Resource }
 
       if args['family']
         unless validTypes[args['family']]
-          error('bad_query_family',
+          error('rtfq_bad_query_family',
                 "Unknown query family type '#{args['family']}'. " +
                 "Use one of #{validTypes}.join(', ')!")
         end
-        args['propertyType'] = validTypes[args['family']]
-        args.delete('family')
+        query.propertyType = validTypes[args['family']]
       end
     end
 
-    def setProperties(args)
-      args['propertyId'] = args['property']
-      args.delete('property')
-
-      args['scopeProperty'] = args['scopeproperty']
-      args.delete('scopeproperty')
-    end
-
-    def setLoadUnit(args)
+    def setLoadUnit(args, query)
       units = {
         'days' => :days, 'hours' => :hours, 'longauto' => :longauto,
         'minutes' => :minutes, 'months' => :months, 'shortauto' => :shortauto,
         'weeks' => :weeks, 'years' => :years
       }
-      if args['loadunit']
-        args['loadUnit'] = units[args['loadunit']]
-        args.delete('loadunit')
-      else
-        args['loadUnit'] = @project['loadUnit']
-      end
+      query.loadUnit = units[args['loadunit']] if args['loadunit']
     end
 
+    def setScenarioIdx(args, query)
+      if args['scenario']
+        scenarioIdx = @project.scnearioIdx(args['scenario'])
+        unless scenarioIdx
+          error('rtfq_bad_scenario', "Unknown scenario #{args['scenario']}")
+        end
+        query.scenarioIdx = scenarioIdx
+      end
+    end
   end
 
 end
