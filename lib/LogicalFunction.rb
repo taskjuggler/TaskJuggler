@@ -34,7 +34,13 @@ class TaskJuggler
 
     # Create a new LogicalFunction. _opnd_ is the name of the function.
     def initialize(opnd)
-      @name = opnd
+      if opnd[-1] == ?_
+        @name = opnd[0..-2]
+        @invertProperties = true
+      else
+        @name = opnd
+        @invertProperties = false
+      end
       @arguments = []
     end
 
@@ -58,8 +64,13 @@ class TaskJuggler
     # Evaluate the function by calling it with the arguments.
     def eval(expr)
       args = []
+      if @invertProperties
+        return true unless expr.scopeProperty
+        expr = expr.dup
+        expr.flipProperties
+      end
       # Call the function and return the result.
-      send(@name, expr, @arguments)
+      send(name, expr, @arguments)
     end
 
     # Return a textual expression of the function call.

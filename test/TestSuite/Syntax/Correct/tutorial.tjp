@@ -483,7 +483,7 @@ taskreport development "" {
   columns hierarchindex, name, start, end, effort { title "Work" },
           duration, chart { scale day width 500 }
   timeformat "%Y-%m-%d"
-  hideresource ~isleaf()
+  hideresource ~(isleaf() & isleaf_())
   sortresources name.up
 }
 
@@ -512,6 +512,7 @@ resourcereport resourceGraph "" {
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly
   loadunit shortauto
-  hidetask ~isleaf()
+  # We only like to show leaf tasks for leaf resources.
+  hidetask ~(isleaf() & isleaf_())
   sorttasks plan.start.up
 }

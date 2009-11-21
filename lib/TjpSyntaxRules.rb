@@ -864,15 +864,38 @@ EOT
     doc('functions', <<'EOT'
 The following functions are supported in logical expressions. These functions
 are evaluated in logical conditions such as hidetask or rollupresource. For
-the evaluation, implicit and explicit parameters are used. All functions may
-operate on the current property and the scope property. The scope property is
-the enclosing property in reports with nested properties. E. g. in a task
-report with nested resources, the task is the scope property and the the
-resource is the property the the function is called for the resource line. The
-explicit parameters are passed in the function call. These arguments may vary
-from function to function.
+the evaluation, implicit and explicit parameters are used.
+
+All functions may operate on the current property and the scope property. The
+scope property is the enclosing property in reports with nested properties.
+Imagine e. g a task report with nested resources. When the function is called
+for a task line, the task is the property and we don't have a scope property.
+When the function is called for a resource line, the resource is the property
+and the enclosing task is the scope property.
+
+These number of arguments that are passed in brackets to the function depends
+on the specific function. See the reference for details on each function.
+
+All functions can be suffixed with an underscore character. In that case, the
+function is operating on the scope property as if it were the property. The
+original property is ignored in that case. In our task report example from
+above, calling a function with an appended dash would mean that a task
+line would be evaluated for the enclosing resource.
+
+In the example below you can see how this can be used. To generate a task
+report that lists all assigned leaf resources for leaf task lines only we use
+the expression
+
+ hideresource ~(isleaf() & isleaf_())
+
+The tilde in front of the bracketed expression means not that expression. In
+other words: show resources that are leaf resources and show them for leaf
+tasks only. The regular form isleaf() (without the appended underscore)
+operates on the resource. The isleaf_() variant operates on the
+enclosing task.
 EOT
        )
+    example('LogicalFunction', '1')
   end
 
   def rule_functionsBody

@@ -33,6 +33,12 @@ class TaskJuggler
       @property = @scopeProperty = nil
     end
 
+    # Switch the scopeProperty to property. We need this for the scopeProperty
+    # operating functions. The @scopeProperty is set to nil.
+    def flipProperties
+      @property, @scopeProperty = @scopeProperty, nil
+    end
+
     # This function triggers the evaluation of the expression. _property_ is the
     # PropertyTreeNode that should be used for the evaluation. _scopeProperty_
     # is the PropertyTreeNode that describes the scope. It may be nil.
