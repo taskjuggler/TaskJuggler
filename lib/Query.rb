@@ -63,9 +63,23 @@ class TaskJuggler
         if @property.nil? && !@propertyId.nil?
           @property = resolvePropertyId(@propertyType, @propertyId)
         end
+
         unless @property
-          raise "Query cannot resolve property '#{propertyId}' of type " +
-            "'#{propertyType}'"
+          # No property was provided. We are looking for a project attribute.
+          supportedAttrs = %w( copyright currency end name now projectid
+                               start version )
+          unless supportedAttrs.include?(@attributeId)
+            raise TjException.new,
+                  "Unsupported project attribute #{@attributeId}"
+          end
+          @sortableResult = @project[@attributeId]
+          @result =
+            if @sortableResult.is_a?(TjTime)
+              @sortableResult.to_s(@project['timeFormat'])
+            else
+              @sortableResult
+            end
+          return @ok = true
         end
 
         # Same for the scope property.
@@ -88,7 +102,7 @@ class TaskJuggler
         if @property.hasQuery?(@attributeId, @scenarioIdx)
           # Call the property query function to get the result.
           if @scenarioIdx
-            @property.send('query_' + @attributeId, scenarioIdx, self)
+            @property.send('query_' + @attributeId, @scenarioIdx, self)
           else
             @property.send('query_' + @attributeId, self)
           end

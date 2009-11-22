@@ -81,5 +81,10 @@ class TaskJuggler
     res
   end
 
+  # Return the number of errors that had been reported during processing.
+  def errors
+    @project.messageHandler.errors
+  end
+
 end
 

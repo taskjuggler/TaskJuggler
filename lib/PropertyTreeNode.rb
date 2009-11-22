@@ -333,7 +333,8 @@ class TaskJuggler
       else
         unless @attributes.has_key?(attributeId)
           raise TjException.new,
-                "Unknown attribute #{attributeId} for class #{self.class}"
+                "Unknown attribute '#{attributeId}' requested for " +
+                "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
         end
         @attributes[attributeId].get
       end
@@ -398,11 +399,14 @@ class TaskJuggler
     # query function must be scenario specific.
     def hasQuery?(queryId, scenarioIdx = nil)
       methodName = 'query_' + queryId
-      if scenarioIdx
-        @data[scenarioIdx].respond_to?(methodName)
-      else
-        respond_to?(methodName)
+      # First we check for non-scenario-specific query functions.
+      if respond_to?(methodName)
+        return true
+      elsif scenarioIdx
+        # Then we check for scenario-specific ones via the @data member.
+        return @data[scenarioIdx].respond_to?(methodName)
       end
+      false
     end
 
     # Returns true if the value of the attribute _attributeId_ (in scenario

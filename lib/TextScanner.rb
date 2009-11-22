@@ -749,6 +749,9 @@ class TaskJuggler
               if c == '-'
                 state = 3
                 break
+              elsif c == "\n"
+                returnChar(c)
+                break
               else
                 error('bad_indent',
                       'All string lines must have the exact same indentation.')

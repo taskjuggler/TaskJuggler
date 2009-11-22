@@ -34,9 +34,6 @@ class TaskJuggler
     def error(id, text)
       message = Message.new(id, 'error', text, nil, nil, @sourceFileInfo)
       @project.sendMessage(message)
-
-      # An empty strings signals an already reported error
-      raise TjException.new, ''
     end
 
   end

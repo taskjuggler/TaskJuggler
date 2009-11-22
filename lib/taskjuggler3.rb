@@ -94,15 +94,13 @@ def main
   @forceReports = false
   @outputDir = ''
 
-  errors = false
   tj = TaskJuggler.new(files = processArguments(ARGV))
   tj.maxCpuCores = @maxCpuCores
   exit 1 unless tj.parse(files)
   if !tj.schedule
-    errors = true
     exit 1 unless @forceReports
   end
-  exit 1 if !tj.generateReports(@outputDir) || errors
+  exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
 
 end
 

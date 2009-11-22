@@ -39,7 +39,12 @@ class TaskJuggler
           XMLText.new(q.result.to_s)
         end
       else
-        error('query_error', q.errorMessage)
+        queryText = "\n<-query"
+        args.each do |a, v|
+          queryText += " #{a}=\"#{v}\""
+        end
+        queryText += "->"
+        error('query_error', q.errorMessage + queryText)
         font = XMLElement.new('font', 'color' => '#FF0000')
         font << XMLText.new('Query Error: ' + q.errorMessage)
         font
@@ -126,6 +131,8 @@ class TaskJuggler
         end
         query.scenarioIdx = scenarioIdx
       end
+      # Default to 0 in case no scenario was provided.
+      query.scenarioIdx = 0 unless query.scenarioIdx
     end
   end
 

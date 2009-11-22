@@ -14,14 +14,17 @@ class TaskJuggler
 
   class MessageHandler
 
-    attr_reader :messages
+    attr_reader :messages, :errors
 
     def initialize(console = false)
       @messages = []
       @console = console
+
+      @errors = 0
     end
 
     def send(message)
+      @errors += 1 if message.level == 'error' || message.level == 'fatal'
       @messages << message
       if @console
         $stderr.puts message
