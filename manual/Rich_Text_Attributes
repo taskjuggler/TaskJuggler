@@ -112,20 +112,71 @@ by double or single quotes, make sure you don't use the same quoting
 marks for the parameter value. Alternatively you can put a backslash
 in front of the quote mark to escape it.
 
+----
 '''Block Generator''' ''''navigator''''
 
 Parameters:
 
-* id : ID of a defined [[navigator]]
+* ''''id'''' : ID of a defined [[navigator]]
 
-''The navigator generator inserts the referenced navigator.''
-
+The navigator generator inserts the referenced navigator.
+----
 '''Block Generator''' ''''report''''
 
 Paramters:
 
-* id : ID of a defined [[report]]
+* ''''id'''' : ID of a defined [[report]]
 
-''The report generator inserts the referenced report as a new block
+The report generator inserts the referenced report as a new block
 of this text. The referenced report inherits some context such as the
-report period and the property set from the referencing report.''
+report period and the property set from the referencing report.
+----
+'''Inline Generator''' ''''query''''
+
+* ''''family'''' : Specifies whether a ''''task'''' or a ''''resource''''
+should be queried.
+
+* ''''property'''' : The ID of the task or resource to be queried. If no
+property is specified, the query will return a global project
+attribute.
+
+* ''''scopeproperty'''' : The ID of the scope property. If the property is a
+task this must be a resource ID and vice versa.
+
+* ''''attribute'''' : The ID of the attribute which value should be returned
+by the query. If a property ID is provided, this must be one of the
+names that can be used as [[columnid]] values. Without a property,
+global attributes of the project can be requested. The following
+attributes are supported: ''''copyright'''', ''''currency'''',
+''''end'''', ''''name'''', ''''now'''', ''''projectid'''',
+''''start'''' and ''''version''''.
+
+* ''''scenario'''' : The ID of a scenario. This must be provided whenever the
+requested attribute is scenario specific.
+
+* ''''start'''' : The start date of the report period of the current report.
+
+* ''''end'''' : The end date of the report period of the current report.
+
+* ''''loadunit'''' : The [[loadunit]] that should be used in case the
+requested attribute is an effort or duration value.
+
+* ''''numberformat'''' : The [[numberformat]] used to format arithmetic
+attributes.
+
+* ''''currencyformat'''' : The [[currencyformat]] used to format currency
+values.
+
+The query generator inserts any requested value from the project, a
+task or a resource.
+
+Queries are context aware. Depending on the context where the query
+is used, certain or all of the above parameters have already
+predefined values. When used in the header section of a report, the
+context does not provide a property or scope property. Start and end
+dates as well the formatting options are taken from the report
+context. But when used e. g. in [[column.celltext]] the cell
+provides, that property and the attribute and possibly even the scope
+property.
+
+

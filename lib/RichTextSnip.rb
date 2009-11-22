@@ -40,14 +40,15 @@ class TaskJuggler
         file.each_line { |line| text += line }
       end
       begin
-        @richText = RichText.new(text, sectionCounter)
+        rText = RichText.new(text)
+        @richText = rText.generateIntermediateFormat(sectionCounter)
       rescue RichTextException => msg
         $stderr.puts "Error in RichText of file '#{fileName}'\n" +
                      "Line #{msg.lineNo}: #{msg.text}\n" +
                      "#{msg.line}"
         exit
       end
-      @richText.setProtocolHandlers(@document.functionHandlers)
+      rText.setProtocolHandlers(@document.functionHandlers)
 
       @prevSnip = @nextSnip = nil
     end

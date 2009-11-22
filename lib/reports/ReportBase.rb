@@ -28,7 +28,12 @@ class TaskJuggler
     end
 
     def generateIntermediateFormat
-      raise 'This function must be overriden by derived classes.'
+      %w( header left center right footer ).each do |name|
+        next unless text = a(name)
+
+        text.functionHandler('query').setQuery(
+          @report.project.reportContext.query)
+      end
     end
 
     def to_html

@@ -199,9 +199,10 @@ class TaskJuggler
       sfi = sourceFileInfo
       begin
         rText = RichText.new(text)
-        rText.registerFunction(RTFNavigator.new(@project, sfi))
-        rText.registerFunction(RTFQuery.new(@project, sfi))
-        rText.registerFunction(RTFReport.new(@project, sfi))
+        rti = rText.generateIntermediateFormat
+        rti.registerFunction(RTFNavigator.new(@project, sfi))
+        rti.registerFunction(RTFQuery.new(@project, sfi))
+        rti.registerFunction(RTFReport.new(@project, sfi))
       rescue RichTextException => msg
         sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)
         message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,
@@ -211,7 +212,7 @@ class TaskJuggler
         # An empty strings signals an already reported error
         raise TjException.new, ''
       end
-      rText
+      rti
     end
 
     # This method is a convenience wrapper around Project.new. It checks if

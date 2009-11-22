@@ -28,6 +28,8 @@ class TaskJuggler
     end
 
     def generateIntermediateFormat
+      super
+
       if a('center')
         if a('left') && a('right')
           @lWidth = @rWidth = 20

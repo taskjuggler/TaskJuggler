@@ -41,8 +41,8 @@ class TaskJuggler
       @report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     end
 
-    # There is nothing to do here.
     def generateIntermediateFormat
+      super
     end
 
     # Return the project data in TJP syntax format.

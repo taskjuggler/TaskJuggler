@@ -18,12 +18,13 @@ class TaskJuggler
   # always accessable via Project.reportContext.
   class ReportContext
 
-    attr_reader :project, :report
-    attr_accessor :query, :tasks, :resources
+    attr_reader :project, :report, :query
+    attr_accessor :tasks, :resources
 
     def initialize(project, report)
       @project = project
       @report = report
+      @query = nil
 
       if (@parent = @project.reportContext)
         # If the new ReportContext is created from within an existing context,
@@ -54,4 +55,5 @@ class TaskJuggler
     end
 
   end
+
 end

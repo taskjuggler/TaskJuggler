@@ -30,6 +30,8 @@ class TaskJuggler
 
     # Generate the table in the intermediate format.
     def generateIntermediateFormat
+      super
+
       setReportPeriod
 
       # Prepare the resource list.

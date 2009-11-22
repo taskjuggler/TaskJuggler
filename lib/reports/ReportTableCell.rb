@@ -19,10 +19,10 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line, :shortText, :longText, :query
+    attr_reader :line, :shortText, :longText, :tooltip, :query
     attr_accessor :data, :url, :category, :hidden, :alignment, :padding,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
-                  :rows, :columns, :tooltip, :special
+                  :rows, :columns, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
     # default values. _line_ is the ReportTableLine this cell belongs to. _text_
@@ -73,8 +73,18 @@ class TaskJuggler
     end
 
     def text=(text)
-      @shortText = text.is_a?(RichText) ? text.to_s : text
-      @longText = text.is_a?(RichText) ? text : nil
+      @shortText = text.is_a?(RichTextIntermediate) ? text.to_s : text
+      @longText = text.is_a?(RichTextIntermediate) ? text : nil
+    end
+
+    def longText=(text)
+      @longText = text
+      text.functionHandler('query').setQuery(@query)
+    end
+
+    def tooltip=(text)
+      @tooltip = text
+      text.functionHandler('query').setQuery(@query)
     end
 
     # Return true if two cells are similar enough so that they can be merged in
@@ -141,7 +151,6 @@ class TaskJuggler
 
       return cell if @shortText.nil? || @shortText.empty?
 
-      query.project.reportContext.query = query if query
       tooltip = nil
       if (@line && @line.table.equiLines) || !@category || @width
         # All lines of the table must have the same height. So we can't put
@@ -164,7 +173,6 @@ class TaskJuggler
             div << XMLText.new(shortVersion(@shortText))
           end
         end
-        query.project.reportContext.query = nil if query
       end
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
@@ -202,8 +210,8 @@ class TaskJuggler
 
     private
 
-    # Convert a RichText String into a small one-line plain text version that
-    # fits the column.
+    # Convert a RichText String into a small one-line plain text
+    # version that fits the column.
     def shortVersion(text)
       text = text.to_s
       modified = false

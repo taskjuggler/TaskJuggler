@@ -22,6 +22,14 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo)
       super(project, 'query', sourceFileInfo)
+      @query = nil
+    end
+
+    # This function must be called to register the Query object that will be
+    # used to resolve the queries. It will create a copy of the object since
+    # it will modify it.
+    def setQuery(query)
+      @query = query.dup
     end
 
     # Not supported for this function
@@ -31,12 +39,12 @@ class TaskJuggler
 
     # Return a XMLElement tree that represents the navigator in HTML code.
     def to_html(args)
-      q = query(args)
-      if q.ok
-        if q.result.respond_to?('to_html')
-          q.to_html
+      prepareQuery(args)
+      if @query.ok
+        if @query.result.respond_to?('to_html')
+          @query.to_html
         else
-          XMLText.new(q.result.to_s)
+          XMLText.new(@query.result.to_s)
         end
       else
         queryText = "\n<-query"
@@ -44,9 +52,9 @@ class TaskJuggler
           queryText += " #{a}=\"#{v}\""
         end
         queryText += "->"
-        error('query_error', q.errorMessage + queryText)
+        error('query_error', @query.errorMessage + queryText)
         font = XMLElement.new('font', 'color' => '#FF0000')
-        font << XMLText.new('Query Error: ' + q.errorMessage)
+        font << XMLText.new('Query Error: ' + @query.errorMessage)
         font
       end
     end
@@ -58,7 +66,10 @@ class TaskJuggler
 
     private
 
-    def query(args)
+    def prepareQuery(args)
+      unless @query
+        raise "No Query has been registered for this RichText yet!"
+      end
       unless @project.reportContext.query
         raise 'RTFQuery has no query.'
       end
@@ -73,33 +84,30 @@ class TaskJuggler
         end
       end
 
-      # Create a copy of the query context since we will probably modify it.
-      query = @project.reportContext.query.dup
-
       # Every provided query parameter will overwrite the corresponding value
       # in the Query that was provided by the ReportContext.  The name of the
       # arguments don't always exactly match the Query variables Let's start
       # with the easy ones.
-      query.propertyId = args['property'] if args['property']
-      query.scopeProperty = args['scopeproperty'] if args['scopeproperty']
-      query.attributeId = args['attribute'] if args['attribute']
-      query.start = args['start'] if args['start']
-      query.end = args['end'] if args['end']
-      query.numberFormat = args['numberformat'] if args['numberformat']
-      query.currencyFormat = args['currencyformat'] if args['currencyformat']
+      @query.propertyId = args['property'] if args['property']
+      @query.scopeProperty = args['scopeproperty'] if args['scopeproperty']
+      @query.attributeId = args['attribute'] if args['attribute']
+      @query.start = args['start'] if args['start']
+      @query.end = args['end'] if args['end']
+      @query.numberFormat = args['numberformat'] if args['numberformat']
+      @query.currencyFormat = args['currencyformat'] if args['currencyformat']
 
       # And now the slighly more complicated ones.
-      setScenarioIdx(args, query)
-      setPropertyType(args, query)
-      setLoadUnit(args, query)
+      setScenarioIdx(args)
+      setPropertyType(args)
+      setLoadUnit(args)
 
-      # Now that we have put together the Query, we can process it and return
-      # the Query object for result extraction.
-      query.process
-      query
+      # Now that we have put together the query, we can process it and return
+      # the query object for result extraction.
+      @query.process
+      @query
     end
 
-    def setPropertyType(args, query)
+    def setPropertyType(args)
       validTypes = { 'account' => :Account,
                      'task' => :Task,
                      'resource' => :Resource }
@@ -110,30 +118,36 @@ class TaskJuggler
                 "Unknown query family type '#{args['family']}'. " +
                 "Use one of #{validTypes}.join(', ')!")
         end
-        query.propertyType = validTypes[args['family']]
+        @query.propertyType = validTypes[args['family']]
+        if @query.propertyType == :Task
+          @query.scopePropertyType = :Resource
+        elsif @query.propertyType == :Resource
+          @query.scopePropertyType = :Task
+        end
       end
     end
 
-    def setLoadUnit(args, query)
+    def setLoadUnit(args)
       units = {
         'days' => :days, 'hours' => :hours, 'longauto' => :longauto,
         'minutes' => :minutes, 'months' => :months, 'shortauto' => :shortauto,
         'weeks' => :weeks, 'years' => :years
       }
-      query.loadUnit = units[args['loadunit']] if args['loadunit']
+      @query.loadUnit = units[args['loadunit']] if args['loadunit']
     end
 
-    def setScenarioIdx(args, query)
+    def setScenarioIdx(args)
       if args['scenario']
         scenarioIdx = @project.scnearioIdx(args['scenario'])
         unless scenarioIdx
           error('rtfq_bad_scenario', "Unknown scenario #{args['scenario']}")
         end
-        query.scenarioIdx = scenarioIdx
+        @query.scenarioIdx = scenarioIdx
       end
       # Default to 0 in case no scenario was provided.
-      query.scenarioIdx = 0 unless query.scenarioIdx
+      @query.scenarioIdx = 0 unless @query.scenarioIdx
     end
+
   end
 
 end

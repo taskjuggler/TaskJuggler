@@ -68,6 +68,11 @@ class TaskJuggler
 
     end
 
+    def generateIntermediateFormat
+      super
+    end
+
+
 
     # Turn the TableReport into an equivalent HTML element tree.
     def to_html
@@ -367,10 +372,9 @@ class TaskJuggler
       # Init the variable to get a larger scope
       line = nil
       taskList.each do |task|
-        # Register the query with the ReportContext so it can be used for
-        # queries that are embedded in RichText objects.
-        query = Query.new(queryAttrs)
-        @project.reportContext.query = query
+        # Get the current Query from the report context and create a copy. We
+        # are going to modify it.
+        query = @project.reportContext.query.dup
         query.property = task
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 
@@ -431,10 +435,9 @@ class TaskJuggler
       # Init the variable to get a larger scope
       line = nil
       resourceList.each do |resource|
-        # Register the query with the ReportContext so it can be used for
-        # queries that are embedded in RichText objects.
-        query = Query.new(queryAttrs)
-        @project.reportContext.query = query
+        # Get the current Query from the report context and create a copy. We
+        # are going to modify it.
+        query = @project.reportContext.query.dup
         query.property = resource
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 

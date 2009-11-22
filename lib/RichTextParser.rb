@@ -27,9 +27,9 @@ class TaskJuggler
 
     # Create the parser and initialize the rule set. _rt_ is the RichText object
     # the resulting tree of RichTextElement objects should belong to.
-    def initialize(rt, sectionCounter = [ 0, 0, 0] )
+    def initialize(rti, sectionCounter = [ 0, 0, 0] )
       super()
-      @richText = rt
+      @richTextI = rti
       # These are the tokens that can be returned by the RichTextScanner.
       @variables = %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE
                        HREF HREFEND REF REFEND HLINE

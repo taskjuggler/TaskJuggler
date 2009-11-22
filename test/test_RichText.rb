@@ -953,12 +953,13 @@ EOT
   def newRichText(text)
     begin
       rText = TaskJuggler::RichText.new(text)
-      rText.registerFunction(RTPDummy.new)
+      rti = rText.generateIntermediateFormat
+      rti.registerFunction(RTPDummy.new)
     rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"
     end
-    rText
+    rti
   end
 
 end

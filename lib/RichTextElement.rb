@@ -23,7 +23,7 @@ class TaskJuggler
   # category that identifies the content of the node.
   class RichTextElement
 
-    attr_reader :category, :children
+    attr_reader :richText, :category, :children
     attr_writer :data
     attr_accessor :appendSpace
 

@@ -564,13 +564,14 @@ class TaskJuggler
     def newRichText(text)
       begin
         rText = RichText.new(text)
-        @references += rText.internalReferences
+        rti = rText.generateIntermediateFormat
+        @references += rti.internalReferences
       rescue RichTextException => msg
         $stderr.puts "Error in RichText of rule #{@keyword}\n" +
                      "Line #{msg.lineNo}: #{msg.text}\n" +
                      "#{msg.line}"
       end
-      rText
+      rti
     end
 
     # Utility function to turn a list of keywords into a comma separated list
