@@ -698,12 +698,9 @@ class TaskJuggler
         return true
       end
 
-      if cell.shortText
-        if columnDef.cellText
-          cell.text = expandMacros(columnDef.cellText, cell.shortText,
-                                        query)
-        end
-      else
+      cell.text = columnDef.cellText if columnDef.cellText
+
+      unless cell.text
         cell.text = '<Error>'
         cell.fontColor = 0xFF0000
       end
@@ -756,9 +753,8 @@ class TaskJuggler
         cell.text = @project.scenario(query.scenarioIdx).name
       end
 
-      if columnDef.cellText
-        cell.text = expandMacros(columnDef.cellText, cell.shortText, query)
-      end
+      cell.text = columnDef.cellText if columnDef.cellText
+
       setCellURL(cell, columnDef, query)
     end
 
@@ -983,7 +979,7 @@ class TaskJuggler
       line.indentation += level if treeMode
     end
 
-    # Set the URL associated with the cell.shortText. _cell_ is the
+    # Set the URL associated with the cell.text. _cell_ is the
     # ReportTableCell.  _columnDef_ is the user specified definition for the
     # cell content and
     # look. _query_ is the query used to resolve dynamic macros in the cellURL.
@@ -994,14 +990,14 @@ class TaskJuggler
          columnDef.hideCellURL.eval(query.property, query.scopeProperty)
         url = nil
       else
-        url = expandMacros(columnDef.cellURL, cell.shortText, query)
+        url = expandMacros(columnDef.cellURL, cell.text, query)
       end
       cell.url = url unless url.nil? || url.empty?
     end
 
     # Try to merge equal cells without text to multi-column cells.
     def tryCellMerging(cell, line, firstCell)
-      if cell.shortText == '' && firstCell && (c = line.last(1)) && c == cell
+      if cell.text == '' && firstCell && (c = line.last(1)) && c == cell
         cell.hidden = true
         c.columns += 1
       end

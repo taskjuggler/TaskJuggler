@@ -19,7 +19,7 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line, :shortText, :longText, :tooltip, :query
+    attr_reader :line, :text, :tooltip, :query
     attr_accessor :data, :url, :category, :hidden, :alignment, :padding,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
@@ -33,14 +33,9 @@ class TaskJuggler
       @line.addCell(self) if line
 
       @headerCell = headerCell
-      # A short version of the cell textual content that can fit in a single
-      # line.
-      @shortText = nil
-      # An option longer version of the textual content in RichText format.
-      # This may consists of multiple or long lines that do not fit into the
-      # single line tables. Depending on the output format, the short or long
-      # or both versions will be used.
-      @longText = nil
+      # The cell textual content. This may be a String or a
+      # RichTextIntermediate object.
+      @text = nil
       # A copy of a Query object that is needed to access project data via the
       # query function.
       @query = query ? query.dup : nil
@@ -73,14 +68,12 @@ class TaskJuggler
     end
 
     def text=(text)
-      @shortText = text.is_a?(RichTextIntermediate) ? text.to_s : text
-      @longText = text.is_a?(RichTextIntermediate) ? text : nil
+      if text.is_a?(RichTextIntermediate)
+        text.functionHandler('query').setQuery(@query)
+      end
+      @text = text
     end
 
-    def longText=(text)
-      @longText = text
-      text.functionHandler('query').setQuery(@query)
-    end
 
     def tooltip=(text)
       @tooltip = text
@@ -91,8 +84,7 @@ class TaskJuggler
     # the report to a single, wider cell. _c_ is the cell to compare this cell
     # with.
     def ==(c)
-      @shortText == c.shortText &&
-      @longText == c.longText &&
+      @text == c.text &&
       @alignment == c.alignment &&
       @padding == c.padding &&
       @indent == c.indent &&
@@ -149,28 +141,36 @@ class TaskJuggler
                                                 'margin-bottom:2px')
       end
 
-      return cell if @shortText.nil? || @shortText.empty?
+      return cell if @text.nil?
 
       tooltip = nil
       if (@line && @line.table.equiLines) || !@category || @width
-        # All lines of the table must have the same height. So we can't put
-        # the full RichText diretly in here.
+        # The cell is size-limited. We only put a shortened plain-text version
+        # in the cell and provide the full content via a tooltip.
+        shortText = shortVersion(@text)
         if url
           div << (a = XMLElement.new('a', 'href' => @url))
-          a << XMLText.new(shortVersion(@shortText))
+          a << XMLText.new(shortText)
         else
-          div << XMLText.new(shortVersion(@shortText))
+          div << XMLText.new(shortText)
         end
-        tooltip = @longText if @longText && @category
+        if @text != shortText
+          tooltip = if @text.is_a?(RichTextIntermediate)
+                      @text
+                    else
+                      XMLText.new(shortText)
+                    end
+        end
       else
-        if @longText
-          div << @longText.to_html
+        # The cell will adjust to the size of the content.
+        if @text.is_a?(RichTextIntermediate)
+          div << @text.to_html
         else
           if url
             div << (a = XMLElement.new('a', 'href' => @url))
-            a << XMLText.new(shortVersion(@shortText))
+            a << XMLText.new(shortText)
           else
-            div << XMLText.new(shortVersion(@shortText))
+            div << XMLText.new(shortText)
           end
         end
       end
@@ -203,8 +203,8 @@ class TaskJuggler
         csv[-1] << @special.to_csv
       elsif @data && @data.is_a?(String)
         csv[-1] << indent + @data
-      elsif @shortText
-        csv[-1] << indent + @shortText
+      elsif @text
+        csv[-1] << indent + shortVersion(@text)
       end
     end
 
@@ -212,8 +212,8 @@ class TaskJuggler
 
     # Convert a RichText String into a small one-line plain text
     # version that fits the column.
-    def shortVersion(text)
-      text = text.to_s
+    def shortVersion(itext)
+      text = itext.to_s
       modified = false
       if text.include?("\n")
         text = text[0, text.index("\n")]
