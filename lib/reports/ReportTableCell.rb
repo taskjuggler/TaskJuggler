@@ -68,8 +68,8 @@ class TaskJuggler
     end
 
     def text=(text)
-      if text.is_a?(RichTextIntermediate)
-        text.functionHandler('query').setQuery(@query)
+      if text.is_a?(RichTextIntermediate) && (fh = text.functionHandler('query'))
+        fh.setQuery(@query)
       end
       @text = text
     end
@@ -143,24 +143,18 @@ class TaskJuggler
 
       return cell if @text.nil?
 
+      shortText = shortVersion(@text)
       tooltip = nil
       if (@line && @line.table.equiLines) || !@category || @width
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
-        shortText = shortVersion(@text)
         if url
           div << (a = XMLElement.new('a', 'href' => @url))
           a << XMLText.new(shortText)
         else
           div << XMLText.new(shortText)
         end
-        if @text != shortText
-          tooltip = if @text.is_a?(RichTextIntermediate)
-                      @text
-                    else
-                      XMLText.new(shortText)
-                    end
-        end
+        tooltip = @text if @text != shortText
       else
         # The cell will adjust to the size of the content.
         if @text.is_a?(RichTextIntermediate)
@@ -183,7 +177,9 @@ class TaskJuggler
         div << (ltDiv = XMLElement.new('div',
                                        'style' => 'visibility:hidden',
                                        'id' => "#{cell.object_id}"))
-        ltDiv << tooltip.to_html
+        ltDiv << (tooltip.is_a?(RichTextIntermediate) ? tooltip.to_html :
+                                                        XMLText.new(tooltip))
+
         div << XMLElement.new('img', 'src' => 'icons/details.png',
                               'width' => '6px',
                               'style' => 'vertical-align:top; ' +

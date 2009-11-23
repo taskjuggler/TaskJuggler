@@ -135,9 +135,6 @@ class TaskJuggler
     # Return the handler for the given _function_ or raise an exception if it
     # does not exist.
     def functionHandler(function)
-      unless @functionHandlers.include?(function)
-        raise TjException.new, "Unsupported function #{function}"
-      end
       @functionHandlers[function]
     end
 
