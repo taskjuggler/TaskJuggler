@@ -28,7 +28,8 @@ class TaskJuggler
     end
 
     def generateIntermediateFormat
-      %w( header left center right footer ).each do |name|
+      %w( header left center right footer
+          prolog headline caption epilog ).each do |name|
         next unless text = a(name)
 
         text.functionHandler('query').setQuery(
