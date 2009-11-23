@@ -128,7 +128,7 @@ class TaskJuggler
       unless @fontColor == 0
         style += "color:#{'#%06X' % @fontColor}; "
       end
-      if @longText && @line && @line.table.equiLines
+      if @text.is_a?(RichTextIntermediate) && @line && @line.table.equiLines
         style += "height:#{@line.height - 3}px; "
       end
       cell << (div = XMLElement.new('div',
