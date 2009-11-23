@@ -469,45 +469,20 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _celltext $STRING ), lambda {
-      @column.cellText = @val[1]
+    pattern(%w( _celltext !logicalExpression $STRING ), lambda {
+      @column.cellText.addPattern(
+        CellTextPattern.new(newRichText(@val[2]), @val[1]))
     })
     doc('celltext.column', <<'EOT'
 Specifies an alternative content that is used for the cells of the column.
-Usually such a text contains a runtime macro, otherwise all cells of the
-column will have the same fixed value.
+Usually such a text contains a query function. Otherwise all cells of the
+column will have the same fixed value. The logical expression specifies for
+which cells the text should be used. If multiple celltext patterns are
+provided for a column, the first matching one is taken for each cell.
 EOT
         )
-    arg(1, 'text', 'Alterntive cell text')
-
-    pattern(%w( _cellurl $STRING ), lambda {
-      @column.cellURL = @val[1]
-    })
-    doc('cellurl.column', <<'EOT'
-Specifies a URL that is associated with the content of the cell.
-Usually such a URL contains a runtime macro, otherwise all cells of the
-column will have the same fixed URL.
-EOT
-        )
-    arg(1, 'text', 'Hyperlink address (e.g. http://www.taskjuggler.org)')
-
-    pattern(%w( _hidecelltext !logicalExpression ), lambda {
-      @column.hideCellText = @val[1]
-    })
-    doc('hidecelltext', <<'EOT'
-This logical expression is evaluated during report generation for each report
-cell. If it evaluates to true, the cell will have no content.
-EOT
-        )
-
-    pattern(%w( _hidecellurl !logicalExpression ), lambda {
-      @column.hideCellURL = @val[1]
-    })
-    doc('hidecellurl', <<'EOT'
-This logical expression is evaluated during report generation for each report
-cell. If it evaluates to true, the cell will have no URL attached.
-EOT
-        )
+    arg(1, 'text',
+        'Alterntive cell text specified as [[Rich_Text_Attributes Rich Text]]')
 
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
@@ -526,17 +501,23 @@ EOT
        )
     arg(1, 'text', 'The new column title.')
 
-    pattern(%w( _tooltip $STRING ), lambda {
-      @column.tooltip = newRichText(@val[1])
+    pattern(%w( _tooltip !logicalExpression $STRING ), lambda {
+      @column.tooltip.addPattern(
+        CellTextPattern.new(newRichText(@val[2]), @val[1]))
     })
     doc('tooltip.column', <<'EOT'
 Specifies an alternative content for the tooltip. This will replace the
 original content of the tooltip that would be available for columns with text
-that does not fit the column with. The text is interpreted as
-[[Rich_Text_Attributes Rich Text]].
+that does not fit the column with.  The logical expression specifies for which
+cells the text should be used. If multiple tooltip patterns are provided for a
+column, the first matching one is taken for each cell.
 EOT
        )
-    arg(1, 'text', 'The content of the tooltip.')
+    arg(2, 'text', <<'EOT'
+The content of the tooltip. The text is interpreted as [[Rich_Text_Attributes
+Rich Text]].
+EOT
+       )
 
     pattern(%w( _width !number ), lambda {
       @column.width = @val[1]
@@ -936,6 +917,12 @@ EOT
 
     pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
+
+    pattern(['_isresource', '_(', '_)' ])
+    doc('isresource', 'The result is true if the property is a resource.')
+
+    pattern(['_istask', '_(', '_)' ])
+    doc('istask', 'The result is true if the property is a task.')
 
     pattern(%w( _treelevel _( _) ))
     doc('treelevel', <<'EOT'

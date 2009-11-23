@@ -442,7 +442,7 @@ taskreport overview "" {
 # *** EXAMPLE: overview4 -
 # *** EXAMPLE: overview1 +
   columns hierarchindex,
-          name { tooltip "'''ID''': <-query attribute='id'->" },
+          name { tooltip 1 "'''ID''': <-query attribute='id'->" },
           start, end, effort, duration, cost,
           revenue, chart
 # *** EXAMPLE: overview1 -
@@ -499,7 +499,9 @@ taskreport deliveries "" {
 # A list of all employees with their contact details.
 resourcereport contactList "" {
   headline "Contact list and duty plan"
-  columns name, Email { cellurl "mailto:$${Email}" }, Phone,
+  columns name,
+          Email, # { celltext 1 "[mailto:<-query attribute='Email'->]" },
+          Phone,
           chart { scale day }
   hideresource ~isleaf()
   sortresources name.up

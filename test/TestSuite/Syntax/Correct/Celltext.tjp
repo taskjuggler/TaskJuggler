@@ -27,5 +27,6 @@ taskreport custom "CustomTitle" {
 # Report with index and task name combined in one single column
 taskreport combined "CombinedColumn" {
   formats html
-  columns name { celltext "$${hierarchno} $${0}"}, start, end, weekly
+  columns name { celltext 1 "<-query attribute='wbs'-> <-query->"},
+          start, end, weekly
 }

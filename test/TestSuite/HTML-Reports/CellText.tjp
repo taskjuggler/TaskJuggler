@@ -1,0 +1,75 @@
+project "Cell Text Test" 2009-11-23 +2m
+
+resource moe "Moe"
+resource curly "Curly Joe"
+resource larry "Larry"
+resource shemp "Shemp"
+resource ted "Ted"
+resource joe "Joe"
+resource emil "Emil"
+
+task ted "With Ted" {
+  task joke1 "Joke 1" {
+    effort 3w
+    allocate ted, moe, shemp
+  }
+  task joke2 "Joke 2" {
+    depends !joke1
+    effort 4w
+    allocate ted, moe, larry, shemp
+  }
+  task joke3 "Joke 3" {
+    depends !joke2
+    effort 4w
+    allocate ted, moe, larry, curly
+  }
+}
+task "With Moe" {
+  task joke4 "Joke 4" {
+    depends ted.joke3
+    effort 3w
+    allocate moe, larry, curly
+  }
+  task joke5 "Joke 5" {
+    depends !joke4
+    effort 3w
+    allocate moe, larry, shemp
+  }
+  task joke6 "Joke 6" {
+    depends !joke5
+    effort 3w
+    allocate moe, larry, joe
+  }
+  task joke7 "Joke 7" {
+    depends !joke6
+    effort 3w
+    allocate moe, larry, curly
+  }
+  task "Joke 8" {
+    depends !joke7
+    effort 3w
+    allocate moe, emil, curly
+  }
+}
+
+resourcereport "CellText" {
+  formats html
+  columns name,
+          id { celltext isleaf() & isresource() "Person"
+               celltext ~isleaf() & isresource() "Group"
+               celltext isleaf() & istask() "Show"
+               celltext ~isleaf() & istask() "Tour"
+
+               tooltip isleaf() & isresource() 
+               "<-query attribute='name'-> is a person"
+               tooltip ~isleaf() & isresource() 
+               "<-query attribute='name'-> is a group"
+               tooltip isleaf() & istask() 
+               "<-query attribute='name'-> is a show"
+               tooltip ~isleaf() & istask() 
+               "<-query attribute='name'-> is a tour"
+             },
+          weekly
+  hidetask 0
+}
+

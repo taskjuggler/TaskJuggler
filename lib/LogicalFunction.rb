@@ -27,7 +27,8 @@ class TaskJuggler
         'isdependencyof' => 3,
         'isdutyof' => 2,
         'isleaf' => 0,
-        'isresource' => 1,
+        'isresource' => 0,
+        'istask' => 0,
         'isoncriticalpath' => 1,
         'treelevel' => 0
     }
@@ -125,7 +126,11 @@ class TaskJuggler
     end
 
     def isresource(expr, args)
-      expr.property.is_a?(Resource) && expr.property.fullId == args[0]
+      expr.property.is_a?(Resource)
+    end
+
+    def istask(expr, args)
+      expr.property.is_a?(Task)
     end
 
     def isoncricitalpath(expr, args)

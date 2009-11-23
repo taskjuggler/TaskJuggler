@@ -12,15 +12,57 @@
 
 class TaskJuggler
 
+  # A CellTextPattern is used to store the RichText that can be used as
+  # alternative content for a ReportTableCell or a cell tooltip. The pattern
+  # is taken when the LogicalExpression matches.
+  class CellTextPattern
+
+    attr_reader :text, :logExpr
+
+    def initialize(text, logExpr)
+      @text = text
+      @logExpr = logExpr
+    end
+
+  end
+
+  # The CellTextPatternList holds a list of possible test pattern for a cell
+  # or tooltip. The first entry who's LogicalExpression matches is used.
+  class CellTextPatternList
+
+    def initialize
+      @patterns = []
+    end
+
+    # Add a new pattern to the list.
+    def addPattern(pattern)
+      @patterns << pattern
+    end
+
+    # Register the Query object with the RichText patterns.
+    def registerQuery(query)
+      @patterns.each do |pattern|
+        pattern.text.functionHandler('query').setQuery(query)
+      end
+    end
+
+    # Get the RichText that matches the _property_ and _scopeProperty_.
+    def getPattern(property, scopeProperty)
+      @patterns.each do |pattern|
+        return pattern.text if pattern.logExpr.eval(property, scopeProperty)
+      end
+      nil
+    end
+
+  end
+
   # This class holds the definition of a column of a report. This is the user
   # specified data that is later used to generate the actual ReportTableColumn.
   # The column is uniquely identified by an ID.
   class TableColumnDefinition
 
-    attr_reader :id
-    attr_accessor :cellText, :hideCellText, :cellURL, :hideCellURL,
-                  :title, :tooltip, :scale, :width,
-                  :content, :column
+    attr_reader :id, :cellText, :tooltip
+    attr_accessor :title, :scale, :width, :content, :column
 
     def initialize(id, title)
       # The column ID. It must be unique within the report.
@@ -29,21 +71,13 @@ class TaskJuggler
       @title = title
       # For regular columns (non-calendar and non-chart) the user can override
       # the actual cell content.
-      @cellText = nil
-      # A LogicalExpression that is evaluated for every cell. If it evaluates to
-      # true, the cell will remain empty.
-      @hideCellText = nil
-      # The cell text can be associated with a hyperlink.
-      @cellURL = nil
-      # A LogicalExpression that is evaluated for every cell. If the result is
-      # true, the cellURL will be ignored.
-      @hideCellURL = nil
+      @cellText = CellTextPatternList.new
       # The content attribute is only used for calendar columns. It specifies
       # what content should be displayed in the colendar columns.
       @content = 'load'
       # An alternative content for the tooltip message. It should be a
       # RichText object.
-      @tooltip = nil
+      @tooltip = CellTextPatternList.new
       # The scale attribute is only used for Gantt chart columns. It specifies
       # the minimum resolution of the chart.
       @scale = 'week'

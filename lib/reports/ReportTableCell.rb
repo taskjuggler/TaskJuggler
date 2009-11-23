@@ -20,7 +20,7 @@ class TaskJuggler
   class ReportTableCell
 
     attr_reader :line, :text, :tooltip, :query
-    attr_accessor :data, :url, :category, :hidden, :alignment, :padding,
+    attr_accessor :data, :category, :hidden, :alignment, :padding,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
 
@@ -42,8 +42,6 @@ class TaskJuggler
       # A custom text for the tooltip.
       @tooltip = nil
       self.text = text
-      # A URL that is associated with the content of the cell.
-      @url = nil
       # The original data of the cell content (optional, nil if not provided)
       @data = nil
       @category = nil
@@ -85,6 +83,7 @@ class TaskJuggler
     # with.
     def ==(c)
       @text == c.text &&
+      @tooltip == c.tooltip &&
       @alignment == c.alignment &&
       @padding == c.padding &&
       @indent == c.indent &&
@@ -148,24 +147,14 @@ class TaskJuggler
       if (@line && @line.table.equiLines) || !@category || @width
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
-        if url
-          div << (a = XMLElement.new('a', 'href' => @url))
-          a << XMLText.new(shortText)
-        else
-          div << XMLText.new(shortText)
-        end
+        div << XMLText.new(shortText)
         tooltip = @text if @text != shortText
       else
         # The cell will adjust to the size of the content.
         if @text.is_a?(RichTextIntermediate)
           div << @text.to_html
         else
-          if url
-            div << (a = XMLElement.new('a', 'href' => @url))
-            a << XMLText.new(shortText)
-          else
-            div << XMLText.new(shortText)
-          end
+          div << XMLText.new(shortText)
         end
       end
 

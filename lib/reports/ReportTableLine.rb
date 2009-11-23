@@ -63,6 +63,11 @@ class TaskJuggler
       @cells << cell
     end
 
+    # Return the scope property or nil
+    def scopeProperty
+      @scopeLine ? @scopeLine.property : nil
+    end
+
     # Return this line as a set of XMLElement that represent the line in HTML.
     def to_html
       style = ""

@@ -28,12 +28,16 @@ class TaskJuggler
     end
 
     def generateIntermediateFormat
+      query = @report.project.reportContext.query
       %w( header left center right footer
           prolog headline caption epilog ).each do |name|
         next unless text = a(name)
 
-        text.functionHandler('query').setQuery(
-          @report.project.reportContext.query)
+        text.functionHandler('query').setQuery(query)
+      end
+      a('columns').each do |column|
+        column.cellText.registerQuery(query)
+        column.tooltip.registerQuery(query)
       end
     end
 

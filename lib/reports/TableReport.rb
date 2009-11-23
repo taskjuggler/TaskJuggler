@@ -569,8 +569,7 @@ class TaskJuggler
         # The GanttChart can be reached via the special variable of the column
         # header.
         chart = columnDef.column.cell1.special
-        GanttLine.new(chart, property,
-                      line.scopeLine ? line.scopeLine.property : nil,
+        GanttLine.new(chart, property, line.scopeProperty,
                       query.scenarioIdx,
                       (line.subLineNo - 1) * (line.height + 1),
                       line.height)
@@ -627,6 +626,7 @@ class TaskJuggler
     # hidden cell.
     def genStandardCell(query, line, columnDef)
       property = line.property
+      scopeProperty = line.scopeProperty
 
       # Find out, what type of PropertyTreeNode we are dealing with.
       if property.is_a?(Task)
@@ -652,7 +652,8 @@ class TaskJuggler
         cell.url = value.url
       end
 
-      cell.tooltip = columnDef.tooltip if columnDef.tooltip
+      cdTooltip = columnDef.tooltip.getPattern(property, scopeProperty)
+      cell.tooltip = cdTooltip if cdTooltip
 
       if colId == 'name'
         cell.icon =
@@ -690,22 +691,15 @@ class TaskJuggler
 
       setStandardCellAttributes(cell, columnDef,
                                 propertyList.attributeType(columnDef.id), line)
-      scopeProperty = line.scopeLine ? line.scopeLine.property : nil
 
-      if columnDef.hideCellText &&
-         columnDef.hideCellText.eval(property, scopeProperty)
-        cell.text = ''
-        return true
-      end
-
-      cell.text = columnDef.cellText if columnDef.cellText
+      cdText = columnDef.cellText.getPattern(property, scopeProperty)
+      cell.text = cdText if cdText
 
       unless cell.text
         cell.text = '<Error>'
         cell.fontColor = 0xFF0000
       end
 
-      setCellURL(cell, columnDef, query)
       true
     end
 
@@ -719,7 +713,9 @@ class TaskJuggler
       # Create a new cell
       cell = newCell(query, line)
 
-      cell.tooltip = columnDef.tooltip if columnDef.tooltip
+      scopeProperty = line.scopeProperty
+      cdTooltip = columnDef.tooltip.getPattern(property, scopeProperty)
+      cell.tooltip = cdTooltip if cdTooltip
 
       unless scenarioSpecific?(columnDef.id)
         if query.scenarioIdx != a('scenarios').first
@@ -731,9 +727,7 @@ class TaskJuggler
 
       setStandardCellAttributes(cell, columnDef, nil, line)
 
-      scopeProperty = line.scopeLine ? line.scopeLine.property : nil
-      return if columnDef.hideCellText &&
-                columnDef.hideCellText.eval(property, scopeProperty)
+      scopeProperty = line.scopeProperty
 
       query.process
       cell.text = query.result
@@ -753,9 +747,8 @@ class TaskJuggler
         cell.text = @project.scenario(query.scenarioIdx).name
       end
 
-      cell.text = columnDef.cellText if columnDef.cellText
-
-      setCellURL(cell, columnDef, query)
+      cdText = columnDef.cellText.getPattern(property, scopeProperty)
+      cell.text = cdText if cdText
     end
 
     # Generate the cells for the task lines of a calendar column. These lines do
@@ -977,22 +970,6 @@ class TaskJuggler
       line.indentation = scopeLine.indentation + 1 if scopeLine
       # In tree mode we indent according to the level.
       line.indentation += level if treeMode
-    end
-
-    # Set the URL associated with the cell.text. _cell_ is the
-    # ReportTableCell.  _columnDef_ is the user specified definition for the
-    # cell content and
-    # look. _query_ is the query used to resolve dynamic macros in the cellURL.
-    def setCellURL(cell, columnDef, query)
-      return unless columnDef.cellURL
-
-      if columnDef.hideCellURL &&
-         columnDef.hideCellURL.eval(query.property, query.scopeProperty)
-        url = nil
-      else
-        url = expandMacros(columnDef.cellURL, cell.text, query)
-      end
-      cell.url = url unless url.nil? || url.empty?
     end
 
     # Try to merge equal cells without text to multi-column cells.
