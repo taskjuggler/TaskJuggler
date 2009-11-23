@@ -175,7 +175,7 @@ is used, certain or all of the above parameters have already
 predefined values. When used in the header section of a report, the
 context does not provide a property or scope property. Start and end
 dates as well the formatting options are taken from the report
-context. But when used e. g. in [[column.celltext]] the cell
+context. But when used e. g. in [[celltext.column]] the cell
 provides, that property and the attribute and possibly even the scope
 property.
 

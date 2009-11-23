@@ -138,6 +138,20 @@ class TaskJuggler
       @functionHandlers[function]
     end
 
+    # Recursively extract the section headings from the RichTextElement and
+    # build the TableOfContents _toc_ with the gathered sections.  _fileName_
+    # is the base name (without .html or other suffix) of the file the
+    # TOCEntries should point to.
+    def tableOfContents(toc, fileName)
+      @tree.tableOfContents(toc, fileName)
+    end
+
+    # Return an Array with all other snippet names that are referenced by
+    # internal references in this RichTextElement.
+    def internalReferences
+      @tree.internalReferences
+    end
+
     # Convert the intermediate format into a plain text String object.
     def to_s
       @tree.to_s
