@@ -301,7 +301,9 @@ taskreport overview "" {
     
     === Project Plan ===
   ->8-
-  columns hierarchindex, name, start, end, effort, duration, cost,
+  columns hierarchindex,
+          name { tooltip 1 "'''ID''': <-query attribute='id'->" },
+          start, end, effort, duration, cost,
           revenue, chart
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
@@ -331,7 +333,7 @@ taskreport development "" {
   columns hierarchindex, name, start, end, effort { title "Work" },
           duration, chart { scale day width 500 }
   timeformat "%Y-%m-%d"
-  hideresource ~isleaf()
+  hideresource ~(isleaf() & isleaf_())
   sortresources name.up
 }
 
@@ -347,7 +349,9 @@ taskreport deliveries "" {
 # A list of all employees with their contact details.
 resourcereport contactList "" {
   headline "Contact list and duty plan"
-  columns name, Email { cellurl "mailto:$${Email}" }, Phone,
+  columns name,
+          Email, # { celltext 1 "[mailto:<-query attribute='Email'->]" },
+          Phone,
           chart { scale day }
   hideresource ~isleaf()
   sortresources name.up
@@ -358,8 +362,9 @@ resourcereport contactList "" {
 # resource is under- or over-allocated for.
 resourcereport resourceGraph "" {
   headline "Resource Allocation Graph"
-  columns no, name, effort, rate, weekly #, utilization, freeload, chart
+  columns no, name, effort, rate, weekly
   loadunit shortauto
-  hidetask ~isleaf()
+  # We only like to show leaf tasks for leaf resources.
+  hidetask ~(isleaf() & isleaf_())
   sorttasks plan.start.up
 }
