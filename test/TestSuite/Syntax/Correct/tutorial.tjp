@@ -500,7 +500,7 @@ taskreport deliveries "" {
 resourcereport contactList "" {
   headline "Contact list and duty plan"
   columns name,
-          Email, # { celltext 1 "[mailto:<-query attribute='Email'->]" },
+          Email { celltext 1 "[mailto:<-Email-> <-Email->]" },
           Phone,
           chart { scale day }
   hideresource ~isleaf()

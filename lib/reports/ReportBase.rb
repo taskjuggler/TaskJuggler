@@ -35,10 +35,6 @@ class TaskJuggler
 
         text.functionHandler('query').setQuery(query)
       end
-      a('columns').each do |column|
-        column.cellText.registerQuery(query)
-        column.tooltip.registerQuery(query)
-      end
     end
 
     def to_html

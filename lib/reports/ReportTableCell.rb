@@ -19,7 +19,7 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line, :text, :tooltip, :query
+    attr_reader :line, :text, :tooltip
     attr_accessor :data, :category, :hidden, :alignment, :padding,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
@@ -28,20 +28,19 @@ class TaskJuggler
     # default values. _line_ is the ReportTableLine this cell belongs to. _text_
     # is the text that should appear in the cell. _headerCell_ is a flag that
     # must be true only for table header cells.
-    def initialize(line, text = '', query = nil, headerCell = false)
+    def initialize(line, query, text = nil, headerCell = false)
       @line = line
       @line.addCell(self) if line
 
       @headerCell = headerCell
-      # The cell textual content. This may be a String or a
-      # RichTextIntermediate object.
-      @text = nil
       # A copy of a Query object that is needed to access project data via the
       # query function.
       @query = query ? query.dup : nil
+      # The cell textual content. This may be a String or a
+      # RichTextIntermediate object.
+      self.text = text || ''
       # A custom text for the tooltip.
       @tooltip = nil
-      self.text = text
       # The original data of the cell content (optional, nil if not provided)
       @data = nil
       @category = nil
@@ -66,16 +65,12 @@ class TaskJuggler
     end
 
     def text=(text)
-      if text.is_a?(RichTextIntermediate) && (fh = text.functionHandler('query'))
-        fh.setQuery(@query)
-      end
-      @text = text
+      @text = text.is_a?(RichTextIntermediate) ? text.dup : text
     end
 
 
     def tooltip=(text)
-      @tooltip = text
-      text.functionHandler('query').setQuery(@query)
+      @tooltip = text.dup
     end
 
     # Return true if two cells are similar enough so that they can be merged in
@@ -142,9 +137,13 @@ class TaskJuggler
 
       return cell if @text.nil?
 
-      shortText = shortVersion(@text)
+      if @text.respond_to?('functionHandler')
+        @text.functionHandler('query').setQuery(@query)
+      end
+
+      shortText, singleLine = shortVersion(@text)
       tooltip = nil
-      if (@line && @line.table.equiLines) || !@category || @width
+      if (@line && @line.table.equiLines && !singleLine) || !@category || @width
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
         div << XMLText.new(shortText)
@@ -161,6 +160,7 @@ class TaskJuggler
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
       if tooltip
+        tooltip.functionHandler('query').setQuery(@query)
         div['onmouseover'] = "TagToTip('#{cell.object_id}')"
         div['onmouseout'] = 'UnTip()'
         div << (ltDiv = XMLElement.new('div',
@@ -189,7 +189,10 @@ class TaskJuggler
       elsif @data && @data.is_a?(String)
         csv[-1] << indent + @data
       elsif @text
-        csv[-1] << indent + shortVersion(@text)
+        if @text.respond_to?('functionHandler')
+          @text.functionHandler('query').setQuery(@query)
+        end
+        csv[-1] << indent + shortVersion(@text)[0]
       end
     end
 
@@ -199,19 +202,21 @@ class TaskJuggler
     # version that fits the column.
     def shortVersion(itext)
       text = itext.to_s
+      singleLine = true
       modified = false
       if text.include?("\n")
         text = text[0, text.index("\n")]
+        singleLine = false
         modified = true
       end
       # Assuming an average character width of 9 pixels
       if @width && (text.length > (@width / 9))
         text = text[0, @width / 9]
-        modified = true
+        modified = shortened = true
       end
       # Add three dots to show that there is more info available.
       text += "..." if modified
-      text
+      [ text, singleLine ]
     end
 
   end

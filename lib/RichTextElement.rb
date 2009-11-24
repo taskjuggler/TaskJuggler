@@ -164,6 +164,8 @@ class TaskJuggler
       when :href
       when :blockfunc
       when :inlinefunc
+        noChilds = true
+        pre = @richText.functionHandler(@data[0]).to_s(@data[1])
       when :italic
       when :bold
       when :code
@@ -350,7 +352,7 @@ class TaskJuggler
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")
       when :href
-        XMLElement.new('a', 'href' => @data, 'target' => '_blank')
+        XMLElement.new('a', 'href' => @data.to_s, 'target' => '_blank')
       when :blockfunc
         noChilds = true
         @richText.functionHandler(@data[0]).to_html(@data[1])

@@ -34,7 +34,13 @@ class TaskJuggler
 
     # Not supported for this function
     def to_s(args)
-      ''
+      prepareQuery(args)
+      if @query.ok
+        @query.result.to_s
+      else
+        error('query_error', @query.errorMessage + recreateQuerySyntax(args))
+        'Query Error: ' + @query.errorMessage
+      end
     end
 
     # Return a XMLElement tree that represents the navigator in HTML code.
@@ -47,12 +53,7 @@ class TaskJuggler
           XMLText.new(@query.result.to_s)
         end
       else
-        queryText = "\n<-query"
-        args.each do |a, v|
-          queryText += " #{a}=\"#{v}\""
-        end
-        queryText += "->"
-        error('query_error', @query.errorMessage + queryText)
+        error('query_error', @query.errorMessage + recreateQuerySyntax(args))
         font = XMLElement.new('font', 'color' => '#FF0000')
         font << XMLText.new('Query Error: ' + @query.errorMessage)
         font
@@ -69,9 +70,6 @@ class TaskJuggler
     def prepareQuery(args)
       unless @query
         raise "No Query has been registered for this RichText yet!"
-      end
-      unless @project.reportContext.query
-        raise 'RTFQuery has no query.'
       end
 
       # Check the user provided arguments. Only the following list is allowed.
@@ -105,6 +103,15 @@ class TaskJuggler
       # the query object for result extraction.
       @query.process
       @query
+    end
+
+    # Regenerate the original query text based on the argument list.
+    def recreateQuerySyntax(args)
+      queryText = "\n<-query"
+      args.each do |a, v|
+        queryText += " #{a}=\"#{v}\""
+      end
+      queryText += "->"
     end
 
     def setPropertyType(args)

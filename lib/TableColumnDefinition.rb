@@ -39,17 +39,12 @@ class TaskJuggler
       @patterns << pattern
     end
 
-    # Register the Query object with the RichText patterns.
-    def registerQuery(query)
-      @patterns.each do |pattern|
-        pattern.text.functionHandler('query').setQuery(query)
-      end
-    end
-
     # Get the RichText that matches the _property_ and _scopeProperty_.
-    def getPattern(property, scopeProperty)
+    def getPattern(query)
       @patterns.each do |pattern|
-        return pattern.text if pattern.logExpr.eval(property, scopeProperty)
+        if pattern.logExpr.eval(query.property, query.scopeProperty)
+          return pattern.text.dup
+        end
       end
       nil
     end

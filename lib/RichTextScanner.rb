@@ -68,6 +68,8 @@ class TaskJuggler
 
       if @mode == :funcarg
         return nextTokenFuncArg
+      elsif @mode == :href
+        return nextTokenHRef
       end
       if @beginOfLine && @mode == :wiki
         if (res = nextTokenWikiBOL)
@@ -156,6 +158,40 @@ class TaskJuggler
       token
     end
 
+    def nextTokenHRef
+      token = [ '.', '<END>' ]
+      while (c = nextChar)
+        if c.nil?
+          # We've reached the end of the text.
+          return [ '.', '<END>' ]
+        elsif c == ' ' || c == "\t" || c == "\n"
+          # Sequences of tabs, spaces and newlines are treated as token
+          # boundaries, but otherwise they are ignored.
+          readSequence(" \n\t")
+          return [ 'SPACE', ' ' ]
+        elsif c == '<' && !@ignoreInlineMarkup
+          if nextChar == '-' && isIdStart(peek(1))
+            token = readId('', 'QUERY')
+            unless nextChar == '-' && nextChar == '>'
+              error('unterminated_query',
+                    "Inline query must be terminated with '->'")
+            end
+            return token
+          else
+            # It's not a query.
+            returnChar(2)
+            @ignoreInlineMarkup = true
+            next
+          end
+        elsif c == ']'
+          @mode = :wiki
+          return [ 'HREFEND', ']' ]
+        else
+          return nextTokenWord(c)
+        end
+      end
+    end
+
     def nextTokenWikiBOL
       # Some characters have only a special meaning at the start of the line.
       # When the last token pushed the cursor into a new line, this flag is set
@@ -235,7 +271,7 @@ class TaskJuggler
       elsif c == ' ' || c == "\t"
         # Sequences of tabs or spaces are treated as token boundaries, but
         # otherwise they are ignored.
-        readSequence(' ', "\t")
+        readSequence(" \t")
         [ 'SPACE', ' ' ]
       elsif c == "'" && !@ignoreInlineMarkup
         # Sequence of 2 ' means italic, 3 ' means bold, 4 ' means monospaced
@@ -269,12 +305,31 @@ class TaskJuggler
           @ignoreInlineMarkup = true
           nil
         end
+      elsif c == '$' && !@ignoreInlineMarkup
+        if nextChar == '{'
+          token = readId('', 'QUERY')
+          unless nextChar == '}'
+            error('unterminated_query',
+                  "Inline query must be terminated with '}'")
+          end
+          token
+        else
+          # It's not a query.
+          returnChar(2)
+          @ignoreInlineMarkup = true
+          nil
+        end
       elsif c == '['
         level = readSequenceMax('[', 2)
-        [ level == 1 ? 'HREF' : 'REF', '[' * level ]
-      elsif c == ']'
-        level = readSequenceMax(']', 2)
-        [ level == 1 ? 'HREFEND' : 'REFEND', ']' * level ]
+        if level == 1
+          @mode = :href
+          [ 'HREF' , '[' ]
+        else
+          [ 'REF', '[[' ]
+        end
+      elsif c == ']' && peek == ']'
+        nextChar
+        [ 'REFEND', ']]' ]
       elsif c == "\n"
         nextTokenNewline
       elsif c == '<' && !@ignoreInlineMarkup
@@ -292,7 +347,7 @@ class TaskJuggler
       elsif c == ' ' || c == "\t"
         # Sequences of tabs or spaces are treated as token boundaries, but
         # otherwise they are ignored.
-        readSequence(' ', "\t")
+        readSequence(" \t")
         [ 'SPACE', ' ' ]
       elsif c == "\n"
         nextTokenNewline
@@ -369,11 +424,15 @@ class TaskJuggler
       str << c
       # Now we can collect characters of a word until we hit a whitespace.
       while (c = nextChar) && !" \n\t".include?(c)
-        if @mode == :wiki
+        case @mode
+        when :wiki
           # Or at least to ' characters in a row.
           break if c == "'" && peek == "'"
-          # Or a ] or <
+          # Or a -, ] or <
           break if ']<'.include?(c)
+        when :href
+          # Look for - of the end mark -> end ']'
+          break if c == '-' || c == ']' || c == '<'
         else
           # Make sure we find the </nowiki> tag even within a word.
           break if c == '<'
@@ -451,9 +510,9 @@ class TaskJuggler
     # Read a sequence of characters that are all contained in the _chars_ Array.
     # If a character is found that is not in _chars_ the method returns the so
     # far found sequence of chars as String.
-    def readSequence(*chars)
+    def readSequence(chars)
       sequence = ''
-      while chars.include?(c = nextChar)
+      while (c = nextChar) && chars.index(c)
         sequence << c
       end
       # Push back the character that did no longer match.
@@ -506,7 +565,11 @@ class TaskJuggler
       end
     end
 
-    def readId(c)
+    def isIdStart(c)
+      (('a'..'z') === c || ('A'..'Z') === c || c == '_')
+    end
+
+    def readId(c, tokenType = 'ID')
       token = ""
       token << c
       while (c = nextChar) &&
@@ -515,7 +578,7 @@ class TaskJuggler
         token << c
       end
       returnChar
-      return [ 'ID', token ]
+      return [ tokenType, token ]
     end
 
     def readString(terminator)

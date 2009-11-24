@@ -42,9 +42,9 @@ class TaskJuggler
       definition.column = self if definition
 
       # Create the 2 cells of the header.
-      @cell1 = ReportTableCell.new(nil, title, nil, true)
+      @cell1 = ReportTableCell.new(nil, nil, title, true)
       @cell1.padding = 5
-      @cell2 = ReportTableCell.new(nil, '', nil, true)
+      @cell2 = ReportTableCell.new(nil, nil, '', true)
       # Header text is always bold.
       @cell1.bold = @cell2.bold = true
       # This variable is set to true if the column requires a scrollbar later

@@ -553,7 +553,7 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             Log.startProgressMeter("Report #{report.name}")
-            ReportContext.new(self, report)
+            @reportContext = ReportContext.new(self, report)
             report.generate
             Log.stopProgressMeter
           end
@@ -562,7 +562,7 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             bp.queue(report) {
-              ReportContext.new(self, report)
+              @reportContext = ReportContext.new(self, report)
               report.generate
             }
           end

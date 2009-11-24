@@ -228,16 +228,32 @@ class TaskJuggler
         el.appendSpace = !@val[5].empty?
         el
       })
-      pattern(%w( $HREF $WORD !space !plainText $HREFEND !space ), lambda {
-        el = RichTextElement.new(@richTextI, :href,
-                                 RichTextElement.new(@richTextI,
-                                                     :text, @val[3].empty? ?
-                                                     @val[1] :
-                                                     @val[3].join(' ')))
-        el.data = @val[1]
+      pattern(%w( $HREF !wordWithQueries !space !plainTextWithQueries
+                  $HREFEND !space ), lambda {
+        el = RichTextElement.new(@richTextI, :href, @val[3].empty? ?
+                                 @val[1] : @val[3])
+        el.data = RichTextElement.new(@richTextI, :richtext, @val[1])
         el.appendSpace = !@val[5].empty?
         el
       })
+    end
+
+    def rule_wordWithQueries
+      repeatable
+      pattern(%w( $WORD ), lambda {
+        RichTextElement.new(@richTextI, :text, @val[0])
+      })
+      pattern(%w( $QUERY ), lambda {
+        # The ${attribute} syntax is a shortcut for an embedded query inline
+        # function. It can only be used within a ReportTableCell context that
+        # provides a property and a scope property.
+        el = RichTextElement.new(@richTextI, :inlinefunc)
+        # Data is a 2 element Array with the function name and a Hash for the
+        # arguments.
+        el.data = ['query', { 'attribute' => @val[0] } ]
+        el
+      })
+
     end
 
     def rule_plainText
@@ -247,6 +263,15 @@ class TaskJuggler
         el = RichTextElement.new(@richTextI, :text, @val[0])
         el.appendSpace = !@val[1].empty?
         el
+      })
+    end
+
+    def rule_plainTextWithQueries
+      repeatable
+      optional
+      pattern(%w( !wordWithQueries !space ), lambda {
+        @val[0][-1].appendSpace = true if !@val[1].empty?
+        @val[0]
       })
     end
 

@@ -563,7 +563,7 @@ class TaskJuggler
       when 'chart'
         # Generate a hidden cell. The real meat is in the actual chart object,
         # not in this cell.
-        cell = ReportTableCell.new(line, '', query)
+        cell = ReportTableCell.new(line, query, '')
         cell.hidden = true
         cell.text = nil
         # The GanttChart can be reached via the special variable of the column
@@ -652,7 +652,7 @@ class TaskJuggler
         cell.url = value.url
       end
 
-      cdTooltip = columnDef.tooltip.getPattern(property, scopeProperty)
+      cdTooltip = columnDef.tooltip.getPattern(query)
       cell.tooltip = cdTooltip if cdTooltip
 
       if colId == 'name'
@@ -692,7 +692,7 @@ class TaskJuggler
       setStandardCellAttributes(cell, columnDef,
                                 propertyList.attributeType(columnDef.id), line)
 
-      cdText = columnDef.cellText.getPattern(property, scopeProperty)
+      cdText = columnDef.cellText.getPattern(query)
       cell.text = cdText if cdText
 
       unless cell.text
@@ -714,7 +714,7 @@ class TaskJuggler
       cell = newCell(query, line)
 
       scopeProperty = line.scopeProperty
-      cdTooltip = columnDef.tooltip.getPattern(property, scopeProperty)
+      cdTooltip = columnDef.tooltip.getPattern(query)
       cell.tooltip = cdTooltip if cdTooltip
 
       unless scenarioSpecific?(columnDef.id)
@@ -747,7 +747,7 @@ class TaskJuggler
         cell.text = @project.scenario(query.scenarioIdx).name
       end
 
-      cdText = columnDef.cellText.getPattern(property, scopeProperty)
+      cdText = columnDef.cellText.getPattern(query)
       cell.text = cdText if cdText
     end
 
@@ -953,7 +953,7 @@ class TaskJuggler
     # Create a new ReportTableCell object and initialize some common values.
     def newCell(query, line, text = '')
       property = line.property
-      cell = ReportTableCell.new(line, text, query)
+      cell = ReportTableCell.new(line, query, text)
 
       # Cells for containers should be using bold font face.
       cell.bold = true if property.container?
