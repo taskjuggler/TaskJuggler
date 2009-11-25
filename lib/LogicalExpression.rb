@@ -46,7 +46,8 @@ class TaskJuggler
       @property = property
       @scopeProperty = scopeProperty
       res = @operation.eval(self)
-      return res if res.class == TrueClass || res.class == FalseClass
+      return res if res.class == TrueClass || res.class == FalseClass ||
+                    res.class == String
       # In TJP syntax 'non 0' means false.
       return res != 0
     end

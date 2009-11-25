@@ -305,20 +305,6 @@ class TaskJuggler
           @ignoreInlineMarkup = true
           nil
         end
-      elsif c == '$' && !@ignoreInlineMarkup
-        if nextChar == '{'
-          token = readId('', 'QUERY')
-          unless nextChar == '}'
-            error('unterminated_query',
-                  "Inline query must be terminated with '}'")
-          end
-          token
-        else
-          # It's not a query.
-          returnChar(2)
-          @ignoreInlineMarkup = true
-          nil
-        end
       elsif c == '['
         level = readSequenceMax('[', 2)
         if level == 1

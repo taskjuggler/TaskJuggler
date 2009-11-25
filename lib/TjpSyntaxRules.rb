@@ -1457,13 +1457,15 @@ EOT
     doc('logicalexpression', <<'EOT'
 A logical expression is a combination of operands and mathematical operations.
 The final result of a logical expression is always true or false. Logical
-expressions are used the reduce the properties in a report to a certain
-subset. If the logical expression evaluates to true for a certain property,
-this property is hidden or rolled-up in the report.
+expressions are used the reduce the properties in a report to a certain subset
+or to select alternatives for the cell content of a table. When used with
+attributes like [[hidetask]] or [[hideresource]] the logical expression
+evaluates to true for a certain property, this property is hidden or rolled-up
+in the report.
 
-Operands can be declared flags, built-in functions, property attributes
+Operands can be declared flags, built-in [[functions]], property attributes
 (specified as scenario.attribute) or another logical expression. The latter
-should be enclosed in brackets to avoid ambiguities.
+should be enclosed in brackets to avoid ambiguities. An operand can also be just a number. 0 evaluates to false, all other numbers to true.
 EOT
        )
     also(%w( functions ))
@@ -1684,10 +1686,15 @@ EOT
       operation
     })
     arg(0, 'operand', <<'EOT'
-An operand can consist of a date, a text string or a numerical value. It can
-also be the name of a declared flag. Finally, an operand can be a negated
-operand by prefixing a ~ charater or it can be another logical expression
-enclosed in braces.
+An operand can consist of a date, a text string, a [[functions function]], a
+property attribute or a numerical value. It can also be the name of a declared
+flag. Use the scenario.attribute notation to use an attribute of the currently
+evaluated property. The scenario ID always has to be specified, also for
+non-scenario specific attributes. This is necessary to distinguish them from
+flags.
+
+An operand can be a negated operand by prefixing a ~ charater or it can be
+another logical expression enclosed in braces.
 EOT
         )
   end

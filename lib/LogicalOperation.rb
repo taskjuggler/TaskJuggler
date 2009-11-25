@@ -52,24 +52,9 @@ class TaskJuggler
           end
         when '~'
           return !coerceBoolean(@operand1.eval(expr))
-        when '>'
-          return coerceNumber(@operand1.eval(expr)) >
-                 coerceNumber(@operand2.eval(expr))
-        when '>='
-          return coerceNumber(@operand1.eval(expr)) >=
-                 coerceNumber(@operand2.eval(expr))
-        when '='
-          return coerceNumber(@operand1.eval(expr)) ==
-                 coerceNumber(@operand2.eval(expr))
-        when '<'
-          return coerceNumber(@operand1.eval(expr)) <
-                 coerceNumber(@operand2.eval(expr))
-        when '<='
-          return coerceNumber(@operand1.eval(expr)) <=
-                 coerceNumber(@operand2.eval(expr))
-        when '!='
-          return coerceNumber(@operand1.eval(expr)) !=
-                 coerceNumber(@operand2.eval(expr))
+        when '>', '>=', '=', '<', '<=', '!='
+          evalOperation(expr, @operator, @operand1.eval(expr),
+                        @operand2.eval(expr))
         when '&'
           return coerceBoolean(@operand1.eval(expr)) &&
                  coerceBoolean(@operand2.eval(expr))
@@ -81,19 +66,71 @@ class TaskJuggler
                 "Unknown operator #{@operator} in logical expression"
         end
       rescue TjException
-        expr.error "Can't evaluate #{to_s}"
+        expr.error "Can't evaluate #{to_s} (#{$!.message})"
+      end
+    end
+
+    # Evaluate the operation for all 2 operand operations that can be either
+    # interpreted as numbers or Strings.
+    def evalOperation(expr, operator, opnd1, opnd2)
+      # The type of the first operand determines how the expression is
+      # evaluated. If it is a number, the 2nd operator is forced to a number
+      # as well. If that does not work, an error is raised. If the first
+      # operator is not a number, the expression will be evaluated as a string
+      # operation.
+      if opnd1.is_a?(Fixnum) || opnd1.is_a?(Float) || opnd1.is_a?(Bignum)
+        case operator
+        when '>'
+          return coerceNumber(opnd1) > coerceNumber(opnd2)
+        when '>='
+          return coerceNumber(opnd1) >= coerceNumber(opnd2)
+        when '='
+          return coerceNumber(opnd1) == coerceNumber(opnd2)
+        when '<'
+          return coerceNumber(opnd1) < coerceNumber(opnd2)
+        when '<='
+          return coerceNumber(opnd1) <= coerceNumber(opnd2)
+        when '!='
+          return coerceNumber(opnd1) != coerceNumber(opnd2)
+        else
+          raise "Operator error"
+        end
+      elsif opnd1.is_a?(String)
+        case operator
+        when '>'
+          return coerceString(opnd1) > coerceString(opnd2)
+        when '>='
+          return coerceString(opnd1) >= coerceString(opnd2)
+        when '='
+          return coerceString(opnd1) == coerceString(opnd2)
+        when '<'
+          return coerceString(opnd1) < coerceString(opnd2)
+        when '<='
+          return coerceString(opnd1) <= coerceString(opnd2)
+        when '!='
+          return coerceString(opnd1) != coerceString(opnd2)
+        else
+          raise "Operator error"
+        end
+      else
+        expr.error "First operand of a binary operation must be a number " +
+                   "or a string"
       end
     end
 
     # Convert the operation into a textual representation. This function is used
     # for error reporting and debugging.
-    def to_s # :nodoc:
+    def to_s
       if @operator.nil?
         @operand1.to_s
       elsif @operand2.nil?
-        "#{@operator}#{@operand1}"
+        "#{@operator}#{@operand1.is_a?(String) ?
+                       "'" + @operand1 + "'" : @operand1}"
       else
-        "#{@operand1} #{@operator} #{@operand2}"
+        "#{@operand1.is_a?(String) ? "'" + @operand1 + "'" :
+                                     @operand1} #{@operator} #{
+           @operand2.is_a?(String) ? "'" + @operand2 + "'" :
+                                     @operand2}"
       end
     end
 
@@ -111,6 +148,15 @@ class TaskJuggler
       unless val.is_a?(Fixnum) || val.is_a?(Float) || val.is_a?(Bignum)
         raise TjException.new,
           "Operand #{val} of type #{val.class} must be a number"
+      end
+      val
+    end
+
+    # Force the _val_ into a String. In case this fails, an exception is raised.
+    def coerceString(val)
+      unless val.respond_to?('to_s')
+        raise TjException.new,
+          "Operand #{val} of type #{val.class} can't be converted into a string"
       end
       val
     end
