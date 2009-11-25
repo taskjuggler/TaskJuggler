@@ -100,187 +100,9 @@ class TaskJuggler
       html = HTMLDocument.new(:transitional)
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
-                             'content' => 'text/css; charset=utf-8')
-      head << (style = XMLElement.new('style', 'type' => 'text/css'))
-      style << XMLBlob.new(<<'EOT'
-  body {
-    font-family:Bitstream Vera Sans, Tahoma, sans-serif;
-    font-size:15px;
-  }
-  h1, h2, table, tr, td, div, span {
-    font-family: Bitstream Vera Sans, Tahoma, sans-serif;
-  }
-  table {
-    font-size:13px;
-  }
-  td, div { white-space:nowrap; padding:0px; margin:0px; }
-  h1 { font-size:22px; }
-  h2 { font-size:18px; }
-  h3 { font-size:16px; }
-
-  .tabback { background-color:#9a9a9a; }
-  .tabfront { background-color:#d4dde6; }
-  .tabhead {
-    white-space:nowrap;
-    background-color:#7a7a7a;
-    color:#ffffff;
-    text-align:center;
-  }
-  .tabhead_offduty {
-    white-space:nowrap;
-    background-color:#dde375;
-    color:#000000;
-  }
-  .tabfooter {
-    white-space:nowrap;
-    background-color:#9a9a9a;
-    color:#ffffff;
-    text-align:center;
-  }
-  .headercelldiv {
-    padding-top:1px;
-    padding-right:3px;
-    padding-left:3px;
-    padding-bottom:0px;
-    white-space:nowrap;
-    overflow:hidden;
-  }
-  .celldiv {
-    padding-top:3px;
-    padding-right:3px;
-    padding-left:3px;
-    padding-bottom:0px;
-    white-space:nowrap;
-    overflow:hidden;
-  }
-  .tabline { color:#000000 }
-  .tabcell {
-    white-space:nowrap;
-    overflow:hidden;
-    padding:0px;
-  }
-  .taskcell1 {
-    background-color:#ebf2ff;
-    white-space:nowrap;
-    padding:0px;
-  }
-  .taskcell2 {
-    background-color:#d9dfeb;
-    white-space:nowrap;
-    padding:0px;
-  }
-  .resourcecell1 {
-    background-color:#fff2eb;
-    white-space:nowrap;
-    padding:0px;
-  }
-  .resourcecell2 {
-    background-color:#ebdfd9;
-    white-space:nowrap;
-    padding:0px;
-  }
-  .busy1 { background-color:#ff3b3b; }
-  .busy2 { background-color:#eb4545; }
-  .loaded1 { background-color:#ff9b9b; }
-  .loaded2 { background-color:#eb8f8f; }
-  .free1 { background-color:#a5ffb4; }
-  .free2 { background-color:#98eba6; }
-  .offduty1 { background-color:#f3f990; }
-  .offduty2 { background-color:#dde375; }
-  .calconttask1 { background-color:#abbeae; }
-  .calconttask2 { background-color:#99aa9c; }
-  .caltask1 { background-color:#2050e5; }
-  .caltask2 { background-color:#2f57ea; }
-  .todo1 { background-color:#beabab; }
-  .todo2 { background-color:#aa9999; }
-
-  .tabvline {
-    background-color:#9a9a9a;
-    position:absolute;
-  }
-  .containerbar {
-    background-color:#09090a;
-    position:absolute;
-  }
-  .taskbarframe {
-    background-color:#09090a;
-    position:absolute;
-  }
-  .taskbar {
-    background-color:#2f57ea;
-    position:absolute;
-  }
-  .progressbar {
-    background-color:#36363f;
-    position:absolute;
-  }
-  .milestone {
-    background-color:#09090a;
-    position:absolute;
-  }
-  .loadstackframe {
-    background-color:#452a2a;
-    position:absolute;
-  }
-  .free {
-    background-color:#a5ffb5;
-    position:absolute;
-  }
-  .busy {
-    background-color:#ff9b9b;
-    position:absolute;
-  }
-  .assigned {
-    background-color:#ff3b3b;
-    position:absolute;
-  }
-  .offduty {
-    background-color:#f3f990;
-    white-space:nowrap;
-    position:absolute;
-  }
-  .depline {
-    background-color:#000000;
-    position:absolute;
-  }
-  .nowline {
-    background-color:#EE0000;
-    position:absolute;
-  }
-  .white {
-    background-color:#FFFFFF;
-    position:absolute;
-  }
-
-  .legendback { background-color:#d4dde6; }
-  .caption {
-     padding: 5px 13px 5px 13px;
-     background-color:#ebf2ff;
-     white-space:normal;
-     font-size:13px
-  }
-
-  .navbar_current {
-    background-color:#606060;
-    font-size:13px;
-    font-weight:bold;
-    color:#FFFFFF;
-    padding:5px;
-  }
-  .navbar_others {
-    background-color:#FFFFFF;
-    font-size:13px;
-    padding:5px;
-  }
-  .copyright {
-    font-size:9px;
-    color:#101010;
-    text-align:center;
-    margin-top:20px;
-  }
-EOT
-                          )
+      head << XMLElement.new('link', 'rel' => 'stylesheet',
+                             'type' => 'text/css',
+                             'href' => 'css/tjreport.css')
       html << (body = XMLElement.new('body'))
 
       body << (script = XMLElement.new('script', 'type' => 'text/javascript',
@@ -294,7 +116,7 @@ EOT
 This page requires Javascript for full functionality. Please enable it
 in your browser settings!
 EOT
-                             )
+                          )
 
 
       # Make sure we have some margins around the report.
@@ -371,6 +193,7 @@ EOT
     def copyAuxiliaryFiles
       return if @name == '.' # Don't copy files if output is stdout.
 
+      copyDirectory('css')
       copyDirectory('icons')
       copyDirectory('scripts')
     end

@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'fileutils'
 require 'Tj3Config'
 require 'RichTextDocument'
 require 'SyntaxReference'
@@ -59,6 +60,7 @@ class TaskJuggler
       # Generate the HTML files.
       generateHTML(destDir)
       checkInternalReferences
+      FileUtils.cp_r(AppConfig.dataDirs('data/css')[0], destDir)
     end
 
     # Generate the manual in HTML format. _directory_ specifies a directory
@@ -76,64 +78,8 @@ class TaskJuggler
     # Callback function used by the RichTextDocument and KeywordDocumentation
     # classes to generate the HTML style sheet for the manual pages.
     def generateStyleSheet
-      html = []
-      html << (style = XMLElement.new('style', 'type' => 'text/css'))
-      style << XMLBlob.new(<<'EOT'
-pre {
-  font-size:16px;
-  font-family: Courier;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:0px;
-  padding-bottom:0px;
-}
-p {
-  margin-top:8px;
-  margin-bottom:8px;
-}
-code {
-  font-size:16px;
-  font-family: Courier;
-}
-.table {
-  background-color:#ABABAB;
-  width:100%;
-}
-.tag {
-  background-color:#E0E0F0;
-  font-size:16px;
-  font-weight:bold;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-.descr {
-  background-color:#F0F0F0;
-  font-size:16px;
-  padding-left:8px;
-  padding-right:8px;
-  padding-top:5px;
-  padding-bottom:5px;
-}
-.codeframe{
-  border-width:2px;
-  border-color:#ABABAB;
-  border-style:solid;
-  background-color:#F0F0F0;
-  margin-top:8px;
-  margin-bottom:8px;
-}
-.code {
-  padding-left:15px;
-  padding-right:15px;
-  padding-top:0px;
-  padding-bottom:0px;
-}
-EOT
-                 )
-
-      html
+      XMLElement.new('link', 'rel' => 'stylesheet', 'type' => 'text/css',
+                             'href' => 'css/tjmanual.css')
     end
 
     # Callback function used by the RichTextDocument class to generate the cover
