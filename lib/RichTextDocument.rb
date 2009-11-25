@@ -32,6 +32,7 @@ class TaskJuggler
       @snippets = []
       @dirty = false
       @sectionCounter = [ 0, 0, 0 ]
+      @linkTarget = nil
       @toc = nil
     end
 
@@ -43,7 +44,8 @@ class TaskJuggler
     # Add a new structured text file to the document. _file_ must be the name of
     # a file with RichText compatible syntax elements.
     def addSnip(file)
-      @snippets << RichTextSnip.new(self, file, @sectionCounter)
+      @snippets << (snippet = RichTextSnip.new(self, file, @sectionCounter))
+      snippet.linkTarget = @linkTarget
       @dirty = true
     end
 

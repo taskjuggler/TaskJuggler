@@ -958,6 +958,7 @@ EOT
     begin
       rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ])
       rti = rText.generateIntermediateFormat
+      rti.linkTarget = '_blank'
     rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"

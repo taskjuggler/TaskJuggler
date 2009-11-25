@@ -30,6 +30,7 @@ class TaskJuggler
       # Don't confuse this with RichTextDocument#references
       @reference = SyntaxReference.new(self)
       registerFunctionHandler(RichTextFunctionExample.new)
+      @linkTarget = '_top'
     end
 
     def generate(directory)

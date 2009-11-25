@@ -125,7 +125,7 @@ class TaskJuggler
   class RichTextIntermediate
 
     attr_reader :richText
-    attr_accessor :blockMode, :sectionNumbers, :lineWidth, :tree
+    attr_accessor :blockMode, :sectionNumbers, :lineWidth, :linkTarget, :tree
 
     def initialize(richText)
       # A reference to the corresponding RichText object the RTI is derived
@@ -140,6 +140,7 @@ class TaskJuggler
       # Set this to false to disable automatically generated section numbers.
       @sectionNumbers = true
       # Set this to the width of your text area. Needed for horizonal lines.
+      @linkTarget = nil
       @lineWidth = 80
       # These are the RichTextFunctionHandler objects to handle references with
       # a function specification.

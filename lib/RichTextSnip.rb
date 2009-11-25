@@ -52,6 +52,11 @@ class TaskJuggler
       @prevSnip = @nextSnip = nil
     end
 
+    # Set the target for all anchor links in the document.
+    def linkTarget=(target)
+      @richText.linkTarget = target
+    end
+
     # Generate a TableOfContents object from the section headers of the
     # RichTextSnip.
     def tableOfContents(toc, fileName)

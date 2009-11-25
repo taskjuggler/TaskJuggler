@@ -246,7 +246,9 @@ class TaskJuggler
         pre = "<ref data=\"#{@data}\">"
         post = '</ref>'
       when :href
-        pre = "<a href=\"#{@data}\" target=\"_blank\">"
+        pre = "<a href=\"#{@data}\" #{@richText.linkTarget ?
+                                      "target=\"#{@richText.linkTarget}\"" :
+                                      ""}>"
         post = '</a>'
       when :blockfunc
         pre = "<blockfunc:#{@data[0]}"
@@ -353,7 +355,9 @@ class TaskJuggler
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")
       when :href
-        XMLElement.new('a', 'href' => @data.to_s, 'target' => '_blank')
+        a = XMLElement.new('a', 'href' => @data.to_s)
+        a['target'] = @richText.linkTarget if @richText.linkTarget
+        a
       when :blockfunc
         noChilds = true
         checkHandler
