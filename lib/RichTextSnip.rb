@@ -40,7 +40,7 @@ class TaskJuggler
         file.each_line { |line| text += line }
       end
       begin
-        rText = RichText.new(text)
+        rText = RichText.new(text, @document.functionHandlers)
         @richText = rText.generateIntermediateFormat(sectionCounter)
       rescue RichTextException => msg
         $stderr.puts "Error in RichText of file '#{fileName}'\n" +
@@ -48,7 +48,6 @@ class TaskJuggler
                      "#{msg.line}"
         exit
       end
-      @richText.setProtocolHandlers(@document.functionHandlers)
 
       @prevSnip = @nextSnip = nil
     end

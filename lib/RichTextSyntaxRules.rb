@@ -298,6 +298,10 @@ class TaskJuggler
         el = RichTextElement.new(@richTextI, :blockfunc)
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.
+        unless @richTextI.richText.functionHandler(@val[1], true)
+          error('bad_block_function',
+                "Unsupported block function #{@val[1]}")
+        end
         el.data = [@val[1], args ]
         el
       })
@@ -312,6 +316,10 @@ class TaskJuggler
         el = RichTextElement.new(@richTextI, :inlinefunc)
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.
+        unless @richTextI.richText.functionHandler(@val[1], false)
+          error('bad_inline_function',
+                "Unsupported inline function #{@val[1]}")
+        end
         el.data = [@val[1], args ]
         el.appendSpace = !@val[4].empty?
         el

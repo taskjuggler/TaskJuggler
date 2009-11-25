@@ -43,7 +43,7 @@ class TaskJuggler
     def getPattern(query)
       @patterns.each do |pattern|
         if pattern.logExpr.eval(query.property, query.scopeProperty)
-          return pattern.text.dup
+          return pattern.text
         end
       end
       nil

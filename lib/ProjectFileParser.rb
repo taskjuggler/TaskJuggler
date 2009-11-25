@@ -198,11 +198,13 @@ class TaskJuggler
     def newRichText(text)
       sfi = sourceFileInfo
       begin
-        rText = RichText.new(text)
+        handlers = [
+          RTFNavigator.new(@project, sfi),
+          RTFQuery.new(@project, sfi),
+          RTFReport.new(@project, sfi)
+        ]
+        rText = RichText.new(text, handlers)
         rti = rText.generateIntermediateFormat
-        rti.registerFunction(RTFNavigator.new(@project, sfi))
-        rti.registerFunction(RTFQuery.new(@project, sfi))
-        rti.registerFunction(RTFReport.new(@project, sfi))
       rescue RichTextException => msg
         sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)
         message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,

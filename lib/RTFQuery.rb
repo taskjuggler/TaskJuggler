@@ -22,6 +22,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo)
       super(project, 'query', sourceFileInfo)
+      @blockMode = false
       @query = nil
     end
 

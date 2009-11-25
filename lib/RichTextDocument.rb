@@ -28,7 +28,7 @@ class TaskJuggler
 
     # Create a new empty RichTextDocument object.
     def initialize
-      @functionHandlers = {}
+      @functionHandlers = []
       @snippets = []
       @dirty = false
       @sectionCounter = [ 0, 0, 0 ]
@@ -37,7 +37,7 @@ class TaskJuggler
 
     # Register a new RichTextFunctionHandler for this document.
     def registerFunctionHandler(handler)
-      @functionHandlers[handler.function] = handler
+      @functionHandlers << handler
     end
 
     # Add a new structured text file to the document. _file_ must be the name of

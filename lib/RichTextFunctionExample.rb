@@ -23,6 +23,7 @@ class TaskJuggler
 
     def initialize
       super(nil, 'example')
+      @blockFunction = true
     end
 
     # Not supported for this function

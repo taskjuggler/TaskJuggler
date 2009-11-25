@@ -114,7 +114,7 @@ class TaskJuggler
         end
       else
         expr.error "First operand of a binary operation must be a number " +
-                   "or a string"
+                   "or a string but is a #{opnd1.class}: #{opnd1}"
       end
     end
 
@@ -122,15 +122,14 @@ class TaskJuggler
     # for error reporting and debugging.
     def to_s
       if @operator.nil?
-        @operand1.to_s
+        "(#{@operand1.to_s})"
       elsif @operand2.nil?
         "#{@operator}#{@operand1.is_a?(String) ?
                        "'" + @operand1 + "'" : @operand1}"
       else
         "#{@operand1.is_a?(String) ? "'" + @operand1 + "'" :
                                      @operand1} #{@operator} #{
-           @operand2.is_a?(String) ? "'" + @operand2 + "'" :
-                                     @operand2}"
+           @operand2.is_a?(String) ? "'" + @operand2 + "'" : @operand2}"
       end
     end
 
@@ -138,7 +137,10 @@ class TaskJuggler
 
     # Force the _val_ into a boolean value.
     def coerceBoolean(val)
+      # First the obvious ones.
       return val if val.class == TrueClass || val.class == FalseClass
+      # An empty String means false, else true.
+      return !val.empty if val.is_a?(String)
       # In TJP logic 'non 0' means false.
       val != 0
     end
@@ -163,6 +165,9 @@ class TaskJuggler
 
   end
 
+  # This class handles operands that are property attributes. They are
+  # addressed by attribute ID and scenario index. The expression provides the
+  # property reference.
   class LogicalAttribute < LogicalOperation
 
     def initialize(attribute, scenario)
@@ -170,27 +175,36 @@ class TaskJuggler
       super
     end
 
-    def LogicalAttribute::tjpId
-      'logical'
+    def eval(expr)
+      # Get the attribute value. nil is converted to an empty String.
+      val = expr.property[@operand1, @scenarioIdx] || ''
+      # Special case for ReferenceAttributes
+      val = val.is_a?(Array) ? val[0] : val
+      # TODO: Check if there are other special cases as well
     end
 
-    def eval(expr)
-      expr.property[@operand1, @scenarioIdx]
+    # Used for debugging and error reporting.
+    def to_s # :nodoc
+      "#{@scenarioIdx}.#{@operand1.to_s}"
     end
 
   end
 
+  # This class handles operands that represent flags. The operation evaluates
+  # to true if the property provided by the expression has the flag assigned.
   class LogicalFlag < LogicalOperation
 
     def initialize(opnd)
       super
     end
 
+    # Return true if the property has the flag assigned.
     def eval(expr)
       expr.property['flags', 0].include?(@operand1)
     end
 
-    def to_s
+    # Used for debugging and error reporting.
+    def to_s # :nodoc:
       @operand1
     end
 

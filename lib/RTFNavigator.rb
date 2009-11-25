@@ -23,6 +23,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo)
       super(project, 'navigator', sourceFileInfo)
+      @blockFunction = true
     end
 
     # Not supported for this function

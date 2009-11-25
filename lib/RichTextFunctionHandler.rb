@@ -23,11 +23,12 @@ class TaskJuggler
   # is the argument Array.
   class RichTextFunctionHandler
 
-    attr_reader :function
+    attr_reader :function, :blockFunction
 
     def initialize(project, function, sourceFileInfo = nil)
       @project = project
       @function = function
+      @blockFunction = false
       @sourceFileInfo = sourceFileInfo
     end
 

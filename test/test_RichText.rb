@@ -16,15 +16,19 @@ require 'test/unit'
 require 'RichText'
 require 'RichTextFunctionHandler'
 
-  class RTPDummy < TaskJuggler::RichTextFunctionHandler
+  class RTFDummy < TaskJuggler::RichTextFunctionHandler
 
     def initialize()
       super(nil, 'dummy')
+      @blockFunction = true
+    end
+
+    def to_tagged(args)
+      '<blockfunc:dummy/>'
     end
 
     # Return a XMLElement tree that represents the navigator in HTML code.
     def to_html(args)
-      s = ''
       TaskJuggler::XMLElement.new('blockfunc:dummy', args)
     end
   end
@@ -952,9 +956,8 @@ EOT
 
   def newRichText(text)
     begin
-      rText = TaskJuggler::RichText.new(text)
+      rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ])
       rti = rText.generateIntermediateFormat
-      rti.registerFunction(RTPDummy.new)
     rescue TaskJuggler::RichTextException => msg
       $stderr.puts "Error in RichText Line #{msg.lineNo}: #{msg.text}\n" +
                    "#{msg.line}"

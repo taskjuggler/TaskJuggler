@@ -19,8 +19,9 @@ class TaskJuggler
   # the provides the necessary output methods such as to_html.
   class ReportTableCell
 
-    attr_reader :line, :text, :tooltip
+    attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
+                  :text, :tooltip,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
 
@@ -62,15 +63,6 @@ class TaskJuggler
       @columns = 1
       # Ignore everything and use this reference to generate the output.
       @special = nil
-    end
-
-    def text=(text)
-      @text = text.is_a?(RichTextIntermediate) ? text.dup : text
-    end
-
-
-    def tooltip=(text)
-      @tooltip = text.dup
     end
 
     # Return true if two cells are similar enough so that they can be merged in
@@ -137,7 +129,7 @@ class TaskJuggler
 
       return cell if @text.nil?
 
-      if @text.respond_to?('functionHandler')
+      if @text.respond_to?('functionHandler') && @text.functionHandler('query')
         @text.functionHandler('query').setQuery(@query)
       end
 
@@ -151,6 +143,8 @@ class TaskJuggler
       else
         # The cell will adjust to the size of the content.
         if @text.is_a?(RichTextIntermediate)
+          # Don't put the @text into a <div> but a <span>.
+          @text.blockMode = false #if singleLine
           div << @text.to_html
         else
           div << XMLText.new(shortText)
@@ -160,14 +154,17 @@ class TaskJuggler
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
       if tooltip
-        tooltip.functionHandler('query').setQuery(@query)
+        if tooltip.respond_to?('functionHandler') &&
+           tooltip.functionHandler('query')
+          tooltip.functionHandler('query').setQuery(@query)
+        end
         div['onmouseover'] = "TagToTip('#{cell.object_id}')"
         div['onmouseout'] = 'UnTip()'
         div << (ltDiv = XMLElement.new('div',
                                        'style' => 'visibility:hidden',
                                        'id' => "#{cell.object_id}"))
-        ltDiv << (tooltip.is_a?(RichTextIntermediate) ? tooltip.to_html :
-                                                        XMLText.new(tooltip))
+        ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
+                                                   XMLText.new(tooltip))
 
         div << XMLElement.new('img', 'src' => 'icons/details.png',
                               'width' => '6px',

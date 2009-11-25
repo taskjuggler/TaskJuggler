@@ -53,6 +53,7 @@ class TaskJuggler
     # This is a wrapper for nextToken only used for debugging.
     #def nextToken
     #  tok = nextTokenI
+    #  raise "Token Error:" unless tok && tok[0] && tok[1]
     #  puts "#{tok[0]}: #{tok[1]}"
     #  tok
     #end
@@ -190,6 +191,7 @@ class TaskJuggler
           return nextTokenWord(c)
         end
       end
+      token
     end
 
     def nextTokenWikiBOL

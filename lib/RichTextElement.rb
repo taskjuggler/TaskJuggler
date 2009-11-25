@@ -165,6 +165,7 @@ class TaskJuggler
       when :blockfunc
       when :inlinefunc
         noChilds = true
+        checkHandler
         pre = @richText.functionHandler(@data[0]).to_s(@data[1])
       when :italic
       when :bold
@@ -297,7 +298,7 @@ class TaskJuggler
       html =
       case @category
       when :richtext
-        XMLElement.new('div')
+        XMLElement.new(@richText.blockMode ? 'div' : 'span')
       when :title1
         el = XMLElement.new('h1', 'id' => convertToID(children_to_s))
         if @richText.sectionNumbers
@@ -355,9 +356,11 @@ class TaskJuggler
         XMLElement.new('a', 'href' => @data.to_s, 'target' => '_blank')
       when :blockfunc
         noChilds = true
+        checkHandler
         @richText.functionHandler(@data[0]).to_html(@data[1])
       when :inlinefunc
         noChilds = true
+        checkHandler
         @richText.functionHandler(@data[0]).to_html(@data[1])
       when :italic
         XMLElement.new('i')
@@ -390,6 +393,15 @@ class TaskJuggler
         text << c.to_s + (c.is_a?(RichTextElement) && c.appendSpace ? ' ' : '')
       end
       text
+    end
+
+    def checkHandler
+      unless @data[0] && @data[0].is_a?(String)
+        raise "Bad RichText function '#{@data[0]}' requested"
+      end
+      if @richText.functionHandler(@data[0]).nil?
+        raise "No handler for #{@data[0]} registered"
+      end
     end
 
     # This function converts a String into a new String that only contains
