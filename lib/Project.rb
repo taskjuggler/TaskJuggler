@@ -56,8 +56,8 @@ class TaskJuggler
     def initialize(id, name, version, messageHandler)
       @messageHandler = messageHandler
       @attributes = {
-        'alertLevels' => [ [ 'green', 0x00FF00 ], [ 'yellow', 0xFFFF00 ],
-                           [ 'red', 0xFF0000 ] ],
+        'alertLevels' => [ [ 'green', 0x008000 ], [ 'yellow', 0xE0E000 ],
+                           [ 'red', 0xC00000 ] ],
         'copyright' => nil,
         'costAccount' => nil,
         'currency' => "EUR",

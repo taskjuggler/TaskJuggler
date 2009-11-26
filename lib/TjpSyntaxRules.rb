@@ -533,7 +533,7 @@ EOT
   end
 
   def rule_date
-    pattern(%w( $DATE ), lambda {
+    pattern(%w( !dateCalcedOrNot ), lambda {
       resolution = @project.nil? ? Project.maxScheduleGranularity :
                                    @project['scheduleGranularity']
       if @val[0] % resolution != 0
@@ -548,9 +548,31 @@ A DATE is an ISO-compliant date in the format
 ''''<nowiki>YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]</nowiki>''''. Hour, minutes,
 seconds, and the ''''TIMEZONE'''' are optional. If not specified, the values
 are set to 0.  ''''TIMEZONE'''' must be an offset to GMT or UTC, specified as
-''''+HHMM'''' or ''''-HHMM''''. Dates must always be aligned with the [[timingresolution]].
+''''+HHMM'''' or ''''-HHMM''''. Dates must always be aligned with the
+[[timingresolution]].
+
+TaskJuggler also supports simple date calculations. You can add or substract a
+given interval from a fixed date.
+
+ %{2009-11-01 + 8m}
+
+This will result in an actual date of around 2009-07-01. Keep in mind that due to the varying lengths of months TaskJuggler cannot add exactly 8 calendar months. The date calculation functionality makes most sense when used with macros.
+
+ %{${now} - 2w}
+
+This is result in a date 2 weeks earlier than the current (or specified) date.
+See [[duration]] for a complete list of supported time intervals. Don't forget
+to put at least one space character after the date to prevent TaskJuggler from
+interpreting the interval as an hour.
 EOT
        )
+  end
+
+  def rule_dateCalcedOrNot
+    singlePattern('$DATE')
+    pattern(%w( _% _{ $DATE !plusOrMinus !intervalDuration _} ), lambda {
+      @val[2] + ((@val[3] == '+' ? 1 : -1) * @val[4])
+    })
   end
 
   def rule_declareFlagList
@@ -1800,6 +1822,11 @@ EOT
     pattern(%w( !outputFormat !moreOutputFormats ), lambda {
       [ @val[0] ] + @val[1]
     })
+  end
+
+  def rule_plusOrMinus
+    singlePattern('_+')
+    singlePattern('_ - ')
   end
 
   def rule_project
