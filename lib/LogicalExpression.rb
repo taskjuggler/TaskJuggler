@@ -64,12 +64,7 @@ class TaskJuggler
     # This is an internal function. It's called by the LogicalOperation methods
     # in case something went wrong during an evaluation.
     def error(text) # :nodoc:
-      if @sourceFileInfo.nil?
-        str = "Logical expression error: " + text
-      else
-        str = "#{@sourceFileInfo} Logical expression error: #{text}\n"
-      end
-      raise TjException.new, str
+      raise TjException.new, "#{to_s}\nLogical expression error: #{text}"
     end
 
   end

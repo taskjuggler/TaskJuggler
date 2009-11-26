@@ -39,82 +39,47 @@ class TaskJuggler
     # LogicalExpression. The result must be of a type that responds to all the
     # operators of this function.
     def eval(expr)
-      begin
-        case @operator
-        when nil
-          if @operand1.respond_to?(:eval)
-            # An operand can be a fixed value or another term. This could be a
-            # LogicalOperation, LogicalFunction or anything else that provides
-            # an appropriate eval() method.
-            return @operand1.eval(expr)
-          else
-            return @operand1
+      case @operator
+      when nil
+        if @operand1.respond_to?(:eval)
+          # An operand can be a fixed value or another term. This could be a
+          # LogicalOperation, LogicalFunction or anything else that provides
+          # an appropriate eval() method.
+          return @operand1.eval(expr)
+        else
+          return @operand1
+        end
+      when '~'
+        return !coerceBoolean(@operand1.eval(expr), expr)
+      when '>', '>=', '=', '<', '<=', '!='
+        # Evaluate the operation for all 2 operand operations that can be
+        # either interpreted as date, numbers or Strings.
+        opnd1 = @operand1.eval(expr)
+        opnd2 = @operand2.eval(expr)
+        if opnd1.is_a?(TjTime)
+          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+            coerceTime(o, expr)
           end
-        when '~'
-          return !coerceBoolean(@operand1.eval(expr))
-        when '>', '>=', '=', '<', '<=', '!='
-          evalOperation(expr, @operator, @operand1.eval(expr),
-                        @operand2.eval(expr))
-        when '&'
-          return coerceBoolean(@operand1.eval(expr)) &&
-                 coerceBoolean(@operand2.eval(expr))
-        when '|'
-          return coerceBoolean(@operand1.eval(expr)) ||
-                 coerceBoolean(@operand2.eval(expr))
+        elsif opnd1.is_a?(Fixnum) || opnd1.is_a?(Float) || opnd1.is_a?(Bignum)
+          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+            coerceNumber(o, expr)
+          end
+        elsif opnd1.is_a?(String)
+          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+            coerceString(o, expr)
+          end
         else
-          raise TjException.new,
-                "Unknown operator #{@operator} in logical expression"
+          expr.error("First operand of a binary operation must be a date, " +
+                     "a number or a string: #{opnd1}")
         end
-      rescue TjException
-        expr.error "Can't evaluate #{to_s} (#{$!.message})"
-      end
-    end
-
-    # Evaluate the operation for all 2 operand operations that can be either
-    # interpreted as numbers or Strings.
-    def evalOperation(expr, operator, opnd1, opnd2)
-      # The type of the first operand determines how the expression is
-      # evaluated. If it is a number, the 2nd operator is forced to a number
-      # as well. If that does not work, an error is raised. If the first
-      # operator is not a number, the expression will be evaluated as a string
-      # operation.
-      if opnd1.is_a?(Fixnum) || opnd1.is_a?(Float) || opnd1.is_a?(Bignum)
-        case operator
-        when '>'
-          return coerceNumber(opnd1) > coerceNumber(opnd2)
-        when '>='
-          return coerceNumber(opnd1) >= coerceNumber(opnd2)
-        when '='
-          return coerceNumber(opnd1) == coerceNumber(opnd2)
-        when '<'
-          return coerceNumber(opnd1) < coerceNumber(opnd2)
-        when '<='
-          return coerceNumber(opnd1) <= coerceNumber(opnd2)
-        when '!='
-          return coerceNumber(opnd1) != coerceNumber(opnd2)
-        else
-          raise "Operator error"
-        end
-      elsif opnd1.is_a?(String)
-        case operator
-        when '>'
-          return coerceString(opnd1) > coerceString(opnd2)
-        when '>='
-          return coerceString(opnd1) >= coerceString(opnd2)
-        when '='
-          return coerceString(opnd1) == coerceString(opnd2)
-        when '<'
-          return coerceString(opnd1) < coerceString(opnd2)
-        when '<='
-          return coerceString(opnd1) <= coerceString(opnd2)
-        when '!='
-          return coerceString(opnd1) != coerceString(opnd2)
-        else
-          raise "Operator error"
-        end
+      when '&'
+        return coerceBoolean(@operand1.eval(expr), expr) &&
+               coerceBoolean(@operand2.eval(expr), expr)
+      when '|'
+        return coerceBoolean(@operand1.eval(expr), expr) ||
+               coerceBoolean(@operand2.eval(expr), expr)
       else
-        expr.error "First operand of a binary operation must be a number " +
-                   "or a string but is a #{opnd1.class}: #{opnd1}"
+        expr.error("Unknown operator #{@operator} in logical expression")
       end
     end
 
@@ -122,43 +87,76 @@ class TaskJuggler
     # for error reporting and debugging.
     def to_s
       if @operator.nil?
-        "(#{@operand1.to_s})"
+        "#{@operand1.to_s}"
       elsif @operand2.nil?
-        "#{@operator}#{@operand1.is_a?(String) ?
-                       "'" + @operand1 + "'" : @operand1}"
+        "#{@operator}(#{@operand1.is_a?(String) ?
+                       "'" + @operand1 + "'" : @operand1})"
       else
-        "#{@operand1.is_a?(String) ? "'" + @operand1 + "'" :
-                                     @operand1} #{@operator} #{
-           @operand2.is_a?(String) ? "'" + @operand2 + "'" : @operand2}"
+        "(#{@operand1.is_a?(String) ? "'" + @operand1 + "'" :
+                                            @operand1} #{@operator} #{
+            @operand2.is_a?(String) ? "'" + @operand2 + "'" : @operand2})"
       end
     end
 
   private
 
+    # We need to do binary operator evaluation with various coerce functions.
+    # This function does the evaluation of _opnd1_ and _opnd2_ with the
+    # operation specified by _operator_. The operands are first coerced into
+    # the proper format by calling the block.
+    def evalBinaryOperation(opnd1, operator, opnd2)
+      case operator
+      when '>'
+        return yield(opnd1) > yield(opnd2)
+      when '>='
+        return yield(opnd1) >= yield(opnd2)
+      when '='
+        return yield(opnd1) == yield(opnd2)
+      when '<'
+        return yield(opnd1) < yield(opnd2)
+      when '<='
+        return yield(opnd1) <= yield(opnd2)
+      when '!='
+        return yield(opnd1) != yield(opnd2)
+      else
+        raise "Operator error"
+      end
+    end
+
     # Force the _val_ into a boolean value.
-    def coerceBoolean(val)
+    def coerceBoolean(val, expr)
       # First the obvious ones.
       return val if val.class == TrueClass || val.class == FalseClass
       # An empty String means false, else true.
       return !val.empty if val.is_a?(String)
       # In TJP logic 'non 0' means false.
-      val != 0
+      return val != 0 if val.is_a?(Fixnum) || val.is_a?(Bignum)
+
+      expr.error("Operand #{val} can't be evaluated to true or false.")
     end
 
     # Force the _val_ into a number. In case this fails, an exception is raised.
-    def coerceNumber(val)
+    def coerceNumber(val, expr)
       unless val.is_a?(Fixnum) || val.is_a?(Float) || val.is_a?(Bignum)
-        raise TjException.new,
-          "Operand #{val} of type #{val.class} must be a number"
+        expr.error("Operand #{val} of type #{val.class} must be a number.")
       end
       val
     end
 
     # Force the _val_ into a String. In case this fails, an exception is raised.
-    def coerceString(val)
+    def coerceString(val, expr)
       unless val.respond_to?('to_s')
-        raise TjException.new,
-          "Operand #{val} of type #{val.class} can't be converted into a string"
+        expr.error("Operand #{val} of type #{val.class} can't be converted " +
+                   "into a string")
+      end
+      val
+    end
+
+    # Force the _val_ into a String. In case this fails, an exception is raised.
+    def coerceTime(val, expr)
+      unless val.is_a?(TjTime)
+        expr.error("Operand #{val} of type #{val.class} can't be converted " +
+                   "into a date")
       end
       val
     end

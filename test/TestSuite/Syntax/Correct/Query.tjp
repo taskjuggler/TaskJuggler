@@ -1,0 +1,18 @@
+project "Query Demo" 2009-11-22 +1m {
+  now 2009-12-06
+}
+
+resource joe "Joe"
+
+task "Job" {
+  effort 2w
+  allocate joe
+}
+
+taskreport "QueryDemo" {
+  formats html
+  header "Project data as of <-query attribute='now'->"
+  columns name { celltext 1 "<-query-> : <-query attribute='id'->" },
+          effortdone, effortleft
+}
+
