@@ -205,6 +205,7 @@ class TaskJuggler
         ]
         rText = RichText.new(text, handlers)
         rti = rText.generateIntermediateFormat
+        rti.sectionNumbers = false
       rescue RichTextException => msg
         sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)
         message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,

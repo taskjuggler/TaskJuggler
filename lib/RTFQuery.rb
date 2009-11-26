@@ -49,7 +49,7 @@ class TaskJuggler
       prepareQuery(args)
       if @query.ok
         if @query.result.respond_to?('to_html')
-          @query.to_html
+          @query.result.to_html
         else
           XMLText.new(@query.result.to_s)
         end
