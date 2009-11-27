@@ -149,7 +149,34 @@ class TaskJuggler
       maxLevel
     end
 
-    private
+    # Return true if the _property_ has the most current and most important
+    # message for the given _date_. The message needs to have at least the
+    # alertLevel _minLevel_.
+    def hasAlertMessage?(date, property, minLevel)
+      pEntry = @propertyToEntries[property] ?
+               @propertyToEntries[property].last(date) : nil
+
+      return false unless pEntry || pEntry.alertLevel < minLevel
+
+      # Check parents for a more important or more up-to-date message.
+      p = property.parent
+      while p do
+        ppEntry = @propertyToEntries[property] ?
+                  @propertyToEntries[property].last(date) : nil
+        if ppEntry && ppEntry.alertLevel >= pEntry.alertLevel &&
+           ppEntry.date >= pEntry.date
+          # A parent has a more up-to-date or more important message.
+          return false
+        end
+
+        p = p.parent
+      end
+
+      # Check all the children for more up-to-date or more important messages.
+      # If the currentEntries list contains pEntry, this property has the
+      # current and most important message for this property tree.
+      return currentEntries.include?(pEntry)
+    end
 
     # This function recursively traverses a tree of PropertyTreeNode objects
     # from bottom to top.

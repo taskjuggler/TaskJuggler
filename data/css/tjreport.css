@@ -13,6 +13,11 @@ h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
 
+.tjtable {
+  background-color:#9a9a9a;
+  margin-top:15px;
+  margin-bottom:15px;
+}
 .tabback { background-color:#9a9a9a; }
 .tabfront { background-color:#d4dde6; }
 .tabhead {
@@ -171,6 +176,6 @@ h3 { font-size:16px; }
   font-size:9px;
   color:#101010;
   text-align:center;
-  margin-top:20px;
+  margin-top:10px;
 }
 

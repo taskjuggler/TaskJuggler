@@ -388,6 +388,7 @@ textreport "" {
     <[navigator id="navbar"]>
     ----
   ->8-
+  footer "----"
 # *** EXAMPLE: overview_report1 +
   textreport "Overview" {
     formats html

@@ -886,6 +886,13 @@ EOT
 
   def rule_functionPatterns
     # This rule is not used by the parser. It's only for the documentation.
+    pattern(%w( _hasalert _( $INTEGER _) ))
+    doc('hasalert', <<'EOT'
+Will evaluate to true if the current property has a current alert message within the report time frame and with at least the provided alert level.
+EOT
+       )
+    arg(2, 'Level', 'The minimum required alert level to be considered.')
+
     pattern(%w( _isactive _( $ID _) ))
     doc('isactive', <<'EOT'
 Will evaluate to true for tasks and resources if they have bookings in

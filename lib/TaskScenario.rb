@@ -1061,8 +1061,9 @@ class TaskJuggler
     def query_alert(query)
       journal = @project['journal']
       endDate = query.end
-      query.sortableResult = journal.alertLevel(endDate, @property)
-      query.result = @project['alertLevels'][query.sortableResult][0]
+      query.sortableResult = query.numericalResult =
+        journal.alertLevel(endDate, @property)
+      query.result = @project['alertLevels'][query.numericalResult][0]
     end
 
     def query_complete(query)
@@ -1755,8 +1756,18 @@ class TaskJuggler
       if a('milestone')
         @property['complete', @scenarioIdx] =
           @property['end', @scenarioIdx] <= @project['now'] ? 100.0 : 0.0
+        @property['status', @scenarioIdx] =
+          a('end') <= @project['now'] ? 'done' : 'not reached'
       elsif @property.container?
         #TODO
+        @property['status', @scenarioIdx] =
+          if a('end') < @project['now']
+            'done'
+          elsif a('start') > @project['now']
+            'not started'
+          else
+            'in progress'
+          end
       else
         # Normal leaf task
         if a('end') <= @project['now']

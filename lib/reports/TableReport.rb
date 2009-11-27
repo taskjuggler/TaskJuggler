@@ -82,7 +82,7 @@ class TaskJuggler
       html << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                      'cellspacing' => '2', 'border' => '0',
                                      'cellpadding' => '0', 'align' => 'center',
-                                     'class' => 'tabback'))
+                                     'class' => 'tjtable'))
 
       # The headline is put in a sub-table to appear bigger.
       if a('headline')

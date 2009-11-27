@@ -57,15 +57,16 @@ class TaskJuggler
         opnd1 = @operand1.eval(expr)
         opnd2 = @operand2.eval(expr)
         if opnd1.is_a?(TjTime)
-          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+          res= evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceTime(o, expr)
           end
+          return res
         elsif opnd1.is_a?(Fixnum) || opnd1.is_a?(Float) || opnd1.is_a?(Bignum)
-          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+          return evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceNumber(o, expr)
           end
         elsif opnd1.is_a?(String)
-          evalBinaryOperation(opnd1, operator, opnd2) do |o|
+          return evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceString(o, expr)
           end
         else
@@ -173,12 +174,32 @@ class TaskJuggler
       super
     end
 
+    # To evaluate a property attribute we use the Query mechanism to retrieve
+    # the value.
     def eval(expr)
-      # Get the attribute value. nil is converted to an empty String.
-      val = expr.property[@operand1, @scenarioIdx] || ''
-      # Special case for ReferenceAttributes
-      val = val.is_a?(Array) ? val[0] : val
-      # TODO: Check if there are other special cases as well
+      project = expr.property.project
+      report = project.reportContext.report
+      queryAttrs = {
+        'project' => expr.property.project,
+        'property' => expr.property,
+        'loadUnit' => report.get('loadUnit'),
+        'numberFormat' => report.get('numberFormat'),
+        'currencyFormat' => report.get('currencyFormat'),
+        'scenarioIdx' => @scenarioIdx,
+        'attributeId' => @operand1,
+        'start' => report.get('start'),
+        'end' => report.get('end'),
+        'costAccount' => report.get('costAccount'),
+        'revenueAccount' => report.get('revenueAccount')
+      }
+      query = Query.new(queryAttrs)
+      query.process
+      # The logical expressions are mostly about comparing values. So we use
+      # the sortableResult of the Query. This creates some challenges for load
+      # values, as the user is not accustomed to the internal representation
+      # of those.
+      # Convert nil results into empty Strings if necessary
+      query.sortableResult || ''
     end
 
     # Used for debugging and error reporting.
