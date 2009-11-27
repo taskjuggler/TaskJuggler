@@ -26,26 +26,27 @@ class TaskJuggler
     attr_reader :legend
 
     @@propertiesById = {
-      # ID               Header         Indent  Align   Calced. Scen Spec.
-      'alert'       => [ 'Alert',       true,   :left,  true,   false ],
-      'complete'    => [ 'Completion',  false,  :right, true,   true ],
-      'cost'        => [ 'Cost',        true,   :right, true,   true ],
-      'duration'    => [ 'Duration',    true,   :right, true,   true ],
-      'effort'      => [ 'Effort',      true,   :right, true,   true ],
-      'effortdone'  => [ 'Effort Done', true,   :right, true,   true ],
-      'effortleft'  => [ 'Effort Left', true,   :right, true,   true ],
-      'freetime'    => [ 'Free Time',   true,   :right, true,   true ],
-      'id'          => [ 'Id',          false,  :left,  true,   false ],
-      'line'        => [ 'Line No.',    false,  :right, true,   false ],
-      'name'        => [ 'Name',        true,   :left,  false,  false ],
-      'no'          => [ 'No.',         false,  :right, true,   false ],
-      'rate'        => [ 'Rate',        true,   :right, true,   true ],
-      'resources'   => [ 'Resources',   false,  :left,  true,   true ],
-      'revenue'     => [ 'Revenue',     true,   :right, true,   true ],
-      'scenario'    => [ 'Scenario',    false,  :left,  true,   true ],
-      'status'      => [ 'Status',      false,  :left,  true,   true ],
-      'targets'     => [ 'Targets',     false,  :left,  true,   true ],
-      'wbs'         => [ 'WBS',         false,  :left,  true,   false ]
+      # ID               Header          Indent  Align   Calced. Scen Spec.
+      'alert'       => [ 'Alert',        true,   :left,  true,   false ],
+      'alertnotice' => [ 'Alert Notice', false,  :left,  true,   false ],
+      'complete'    => [ 'Completion',   false,  :right, true,   true ],
+      'cost'        => [ 'Cost',         true,   :right, true,   true ],
+      'duration'    => [ 'Duration',     true,   :right, true,   true ],
+      'effort'      => [ 'Effort',       true,   :right, true,   true ],
+      'effortdone'  => [ 'Effort Done',  true,   :right, true,   true ],
+      'effortleft'  => [ 'Effort Left',  true,   :right, true,   true ],
+      'freetime'    => [ 'Free Time',    true,   :right, true,   true ],
+      'id'          => [ 'Id',           false,  :left,  true,   false ],
+      'line'        => [ 'Line No.',     false,  :right, true,   false ],
+      'name'        => [ 'Name',         true,   :left,  false,  false ],
+      'no'          => [ 'No.',          false,  :right, true,   false ],
+      'rate'        => [ 'Rate',         true,   :right, true,   true ],
+      'resources'   => [ 'Resources',    false,  :left,  true,   true ],
+      'revenue'     => [ 'Revenue',      true,   :right, true,   true ],
+      'scenario'    => [ 'Scenario',     false,  :left,  true,   true ],
+      'status'      => [ 'Status',       false,  :left,  true,   true ],
+      'targets'     => [ 'Targets',      false,  :left,  true,   true ],
+      'wbs'         => [ 'WBS',          false,  :left,  true,   false ]
     }
     @@propertiesByType = {
       # Type                  Indent  Align
@@ -161,22 +162,15 @@ class TaskJuggler
       end
     end
 
-    # This function returns true if the values for the _colId_ column need to be
-    # calculated.
-    def calculated?(colId)
-      if @@propertiesById.has_key?(colId)
-        return @@propertiesById[colId][3]
-      end
-      return false
-    end
+    # Returns the default column title for the columns _id_.
+    def TableReport::defaultColumnTitle(id)
+      # Return an empty string for some special columns that don't have a fixed
+      # title.
+      specials = %w( chart hourly daily weekly monthly quarterly yearly)
+      return '' if specials.include?(id)
 
-    # This functions returns true if the values for the _col_id_ column are
-    # scenario specific.
-    def scenarioSpecific?(colId)
-      if @@propertiesById.has_key?(colId)
-        return @@propertiesById[colId][4]
-      end
-      return false
+      # Return the title for build-in hardwired columns.
+      @@propertiesById.include?(id) ? @@propertiesById[id][0] : nil
     end
 
     # Return if the column values should be indented based on the _colId_ or the
@@ -203,15 +197,22 @@ class TaskJuggler
       end
     end
 
-    # Returns the default column title for the columns _id_.
-    def TableReport::defaultColumnTitle(id)
-      # Return an empty string for some special columns that don't have a fixed
-      # title.
-      specials = %w( chart hourly daily weekly monthly quarterly yearly)
-      return '' if specials.include?(id)
+    # This function returns true if the values for the _colId_ column need to be
+    # calculated.
+    def calculated?(colId)
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][3]
+      end
+      return false
+    end
 
-      # Return the title for build-in hardwired columns.
-      @@propertiesById.include?(id) ? @@propertiesById[id][0] : nil
+    # This functions returns true if the values for the _col_id_ column are
+    # scenario specific.
+    def scenarioSpecific?(colId)
+      if @@propertiesById.has_key?(colId)
+        return @@propertiesById[colId][4]
+      end
+      return false
     end
 
     def supportedColumns
@@ -358,6 +359,7 @@ class TaskJuggler
                      'scopeProperty' => scopeLine ? scopeLine.property : nil,
                      'loadUnit' => a('loadUnit'),
                      'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
                      'costAccount' => a('costAccount'),
@@ -421,6 +423,7 @@ class TaskJuggler
                      'scopeProperty' => scopeLine ? scopeLine.property : nil,
                      'loadUnit' => a('loadUnit'),
                      'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
                      'costAccount' => a('costAccount'),

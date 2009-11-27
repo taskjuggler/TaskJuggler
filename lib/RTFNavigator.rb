@@ -21,7 +21,7 @@ class TaskJuggler
   # It currently only supports HTML.
   class RTFNavigator < RichTextFunctionHandler
 
-    def initialize(project, sourceFileInfo)
+    def initialize(project, sourceFileInfo = nil)
       super(project, 'navigator', sourceFileInfo)
       @blockFunction = true
     end

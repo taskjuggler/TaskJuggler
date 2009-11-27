@@ -297,33 +297,23 @@ class TaskJuggler
     # Convert the intermediate representation into HTML elements.
     def to_html
       noChilds = false
+      attrs = {}
+      attrs['class'] = @richText.cssClass if @richText.cssClass
       html =
       case @category
       when :richtext
-        XMLElement.new(@richText.blockMode ? 'div' : 'span')
+        XMLElement.new(@richText.blockMode ? 'div' : 'span', attrs)
       when :title1
-        el = XMLElement.new('h1', 'id' => convertToID(children_to_s))
-        if @richText.sectionNumbers
-          el << XMLText.new("#{@data[0]} ")
-        end
-        el
+        htmlTitle(1)
       when :title2
-        el = XMLElement.new('h2', 'id' => convertToID(children_to_s))
-        if @richText.sectionNumbers
-          el << XMLText.new("#{@data[0]}.#{@data[1]} ")
-        end
-        el
+        htmlTitle(2)
       when :title3
-        el = XMLElement.new('h3', 'id' => convertToID(children_to_s))
-        if @richText.sectionNumbers
-          el << XMLText.new("#{@data[0]}.#{@data[1]}.#{@data[2]} ")
-        end
-        el
+        htmlTitle(3)
       when :hline
         noChilds = true
-        XMLElement.new('hr')
+        XMLElement.new('hr', attrs)
       when :paragraph
-        XMLElement.new('p')
+        XMLElement.new('p', attrs)
       when :pre
         noChilds = true
         pre = XMLElement.new('pre')
@@ -371,7 +361,7 @@ class TaskJuggler
       when :bold
         XMLElement.new('b')
       when :code
-        XMLElement.new('code')
+        XMLElement.new('code', attrs)
       when :text
         noChilds = true
         XMLText.new(@children[0])
@@ -419,6 +409,24 @@ class TaskJuggler
         out << '_' if c == ' '
       end
       out.chomp('_')
+    end
+
+    private
+
+    def htmlTitle(level)
+      attrs = { 'id' => convertToID(children_to_s) }
+      attrs['class'] = @richText.cssClass if @richText.cssClass
+      el = XMLElement.new("h#{level}", attrs)
+      if @richText.sectionNumbers
+        s = ''
+        1.upto(level) do |i|
+          s += '.' unless s.empty?
+          s += "#{@data[i - 1]}"
+        end
+        s += ' '
+        el << XMLText.new(s)
+      end
+      el
     end
 
   end

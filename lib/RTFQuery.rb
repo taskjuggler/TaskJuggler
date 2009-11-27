@@ -20,7 +20,7 @@ class TaskJuggler
   # query the value of a project or property attribute.
   class RTFQuery < RichTextFunctionHandler
 
-    def initialize(project, sourceFileInfo)
+    def initialize(project, sourceFileInfo = nil)
       super(project, 'query', sourceFileInfo)
       @blockMode = false
       @query = nil
@@ -35,7 +35,7 @@ class TaskJuggler
 
     # Not supported for this function
     def to_s(args)
-      prepareQuery(args)
+      return '' unless prepareQuery(args)
       if @query.ok
         @query.result.to_s
       else
@@ -46,7 +46,7 @@ class TaskJuggler
 
     # Return a XMLElement tree that represents the navigator in HTML code.
     def to_html(args)
-      prepareQuery(args)
+      return nil unless prepareQuery(args)
       if @query.ok
         if @query.result.respond_to?('to_html')
           @query.result.to_html
@@ -75,11 +75,12 @@ class TaskJuggler
 
       # Check the user provided arguments. Only the following list is allowed.
       validArgs = %w( family property scopeproperty attribute scenario
-                      start end loadunit numberformat currencyformat )
+                      start end loadunit numberformat timeformat currencyformat )
       args.each_key do |arg|
         unless validArgs.include?(arg)
           error('bad_query_parameter', "Unknown query parameter '#{arg}'. " +
                 "Use one of #{validArgs.join(', ')}!")
+          return nil
         end
       end
 
@@ -93,6 +94,7 @@ class TaskJuggler
       @query.start = args['start'] if args['start']
       @query.end = args['end'] if args['end']
       @query.numberFormat = args['numberformat'] if args['numberformat']
+      @query.timeFormat = args['timeformat'] if args['timeformat']
       @query.currencyFormat = args['currencyformat'] if args['currencyformat']
 
       # And now the slighly more complicated ones.

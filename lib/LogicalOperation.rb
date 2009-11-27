@@ -184,6 +184,7 @@ class TaskJuggler
         'property' => expr.property,
         'loadUnit' => report.get('loadUnit'),
         'numberFormat' => report.get('numberFormat'),
+        'timeFormat' => report.get('timeFormat'),
         'currencyFormat' => report.get('currencyFormat'),
         'scenarioIdx' => @scenarioIdx,
         'attributeId' => @operand1,

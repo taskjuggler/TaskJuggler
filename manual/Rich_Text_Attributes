@@ -161,6 +161,8 @@ requested attribute is scenario specific.
 * ''''loadunit'''' : The [[loadunit]] that should be used in case the
 requested attribute is an effort or duration value.
 
+* ''''timeformat'''' : The [[timeformat]] used to format date attributes.
+
 * ''''numberformat'''' : The [[numberformat]] used to format arithmetic
 attributes.
 

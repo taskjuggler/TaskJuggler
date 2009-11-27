@@ -99,6 +99,7 @@ balance cost rev
 # *** EXAMPLE: balance -
 
 # *** EXAMPLE: resources +
+resource boss "Paul Henry Bullock"
 resource dev "Developers" {
   resource dev1 "Paul Smith" {
     Email "paul@crappysoftware.com"
@@ -212,6 +213,18 @@ task AcSo "Accounting Software" {
       effort 20d
       allocate dev1, dev2
 # *** EXAMPLE: software +
+      journalentry 2002-02-03 "Problems with the SQL Libary" {
+        author boss
+        alert yellow
+        intro -8<-
+          We ran into some compatibility problems with the SQL
+          Library.
+        ->8-
+        more -8<-
+          We have already contacted the vendor and are now waiting for
+          their advise.
+        ->8-  
+      }
     }
 # *** EXAMPLE: database -
 # *** EXAMPLE: software -
@@ -278,6 +291,17 @@ task AcSo "Accounting Software" {
       depends !!software
       allocate test, dev2
       note "Hopefully most bugs will be found and fixed here."
+      journalentry 2002-03-01 "Contract with Peter not yet signed" {
+        author boss
+        alert red
+        intro -8<-
+          The paperwork is stuck with HR and I can't hunt it down.
+        ->8-
+        more -8<-
+          If we don't get the contract closed within the next week,
+          the start of the testing is at risk.
+        ->8-
+      }
     }
 
     task beta "Beta Test" {
@@ -300,6 +324,10 @@ task AcSo "Accounting Software" {
     purge chargeset
     chargeset doc
 # *** EXAMPLE: task1 +
+    journalentry 2002-02-28 "User manual completed" {
+      author boss
+      intro "The doc writers did a really great job to finish on time."
+    }
   }
 # *** EXAMPLE: manual -
 # *** EXAMPLE: task1 -
@@ -400,6 +428,8 @@ textreport "" {
   textreport "Status" {
     formats html
     center -8<-
+      <[report id="status.dashboard"]>
+      ----
       <[report id="status.completed"]>
       ----
       <[report id="status.ongoing"]>
@@ -493,6 +523,12 @@ taskreport status "" {
   columns wbs, name, start, end, effort, status
   scenarios delayed 
 
+  taskreport dashboard "" {
+    headline "Project Dashboard (<-query attribute='now'->)"
+    columns name, resources, alert, alertnotice
+    hidetask ~hasalert(1)
+    sorttasks alert.down, delayed.end.up
+  }
   taskreport completed "" {
     headline "Already completed tasks"
     hidetask ~(delayed.end <= ${now})

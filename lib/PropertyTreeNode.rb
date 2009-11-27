@@ -438,6 +438,41 @@ class TaskJuggler
       query.result = @project['alertLevels'][query.numericalResult][0]
     end
 
+    def query_alertnotice(query)
+      rText = ''
+      @project['journal'].currentEntries(query.end, self).each do |entry|
+        rText = "=== " + entry.headline + " ===\n"
+        rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
+        if entry.author
+          rText += "''by #{entry.author.name}''"
+        end
+        rText += "\n\n"
+        if entry.intro
+          rText += entry.intro.richText.inputText
+        end
+      end
+      handlers = [
+        RTFNavigator.new(@project),
+        RTFQuery.new(@project),
+        RTFReport.new(@project)
+      ]
+      begin
+        rti = RichText.new(rText, handlers).generateIntermediateFormat
+      rescue RichTextException => msg
+        $stderr.puts "Error in RichText of rule #{@keyword}\n" +
+                     "Line #{msg.lineNo}: #{msg.text}\n" +
+                     "#{msg.line}"
+        return nil
+      end
+      rti.sectionNumbers = false
+      rti.cssClass = "alertnote"
+      query.result = rti
+    end
+
+    def query_alertmessage(query)
+      nil
+    end
+
     # Dump the class data in human readable form. Used for debugging only.
     def to_s # :nodoc:
       res = "#{self.class} #{fullId} \"#{@name}\"\n" +

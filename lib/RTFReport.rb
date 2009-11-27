@@ -19,7 +19,7 @@ class TaskJuggler
   # report into the RichText output for supported formats.
   class RTFReport < RichTextFunctionHandler
 
-    def initialize(project, sourceFileInfo)
+    def initialize(project, sourceFileInfo = nil)
       super(project, 'report', sourceFileInfo)
       @blockFunction = true
     end

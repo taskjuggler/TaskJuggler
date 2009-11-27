@@ -71,6 +71,11 @@ class TaskJuggler
       end
     end
 
+    # Like Array::include?
+    def include?(entry)
+      @entries.include?(entry)
+    end
+
     # Returns the last element (by date) if date is nil or the last element
     # right before the given _date_.
     def last(date = nil)
@@ -156,15 +161,18 @@ class TaskJuggler
       pEntry = @propertyToEntries[property] ?
                @propertyToEntries[property].last(date) : nil
 
-      return false unless pEntry || pEntry.alertLevel < minLevel
+      return false if pEntry.nil? || pEntry.headline.empty? ||
+                      pEntry.alertLevel < minLevel
 
       # Check parents for a more important or more up-to-date message.
       p = property.parent
       while p do
-        ppEntry = @propertyToEntries[property] ?
-                  @propertyToEntries[property].last(date) : nil
-        if ppEntry && ppEntry.alertLevel >= pEntry.alertLevel &&
-           ppEntry.date >= pEntry.date
+        ppEntry = @propertyToEntries[p] ?
+                  @propertyToEntries[p].last(date) : nil
+
+        if ppEntry && ppEntry.date >= pEntry.date &&
+           ((ppEntry.alertLevel >= pEntry.alertLevel) ||
+            ppEntry.headline.empty?)
           # A parent has a more up-to-date or more important message.
           return false
         end
@@ -175,7 +183,7 @@ class TaskJuggler
       # Check all the children for more up-to-date or more important messages.
       # If the currentEntries list contains pEntry, this property has the
       # current and most important message for this property tree.
-      return currentEntries.include?(pEntry)
+      return currentEntries(date, property).include?(pEntry)
     end
 
     # This function recursively traverses a tree of PropertyTreeNode objects

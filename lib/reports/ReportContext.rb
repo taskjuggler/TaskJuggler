@@ -28,6 +28,7 @@ class TaskJuggler
         'project' => @project,
         'loadUnit' => @report.get('loadUnit'),
         'numberFormat' => @report.get('numberFormat'),
+        'timeFormat' => @report.get('timeFormat'),
         'currencyFormat' => @report.get('currencyFormat'),
         'start' => @report.get('start'),
         'end' => @report.get('end'),

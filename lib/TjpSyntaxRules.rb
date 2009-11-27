@@ -2346,6 +2346,13 @@ properties.
 EOT
          )
 
+    singlePattern('_alertnotice')
+    descr(<<'EOT'
+The headlines and the intro message from the journal entries that caused the
+current alert level for this task.
+EOT
+         )
+
     singlePattern('_chart')
     descr(<<'EOT'
 A Gantt chart. This column type requires all lines to have the same fixed

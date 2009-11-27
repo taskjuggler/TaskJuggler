@@ -35,7 +35,8 @@ class TaskJuggler
     attr_accessor :project, :propertyType, :propertyId, :property,
                   :scopePropertyType, :scopePropertyId, :scopeProperty,
                   :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
-                  :numberFormat, :currencyFormat, :costAccount, :revenueAccount,
+                  :timeFormat, :numberFormat, :currencyFormat, :costAccount,
+                  :revenueAccount,
                   :loadUnit,
                   :result, :numericalResult, :sortableResult, :ok, :errorMessage
 
@@ -45,7 +46,8 @@ class TaskJuggler
       ps = %w( project propertyType propertyId property scopePropertyId
                scopeProperty attributeId scenario scenarioIdx
                start end startIdx endIdx
-               loadUnit numberFormat currencyFormat costAccount revenueAccount)
+               loadUnit numberFormat currencyFormat timeFormat
+               costAccount revenueAccount)
       ps.each do |p|
         instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
       end
@@ -70,7 +72,7 @@ class TaskJuggler
                                start version )
           unless supportedAttrs.include?(@attributeId)
             raise TjException.new,
-                  "Unsupported project attribute #{@attributeId}"
+                  "Unsupported project attribute '#{@attributeId}'"
           end
           @sortableResult = @project[@attributeId]
           @result =
