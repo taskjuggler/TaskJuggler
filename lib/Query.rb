@@ -99,13 +99,14 @@ class TaskJuggler
         @startIdx = @project.dateToIdx(@start, true) if @startIdx.nil? && @start
         @endIdx = @project.dateToIdx(@end, true) - 1 if @endIdx.nil? && @end
 
-        if @property.hasQuery?(@attributeId, @scenarioIdx)
-          # Call the property query function to get the result.
-          if @scenarioIdx
-            @property.send('query_' + @attributeId, @scenarioIdx, self)
-          else
-            @property.send('query_' + @attributeId, self)
-          end
+        queryMethodName = 'query_' + @attributeId
+        # First we check for non-scenario-specific query functions.
+        if @property.respond_to?(queryMethodName)
+          @property.send(queryMethodName, self)
+        elsif @scenarioIdx &&
+              @property.data[@scenarioIdx].respond_to?(queryMethodName)
+          # Then we check for scenario-specific ones via the @data member.
+          @property.send(queryMethodName, @scenarioIdx, self)
         else
           # There is no query function. We simply use the property attribute
           # value.
@@ -115,12 +116,15 @@ class TaskJuggler
             else
               @property.get(@attributeId)
             end
-          if @sortableResult.is_a?(Array)
+          if @sortableResult.is_a?(TjTime)
+            @result = @sortableResult.to_s(@timeFormat)
+          elsif @sortableResult.is_a?(Array)
             # This ugly special case is needed for custom attributes of type
             # reference.
             @sortableResult = @sortableResult[0]
+          else
+            @result = @sortableResult.to_s
           end
-          @result = @sortableResult.to_s
           @numericalResult = @result if @result.is_a?(Fixnum) or
                                         @result.is_a?(Float)
         end

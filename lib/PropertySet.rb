@@ -93,6 +93,24 @@ class TaskJuggler
       @attributeDefinitions.include?(attrId)
     end
 
+    # Check whether the PropertyTreeNode has a calculated attribute with the
+    # ID _attrId_. For scenarioSpecific attributes _scenarioIdx_ needs to be
+    # provided.
+    def hasQuery?(attrId, scenarioIdx = nil)
+      return false if @properties.empty?
+
+      property = @properties.first
+      methodName = 'query_' + attrId
+      # First we check for non-scenario-specific query functions.
+      if property.respond_to?(methodName)
+        return true
+      elsif scenarioIdx
+        # Then we check for scenario-specific ones via the @data member.
+        return property.data[scenarioIdx].respond_to?(methodName)
+      end
+      false
+    end
+
     # Return whether the attribute with _attrId_ is scenario specific or not.
     def scenarioSpecific?(attrId)
       # All hardwired attributes are not scenario specific.

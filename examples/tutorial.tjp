@@ -261,9 +261,21 @@ textreport "" {
     <[navigator id="navbar"]>
     ----
   ->8-
+  footer "----"
   textreport "Overview" {
     formats html
     center '<[report id="overview"]>'
+  }
+
+  textreport "Status" {
+    formats html
+    center -8<-
+      <[report id="status.completed"]>
+      ----
+      <[report id="status.ongoing"]>
+      ----
+      <[report id="status.future"]>
+    ->8-   
   }
 
   textreport "Development" {
@@ -299,7 +311,7 @@ taskreport overview "" {
     # [[Development]]
     # Testing
     
-    === Project Plan ===
+    === Original Project Plan ===
   ->8-
   columns hierarchindex,
           name { tooltip 1 "'''ID''': <-query attribute='id'->" },
@@ -327,8 +339,27 @@ taskreport overview "" {
   ->8-
 }
 
+taskreport status "" {
+  columns wbs, name, start, end, effort, status
+  scenarios delayed 
+
+  taskreport completed "" {
+    headline "Already completed tasks"
+    hidetask ~(delayed.end <= ${now})
+  }
+  taskreport ongoing "" {
+    headline "Ongoing tasks"
+    hidetask ~((delayed.start <= ${now}) & (delayed.end > ${now}))
+  }
+  taskreport future "" {
+    headline "Future tasks"
+    hidetask ~(delayed.start > ${now})
+  }
+}
+
 # A list of tasks showing the resources assigned to each task.
 taskreport development "" {
+  scenarios delayed
   headline "Development - Resource Allocation Report"
   columns hierarchindex, name, start, end, effort { title "Work" },
           duration, chart { scale day width 500 }
@@ -348,6 +379,7 @@ taskreport deliveries "" {
 }
 # A list of all employees with their contact details.
 resourcereport contactList "" {
+  scenarios delayed
   headline "Contact list and duty plan"
   columns name,
           Email { celltext 1 "[mailto:<-Email-> <-Email->]" },
@@ -361,6 +393,7 @@ resourcereport contactList "" {
 # A graph showing resource allocation. It identifies whether each
 # resource is under- or over-allocated for.
 resourcereport resourceGraph "" {
+  scenarios delayed
   headline "Resource Allocation Graph"
   columns no, name, effort, rate, weekly
   loadunit shortauto

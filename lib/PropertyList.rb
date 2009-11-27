@@ -96,7 +96,8 @@ class TaskJuggler
 
     # Append a new sorting level to the existing levels.
     def addSortingCriteria(criteria, up, scIdx)
-      unless @propertySet.knownAttribute?(criteria)
+      unless @propertySet.knownAttribute?(criteria) ||
+             @propertySet.hasQuery?(criteria, scIdx)
         raise TjException.new, "Unknown attribute #{criteria} used for " +
                                'sorting criterium'
       end

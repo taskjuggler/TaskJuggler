@@ -71,5 +71,7 @@ task "Overwrite Yellow" {
 taskreport "Alerts" {
   formats html
   columns name, alert
+  sorttasks alert.down
+  #hidetask plan.alert < 2
 }
 

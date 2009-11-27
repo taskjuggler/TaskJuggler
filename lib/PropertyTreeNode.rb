@@ -29,6 +29,7 @@ class TaskJuggler
     attr_reader :propertySet, :id, :name, :parent, :project, :sequenceNo,
                 :children
     attr_accessor :sourceFileInfo
+    attr_reader :data
 
     # Create a new PropertyTreeNode object. _propertySet_ is the PropertySet
     # that this PropertyTreeNode object belongs to. The PropertySet determines
@@ -394,21 +395,6 @@ class TaskJuggler
       end
     end
 
-    # This function returns true if the PropertyTreeNode has a query function
-    # for the given ID _queryId_. In case a _scenarioIdx_ is specified, the
-    # query function must be scenario specific.
-    def hasQuery?(queryId, scenarioIdx = nil)
-      methodName = 'query_' + queryId
-      # First we check for non-scenario-specific query functions.
-      if respond_to?(methodName)
-        return true
-      elsif scenarioIdx
-        # Then we check for scenario-specific ones via the @data member.
-        return @data[scenarioIdx].respond_to?(methodName)
-      end
-      false
-    end
-
     # Returns true if the value of the attribute _attributeId_ (in scenario
     # _scenarioIdx_) has been provided by the user.
     def provided(attributeId, scenarioIdx = nil)
@@ -442,6 +428,14 @@ class TaskJuggler
         return false if @attributes[attributeId].nil?
         @attributes[attributeId].provided || @attributes[attributeId].inherited
       end
+    end
+
+    def query_alert(query)
+      journal = @project['journal']
+      endDate = query.end
+      query.sortableResult = query.numericalResult =
+        journal.alertLevel(endDate, self)
+      query.result = @project['alertLevels'][query.numericalResult][0]
     end
 
     # Dump the class data in human readable form. Used for debugging only.
