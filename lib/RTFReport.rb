@@ -34,9 +34,11 @@ class TaskJuggler
       if args.nil? || (id = args['id']).nil?
         error('rtp_report_id',
               "Argument 'id' missing to specify the report to be used.")
+        nil
       end
       unless (report = @project.report(id))
         error('rtp_report_unknown_id', "Unknown report #{id}")
+        nil
       end
 
       # Save the old report context record
