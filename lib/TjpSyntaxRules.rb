@@ -2357,6 +2357,13 @@ properties.
 EOT
          )
 
+    singlePattern('_alertmessage')
+    descr(<<'EOT'
+The headlines, the summary and the details of the message from the journal
+entries that caused the current alert level for this task.
+EOT
+         )
+
     singlePattern('_alertsummary')
     descr(<<'EOT'
 The headlines and the summary message from the journal entries that caused the

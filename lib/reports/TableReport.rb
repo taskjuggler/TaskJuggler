@@ -28,6 +28,7 @@ class TaskJuggler
     @@propertiesById = {
       # ID                Header          Indent  Align   Calced. Scen Spec.
       'alert'        => [ 'Alert',        true,   :left,  true,   false ],
+      'alertmessage' => [ 'Alert Notice', false,  :left,  true,   false ],
       'alertsummary' => [ 'Alert Notice', false,  :left,  true,   false ],
       'complete'     => [ 'Completion',   false,  :right, true,   true ],
       'cost'         => [ 'Cost',         true,   :right, true,   true ],
@@ -738,7 +739,8 @@ class TaskJuggler
       # Some columns need some extra care.
       case columnDef.id
       when 'alert'
-        cell.icon = "flag-#{query.result}"
+        id = @project.alertLevelId(query.numericalResult)
+        cell.icon = "flag-#{id}"
         cell.fontColor = @project.alertLevelColor(query.sortableResult)
       when 'line'
         cell.text = line.lineNo.to_s

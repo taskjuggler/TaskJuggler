@@ -1,8 +1,8 @@
 project journal "Project with Journal" "1.0" 2009-05-04 +1m {
   journalentry 2009-05-05 "The project started."
   journalentry 2009-05-10 "We made some progress." {
-    intro "All jobs have been assigned. The crew is working away."
-    more "Let's hope, we can keep the good spirit."
+    summary "All jobs have been assigned. The crew is working away."
+    details "Let's hope, we can keep the good spirit."
   }
 }
 

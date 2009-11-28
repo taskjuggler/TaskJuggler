@@ -110,6 +110,13 @@ class TaskJuggler
       end
       style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
       style += 'font-weight:bold; ' if @bold
+
+      # If we have a RichText content and a width limit, we enable line
+      # wrapping.
+      if @text.is_a?(RichTextIntermediate) && @width
+        style += "white-space:normal; "
+      end
+
       style += "font-size: #{@fontSize}px; " if fontSize
       unless @fontColor == 0
         style += "color:#{'#%06X' % @fontColor}; "
@@ -135,7 +142,8 @@ class TaskJuggler
 
       shortText, singleLine = shortVersion(@text)
       tooltip = nil
-      if (@line && @line.table.equiLines && !singleLine) || !@category || @width
+      if (@line && @line.table.equiLines && (!singleLine || @width )) ||
+          !@category
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
         div << XMLText.new(shortText)

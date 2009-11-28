@@ -439,38 +439,11 @@ class TaskJuggler
     end
 
     def query_alertsummary(query)
-      rText = ''
-      @project['journal'].currentEntries(query.end, self).each do |entry|
-        rText = "=== " + entry.headline + " ===\n"
-        rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
-        if entry.author
-          rText += "''by #{entry.author.name}''"
-        end
-        rText += "\n\n"
-        if entry.summary
-          rText += entry.summary.richText.inputText
-        end
-      end
-      handlers = [
-        RTFNavigator.new(@project),
-        RTFQuery.new(@project),
-        RTFReport.new(@project)
-      ]
-      begin
-        rti = RichText.new(rText, handlers).generateIntermediateFormat
-      rescue RichTextException => msg
-        $stderr.puts "Error in RichText of rule #{@keyword}\n" +
-                     "Line #{msg.lineNo}: #{msg.text}\n" +
-                     "#{msg.line}"
-        return nil
-      end
-      rti.sectionNumbers = false
-      rti.cssClass = "alertnote"
-      query.result = rti
+      alertMessages(query, false)
     end
 
     def query_alertmessage(query)
-      nil
+      alertMessages(query, true)
     end
 
     # Dump the class data in human readable form. Used for debugging only.
@@ -517,6 +490,49 @@ class TaskJuggler
     end
 
   private
+
+    # Create a blog-style list of all alert messages that match the Query.
+    def alertMessages(query, longVersion)
+      # The components of the message are either UTF-8 text or RichText. For
+      # the RichText components, we use the originally provided markup since
+      # we compose the result as RichText markup first.
+      rText = ''
+      @project['journal'].currentEntries(query.end, self).each do |entry|
+        rText = "== " + entry.headline + " ==\n"
+        rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
+        if entry.author
+          rText += "''by #{entry.author.name}''"
+        end
+        rText += "\n\n"
+        if entry.summary
+          rText += entry.summary.richText.inputText
+          rText += "\n\n"
+        end
+        if longVersion && entry.details
+          rText += entry.details.richText.inputText
+        end
+      end
+      # Now convert the RichText markup String into RichTextIntermediate
+      # format.
+      handlers = [
+        RTFNavigator.new(@project),
+        RTFQuery.new(@project),
+        RTFReport.new(@project)
+      ]
+      begin
+        rti = RichText.new(rText, handlers).generateIntermediateFormat
+      rescue RichTextException => msg
+        $stderr.puts "Error in RichText of rule #{@keyword}\n" +
+                     "Line #{msg.lineNo}: #{msg.text}\n" +
+                     "#{msg.line}"
+        return nil
+      end
+      # No section numbers, please!
+      rti.sectionNumbers = false
+      # We use a special class to allow CSS formating.
+      rti.cssClass = 'alertmessage'
+      query.result = rti
+    end
 
     def newAttribute(attributeType)
       attribute = attributeType.objClass.new(self, attributeType)

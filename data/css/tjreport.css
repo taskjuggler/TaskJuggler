@@ -13,18 +13,20 @@ h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
 
-alertnote { font-size:10px; }
-h1.alertnote { font-size:14px; }
-h2.alertnote { 
+.alertmessage { font-size:11px; }
+i.alertmessage { font-size:9px; }
+h1.alertmessage { 
   margin-top:5px;
   font-size:13px; 
   margin-bottom:1px;
 }
-h3.alertnote { font-size:12px; }
-p.alertnote {
+h2.alertmessage { font-size:12px; }
+h3.alertmessage { font-size:11px; }
+p.alertmessage {
   margin-top:1px;
   margin-bottom:5px;
 }
+
 .tjtable {
   background-color:#9a9a9a;
   margin-top:15px;

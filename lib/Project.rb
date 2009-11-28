@@ -419,6 +419,13 @@ class TaskJuggler
       nil
     end
 
+    # Return the ID or keyword of the alert level with the given _levelIndex_.
+    # Or nil if the level does not exist.
+    def alertLevelId(levelIndex)
+      return 'unknown' unless @attributes['alertLevels'][levelIndex]
+      @attributes['alertLevels'][levelIndex][0]
+    end
+
     # Return the user readable name of the alert level with the given
     # _levelIndex_. Or nil if the level does not exist.
     def alertLevelName(levelIndex)
