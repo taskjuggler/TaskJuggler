@@ -1219,12 +1219,12 @@ information in the journal entry.
 EOT
        )
 
-    pattern(%w( _intro $STRING ), lambda {
+    pattern(%w( _summary $STRING ), lambda {
       rtTokenSetIntro =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
-      @journalEntry.intro = newRichText(@val[1], rtTokenSetIntro)
+      @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
     })
-    doc('intro', <<'EOT'
+    doc('summary', <<'EOT'
 This is the introductory part of the journal entry. It should summarize the
 full entry but should contain more details than the headline.
 EOT
@@ -1236,16 +1236,16 @@ formatting, hyperlinks and paragraphs.
 EOT
        )
 
-    pattern(%w( _more $STRING ), lambda {
+    pattern(%w( _details $STRING ), lambda {
       rtTokenSetMore =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
             REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
             BULLET3 NUMBER1 NUMBER2 NUMBER3 )
-      @journalEntry.more = newRichText(@val[1], rtTokenSetMore)
+      @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
     })
-    doc('more', <<'EOT'
-This is a continuation of the [[intro introduction]] of the journal entry. It
-is usually several paragraphs long.
+    doc('details', <<'EOT'
+This is a continuation of the [[summary]] of the journal entry. It
+can be several paragraphs long.
 EOT
        )
     arg(1, 'text', <<'EOT'
@@ -2357,9 +2357,9 @@ properties.
 EOT
          )
 
-    singlePattern('_alertnotice')
+    singlePattern('_alertsummary')
     descr(<<'EOT'
-The headlines and the intro message from the journal entries that caused the
+The headlines and the summary message from the journal entries that caused the
 current alert level for this task.
 EOT
          )

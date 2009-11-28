@@ -62,7 +62,11 @@ account rev "Payments"
 # The Profit&Loss analysis should be rev - cost accounts.
 balance cost rev
 
-resource boss "Paul Henry Bullock"
+resource boss "Paul Henry Bullock" {
+  Email "phb@crappysoftware.com"
+  Phone "x100"
+  rate 480
+}
 resource dev "Developers" {
   resource dev1 "Paul Smith" {
     Email "paul@crappysoftware.com"
@@ -144,13 +148,13 @@ task AcSo "Accounting Software" {
       effort 20d
       allocate dev1, dev2
       journalentry 2002-02-03 "Problems with the SQL Libary" {
-        author boss
+        author dev1
         alert yellow
-        intro -8<-
+        summary -8<-
           We ran into some compatibility problems with the SQL
           Library.
         ->8-
-        more -8<-
+        details -8<-
           We have already contacted the vendor and are now waiting for
           their advise.
         ->8-  
@@ -197,10 +201,10 @@ task AcSo "Accounting Software" {
       journalentry 2002-03-01 "Contract with Peter not yet signed" {
         author boss
         alert red
-        intro -8<-
+        summary -8<-
           The paperwork is stuck with HR and I can't hunt it down.
         ->8-
-        more -8<-
+        details -8<-
           If we don't get the contract closed within the next week,
           the start of the testing is at risk.
         ->8-
@@ -222,7 +226,7 @@ task AcSo "Accounting Software" {
     chargeset doc
     journalentry 2002-02-28 "User manual completed" {
       author boss
-      intro "The doc writers did a really great job to finish on time."
+      summary "The doc writers did a really great job to finish on time."
     }
   }
 
@@ -375,7 +379,7 @@ taskreport status "" {
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
-    columns name, resources, alert, alertnotice
+    columns name { title "Task" }, resources, alert, alertsummary
     hidetask ~hasalert(1)
     sorttasks alert.down, delayed.end.up
   }
@@ -409,7 +413,6 @@ taskreport deliveries "" {
   headline "Project Deliveries"
   columns hierarchindex, name, start, end, note { width 150 }, complete, chart
   taskroot AcSo.deliveries
-  loadunit days
   hideresource 1
   scenarios plan, delayed
 }

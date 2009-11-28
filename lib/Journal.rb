@@ -16,12 +16,12 @@ class TaskJuggler
   # property of the project at a certain point in time. Additionally, the
   # entry can contain a reference to a Resource as author and an alert level.
   # The text is structured in 3 different elements, a headline, a short
-  # introduction and a longer text segment. The headline is mandatory, the
-  # intro and more sections are optional.
+  # summary and a longer text segment. The headline is mandatory, the
+  # summary and details sections are optional.
   class JournalEntry
 
     attr_reader :date, :headline, :property
-    attr_accessor :author, :intro, :more, :alertLevel
+    attr_accessor :author, :summary, :details, :alertLevel
 
     # Create a new JournalEntry object.
     def initialize(journal, date, headline, property)
@@ -37,10 +37,10 @@ class TaskJuggler
       @property = property
       # A reference to a Resource.
       @author = nil
-      # An introductory RichText paragraph.
-      @intro = nil
+      # An introductory or summarizing RichText paragraph.
+      @summary = nil
       # A RichText of arbitrary length.
-      @more = nil
+      @details = nil
       # The alert level.
       @alertLevel = 0
     end

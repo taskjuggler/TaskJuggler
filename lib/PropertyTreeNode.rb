@@ -438,7 +438,7 @@ class TaskJuggler
       query.result = @project.alertLevelName(query.numericalResult)
     end
 
-    def query_alertnotice(query)
+    def query_alertsummary(query)
       rText = ''
       @project['journal'].currentEntries(query.end, self).each do |entry|
         rText = "=== " + entry.headline + " ===\n"
@@ -447,8 +447,8 @@ class TaskJuggler
           rText += "''by #{entry.author.name}''"
         end
         rText += "\n\n"
-        if entry.intro
-          rText += entry.intro.richText.inputText
+        if entry.summary
+          rText += entry.summary.richText.inputText
         end
       end
       handlers = [
