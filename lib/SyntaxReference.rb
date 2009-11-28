@@ -234,7 +234,7 @@ class TaskJuggler
           # If it's a terminal symbol, we found what we are looking for. We add
           # it to the attrs hash and mark it as non scenario specific.
           attrs[pattern] = scenarioSpecific
-        elsif pattern[0] == '!scenarioId'
+        elsif pattern[0] == '!scenarioIdCol'
           # A reference to the !scenarioId rule marks the next token of the
           # pattern as a reference to a rule with all scenario specific
           # attributes.

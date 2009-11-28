@@ -40,7 +40,7 @@ EOT
     optional
     pattern(%w( !account))
     pattern(%w( !accountScenarioAttributes ))
-    pattern(%w( !scenarioId !accountScenarioAttributes ), lambda {
+    pattern(%w( !scenarioIdCol !accountScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
     # Other attributes will be added automatically.
@@ -100,6 +100,28 @@ EOT
        )
 
     # Other attributes will be added automatically.
+  end
+
+  def rule_alertLevel
+    pattern(%w( $ID ), lambda {
+      level = @project.alertLevelIndex(@val[0])
+      unless level
+        error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
+              'green, yellow or red')
+      end
+      level
+    })
+    doc('alert level', <<'EOT'
+Specify the alert level for this entry. Supported values are green, yellow and
+red. The default value is green. This attribute is inteded to be used for
+status reporting. When used for a journal entry that is associated with a
+property, the value can be reported in the alert column. When multiple entries
+have been specified for the property, the entry with the date closest to the
+report end date will be used. Container properties will inherit the highest
+alert level of all its sub properties unless it has an own journal entry dated
+closer to the report end than all of its sub properties.
+EOT
+       )
   end
 
   def rule_allocate
@@ -577,6 +599,28 @@ EOT
 
   def rule_declareFlagList
     listRule('moreDeclareFlagList', '$ID')
+  end
+
+  def rule_details
+    pattern(%w( _details $STRING ), lambda {
+      rtTokenSetMore =
+        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
+            REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
+            BULLET3 NUMBER1 NUMBER2 NUMBER3 )
+      newRichText(@val[1], rtTokenSetMore)
+    })
+    doc('details', <<'EOT'
+This is a continuation of the [[summary]] of the journal or status entry. It
+can be several paragraphs long.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+subset of the markup is supported for this attribute. You can use word
+formatting, paragraphs, hyperlinks, lists, section and subsection
+headers.
+EOT
+       )
   end
 
   def rule_durationUnit
@@ -1219,42 +1263,13 @@ information in the journal entry.
 EOT
        )
 
-    pattern(%w( _summary $STRING ), lambda {
-      rtTokenSetIntro =
-        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
-      @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
+    pattern(%w( !summary ), lambda {
+      @journalEntry.summary = @val[0]
     })
-    doc('summary', <<'EOT'
-This is the introductory part of the journal entry. It should summarize the
-full entry but should contain more details than the headline.
-EOT
-       )
-    arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
-small subset of the markup is supported for this attribute. You can use word
-formatting, hyperlinks and paragraphs.
-EOT
-       )
 
-    pattern(%w( _details $STRING ), lambda {
-      rtTokenSetMore =
-        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
-            REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
-            BULLET3 NUMBER1 NUMBER2 NUMBER3 )
-      @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
+    pattern(%w( !details ), lambda {
+      @journalEntry.details = @val[0]
     })
-    doc('details', <<'EOT'
-This is a continuation of the [[summary]] of the journal entry. It
-can be several paragraphs long.
-EOT
-       )
-    arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
-subset of the markup is supported for this attribute. You can use word
-formatting, paragraphs, hyperlinks, lists, section and subsection
-headers.
-EOT
-       )
   end
 
   def rule_journalEntryBody
@@ -2231,6 +2246,7 @@ EOT
        )
 
     pattern(%w( !task ))
+    pattern(%w( !timeSheet ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       @project['vacations'] = @project['vacations'] + @val[2]
     })
@@ -2987,7 +3003,7 @@ EOT
     pattern(%w( !purge ))
     pattern(%w( !resource ))
     pattern(%w( !resourceScenarioAttributes ))
-    pattern(%w( !scenarioId !resourceScenarioAttributes ), lambda {
+    pattern(%w( !scenarioIdCol !resourceScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
 
@@ -3265,6 +3281,15 @@ EOT
   end
 
   def rule_scenarioId
+    pattern(%w( $ID ), lambda {
+      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
+        error('unknown_scenario_id', "Unknown scenario: @val[0]")
+      end
+    })
+    arg(0, 'scenario', 'ID of a defined scenario')
+  end
+
+  def rule_scenarioIdCol
     pattern(%w( $ID_WITH_COLON ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
         error('unknown_scenario_id', "Unknown scenario: @val[0]")
@@ -3341,7 +3366,7 @@ EOT
 
     pattern(%w( !shift ))
     pattern(%w( !shiftScenarioAttributes ))
-    pattern(%w( !scenarioId !shiftScenarioAttributes ), lambda {
+    pattern(%w( !scenarioIdCol !shiftScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
   end
@@ -3479,6 +3504,25 @@ EOT
         'Use \'tree\' as first criteria to keep the breakdown structure.')
   end
 
+  def rule_summary
+    pattern(%w( _summary $STRING ), lambda {
+      rtTokenSetIntro =
+        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
+      newRichText(@val[1], rtTokenSetIntro)
+    })
+    doc('summary', <<'EOT'
+This is the introductory part of the journal or status entry. It should
+summarize the full entry but should contain more details than the headline.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+small subset of the markup is supported for this attribute. You can use word
+formatting, hyperlinks and paragraphs.
+EOT
+       )
+  end
+
   def rule_supplement
     pattern(%w( !supplementAccount !accountBody ), lambda {
       @property = nil
@@ -3572,7 +3616,7 @@ EOT
 
     pattern(%w( !task ))
     pattern(%w( !taskScenarioAttributes ))
-    pattern(%w( !scenarioId !taskScenarioAttributes ), lambda {
+    pattern(%w( !scenarioIdCol !taskScenarioAttributes ), lambda {
       @scenarioIdx = 0
     })
     # Other attributes will be added automatically.
@@ -4333,6 +4377,89 @@ EOT
     })
   end
 
+  def rule_timeSheet
+    pattern(%w( !timeSheetHeader !timeSheetBody ), lambda {
+
+    })
+    doc('timesheet', <<'EOT'
+A time sheet record can be used to capture the current status of the tasks
+assigned to a specific resource and the achieved progress for a given period
+of time. The status is assumed to be for the end of this time period. There
+must be a separate time sheet record for each resource per period. Different
+resources can use different reporting periods and reports for the same
+resource may have different reporting periods as long as they don't overlap.
+For the time after the last time sheet, TaskJuggler will extrapolate based on
+the plan data. For periods without a time sheet record prior to the last
+record for this resource, TaskJuggler assumes that no work has been done. The
+work is booked for the specified scenario, but the journal is not scenario
+specific. It is recommended that you only use one scenario to capture actual
+data with this method.
+
+The intended use for time sheets is to have all resource report a time sheet
+every day, week or month. For time sheets covering a period before the [[now
+current date]], the [[work]], [[remaining]] and [[end.timesheet end]]
+attributes are ignored. For the time after the [[now current date]] one
+time sheet is allowed for every resource. The attributes of this time sheet
+will be converted into [[booking]] statements internally. These bookings can
+then be [[export exported]] into a file and then the [[now current date]]
+adjusted to the end of the time sheet period. This way, time sheets can be
+used to capture actual work for each task in an almost automatic way.
+
+The status messages are interpreted as [[journalentry journal entries]]. The
+alert level will be evaluated and the current state of the project can be put
+into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid
+columns]].
+EOT
+       )
+  end
+
+  def rule_timeSheetAttributes
+    optional
+    repeatable
+
+    pattern(%w( !tsNewTaskHeader !tsTaskBody ))
+    doc('newtask', <<'EOT'
+The keyword can be used add a new task to the project. If the task ID requires
+further parent task that don't exist yet, these tasks will be created as well.
+If the task exists already, an error is generated. The new task can be used
+immediately to report progress and status against it.
+EOT
+       )
+
+    pattern(%w( _shift !shiftId ), lambda {
+
+    })
+    doc('shift.timesheet', <<'EOT'
+Specifies an alternative [[shift]] for the time sheet period. This shift will
+override any existing working hour definitions for the resource. It will not
+override already declared [[vacation vacations]] though.
+
+The primary use of this feature is to let the resources report different total
+work time for the report period.
+EOT
+       )
+
+    pattern(%w( !tsTaskHeader !tsTaskBody ))
+    doc('task.timesheet', <<'EOT'
+Specifies an existing task that progress and status should be reported
+against.
+EOT
+       )
+  end
+
+  def rule_timeSheetBody
+    pattern(%w( _{ !timeSheetAttributes _} ), lambda {
+
+    })
+  end
+
+  def rule_timeSheetHeader
+    pattern(%w( _timesheet !resourceId !scenarioId !valIntervalOrDate ),
+            lambda {
+
+    })
+  end
+
   def rule_timezone
     pattern(%w( _timezone !validTimeZone ), lambda{
       ENV['TZ'] = @project['timezone'] = @val[1]
@@ -4362,6 +4489,113 @@ letter acronyms. See
 possible values.
 EOT
        )
+  end
+
+  def rule_tsStatusAttributes
+    optional
+    repeatable
+
+    pattern(%w( !details ), lambda {
+
+    })
+    pattern(%w( !summary ), lambda {
+
+    })
+  end
+
+  def rule_tsStatusBody
+    optional
+    pattern(%w( _{ !tsStatusAttributes _} ))
+  end
+
+  def rule_tsStatusHeader
+    pattern(%w( _status !alertLevel $STRING ), lambda {
+
+    })
+  end
+
+  def rule_tsStatus
+    pattern(%w( !tsStatusHeader !tsStatusBody ))
+    doc('status', <<'EOT'
+The status attribute can be used to describe the current status of the task or
+resource. The content of the status messages is added to the project journal.
+EOT
+       )
+  end
+
+  def rule_tsTaskAttributes
+    optional
+    repeatable
+
+    pattern(%w( _end !valDate ), lambda {
+
+    })
+    doc('end.timesheet', <<'EOT'
+The expected end date for the task. This can only be used for duration based
+task. For effort based task [[remaining]] has to be used.
+EOT
+       )
+
+    pattern(%w( _priority $INTEGER ), lambda {
+
+    })
+    doc('priority.timesheet', <<'EOT'
+The priority is a value between 1 and 1000. It is used to determine the
+sequence of task when converting [[work]] to [[booking bookings]]. Tasks that
+need to finish earlier in the period should have a high priority, tasks that
+end later in the period should have a low priority. For tasks that don't get
+finished in the reported period the priority should be set to 1.
+EOT
+       )
+
+    pattern(%w( _remaining !workingDuration ), lambda {
+
+    })
+    doc('remaining', <<'EOT'
+The remaining effort for the task. If the time sheet is dated after the [[now
+current date]] and the value is different from what TaskJuggler has calculated
+after tasking the reported [[work]] into account, a warning is generated.
+EOT
+       )
+
+    pattern(%w( !tsStatus ))
+
+    pattern(%w( _work !workingDuration ), lambda {
+
+    })
+    doc('work', <<'EOT'
+The amount of time that the resource has spend with the task during the
+reported period. This value is ignored when the reported period is before the
+[[now current date]]. Otherwise TaskJuggler tries to create bookings for the
+reported period based on the provided work time.
+
+Every task listed in the time sheet needs to have a work attribute. The total
+accumulated work time that is reported must match exactly the total working
+hours for the resource for that period.
+
+If a resource has no vacation during the week that is reported and it has a
+regular 40 hour work week, exactly 40 hours total or 5 working days have to be
+reported.
+EOT
+       )
+  end
+
+  def rule_tsTaskBody
+    pattern(%w( _{ !tsTaskAttributes _} ))
+  end
+
+  def rule_tsNewTaskHeader
+    pattern(%w( _newtask !taskIdUnverifd ), lambda {
+
+    })
+    arg(1, 'task', 'ID of the new task')
+  end
+
+  def rule_tsTaskHeader
+    pattern(%w( _task !taskId ), lambda {
+
+    })
+    arg(1, 'task', 'ID of an already existing task')
   end
 
   def rule_vacationName

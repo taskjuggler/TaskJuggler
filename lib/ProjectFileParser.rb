@@ -131,11 +131,13 @@ class TaskJuggler
       # Make sure the interval is within the project time frame.
       if iv.start < @project['start'] || iv.start >= @project['end']
         error('interval_start_in_range',
-                "Start date #{iv.start} must be within the project time frame")
+              "Start date #{iv.start} must be within the project time frame " +
+              "(#{@project['start']} - #{@project['end']})")
       end
       if iv.end <= @project['start'] || iv.end > @project['end']
         error('interval_end_in_range',
-                "End date #{iv.end} must be within the project time frame")
+              "End date #{iv.end} must be within the project time frame " +
+              "(#{@project['start']} - #{@project['end']})")
       end
     end
 
