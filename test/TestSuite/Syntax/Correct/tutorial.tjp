@@ -559,7 +559,6 @@ taskreport deliveries "" {
   headline "Project Deliveries"
   columns hierarchindex, name, start, end, note { width 150 }, complete, chart
   taskroot AcSo.deliveries
-  loadunit days
   hideresource 1
   scenarios plan, delayed
 }

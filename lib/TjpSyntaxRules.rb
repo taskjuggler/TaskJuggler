@@ -1457,36 +1457,36 @@ EOT
   end
 
   def rule_loadunit
-    singlePattern('_days')
+    pattern([ '_days' ], lambda { :days })
     descr('Display all load and duration values as days.')
 
-    singlePattern('_hours')
+    pattern([ '_hours' ], lambda { :hours })
     descr('Display all load and duration values as hours.')
 
-    singlePattern('_longauto')
+    pattern([ '_longauto'] , lambda { :longauto })
     descr(<<'EOT'
 Automatically select the unit that produces the shortest and most readable
 value. The unit name will not be abbreviated.
 EOT
          )
 
-    singlePattern('_minutes')
+    pattern([ '_minutes' ], lambda { :minutes })
     descr('Display all load and duration values as minutes.')
 
-    singlePattern('_months')
+    pattern([ '_months' ], lambda { :months })
     descr('Display all load and duration values as monts.')
 
-    singlePattern('_shortauto')
+    pattern([ '_shortauto' ], lambda { :shortauto })
     descr(<<'EOT'
 Automatically select the unit that produces the shortest and most readable
 value. The unit name will be abbreviated.
 EOT
          )
 
-    singlePattern('_weeks')
+    pattern([ '_weeks' ], lambda { :weeks })
     descr('Display all load and duration values as weeks.')
 
-    singlePattern('_years')
+    pattern([ '_years' ], lambda { :years })
     descr('Display all load and duration values as years.')
   end
 
@@ -2668,7 +2668,7 @@ EOT
        )
 
     pattern(%w( _loadunit !loadunit ), lambda {
-      @property.set('loadUnit', "#{@val[1]}")
+      @property.set('loadUnit', @val[1])
     })
     doc('loadunit', <<'EOT'
 Determines what unit should be used to display all load values in this report.

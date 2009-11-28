@@ -36,7 +36,6 @@ class TaskJuggler
         'revenueAccount' => @report.get('revenueAccount')
       }
       @query = Query.new(queryAttrs)
-
       if (@parent = @project.reportContext)
         # If the new ReportContext is created from within an existing context,
         # this is used as parent context and the settings are copied as

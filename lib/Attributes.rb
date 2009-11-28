@@ -430,6 +430,10 @@ class TaskJuggler
       'richtext'
     end
 
+    def to_s
+      @value ? @value.richText.inputText : ''
+    end
+
     def to_tjp
       "#{@type.id} \"#{@value.to_s}\""
     end

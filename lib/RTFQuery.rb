@@ -33,7 +33,7 @@ class TaskJuggler
       @query = query.dup
     end
 
-    # Not supported for this function
+    # Return the result of the query as String.
     def to_s(args)
       return '' unless prepareQuery(args)
       if @query.ok

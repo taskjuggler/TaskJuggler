@@ -253,7 +253,6 @@ class TaskJuggler
       @result = nil
       @numericalResult = nil
       @sortableResult = nil
-      @loadUnit = :days
       @ok = nil
       @errorMessage = nil
     end
