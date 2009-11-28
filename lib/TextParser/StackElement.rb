@@ -35,9 +35,10 @@ class TaskJuggler::TextParser
     end
 
     # Store a collected value and move the position to the next pattern.
-    def store(val)
+    def store(val, sourceFileInfo = nil)
       @val[@position] = val
       @position += 1
+      @sourceFileInfo = sourceFileInfo if sourceFileInfo
     end
 
   end

@@ -195,7 +195,9 @@ class TaskJuggler
     # This is necessary, because the RichText parser knows nothing about the
     # actual input file. So we have to map the error location in the RichText
     # input stream back to the position in the project file.
-    def newRichText(text)
+    # To limit the supported set of variable tokens, a subset can be provided
+    # by _tokenSet_.
+    def newRichText(text, tokenSet = nil)
       sfi = sourceFileInfo
       begin
         handlers = [
@@ -204,7 +206,7 @@ class TaskJuggler
           RTFReport.new(@project, sfi)
         ]
         rText = RichText.new(text, handlers)
-        rti = rText.generateIntermediateFormat
+        rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet)
         rti.sectionNumbers = false
       rescue RichTextException => msg
         sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)

@@ -1,0 +1,12 @@
+project "Test" 2009-11-28 +2m 
+
+task t "T" {
+	journalentry 2009-11-28 "Just testing" {
+# MARK: error 8 unsupported_token
+    intro -8<-
+      This is all good.
+      * This is bad.
+    ->8-
+  }
+}
+

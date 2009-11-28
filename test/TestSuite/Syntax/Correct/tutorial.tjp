@@ -214,7 +214,7 @@ task AcSo "Accounting Software" {
       allocate dev1, dev2
 # *** EXAMPLE: software +
       journalentry 2002-02-03 "Problems with the SQL Libary" {
-        author boss
+        author dev1
         alert yellow
         intro -8<-
           We ran into some compatibility problems with the SQL
@@ -525,7 +525,7 @@ taskreport status "" {
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
-    columns name, resources, alert, alertnotice
+    columns name { title "Task" }, resources, alert, alertnotice
     hidetask ~hasalert(1)
     sorttasks alert.down, delayed.end.up
   }

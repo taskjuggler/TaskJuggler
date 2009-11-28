@@ -222,7 +222,7 @@ EOT
   end
 
   def test_italic
-    inp = "This is a text with ''italic words'' in it."
+    inp = "This is a text with ''italic words '' in it."
 
     # Check tagged output.
     out = newRichText(inp).to_tagged + "\n"
@@ -248,7 +248,7 @@ EOT
   end
 
   def test_bold
-    inp = "This is a text with '''bold words''' in it."
+    inp = "This is a text with ''' bold words''' in it."
 
     # Check tagged output.
     out = newRichText(inp).to_tagged + "\n"

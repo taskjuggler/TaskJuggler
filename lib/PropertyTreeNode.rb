@@ -435,7 +435,7 @@ class TaskJuggler
       endDate = query.end
       query.sortableResult = query.numericalResult =
         journal.alertLevel(endDate, self)
-      query.result = @project['alertLevels'][query.numericalResult][0]
+      query.result = @project.alertLevelName(query.numericalResult)
     end
 
     def query_alertnotice(query)

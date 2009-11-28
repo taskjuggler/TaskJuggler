@@ -189,26 +189,33 @@ class TaskJuggler
       pattern(%w( !inlineFunction ), lambda {
         @val[0]
       })
-      pattern(%w( $ITALIC !plainTextWithLinks $ITALIC !space ), lambda {
-        el = RichTextElement.new(@richTextI, :italic, @val[1])
-        el.appendSpace = !@val[3].empty?
+      pattern(%w( $ITALIC !space !plainTextWithLinks $ITALIC !space ), lambda {
+        el = RichTextElement.new(@richTextI, :italic, @val[2])
+        # Since the italic end marker will disappear we need to make sure
+        # there was no space before it.
+        @val[2].last.appendSpace = false if @val[2].last
+        el.appendSpace = !@val[4].empty?
         el
       })
-      pattern(%w( $BOLD !plainTextWithLinks $BOLD !space ), lambda {
-        el = RichTextElement.new(@richTextI, :bold, @val[1])
-        el.appendSpace = !@val[3].empty?
+      pattern(%w( $BOLD !space !plainTextWithLinks $BOLD !space ), lambda {
+        el = RichTextElement.new(@richTextI, :bold, @val[2])
+        @val[2].last.appendSpace = false if @val[2].last
+        el.appendSpace = !@val[4].empty?
         el
       })
-      pattern(%w( $CODE !plainTextWithLinks $CODE !space ), lambda {
-        el = RichTextElement.new(@richTextI, :code, @val[1])
-        el.appendSpace = !@val[3].empty?
+      pattern(%w( $CODE !space !plainTextWithLinks $CODE !space ), lambda {
+        el = RichTextElement.new(@richTextI, :code, @val[2])
+        @val[2].last.appendSpace = false if @val[2].last
+        el.appendSpace = !@val[4].empty?
         el
       })
-      pattern(%w( $BOLDITALIC !plainTextWithLinks $BOLDITALIC !space ), lambda {
+      pattern(%w( $BOLDITALIC !space !plainTextWithLinks $BOLDITALIC !space ),
+              lambda {
         el = RichTextElement.new(@richTextI,
                             :bold, RichTextElement.new(@richTextI,
-                                                       :italic, @val[1]))
-        el.appendSpace = !@val[3].empty?
+                                                       :italic, @val[2]))
+        @val[2].last.appendSpace = false if @val[2].last
+        el.appendSpace = !@val[4].empty?
         el
       })
     end

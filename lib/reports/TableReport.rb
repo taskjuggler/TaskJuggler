@@ -739,7 +739,7 @@ class TaskJuggler
       case columnDef.id
       when 'alert'
         cell.icon = "flag-#{query.result}"
-        cell.fontColor = @project['alertLevels'][query.sortableResult][1]
+        cell.fontColor = @project.alertLevelColor(query.sortableResult)
       when 'line'
         cell.text = line.lineNo.to_s
       when 'no'

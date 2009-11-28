@@ -86,14 +86,14 @@ class TaskJuggler
     # Convert the @inputText into an abstract syntax tree that can then be
     # converted into the various output formats. _sectionCounter_ is an Array
     # that holds the initial values for the section counters.
-    def generateIntermediateFormat(sectionCounter = [ 0, 0, 0])
+    def generateIntermediateFormat(sectionCounter = [ 0, 0, 0], tokenSet = nil)
       rti = RichTextIntermediate.new(self)
       # Copy the function handlers.
       @functionHandlers.each do |h|
         rti.registerFunctionHandler(h)
       end
       # Parse the input text into an abstract syntax tree.
-      parser = RichTextParser.new(rti, sectionCounter)
+      parser = RichTextParser.new(rti, sectionCounter, tokenSet)
       parser.open(@inputText)
       # Parse the input text and convert it to the intermediate representation.
       tree = parser.parse('richtext')

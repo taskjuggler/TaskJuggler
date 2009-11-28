@@ -71,10 +71,21 @@ class TaskJuggler
       @rules = { }
       # Array to hold the token types that the scanner can return.
       @variables = []
+      # An list of token types that are not allowed in the current context.
+      @badVariables = []
       # The currently processed rule.
       @cr = nil
       # If set to a value larger than 0 debug output will be generated.
       @@debug = 30
+    end
+
+    # Limit the allowed tokens of the scanner to the subset passed by the
+    # _tokenSet_ Array.
+    def limitTokenSet(tokenSet)
+      return unless tokenSet
+
+      @badVariables = @variables.dup
+      @badVariables.delete_if { |v| tokenSet.include?(v) }
     end
 
     # Call all methods that start with 'rule_' to initialize the rules.
@@ -255,8 +266,8 @@ class TaskJuggler
           token = tok[1..-1]
           if type == ?$
             if @variables.index(token).nil?
-              raise "Fatal Error: Illegal variable type #{token} used for " +
-                    "rule #{rule.name} in pattern '#{pat}'"
+              error('unsupported_token',
+                    "The token #{token} is not supported here.")
             end
           elsif type == ?!
             if @rules[token].nil?
@@ -280,12 +291,7 @@ class TaskJuggler
       loop do
         # At the beginning of a rule we need a token from the input to determine
         # which pattern of the rule needs to be processed.
-        begin
-          token = nextToken
-          Log << "Token: [#{token[0]}][#{token[1]}]"
-        rescue TjException
-          error('parse_rule1', $!.message)
-        end
+        token = getNextToken
 
         # The scanner cannot differentiate between keywords and identifiers. So
         # whenever an identifier is returned we have to see if we have a
@@ -347,17 +353,13 @@ class TaskJuggler
               returnToken(token)
               token = nil
             end
-            @stack.last.store(parseRule(@rules[elToken]))
+            @stack.last.store(parseRule(@rules[elToken]),
+                              @scanner.sourceFileInfo)
           else
             # In case the element is a keyword or variable we have to get a new
             # token if we don't have one anymore.
             if token.nil?
-              begin
-                token = nextToken
-                Log << "Token: [#{token[0]}][#{token[1]}]"
-              rescue TjException
-                error('parse_rule2', $!.message)
-              end
+              token = getNextToken
             end
 
             if elType == ?_
@@ -371,7 +373,7 @@ class TaskJuggler
                 end
                 error('spec_keywork_expctd', text)
               end
-              @stack.last.store(elToken)
+              @stack.last.store(elToken, @scanner.sourceFileInfo)
             elsif elType == ?.
               if token != [ '.', '<END>' ]
                 error('end_expected', 'End expected but found ' +
@@ -388,7 +390,7 @@ class TaskJuggler
                 error('spec_token_expctd', text)
               end
               # If the element is a variable store the value of the token.
-              @stack.last.store(token[1])
+              @stack.last.store(token[1], @scanner.sourceFileInfo)
             end
             # The token has been consumed. Reset the variable.
             token = nil
@@ -419,6 +421,20 @@ class TaskJuggler
 
       Log.exit('parseRule', "Finished rule #{rule.name}")
       return result
+    end
+
+    def getNextToken
+      begin
+        token = nextToken
+        Log << "Token: [#{token[0]}][#{token[1]}]"
+      rescue TjException
+        error('parse_rule', $!.message)
+      end
+      if @badVariables.include?(token[0])
+        error('unsupported_token',
+              "The token #{token[1]} is not supported in this context.")
+      end
+      token
     end
 
   end

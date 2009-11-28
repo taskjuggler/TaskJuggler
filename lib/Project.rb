@@ -56,8 +56,15 @@ class TaskJuggler
     def initialize(id, name, version, messageHandler)
       @messageHandler = messageHandler
       @attributes = {
-        'alertLevels' => [ [ 'green', 0x008000 ], [ 'yellow', 0xE0E000 ],
-                           [ 'red', 0xC00000 ] ],
+        # This nested Array defines the supported alert levels. The lowest
+        # level comes first at index 0 and the level rises from there on.
+        # Currently, these levels are hardcoded. Each level entry has 3
+        # members: the tjp syntax token, the user visible name and the
+        # associated color as RGB byte array.
+        'alertLevels' => [
+          [ 'green',  'Green',  0x008000 ],
+          [ 'yellow', 'Yellow', 0xBEA800 ],
+          [ 'red',    'Red',    0xC00000 ] ],
         'copyright' => nil,
         'costAccount' => nil,
         'currency' => "EUR",
@@ -410,6 +417,21 @@ class TaskJuggler
         end
       end
       nil
+    end
+
+    # Return the user readable name of the alert level with the given
+    # _levelIndex_. Or nil if the level does not exist.
+    def alertLevelName(levelIndex)
+      return 'unknown' unless @attributes['alertLevels'][levelIndex]
+      @attributes['alertLevels'][levelIndex][1]
+    end
+
+    # Return the color of the alert level with the given _levelIndex_. Or nil
+    # if the level does not exist. The color is an RGB encoded byte array,
+    # stored as hexadecimal String, prefixed with a pound sign.
+    def alertLevelColor(levelIndex)
+      return 'unknown' unless @attributes['alertLevels'][levelIndex]
+      @attributes['alertLevels'][levelIndex][2]
     end
 
     # Return the average number of working hours per day. This defaults to 8 but

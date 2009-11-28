@@ -1220,7 +1220,9 @@ EOT
        )
 
     pattern(%w( _intro $STRING ), lambda {
-      @journalEntry.intro = newRichText(@val[1])
+      rtTokenSetIntro =
+        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
+      @journalEntry.intro = newRichText(@val[1], rtTokenSetIntro)
     })
     doc('intro', <<'EOT'
 This is the introductory part of the journal entry. It should summarize the
@@ -1228,12 +1230,18 @@ full entry but should contain more details than the headline.
 EOT
        )
     arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+small subset of the markup is supported for this attribute. You can use word
+formatting, hyperlinks and paragraphs.
 EOT
        )
 
     pattern(%w( _more $STRING ), lambda {
-      @journalEntry.more = newRichText(@val[1])
+      rtTokenSetMore =
+        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
+            REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
+            BULLET3 NUMBER1 NUMBER2 NUMBER3 )
+      @journalEntry.more = newRichText(@val[1], rtTokenSetMore)
     })
     doc('more', <<'EOT'
 This is a continuation of the [[intro introduction]] of the journal entry. It
@@ -1241,7 +1249,10 @@ is usually several paragraphs long.
 EOT
        )
     arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+subset of the markup is supported for this attribute. You can use word
+formatting, paragraphs, hyperlinks, lists, section and subsection
+headers.
 EOT
        )
   end

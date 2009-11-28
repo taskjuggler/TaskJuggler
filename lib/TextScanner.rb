@@ -254,7 +254,7 @@ class TaskJuggler
       end
 
       # Start processing characters from the input.
-      startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+      @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
       token = [ '.', '<END>' ]
       while c = nextChar
         case c
@@ -263,14 +263,14 @@ class TaskJuggler
             token = tok
             break
           end
-          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
         when '#'
           skipComment
-          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
         when '/'
           skipCPlusPlusComments
-          startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
-        when '0'..'9'
+          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+          when '0'..'9'
           token = readNumber(c)
           break
         when "'"
@@ -309,7 +309,7 @@ class TaskJuggler
           break
         end
       end
-      @pos = startOfToken
+      @pos = @startOfToken
       return token
     end
 
@@ -692,6 +692,7 @@ class TaskJuggler
           while (c = nextChar) == ' ' || c == "\t"
             indent << c
           end
+          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
           returnChar(c)
           state = 1
         when 1 # reading '-' or first content line character
