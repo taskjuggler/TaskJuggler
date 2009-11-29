@@ -1279,8 +1279,7 @@ EOT
   def rule_journalEntryHeader
     pattern(%w( _journalentry !valDate $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
-                                      @property)
-      @project['journal'].addEntry(@journalEntry)
+                                       @property)
     })
     arg(2, 'headline', <<'EOT'
 The headline of the journal entry. It will be interpreted as
@@ -3283,7 +3282,7 @@ EOT
   def rule_scenarioId
     pattern(%w( $ID ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_id', "Unknown scenario: @val[0]")
+        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}")
       end
     })
     arg(0, 'scenario', 'ID of a defined scenario')
@@ -4388,22 +4387,26 @@ of time. The status is assumed to be for the end of this time period. There
 must be a separate time sheet record for each resource per period. Different
 resources can use different reporting periods and reports for the same
 resource may have different reporting periods as long as they don't overlap.
-For the time after the last time sheet, TaskJuggler will extrapolate based on
-the plan data. For periods without a time sheet record prior to the last
-record for this resource, TaskJuggler assumes that no work has been done. The
-work is booked for the specified scenario, but the journal is not scenario
+For the time after the last time sheet, TaskJuggler will project the result
+based on the plan data. For periods without a time sheet record prior to the
+last record for this resource, TaskJuggler assumes that no work has been done.
+The work is booked for the specified scenario, but the journal is not scenario
 specific. It is recommended that you only use one scenario to capture actual
 data with this method.
 
-The intended use for time sheets is to have all resource report a time sheet
-every day, week or month. For time sheets covering a period before the [[now
-current date]], the [[work]], [[remaining]] and [[end.timesheet end]]
-attributes are ignored. For the time after the [[now current date]] one
-time sheet is allowed for every resource. The attributes of this time sheet
+The intended use for time sheets is to have all resources report a time sheet
+every day, week or month. All time sheets can be added to the project plan.
+The status information is always used to determin the current status of the
+project. The [[work]], [[remaining]] and [[end.timesheet end]] attributes are
+ignored if there are also [[booking bookings]] for the resource in the time
+sheet period. The non-ignored attributes of the time sheets
 will be converted into [[booking]] statements internally. These bookings can
-then be [[export exported]] into a file and then the [[now current date]]
-adjusted to the end of the time sheet period. This way, time sheets can be
-used to capture actual work for each task in an almost automatic way.
+then be [[export exported]] into a file which can then be added to the project
+again. This way, you can use time sheets to incrementally record progress of
+your project. There is a possibility that time sheets conflict with other data
+in the plan. In case TaskJuggler cannot automatically resolve them, these
+conflicts have to be manually resolved by either changing the plan or the time
+sheet.
 
 The status messages are interpreted as [[journalentry journal entries]]. The
 alert level will be evaluated and the current state of the project can be put
@@ -4456,7 +4459,10 @@ EOT
   def rule_timeSheetHeader
     pattern(%w( _timesheet !resourceId !scenarioId !valIntervalOrDate ),
             lambda {
-
+      @timeSheetResource = @val[1]
+      @scenarioIdx = @val[2]
+      @timeSheetStart = @val[3].start
+      @timeSheetEnd = @val[3].end
     })
   end
 
@@ -4510,6 +4516,10 @@ EOT
 
   def rule_tsStatusHeader
     pattern(%w( _status !alertLevel $STRING ), lambda {
+      @journalEntry = JournalEntry.new(@project['journal'], @timeSheetEnd,
+                                       @val[2], @property)
+      @journalEntry.alertLevel = @val[1]
+      @journalEntry.author = @timeSheetResource
 
     })
   end
@@ -4552,9 +4562,15 @@ EOT
 
     })
     doc('remaining', <<'EOT'
-The remaining effort for the task. If the time sheet is dated after the [[now
-current date]] and the value is different from what TaskJuggler has calculated
-after tasking the reported [[work]] into account, a warning is generated.
+The remaining effort for the task. This value is ignored if there are
+[[booking bookings]] for the resource that overlap with the time sheet period.
+If there are no bookings, the value is compared with the [[effort]]
+specification of the task. If there a mismatch between the accumulated effort
+specified with bookings, [[work]] and [[remaining]] on one side and the
+specified [[effort]] on the other, a warning is generated.
+
+This attribute can only be used with tasks that are effort based. Duration
+based tasks need to have an [[end.timesheet end]] attribute.
 EOT
        )
 
@@ -4565,9 +4581,10 @@ EOT
     })
     doc('work', <<'EOT'
 The amount of time that the resource has spend with the task during the
-reported period. This value is ignored when the reported period is before the
-[[now current date]]. Otherwise TaskJuggler tries to create bookings for the
-reported period based on the provided work time.
+reported period. This value is ignored when there are [[booking bookings]] for
+the resource overlapping with the time sheet period. If there are no bookings,
+TaskJuggler will try to convert the work specification into bookings
+internally before the actual scheduling is started.
 
 Every task listed in the time sheet needs to have a work attribute. The total
 accumulated work time that is reported must match exactly the total working
@@ -4581,7 +4598,9 @@ EOT
   end
 
   def rule_tsTaskBody
-    pattern(%w( _{ !tsTaskAttributes _} ))
+    pattern(%w( _{ !tsTaskAttributes _} ), lambda {
+      @property = nil
+    })
   end
 
   def rule_tsNewTaskHeader
@@ -4593,7 +4612,7 @@ EOT
 
   def rule_tsTaskHeader
     pattern(%w( _task !taskId ), lambda {
-
+      @property = @val[1]
     })
     arg(1, 'task', 'ID of an already existing task')
   end

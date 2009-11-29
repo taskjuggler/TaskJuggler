@@ -27,7 +27,6 @@ class TaskJuggler
     def initialize(journal, date, headline, property)
       # A reference to the Journal object this entry belongs to.
       @journal = journal
-      @journal.addEntry(self)
       # The date of the entry.
       @date = date
       # A very short description. Should not be longer than about 40
@@ -43,6 +42,14 @@ class TaskJuggler
       @details = nil
       # The alert level.
       @alertLevel = 0
+
+      # Add the new entry to the journal.
+      @journal.addEntry(self)
+    end
+
+    # Just for debugging
+    def to_s # :nodoc:
+      @headline
     end
 
   end
@@ -57,10 +64,21 @@ class TaskJuggler
       @sorted = true
     end
 
+    # Return the number of entries.
+    def count
+      @entries.count
+    end
+
     # Add a new JournalEntry to the list. The list will be marked as unsorted.
     def<<(entry)
       @entries << entry
       @sorted = false
+    end
+
+    # Return the _index_-th entry.
+    def[](index)
+      sort
+      @entries[index]
     end
 
     # The well known iterator. The list will be sorted first.
@@ -93,7 +111,10 @@ class TaskJuggler
     def sort
       return if @sorted
 
-      @entries.sort! { |a, b| a.date <=> b.date }
+      @entries.sort! { |a, b| a.date != b.date ?
+                              a.date <=> b.date :
+                              a.property.sequenceNo <=>
+                              b.property.sequenceNo }
       @sorted = true
     end
 
@@ -114,6 +135,7 @@ class TaskJuggler
 
     # Add a new JournalEntry to the Journal.
     def addEntry(entry)
+      return if @entries.include?(entry)
       @entries << entry
 
       return if entry.property.nil?
@@ -126,7 +148,6 @@ class TaskJuggler
 
     def entries(startDate = nil, endDate = nil, property = nil,
                 alertLevel = nil)
-      sort
       list = []
       @entries.each do |entry|
         if (startDate.nil? || startDate <= entry.date) &&
