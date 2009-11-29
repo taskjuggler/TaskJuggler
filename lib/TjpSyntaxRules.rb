@@ -2170,6 +2170,7 @@ EOT
     })
 
     pattern(%w( !export ))
+    pattern(%w( !timeSheetReport ))
 
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
@@ -4466,6 +4467,18 @@ EOT
     })
   end
 
+  def rule_timeSheetReport
+    pattern(%w( !tsReportHeader !tsReportBody ))
+    doc('timesheetreport', <<'EOT'
+For projects that flow mostly according to plan, TaskJuggler already knows
+much of the information that should be contained in the time sheets. With this
+property, you can generate a report that contains drafts of the time sheets
+for one or more resources. The time sheet drafts will be for the
+specified report period.
+EOT
+       )
+  end
+
   def rule_timezone
     pattern(%w( _timezone !validTimeZone ), lambda{
       ENV['TZ'] = @project['timezone'] = @val[1]
@@ -4495,6 +4508,44 @@ letter acronyms. See
 possible values.
 EOT
        )
+  end
+  def rule_tsReportHeader
+    pattern(%w( _timesheetreport $STRING ), lambda {
+      if (fileName = @val[1]) != '.'
+        suffix = fileName[-4, 4]
+        if suffix != '.tji'
+          error('tsreport_bad_extn',
+              'time sheet report files must have a .tji extension.')
+        end
+
+        if @project.reports[fileName]
+          error('report_redefinition',
+                "A report with the name '#{fileName}' has already been defined.")
+        end
+      else
+        fileName = "timeSheet#{@project.reports.count + 1}"
+      end
+      newReport(fileName, :timeSheet, sourceFileInfo)
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the time sheet report file to generate. It must end with a .tji
+extension, or use . to use the standard output channel.
+EOT
+       )
+  end
+
+  def rule_tsReportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !hideresource ))
+    pattern(%w( !reportEnd ))
+    pattern(%w( !reportPeriod ))
+    pattern(%w( !reportStart ))
+  end
+
+  def rule_tsReportBody
+    optionsRule('tsReportAttributes')
   end
 
   def rule_tsStatusAttributes

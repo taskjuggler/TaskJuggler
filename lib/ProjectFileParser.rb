@@ -236,7 +236,7 @@ class TaskJuggler
                              name, nil)
       @property.typeSpec = type
       @property.sourceFileInfo = sourceFileInfo
-      @property.set('formats', [ type ])
+      @property.set('formats', [ :tjp ])
       @property.inheritAttributes
       @property
     end

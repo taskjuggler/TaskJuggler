@@ -16,6 +16,7 @@ require 'reports/TextReport'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
+require 'reports/TimeSheetReport'
 require 'reports/CSVFile'
 require 'reports/Navigator'
 require 'reports/ReportContext'
@@ -47,14 +48,16 @@ class TaskJuggler
       begin
         @content = nil
         case @typeSpec
-        when :export
-          # Does not have an intermediate representation. Nothing to do here.
         when :resourcereport
           @content = ResourceListRE.new(self)
         when :textreport
           @content = TextReport.new(self)
         when :taskreport
           @content = TaskListRE.new(self)
+        when :export
+          @content = TjpExportRE.new(self)
+        when :timeSheet
+          @content = TimeSheetReport.new(self)
         else
           raise "Unknown report type"
         end
@@ -71,8 +74,8 @@ class TaskJuggler
             copyAuxiliaryFiles
           when :csv
             generateCSV
-          when :export
-            generateExport
+          when :tjp
+            generateTJP
           else
             raise 'Unknown report output format.'
           end
@@ -181,9 +184,8 @@ EOT
                                   @name + (@name == '.' ? '' : '.csv'))
     end
 
-    # Generate an export report
-    def generateExport
-      @content = TjpExportRE.new(self)
+    # Generate time sheet drafts.
+    def generateTJP
       f = @name == '.' ? $stdout :
                          File.new((@name[0] == '/' ? '' : @project.outputDir) +
                                   @name, 'w')

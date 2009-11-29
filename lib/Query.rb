@@ -34,11 +34,12 @@ class TaskJuggler
 
     attr_accessor :project, :propertyType, :propertyId, :property,
                   :scopePropertyType, :scopePropertyId, :scopeProperty,
-                  :attributeId, :scenarioIdx, :start, :end, :startIdx, :endIdx,
+                  :attributeId, :scenarioIdx, :startIdx, :endIdx,
                   :timeFormat, :numberFormat, :currencyFormat, :costAccount,
                   :revenueAccount,
                   :loadUnit,
                   :result, :numericalResult, :sortableResult, :ok, :errorMessage
+    attr_reader :end, :start
 
     # Create a new Query object. The _parameters_ need to be sufficent to
     # uniquely identify an attribute.
@@ -53,6 +54,18 @@ class TaskJuggler
       end
 
       reset
+    end
+
+    # Reset the @startIdx when a start date is set.
+    def start=(date)
+      @start = date
+      @startIdx = nil
+    end
+
+    # Reset the @endIdx when an end date is set.
+    def end=(date)
+      @end = date
+      @endIdx = nil
     end
 
     # This method tries to resolve the query and return a result. In case it
