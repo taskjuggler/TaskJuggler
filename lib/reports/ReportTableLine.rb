@@ -17,7 +17,8 @@ class TaskJuggler
   class ReportTableLine
 
     attr_reader :table, :property, :scopeLine
-    attr_accessor :height, :indentation, :fontSize, :no, :lineNo, :subLineNo
+    attr_accessor :height, :indentation, :fontSize, :bold,
+                  :no, :lineNo, :subLineNo
 
     # Create a ReportTableCell object and initialize the variables with default
     # values. _table_ is a reference to the ReportTable object this line belongs
@@ -39,6 +40,8 @@ class TaskJuggler
       @indentation = 0
       # The factor used to enlarge or shrink the font size for this line.
       @fontSize = 12
+      # Specifies whether the whole line should be in bold type or not.
+      @bold = false
       # Counter that counts primary and nested lines separately. It restarts
       # with 0 for each new nested line set. Scenario lines don't count.
       @no = nil

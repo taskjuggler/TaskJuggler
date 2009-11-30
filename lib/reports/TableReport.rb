@@ -961,7 +961,7 @@ class TaskJuggler
       cell = ReportTableCell.new(line, query, text)
 
       # Cells for containers should be using bold font face.
-      cell.bold = true if property.container?
+      cell.bold = true if property.container? && line.bold
 
       cell
     end
@@ -974,7 +974,10 @@ class TaskJuggler
       # We indent at least as much as the scopeline + 1, if we have a scope.
       line.indentation = scopeLine.indentation + 1 if scopeLine
       # In tree mode we indent according to the level.
-      line.indentation += level if treeMode
+      if treeMode
+        line.indentation += level
+        line.bold = true
+      end
     end
 
     # Try to merge equal cells without text to multi-column cells.
