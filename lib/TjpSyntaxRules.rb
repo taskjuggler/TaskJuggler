@@ -607,7 +607,7 @@ EOT
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
             REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
             BULLET3 NUMBER1 NUMBER2 NUMBER3 )
-      newRichText(@val[1], rtTokenSetMore)
+      @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
     })
     doc('details', <<'EOT'
 This is a continuation of the [[summary]] of the journal or status entry. It
@@ -3508,7 +3508,7 @@ EOT
     pattern(%w( _summary $STRING ), lambda {
       rtTokenSetIntro =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
-      newRichText(@val[1], rtTokenSetIntro)
+      @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
     })
     doc('summary', <<'EOT'
 This is the introductory part of the journal or status entry. It should

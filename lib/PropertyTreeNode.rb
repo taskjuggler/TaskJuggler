@@ -505,11 +505,10 @@ class TaskJuggler
         end
         rText += "\n\n"
         if entry.summary
-          rText += entry.summary.richText.inputText
-          rText += "\n\n"
+          rText += entry.summary.richText.inputText + "\n\n"
         end
         if longVersion && entry.details
-          rText += entry.details.richText.inputText
+          rText += entry.details.richText.inputText + "\n\n"
         end
       end
       # Now convert the RichText markup String into RichTextIntermediate
