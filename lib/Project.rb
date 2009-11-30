@@ -411,7 +411,7 @@ class TaskJuggler
     # Try to match _levelName_ to a defined alert level name and return the
     # index of it. If no level is found, nil is returned.
     def alertLevelIndex(levelName)
-      0.upto(@attributes['alertLevels'].count - 1) do |i|
+      0.upto(@attributes['alertLevels'].length - 1) do |i|
         if @attributes['alertLevels'][i][0] == levelName
           return i
         end

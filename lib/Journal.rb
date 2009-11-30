@@ -66,7 +66,7 @@ class TaskJuggler
 
     # Return the number of entries.
     def count
-      @entries.count
+      @entries.length
     end
 
     # Add a new JournalEntry to the list. The list will be marked as unsorted.

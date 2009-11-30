@@ -4523,7 +4523,7 @@ EOT
                 "A report with the name '#{fileName}' has already been defined.")
         end
       else
-        fileName = "timeSheet#{@project.reports.count + 1}"
+        fileName = "timeSheet#{@project.reports.length + 1}"
       end
       newReport(fileName, :timeSheet, sourceFileInfo)
     })
