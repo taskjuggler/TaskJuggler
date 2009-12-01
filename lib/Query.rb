@@ -136,7 +136,7 @@ class TaskJuggler
           elsif @sortableResult.is_a?(Array)
             # This ugly special case is needed for custom attributes of type
             # reference.
-            @sortableResult = @sortableResult[0]
+            @sortableResult = @result = @sortableResult[0]
           else
             @result = @sortableResult.to_s
           end

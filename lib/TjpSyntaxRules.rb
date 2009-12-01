@@ -1279,7 +1279,7 @@ EOT
   def rule_journalEntryHeader
     pattern(%w( _journalentry !valDate $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
-                                       @property)
+                                       @property, @scanner.sourceFileInfo)
     })
     arg(2, 'headline', <<'EOT'
 The headline of the journal entry. It will be interpreted as
@@ -4578,7 +4578,8 @@ EOT
   def rule_tsStatusHeader
     pattern(%w( _status !alertLevel $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @timeSheetEnd,
-                                       @val[2], @property)
+                                       @val[2], @property,
+                                       @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
       @journalEntry.author = @timeSheetResource
 
@@ -4667,6 +4668,17 @@ EOT
   def rule_tsTaskHeader
     pattern(%w( _task !taskId ), lambda {
       @property = @val[1]
+      # TODO: This is not too useful here. Needs to be done in postScheduling.
+      #scenarioIdx = @project['trackingScenarioIdx']
+      #taskStart = @property['start', scenarioIdx] || @project['start']
+      #taskEnd = @property['end', scenarioIdx] || @project['end']
+
+      #if !Interval.new(@timeSheetStart, @timeSheetEnd).
+      #    overlaps?(Interval.new(taskStart, taskEnd))
+      #  warning('ts_task_not_active',
+      #          "Task #{@property.fullId} is not active during the time sheet " +
+      #          "reporting period")
+      #end
     })
     arg(1, 'task', 'ID of an already existing task')
   end

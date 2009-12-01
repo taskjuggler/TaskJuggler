@@ -20,11 +20,11 @@ class TaskJuggler
   # summary and details sections are optional.
   class JournalEntry
 
-    attr_reader :date, :headline, :property
+    attr_reader :date, :headline, :property, :sourceFileInfo
     attr_accessor :author, :summary, :details, :alertLevel
 
     # Create a new JournalEntry object.
-    def initialize(journal, date, headline, property)
+    def initialize(journal, date, headline, property, sourceFileInfo = nil)
       # A reference to the Journal object this entry belongs to.
       @journal = journal
       # The date of the entry.
@@ -34,6 +34,8 @@ class TaskJuggler
       @headline = headline
       # A reference to a PropertyTreeNode object.
       @property = property
+      # Source file location of this entry of type SourceFileInfo
+      @sourceFileInfo = sourceFileInfo
       # A reference to a Resource.
       @author = nil
       # An introductory or summarizing RichText paragraph.
@@ -98,12 +100,13 @@ class TaskJuggler
     # right before the given _date_.
     def last(date = nil)
       sort
-      if date
-        @entries.reverse_each do |e|
-          return e if e.date <= date
-        end
+      # If we have no date, return the latest entry.
+      return @entries.last unless date
+
+      @entries.reverse_each do |e|
+        return e if e.date <= date
       end
-      @entries.last
+      nil
     end
 
     private
@@ -175,15 +178,16 @@ class TaskJuggler
       maxLevel
     end
 
-    # Return true if the _property_ has the most current and most important
-    # message for the given _date_. The message needs to have at least the
-    # alertLevel _minLevel_.
-    def hasAlertMessage?(date, property, minLevel)
+    # Return the last entry if the _property_ has the most current and most
+    # important message for the given _date_. The message needs to have at
+    # least the alertLevel _minLevel_. Return nil if there is no current entry
+    # for this property with the requested level.
+    def currentEntry(date, property, minLevel)
       pEntry = @propertyToEntries[property] ?
                @propertyToEntries[property].last(date) : nil
 
-      return false if pEntry.nil? || pEntry.headline.empty? ||
-                      pEntry.alertLevel < minLevel
+      return nil if pEntry.nil? || pEntry.headline.empty? ||
+                    (pEntry.alertLevel < minLevel)
 
       # Check parents for a more important or more up-to-date message.
       p = property.parent
@@ -191,20 +195,15 @@ class TaskJuggler
         ppEntry = @propertyToEntries[p] ?
                   @propertyToEntries[p].last(date) : nil
 
-        if ppEntry && ppEntry.date >= pEntry.date &&
-           ((ppEntry.alertLevel >= pEntry.alertLevel) ||
-            ppEntry.headline.empty?)
-          # A parent has a more up-to-date or more important message.
-          return false
+        # A parent has a more up-to-date message.
+        if ppEntry && ppEntry.date >= pEntry.date
+          return nil
         end
 
         p = p.parent
       end
 
-      # Check all the children for more up-to-date or more important messages.
-      # If the currentEntries list contains pEntry, this property has the
-      # current and most important message for this property tree.
-      return currentEntries(date, property).include?(pEntry)
+      pEntry
     end
 
     # This function recursively traverses a tree of PropertyTreeNode objects

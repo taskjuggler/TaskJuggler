@@ -652,9 +652,9 @@ class TaskJuggler
 
       # Create a new cell
       cell = newCell(query, line, cellText(value, type))
-      if type == ReferenceAttribute
-        cell.url = value.url
-      end
+      #if type == ReferenceAttribute
+      #  cell.text = "Hello!"
+      #end
 
       cdTooltip = columnDef.tooltip.getPattern(query)
       cell.tooltip = cdTooltip if cdTooltip

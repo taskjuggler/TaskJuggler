@@ -86,7 +86,7 @@ class TaskJuggler
       property = expr.property
       project = property.project
       date = project.reportContext.report.get('end')
-      project['journal'].hasAlertMessage?(date, property, args[0])
+      !project['journal'].currentEntry(date, property, args[0]).nil?
     end
 
     def isactive(expr, args)

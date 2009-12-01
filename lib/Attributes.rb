@@ -394,6 +394,7 @@ class TaskJuggler
     def label
       @value ? @value[1][0] : nil
     end
+
   end
 
   class ResourceListAttribute < AttributeBase
