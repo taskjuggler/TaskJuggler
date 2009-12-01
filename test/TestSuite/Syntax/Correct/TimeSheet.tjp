@@ -1,0 +1,49 @@
+project "test" 2009-11-30 +2m
+
+trackingscenario plan
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+task t2 "Task 2" {
+  task t3 "Task 3" {
+    effort 10d
+    allocate r2
+  }
+}
+
+timesheet r1 2009-11-30 +1w {
+  task t1 {
+    work 5d
+    remaining 0d
+    status green "All work done" {
+      summary "I had good fun!"
+      details -8<-
+        This task went smoothly and I got three things done:
+        * Have fun
+        * Be on time
+        * Get things done
+      ->8-
+    }
+  }
+}
+
+timesheet r2 2009-11-30 +1w {
+  task t2.t3 {
+    work 5d
+    remaining 8d
+    status red "I need more time" {
+      summary "This takes longer than expected" 
+      details -8<-
+        To finish on time, I need help. Get this r1 guy to help me out
+        here.
+        * I want to have fun too!
+      ->8-
+    }
+  }
+}
+

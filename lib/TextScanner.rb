@@ -684,7 +684,11 @@ class TaskJuggler
       while true
         case state
         when 0 # Determining indent
-          if nextChar != "\n"
+          # Skip trailing spaces and tabs.
+          while (c = nextChar) == ' ' || c == "\t" do
+            # empty on purpose
+          end
+          if c != "\n"
             error('junk_after_cut',
                   'The cut mark -8<- must be immediately followed by a ' +
                   'line break.')

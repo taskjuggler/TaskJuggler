@@ -2258,6 +2258,16 @@ part-time, or vice versa, please refer to the 'Shift' property.
 EOT
        )
     arg(1, 'name', 'Name or purpose of the vacation')
+
+    pattern(%w( _trackingscenario !scenarioId ), lambda {
+      @project['trackingScenarioIdx'] = @val[1]
+    })
+    doc('trackingscenario', <<'EOT'
+Specifies which scenario should be used for time sheet reports. By default,
+the top-level scenario will be used.
+EOT
+       )
+
   end
 
   def rule_propertiesInclude
@@ -4391,9 +4401,7 @@ resource may have different reporting periods as long as they don't overlap.
 For the time after the last time sheet, TaskJuggler will project the result
 based on the plan data. For periods without a time sheet record prior to the
 last record for this resource, TaskJuggler assumes that no work has been done.
-The work is booked for the specified scenario, but the journal is not scenario
-specific. It is recommended that you only use one scenario to capture actual
-data with this method.
+The work is booked for the scenario specified by [[trackingscenario]].
 
 The intended use for time sheets is to have all resources report a time sheet
 every day, week or month. All time sheets can be added to the project plan.
@@ -4458,12 +4466,11 @@ EOT
   end
 
   def rule_timeSheetHeader
-    pattern(%w( _timesheet !resourceId !scenarioId !valIntervalOrDate ),
+    pattern(%w( _timesheet !resourceId !valIntervalOrDate ),
             lambda {
       @timeSheetResource = @val[1]
-      @scenarioIdx = @val[2]
-      @timeSheetStart = @val[3].start
-      @timeSheetEnd = @val[3].end
+      @timeSheetStart = @val[2].start
+      @timeSheetEnd = @val[2].end
     })
   end
 
@@ -4509,6 +4516,13 @@ possible values.
 EOT
        )
   end
+
+  def rule_tsNewTaskHeader
+    pattern(%w( _newtask !taskIdUnverifd ), lambda {
+
+    })
+    arg(1, 'task', 'ID of the new task')
+  end
   def rule_tsReportHeader
     pattern(%w( _timesheetreport $STRING ), lambda {
       if (fileName = @val[1]) != '.'
@@ -4552,12 +4566,8 @@ EOT
     optional
     repeatable
 
-    pattern(%w( !details ), lambda {
-
-    })
-    pattern(%w( !summary ), lambda {
-
-    })
+    pattern(%w( !details ))
+    pattern(%w( !summary ))
   end
 
   def rule_tsStatusBody
@@ -4652,13 +4662,6 @@ EOT
     pattern(%w( _{ !tsTaskAttributes _} ), lambda {
       @property = nil
     })
-  end
-
-  def rule_tsNewTaskHeader
-    pattern(%w( _newtask !taskIdUnverifd ), lambda {
-
-    })
-    arg(1, 'task', 'ID of the new task')
   end
 
   def rule_tsTaskHeader

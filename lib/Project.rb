@@ -89,6 +89,7 @@ class TaskJuggler
         'start' => nil,
         'timeFormat' => "%Y-%m-%d",
         'timezone' => nil,
+        'trackingScenarioIdx' => 0,
         'vacations' => [],
         'version' => version || "1.0",
         'weekStartsMonday' => true,

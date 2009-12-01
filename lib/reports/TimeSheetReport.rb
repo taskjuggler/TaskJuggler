@@ -165,7 +165,6 @@ class TaskJuggler
         resource = rr.resource
         # Generate the time sheet header
         @file << "timesheet #{resource.fullId} " +
-                 "#{@project.scenario(a('scenarios')[0]).fullId} " +
                  "#{a('start')} - #{a('end')} {\n\n"
 
         if rr.tasks.empty?
