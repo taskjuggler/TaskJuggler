@@ -37,12 +37,17 @@ class TaskJuggler
       # Flag that marks whether the value of this attribute was inherited from
       # the parent PropertyTreeNode.
       @inherited = false
-      # Flat that marks whether the value of this attribute was provided by the
+      # Flag that marks whether the value of this attribute was provided by the
       # user (in contrast to being calculated).
       @provided = false
-      # Create the initial value according to the specified default for this
-      # type.
-      @value = @type.default.deep_clone
+      # If type is an AttributeDefinition, create the initial value according
+      # to the specified default for this type. Otherwise type is the initial
+      # value.
+      if @type.is_a?(AttributeDefinition)
+        @value = @type.default.deep_clone
+      else
+        @value = @type
+      end
       # The mode is flag that controls how value assignments affect the flags.
       @@mode = 0
     end
@@ -98,8 +103,31 @@ class TaskJuggler
     end
 
     # Return the value as String.
-    def to_s
+    def to_s(query = nil)
       @value.to_s
+    end
+
+    def to_num
+      if @value.is_a?(Fixnum) || @value.is_a?(Bignum) || @value.is_a?(Float)
+        @value
+      else
+        nil
+      end
+    end
+
+    def to_sort
+      if @value.is_a?(Fixnum) || @value.is_a?(Bignum) ||
+         @value.is_a?(Float)
+        @value
+      elsif @value.respond_to?('to_s')
+        @value.to_s
+      else
+        nil
+      end
+    end
+
+    def to_rti(query)
+      @value.is_a?(RichTextIntermediate) ? !value : nil
     end
 
     # Return the value in TJP file syntax.

@@ -123,7 +123,7 @@ class TaskJuggler
           query.start = a('start')
           query.end = a('end')
           query.process
-          work = query.result
+          work = query.to_s
 
           if task['effort', scenarioIdx]
             # The task is an effort based task.
@@ -131,7 +131,7 @@ class TaskJuggler
             query.start = a('end')
             query.end = task['end', scenarioIdx]
             query.process
-            remaining = query.result
+            remaining = query.to_s
             endDate = nil
           else
             # The task is a duration task.

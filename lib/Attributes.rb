@@ -30,7 +30,7 @@ class TaskJuggler
       'account'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value ? @value.id : ''
     end
 
@@ -60,7 +60,7 @@ class TaskJuggler
       out
     end
 
-    def to_s
+    def to_s(query = nil)
       out = ''
       first = true
       @value.each do |allocation|
@@ -100,7 +100,7 @@ class TaskJuggler
       'bookinglist'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value.collect{ |x| x.to_s }.join(', ')
     end
 
@@ -119,7 +119,7 @@ class TaskJuggler
       'boolean'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value ? 'true' : 'false'
     end
 
@@ -138,7 +138,7 @@ class TaskJuggler
       'charge'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value.join(', ')
     end
 
@@ -158,7 +158,7 @@ class TaskJuggler
       'chargeset'
     end
 
-    def to_s
+    def to_s(query = nil)
       out = []
       @value.each { |i| out << i.to_s }
       out.join(", ")
@@ -184,7 +184,7 @@ class TaskJuggler
       'columns'
     end
 
-    def to_s
+    def to_s(query = nil)
       "TODO"
     end
   end
@@ -192,6 +192,14 @@ class TaskJuggler
   class DateAttribute < AttributeBase
     def initialize(property, type)
       super
+    end
+
+    def to_s(query)
+      if @value
+        @value.to_s(query.timeFormat)
+      else
+        'Error'
+      end
     end
 
     def DateAttribute::tjpId
@@ -216,7 +224,7 @@ class TaskJuggler
       'dependencylist'
     end
 
-    def to_s
+    def to_s(query = nil)
       out = []
       @value.each { |t| out << t.task.fullId if t.task }
       out.join(', ')
@@ -266,7 +274,7 @@ class TaskJuggler
       'flaglist'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value.join(', ')
     end
 
@@ -297,7 +305,7 @@ class TaskJuggler
       super
     end
 
-    def to_s
+    def to_s(query = nil)
       @value.join(', ')
     end
 
@@ -314,7 +322,7 @@ class TaskJuggler
       'intervallist'
     end
 
-    def to_s
+    def to_s(query = nil)
       out = []
       @value.each { |i| out << i.to_s }
       out.join(", ")
@@ -408,10 +416,18 @@ class TaskJuggler
       'resourcelist'
     end
 
-    def to_s
+    def to_s(query = nil)
       out = []
       @value.each { |r| out << r.fullId }
       out.join(", ")
+    end
+
+    def to_rti(query = nil)
+      out = []
+      @value.each { |r| out << "#{r.name} (#{r.fullId})" }
+      out.join(", ")
+      rText = RichText.new(out)
+      rText.generateIntermediateFormat
     end
 
     def to_tjp
@@ -427,12 +443,16 @@ class TaskJuggler
       super
     end
 
+    def inputText
+      @value ? @value.richText.inputText : ''
+    end
+
     def RichTextAttribute::tjpId
       'richtext'
     end
 
-    def to_s
-      @value ? @value.richText.inputText : ''
+    def to_s(query = nil)
+      @value ? @value.to_s : ''
     end
 
     def to_tjp
@@ -450,7 +470,7 @@ class TaskJuggler
       'scenarios'
     end
 
-    def to_s
+    def to_s(query = nil)
       @value.join(', ')
     end
 
@@ -527,7 +547,7 @@ class TaskJuggler
       'tasklist'
     end
 
-    def to_s
+    def to_s(query = nil)
       out = []
       @value.each { |t, onEnd| out << t.fullId }
       out.join(", ")

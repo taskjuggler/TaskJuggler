@@ -760,6 +760,7 @@ class TaskJuggler
 
     # Print the attribute values. It's used for debugging only.
     def to_s
+      raise "STOP!"
       @attributes.each do |attribute, value|
         if value
           puts "#{attribute}: " +

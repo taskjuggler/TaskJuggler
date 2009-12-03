@@ -30,7 +30,7 @@ class TaskJuggler
   # used for sorting (Query#sortableResult). To get the result, Query#process
   # needs to be called. In case an error occured, Query#ok is set to false and
   # Query#errorMessage contains an error message.
-  class Query
+   class Query
 
     attr_accessor :project, :propertyType, :propertyId, :property,
                   :scopePropertyType, :scopePropertyId, :scopeProperty,
@@ -38,8 +38,9 @@ class TaskJuggler
                   :timeFormat, :numberFormat, :currencyFormat, :costAccount,
                   :revenueAccount,
                   :loadUnit,
-                  :result, :numericalResult, :sortableResult, :ok, :errorMessage
-    attr_reader :end, :start
+                  :ok, :errorMessage
+     attr_reader :end, :start
+    attr_writer :sortable, :numerical, :string, :rti
 
     # Create a new Query object. The _parameters_ need to be sufficent to
     # uniquely identify an attribute.
@@ -70,7 +71,9 @@ class TaskJuggler
 
     # This method tries to resolve the query and return a result. In case it
     # finds an attribute that matches the query, it returns true; false
-    # otherwise. The actual result data is put into the Query object.
+    # otherwise. The actual result data is stored in the Query object. It can
+    # then be retrieved by the caller with the methods to_s(), to_num(),
+    # to_sort() and result().
     def process
       reset
       begin
@@ -87,13 +90,13 @@ class TaskJuggler
             raise TjException.new,
                   "Unsupported project attribute '#{@attributeId}'"
           end
-          @sortableResult = @project[@attributeId]
-          @result =
-            if @sortableResult.is_a?(TjTime)
-              @sortableResult.to_s(@project['timeFormat'])
-            else
-              @sortableResult
-            end
+          attr = @project[@attributeId]
+          if attr.is_a?(TjTime)
+            @sortable = @numerical = attr
+            @string = attr.to_s(@timeFormat)
+          else
+            @sortable = @string = attr
+          end
           return @ok = true
         end
 
@@ -123,32 +126,50 @@ class TaskJuggler
           # Then we check for scenario-specific ones via the @data member.
           @property.send(queryMethodName, @scenarioIdx, self)
         else
-          # There is no query function. We simply use the property attribute
-          # value.
-          @sortableResult =
-            if @scenarioIdx
-              @property[@attributeId, @scenarioIdx]
-            else
-              @property.get(@attributeId)
-            end
-          if @sortableResult.is_a?(TjTime)
-            @result = @sortableResult.to_s(@timeFormat)
-          elsif @sortableResult.is_a?(Array)
-            # This ugly special case is needed for custom attributes of type
-            # reference.
-            @sortableResult = @result = @sortableResult[0]
-          else
-            @result = @sortableResult.to_s
+          # The result is a BaseAttribute
+          unless (@attr = @property.getAttribute(@attributeId, @scenarioIdx))
+            errorMessage = "Unknown attribute #{@attributeId} queried"
+            return @ok = false
           end
-          @numericalResult = @result if @result.is_a?(Fixnum) or
-                                        @result.is_a?(Float)
         end
       rescue TjException
         @errorMessage = $!.message
-        @result = ''
         return @ok = false
       end
       @ok = true
+    end
+
+    # Return the result of the Query as String. The result may be nil.
+    def to_s
+      @attr ? @attr.to_s(self) : @string
+    end
+
+    # Return the result of the Query as Fixnum or Float. The result may be
+    # nil.
+    def to_num
+      @attr ? @attr.to_num : @numerical
+    end
+
+    # Return the result in the best suited type and format for sorting. The
+    # result may be nil.
+    def to_sort
+      @attr ? @attr.to_sort : @sortable
+    end
+
+    # Return the result as RichTextIntermediate object. The result may be nil.
+    def to_rti
+      @attr ? @attr.to_rti(self) : @rti
+    end
+
+    # Return the result in the orginal form. It may be nil.
+    def result
+      if @attr
+        @attr.value
+      elsif @numerical
+        @numerical
+      else
+        @string
+      end
     end
 
     # Convert a duration to the format specified by @loadUnit.  _value_ is the
@@ -263,9 +284,7 @@ class TaskJuggler
     # Queries object can be reused. Calling this function will clear the query
     # result data.
     def reset
-      @result = nil
-      @numericalResult = nil
-      @sortableResult = nil
+      @attr = @numerical = @sortable = @string = @rti = nil
       @ok = nil
       @errorMessage = nil
     end

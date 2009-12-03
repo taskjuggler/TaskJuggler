@@ -361,6 +361,22 @@ class TaskJuggler
       end
     end
 
+    # This function is similar to getAttr() but it always returns a
+    # AttributeBase object.
+    def getAttribute(attributeId, scenarioIdx = nil)
+      case attributeId
+      when 'id'
+        StringAttribute.new(self, @id)
+      when 'name'
+        StringAttribute.new(self, @name)
+      when 'seqno'
+        FixnumAttribute.new(self, @sequenceNo)
+      else
+        @attributes[attributeId] ||
+        @scenarioAttributes[scenarioIdx][attributeId]
+      end
+    end
+
     # Set the non-scenario-specific attribute with ID _attributeId_ to _value_.
     # In case the attribute does not exist, an exception is raised.
     def set(attributeId, value)
@@ -433,9 +449,9 @@ class TaskJuggler
     def query_alert(query)
       journal = @project['journal']
       endDate = query.end
-      query.sortableResult = query.numericalResult =
+      query.sortable = query.numerical = alert =
         journal.alertLevel(endDate, self)
-      query.result = @project.alertLevelName(query.numericalResult)
+      query.string = @project.alertLevelName(alert)
     end
 
     def query_alertsummary(query)
@@ -530,7 +546,7 @@ class TaskJuggler
       rti.sectionNumbers = false
       # We use a special class to allow CSS formating.
       rti.cssClass = 'alertmessage'
-      query.result = rti
+      query.rti = rti
     end
 
     def newAttribute(attributeType)

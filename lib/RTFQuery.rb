@@ -37,7 +37,7 @@ class TaskJuggler
     def to_s(args)
       return '' unless prepareQuery(args)
       if @query.ok
-        @query.result.to_s
+        @query.to_s
       else
         error('query_error', @query.errorMessage + recreateQuerySyntax(args))
         'Query Error: ' + @query.errorMessage
@@ -48,10 +48,12 @@ class TaskJuggler
     def to_html(args)
       return nil unless prepareQuery(args)
       if @query.ok
-        if @query.result.respond_to?('to_html')
-          @query.result.to_html
+        if (rti = @query.to_rti)
+          rti.to_html
+        elsif (str = @query.to_s)
+          XMLText.new(str)
         else
-          XMLText.new(@query.result.to_s)
+          nil
         end
       else
         error('query_error', @query.errorMessage + recreateQuerySyntax(args))

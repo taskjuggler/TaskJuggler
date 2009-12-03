@@ -56,7 +56,7 @@ class TaskJuggler
     end
 
     def query_id(query)
-      query.result = query.sortableResult = @property.fullId
+      query.sortable = query.string = @property.fullId
     end
 
   end

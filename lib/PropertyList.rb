@@ -215,11 +215,11 @@ class TaskJuggler
 
             @query.property = a
             @query.process
-            aVal = @query.sortableResult
+            aVal = @query.to_sort
 
             @query.property = b
             @query.process
-            bVal = @query.sortableResult
+            bVal = @query.to_sort
           else
             # In case we don't have a query, we use the static mechanism.
             # If the scenario index is negative we have a non-scenario-specific

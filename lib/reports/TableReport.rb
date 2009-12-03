@@ -26,28 +26,28 @@ class TaskJuggler
     attr_reader :legend
 
     @@propertiesById = {
-      # ID                Header           Indent  Align   Calced. Scen Spec.
-      'alert'        => [ 'Alert',         true,   :left,  true,   false ],
-      'alertmessage' => [ 'Alert Message', false,  :left,  true,   false ],
-      'alertsummary' => [ 'Alert Summary', false,  :left,  true,   false ],
-      'complete'     => [ 'Completion',    false,  :right, true,   true ],
-      'cost'         => [ 'Cost',          true,   :right, true,   true ],
-      'duration'     => [ 'Duration',      true,   :right, true,   true ],
-      'effort'       => [ 'Effort',        true,   :right, true,   true ],
-      'effortdone'   => [ 'Effort Done',   true,   :right, true,   true ],
-      'effortleft'   => [ 'Effort Left',   true,   :right, true,   true ],
-      'freetime'     => [ 'Free Time',     true,   :right, true,   true ],
-      'id'           => [ 'Id',            false,  :left,  true,   false ],
-      'line'         => [ 'Line No.',      false,  :right, true,   false ],
-      'name'         => [ 'Name',          true,   :left,  false,  false ],
-      'no'           => [ 'No.',           false,  :right, true,   false ],
-      'rate'         => [ 'Rate',          true,   :right, true,   true ],
-      'resources'    => [ 'Resources',     false,  :left,  true,   true ],
-      'revenue'      => [ 'Revenue',       true,   :right, true,   true ],
-      'scenario'     => [ 'Scenario',      false,  :left,  true,   true ],
-      'status'       => [ 'Status',        false,  :left,  true,   true ],
-      'targets'      => [ 'Targets',       false,  :left,  true,   true ],
-      'wbs'          => [ 'WBS',           false,  :left,  true,   false ]
+      # ID                Header           Indent  Align   Scen Spec.
+      'alert'        => [ 'Alert',         true,   :left,  false ],
+      'alertmessage' => [ 'Alert Message', false,  :left,  false ],
+      'alertsummary' => [ 'Alert Summary', false,  :left,  false ],
+      'complete'     => [ 'Completion',    false,  :right, true ],
+      'cost'         => [ 'Cost',          true,   :right, true ],
+      'duration'     => [ 'Duration',      true,   :right, true ],
+      'effort'       => [ 'Effort',        true,   :right, true ],
+      'effortdone'   => [ 'Effort Done',   true,   :right, true ],
+      'effortleft'   => [ 'Effort Left',   true,   :right, true ],
+      'freetime'     => [ 'Free Time',     true,   :right, true ],
+      'id'           => [ 'Id',            false,  :left,  false ],
+      'line'         => [ 'Line No.',      false,  :right, false ],
+      'name'         => [ 'Name',          true,   :left,  false ],
+      'no'           => [ 'No.',           false,  :right, false ],
+      'rate'         => [ 'Rate',          true,   :right, true ],
+      'resources'    => [ 'Resources',     false,  :left,  true ],
+      'revenue'      => [ 'Revenue',       true,   :right, true ],
+      'scenario'     => [ 'Scenario',      false,  :left,  true ],
+      'status'       => [ 'Status',        false,  :left,  true ],
+      'targets'      => [ 'Targets',       false,  :left,  true ],
+      'wbs'          => [ 'WBS',           false,  :left,  false ]
     }
     @@propertiesByType = {
       # Type                  Indent  Align
@@ -136,33 +136,6 @@ class TaskJuggler
       @table.to_csv
     end
 
-    # This is the default attribute value to text converter. It is used
-    # whenever we need no special treatment.
-    def cellText(value, type)
-      begin
-        if value.nil?
-          if type == DateAttribute
-            nil
-          else
-            ''
-          end
-        else
-          # Certain attribute types need special treatment.
-          if type == DateAttribute
-            value.value.to_s(a('timeFormat'))
-          elsif type == RichTextAttribute
-            value.value
-          elsif type == ReferenceAttribute
-            value.label
-          else
-            value.to_s
-          end
-        end
-      rescue TjException
-        ''
-      end
-    end
-
     # Returns the default column title for the columns _id_.
     def TableReport::defaultColumnTitle(id)
       # Return an empty string for some special columns that don't have a fixed
@@ -201,17 +174,14 @@ class TaskJuggler
     # This function returns true if the values for the _colId_ column need to be
     # calculated.
     def calculated?(colId)
-      if @@propertiesById.has_key?(colId)
-        return @@propertiesById[colId][3]
-      end
-      return false
+      return @@propertiesById.has_key?(colId)
     end
 
     # This functions returns true if the values for the _col_id_ column are
     # scenario specific.
     def scenarioSpecific?(colId)
       if @@propertiesById.has_key?(colId)
-        return @@propertiesById[colId][4]
+        return @@propertiesById[colId][3]
       end
       return false
     end
@@ -600,8 +570,7 @@ class TaskJuggler
         sameTimeNextFunc = :sameTimeNextYear
       else
         if calculated?(columnDef.id)
-          genCalculatedCell(query, line, columnDef, property)
-          return true
+          return genCalculatedCell(query, line, columnDef, property)
         else
           return genStandardCell(query, line, columnDef)
         end
@@ -629,10 +598,8 @@ class TaskJuggler
     # property that line is for. It returns true if the cell exists, false for a
     # hidden cell.
     def genStandardCell(query, line, columnDef)
-      property = line.property
-      scopeProperty = line.scopeProperty
-
       # Find out, what type of PropertyTreeNode we are dealing with.
+      property = line.property
       if property.is_a?(Task)
         propertyList = @project.tasks
       elsif property.is_a?(Resource)
@@ -640,26 +607,64 @@ class TaskJuggler
       else
         raise "Unknown property type #{property.class}"
       end
-      colId = columnDef.id
-      # Get the value no matter if it's scenario specific or not.
-      if propertyList.scenarioSpecific?(colId)
-        value = property.getAttr(colId, query.scenarioIdx)
-      else
-        value = property.getAttr(colId)
-      end
-      # Get the type of the property
-      type = propertyList.attributeType(colId)
 
       # Create a new cell
-      cell = newCell(query, line, cellText(value, type))
-      #if type == ReferenceAttribute
-      #  cell.text = "Hello!"
-      #end
+      cell = newCell(query, line)
 
-      cdTooltip = columnDef.tooltip.getPattern(query)
-      cell.tooltip = cdTooltip if cdTooltip
+      unless setScenarioSettings(cell, query.scenarioIdx,
+                                 propertyList.scenarioSpecific?(columnDef.id))
+        return false
+      end
 
-      if colId == 'name'
+      setStandardCellAttributes(cell, columnDef,
+                                propertyList.attributeType(columnDef.id), line)
+
+      # If the user has requested a custom cell text, this will be used
+      # instead of the queried one.
+      if (cdText = columnDef.cellText.getPattern(query))
+        cell.text = cdText
+      elsif query.process
+        cell.text = (rti = query.to_rti) ? rti : query.to_s
+      end
+
+      # If the user has requested a custom tooltip, add it to the cell.
+      cell.tooltip = columnDef.tooltip.getPattern(query) || nil
+
+      checkCellText(cell)
+
+      true
+    end
+
+    # Generate a ReportTableCell filled with a calculted value from the property
+    # or other sources of information. It returns true if the cell exists, false
+    # for a hidden cell. _query_ is the Query to get the cell value.  _line_
+    # is the ReportTableLine of the cell. _columnDef_ is the
+    # TableColumnDefinition of the column. _property_ is the PropertyTreeNode
+    # that is reported in this cell.
+    def genCalculatedCell(query, line, columnDef, property)
+      # Create a new cell
+      cell = newCell(query, line)
+
+      unless setScenarioSettings(cell, query.scenarioIdx,
+                                 scenarioSpecific?(columnDef.id))
+        return false
+      end
+
+      setStandardCellAttributes(cell, columnDef, nil, line)
+
+      if query.process
+        cell.text = (rti = query.to_rti) ? rti : query.to_s
+      end
+
+      # Some columns need some extra care.
+      case columnDef.id
+      when 'alert'
+        id = @project.alertLevelId(query.to_num)
+        cell.icon = "flag-#{id}"
+        cell.fontColor = @project.alertLevelColor(query.to_sort)
+      when 'line'
+        cell.text = line.lineNo.to_s
+      when 'name'
         cell.icon =
           if property.is_a?(Task)
             if property.container?
@@ -676,74 +681,6 @@ class TaskJuggler
           else
             nil
           end
-      end
-      # Check if we are dealing with multiple scenarios.
-      if a('scenarios').length > 1
-        # Check if the attribute is not scenario specific
-        unless propertyList.scenarioSpecific?(columnDef.id)
-          if query.scenarioIdx == a('scenarios').first
-            #  Use a somewhat bigger font.
-            cell.fontSize = 15
-          else
-            # And hide the cells for all but the first scenario.
-            cell.hidden = true
-            return false
-          end
-          cell.rows = a('scenarios').length
-        end
-      end
-
-      setStandardCellAttributes(cell, columnDef,
-                                propertyList.attributeType(columnDef.id), line)
-
-      cdText = columnDef.cellText.getPattern(query)
-      cell.text = cdText if cdText
-
-      unless cell.text
-        cell.text = '<Error>'
-        cell.fontColor = 0xFF0000
-      end
-
-      true
-    end
-
-    # Generate a ReportTableCell filled with a calculted value from the property
-    # or other sources of information. It returns true if the cell exists, false
-    # for a hidden cell. _scenarioIdx_ is the index of the reported scenario.
-    # _line_ is the ReportTableLine of the cell. _columnDef_ is the
-    # TableColumnDefinition of the column. _property_ is the PropertyTreeNode
-    # that is reported in this cell.
-    def genCalculatedCell(query, line, columnDef, property)
-      # Create a new cell
-      cell = newCell(query, line)
-
-      scopeProperty = line.scopeProperty
-      cdTooltip = columnDef.tooltip.getPattern(query)
-      cell.tooltip = cdTooltip if cdTooltip
-
-      unless scenarioSpecific?(columnDef.id)
-        if query.scenarioIdx != a('scenarios').first
-          cell.hidden = true
-          return false
-        end
-        cell.rows = a('scenarios').length
-      end
-
-      setStandardCellAttributes(cell, columnDef, nil, line)
-
-      scopeProperty = line.scopeProperty
-
-      query.process
-      cell.text = query.result
-
-      # Some columns need some extra care.
-      case columnDef.id
-      when 'alert'
-        id = @project.alertLevelId(query.numericalResult)
-        cell.icon = "flag-#{id}"
-        cell.fontColor = @project.alertLevelColor(query.sortableResult)
-      when 'line'
-        cell.text = line.lineNo.to_s
       when 'no'
         cell.text = line.no.to_s
       when 'wbs'
@@ -752,8 +689,17 @@ class TaskJuggler
         cell.text = @project.scenario(query.scenarioIdx).name
       end
 
+      # Replace the cell text if the user has requested a custom cell text.
       cdText = columnDef.cellText.getPattern(query)
       cell.text = cdText if cdText
+
+      # Register the custom tooltip if the user has requested one.
+      cdTooltip = columnDef.tooltip.getPattern(query)
+      cell.tooltip = cdTooltip if cdTooltip
+
+      checkCellText(cell)
+
+      true
     end
 
     # Generate the cells for the task lines of a calendar column. These lines do
@@ -796,7 +742,7 @@ class TaskJuggler
           query.endIdx = nextT
           query.process
           # To increase readability, we don't show 0.0 values.
-          cell.text = query.result if query.numericalResult > 0.0
+          cell.text = query.to_s if query.to_num != 0.0
         else
           raise "Unknown column content #{column.content}"
         end
@@ -860,21 +806,21 @@ class TaskJuggler
         query.startIdx = @project.dateToIdx(t, true)
         query.endIdx = @project.dateToIdx(nextT, true) - 1
         query.process
-        workLoad = query.numericalResult
-        scaledWorkLoad = query.result
+        workLoad = query.to_num
+        scaledWorkLoad = query.to_s
         if task
           # Get work load for the particular task.
           query.scopeProperty = task
           query.process
-          workLoadTask = query.numericalResult
-          scaledWorkLoad = query.result
+          workLoadTask = query.to_num
+          scaledWorkLoad = query.to_s
         else
           workLoadTask = 0.0
         end
         # Get unassigned work load.
         query.attributeId = 'freework'
         query.process
-        freeLoad = query.numericalResult
+        freeLoad = query.to_num
         case columnDef.content
         when 'empty'
           # We only generate cells will different background colors.
@@ -933,6 +879,8 @@ class TaskJuggler
       legend.addCalendarItem('Off duty time', 'offduty')
     end
 
+    # This method takes care of often used cell attributes like indentation,
+    # alignment and background color.
     def setStandardCellAttributes(cell, columnDef, attributeType, line)
       # Determine whether it should be indented
       if indent(columnDef.id, attributeType)
@@ -955,10 +903,29 @@ class TaskJuggler
       cell.width = columnDef.width if columnDef.width
     end
 
+    def setScenarioSettings(cell, scenarioIdx, scenarioSpecific)
+      # Check if we are dealing with multiple scenarios.
+      if a('scenarios').length > 1
+        # Check if the attribute is not scenario specific
+        unless scenarioSpecific
+          if scenarioIdx == a('scenarios').first
+            #  Use a somewhat bigger font.
+            cell.fontSize = 15
+          else
+            # And hide the cells for all but the first scenario.
+            cell.hidden = true
+            return false
+          end
+          cell.rows = a('scenarios').length
+        end
+      end
+      true
+    end
+
     # Create a new ReportTableCell object and initialize some common values.
-    def newCell(query, line, text = '')
+    def newCell(query, line)
       property = line.property
-      cell = ReportTableCell.new(line, query, text)
+      cell = ReportTableCell.new(line, query)
 
       # Cells for containers should be using bold font face.
       cell.bold = true if property.container? && line.bold
@@ -980,6 +947,15 @@ class TaskJuggler
       end
     end
 
+    # Make sure we have a valid cell text. If not, this is the result of an
+    # error. This could happen after scheduling errors.
+    def checkCellText(cell)
+      unless cell.text
+        cell.text = '<Error>'
+        cell.fontColor = 0xFF0000
+      end
+    end
+
     # Try to merge equal cells without text to multi-column cells.
     def tryCellMerging(cell, line, firstCell)
       if cell.text == '' && firstCell && (c = line.last(1)) && c == cell
@@ -988,64 +964,6 @@ class TaskJuggler
       end
     end
 
-    # Expand the run-time macros in _pattern_. ${0} is a special case and will
-    # be replaced with the _originalText_. For all other macros the _query_ will
-    # be used with the macro name used for the attributeId of the query. The
-    # method returns the expanded pattern.
-    def expandMacros(pattern, originalText, query)
-      return pattern unless pattern.include?('${')
-
-      out = ''
-      # Scan the pattern for macros ${...}
-      i = 0
-      while i < pattern.length
-        c = pattern[i]
-        if c == ?$
-          # This could be a macro
-          if pattern[i + 1] != ?{
-            # It's not. Just append the '$'
-            out << c
-          else
-            # It is a macro.
-            i += 2
-            macro = ''
-            # Scan for the end '}' and get the macro name.
-            while i < pattern.length && pattern[i] != ?}
-              macro << pattern[i]
-              i += 1
-            end
-            if macro == '0'
-              # This turns RichText into plain ASCII!
-              out += originalText
-            else
-              # resolve by query
-              # If the macro is prefixed by a '?' it may be undefined.
-              if macro[0] == ??
-                macro = macro[1..-1]
-                ignoreErrors = true
-              else
-                ignoreErrors = false
-              end
-              query.attributeId = macro
-              query.process
-              unless query.ok || ignoreErrors
-                raise TjException.new, query.errorMessage
-              end
-              # This turns RichText into plain ASCII!
-              out += query.result
-            end
-          end
-        else
-          # Just append the character to the output.
-          out << c
-        end
-        i += 1
-      end
-
-      out
-    end
-
   end
 
 end
-

@@ -200,7 +200,7 @@ class TaskJuggler
       # values, as the user is not accustomed to the internal representation
       # of those.
       # Convert nil results into empty Strings if necessary
-      query.sortableResult || ''
+      query.result || ''
     end
 
     # Used for debugging and error reporting.
