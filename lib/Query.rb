@@ -30,7 +30,7 @@ class TaskJuggler
   # used for sorting (Query#sortableResult). To get the result, Query#process
   # needs to be called. In case an error occured, Query#ok is set to false and
   # Query#errorMessage contains an error message.
-   class Query
+  class Query
 
     attr_accessor :project, :propertyType, :propertyId, :property,
                   :scopePropertyType, :scopePropertyId, :scopeProperty,

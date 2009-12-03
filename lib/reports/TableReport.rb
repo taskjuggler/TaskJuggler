@@ -43,6 +43,7 @@ class TaskJuggler
       'no'           => [ 'No.',           false,  :right, false ],
       'rate'         => [ 'Rate',          true,   :right, true ],
       'resources'    => [ 'Resources',     false,  :left,  true ],
+      'responsible'  => [ 'Responsible',   false,  :left,  true ],
       'revenue'      => [ 'Revenue',       true,   :right, true ],
       'scenario'     => [ 'Scenario',      false,  :left,  true ],
       'status'       => [ 'Status',        false,  :left,  true ],
