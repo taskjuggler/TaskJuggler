@@ -395,12 +395,23 @@ class TaskJuggler
       'reference'
     end
 
+    def to_s(query)
+      url || ''
+    end
+
+    def to_rti(query)
+      return nil unless @value
+
+      rText = RichText.new("[#{url} #{label}]")
+      rText.generateIntermediateFormat
+    end
+
     def url
       @value ? @value[0] : nil
     end
 
     def label
-      @value ? @value[1][0] : nil
+      @value ? (@value[1] ? @value[1][0] : @value[0]) : nil
     end
 
   end
@@ -424,9 +435,8 @@ class TaskJuggler
 
     def to_rti(query = nil)
       out = []
-      @value.each { |r| out << "#{r.name} (#{r.fullId})" }
-      out.join(", ")
-      rText = RichText.new(out)
+      @value.each { |r| out << r.name }
+      rText = RichText.new(out.join(', '))
       rText.generateIntermediateFormat
     end
 

@@ -39,7 +39,7 @@ class TaskJuggler
                   :revenueAccount,
                   :loadUnit,
                   :ok, :errorMessage
-     attr_reader :end, :start
+    attr_reader :end, :start
     attr_writer :sortable, :numerical, :string, :rti
 
     # Create a new Query object. The _parameters_ need to be sufficent to
@@ -164,7 +164,11 @@ class TaskJuggler
     # Return the result in the orginal form. It may be nil.
     def result
       if @attr
-        @attr.value
+        if @attr.value && @attr.is_a?(ReferenceAttribute)
+          @attr.value[0]
+        else
+          @attr.value
+        end
       elsif @numerical
         @numerical
       else
