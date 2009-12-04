@@ -342,6 +342,8 @@ class TaskJuggler
               true, false,    false, nil ],
         [ 'scenarios',  'Scenarios',   ScenarioListAttribute,
               true, false,    false, [ 0 ] ],
+        [ 'selfcontained', 'Selfcontained', BooleanAttribute,
+              true, false,    false, false ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
               true,  true,    false, nil ],
         [ 'sortResources', 'Sort Resources', SortListAttribute,

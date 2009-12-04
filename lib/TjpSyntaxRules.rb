@@ -2767,6 +2767,16 @@ List of scenarios that should be included in the report.
 EOT
        )
 
+    pattern(%w( _selfcontained !yesNo ), lambda {
+      @property.set('selfcontained', @val[1])
+    })
+    doc('selfcontained', <<'EOT'
+Try to generate selfcontained output files when the format supports this. E.
+g. for HTML reports, the style sheet will be included and no icons will be
+used.
+EOT
+       )
+
     pattern(%w( _sortresources !sortCriteria ), lambda {
       @property.set('sortResources', @val[1])
     })
@@ -4869,6 +4879,15 @@ limits the availability of resources or the activity on a task to certain time
 slots of week days.
 EOT
        )
+  end
+
+  def rule_yesNo
+    pattern(%w( _yes ), lambda {
+      true
+    })
+    pattern(%w( _no ), lambda {
+      false
+    })
   end
 
 end

@@ -930,7 +930,7 @@ class TaskJuggler
 
       # Cells for containers should be using bold font face.
       cell.bold = true if property.container? && line.bold
-
+      cell.selfcontained = a('selfcontained')
       cell
     end
 

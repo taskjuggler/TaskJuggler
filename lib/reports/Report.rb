@@ -103,23 +103,50 @@ class TaskJuggler
       html = HTMLDocument.new(:transitional)
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
-      head << XMLElement.new('link', 'rel' => 'stylesheet',
-                             'type' => 'text/css',
-                             'href' => 'css/tjreport.css')
+      if a('selfcontained')
+        puts "SC: #{a('selfcontained')}"
+        auxSrcDir = AppConfig.dataDirs('data/css')[0]
+        cssFileName = auxSrcDir + '/tjreport.css'
+        if auxSrcDir.nil? || !File.exists?(cssFileName)
+          raise TjException.new, <<"EOT"
+Cannot find '#{cssFileName}'. This is usually the result of an improper
+TaskJuggler installation. If you know where to find the data directory, you
+can use the TASKJUGGLER_DATA_PATH environment variable to specify the
+location.
+EOT
+        end
+        cssFile = IO.read(cssFileName)
+        if cssFile.empty?
+          raise TjException.new, <<"EOT"
+Cannot read '#{cssFileName}'. Make sure the file is not empty and you have
+read access permission.
+EOT
+        end
+        head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
+                               'content' => 'text/css; charset=utf-8')
+        head << (style = XMLElement.new('style', 'type' => 'text/css'))
+        style << XMLBlob.new("\n" + cssFile)
+      else
+        head << XMLElement.new('link', 'rel' => 'stylesheet',
+                               'type' => 'text/css',
+                               'href' => 'css/tjreport.css')
+      end
       html << (body = XMLElement.new('body'))
 
-      body << (script = XMLElement.new('script', 'type' => 'text/javascript',
-                                       'src' => 'scripts/wz_tooltip.js'))
-      script.mayNotBeEmpty = true
-      body << (noscript = XMLElement.new('noscript'))
-      noscript << (nsdiv = XMLElement.new('div',
-                                          'style' => 'text-align:center; ' +
-                                                     'color:#FF0000'))
-      nsdiv << XMLText.new(<<'EOT'
+      unless a('selfcontained')
+        body << (script = XMLElement.new('script', 'type' => 'text/javascript',
+                                         'src' => 'scripts/wz_tooltip.js'))
+        script.mayNotBeEmpty = true
+        body << (noscript = XMLElement.new('noscript'))
+        noscript << (nsdiv = XMLElement.new('div',
+                                            'style' => 'text-align:center; ' +
+                                            'color:#FF0000'))
+        nsdiv << XMLText.new(<<'EOT'
 This page requires Javascript for full functionality. Please enable it
 in your browser settings!
 EOT
-                          )
+                            )
+      end
 
 
       # Make sure we have some margins around the report.
@@ -207,8 +234,8 @@ EOT
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
       if auxSrcDir.nil? || !File.exists?(auxSrcDir)
-        raise TjException.new, <<'EOT'
-Cannot find the icon directory. This is usually
+        raise TjException.new, <<"EOT"
+Cannot find the #{dirName} directory. This is usually
 the result of an improper TaskJuggler installation. If you know the directory,
 you can use the TASKJUGGLER_DATA_PATH environment variable to specify the
 location.
