@@ -21,7 +21,7 @@ class TaskJuggler
 
     attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
-                  :text, :tooltip,
+                  :text, :tooltip, :selfcontained,
                   :indent, :icon, :fontSize, :fontColor, :bold, :width,
                   :rows, :columns, :special
 
@@ -61,6 +61,7 @@ class TaskJuggler
       @width = nil
       @rows = 1
       @columns = 1
+      @selfcontained = false
       # Ignore everything and use this reference to generate the output.
       @special = nil
     end
@@ -127,7 +128,7 @@ class TaskJuggler
       cell << (div = XMLElement.new('div',
         'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
-      if @icon
+      if @icon && !@selfcontained
         div << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
                                      'align' => 'top',
                                      'style' => 'margin-right:3px;' +
@@ -161,7 +162,7 @@ class TaskJuggler
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
-      if tooltip
+      if tooltip && !@selfcontained
         if tooltip.respond_to?('functionHandler') &&
            tooltip.functionHandler('query')
           tooltip.functionHandler('query').setQuery(@query)
@@ -169,7 +170,8 @@ class TaskJuggler
         div['onmouseover'] = "TagToTip('#{cell.object_id}')"
         div['onmouseout'] = 'UnTip()'
         div << (ltDiv = XMLElement.new('div',
-                                       'style' => 'visibility:hidden',
+                                       'style' => 'position:fixed; ' +
+                                       'visibility:hidden',
                                        'id' => "#{cell.object_id}"))
         ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
                                                    XMLText.new(tooltip))
