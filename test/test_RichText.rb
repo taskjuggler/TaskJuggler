@@ -59,6 +59,11 @@ class TestRichText < Test::Unit::TestCase
     out = newRichText(inp).to_html.to_s + "\n"
     ref = "<div/>\n"
     assert_equal(ref, out)
+
+    assert_equal(true, newRichText(inp).empty?)
+    assert_equal(true, newRichText("\n").empty?)
+    assert_equal(true, newRichText("\n \n").empty?)
+    assert_equal(false, newRichText("foo").empty?)
   end
 
   def test_one_word

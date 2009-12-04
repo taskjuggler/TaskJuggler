@@ -161,7 +161,7 @@ class TaskJuggler
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
-      if tooltip
+      if tooltip && !tooltip.empty?
         if tooltip.respond_to?('functionHandler') &&
            tooltip.functionHandler('query')
           tooltip.functionHandler('query').setQuery(@query)

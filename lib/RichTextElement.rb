@@ -65,6 +65,12 @@ class TaskJuggler
       self
     end
 
+    # Return true of the node contains an empty RichText tree.
+    def empty?
+      @category == :richtext && @children.empty?
+    end
+
+
     # Recursively extract the section headings from the RichTextElement and
     # build the TableOfContents _toc_ with the gathered sections.  _fileName_
     # is the base name (without .html or other suffix) of the file the

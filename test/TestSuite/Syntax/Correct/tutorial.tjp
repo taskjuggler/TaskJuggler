@@ -561,7 +561,7 @@ taskreport development "" {
 
 # A list of all tasks with the percentage completed for each task
 taskreport deliveries "" {
-  headline "Project Deliveries"
+  headline "Project Deliverables"
   columns hierarchindex, name, start, end, note { width 150 }, complete, chart
   taskroot AcSo.deliveries
   hideresource 1

@@ -164,6 +164,11 @@ class TaskJuggler
       @functionHandlers[function]
     end
 
+    # Return true if the RichText has no content.
+    def empty?
+      @tree.empty?
+    end
+
     # Recursively extract the section headings from the RichTextElement and
     # build the TableOfContents _toc_ with the gathered sections.  _fileName_
     # is the base name (without .html or other suffix) of the file the
