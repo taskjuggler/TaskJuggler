@@ -278,7 +278,7 @@ EOT
 
   def rule_argument
     singlePattern('$ABSOLUTE_ID')
-    singlePattern('$DATE')
+    singlePattern('!date')
     singlePattern('$ID')
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')

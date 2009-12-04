@@ -513,7 +513,8 @@ class TaskJuggler
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
       rText = ''
-      if (entry = @project['journal'].currentEntry(query.end, self, 0))
+      if (entry = @project['journal'].currentEntry(query.end, self, 0,
+                                                   @project['start']))
         rText += "== " + entry.headline + " ==\n"
         rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
         if entry.author

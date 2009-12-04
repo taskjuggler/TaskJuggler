@@ -182,12 +182,14 @@ class TaskJuggler
     # important message for the given _date_. The message needs to have at
     # least the alertLevel _minLevel_. Return nil if there is no current entry
     # for this property with the requested level.
-    def currentEntry(date, property, minLevel)
+    def currentEntry(date, property, minLevel, minDate)
       pEntry = @propertyToEntries[property] ?
                @propertyToEntries[property].last(date) : nil
 
       return nil if pEntry.nil? || pEntry.headline.empty? ||
-                    (pEntry.alertLevel < minLevel)
+                    (pEntry.alertLevel < minLevel) ||
+                    (pEntry.alertLevel == minLevel &&
+                     pEntry.date < minDate)
 
       # Check parents for a more important or more up-to-date message.
       p = property.parent

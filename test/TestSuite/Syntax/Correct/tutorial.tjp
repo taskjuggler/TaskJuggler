@@ -531,7 +531,7 @@ taskreport status "" {
     headline "Project Dashboard (<-query attribute='now'->)"
     columns name { title "Task" }, resources { width 200 },
             alert, alertmessage { width 260}
-    hidetask ~hasalert(1)
+    hidetask ~hasalert(1, ${projectstart})
     sorttasks alert.down, delayed.end.up
   }
   taskreport completed "" {
