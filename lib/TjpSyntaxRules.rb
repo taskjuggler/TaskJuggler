@@ -534,6 +534,18 @@ matching one is used for each cell.
 EOT
        )
 
+    pattern(%w( _end !date ), lambda {
+      @column.end = @val[1]
+    })
+    doc('end.column', <<'EOT'
+Normally, columns with calculated values take the specified report period into
+account when calculating their values. With this attribute, the user can
+specify an end date for the period that should be used when calculating the
+values of this column. It does not have an impact on column with time
+invariant values.
+EOT
+       )
+
     pattern(%w( _fontcolor !logicalExpression !color ), lambda {
       @column.fontColor.addPattern(
         CellSettingPattern.new(@val[2], @val[1]))
@@ -546,11 +558,33 @@ matching one is used for each cell.
 EOT
        )
 
+    pattern(%w( _period !interval ), lambda {
+      @column.start = @val[1].start
+      @column.end = @val[1].end
+    })
+    doc('period.column', <<'EOT'
+This property is a shortcut for setting the [[start.column start]] and
+[[end.column end]] property at the same time.
+EOT
+       )
+
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
     })
     doc('scale.column', <<'EOT'
 Specifies the scale that should be used for a chart column. This value is ignored for all other columns.
+EOT
+       )
+
+    pattern(%w( _start !date ), lambda {
+      @column.start = @val[1]
+    })
+    doc('start.column', <<'EOT'
+Normally, columns with calculated values take the specified report period into
+account when calculating their values. With this attribute, the user can
+specify a start date for the period that should be used when calculating the
+values of this column. It does not have an impact on column with time
+invariant values.
 EOT
        )
 
@@ -2656,14 +2690,10 @@ EOT
       @property.set('columns', columns)
     })
     doc('columns', <<'EOT'
-Specifies which columns shall be included in a report.
-
-All columns support macro expansion. Contrary to the normal macro expansion,
-these macros are expanded during the report generation. So the value of the
-macro is being changed after each table cell or table line. Consequently only
-build in macros can be used. To protect the macro calls against expansion
-during the initial file processing, the report macros must be prefixed with an
-additional ''''$''''.
+Specifies which columns shall be included in a report. Some columns show
+values that are constant over the course of the project. Other columns show
+calculated values that depend on the time period that was chosen for the
+report.
 EOT
        )
 
@@ -2748,6 +2778,8 @@ Determines what unit should be used to display all load values in this report.
 EOT
        )
 
+    pattern(%w( !reportPeriod ))
+
     pattern(%w( _prolog $STRING ), lambda {
       @property.set('prolog', newRichText(@val[1]))
     })
@@ -2777,7 +2809,6 @@ EOT
        )
 
     pattern(%w( !report ))
-    pattern(%w( !reportPeriod ))
 
     pattern(%w( _right $STRING ), lambda {
       @property.set('right', newRichText(@val[1]))
@@ -3027,9 +3058,16 @@ EOT
        )
     singlePattern('_taskreport')
     doc('taskreport', <<'EOT'
-The report lists tasks and their respective values in a table. The resources
-that are allocated to each task can be listed as well. See [[report]] for
-further details.
+The report lists tasks and their respective values in a table. To reduce the
+list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
+[[taskroot]] attributes. The order of the task can be controlled with
+[[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
+will unconditionally be included to form the tree. Tree sorting is the
+default. You need to change it if you do not want certain parent tasks to be
+included in the report.
+
+The resources that are allocated to each task can be listed as well. See
+[[report]] for further details.
 EOT
        )
     singlePattern('_textreport')

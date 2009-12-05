@@ -534,6 +534,14 @@ class TaskJuggler
     # this method. The last kind of cell is actually not a cell. It just
     # generates the chart objects that belong to the property in this line.
     def generateTableCell(line, property, columnDef, query)
+      if columnDef.start || columnDef.end
+        # If the user has specified a new start or end time for this column,
+        # we have to duplicate the query before we modify it.
+        query = query.dup
+        query.start = columnDef.start if columnDef.start
+        query.end = columnDef.end if columnDef.end
+      end
+
       case columnDef.id
       when 'chart'
         # Generate a hidden cell. The real meat is in the actual chart object,

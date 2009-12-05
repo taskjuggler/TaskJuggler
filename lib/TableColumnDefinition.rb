@@ -58,13 +58,17 @@ class TaskJuggler
   class TableColumnDefinition
 
     attr_reader :id, :cellText, :tooltip, :cellColor, :fontColor
-    attr_accessor :title, :scale, :width, :content, :column
+    attr_accessor :title, :start, :end, :scale, :width, :content, :column
 
     def initialize(id, title)
       # The column ID. It must be unique within the report.
       @id = id
       # An alternative title for the column header.
       @title = title
+      # An alternative start date for columns with time-variant values.
+      @start = nil
+      # An alternative end date for columns with time-variant values.
+      @end = nil
       # For regular columns (non-calendar and non-chart) the user can override
       # the actual cell content.
       @cellText = CellSettingPatternList.new

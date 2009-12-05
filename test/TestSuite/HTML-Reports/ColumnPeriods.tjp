@@ -1,0 +1,44 @@
+project 'test' 2009-12-05 +6m
+
+shift part30 "30 hours part time" {
+  workinghours thu 8:00 - 14:00
+  workinghours fri off
+}
+shift part20 "20 hours part time" {
+  workinghours mon, tue off
+  workinghours wed 12:00 - 16:00
+}
+shift part10 "10 hours part time" {
+  workinghours mon - fri 10:00 - 12:00
+}
+
+resource r1 "R1"
+resource r2 "R2" { shift part20 }
+resource r3 "R3"
+
+task "T1" {
+  effort 20d
+  allocate r1, r2
+  shift part10
+}
+task "T2" {
+  effort 30d
+  priority 600
+  allocate r1, r2
+}
+task "T3" {
+  effort 40d
+  allocate r1, r2, r3
+  shift part30
+}
+
+taskreport "ColumnPeriods" {
+  formats html
+  columns name,
+          effort { title "Nov" start 2009-12-01 end 2009-12-01 },
+          effort { title "Dec" period 2009-12-01 - 2010-01-01 },
+          effort { title "Jan" start 2010-01-01 end 2010-02-01 },
+          effort { title "Feb" period 2010-02-01 - 2010-03-01 },
+          effort { title "Mar" start 2010-03-01 end 2010-04-01 },
+          monthly
+}

@@ -373,15 +373,24 @@ taskreport overview "" {
   ->8-
 }
 
+# Macro to set the background color of a cell according to the alert
+# level of the task.
+macro AlertColor [
+  cellcolor plan.alert = 0 "#00D000" # green
+  cellcolor plan.alert = 1 "#D0D000" # yellow
+  cellcolor plan.alert = 2 "#D00000" # red
+]
+
 taskreport status "" {
-  columns wbs, name, start, end, effort, status
+  columns wbs, name, start, end, effort, alert, status
   scenarios delayed 
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
-    columns name { title "Task" }, resources { width 200 },
-            alert, alertsummary { width 260}
-    hidetask ~hasalert(1)
+    columns name { title "Task" ${AlertColor} },
+            resources { width 200 ${AlertColor} },
+            alertmessage { width 260 ${AlertColor} }
+    hidetask ~hasalert(1, ${projectstart})
     sorttasks alert.down, delayed.end.up
   }
   taskreport completed "" {
@@ -411,7 +420,7 @@ taskreport development "" {
 
 # A list of all tasks with the percentage completed for each task
 taskreport deliveries "" {
-  headline "Project Deliveries"
+  headline "Project Deliverables"
   columns hierarchindex, name, start, end, note { width 150 }, complete, chart
   taskroot AcSo.deliveries
   hideresource 1
@@ -441,3 +450,4 @@ resourcereport resourceGraph "" {
   hidetask ~(isleaf() & isleaf_())
   sorttasks plan.start.up
 }
+
