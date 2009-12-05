@@ -73,26 +73,6 @@ class TaskJuggler
         end
       end
 
-      # Remove all tasks that don't overlap with the reported interval.
-      list.delete_if do |task|
-        delete = true
-        a('scenarios').each do |scenarioIdx|
-          iv = Interval.new(task['start', scenarioIdx].nil? ?
-                            @project['start'] : task['start', scenarioIdx],
-                            task['end', scenarioIdx].nil? ?
-                            @project['end'] : task['end', scenarioIdx])
-          # Special case to include milestones at the report end.
-          if iv.start == iv.end && iv.end == @end
-            iv.start = iv.end = iv.start - 1
-          end
-          if iv.overlaps?(Interval.new(a('start'), a('end')))
-            delete = false
-            break;
-          end
-        end
-        delete
-      end
-
       standardFilterOps(list, hideExpr, rollupExpr, resource, taskRoot)
     end
 

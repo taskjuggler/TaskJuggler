@@ -28,9 +28,9 @@ class TaskJuggler
         'isdependencyof' => 3,
         'isdutyof' => 2,
         'isleaf' => 0,
+        'isongoing' => 1,
         'isresource' => 0,
         'istask' => 0,
-        'isoncriticalpath' => 1,
         'treelevel' => 0
     }
 
@@ -91,11 +91,14 @@ class TaskJuggler
 
     def isactive(expr, args)
       # The result can only be true when called for a Task property.
-      return false unless (property = expr.property).is_a?(Task)
+      return false unless (property = expr.property).is_a?(Task) ||
+                           property.is_a?(Resource)
       scopeProperty = expr.scopeProperty
       project = property.project
       # 1st arg must be a scenario index.
-      return false if (scenarioIdx = project.scenarioIdx(args[0])).nil?
+      if (scenarioIdx = project.scenarioIdx(args[0])).nil?
+        expr.error("Unknown scenario '#{args[0]}' used for function isactive()")
+      end
 
       property.getAllocatedTime(scenarioIdx,
                                 project.reportContext.report.get('start'),
@@ -133,17 +136,32 @@ class TaskJuggler
       expr.property.leaf?
     end
 
+    def isongoing(expr, args)
+      # The result can only be true when called for a Task property.
+      return false unless (task = expr.property).is_a?(Task)
+      project = task.project
+      # 1st arg must be a scenario index.
+      if (scenarioIdx = project.scenarioIdx(args[0])).nil?
+        expr.error("Unknown scenario '#{args[0]}' used for function isongoing()")
+      end
+
+      iv1 = Interval.new(project.reportContext.report.get('start'),
+                         project.reportContext.report.get('end'))
+      tStart = task['start', scenarioIdx]
+      tEnd = task['end', scenarioIdx]
+      # This helps to show tasks with scheduling errors.
+      return true unless tStart && tEnd
+      iv2 = Interval.new(tStart, tEnd)
+
+      return iv1.overlaps?(iv2)
+    end
+
     def isresource(expr, args)
       expr.property.is_a?(Resource)
     end
 
     def istask(expr, args)
       expr.property.is_a?(Task)
-    end
-
-    def isoncricitalpath(expr, args)
-      # TODO
-      false
     end
 
     def treelevel(expr, args)

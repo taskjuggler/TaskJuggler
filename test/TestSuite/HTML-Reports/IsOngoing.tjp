@@ -1,0 +1,34 @@
+project "test" 2009-12-05 +1y
+
+task "Hide" {
+  period 2010-01-01 - 2010-02-01
+}
+task "Show" {
+  period 2010-02-01 - 2010-03-01
+}
+task "Show" {
+  period 2010-02-01 - 2010-05-01
+}
+task "Show" {
+  period 2010-03-01 - 2010-04-01
+}
+task "Show" {
+  period 2010-04-01 - 2010-05-01
+}
+task "Hide" {
+  period 2010-05-01 - 2010-06-01
+}
+task "Show" {
+  start 2010-02-15
+}
+task "Hide" {
+  end 2010-04-18
+}
+
+taskreport "IsOngoing" {
+  formats html
+  columns no, name, start, end, chart
+  hidetask ~isongoing(planx)
+  period 2010-02-15 - 2010-04-18
+  headline "5 Tasks should be shown"
+}

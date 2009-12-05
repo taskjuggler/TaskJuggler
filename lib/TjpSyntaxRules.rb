@@ -1065,6 +1065,14 @@ EOT
     pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
 
+    pattern(%w( _isongoing _( $ID _) ))
+    doc('isongoing', <<'EOT'
+Will evaluate to true for tasks that overlap with the report period in given
+scenario.
+EOT
+       )
+    arg(2, 'ID', 'A scenario ID')
+
     pattern(['_isresource', '_(', '_)' ])
     doc('isresource', 'The result is true if the property is a resource.')
 
