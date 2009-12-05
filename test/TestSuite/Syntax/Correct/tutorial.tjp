@@ -523,14 +523,23 @@ taskreport overview "" {
 # *** EXAMPLE: overview1 -
 # *** EXAMPLE: overview -
 
+# Macro to set the background color of a cell according to the alert
+# level of the task.
+macro AlertColor [
+  cellcolor plan.alert = 0 "#00D000" # green
+  cellcolor plan.alert = 1 "#D0D000" # yellow
+  cellcolor plan.alert = 2 "#D00000" # red
+]
+
 taskreport status "" {
-  columns wbs, name, start, end, effort, status
+  columns wbs, name, start, end, effort, alert, status
   scenarios delayed 
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
-    columns name { title "Task" }, resources { width 200 },
-            alert, alertmessage { width 260}
+    columns name { title "Task" ${AlertColor} },
+            resources { width 200 ${AlertColor} },
+            alertmessage { width 260 ${AlertColor} }
     hidetask ~hasalert(1, ${projectstart})
     sorttasks alert.down, delayed.end.up
   }

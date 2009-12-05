@@ -463,6 +463,22 @@ EOT
     descr('Set chart resolution to 1 year.')
   end
 
+  def rule_color
+    pattern(%w( $STRING ), lambda {
+      col = @val[0]
+      unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{3}/ =~ col
+        error('bad_color',
+              "Color values must be specified as '#RGB' or '#RRGGBB' values")
+      end
+      col
+    })
+    arg(0, 'color', <<'EOT'
+The RGB color values of the color. The following formats are supported: #RGB
+and #RRGGBB. Where R, G, B are hexadecimal values. See
+[http://en.wikipedia.org/wiki/Web_colors Wikipedia] for more details.
+EOT
+       )
+  end
 
   def rule_columnBody
     optionsRule('columnOptions')
@@ -493,7 +509,7 @@ EOT
 
     pattern(%w( _celltext !logicalExpression $STRING ), lambda {
       @column.cellText.addPattern(
-        CellTextPattern.new(newRichText(@val[2]), @val[1]))
+        CellSettingPattern.new(newRichText(@val[2]), @val[1]))
     })
     doc('celltext.column', <<'EOT'
 Specifies an alternative content that is used for the cells of the column.
@@ -505,6 +521,30 @@ EOT
         )
     arg(1, 'text',
         'Alterntive cell text specified as [[Rich_Text_Attributes Rich Text]]')
+
+    pattern(%w( _cellcolor !logicalExpression !color ), lambda {
+      @column.cellColor.addPattern(
+        CellSettingPattern.new(@val[2], @val[1]))
+    })
+    doc('cellcolor.column', <<'EOT'
+Specifies an alternative background color for the cells of this column. The
+logical expression specifies for which cells the color should be used. If
+multiple cellcolor patterns are provided for a column, the first
+matching one is used for each cell.
+EOT
+       )
+
+    pattern(%w( _fontcolor !logicalExpression !color ), lambda {
+      @column.fontColor.addPattern(
+        CellSettingPattern.new(@val[2], @val[1]))
+    })
+    doc('fontcolor.column', <<'EOT'
+Specifies an alternative font color for the cells of this column. The
+logical expression specifies for which cells the color should be used. If
+multiple fontcolor patterns are provided for a column, the first
+matching one is used for each cell.
+EOT
+       )
 
     pattern(%w( _scale !chartScale ), lambda {
       @column.scale = @val[1]
@@ -525,7 +565,7 @@ EOT
 
     pattern(%w( _tooltip !logicalExpression $STRING ), lambda {
       @column.tooltip.addPattern(
-        CellTextPattern.new(newRichText(@val[2]), @val[1]))
+        CellSettingPattern.new(newRichText(@val[2]), @val[1]))
     })
     doc('tooltip.column', <<'EOT'
 Specifies an alternative content for the tooltip. This will replace the

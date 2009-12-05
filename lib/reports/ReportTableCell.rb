@@ -22,7 +22,8 @@ class TaskJuggler
     attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
                   :text, :tooltip, :selfcontained,
-                  :indent, :icon, :fontSize, :fontColor, :bold, :width,
+                  :cellColor, :indent, :icon, :fontSize, :fontColor,
+                  :bold, :width,
                   :rows, :columns, :special
 
     # Create the ReportTableCell object and initialize the attributes to some
@@ -56,7 +57,8 @@ class TaskJuggler
       # The basename of the icon file
       @icon = nil
       @fontSize = nil
-      @fontColor = 0x000000
+      @cellColor = nil
+      @fontColor = nil
       @bold = false
       @width = nil
       @rows = 1
@@ -88,6 +90,7 @@ class TaskJuggler
       attribs['rowspan'] = "#{@rows}" if @rows > 1
       attribs['colspan'] = "#{@columns}" if @columns > 1
       attribs['class'] = @category ? @category : 'tabcell'
+      attribs['style'] = "background-color: #{@cellColor}; " if @cellColor
       cell = XMLElement.new('td', attribs)
 
       # Determine cell style
@@ -119,8 +122,8 @@ class TaskJuggler
       end
 
       style += "font-size: #{@fontSize}px; " if fontSize
-      unless @fontColor == 0
-        style += "color:#{'#%06X' % @fontColor}; "
+      if @fontColor
+        style += "color:#{@fontColor}; "
       end
       if @text.is_a?(RichTextIntermediate) && @line && @line.table.equiLines
         style += "height:#{@line.height - 3}px; "

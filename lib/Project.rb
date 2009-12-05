@@ -62,9 +62,9 @@ class TaskJuggler
         # members: the tjp syntax token, the user visible name and the
         # associated color as RGB byte array.
         'alertLevels' => [
-          [ 'green',  'Green',  0x008000 ],
-          [ 'yellow', 'Yellow', 0xBEA800 ],
-          [ 'red',    'Red',    0xC00000 ] ],
+          [ 'green',  'Green',  '#008000' ],
+          [ 'yellow', 'Yellow', '#BEA800' ],
+          [ 'red',    'Red',    '#C00000' ] ],
         'copyright' => nil,
         'costAccount' => nil,
         'currency' => "EUR",

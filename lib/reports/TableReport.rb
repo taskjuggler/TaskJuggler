@@ -694,6 +694,16 @@ class TaskJuggler
       cdText = columnDef.cellText.getPattern(query)
       cell.text = cdText if cdText
 
+      # Replace the cell background color if the user has requested a custom
+      # color.
+      cellColor = columnDef.cellColor.getPattern(query)
+      cell.cellColor = cellColor if cellColor
+
+      # Replace the font color setting if the user has requested a custom
+      # color.
+      fontColor = columnDef.fontColor.getPattern(query)
+      cell.fontColor = fontColor if fontColor
+
       # Register the custom tooltip if the user has requested one.
       cdTooltip = columnDef.tooltip.getPattern(query)
       cell.tooltip = cdTooltip if cdTooltip
@@ -953,7 +963,7 @@ class TaskJuggler
     def checkCellText(cell)
       unless cell.text
         cell.text = '<Error>'
-        cell.fontColor = 0xFF0000
+        cell.fontColor = '#FF0000'
       end
     end
 

@@ -12,23 +12,24 @@
 
 class TaskJuggler
 
-  # A CellTextPattern is used to store the RichText that can be used as
-  # alternative content for a ReportTableCell or a cell tooltip. The pattern
-  # is taken when the LogicalExpression matches.
-  class CellTextPattern
+  # A CellSettingPattern is used to store alternative settings for
+  # ReportTableCell settings. These could be the cell text, the tooltip or a
+  # color setting. The user can provide multiple options and the
+  # LogicalExpression is used to select the pattern for a given cell.
+  class CellSettingPattern
 
-    attr_reader :text, :logExpr
+    attr_reader :setting, :logExpr
 
-    def initialize(text, logExpr)
-      @text = text
+    def initialize(setting, logExpr)
+      @setting = setting
       @logExpr = logExpr
     end
 
   end
 
-  # The CellTextPatternList holds a list of possible test pattern for a cell
+  # The CellSettingPatternList holds a list of possible test pattern for a cell
   # or tooltip. The first entry who's LogicalExpression matches is used.
-  class CellTextPatternList
+  class CellSettingPatternList
 
     def initialize
       @patterns = []
@@ -43,7 +44,7 @@ class TaskJuggler
     def getPattern(query)
       @patterns.each do |pattern|
         if pattern.logExpr.eval(query.property, query.scopeProperty)
-          return pattern.text
+          return pattern.setting
         end
       end
       nil
@@ -56,7 +57,7 @@ class TaskJuggler
   # The column is uniquely identified by an ID.
   class TableColumnDefinition
 
-    attr_reader :id, :cellText, :tooltip
+    attr_reader :id, :cellText, :tooltip, :cellColor, :fontColor
     attr_accessor :title, :scale, :width, :content, :column
 
     def initialize(id, title)
@@ -66,13 +67,19 @@ class TaskJuggler
       @title = title
       # For regular columns (non-calendar and non-chart) the user can override
       # the actual cell content.
-      @cellText = CellTextPatternList.new
+      @cellText = CellSettingPatternList.new
       # The content attribute is only used for calendar columns. It specifies
       # what content should be displayed in the colendar columns.
       @content = 'load'
       # An alternative content for the tooltip message. It should be a
       # RichText object.
-      @tooltip = CellTextPatternList.new
+      @tooltip = CellSettingPatternList.new
+      # An alternative background color for the cell. The color setting is
+      # stored as "#RGB" or "#RRGGBB" String.
+      @cellColor = CellSettingPatternList.new
+      # An alternative font color for the cell. The format is equivalent to
+      # the @cellColor setting.
+      @fontColor = CellSettingPatternList.new
       # The scale attribute is only used for Gantt chart columns. It specifies
       # the minimum resolution of the chart.
       @scale = 'week'
