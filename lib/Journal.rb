@@ -63,7 +63,7 @@ class TaskJuggler
 
     def initialize
       @entries = []
-      @sorted = true
+      @sorted = false
     end
 
     # Return the number of entries.
@@ -72,9 +72,15 @@ class TaskJuggler
     end
 
     # Add a new JournalEntry to the list. The list will be marked as unsorted.
-    def<<(entry)
+    def <<(entry)
       @entries << entry
       @sorted = false
+    end
+
+    # Add a list of JournalEntry objects to the existing list. The list will
+    # be marked unsorted.
+    def +(list)
+      @entries + list
     end
 
     # Return the _index_-th entry.
@@ -96,28 +102,42 @@ class TaskJuggler
       @entries.include?(entry)
     end
 
-    # Returns the last element (by date) if date is nil or the last element
-    # right before the given _date_.
+    # Returns the last elements (by date) if date is nil or the last elements
+    # right before the given _date_. If there are multiple entries with
+    # exactly the same date, all are returned. Otherwise the result Array will
+    # only contain one element. In case no matching entry is found, the Array
+    # will be empty.
     def last(date = nil)
+      result = []
       sort
       # If we have no date, return the latest entry.
       return @entries.last unless date
 
       @entries.reverse_each do |e|
-        return e if e.date <= date
+        if result.empty?
+          result << e if e.date <= date
+        elsif result.first.date == e.date
+          result << e
+        else
+          break
+        end
       end
-      nil
+      result
     end
 
     private
 
+    # Sort the list of entries. First by ascending by date, than by alertLevel
+    # and finally by PropertyTreeNode sequence number.
     def sort
       return if @sorted
 
       @entries.sort! { |a, b| a.date != b.date ?
                               a.date <=> b.date :
-                              a.property.sequenceNo <=>
-                              b.property.sequenceNo }
+                              (a.alertLevel != b.alertLevel ?
+                               a.alertLevel <=> b.alertLevel :
+                               a.property.sequenceNo <=>
+                               b.property.sequenceNo) }
       @sorted = true
     end
 
@@ -172,64 +192,70 @@ class TaskJuggler
       maxLevel = 0
       # Gather all the current (as of the specified _date_) JournalEntry
       # objects for the property and than find the highest level.
-      currentEntries(date, property).each do |e|
+      currentEntriesR(date, property).each do |e|
         maxLevel = e.alertLevel if maxLevel < e.alertLevel
       end
       maxLevel
     end
 
-    # Return the last entry if the _property_ has the most current and most
-    # important message for the given _date_. The message needs to have at
-    # least the alertLevel _minLevel_. Return nil if there is no current entry
-    # for this property with the requested level.
-    def currentEntry(date, property, minLevel, minDate)
-      pEntry = @propertyToEntries[property] ?
-               @propertyToEntries[property].last(date) : nil
+    # This function returns a list of entries that have all the exact same
+    # date and are the last entries before the deadline _date_. Only messages
+    # with at least the required alert level _minLevel_ are returned. Messages
+    # with alert level _minLevel_ must not be older than _minDate_.
+    def currentEntries(date, property, minLevel, minDate)
+      pEntries = @propertyToEntries[property] ?
+                 @propertyToEntries[property].last(date) : []
+      # Remove entries below the minium alert level or before the timeout
+      # date.
+      pEntries.delete_if { |e| e.alertLevel < minLevel  ||
+                               (e.alertLevel == minLevel && e.date < minDate) }
 
-      return nil if pEntry.nil? || pEntry.headline.empty? ||
-                    (pEntry.alertLevel < minLevel) ||
-                    (pEntry.alertLevel == minLevel &&
-                     pEntry.date < minDate)
+      return [] if pEntries.empty?
 
       # Check parents for a more important or more up-to-date message.
       p = property.parent
       while p do
-        ppEntry = @propertyToEntries[p] ?
-                  @propertyToEntries[p].last(date) : nil
+        ppEntries = @propertyToEntries[p] ?
+                    @propertyToEntries[p].last(date) : []
 
         # A parent has a more up-to-date message.
-        if ppEntry && ppEntry.date >= pEntry.date
+        if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
           return nil
         end
 
         p = p.parent
       end
 
-      pEntry
+      pEntries
     end
 
     # This function recursively traverses a tree of PropertyTreeNode objects
-    # from bottom to top.
-    def currentEntries(date, property)
-      # See if this property has any current JournalEntry object.
-      pEntry = @propertyToEntries[property] ?
-               @propertyToEntries[property].last(date) : nil
+    # from bottom to top. It returns the last entries before _date_ for each
+    # property unless there is a property in the sub-tree specified by the
+    # root _property_ with more up-to-date entries. The result is a
+    # JournalEntryList.
+    def currentEntriesR(date, property)
+      # See if this property has any current JournalEntry objects.
+      pEntries = @propertyToEntries[property] ?
+                 @propertyToEntries[property].last(date) : []
 
       entries = JournalEntryList.new
       latestDate = nil
       # Now gather all current entries of the child properties and find the
-      # date that is closest and right before the given _date_.
+      # date that is closest to and right before the given _date_.
       property.children.each do |p|
-        currentEntries(date, p).each do |e|
+        currentEntriesR(date, p).each do |e|
           latestDate = e.date if latestDate.nil? || e.date > latestDate
           entries << e
         end
       end
       # If no child property has a more current JournalEntry than this
-      # property and this property has a JournalEntry, than this is taken.
-      if pEntry && (latestDate.nil? || pEntry.date >= latestDate)
+      # property and this property has JournalEntry objects, than those are
+      # taken.
+      if !pEntries.empty? && (latestDate.nil? ||
+                              pEntries.first.date >= latestDate)
         entries = JournalEntryList.new
-        entries << pEntry
+        entries += pEntries
       end
       # Otherwise return the list provided by the childen.
       entries

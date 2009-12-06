@@ -60,43 +60,61 @@ class TestJournal < Test::Unit::TestCase
     end
   end
 
+  def test_sortSameDate
+    # Add a bunch of entries and see if the sorting by date works properly.
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A2", 0))
+    e.alertLevel = 2
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A0", 0))
+    e.alertLevel = 0
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A1", 0))
+    e.alertLevel = 1
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A3", 0))
+    e.alertLevel = 3
+
+    i = 0
+    @j.entries.each do |entry|
+      assert_equal(i, entry.alertLevel)
+      i += 1
+    end
+  end
+
   def test_currentEntries
     createTaskTree
     # Set a 0 alert for a task
     a1 = addAlert('2009-11-29', 0, t = task('p1.m1.l1'))
-    ce = @j.currentEntries(tm('2009-12-05'), t)
+    ce = @j.currentEntriesR(tm('2009-12-05'), t)
     assert_equal(1, ce.count)
     assert_equal(a1, ce[0])
 
     # Add a later alert for the same task
     a2 = addAlert('2009-11-30', 0, t = task('p1.m1.l1'))
-    ce = @j.currentEntries(tm('2009-12-05'), t)
+    ce = @j.currentEntriesR(tm('2009-12-05'), t)
     assert_equal(1, ce.count)
     assert_equal(a2, ce[0])
 
     # Add another alert to the sister task and check parent
     a3 = addAlert('2009-11-30', 0, t = task('p1.m1.l2'))
-    ce = @j.currentEntries(tm('2009-12-05'), task('p1.m1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1.m1'))
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Check root task
-    ce = @j.currentEntries(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Add old override alert to p1.m1
     a4 = addAlert('2009-11-29', 0, t = task('p1.m1'))
-    ce = @j.currentEntries(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Add new override alert to p1.m1
     a5 = addAlert('2009-12-01', 0, t = task('p1.m1'))
-    ce = @j.currentEntries(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
     assert_equal(1, ce.count)
     assert_equal(a5, ce[0])
   end
