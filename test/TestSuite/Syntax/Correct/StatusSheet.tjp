@@ -1,0 +1,45 @@
+project "test" 2009-11-30 +2m
+
+resource r1 "R1"
+resource r2 "R2"
+resource r3 "R3"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+task t2 "Task 2" {
+  task t3 "Task 3" {
+    effort 10d
+    allocate r2
+  }
+}
+
+statussheet r3 2009-12-04 {
+  task t1 {
+    status green "All work done" {
+      author r1
+      summary "I had good fun!"
+      details -8<-
+        This task went smoothly and I got three things done:
+        * Have fun
+        * Be on time
+        * Get things done
+      ->8-
+    }
+  }
+  task t2 {
+    task t3 {
+      status red "I need more time" {
+        author r2
+        summary "This takes longer than expected" 
+        details -8<-
+        To finish on time, I need help. Get this r1 guy to help me out
+        here.
+        * I want to have fun too!
+        ->8-
+      }
+    }
+  }
+}
+

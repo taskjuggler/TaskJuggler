@@ -298,6 +298,17 @@ EOT
     })
   end
 
+  def rule_author
+    pattern(%w( _author !resourceId ), lambda {
+      @journalEntry.author = @val[1]
+    })
+    doc('author', <<'EOT'
+This attribute can be used to capture the authorship or source of the
+information.
+EOT
+       )
+  end
+
   def rule_balance
     pattern(%w( _balance !accountId !accountId ), lambda {
       if @val[1].parent
@@ -1336,14 +1347,7 @@ closer to the report end than all of its sub properties.
 EOT
        )
 
-    pattern(%w( _author !resourceId ), lambda {
-      @journalEntry.author = @val[1]
-    })
-    doc('author', <<'EOT'
-This attribute can be used to capture the authorship or source of the
-information in the journal entry.
-EOT
-       )
+    pattern(%w( !author ))
 
     pattern(%w( !summary ), lambda {
       @journalEntry.summary = @val[0]
@@ -2313,6 +2317,7 @@ EOT
     pattern(%w( !report ))
     pattern(%w( !resource ))
     pattern(%w( !shift ))
+    pattern(%w( !statusSheet ))
 
     pattern(%w( _supplement !supplement ))
     doc('supplement', <<'EOT'
@@ -3610,6 +3615,104 @@ EOT
         'Use \'tree\' as first criteria to keep the breakdown structure.')
   end
 
+  def rule_ssStatusAttributes
+    optional
+    repeatable
+
+    pattern(%w( !author ))
+    pattern(%w( !details ))
+    pattern(%w( !summary ))
+  end
+
+  def rule_ssStatusBody
+    optional
+    pattern(%w( _{ !ssStatusAttributes _} ))
+  end
+
+  def rule_ssStatusHeader
+    pattern(%w( _status !alertLevel $STRING ), lambda {
+      @journalEntry = JournalEntry.new(@project['journal'], @sheetEnd,
+                                       @val[2], @property,
+                                       @scanner.sourceFileInfo)
+      @journalEntry.alertLevel = @val[1]
+      @journalEntry.author = @sheetAuthor
+
+    })
+  end
+
+  def rule_ssStatus
+    pattern(%w( !ssStatusHeader !ssStatusBody ))
+    doc('status.statussheet', <<'EOT'
+The status attribute can be used to describe the current status of the task or
+resource. The content of the status messages is added to the project journal.
+EOT
+       )
+  end
+
+  def rule_statusSheet
+    pattern(%w( !statusSheetHeader !statusSheetBody ))
+    doc('statussheet', <<'EOT'
+A status sheet can be used to capture the status of various tasks outside of
+the regular task tree definition. It is intended for use by managers that
+don't directly work with the full project plan, but need to report the current
+status of each task or task-tree that they are responsible for.
+EOT
+       )
+    example('StatusSheet')
+  end
+
+  def rule_statusSheetAttributes
+    optional
+    repeatable
+
+    pattern(%w( !statusSheetTask ))
+  end
+
+  def rule_statusSheetBody
+    optionsRule('statusSheetAttributes')
+  end
+
+  def rule_statusSheetHeader
+    pattern(%w( _statussheet !resourceId !date ), lambda {
+      @sheetAuthor = @val[1]
+      @sheetEnd = @val[2]
+    })
+    arg(1, 'reporter', <<'EOT'
+The ID of a defined resource. This identifies the status reporter. Unless the
+status entries provide a different author, the sheet author will be used as
+status entry author.
+EOT
+       )
+  end
+
+  def rule_statusSheetTask
+    pattern(%w( !statusSheetTaskHeader !statusSheetTaskBody), lambda {
+      @property = @property.parent
+    })
+    doc('task.statussheet', <<'EOT'
+Opens the task with the specified ID to add a status report. Child task can be
+opened inside this context by specifying their relative ID to this parent.
+EOT
+       )
+  end
+
+  def rule_statusSheetTaskAttributes
+    optional
+    repeatable
+    pattern(%w( !ssStatus ))
+    pattern(%w( !statusSheetTask ), lambda {
+    })
+  end
+
+  def rule_statusSheetTaskBody
+    optionsRule('statusSheetTaskAttributes')
+  end
+
+  def rule_statusSheetTaskHeader
+    pattern(%w( _task !taskId ), lambda {
+      @property = @val[1]
+    })
+  end
   def rule_summary
     pattern(%w( _summary $STRING ), lambda {
       rtTokenSetIntro =
@@ -4519,6 +4622,7 @@ into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid
 columns]].
 EOT
        )
+    example('TimeSheet')
   end
 
   def rule_timeSheetAttributes
@@ -4564,9 +4668,9 @@ EOT
   def rule_timeSheetHeader
     pattern(%w( _timesheet !resourceId !valIntervalOrDate ),
             lambda {
-      @timeSheetResource = @val[1]
-      @timeSheetStart = @val[2].start
-      @timeSheetEnd = @val[2].end
+      @sheetAuthor = @val[1]
+      @sheetStart = @val[2].start
+      @sheetEnd = @val[2].end
     })
   end
 
@@ -4673,18 +4777,18 @@ EOT
 
   def rule_tsStatusHeader
     pattern(%w( _status !alertLevel $STRING ), lambda {
-      @journalEntry = JournalEntry.new(@project['journal'], @timeSheetEnd,
+      @journalEntry = JournalEntry.new(@project['journal'], @sheetEnd,
                                        @val[2], @property,
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
-      @journalEntry.author = @timeSheetResource
+      @journalEntry.author = @sheetAuthor
 
     })
   end
 
   def rule_tsStatus
     pattern(%w( !tsStatusHeader !tsStatusBody ))
-    doc('status', <<'EOT'
+    doc('status.timesheet', <<'EOT'
 The status attribute can be used to describe the current status of the task or
 resource. The content of the status messages is added to the project journal.
 EOT
@@ -4769,7 +4873,7 @@ EOT
       #taskStart = @property['start', scenarioIdx] || @project['start']
       #taskEnd = @property['end', scenarioIdx] || @project['end']
 
-      #if !Interval.new(@timeSheetStart, @timeSheetEnd).
+      #if !Interval.new(@sheetStart, @sheetEnd).
       #    overlaps?(Interval.new(taskStart, taskEnd))
       #  warning('ts_task_not_active',
       #          "Task #{@property.fullId} is not active during the time sheet " +
