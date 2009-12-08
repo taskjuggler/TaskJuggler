@@ -1,0 +1,27 @@
+project "test" 2009-12-01 +1m {
+  extend resource {
+    reference LinkR "Link R"
+  }
+  extend task {
+    reference LinkT "Link T"
+  }
+}
+
+resource r1 "R1" {
+  LinkR "http://www.taskjuggler.org" { label "TaskJuggler" }
+}
+
+task "T1" {
+  effort 10d
+  allocate r1
+  LinkT "http://www.taskjuggler.org" { label "TaskJuggler" }
+}
+
+taskreport "UDAQuery" {
+  formats html
+  columns no, name { celltext istask() "[<-LinkT-> <-name->]"
+                     celltext isresource() "[<-LinkR-> <-name->]" },
+          LinkR, LinkT
+  hidetask 0
+  hideresource 0
+}

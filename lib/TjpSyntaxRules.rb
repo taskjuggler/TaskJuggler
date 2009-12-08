@@ -3687,7 +3687,7 @@ EOT
 
   def rule_statusSheetTask
     pattern(%w( !statusSheetTaskHeader !statusSheetTaskBody), lambda {
-      @property = @property.parent
+      @property = @propertyStack.pop
     })
     doc('task.statussheet', <<'EOT'
 Opens the task with the specified ID to add a status report. Child task can be
@@ -3710,6 +3710,11 @@ EOT
 
   def rule_statusSheetTaskHeader
     pattern(%w( _task !taskId ), lambda {
+      if @property
+        @propertyStack.push(@property)
+      else
+        @propertyStack = []
+      end
       @property = @val[1]
     })
   end

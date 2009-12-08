@@ -33,7 +33,7 @@ class TestLogicalExpression < Test::Unit::TestCase
 
     parameter.each do |op, operator, result|
       exp = LogicalExpression.new(unaryOp(op, operator))
-      assert_equal(result, exp.eval(nil, nil),
+      assert_equal(result, exp.eval(nil),
                   "Operation #{operator} #{op} -> #{result} failed")
     end
   end
@@ -79,7 +79,7 @@ class TestLogicalExpression < Test::Unit::TestCase
 
     parameter.each do |op1, operator, op2, result|
       exp = LogicalExpression.new(binaryOp(op1, operator, op2))
-      assert_equal(result, exp.eval(nil, nil),
+      assert_equal(result, exp.eval(nil),
                   "Operation #{op1} #{operator} #{op2} -> #{result} failed")
     end
   end
@@ -88,7 +88,7 @@ class TestLogicalExpression < Test::Unit::TestCase
     op1 = binaryOp(2, '<', 4)
     op2 = binaryOp(3, '>', 6)
     exp = LogicalExpression.new(binaryOp(op1, '|', op2))
-    assert_equal(true, exp.eval(nil, nil),
+    assert_equal(true, exp.eval(nil),
                  "Operation #{exp} -> true failed")
   end
 
@@ -96,7 +96,7 @@ class TestLogicalExpression < Test::Unit::TestCase
     begin
       exp = LogicalExpression.new(binaryOp(false, '<', true))
       assert_raise TjException do
-        exp.eval(nil, nil)
+        exp.eval(nil)
       end
     rescue TjException
     end

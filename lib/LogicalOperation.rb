@@ -177,23 +177,11 @@ class TaskJuggler
     # To evaluate a property attribute we use the Query mechanism to retrieve
     # the value.
     def eval(expr)
-      project = expr.property.project
+      query = expr.query
+      project = query.property.project
       report = project.reportContext.report
-      queryAttrs = {
-        'project' => expr.property.project,
-        'property' => expr.property,
-        'loadUnit' => report.get('loadUnit'),
-        'numberFormat' => report.get('numberFormat'),
-        'timeFormat' => report.get('timeFormat'),
-        'currencyFormat' => report.get('currencyFormat'),
-        'scenarioIdx' => @scenarioIdx,
-        'attributeId' => @operand1,
-        'start' => report.get('start'),
-        'end' => report.get('end'),
-        'costAccount' => report.get('costAccount'),
-        'revenueAccount' => report.get('revenueAccount')
-      }
-      query = Query.new(queryAttrs)
+      query.scenarioIdx = @scenarioIdx
+      query.attributeId = @operand1
       query.process
       # The logical expressions are mostly about comparing values. So we use
       # the sortableResult of the Query. This creates some challenges for load
@@ -220,7 +208,7 @@ class TaskJuggler
 
     # Return true if the property has the flag assigned.
     def eval(expr)
-      expr.property['flags', 0].include?(@operand1)
+      expr.query.property['flags', 0].include?(@operand1)
     end
 
     # Used for debugging and error reporting.

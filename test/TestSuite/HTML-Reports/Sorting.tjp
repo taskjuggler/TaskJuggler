@@ -1,0 +1,68 @@
+project "Task Sorting" 2009-11-10 +2m
+
+task "Root" {
+  task "Group 1" {
+    task "M1" {
+      start 2009-11-11
+    }
+    task "M2" {
+      start 2009-11-20
+    }
+    task "M3" {
+      start 2009-11-14
+    }
+  }
+  task "Group 2" {
+    task "Group 3" {
+      task "M1" {
+        start 2009-12-30
+      }
+      task "M2" {
+        start 2009-12-20
+      }
+      task "M3" {
+        start 2009-12-10
+      }
+    }
+    task "Group 4" {
+      task "M1" {
+        start 2009-11-20
+      }
+      task "M2" {
+        start 2009-12-10
+      }
+      task "M3" {
+        start 2009-11-30
+      }
+    }
+    task "Group 5" {
+      task "M1" {
+        start 2009-12-01
+      }
+    }
+    task "M1" {
+      start 2009-11-20
+    }
+    task "M2" {
+      start 2009-11-30
+    }
+    task "M3" {
+      start 2009-11-11
+    }
+  }
+}
+task "M1" {
+  start 2009-12-05
+}
+task "Group6" {
+  task "M1" {
+    start 2009-11-20
+  }
+}
+
+taskreport "TaskSorting" {
+  formats html
+  columns name, chart
+  sorttasks tree, plan.start.up
+}
+

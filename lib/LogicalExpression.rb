@@ -21,7 +21,7 @@ class TaskJuggler
   # objects and the context that it should be evaluated in.
   class LogicalExpression
 
-    attr_reader :property, :scopeProperty, :sourceFileInfo
+    attr_reader :query, :sourceFileInfo
 
     # Create a new LogicalExpression object. _op_ must be a LogicalOperation.
     # _sourceFileInfo_ is the file position where expression started. It may be
@@ -30,21 +30,20 @@ class TaskJuggler
       @operation = op
       @sourceFileInfo = sourceFileInfo
 
-      @property = @scopeProperty = nil
+      @query = nil
     end
 
     # Switch the scopeProperty to property. We need this for the scopeProperty
     # operating functions. The @scopeProperty is set to nil.
     def flipProperties
-      @property, @scopeProperty = @scopeProperty, nil
+      @query.property, @query.scopeProperty = @query.scopeProperty, nil
     end
 
     # This function triggers the evaluation of the expression. _property_ is the
     # PropertyTreeNode that should be used for the evaluation. _scopeProperty_
     # is the PropertyTreeNode that describes the scope. It may be nil.
-    def eval(property, scopeProperty)
-      @property = property
-      @scopeProperty = scopeProperty
+    def eval(query)
+      @query = query
       res = @operation.eval(self)
       return res if res.class == TrueClass || res.class == FalseClass ||
                     res.class == String

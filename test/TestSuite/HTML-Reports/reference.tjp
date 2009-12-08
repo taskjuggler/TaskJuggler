@@ -1,0 +1,20 @@
+project "Test" 2008-02-28 +1m {
+  extend task {
+    reference URL "URL"
+  }
+}
+
+task a "A A A" {
+  task b "B B B" {
+    URL "http://www.taskjuggler.org" { label "foo" }
+  }
+}
+task c "C C C" {
+  URL "http://www.kde.org"
+}
+
+taskreport "reference" {
+  formats html
+  columns name { celltext plan.URL != '' "[<-URL-> <-name->]" }, URL, start
+}
+

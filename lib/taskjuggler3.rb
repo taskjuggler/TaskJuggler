@@ -94,6 +94,12 @@ def main
   @forceReports = false
   @outputDir = ''
 
+  # Install signal handler to exit gracefully on CTRL-C.
+  Kernel.trap('INT') do
+    puts "\nAborting by user request!"
+    exit 1
+  end
+
   tj = TaskJuggler.new(files = processArguments(ARGV))
   tj.maxCpuCores = @maxCpuCores
   exit 1 unless tj.parse(files)

@@ -120,10 +120,15 @@ class TaskJuggler
     # This function implements the generic filtering functionality for all kinds
     # of lists.
     def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)
+      # Make a copy of the current Query.
+      query = @project.reportContext.query.dup
+      query.scopeProperty = scopeProperty
+
       # Remove all properties that the user wants to have hidden.
       if hideExpr
         list.delete_if do |property|
-          hideExpr.eval(property, scopeProperty)
+          query.property = property
+          hideExpr.eval(query)
         end
       end
 
@@ -133,7 +138,8 @@ class TaskJuggler
           parent = property.parent
           delete = false
           while (parent)
-            if rollupExpr.eval(parent, scopeProperty)
+            query.property = parent
+            if rollupExpr.eval(query)
               delete = true
               break
             end

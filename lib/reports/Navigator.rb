@@ -172,8 +172,11 @@ class TaskJuggler
       list.setSorting([[ 'seqno', true, -1 ]])
       list.sort!
       # Remove all reports that the user doesn't want to have include.
+      query = @project.reportContext.query.dup
+      query.scopeProperty = nil
       list.delete_if do |property|
-        @hideReport.eval(property, nil)
+        query.property = property
+        @hideReport.eval(query)
       end
       list
     end

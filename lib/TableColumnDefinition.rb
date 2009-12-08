@@ -43,7 +43,7 @@ class TaskJuggler
     # Get the RichText that matches the _property_ and _scopeProperty_.
     def getPattern(query)
       @patterns.each do |pattern|
-        if pattern.logExpr.eval(query.property, query.scopeProperty)
+        if pattern.logExpr.eval(query)
           return pattern.setting
         end
       end

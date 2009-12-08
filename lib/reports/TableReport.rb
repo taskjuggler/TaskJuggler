@@ -636,6 +636,16 @@ class TaskJuggler
         cell.text = (rti = query.to_rti) ? rti : query.to_s
       end
 
+      # Replace the font color setting if the user has requested a custom
+      # color.
+      fontColor = columnDef.fontColor.getPattern(query)
+      cell.fontColor = fontColor if fontColor
+
+      # Replace the cell background color if the user has requested a custom
+      # color.
+      cellColor = columnDef.cellColor.getPattern(query)
+      cell.cellColor = cellColor if cellColor
+
       # If the user has requested a custom tooltip, add it to the cell.
       cell.tooltip = columnDef.tooltip.getPattern(query) || nil
 

@@ -104,7 +104,6 @@ class TaskJuggler
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
       if a('selfcontained')
-        puts "SC: #{a('selfcontained')}"
         auxSrcDir = AppConfig.dataDirs('data/css')[0]
         cssFileName = auxSrcDir + '/tjreport.css'
         if auxSrcDir.nil? || !File.exists?(cssFileName)
