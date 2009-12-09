@@ -448,9 +448,8 @@ class TaskJuggler
 
     def query_alert(query)
       journal = @project['journal']
-      endDate = query.end
       query.sortable = query.numerical = alert =
-        journal.alertLevel(endDate, self)
+        journal.alertLevel(query.end, self)
       query.string = @project.alertLevelName(alert)
     end
 
@@ -460,6 +459,22 @@ class TaskJuggler
 
     def query_alertmessage(query)
       alertMessages(query, true)
+    end
+
+    def query_alerttrend(query)
+      journal = @project['journal']
+      startAlert = journal.alertLevel(query.start, self)
+      endAlert = journal.alertLevel(query.end, self)
+      if startAlert < endAlert
+        query.sortable = 0
+        query.string = 'Up'
+      elsif startAlert > endAlert
+        query.sortable = 2
+        query.string = 'Down'
+      else
+        query.sortable = 1
+        query.string = 'Flat'
+      end
     end
 
     # Dump the class data in human readable form. Used for debugging only.

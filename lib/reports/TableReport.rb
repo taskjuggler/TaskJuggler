@@ -30,6 +30,7 @@ class TaskJuggler
       'alert'        => [ 'Alert',         true,   :left,  false ],
       'alertmessage' => [ 'Alert Message', false,  :left,  false ],
       'alertsummary' => [ 'Alert Summary', false,  :left,  false ],
+      'alerttrend'   => [ 'Alert Trend',   false,  :left,  false ],
       'complete'     => [ 'Completion',    false,  :right, true ],
       'cost'         => [ 'Cost',          true,   :right, true ],
       'duration'     => [ 'Duration',      true,   :right, true ],
@@ -681,6 +682,9 @@ class TaskJuggler
         id = @project.alertLevelId(query.to_num)
         cell.icon = "flag-#{id}"
         cell.fontColor = @project.alertLevelColor(query.to_sort)
+      when 'alerttrend'
+        icons = %w( up flat down )
+        cell.icon = "trend-#{icons[query.to_sort]}"
       when 'line'
         cell.text = line.lineNo.to_s
       when 'name'

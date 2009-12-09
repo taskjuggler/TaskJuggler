@@ -2484,6 +2484,14 @@ current alert level for this task.
 EOT
          )
 
+    singlePattern('_alerttrend')
+    descr(<<'EOT'
+Shows how the alert level at the end of the report period compares to the
+alert level at the begining of the report period. Possible values are up, down
+or flat.
+EOT
+         )
+
     singlePattern('_chart')
     descr(<<'EOT'
 A Gantt chart. This column type requires all lines to have the same fixed

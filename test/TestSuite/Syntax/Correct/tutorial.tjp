@@ -538,10 +538,13 @@ taskreport status "" {
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
     columns name { title "Task" ${AlertColor} },
-            resources { width 200 ${AlertColor} },
+            resources { width 200 ${AlertColor} 
+                        start ${projectstart} end ${projectend} },
+            alerttrend { title "Trend" ${AlertColor} },
             alertmessage { width 260 ${AlertColor} }
     hidetask ~hasalert(1, ${projectstart})
     sorttasks alert.down, delayed.end.up
+    period %{${now} - 1w} +1w
   }
   taskreport completed "" {
     headline "Already completed tasks"
