@@ -111,7 +111,7 @@ class TaskJuggler
       result = []
       sort
       # If we have no date, return the latest entry.
-      return @entries.last unless date
+      return [ @entries.last ] unless date
 
       @entries.reverse_each do |e|
         if result.empty?
@@ -220,7 +220,7 @@ class TaskJuggler
 
         # A parent has a more up-to-date message.
         if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
-          return nil
+          return []
         end
 
         p = p.parent
