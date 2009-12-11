@@ -619,6 +619,14 @@ class TaskJuggler
       true
     end
 
+    def generateReport(reportId)
+      unless (report = @reports[reportId])
+        error('unknown_report_id',
+              "Request to generate unknown report #{reportId}")
+      end
+      report.generate
+    end
+
     ####################################################################
     # The following functions are not intended to be called from outside
     # the TaskJuggler library. There is no guarantee that these

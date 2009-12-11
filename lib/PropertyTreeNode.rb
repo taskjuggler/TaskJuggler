@@ -529,7 +529,7 @@ class TaskJuggler
       # we compose the result as RichText markup first.
       rText = ''
       @project['journal'].currentEntries(query.end, self, 0,
-                                         @project['start']).each do |entry|
+                                         query.start).each do |entry|
         rText += "== " + entry.headline + " ==\n"
         rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
         if entry.author

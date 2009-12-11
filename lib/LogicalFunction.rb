@@ -23,7 +23,7 @@ class TaskJuggler
     # A map with the names of the supported functions and the number of
     # arguments they require.
     @@functions = {
-        'hasalert' => 2,
+        'hasalert' => 1,
         'isactive' => 1,
         'isdependencyof' => 3,
         'isdutyof' => 2,
@@ -83,11 +83,12 @@ class TaskJuggler
   private
 
     def hasalert(expr, args)
-      property = expr.query.property
+      query = expr.query
+      property = query.property
       project = property.project
       date = project.reportContext.report.get('end')
-      !project['journal'].currentEntries(date, property,
-                                         args[0], args[1]).empty?
+      !project['journal'].currentEntries(query.end, property,
+                                         args[0], query.start).empty?
     end
 
     def isactive(expr, args)

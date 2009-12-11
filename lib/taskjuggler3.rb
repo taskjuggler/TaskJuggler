@@ -44,6 +44,11 @@ def processArguments(argv)
           'Generate reports despite scheduling errors') do
     @forceReports = true
   end
+  opts.on('-s', '--report-server',
+          'Parse and schedule the project and wait for remote report ' +
+          'requests') do
+    @reportServer = true
+  end
   opts.on('-o', '--output-dir <directory>', String,
           'Directory the reports should go into') do |arg|
     @outputDir = arg + '/'
@@ -74,7 +79,7 @@ def processArguments(argv)
 
   if files.empty?
     puts opts.to_s
-    $stderr.puts "\nNo file name specified!"
+    $stderr.puts "\nNo project file name specified!"
     exit 1
   end
 
@@ -92,11 +97,12 @@ end
 def main
   @maxCpuCores = 1
   @forceReports = false
+  @reportServer = false
   @outputDir = ''
 
   # Install signal handler to exit gracefully on CTRL-C.
   Kernel.trap('INT') do
-    puts "\nAborting by user request!"
+    puts "\nAborting on user request!"
     exit 1
   end
 
@@ -106,7 +112,12 @@ def main
   if !tj.schedule
     exit 1 unless @forceReports
   end
-  exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+
+  if @reportServer
+    tj.serveReports
+  else
+    exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+  end
 
 end
 

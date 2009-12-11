@@ -63,7 +63,7 @@ timesheet r3 2009-11-30 +1w {
 taskreport "TimeSheet" {
   formats html
   columns name, id, alert, alertmessage
-  hidetask ~hasalert(0, ${projectstart})
+  hidetask ~hasalert(0)
   sorttasks alert.down
 }
 

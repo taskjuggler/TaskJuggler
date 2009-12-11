@@ -12,6 +12,7 @@
 
 require 'Project'
 require 'MessageHandler'
+require 'ReportServer'
 require 'Log'
 
 # The TaskJuggler class models the object that provides access to the
@@ -26,6 +27,7 @@ class TaskJuggler
   # whether or not messsages can be written to $stderr.
   def initialize(console)
     @project = nil
+    @parser = nil
     @messageHandler = MessageHandler.new(console)
     @maxCpuCores = 1
   end
@@ -33,28 +35,32 @@ class TaskJuggler
   # Read in the files passed as file names in _files_, parse them and
   # construct a Project object. In case of success true is returned.
   # Otherwise false.
-  def parse(files)
+  def parse(files, keepParser = false)
     Log.enter('parser', 'Parsing files ...')
     master = true
     @project = nil
 
-    parser = ProjectFileParser.new(@messageHandler)
+    @parser = ProjectFileParser.new(@messageHandler)
     files.each do |file|
       begin
-        parser.open(file, master)
+        @parser.open(file, master)
       rescue TjException
         Log.exit('parser')
         return false
       end
       if master
-        @project = parser.parse('project')
+        @project = @parser.parse('project')
         master = false
       else
-        parser.setGlobalMacros
-        parser.parse('properties')
+        @parser.setGlobalMacros
+        @parser.parse('properties')
       end
-      parser.close
+      @parser.close
     end
+
+    # For the report server mode we may need to keep the parser. Otherwise,
+    # destroy it.
+    @parser = nil unless keepParser
 
     Log.exit('parser')
     @messageHandler.messages.empty?
@@ -79,6 +85,12 @@ class TaskJuggler
     res = @project.generateReports(@maxCpuCores)
     Log.exit('reports')
     res
+  end
+
+  def serveReports
+    server = ReportServer.new(@parser, @project)
+    DRb.start_service('druby://localhost:8474')
+    DRb.thread.join
   end
 
   # Return the number of errors that had been reported during processing.

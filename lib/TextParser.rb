@@ -75,8 +75,6 @@ class TaskJuggler
       @badVariables = []
       # The currently processed rule.
       @cr = nil
-      # If set to a value larger than 0 debug output will be generated.
-      @@debug = 30
     end
 
     # Limit the allowed tokens of the scanner to the subset passed by the

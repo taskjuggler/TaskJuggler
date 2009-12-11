@@ -207,7 +207,7 @@ class TaskJuggler
                  @propertyToEntries[property].last(date) : []
       # Remove entries below the minium alert level or before the timeout
       # date.
-      pEntries.delete_if { |e| e.alertLevel < minLevel  ||
+      pEntries.delete_if { |e| e.alertLevel < minLevel  || e.headline.empty? ||
                                (e.alertLevel == minLevel && e.date < minDate) }
 
       return [] if pEntries.empty?

@@ -1037,7 +1037,7 @@ EOT
 
   def rule_functionPatterns
     # This rule is not used by the parser. It's only for the documentation.
-    pattern(%w( _hasalert _( $INTEGER _) ))
+    pattern(%w( _hasalert _( $INTEGER _, !date _) ))
     doc('hasalert', <<'EOT'
 Will evaluate to true if the current property has a current alert message within the report time frame and with at least the provided alert level.
 EOT
