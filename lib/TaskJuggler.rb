@@ -89,7 +89,8 @@ class TaskJuggler
 
   def serveReports
     server = ReportServer.new(@parser, @project)
-    DRb.start_service('druby://localhost:8474')
+    DRb.start_service('druby://localhost:8474', server)
+    puts "Server started..."
     DRb.thread.join
   end
 

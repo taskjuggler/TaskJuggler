@@ -624,6 +624,7 @@ class TaskJuggler
         error('unknown_report_id',
               "Request to generate unknown report #{reportId}")
       end
+      @reportContext = ReportContext.new(self, report)
       report.generate
     end
 

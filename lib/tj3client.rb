@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = taskjuggler3.rb -- The TaskJuggler III Project Management Software
+# = tj3client.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
 #
@@ -11,11 +11,11 @@
 #
 
 require 'optparse'
+require 'drb'
 require 'Tj3Config'
-require 'TaskJuggler'
 
 # Name of the application suite
-AppConfig.appName = 'taskjuggler3'
+AppConfig.appName = 'tj3client'
 
 def processArguments(argv)
   opts = OptionParser.new
@@ -30,31 +30,12 @@ def processArguments(argv)
                 "Usage: #{AppConfig.appName} [options] file.tjp " +
                 "[ file1.tji ... ]"
   opts.separator ""
-  opts.on('--debuglevel N', Integer, "Verbosity of debug output") do |arg|
-    TaskJuggler::Log.level = arg
-  end
-  opts.on('--debugmodules x,y,z', Array,
-          'Restrict debug output to a list of modules') do |arg|
-    TaskJuggler::Log.segments = arg.split(',')
-  end
   opts.on('--silent', "Don't show program and progress information") do
-    TaskJuggler::Log.silent = true
+    @silent = true
   end
-  opts.on('-f', '--force-reports',
-          'Generate reports despite scheduling errors') do
-    @forceReports = true
-  end
-  opts.on('-s', '--report-server',
-          'Parse and schedule the project and wait for remote report ' +
-          'requests') do
-    @reportServer = true
-  end
-  opts.on('-o', '--output-dir <directory>', String,
-          'Directory the reports should go into') do |arg|
-    @outputDir = arg + '/'
-  end
-  opts.on('-c N', Integer, 'Maximum number of CPU cores to use') do |arg|
-    @maxCpuCores = arg
+  opts.on('-g', '--generate-report <ID>', String,
+          'Generate reports despite scheduling errors') do |arg|
+    @reports << arg
   end
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts.to_s
@@ -68,7 +49,7 @@ def processArguments(argv)
   end
 
   # Show some progress information by default
-  TaskJuggler::Log.silent = false
+  @silent = false
   begin
     files = opts.parse(argv)
   rescue OptionParser::ParseError => msg
@@ -77,13 +58,7 @@ def processArguments(argv)
     exit 0
   end
 
-  if files.empty?
-    puts opts.to_s
-    $stderr.puts "\nNo project file name specified!"
-    exit 1
-  end
-
-  unless TaskJuggler::Log.silent
+  unless @silent
     puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
       "#{AppConfig.packageInfo}\n\n" +
       "Copyright (c) #{AppConfig.copyright.join(', ')}" +
@@ -95,10 +70,7 @@ def processArguments(argv)
 end
 
 def main
-  @maxCpuCores = 1
-  @forceReports = false
-  @reportServer = false
-  @outputDir = ''
+  @reports = []
 
   # Install signal handler to exit gracefully on CTRL-C.
   Kernel.trap('INT') do
@@ -106,21 +78,23 @@ def main
     exit 1
   end
 
-  tj = TaskJuggler.new(files = processArguments(ARGV))
-  tj.maxCpuCores = @maxCpuCores
-  exit 1 unless tj.parse(files, @reportServer)
-  if !tj.schedule
-    exit 1 unless @forceReports
+  files = processArguments(ARGV)
+
+  DRb.start_service
+  server = DRbObject.new(nil, 'druby://localhost:8474')
+
+  files.each do |file|
+    fileContent = IO.read(file)
+    server.parse(fileContent)
   end
 
-  if @reportServer
-    tj.serveReports
-  else
-    exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+  @reports.each do |id|
+    server.generateReport(id)
   end
 
 end
 
 main()
 exit 0
+
 

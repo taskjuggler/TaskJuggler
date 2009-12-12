@@ -22,18 +22,21 @@ class ReportServer
 
   end
 
-  def generateReport(tjiFileContent, reportId)
+  def parse(tjiFileContent)
     begin
       Log.enter('parser', 'Parsing buffer ...')
-      @parser.open(tjiFileContent, true)
+      @parser.open(tjiFileContent, false, true)
       @parser.setGlobalMacros
       @parser.parse('properties')
       @parser.close
     rescue TjException
       Log.exit('parser')
-      return nil
+      return false
     end
+    true
+  end
 
+  def generateReport(reportId)
     @project.generateReport(reportId)
   end
 
