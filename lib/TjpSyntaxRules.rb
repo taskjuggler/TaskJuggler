@@ -1180,24 +1180,32 @@ EOT
   end
 
   def rule_includeFile
-    pattern(%w( $STRING ), lambda {
+    pattern(%w( !includeFileName ), lambda {
       @scanner.include(@val[0])
     })
+  end
+
+  def rule_includeFileName
+    pattern(%w( $STRING ), lambda {
+      unless @val[0][-4, 4] == '.tji'
+        error('bad_include_suffix', "Included files must have a '.tji'" +
+                                    "extension: '#{@val[0]}'")
+      end
+      @val[0]
+    })
     arg(0, 'filename', <<'EOT'
-Name of the file to include. This must have a ''''.tji'''' extension. The name may have an absolute or relative path. You need to use ''''/'''' characters to separate directories.
+Name of the file to include. This must have a ''''.tji'''' extension. The name
+may have an absolute or relative path. You need to use ''''/'''' characters to
+separate directories.
 EOT
        )
   end
 
   def rule_includeProperties
-    pattern(%w( $STRING !includeAttributes ), lambda {
+    pattern(%w( !includeFileName !includeAttributes ), lambda {
       pushFileStack
       @scanner.include(@val[0])
     })
-    arg(0, 'filename', <<'EOT'
-Name of the file to include. This must have a ''''.tji'''' extension. The name may have an absolute or relative path. You need to use ''''/'''' characters to separate directories.
-EOT
-       )
   end
 
   def rule_intervalOrDate
@@ -2936,9 +2944,12 @@ EOT
   def rule_reportId
     pattern(%w( !reportIdUnverifd ), lambda {
       id = @val[0]
-      id = @reportprefix + '.' + id unless @reportprefix.empty?
+      if @property && @property.is_a?(Report)
+        id = @property.fullId + '.' + id
+      else
+        id = @reportprefix + '.' + id unless @reportprefix.empty?
+      end
       # In case we have a nested supplement, we need to prepend the parent ID.
-      id = @property.fullId + '.' + id if @property && @property.is_a?(Report)
       if (report = @project.report(id)).nil?
         error('report_id_expected', "#{id} is not a defined report.")
       end
@@ -3987,9 +3998,12 @@ EOT
   def rule_taskId
     pattern(%w( !taskIdUnverifd ), lambda {
       id = @val[0]
-      id = @taskprefix + '.' + id unless @taskprefix.empty?
-      # In case we have a nested supplement, we need to prepend the parent ID.
-      id = @property.fullId + '.' + id if @property && @property.is_a?(Task)
+      if @property && @property.is_a?(Task)
+        # In case we have a nested supplement, we need to prepend the parent ID.
+        id = @property.fullId + '.' + id
+      else
+        id = @taskprefix + '.' + id unless @taskprefix.empty?
+      end
       if (task = @project.task(id)).nil?
         error('unknown_task', "Unknown task #{id}")
       end
