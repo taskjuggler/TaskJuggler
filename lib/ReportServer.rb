@@ -10,16 +10,29 @@
 # published by the Free Software Foundation.
 #
 
-require 'drb'
-
 class TaskJuggler
 
 class ReportServer
 
-  def initialize(parser, project)
+  def initialize(serviceManager, parser, project)
+    @serviceManager = serviceManager
     @parser = parser
     @project = project
+  end
 
+  def connect(stdout, stderr)
+    # Make sure that all output to STDOUT and STDERR is sent to the client.
+    @stdout = $stdout
+    @stderr = $stderr
+    $stdout = stdout
+    $stderr = stderr
+  end
+
+  def disconnect
+    # Signal to the RemoteServiceManager to exit the process.
+    $stdout = @stdout
+    $stderr = @stderr
+    @serviceManager.terminate = true
   end
 
   def parse(tjiFileContent)
@@ -37,7 +50,15 @@ class ReportServer
   end
 
   def generateReport(reportId)
-    @project.generateReport(reportId)
+    begin
+      Log.enter('generateReport', "Generating report #{reportId} ...")
+      @project.generateReport(reportId)
+    rescue
+      Log.exit('generateReport', "#{reportId} failed")
+      return false
+    end
+    Log.exit('generateReport', "Generating report #{reportId} ...")
+    true
   end
 
 end

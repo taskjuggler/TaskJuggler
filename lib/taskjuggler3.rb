@@ -106,7 +106,8 @@ def main
     exit 1
   end
 
-  tj = TaskJuggler.new(files = processArguments(ARGV))
+  files = processArguments(ARGV)
+  tj = TaskJuggler.new(true)
   tj.maxCpuCores = @maxCpuCores
   exit 1 unless tj.parse(files, @reportServer)
   if !tj.schedule

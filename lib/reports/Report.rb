@@ -248,13 +248,13 @@ EOT
     end
 
     def directoryUpToDate?(auxSrcDir, auxDstDir)
-      return false unless File.exists?(auxDstDir)
+      return false unless File.exists?(auxDstDir.untaint)
 
       Dir.entries(auxSrcDir).each do |file|
         next if file == '.' || file == '..'
 
-        srcFile = auxSrcDir + '/' + file
-        dstFile = auxDstDir + '/' + file
+        srcFile = (auxSrcDir + '/' + file).untaint
+        dstFile = (auxDstDir + '/' + file).untaint
         return false if !File.exist?(dstFile) ||
                         File.mtime(srcFile) > File.mtime(dstFile)
       end

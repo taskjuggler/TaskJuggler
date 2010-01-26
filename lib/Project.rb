@@ -624,8 +624,10 @@ class TaskJuggler
         error('unknown_report_id',
               "Request to generate unknown report #{reportId}")
       end
+      Log.startProgressMeter("Report #{report.name}")
       @reportContext = ReportContext.new(self, report)
       report.generate
+      Log.stopProgressMeter
     end
 
     ####################################################################
@@ -767,8 +769,6 @@ class TaskJuggler
       name
     end
 
-
-
     # Print the attribute values. It's used for debugging only.
     def to_s
       raise "STOP!"
@@ -778,6 +778,12 @@ class TaskJuggler
                "#{value.is_a?(PropertyTreeNode) ? value.fullId : value}"
         end
       end
+    end
+
+    # This function sends an error message to the message handler.
+    def error(id, text)
+      message = Message.new(id, 'error', text)
+      @messageHandler.send(message)
     end
 
   protected

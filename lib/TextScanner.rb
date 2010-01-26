@@ -157,11 +157,13 @@ class TaskJuggler
       # In certain situation we want to ignore Macro replacement and this flag
       # is set to true.
       @ignoreMacros = false
+      @fileNameIsBuffer = false
     end
 
     # Start the processing. if _fileNameIsBuffer_ is true, we operate on a
     # String, else on a File.
     def open(fileNameIsBuffer = false)
+      @fileNameIsBuffer = fileNameIsBuffer
       if fileNameIsBuffer
         @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil, nil ] ]
       else
@@ -177,8 +179,10 @@ class TaskJuggler
 
     # Finish processing and reset all data structures.
     def close
-      Log.startProgressMeter("Reading file #{@masterFile}")
-      Log.stopProgressMeter
+      unless @fileNameIsBuffer
+        Log.startProgressMeter("Reading file #{@masterFile}")
+        Log.stopProgressMeter
+      end
       @fileStack = []
       @cf = @tokenBuffer = nil
     end

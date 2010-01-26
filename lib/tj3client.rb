@@ -80,8 +80,17 @@ def main
 
   files = processArguments(ARGV)
 
+  # Connect to the RemoteServiceManager object and request a new service
+  # process.
   DRb.start_service
-  server = DRbObject.new(nil, 'druby://localhost:8474')
+  serviceManager = DRbObject.new(nil, 'druby://localhost:8474')
+
+  uri = serviceManager.requestService
+  DRb.stop_service
+
+  DRb.start_service
+  server = DRbObject.new(nil, uri)
+  server.connect($stdout, $stderr)
 
   files.each do |file|
     fileContent = IO.read(file)
@@ -92,6 +101,7 @@ def main
     server.generateReport(id)
   end
 
+  server.disconnect
 end
 
 main()

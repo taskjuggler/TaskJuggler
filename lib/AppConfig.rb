@@ -120,7 +120,7 @@ class AppConfig
         + @@packageName + '-' + @@version + "/#{baseDir}/"
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|
-      !File.exists?(dir)
+      !File.exists?(dir.untaint)
     end
     dirs
   end

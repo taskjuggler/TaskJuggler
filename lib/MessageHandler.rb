@@ -27,7 +27,8 @@ class TaskJuggler
       @errors += 1 if message.level == 'error' || message.level == 'fatal'
       @messages << message
       if @console
-        $stderr.puts message
+        # The to_s call is necessary to support remote prints via DRb.
+        $stderr.puts message.to_s
       end
     end
 

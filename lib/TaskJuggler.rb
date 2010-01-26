@@ -10,9 +10,10 @@
 # published by the Free Software Foundation.
 #
 
+require 'drb'
 require 'Project'
 require 'MessageHandler'
-require 'ReportServer'
+require 'RemoteServiceManager'
 require 'Log'
 
 # The TaskJuggler class models the object that provides access to the
@@ -88,9 +89,9 @@ class TaskJuggler
   end
 
   def serveReports
-    server = ReportServer.new(@parser, @project)
-    DRb.start_service('druby://localhost:8474', server)
-    puts "Server started..."
+    $SAFE = 1
+    serviceManager = RemoteServiceManager.new(@parser, @project)
+    DRb.start_service('druby://localhost:8474', serviceManager)
     DRb.thread.join
   end
 
