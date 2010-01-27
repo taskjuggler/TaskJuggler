@@ -2027,6 +2027,8 @@ EOT
       @project['now'] = @val[1]
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
                                   @scanner.sourceFileInfo))
+      @scanner.addMacro(Macro.new('today', @val[1].to_s(@project['timeFormat']),
+                                  @scanner.sourceFileInfo))
     })
     doc('now', <<'EOT'
 Specify the date that TaskJuggler uses for calculation as current

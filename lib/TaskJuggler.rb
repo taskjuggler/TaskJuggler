@@ -90,9 +90,13 @@ class TaskJuggler
 
   def serveReports
     $SAFE = 1
+    Log.enter('reportserver', 'Starting Server Mode ...')
+    Log.status("Report Server is now active!")
     serviceManager = RemoteServiceManager.new(@parser, @project)
     DRb.start_service('druby://localhost:8474', serviceManager)
     DRb.thread.join
+    # We'll probably never get here. The DRb threads may call exit().
+    Log.exit('reportserver')
   end
 
   # Return the number of errors that had been reported during processing.

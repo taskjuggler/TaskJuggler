@@ -101,6 +101,13 @@ class TaskJuggler
       end
     end
 
+    # Print out a status message unless we are in silent mode.
+    def Log.status(message)
+      return if @@silent
+
+      $stdout.puts message
+    end
+
     # The progress meter can be a textual progress bar or some animated
     # character sequence that informs the user about ongoing activities. Call
     # this function to start the progress meter display or to change the info

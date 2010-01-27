@@ -100,6 +100,9 @@ class TaskJuggler
                                   @scanner.sourceFileInfo))
       @scanner.addMacro(Macro.new('now', @project['now'].to_s,
                                   @scanner.sourceFileInfo))
+      @scanner.addMacro(Macro.new('today', @project['now'].
+                                   to_s(@project['timeFormat']),
+                                  @scanner.sourceFileInfo))
     end
 
   private
