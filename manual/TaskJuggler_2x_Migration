@@ -38,3 +38,30 @@ What used to be ''''startup'''' is now ''''plan.start.up''''. See
 longer supported. The naming was inconsistent with TaskJuggler lingo
 and did not handle tasks and resources separately. It has been
 replaced with [[taskattributes]] and [[resourceattributes]].
+
+* Shifts and limits for allocations have been deprecated. The concept
+was bogus and not compatible with bookings. The functionality is
+now provided by [[shifts.task shifts]] and [[limits.task limits]] on the
+task level. Limits for a task can be [[limit.resources selectively
+applied]] to certain resources.
+
+* Support for reading and writing XML files is no longer available.
+The content was redundant with the TJP file format and it was not
+widely used. Keeping it in sync was too much of an effort to be worth
+it. There is nothing in the TJ3 design that would prevent this
+feature from being added again, but there are no plans for this right
+now.
+
+* The format for [[report reports]] has been changed considerably.
+The old format was not very flexible and had some design flaws.
+TaskJuggler III now supports report nesting and composition. A report
+definition can be used to generated multiple output [[formats]]. The
+name of a report must now be specified without the file name
+extension. It will be automatically added depending on the output
+format.
+
+* IDs for properties such as tasks, resources and reports are now
+optional. If you don't need to reference a property, you can omit the
+ID. TaskJuggler will automatically assign an ID then.
+
+

@@ -176,7 +176,7 @@ EOT
          end
       end
     })
-    doc('allocate.limits', 'This keyword is deprecated. Don\'t use it anymore!')
+    doc('limits.allocate', 'This keyword is deprecated. Don\'t use it anymore!')
 
     pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])
