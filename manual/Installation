@@ -30,20 +30,35 @@ TaskJuggler currently needs at least Ruby version 1.8.5.
 
 === Installation Process ===
 
-If you have downloaded the gem package, you can skip to the next
-paragraph.  If you have checked-out the git repository, you need to
-build the Gem package first. Make sure, you have removed all other
-instances of TaskJuggler from you system before doing so. It is a
-common mistake to have an old version of the TaskJuggler installed and
-then use parts of the old and new version together.
+On systems that already have the gem package manager installed you
+can simply type the following command:
 
-In addition to the above listed dependencies, you need to have the
+  gem install taskjuggler
+
+This will download and install the latest version from the
+[http://gemcutter.org/ Gemcutter] site.
+
+If that doesn't work for you, you need to download and install the
+packages manually.  If you have downloaded the gem package, you can
+skip to the next paragraph.  If you have checked-out the git
+repository, you need to build the Gem package first. Make sure, you
+have removed all other instances of TaskJuggler from you system before
+doing so. It is a common mistake to have an old version of the
+TaskJuggler installed and then use parts of the old and new version
+together.
+
+In addition to the above listed dependencies, you may need to have the
 following packages installed:
 
 * [http://rake.rubyforge.org Rake] The Ruby build tool.
 
 * [http://eigenclass.org/hiki.rb?rcov rcov] The rcov code
 coverage analysis tool.
+
+If you use Ruby 1.9 or later, rake is already included. There is no
+need to install it separately. rcov is a code coverage tool and it's
+only needed for developers. Users don't need to install it and can
+ignore the warning about rcov during package build.
 
 The following command will create an archive file called a gem
 package.
@@ -60,10 +75,48 @@ Replace the X.X.X with the actual version that you have downloaded.
 
 It will install all components of the Gem in the appropriate place.
 
+On user friendly Linux distributions, the start scripts will be
+installed in a standard directory like ''''/usr/bin''''. On Debian
+based distributions, the start scripts end up in a place like
+''''/var/lib/gems/1.8/bin/'''' that is not listed in the ''''PATH''''
+variable. You either have to create a symbolic link for each start
+script or add the directory to your PATH variable. If you use the
+standard bash shell, put the following line in your ''''${HOME}/.profile''''
+file.
+
+ PATH=${PATH}:/var/lib/gems/1.8/bin/
+
+Windows and MacOS platforms may require similar steps.
+
+
 === Update from previous versions ===
 
 Updates work just like the installation.
 
+ gem update taskjuggler
+
+For downloaded or self-built packages use the following command:
+
  gem update pkg/taskjuggler-X.X.X.gem
+
+
+=== Developer Installation ===
+
+If you plan to modify the TaskJuggler files, creating and installing
+the gem file for every test run is not very comfortable. To run tj3
+from source put the following code in ''''${HOME}/bin/tj3''''. 
+
+ #! /usr/bin/ruby
+ 
+ # Set this to your source code directory
+ ENV['TASKJUGGLER_DATA_PATH'] = "#{ENV['HOME']}/src/taskjuggler3"
+ 
+ $:.unshift "#{ENV['TASKJUGGLER_DATA_PATH']}/lib/"
+ 
+ require "taskjuggler3"
+
+Don't forget to mark it as executable.
+
+ chmod 750 ${HOME}/bin/tj3
 
 
