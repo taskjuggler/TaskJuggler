@@ -44,9 +44,9 @@ class TaskJuggler
       %w(
         Intro
         TaskJuggler_2x_Migration
-        How_To_Contribute
         Reporting_Bugs
         Installation
+        How_To_Contribute
         Getting_Started
         Tutorial
         The_TaskJuggler_Syntax

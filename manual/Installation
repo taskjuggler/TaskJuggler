@@ -2,11 +2,13 @@
 
 TaskJuggler III is written in [http://www.ruby-lang.org Ruby]. It
 should run on any platform that Ruby is available on. It uses the
-standard Ruby mechanism for distribution. The package format is called
-[http://docs.rubygems.org Ruby Gems]. Alternatively, you can install
-from a the source code using ''''setup.rb''''.
+standard Ruby mechanism for distribution, a package format called
+[http://docs.rubygems.org RubyGems].
 
-This is a prototype. Consider it being alpha quality at best!
+TaskJuggler III is still under development. There is no stable
+version yet. You are welcome to try it. Some users are already using
+it successfully for their purposes, but it might not yet be right for
+you.
 
 === Requirements ===
 
@@ -15,59 +17,45 @@ compile anything. But TaskJuggler has a very small set of
 dependencies that you have to take care of first. Please make sure you
 have the minimum required version installed.
 
-* ''Ruby'' TaskJuggler III is written in Ruby.  You need a Ruby
+* '''Ruby:''' TaskJuggler III is written in Ruby.  You need a Ruby
 runtime environment to run it. This can be downloaded from
 [http://www.ruby-lang.org/en/downloads/ here].  Most Linux
 distributions usually have Ruby already included. So does MacOS X
 Leopard. For Windows, there is a one-click installer available.
-TaskJuggler currently needs at least Ruby version 1.8.5.
+TaskJuggler currently needs at least Ruby version 1.8.6.
 
-* ''RubyGems'' If it did not come with your OS or Ruby package, see
-[http://docs.rubygems.org here] how to get and install it.
+* '''RubyGems:''' If it did not come with your OS or the Ruby
+installation, see [http://docs.rubygems.org here] how to get and
+install it.
 
-* ''TaskJuggler'' Get TaskJuggler III from the
-[http://www.taskjuggler.org/download.php Download Page].
+=== Installation Steps for Users ===
 
-=== Installation Process ===
+==== The easy way ====
 
-On systems that already have the gem package manager installed you
-can simply type the following command:
+TaskJuggler is a commandline tool. It does not (yet) have a graphical
+user interface. To use it, you need to know how to open a command
+or terminal window. In this manual, we refer to it as your shell. The
+following paragraphs describe the commands you need to type into your
+[http://en.wikipedia.org/wiki/Shell_(computing) shell].
+
+On systems that already have Ruby and the gem package manager
+installed you can simply type the following command into your shell
+or command window:
 
   gem install taskjuggler
 
 This will download and install the latest version from the
 [http://gemcutter.org/ Gemcutter] site.
 
-If that doesn't work for you, you need to download and install the
-packages manually.  If you have downloaded the gem package, you can
-skip to the next paragraph.  If you have checked-out the git
-repository, you need to build the Gem package first. Make sure, you
-have removed all other instances of TaskJuggler from you system before
-doing so. It is a common mistake to have an old version of the
-TaskJuggler installed and then use parts of the old and new version
-together.
+==== The manual way ====
 
-In addition to the above listed dependencies, you may need to have the
-following packages installed:
+If the easy way doesn't work for you, you need to download and install
+the packages manually.  Get TaskJuggler III from the
+[http://www.taskjuggler.org/download.php Download Page].
 
-* [http://rake.rubyforge.org Rake] The Ruby build tool.
-
-* [http://eigenclass.org/hiki.rb?rcov rcov] The rcov code
-coverage analysis tool.
-
-If you use Ruby 1.9 or later, rake is already included. There is no
-need to install it separately. rcov is a code coverage tool and it's
-only needed for developers. Users don't need to install it and can
-ignore the warning about rcov during package build.
-
-The following command will create an archive file called a gem
-package.
-
- cd taskjuggler3; rake gem
- 
 A gem package is an operating system and architecture independent
 archive file for Ruby programs. You can install it on any system that
-has Ruby and ruby-gems installed.  Normally, you should be logged-in
+has Ruby and RubyGems installed.  Normally, you should be logged-in
 as root or administrator to run the following installation command.
 Replace the X.X.X with the actual version that you have downloaded.
 
@@ -81,15 +69,14 @@ based distributions, the start scripts end up in a place like
 ''''/var/lib/gems/1.8/bin/'''' that is not listed in the ''''PATH''''
 variable. You either have to create a symbolic link for each start
 script or add the directory to your PATH variable. If you use the
-standard bash shell, put the following line in your ''''${HOME}/.profile''''
-file.
+standard [http://en.wikipedia.org/wiki/Bash bash shell], put the
+following line in your ''''${HOME}/.profile'''' file.
 
  PATH=${PATH}:/var/lib/gems/1.8/bin/
 
 Windows and MacOS platforms may require similar steps.
 
-
-=== Update from previous versions ===
+=== Update from older TaskJuggler III versions ===
 
 Updates work just like the installation.
 
@@ -100,8 +87,41 @@ For downloaded or self-built packages use the following command:
  gem update pkg/taskjuggler-X.X.X.gem
 
 
-=== Developer Installation ===
+=== Installation Steps for Developers ===
 
+The following description is for users that want to learn more about
+TaskJuggler or want to make improvements. TaskJuggler is
+[http://en.wikipedia.org/wiki/Open_source Open Source] software and
+you are encouraged to read and modify the source code.
+
+To get the source code, the recommended way it to check out the
+latest code from the developer repository. To do this, you need to
+have [http://www.kernel.org/pub/software/scm/git/docs/ git] installed.
+
+Then checkout the source code with the following command
+
+ git clone http://www.taskjuggler.org/git-repos/taskjuggler3.git
+
+Make sure, you
+have removed all previously installed instances of TaskJuggler from
+your system before doing so. It is a common mistake to have an old
+version of the TaskJuggler installed and then use parts of the old and
+new version together.
+
+If your Ruby installation does not come with the
+[http://rake.rubyforge.org Rake] build tool, you need to install it
+now.
+
+If you are interested in a code coverage analysis, you need to also
+install the [http://eigenclass.org/hiki.rb?rcov rcov] code coverage
+analysis tool. This tool is not needed for most developers. You can
+safely ignore the warning during rake builds if you don't have it
+installed.
+
+The following command will create a gem package from the source code.
+
+ cd taskjuggler3; rake gem
+ 
 If you plan to modify the TaskJuggler files, creating and installing
 the gem file for every test run is not very comfortable. To run tj3
 from source put the following code in ''''${HOME}/bin/tj3''''. 
