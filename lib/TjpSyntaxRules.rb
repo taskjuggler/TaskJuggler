@@ -3,7 +3,7 @@
 #
 # = TjpSyntaxRules.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -176,7 +176,7 @@ EOT
          end
       end
     })
-    doc('allocate.limits', 'This keyword is deprecated. Don\'t use it anymore!')
+    doc('limits.allocate', 'This keyword is deprecated. Don\'t use it anymore!')
 
     pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])

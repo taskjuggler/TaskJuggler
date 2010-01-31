@@ -31,13 +31,8 @@ for your TaskJuggler contributions, you should consider using a Linux
 Live (or bootable) CD/DVD or use a VmWare Player image of a Linux
 distribution.
 
-As a first step, you need to checkout the latest version of
-the TaskJuggler. This will create a directory called taskjuggler in
-your current directory. It not only contains the latest sources, but
-also the full revision history of the code. It is your local copy of
-the TaskJuggler source repository.
-
- git clone http://www.taskjuggler.org/git-repos/taskjuggler.git
+Make sure you have followed the steps described in the
+[Installation#Installation_Steps_for_Developers] chapter.
 
 If you have never used Git before, you need to configure it first. You
 need to set your name and email address. This information will be
@@ -46,12 +41,10 @@ present in all patches that you submit.
  git config --global user.name "Your Name"
  git config --global user.email "firstname.lastname@domain.org"
 
-See the [[Installation]] section for how to build and install
-TaskJuggler.
-
-Do not use the development snapshots and send your patches as plain
-diff files. After having switched to Git, we no longer accept such
-patches.
+Do not use the development snapshots or send your patches as plain
+diff files. We'd like to ensure that we know who contributed to
+TaskJuggler. Therefor we are only accepting signed-off git patches
+with full user names and valid email addresses.
 
 Next you need to find the files where you want to make your
 modifications. Sometimes files will be generated from other files. Do

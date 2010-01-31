@@ -3,7 +3,7 @@
 #
 # = Tj3Config.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -17,7 +17,7 @@ AppConfig.version = '0.0.3'
 AppConfig.packageName = 'taskjuggler'
 AppConfig.softwareName = 'TaskJuggler III'
 AppConfig.packageInfo = 'A Project Management Software'
-AppConfig.copyright = [ (2006..2009).to_a ]
+AppConfig.copyright = [ (2006..2010).to_a ]
 AppConfig.authors = [ 'Chris Schlaeger <cs(a)kde.org>' ]
 AppConfig.contact = 'http://www.taskjuggler.org'
 AppConfig.license = <<'EOT'

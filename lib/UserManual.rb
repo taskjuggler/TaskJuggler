@@ -3,7 +3,7 @@
 #
 # = UserManual.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -44,9 +44,9 @@ class TaskJuggler
       %w(
         Intro
         TaskJuggler_2x_Migration
-        How_To_Contribute
         Reporting_Bugs
         Installation
+        How_To_Contribute
         Getting_Started
         Tutorial
         The_TaskJuggler_Syntax
