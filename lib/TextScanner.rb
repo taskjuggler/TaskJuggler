@@ -191,13 +191,14 @@ class TaskJuggler
     # file is finished, we will continue in the old file after the location
     # where we started with the new file.
     def include(fileName)
-      if @fileStack.empty?
-        path = @masterPath
-      else
-        path = @fileStack.last[0].dirname + '/'
-        @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
-      end
       if fileName[0] != '/'
+        if @fileStack.empty?
+          path = @masterPath
+        else
+          pathOfCallingFile = @fileStack.last[0].dirname
+          path = pathOfCallingFile.empty? ? '' : pathOfCallingFile + '/'
+          @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
+        end
         # If the included file is not an absolute name, we interpret the file
         # name relative to the including file.
         fileName = path + fileName
