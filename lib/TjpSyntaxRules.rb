@@ -4620,6 +4620,8 @@ EOT
 
     })
     doc('timesheet', <<'EOT'
+This feature is not yet functional!
+
 A time sheet record can be used to capture the current status of the tasks
 assigned to a specific resource and the achieved progress for a given period
 of time. The status is assumed to be for the end of this time period. There

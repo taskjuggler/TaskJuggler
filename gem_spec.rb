@@ -3,6 +3,7 @@ GEM_SPEC = Gem::Specification.new { |s|
     s.name              = UNIX_NAME
     s.version           = PROJECT_VERSION
     s.summary           = PROJECT_SUMMARY
+    s.description       = DESCRIPTION
     s.rubyforge_project = UNIX_NAME
     s.homepage          = PROJECT_HOMEPAGE
     s.author            = USER_NAME
@@ -25,6 +26,6 @@ GEM_SPEC = Gem::Specification.new { |s|
         s.cert_chain  = [CERT_PUBLIC]
     end
     s.platform          = Gem::Platform::RUBY
-    s.required_ruby_version  = '>= 1.8.5'
+    s.required_ruby_version  = '>= 1.8.6'
 }
 
