@@ -10,6 +10,7 @@ UNIX_NAME       = 'taskjuggler'
 USER_NAME       = 'Chris Schlaeger'
 USER_EMAIL      = 'cs@kde.org'
 RUBYFORGE_USER  = ENV['RUBYFORGE_USER']
+#CERT_PRIVATE    = ENV['HOME']/.gem/certs/gem-private-key.pem
 
 # VERSION
 begin
