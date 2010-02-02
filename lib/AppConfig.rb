@@ -106,7 +106,6 @@ class AppConfig
   end
 
   def AppConfig.dataDirs(baseDir = 'data')
-    version = RbConfig::CONFIG['ruby_version']
     rubyLibDir = RbConfig::CONFIG['rubylibdir']
     rubyBaseDir, versionDir = rubyLibDir.scan(/(.*\/)(.*)/)[0]
 
@@ -116,7 +115,11 @@ class AppConfig
     end
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
+    # This one is for RPM based distros like Novell
     dirs << rubyBaseDir + "gems/" + versionDir + '/gems/' \
+        + @@packageName + '-' + @@version + "/#{baseDir}/"
+    # This one is for Debian based distros
+    dirs << rubyLibDir + '/gems/' \
         + @@packageName + '-' + @@version + "/#{baseDir}/"
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|
