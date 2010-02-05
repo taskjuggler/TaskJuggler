@@ -64,4 +64,40 @@ format.
 optional. If you don't need to reference a property, you can omit the
 ID. TaskJuggler will automatically assign an ID then.
 
+=== Using TaskJuggler 2.4.3 and TaskJuggler 3.x in parallel ===
+
+While TaskJuggler 3.x has many new features over TaskJuggler 2.x like
+the much improved HTML reports, many 2.x users will miss the
+graphical user interface.
+
+To ease the migration, you can continue to use the TaskJuggler 2.x
+front-end while using TaskJuggler 3.x for report generation. This is
+possible because TaskJuggler 3.x can read-in the TaskJuggler 2.x
+export files. Export files are fully scheduled projects that include
+start and end dates for all tasks and bookings for resource
+allocations. 
+
+To export all tasks and resources into a TJP file that can be read by
+TaskJuggler 3.x include the following export report definition in your
+TaskJuggler 2.x project plan.
+
+ export "FullProject.tjp" {
+   taskattributes all
+   resourceattributes all
+   hideresource 0
+ }
+
+The resulting ''''FullProject.tjp'''' file is a valid self-contained
+project file that can be read with TaskJuggler 2.x or TaskJuggler
+3.x. The file does not contain any report definitions. To generate
+reports with TaskJuggler 3.x you need to create an additional file
+that contains the TaskJugler 3.x report definitions.
+
+Let's assume the file is called ''''tj3reports.tji''''. Start
+TaskJuggler 3.x with the following command:
+
+ tj3 FullProject.tjp tj3reports.tji
+
+Now you have generated TaskJuggler 3.x reports from you TaskJuggler
+2.x project.
 
