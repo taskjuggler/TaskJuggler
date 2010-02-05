@@ -126,7 +126,7 @@ can generate the file with the booking statements automatically.
    hideresource 0
    start 2005-04-11
    end 2005-04-16
-   properties bookings
+   taskattributes *
  }
 
 This will generate a TaskJuggler include file that contains all bookings

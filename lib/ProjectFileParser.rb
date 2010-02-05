@@ -281,7 +281,7 @@ class TaskJuggler
         descr('No items')
         # Or the list consists of one or more comma separated keywords.
         pattern([ "!#{name}_AoN_ruleItems" ], lambda {
-          KeywordArray.new(@val)
+          KeywordArray.new(@val[0])
         })
       }
       # Create the rule for the comma separated list.

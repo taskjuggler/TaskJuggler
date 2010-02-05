@@ -295,8 +295,7 @@ class TaskJuggler
         @project.tasks.eachAttributeDefinition do |attrDef|
           id = attrDef.id
           attr = task.getAttr(id)
-          next if (!@supportedTaskAttrs.include?(id) &&
-                   ! attrDef.userDefined) ||
+          next if (!@supportedTaskAttrs.include?(id) && !attrDef.userDefined) ||
                   !a('taskAttributes').include?(id)
 
           if attrDef.scenarioSpecific

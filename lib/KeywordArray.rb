@@ -17,7 +17,7 @@ class TaskJuggler
     alias a_include? include?
 
     def include?(keyword)
-      self[0] == '*' || a_include?(keyword)
+      (self[0] == '*') || a_include?(keyword)
     end
 
   end
