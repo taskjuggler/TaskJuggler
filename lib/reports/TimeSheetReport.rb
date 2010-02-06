@@ -18,9 +18,12 @@ class TaskJuggler
   class TSResourceRecord
 
     attr_reader :resource, :tasks
+    attr_accessor :vacationHours, :vacationPercent
 
     def initialize(resource)
       @resource = resource
+      @vacationHours = 0.0
+      @vacationPercent = 0.0
       @tasks = []
     end
 
@@ -29,11 +32,12 @@ class TaskJuggler
   # Utility class for the intermediate TimeSheetReport format.
   class TSTaskRecord
 
-    attr_reader :task, :work, :remaining, :endDate
+    attr_reader :task, :workHours, :workPercent, :remaining, :endDate
 
-    def initialize(task, work, remaining = nil, endDate = nil)
+    def initialize(task, workHours, workPercent, remaining = nil, endDate = nil)
       @task = task
-      @work = work
+      @workHours = workHours
+      @workPercent = workPercent
       @remaining = remaining
       @endDate = endDate
     end
@@ -49,14 +53,6 @@ class TaskJuggler
     # Create a new object and set some default values.
     def initialize(report)
       super(report)
-
-      @report.set('scenarios', [ 0 ])
-      # Show all tasks, sorted by seqno-up.
-      @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortResources', [ [ 'seqno', true, -1 ] ])
 
       @records = []
     end
@@ -102,6 +98,23 @@ class TaskJuggler
         # Create a new TSResourceRecord for the resource.
         @records << (resourceRecord = TSResourceRecord.new(resource))
 
+        # Calculate the average working days per week (usually 5)
+        weeklyWorkingDays = @project['yearlyworkingdays'] / 52.1428
+        # Calculate the number of weeks in the report
+        weeksToReport = (a('end') - a('start')) / (60 * 60 * 24 * 7)
+
+        # Get the vacation days for the resource for this period.
+        queryAttrs['property'] = resource
+        query = Query.new(queryAttrs)
+        query.attributeId = 'vacationdays'
+        query.start = a('start')
+        query.end = a('end')
+        query.process
+        resourceRecord.vacationHours = query.to_s
+        resourceRecord.vacationPercent =
+          (query.to_num / (weeksToReport * weeklyWorkingDays)) * 100.0
+
+
         # Now we have to find all the task that the resource is allocated to
         # during the report period.
         assignedTaskList = filterTaskList(taskList, resource,
@@ -123,7 +136,10 @@ class TaskJuggler
           query.start = a('start')
           query.end = a('end')
           query.process
-          work = query.to_s
+          workHours = query.to_s
+          # The Query.to_num of an effort always returns the value in days.
+          workPercent = (query.to_num / (weeksToReport * weeklyWorkingDays)) *
+                        100.0
 
           if task['effort', scenarioIdx]
             # The task is an effort based task.
@@ -143,7 +159,7 @@ class TaskJuggler
           # Put all data into a TSTaskRecord and push it into the resource
           # record.
           resourceRecord.tasks <<
-            TSTaskRecord.new(task, work, remaining, endDate)
+            TSTaskRecord.new(task, workHours, workPercent, remaining, endDate)
         end
       end
     end
@@ -158,7 +174,14 @@ class TaskJuggler
       @taskList.sort!
 
       # This String will hold the result.
-      @file = ''
+      @file =  <<'EOT'
+# The status headline should be no more than 60 characters and may not be
+# empty! The status summary is optional and should be no longer than one or
+# two sentences of plain text. The details section is also optional has no
+# length limitation. You can use simple markup in this section.
+# It is recommended that you provide at least a summary or a details section.
+# See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
+EOT
 
       # Iterate over all the resources that we have TSResourceRecords for.
       @records.each do |rr|
@@ -166,6 +189,8 @@ class TaskJuggler
         # Generate the time sheet header
         @file << "timesheet #{resource.fullId} " +
                  "#{a('start')} - #{a('end')} {\n\n"
+
+        @file << "  # Vacation time: #{rr.vacationPercent}%\n\n"
 
         if rr.tasks.empty?
           # If there were no assignments, just write a comment.
@@ -177,17 +202,20 @@ class TaskJuggler
 
             @file << "  # Task: #{task.name}\n"
             @file << "  task #{task.fullId} {\n"
-            @file << "    work #{tr.work}\n"
+            #@file << "    work #{tr.workHours}h\n"
+            @file << "    work #{tr.workPercent}%\n"
             if tr.remaining
-              @file << "    remaining #{tr.remaining}\n"
+              @file << "    remaining #{tr.remaining}d\n"
             else
               @file << "    end #{tr.endDate.to_tjp}\n"
             end
-            @file << "    status green \"Your status here!\" {\n" +
-                     "      summary\n" +
-                     "      -8<-\n" +
-                     "      Your summary here!\n" +
-                     "      ->8-\n" +
+            @file << "    status green \"Your headline here!\" {\n" +
+                     "    #  summary -8<-\n" +
+                     "    #  Uncomment and put one or two sentences here!\n" +
+                     "    #  ->8-\n" +
+                     "    #  details -8<-\n" +
+                     "    #  Uncomment and put markup text here.\n" +
+                     "    #  ->8-\n" +
                      "    }\n"
             @file << "  }\n\n"
           end
@@ -195,8 +223,18 @@ class TaskJuggler
         @file << <<'EOT'
   # If you had unplanned tasks, uncomment and fill out the following lines:
   # newtask new.task.id "A task title" {
-  #   work X.Xd
+  #   work X%
   #   remaining Y.Yd
+  # }
+
+  # You can use the following section to report a personal status.
+  # status green "A task title" {
+  #   summary -8<-\n" +
+  #   Uncomment and put one or two sentences here!\n" +
+  #   ->8-\n" +
+  #   details -8<-\n" +
+  #   Uncomment and put markup text here.\n" +
+  #   ->8-\n" +
   # }
 EOT
         @file << "}\n\n"

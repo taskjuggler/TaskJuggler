@@ -1,0 +1,67 @@
+project "Shift2" 2010-02-06 +1w
+
+include "checks.tji"
+
+shift s2 "s2" {
+  replace 
+  workinghours mon - fri 8:00 - 16:00
+}
+
+shift s3 "s3" {
+  vacation 2010-02-09
+  workinghours mon - fri 8:00 - 16:00
+}
+
+shift s4 "s4" {
+  replace
+  vacation 2010-02-09
+  workinghours mon - fri 8:00 - 16:00
+}
+
+vacation 2010-02-10
+
+resource r1 "r1"
+
+task "T1" {
+  effort 32h
+  allocate r1
+  ${FixEnd "2010-02-12-18:00"}
+}
+
+resource r2 "r2" {
+  shift s2 2010-02-08 +1w
+}
+
+task "T2" {
+  effort 40h
+  allocate r2
+  ${FixEnd "2010-02-12-16:00"}
+}
+
+resource r3 "r3" {
+  shift s3 2010-02-08 +1w
+}
+
+task "T3" {
+  effort 24h
+  allocate r3
+  ${FixEnd "2010-02-12-16:00"}
+}
+
+resource r4 "r4" {
+  shift s4 2010-02-08 +1w
+}
+
+task "T4" {
+  effort 32h
+  allocate r4
+  ${FixEnd "2010-02-12-16:00"}
+}
+
+taskreport "Shift2" {
+  formats html
+  columns name, start, end, daily
+  sorttasks index.up
+  loadunit hours
+}
+

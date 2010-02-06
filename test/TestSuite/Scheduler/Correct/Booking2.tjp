@@ -1,0 +1,57 @@
+project "Booking2" 2010-02-08 +1m
+
+include "checks.tji"
+
+resource r1 "R1"
+
+task "T1" {
+  effort 40h
+  allocate r1
+	${FixEnd "2010-02-12-18:00"}
+}
+
+resource r2 "R2"
+
+task "T2" {
+  effort 40h
+  allocate r2
+  booking r2 2010-02-08 +1d { sloppy 1 }
+	${FixEnd "2010-02-12-18:00"}
+}
+
+resource r3 "r3" {
+  vacation 2010-02-09
+}
+
+task "T3" {
+  effort 32h
+  allocate r3
+  booking r3 2010-02-08 +2d { sloppy 2 }
+	${FixEnd "2010-02-12-18:00"}
+}
+
+resource r4 "R4"
+
+task "T4" {
+  effort 56h
+  allocate r4
+  booking r4 2010-02-08 +1d { overtime 1 }
+	${FixEnd "2010-02-12-18:00"}
+}
+
+resource r5 "r5" {
+  vacation 2010-02-09
+}
+
+task "T5" {
+  effort 72h
+  allocate r5
+  booking r5 2010-02-08 +2d { overtime 2 }
+	${FixEnd "2010-02-12-18:00"}
+}
+
+taskreport "Booking2" {
+  formats html
+  hideresource 0
+	columns no, name, effort, end, hourly
+}

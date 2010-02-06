@@ -20,11 +20,18 @@ class TaskJuggler
     def initialize(resource, scenarioIdx, attributes)
       super
 
-      # The scoreboard entries are either nil, a number or a task reference. nil
-      # means the slot is unassigned. The task reference means assigned to this
-      # task. The numbers have the following values:
-      # 1: Off hour
-      # 2: Vacation
+      # Scoreboard may be nil, a Task, or a bit vector encoded as a Fixnum
+      # nil:        Value has not been determined yet.
+      # Task:       A reference to a Task object
+      # Bit 0:      Reserved
+      # Bit 1:      0: Work time
+      #             1: Off time
+      # Bit 2 - 5:  0: No vacation or leave time
+      #             1: Regular vacation
+      #             2 - 15: Reserved
+      # Bit 6:      Reserved
+      # Bit 7:      0: No global override
+      #             1: Override global setting
       # The scoreboard is only created when needed to save memory for projects
       # which read-in the coporate employee database but only need a small
       # subset.
@@ -118,14 +125,22 @@ class TaskJuggler
                 "conflicting tasks are #{@scoreboard[sbIdx].fullId} and " +
                 "#{booking.task.fullId}.", true, booking.sourceFileInfo)
         end
-        if @scoreboard[sbIdx] > booking.overtime
-          if @scoreboard[sbIdx] == 1 && booking.sloppy == 0
+        val = @scoreboard[sbIdx]
+        if ((val & 2) != 0 && booking.overtime < 1)
+          # The booking is blocked due to the overtime attribute. Now let's
+          # see if the user wants to be warned about it.
+          if booking.sloppy < 1
             error('booking_no_duty',
                   "Resource #{@property.fullId} has no duty at " +
                   "#{@scoreboard.idxToDate(sbIdx)}.", true,
                   booking.sourceFileInfo)
           end
-          if @scoreboard[sbIdx] == 2 && booking.sloppy <= 1
+          return false
+        end
+        if ((val & 0x3C) != 0 && booking.overtime < 2)
+          # The booking is blocked due to the overtime attribute. Now let's
+          # see if the user wants to be warned about it.
+          if booking.sloppy < 2
             error('booking_on_vacation',
                   "Resource #{@property.fullId} is on vacation at " +
                   "#{@scoreboard.idxToDate(sbIdx)}.", true,
@@ -193,6 +208,14 @@ class TaskJuggler
       else
         query.string = 'No revenue account'
       end
+    end
+
+    # The work time of the Resource that was blocked by a vacation during the
+    # specified Interval. The result is in working days (effort).
+    def query_vacationdays(query)
+      query.sortable = query.numerical = time =
+        getVacationDays(query.startIdx, query.endIdx)
+      query.string = query.scaleLoad(time)
     end
 
     # Returns the work of the resource (and its children) weighted by their
@@ -302,6 +325,28 @@ class TaskJuggler
       work
     end
 
+    # Return the number of working days that are blocked by vacations.
+    def getVacationDays(startIdx, endIdx)
+      # Convert the interval dates to indexes if needed.
+      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+
+      vacationDays = 0.0
+      if @property.container?
+        @property.children.each do |resource|
+          vacationDays += resource.getVacationDays(@scenarioIdx,
+                                                   startIdx, endIdx)
+        end
+      else
+        initScoreboard if @scoreboard.nil?
+
+        vacationDays = @project.convertToDailyLoad(
+          getVacationSlots(startIdx, endIdx) *
+          @project['scheduleGranularity']) * a('efficiency')
+      end
+      vacationDays
+    end
+
     def turnover(startIdx, endIdx, account, task = nil)
       amount = 0.0
       if @property.container?
@@ -391,12 +436,14 @@ class TaskJuggler
     end
 
     # Return a list of scoreboard intervals that are at least _minDuration_ long
-    # and contain only 1 and 2. These values determine off-hours of the
-    # resource. The result is an Array of [ start, end ] TjTime values.
+    # and contain only off-duty and vacation slots. The result is an Array of
+    # [ start, end ] TjTime values.
     def collectTimeOffIntervals(iv, minDuration)
       initScoreboard if @scoreboard.nil?
 
-      @scoreboard.collectTimeOffIntervals(iv, minDuration, [ 1, 2 ])
+      @scoreboard.collectIntervals(iv, minDuration) do |val|
+        val.is_a?(Fixnum) && (val & 0x3E) != 0
+      end
     end
 
   private
@@ -404,7 +451,7 @@ class TaskJuggler
     def initScoreboard
       # Create scoreboard and mark all slots as unavailable
       @scoreboard = Scoreboard.new(@project['start'], @project['end'],
-                                   @project['scheduleGranularity'], 1)
+                                   @project['scheduleGranularity'], 2)
 
       # We'll need this frequently and can savely cache it here.
       @shifts = a('shifts')
@@ -418,21 +465,24 @@ class TaskJuggler
         date += delta
       end
 
-      # Mark all resource specific vacation slots as such (2)
+      # Mark all resource specific vacation slots as such
       a('vacations').each do |vacation|
         startIdx = @scoreboard.dateToIdx(vacation.start, true)
         endIdx = @scoreboard.dateToIdx(vacation.end, true)
         startIdx.upto(endIdx - 1) do |i|
-           @scoreboard[i] = 2
+          # If the slot is nil, we don't set the time-off bit.
+          @scoreboard[i] = (@scoreboard[i].nil? ? 0 : 2) | (1 << 2)
         end
       end
 
-      # Mark all global vacation slots as such (2)
+      # Mark all global vacation slots as such
       @project['vacations'].each do |vacation|
         startIdx = @scoreboard.dateToIdx(vacation.start, true)
         endIdx = @scoreboard.dateToIdx(vacation.end, true)
         startIdx.upto(endIdx - 1) do |i|
-           @scoreboard[i] = 2
+          # If the slot is nil or set to 4 then don't set the time-off bit.
+          sb = @scoreboard[i]
+          @scoreboard[i] = ((sb.nil? || sb == 4) ? 0 : 2) | (1 << 2)
         end
       end
 
@@ -441,31 +491,27 @@ class TaskJuggler
         @project.scoreboardSize.times do |i|
           v = @shifts.getSbSlot(@scoreboard.idxToDate(i))
           # Check if the vacation replacement bit is set. In that case we copy
-          # the while interval over to the resource scoreboard overriding any
+          # the whole interval over to the resource scoreboard overriding any
           # global vacations.
-          if (v & (1 << 8)) > 0
-            # The ShiftAssignments scoreboard and the ResourceScenario scoreboard
-            # unfortunately can't use the same values for a certain meaning. So,
-            # we have to use a map to translate the values.
-            map = [ nil, nil, 1, 2 ]
-            @scoreboard[i] = map[v & 0xFF]
-          elsif (v & 0xFF) == 3
-            # 3 in ShiftAssignments means 2 in ResourceScenario (on vacation)
-            @scoreboard[i] = 2
+          if (v & (1 << 8)) != 0
+            if (v & 0x3E) == 0
+              @scoreboard[i] = nil
+            else
+              @scoreboard[i] = v & 0x3E
+            end
+          elsif ((sbV = @scoreboard[i]).nil? || (sbV & 0x3C) == 0) &&
+                (v & 0x3C) != 0
+            # We only add the shift vacations but don't turn global vacation
+            # slots into working slots again.
+            @scoreboard[i] = v & 0x3E
           end
         end
       end
     end
 
     def onShift?(date)
-      # The more redable but slower form would be:
-      # if @shifts.assigned?(date)
-      #   return @shifts.onShift?(date)
-      # else
-      #   @workinghours.onShift?(date)
-      # end
-      if @shifts && (v = (@shifts.getSbSlot(date) & 0xFF)) > 0
-        v == 1
+      if @shifts && @shifts.assigned?(date)
+        return @shifts.onShift?(date)
       else
         @workinghours.onShift?(date)
       end
@@ -500,6 +546,19 @@ class TaskJuggler
       end
 
       freeSlots
+    end
+
+    # Count the regular work time slots between the start and end index that
+    # have been blocked by a vacation.
+    def getVacationSlots(startIdx, endIdx)
+      vacationSlots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        val = @scoreboard[idx]
+        # Bit 1 needs to be unset and the vacation bits must not be 0.
+        vacationSlots += 1 if val.is_a?(Fixnum) && (val & 0x2) == 0 &&
+                                                   (val & 0x3C) != 0
+      end
+      vacationSlots
     end
 
     # Returns true if the resource or any of its children is allocated during

@@ -79,12 +79,18 @@ class TaskJuggler
   # To optimize memory usage and computation time the Scoreboard objects for
   # similar ShiftAssignments are shared.
   #
-  # Scoreboard entries can have 5 possible values
+  # Scoreboard may be nil or a bit vector encoded as a Fixnum
   # nil: Value has not been determined yet.
-  # 0: No assignment
-  # 1: on shift
-  # 2: Off-hour slot
-  # 3: Vacation slot
+  # Bit 0:      0: No assignment
+  #             1: Has assignement
+  # Bit 1:      0: Work time
+  #             1: Off time
+  # Bit 2 - 5:  0: No vacation or leave time
+  #             1: Regular vacation
+  #             2 - 15: Reserved
+  # Bit 6:      Reserved
+  # Bit 7:      0: No global override
+  #             1: Override global setting
   class ShiftAssignments
 
     include ObjectSpace
@@ -137,59 +143,61 @@ class TaskJuggler
       # Check if we have a value already for this slot.
       return @scoreboard[idx] unless @scoreboard[idx].nil?
 
+
       # If not, compute it.
       @assignments.each do |sa|
         next unless sa.assigned?(date)
 
-        # Set the 8th bit if the shift replaces global vacations.
-        replace = sa.replace?(date) ? (1 << 8) : 0
+        # Mark the slot as 'assigned'. Meaning, the rest of the bits are valid
+        # for this time slot.
+        @scoreboard[idx] = 1
 
-        if sa.onVacation?(date)
-          # On vacation
-          return @scoreboard[idx] = 3 | replace
-        elsif sa.onShift?(date)
-          # On shift
-          return @scoreboard[idx] = 1 | replace
-        else
-          # Off hour
-          return @scoreboard[idx] = 2 | replace
-        end
+        # Set bit 1 if the shift is not active
+        @scoreboard[idx] |= 1 << 1 unless sa.onShift?(date)
+
+        # Set bits 2 - 5 to 1 if it's a vacation slot.
+        @scoreboard[idx] |= 1 << 3 if sa.onVacation?(date)
+
+        # Set the 8th bit if the shift replaces global vacations.
+        @scoreboard[idx] |= 1 << 8 if sa.replace?(date)
+
+        return @scoreboard[idx]
       end
-      # No assignment for slot
+
+      # The slot is not covered by any assignment.
       @scoreboard[idx] = 0
     end
 
     # Returns true if any of the defined shift periods overlaps with the date or
     # interval specified by _date_.
     def assigned?(date)
-      getSbSlot(date) > 0
+      (getSbSlot(date) & 1) == 1
     end
 
     # Returns true if any of the defined shift periods contains the
     # _date_ and the shift has working hours defined for that _date_.
     def onShift?(date)
-      (getSbSlot(date) & 0xFF) == 1
+      (getSbSlot(date) & (1 << 1)) == 0
     end
 
     # Returns true if any of the defined shift periods contains the _date_ and
     # the shift has a vacation defined or all off hours defined for that _date_.
     def timeOff?(date)
-      (getSbSlot(date) & 0xFF) >= 2
+      (getSbSlot(date) & 0x3E) != 0
     end
 
     # Returns true if any of the defined shift periods contains the _date_ and
     # if the shift has a vacation defined for the _date_.
     def onVacation?(date)
-      (getSbSlot(date) & 0xFF) == 3
+      (getSbSlot(date) & 0x3C) != 0
     end
 
     # Return a list of intervals that lay within _iv_ and are at least
-    # minDuration long and contain no working time. In this class the scoreboard
-    # values 2 and 3 mark time off. Additionally the 8-th but may be set as
-    # well.
+    # minDuration long and contain no working time.
     def collectTimeOffIntervals(iv, minDuration)
-      @scoreboard.collectTimeOffIntervals(iv, minDuration,
-                                          [ 2, 3, (1 << 8) | 2, (1 << 8) | 3 ])
+      @scoreboard.collectTimeOffIntervals(iv, minDuration) do |val|
+        (val & 0x3E) != 0
+      end
     end
 
     # Returns true if two ShiftAssignments object have the same assignment

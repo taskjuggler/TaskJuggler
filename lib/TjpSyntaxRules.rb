@@ -352,7 +352,16 @@ EOT
       @booking.overtime = @val[1]
     })
     doc('overtime.booking', <<'EOT'
-This attribute enables bookings to override working hours and vacations.
+This attribute enables bookings during off-hours and vacations. It implicitly
+sets the [[sloppy.booking sloppy]] attribute accordingly.
+EOT
+       )
+    arg(1, 'value', <<'EOT'
+* '''0''': You can only book available working time. (Default)
+
+* '''1''': You can book off-hours as well.
+
+* '''2''': You can book working time, off-hours and vacation time.
 EOT
        )
 
@@ -365,9 +374,20 @@ EOT
     })
     doc('sloppy.booking', <<'EOT'
 Controls how strict TaskJuggler checks booking intervals for conflicts with
-vacation and other bookings. In case the error is suppressed the booking will
-not overwrite the existing bookings. It will avoid the already assigned
-intervals during booking.
+working periods and vacations. This attribute only affects the check for
+conflicts. No assignments will be made unless the [[overtime.booking
+overtime]] attribute is set accordingly.
+EOT
+       )
+    arg(1, 'sloppyness', <<'EOT'
+* '''0''': Period may not contain any off-duty hours, vacation or other task
+assignments. (default)
+
+* '''1''': Period may contain off-duty hours, but no vacation time or other
+task assignments.
+
+* '''2''': Period may contain off-duty hours and vacation time, but no other
+task assignments.
 EOT
        )
   end
@@ -3284,8 +3304,8 @@ EOT
 
     pattern(%w( _shift !shiftAssignments ))
     doc('shift.resource', <<'EOT'
-This keyword has been deprecated. Please use [shifts.resource shifts
-(resource)] instead.
+This keyword has been deprecated. Please use [[shifts.resource shifts
+(resource)]] instead.
 EOT
        )
 
@@ -4770,7 +4790,15 @@ EOT
       else
         fileName = "timeSheet#{@project.reports.length + 1}"
       end
-      newReport(fileName, :timeSheet, sourceFileInfo)
+      report = newReport(fileName, :timeSheet, sourceFileInfo)
+      report.set('scenarios', [ 0 ])
+      # Show all tasks, sorted by seqno-up.
+      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      # Show all resources, sorted by seqno-up.
+      report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      report.set('loadUnit', :hours)
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji

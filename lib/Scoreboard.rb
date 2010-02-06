@@ -95,11 +95,11 @@ class TaskJuggler
     end
 
     # Return a list of intervals that describe a contiguous part of the
-    # scoreboard that contains only the values listed in _targets_. The
-    # intervals must be within the interval described by _iv_ and must be at
-    # least _minDuration_ long. The return value is an Array of [ start, end ]
-    # TjTime values.
-    def collectTimeOffIntervals(iv, minDuration, targets)
+    # scoreboard that contains only the values that yield true for the passed
+    # block.  The intervals must be within the interval described by _iv_ and
+    # must be at least _minDuration_ long. The return value is an Array of [
+    # start, end ] TjTime values.
+    def collectIntervals(iv, minDuration)
       # Determine the start and stop index for the scoreboard search.
       startIdx = dateToIdx(iv.start, true)
       endIdx = dateToIdx(iv.end, true)
@@ -116,7 +116,7 @@ class TaskJuggler
 
       startIdx.upto(endIdx) do |idx|
         # Check whether the scoreboard slot matches any of the target values.
-        if targets.include?(@sb[idx])
+        if yield(@sb[idx])
           # If so, save the start position if this is the first slot and start
           # counting the matching slots.
           start = idx if start == 0
