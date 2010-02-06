@@ -1783,6 +1783,57 @@ EOT
     })
   end
 
+  def rule_nikuReportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
+    pattern(%w( !reportEnd ))
+    pattern(%w( !reportPeriod ))
+    pattern(%w( !reportStart ))
+  end
+
+  def rule_nikuReportBody
+    pattern(%w( _{ !nikuReportAttributes _} ), lambda {
+
+    })
+  end
+
+  def rule_nikuReportHeader
+    pattern(%w( _nikureport !optionalID $STRING ), lambda {
+      if (fileName = @val[2]) != '.'
+        fileName += '.xml'
+        if @project.reports[fileName]
+          error('report_redefinition',
+                "A report with the name '#{fileName}' has already been defined.")
+        end
+      else
+        fileName = "nikureport#{@project.reports.length + 1}"
+      end
+      @property = newReport(fileName, :niku, sourceFileInfo)
+      @property.set('formats', [ :niku ])
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the time sheet report file to generate. It must end with a .tji
+extension, or use . to use the standard output channel.
+EOT
+       )
+  end
+
+  def rule_nikuReport
+    pattern(%w( !nikuReportHeader !nikuReportBody ))
+    doc('nikureport', <<'EOT'
+This report generates an XML file to be imported into the enterprise resource
+management software Clarity(R) from Computer Associates(R). The files contains
+allocation curves for the specified resources. All tasks with identical user
+defined attributes ''''ClarityPID'''' and ''''ClarityPNAME'''' are bundled
+into a Clarity project. The resulting XML file can be imported into Clarity
+with the xog-in tool.
+EOT
+       )
+  end
+
   def rule_number
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')
@@ -2286,7 +2337,6 @@ EOT
     })
 
     pattern(%w( !export ))
-    pattern(%w( !timeSheetReport ))
 
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
@@ -2311,6 +2361,8 @@ EOT
        )
 
     pattern(%w( !macro ))
+
+    pattern(%w( !nikuReport ))
 
     pattern(%w( !navigator ))
 
@@ -2364,6 +2416,7 @@ EOT
 
     pattern(%w( !task ))
     pattern(%w( !timeSheet ))
+    pattern(%w( !timeSheetReport ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       @project['vacations'] = @project['vacations'] + @val[2]
     })
@@ -2384,7 +2437,6 @@ Specifies which scenario should be used for time sheet reports. By default,
 the top-level scenario will be used.
 EOT
        )
-
   end
 
   def rule_propertiesInclude

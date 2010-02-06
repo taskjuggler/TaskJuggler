@@ -17,6 +17,7 @@ require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
 require 'reports/TimeSheetReport'
+require 'reports/NikuReport'
 require 'reports/CSVFile'
 require 'reports/Navigator'
 require 'reports/ReportContext'
@@ -48,14 +49,16 @@ class TaskJuggler
       begin
         @content = nil
         case @typeSpec
+        when :export
+          @content = TjpExportRE.new(self)
+        when :niku
+          @content = NikuReport.new(self)
         when :resourcereport
           @content = ResourceListRE.new(self)
         when :textreport
           @content = TextReport.new(self)
         when :taskreport
           @content = TaskListRE.new(self)
-        when :export
-          @content = TjpExportRE.new(self)
         when :timeSheet
           @content = TimeSheetReport.new(self)
         else
@@ -74,10 +77,12 @@ class TaskJuggler
             copyAuxiliaryFiles
           when :csv
             generateCSV
+          when :niku
+            generateNiku
           when :tjp
             generateTJP
           else
-            raise 'Unknown report output format.'
+            raise 'Unknown report output format #{format}.'
           end
         end
       rescue TjException
@@ -216,6 +221,14 @@ EOT
                          File.new((@name[0] == '/' ? '' : @project.outputDir) +
                                   @name, 'w')
       f.puts "#{@content.to_tjp}"
+    end
+
+    # Generate Niku report
+    def generateNiku
+      f = @name == '.' ? $stdout :
+                         File.new((@name[0] == '/' ? '' : @project.outputDir) +
+                                  @name, 'w')
+      f.puts "#{@content.to_niku}"
     end
 
     def copyAuxiliaryFiles

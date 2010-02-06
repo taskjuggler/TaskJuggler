@@ -48,8 +48,6 @@ class TaskJuggler
   # sheets. The time sheet is structured using the TJP file syntax.
   class TimeSheetReport < ReportBase
 
-    attr_reader :mainFile
-
     # Create a new object and set some default values.
     def initialize(report)
       super(report)
