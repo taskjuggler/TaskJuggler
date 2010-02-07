@@ -669,11 +669,11 @@ EOT
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
-<div><pre>#include &lt;stdin.h&gt;
+<div><div codesection="1"><pre codesection="1">#include &lt;stdin.h&gt;
 main() {
   printf("Hello, world!\n")
 }
-</pre></div>
+</pre></div></div>
 EOT
     assert_equal(ref, out)
   end

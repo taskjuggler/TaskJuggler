@@ -49,4 +49,18 @@ code {
   padding-top:0px;
   padding-bottom:0px;
 }
+div[codesection] {
+  border-width:2px;
+  border-color:#ABABAB;
+  border-style:solid;
+  background-color:#F0F0F0;
+  margin-top:8px;
+  margin-bottom:8px;
+}
+pre[codesection] {
+  padding-left:15px;
+  padding-right:15px;
+  padding-top:0px;
+  padding-bottom:0px;
+}
 

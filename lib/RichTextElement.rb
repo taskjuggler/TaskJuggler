@@ -322,8 +322,11 @@ class TaskJuggler
         XMLElement.new('p', attrs)
       when :pre
         noChilds = true
-        pre = XMLElement.new('pre')
+        attrs['codesection'] = '1'
+        div = XMLElement.new('div', attrs)
+        div << (pre = XMLElement.new('pre', attrs))
         pre << XMLText.new(@children[0])
+        div
       when :bulletlist1
         XMLElement.new('ul')
       when :bulletitem1

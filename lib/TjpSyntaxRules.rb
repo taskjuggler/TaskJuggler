@@ -2895,24 +2895,6 @@ EOT
        )
     also(%w( epilog footer header ))
 
-    pattern(%w( _rawhead $STRING ), lambda {
-      @property.set('rawHead', @val[1])
-    })
-    doc('rawhead', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the top of the
-report.
-EOT
-        )
-
-    pattern(%w( _rawtail $STRING ), lambda {
-      @property.set('rawTail', @val[1])
-    })
-    doc('rawtail', <<'EOT'
-Specifies a section of raw HTML code that will be inserted at the bottom of
-the report.
-EOT
-       )
-
     pattern(%w( !report ))
 
     pattern(%w( _right $STRING ), lambda {

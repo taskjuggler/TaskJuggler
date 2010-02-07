@@ -54,7 +54,8 @@ class TaskJuggler
         Day_To_Day_Juggling
         fdl
       ).each do |file|
-        addSnip(srcDir + file)
+        snip = addSnip(srcDir + file)
+        snip.cssClass = 'manual'
       end
       # Generate the table of contense
       tableOfContents

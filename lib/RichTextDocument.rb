@@ -47,6 +47,7 @@ class TaskJuggler
       @snippets << (snippet = RichTextSnip.new(self, file, @sectionCounter))
       snippet.linkTarget = @linkTarget
       @dirty = true
+      snippet
     end
 
     # Call this method to generate a table of contents for all files that were

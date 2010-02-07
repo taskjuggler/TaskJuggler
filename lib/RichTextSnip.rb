@@ -57,6 +57,11 @@ class TaskJuggler
       @richText.linkTarget = target
     end
 
+    # Set the CSS class.
+    def cssClass=(css)
+      @richText.cssClass = css
+    end
+
     # Generate a TableOfContents object from the section headers of the
     # RichTextSnip.
     def tableOfContents(toc, fileName)
