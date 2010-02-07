@@ -337,7 +337,7 @@ class TaskJuggler
     def to_s(format = nil)
       return 'unknown' if @time.nil?
       if format.nil?
-        format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%s') + '-%z'
+        format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
       end
       # Always report values in local timezone
       @time.dup.localtime.strftime(format)

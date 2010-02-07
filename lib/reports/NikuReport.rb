@@ -39,6 +39,16 @@ class TaskJuggler
 
   end
 
+  # The Niku report can be used to export resource allocation data for certain
+  # task groups in the Niku XOG format. This file can be read by the Clarity
+  # enterprise resource management software from Computer Associates.
+  # Since I don't think this is a use case for many users, the implementation
+  # is somewhat of a hack. The report relies on 3 custom attributes that the
+  # user has to define in the project.
+  # Resources must be tagged with a ClarityRID and Tasks must have a
+  # ClarityPID and a ClarityPName.
+  # This file format works for our Clarity installation. I have no idea if it
+  # is even portable to other Clarity installations.
   class NikuReport < ReportBase
 
     def initialize(report)
@@ -58,7 +68,7 @@ class TaskJuggler
 
       computeResourceTotals
       collectProjects
-      computeProjectTotals
+      computeProjectAllocations
     end
 
     def to_niku
@@ -89,19 +99,19 @@ class TaskJuggler
                                        'resourceID' => res.id,
                                        'defaultAllocation' => '0'))
           resource << (allocCurve = XMLElement.new('AllocCurve'))
+          percent = res.sum / @resourcesTotalEffort[res.id]
           allocCurve << (XMLElement.new('Segment',
                                         'start' =>
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => res.sum.to_s))
+                                        'sum' => percent.to_s))
         end
 
-        project << (customInfo = XMLElement.new('CustomInformation'))
-        customInfo << XMLNamedText.new('amd_active', 'ColumnValue',
-                                       'name' => 'amd_state')
-        customInfo << XMLNamedText.new('amd_eng', 'ColumnValue',
-                                       'name' => 'partition_code')
+        # The custom information section usually contains Clarity installation
+        # specific parts. They are identical for each project section, so we
+        # mis-use the title attribute to insert them as an XML blob.
+        project << XMLBlob.new(a('title')) unless a('title').empty?
       end
 
       xml.to_s
@@ -109,6 +119,10 @@ class TaskJuggler
 
   private
 
+    # The report must contain percent values for the allocation of the
+    # resources. A value of 1.0 means 100%. The resource is fully allocated
+    # for the whole report period. To compute the percentage later on, we
+    # first have to compute the maximum possible allocation.
     def computeResourceTotals
       # Prepare the resource list.
       resourceList = PropertyList.new(@project.resources)
@@ -118,7 +132,11 @@ class TaskJuggler
                                         @report.get('rollupResource'))
 
       resourceList.each do |resource|
-        next if (resourceId = resource.get('ClarityRID')).nil?
+        # We only care about leaf resources that have the custom attribute
+        # 'ClarityRID' set.
+        next if !resource.leaf? ||
+                (resourceId = resource.get('ClarityRID')).nil? ||
+                resourceId.empty?
 
         # Prepare a template for the Query we will use to get all the data.
         queryAttrs = { 'project' => @project,
@@ -134,13 +152,31 @@ class TaskJuggler
                        'revenueAccount' => a('revenueAccount') }
 
         query = Query.new(queryAttrs)
+
+        # First get the allocated effort.
         query.attributeId = 'effort'
         query.process
+        total = query.to_num
 
-        @resourcesTotalEffort[resourceId] = query.to_num
+        # Then add the still available effort.
+        query.attributeId = 'freework'
+        query.process
+        total += query.to_num
+
+        # This is the maximum possible work of this resource in the report
+        # period.
+        @resourcesTotalEffort[resourceId] = total
+      end
+
+      # Make sure that we have at least one Resource with a ClarityRID.
+      if @resourcesTotalEffort.empty?
+        raise TjException.new,
+          'No resources with the custom attribute ClarityRID were found!'
       end
     end
 
+    # Search the Task list for the various ClarityPIDs and create a new Task
+    # list for each ClarityPID.
     def collectProjects
       # Prepare the task list.
       taskList = PropertyList.new(@project.tasks)
@@ -150,19 +186,45 @@ class TaskJuggler
 
 
       taskList.each do |task|
+        # We only care about tasks that are leaf tasks and have resource
+        # allocations.
         next unless task.leaf? ||
                     task['assignedresources', @scenarioIdx].empty?
 
         id = task.get('ClarityPID')
+        name = task.get('ClarityPName')
+
         if (project = @projects[id]).nil?
-          project = NikuProject.new(id, task.get('ClarityPName'))
+          # We don't have a record for the Clarity project yet, so we create a
+          # new NikuProject object.
+          project = NikuProject.new(id, name)
+          # And store it in the project list hashed by the ClarityPID.
           @projects[id] = project
+        else
+          # Due to a design flaw in the Niku file format, Clarity projects are
+          # identified by a name and an ID. We have to check that those pairs
+          # are always the same.
+          if (fTask = project.tasks.first).get('ClarityPName') != name
+            raise TjException.new,
+              "Task #{task.fullId} and task #{fTask.fullId} " +
+              "have same ClarityPID (#{id}) but different ClarityPName " +
+              "(#{name}/#{fTask.get('ClarityPName')})"
+          end
         end
+        # Append the Task to the task list of the Clarity project.
         project.tasks << task
+      end
+
+      if @projects.empty?
+        raise TjException.new,
+          'No tasks with the custom attributes ClarityPID and ClarityPName ' +
+          'were found!'
       end
     end
 
-    def computeProjectTotals
+    # Compute the total effort each Resource is allocated to the Task objects
+    # that have the same ClarityPID.
+    def computeProjectAllocations
       @projects.each_value do |project|
         project.tasks.each do |task|
           task['assignedresources', @scenarioIdx].each do |resource|
@@ -182,10 +244,19 @@ class TaskJuggler
             query = Query.new(queryAttrs)
             query.attributeId = 'effort'
             query.process
+            work = query.to_num
+
+            # If the resource was not actually working on this task during the
+            # report period, we don't create a record for it.
+            next if work <= 0.0
 
             resourceId = resource.get('ClarityRID')
             if (resourceRecord = project.resources[resourceId]).nil?
+              # If we don't already have a NikuResource object for the
+              # Resource, we create a new one.
               resourceRecord = NikuResource.new(resourceId)
+              # Store the new NikuResource in the resource list of the
+              # NikuProject record.
               project.resources[resourceId] = resourceRecord
             end
             resourceRecord.sum += query.to_num
