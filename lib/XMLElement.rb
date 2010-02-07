@@ -164,7 +164,7 @@ class TaskJuggler
     end
 
     def to_s(indent)
-      '<!-- ' + @text + '-->'
+      '<!-- ' + @text + " -->\n#{' ' * indent}"
     end
 
   end
@@ -179,7 +179,11 @@ class TaskJuggler
     end
 
     def to_s(indent)
-      @blob
+      out = ''
+      @blob.each_utf8_char do |c|
+        out += (c == "\n" ? "\n" + ' ' * indent : c)
+      end
+      out
     end
 
   end
