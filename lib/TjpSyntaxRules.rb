@@ -1833,6 +1833,7 @@ into a Clarity project. The resulting XML file can be imported into Clarity
 with the xog-in tool.
 EOT
        )
+    example('Niku')
   end
 
   def rule_number
