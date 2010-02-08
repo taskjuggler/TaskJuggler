@@ -58,6 +58,9 @@ class TaskJuggler
       # A Hash to store NikuProject objects by id
       @projects = {}
 
+      # A Hash to map ClarityRID to Resource
+      @resources = {}
+
       # Resources total effort during the report period hashed by ClarityId
       @resourcesTotalEffort = {}
     end
@@ -70,6 +73,42 @@ class TaskJuggler
       computeResourceTotals
       collectProjects
       computeProjectAllocations
+    end
+
+    def to_html
+      div = XMLElement.new('div', 'class' => 'tabback')
+      div << (table = XMLElement.new('table', 'class' => 'table',
+                                     'style' => 'width:100%'))
+
+      # Table Header
+      table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+      tr << htmlTabCell('Resource\Project', true, 'center')
+      @projects.each_key do |projectId|
+        tr << htmlTabCell(projectId, true, 'center')
+      end
+      tr << htmlTabCell('Total', true, 'center')
+
+      @resourcesTotalEffort.each_key do |resourceId|
+        table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+        tr << htmlTabCell("#{@resources[resourceId].name} (#{resourceId})",
+                          true, 'left')
+
+        @projects.each_key do |projectId|
+          tr << htmlTabCell(format("%.3f", sum(projectId, resourceId)))
+        end
+
+        tr << htmlTabCell(format("%.2f", resourceTotal(resourceId)), true)
+      end
+
+      # Project totals
+      table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+      tr << htmlTabCell('Total', 'true', 'left')
+      @projects.each_key do |projectId|
+        tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true, 'right')
+      end
+      tr << htmlTabCell(format("%.2f", total()), true, 'right')
+
+      div
     end
 
     def to_niku
@@ -95,6 +134,9 @@ EOT
 
       timeFormat = '%Y-%m-%dT%H:%M:%S'
       @projects.each_value do |prj|
+        # Don't include projects with 0 allocations
+        next if projectTotal(prj.id) <= 0.0
+
         projects << (project =
                      XMLElement.new('Project',
                                     'name' => prj.name,
@@ -106,13 +148,12 @@ EOT
                                        'resourceID' => res.id,
                                        'defaultAllocation' => '0'))
           resource << (allocCurve = XMLElement.new('AllocCurve'))
-          percent = res.sum / @resourcesTotalEffort[res.id]
           allocCurve << (XMLElement.new('Segment',
                                         'start' =>
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => percent.to_s))
+                                        'sum' => sum(prj.id, res.id).to_s))
         end
 
         # The custom information section usually contains Clarity installation
@@ -125,6 +166,51 @@ EOT
     end
 
   private
+
+    def sum(projectId, resourceId)
+      project = @projects[projectId]
+      return 0.0 unless project
+
+      resource = project.resources[resourceId]
+      return 0.0 unless resource && @resourcesTotalEffort[resourceId]
+
+      resource.sum / @resourcesTotalEffort[resourceId]
+    end
+
+    def resourceTotal(resourceId)
+      total = 0.0
+      @projects.each_key do |projectId|
+        total += sum(projectId, resourceId)
+      end
+      total
+    end
+
+    def projectTotal(projectId)
+      total = 0.0
+      @resources.each_key do |resourceId|
+        total += sum(projectId, resourceId)
+      end
+      total
+    end
+
+    def total
+      total = 0.0
+      @projects.each_key do |projectId|
+        @resources.each_key do |resourceId|
+          total += sum(projectId, resourceId)
+        end
+      end
+      total
+    end
+
+    def htmlTabCell(text, headerCell = false, align = 'right')
+      td = XMLElement.new('td', 'class' => headerCell ? 'tabhead' : 'taskcell1')
+      td << XMLNamedText.new(text, 'div',
+                             'class' => headerCell ? 'headercelldiv' : 'celldiv',
+                             'style' => "text-align:#{align}")
+      td
+    end
+
 
     # The report must contain percent values for the allocation of the
     # resources. A value of 1.0 means 100%. The resource is fully allocated
@@ -170,6 +256,10 @@ EOT
         query.process
         total += query.to_num
 
+        next if total <= 0.0
+
+        @resources[resourceId] = resource
+
         # This is the maximum possible work of this resource in the report
         # period.
         @resourcesTotalEffort[resourceId] = total
@@ -199,7 +289,19 @@ EOT
                     task['assignedresources', @scenarioIdx].empty?
 
         id = task.get('ClarityPID')
+        # Ignore tasks without a ClarityPID attribute.
+        next if id.nil?
+        if id.empty?
+          raise "ClarityPID of task #{task.fullId} may not be empty"
+        end
+
         name = task.get('ClarityPName')
+        if name.nil?
+          raise "ClarityPName of task #{task.fullId} has not been set!"
+        end
+        if name.empty?
+          raise "ClarityPName of task #{task.fullId} may not be empty!"
+        end
 
         if (project = @projects[id]).nil?
           # We don't have a record for the Clarity project yet, so we create a
@@ -235,6 +337,9 @@ EOT
       @projects.each_value do |project|
         project.tasks.each do |task|
           task['assignedresources', @scenarioIdx].each do |resource|
+            # Only consider resources that are in the filtered resource list.
+            next unless @resources[resource.get('ClarityRID')]
+
             # Prepare a template for the Query we will use to get all the data.
             queryAttrs = { 'project' => @project,
                            'property' => task,

@@ -1010,6 +1010,22 @@ EOT
     listRule('moreFlagList', '!flag')
   end
 
+  def rule_formats
+    pattern(%w( _formats !outputFormats ), lambda {
+      @property.set('formats', @val[1])
+    })
+    doc('formats', <<'EOT'
+This attribute defines for which output formats the report should be
+generated. By default, this list is empty. Unless a formats attribute was
+added to a report definition, no output will be generated for this report.
+
+As reports are composable, a report may include other report definitions. A
+format definition is only needed for the outermost report that includes the
+others.
+EOT
+       )
+  end
+
   def rule_functions
     # This rule is not used by the parser. It's only for the documentation.
     pattern(%w( !functionsBody ))
@@ -1787,6 +1803,7 @@ EOT
     optional
     repeatable
 
+    pattern(%w( !formats ))
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
@@ -1804,7 +1821,6 @@ EOT
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
       if (fileName = @val[2]) != '.'
-        fileName += '.xml'
         if @project.reports[fileName]
           error('report_redefinition',
                 "A report with the name '#{fileName}' has already been defined.")
@@ -1813,7 +1829,6 @@ EOT
         fileName = "nikureport#{@project.reports.length + 1}"
       end
       @property = newReport(fileName, :niku, sourceFileInfo)
-      @property.set('formats', [ :niku ])
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -2015,6 +2030,11 @@ EOT
       :html
     })
     descr('Generate a web page (HTML file)')
+
+    pattern(%w( _niku ), lambda {
+      :niku
+    })
+    descr('Generate a XOG XML file to be used with Clarity.')
   end
 
   def rule_outputFormats
@@ -2831,12 +2851,7 @@ EOT
        )
     also(%w( epilog header prolog ))
 
-    pattern(%w( _formats !outputFormats ), lambda {
-      @property.set('formats', @val[1])
-    })
-    doc('formats', <<'EOT'
-EOT
-       )
+    pattern(%w( !formats ))
 
     pattern(%w( _header $STRING ), lambda {
       @property.set('header', newRichText(@val[1]))

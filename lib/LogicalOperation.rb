@@ -129,7 +129,7 @@ class TaskJuggler
       # First the obvious ones.
       return val if val.class == TrueClass || val.class == FalseClass
       # An empty String means false, else true.
-      return !val.empty if val.is_a?(String)
+      return !val.empty? if val.is_a?(String)
       # In TJP logic 'non 0' means false.
       return val != 0 if val.is_a?(Fixnum) || val.is_a?(Bignum)
 

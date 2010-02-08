@@ -227,7 +227,7 @@ EOT
     def generateNiku
       f = @name == '.' ? $stdout :
                          File.new((@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name, 'w')
+                                  @name + '.xml', 'w')
       f.puts "#{@content.to_niku}"
     end
 
