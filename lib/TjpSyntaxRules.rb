@@ -789,7 +789,7 @@ EOT
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      newReport(@val[1], :export, sourceFileInfo)
+      newReport(nil, @val[1], :export, sourceFileInfo)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -1844,7 +1844,7 @@ EOT
       else
         fileName = "nikureport#{@project.reports.length + 1}"
       end
-      @property = newReport(fileName, :niku, sourceFileInfo)
+      @property = newReport(@val[1], fileName, :niku, sourceFileInfo)
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -4851,7 +4851,7 @@ EOT
       else
         fileName = "timeSheet#{@project.reports.length + 1}"
       end
-      report = newReport(fileName, :timeSheet, sourceFileInfo)
+      report = newReport(nil, fileName, :timeSheet, sourceFileInfo)
       report.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))

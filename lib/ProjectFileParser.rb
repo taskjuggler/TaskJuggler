@@ -230,12 +230,12 @@ class TaskJuggler
     # inheritance. +name+ is the name of the report, +type+ is the report
     # type. +sourceFileInfo+ is a SourceFileInfo of the report definition. The
     # method returns the newly created Report.
-    def newReport(name, type, sourceFileInfo)
+    def newReport(id, name, type, sourceFileInfo)
       if @project.reportByName(name)
         error('report_redefinition',
               "A report with the name #{name} has already been defined.")
       end
-      @property = Report.new(@project, "report#{@reportCounter += 1}",
+      @property = Report.new(@project, id || "report#{@reportCounter += 1}",
                              name, nil)
       @property.typeSpec = type
       @property.sourceFileInfo = sourceFileInfo

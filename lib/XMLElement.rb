@@ -71,7 +71,7 @@ class TaskJuggler
     def to_s(indent = 0)
       out = '<' + @name
       @attributes.keys.sort.each do |attrName|
-        out << " #{attrName}=\"#{quoteAttr(@attributes[attrName])}\""
+        out << " #{attrName}=\"#{escape(@attributes[attrName], true)}\""
       end
       if @children.empty? && !@mayNotBeEmpty
         out << '/>'
@@ -92,24 +92,24 @@ class TaskJuggler
 
   protected
 
-    def indentation(indent)
-      ' ' * indent
-    end
-
-  private
-
-    # Make sure that any double quote in _str_ is properly quoted.
-    def quoteAttr(str)
+    # Escape special characters in input String _str_.
+    def escape(str, quotes = false)
       out = ''
       str.each_utf8_char do |c|
-        if c == '"'
+        case c
+        when '&'
+          out << '&amp;'
+        when '"'
           out << '\"'
         else
           out << c
         end
       end
-
       out
+    end
+
+    def indentation(indent)
+      ' ' * indent
     end
 
   end

@@ -100,7 +100,7 @@ class TaskJuggler
                           true, 'left')
 
         @projects.each_key do |projectId|
-          tr << htmlTabCell(format("%.3f", sum(projectId, resourceId)))
+          tr << htmlTabCell(format("%.2f", sum(projectId, resourceId)))
         end
 
         tr << htmlTabCell(format("%.2f", resourceTotal(resourceId)), true)
@@ -154,12 +154,13 @@ EOT
                                        'resourceID' => res.id,
                                        'defaultAllocation' => '0'))
           resource << (allocCurve = XMLElement.new('AllocCurve'))
+          value = sum(prj.id, res.id)
           allocCurve << (XMLElement.new('Segment',
                                         'start' =>
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => sum(prj.id, res.id).to_s))
+                                        'sum' => value > 0.0 ? value.to_s : ''))
         end
 
         # The custom information section usually contains Clarity installation
