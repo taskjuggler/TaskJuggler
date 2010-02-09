@@ -1134,6 +1134,21 @@ EOT
        )
   end
 
+  def rule_headline
+    pattern(%w( _headline $STRING ), lambda {
+      @property.set('headline', newRichText(@val[1]))
+    })
+    doc('headline', <<'EOT'
+Specifies the headline for a report.
+EOT
+       )
+    arg(1, 'text', <<'EOT'
+The text used for the headline. It is interpreted as
+[[Rich_Text_Attributes Rich Text]].
+EOT
+       )
+  end
+
   def rule_hideresource
     pattern(%w( _hideresource !logicalExpression ), lambda {
       @property.set('hideResource', @val[1])
@@ -1804,6 +1819,7 @@ EOT
     repeatable
 
     pattern(%w( !formats ))
+    pattern(%w( !headline ))
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
@@ -2863,19 +2879,7 @@ EOT
        )
     also(%w( epilog footer prolog ))
 
-    pattern(%w( _headline $STRING ), lambda {
-      @property.set('headline', newRichText(@val[1]))
-    })
-    doc('headline', <<'EOT'
-Specifies the headline for a report.
-EOT
-       )
-    arg(1, 'text', <<'EOT'
-The text used for the headline. It is interpreted as
-[[Rich_Text_Attributes Rich Text]].
-EOT
-       )
-
+    pattern(%w( !headline ))
     pattern(%w( !hideresource ))
 
     pattern(%w( !hidetask ))

@@ -76,8 +76,6 @@ class TaskJuggler
       super
     end
 
-
-
     # Turn the TableReport into an equivalent HTML element tree.
     def to_html
       html = []
@@ -86,7 +84,7 @@ class TaskJuggler
       html << (table = XMLElement.new('table', 'summary' => 'Report Table',
                                      'cellspacing' => '2', 'border' => '0',
                                      'cellpadding' => '0', 'align' => 'center',
-                                     'class' => 'tjtable'))
+                                     'class' => 'tableframe'))
 
       # The headline is put in a sub-table to appear bigger.
       if a('headline')

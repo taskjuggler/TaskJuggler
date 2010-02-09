@@ -27,12 +27,26 @@ p.alertmessage {
   margin-bottom:5px;
 }
 
-.tjtable {
+.tableframe {
   background-color:#9a9a9a;
   margin-top:15px;
   margin-bottom:15px;
+  padding:1px;
 }
-.tabback { background-color:#9a9a9a; }
+.headline {
+  font-size:16px; 
+  font-weight:bold;
+  white-space:nowrap;
+  padding:5px;
+  margin:2px;
+  text-align:center;
+  color:#000000;
+  background-color:#d4dde6; 
+}
+  	
+.tabback {
+  background-color:#9a9a9a;
+}
 .tabfront { background-color:#d4dde6; }
 .tabhead {
   white-space:nowrap;

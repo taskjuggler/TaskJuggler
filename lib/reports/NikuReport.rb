@@ -76,9 +76,15 @@ class TaskJuggler
     end
 
     def to_html
-      div = XMLElement.new('div', 'class' => 'tabback')
-      div << (table = XMLElement.new('table', 'class' => 'table',
-                                     'style' => 'width:100%'))
+      div = XMLElement.new('div', 'class' => 'tableframe')
+
+      # Headline box
+      if a('headline')
+        div << (div1 = XMLElement.new('div', 'class' => 'headline'))
+        div1 << a('headline').to_html
+      end
+
+      div << (table = XMLElement.new('table', 'style' => 'width:100%'))
 
       # Table Header
       table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
