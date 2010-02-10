@@ -90,7 +90,14 @@ class TaskJuggler
       table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Resource\Project', true, 'center')
       @projects.each_key do |projectId|
-        tr << htmlTabCell(projectId, true, 'center')
+        # Don't include projects without allocations.
+        next if projectTotal(projectId) <= 0.0
+        name = @projects[projectId].name
+        # To avoid exploding tables for long project names, we only show the
+        # last 15 characters for those. We expect the last characters to be
+        # more significant in those names than the first.
+        name = '...' + name[-15..-1] if name.length > 15
+        tr << htmlTabCell(name, true, 'center')
       end
       tr << htmlTabCell('Total', true, 'center')
 
@@ -100,7 +107,9 @@ class TaskJuggler
                           true, 'left')
 
         @projects.each_key do |projectId|
-          tr << htmlTabCell(format("%.2f", sum(projectId, resourceId)))
+          next if projectTotal(projectId) <= 0.0
+          value = sum(projectId, resourceId)
+          tr << htmlTabCell(value >= 0.01 ? format("%.2f", value) : '')
         end
 
         tr << htmlTabCell(format("%.2f", resourceTotal(resourceId)), true)
@@ -110,6 +119,7 @@ class TaskJuggler
       table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Total', 'true', 'left')
       @projects.each_key do |projectId|
+        next if projectTotal(projectId) <= 0.0
         tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true, 'right')
       end
       tr << htmlTabCell(format("%.2f", total()), true, 'right')
@@ -154,13 +164,12 @@ EOT
                                        'resourceID' => res.id,
                                        'defaultAllocation' => '0'))
           resource << (allocCurve = XMLElement.new('AllocCurve'))
-          value = sum(prj.id, res.id)
           allocCurve << (XMLElement.new('Segment',
                                         'start' =>
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => value > 0.0 ? value.to_s : ''))
+                                        'sum' => sum(prj.id, res.id).to_s))
         end
 
         # The custom information section usually contains Clarity installation
