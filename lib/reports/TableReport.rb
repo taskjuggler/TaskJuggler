@@ -81,50 +81,33 @@ class TaskJuggler
       html = []
 
       html << rt_to_html('header')
-      html << (table = XMLElement.new('table', 'summary' => 'Report Table',
-                                     'cellspacing' => '2', 'border' => '0',
-                                     'cellpadding' => '0', 'align' => 'center',
-                                     'class' => 'tableframe'))
+      html << (tableBlock = XMLElement.new('div', 'class' => 'tj_table_block'))
+      tableBlock << (tableFrame = XMLElement.new('div',
+                                                 'class' => 'tj_table_frame'))
 
-      # The headline is put in a sub-table to appear bigger.
+      # Headline box
       if a('headline')
-        table << (thead = XMLElement.new('thead'))
-        thead << (tr = XMLElement.new('tr'))
-        tr << (td = XMLElement.new('td'))
-        td << (table1 = XMLElement.new('table', 'summary' => 'headline',
-                                       'cellspacing' => '1', 'border' => '0',
-                                       'cellpadding' => '5',
-                                       'align' => 'center', 'width' => '100%'))
-        table1 << (tr1 = XMLElement.new('tr'))
-        tr1 << (td1 = XMLElement.new('td', 'align' => 'center',
-                                     'style' => 'font-size:16px; ' +
-                                                'font-weight:bold; ' +
-                                                'padding:5px',
-                                     'class' => 'tabfront'))
-        td1 << a('headline').to_html
+        tableFrame << (div = XMLElement.new('div',
+                                            'class' => 'tj_table_headline'))
+        div << a('headline').to_html
       end
 
       # Now generate the actual table with the data.
-      table << (tbody = XMLElement.new('tbody'))
-      tbody << (tr = XMLElement.new('tr'))
-      tr << (td = XMLElement.new('td'))
-      td << @table.to_html
+      tableFrame << @table.to_html
 
       # Embedd the caption as RichText into the table footer.
       if a('caption')
-        tbody << (tr = XMLElement.new('tr'))
-        tr << (td = XMLElement.new('td', 'class' => 'tabback'))
-        td << (div = XMLElement.new('div', 'class' => 'caption',
-                                    'style' => 'margin:1px'))
+        tableFrame << (div = XMLElement.new('div',
+                                            'class' => 'tj_table_caption'))
         a('caption').sectionNumbers = false
         div << a('caption').to_html
       end
 
-      # A sub-table with the legend.
-      tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
-      tr << (td = XMLElement.new('td', 'style' =>
-                                 'padding-left:1px; padding-right:1px;'))
-      td << @legend.to_html
+      # The legend.
+      #tbody << (tr = XMLElement.new('tr', 'style' => 'font-size:10px;'))
+      #tr << (td = XMLElement.new('td', 'style' =>
+      #                           'padding-left:1px; padding-right:1px;'))
+      tableFrame << @legend.to_html
 
       html << rt_to_html('footer')
       html

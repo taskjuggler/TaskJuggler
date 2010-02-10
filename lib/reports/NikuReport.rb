@@ -76,15 +76,18 @@ class TaskJuggler
     end
 
     def to_html
-      div = XMLElement.new('div', 'class' => 'tableframe')
+      tableBlock = XMLElement.new('div', 'class' => 'tj_table_block')
+      tableBlock << (tableFrame =
+                     XMLElement.new('div', 'class' => 'tj_table_frame'))
 
       # Headline box
       if a('headline')
-        div << (div1 = XMLElement.new('div', 'class' => 'headline'))
-        div1 << a('headline').to_html
+        tableFrame << (div = XMLElement.new('div',
+                                            'class' => 'tj_table_headline'))
+        div << a('headline').to_html
       end
 
-      div << (table = XMLElement.new('table', 'style' => 'width:100%'))
+      tableFrame << (table = XMLElement.new('table', 'class' => 'tj_table'))
 
       # Table Header
       table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
@@ -114,7 +117,7 @@ class TaskJuggler
       end
       tr << htmlTabCell(format("%.2f", total()), true, 'right')
 
-      div
+      tableBlock
     end
 
     def to_niku

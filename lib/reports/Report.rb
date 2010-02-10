@@ -116,7 +116,7 @@ class TaskJuggler
 Cannot find '#{cssFileName}'. This is usually the result of an improper
 TaskJuggler installation. If you know where to find the data directory, you
 can use the TASKJUGGLER_DATA_PATH environment variable to specify the
-location.
+location. The variable should be set to the path without the /data at the end.
 EOT
         end
         cssFile = IO.read(cssFileName)
@@ -154,8 +154,7 @@ EOT
 
 
       # Make sure we have some margins around the report.
-      body << (frame = XMLElement.new('div',
-                                      'style' => 'margin: 35px 5% 25px 5%; '))
+      body << (frame = XMLElement.new('div', 'class' => 'tj_page'))
 
       frame << @content.to_html if @content
 

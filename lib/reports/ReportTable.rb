@@ -73,9 +73,7 @@ class TaskJuggler
     def to_html
       determineMaxIndents
 
-      table = XMLElement.new('table', 'align' => 'center', 'cellspacing' => '1',
-                             'cellpadding' => '2', 'width' => '100%',
-                             'class' => 'tabback')
+      table = XMLElement.new('table', 'class' => 'tj_table')
       table << (tbody = XMLElement.new('tbody'))
 
       # Generate the 1st table header line.
