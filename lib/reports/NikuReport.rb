@@ -86,9 +86,11 @@ class TaskJuggler
 
       div << (table = XMLElement.new('table', 'style' => 'width:100%'))
 
-      # Table Header
-      table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
-      tr << htmlTabCell('Resource\Project', true, 'center')
+      # Table Header with two rows. First the project name, then the ID.
+      table << (thead = XMLElement.new('thead'))
+      thead << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+      # First line
+      tr << htmlTabCell('Project', true, 'right')
       @projects.each_key do |projectId|
         # Don't include projects without allocations.
         next if projectTotal(projectId) <= 0.0
@@ -99,10 +101,21 @@ class TaskJuggler
         name = '...' + name[-15..-1] if name.length > 15
         tr << htmlTabCell(name, true, 'center')
       end
+      tr << htmlTabCell('', true)
+      # Second line
+      thead << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+      tr << htmlTabCell('Resource', true, 'left')
+      @projects.each_key do |projectId|
+        # Don't include projects without allocations.
+        next if projectTotal(projectId) <= 0.0
+        tr << htmlTabCell(projectId, true, 'center')
+      end
       tr << htmlTabCell('Total', true, 'center')
 
+      # The actuable content. One line per resource.
+      table << (tbody = XMLElement.new('tbody'))
       @resourcesTotalEffort.each_key do |resourceId|
-        table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+        tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
         tr << htmlTabCell("#{@resources[resourceId].name} (#{resourceId})",
                           true, 'left')
 
@@ -116,7 +129,7 @@ class TaskJuggler
       end
 
       # Project totals
-      table << (tr = XMLElement.new('tr', 'class' => 'tabline'))
+      tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Total', 'true', 'left')
       @projects.each_key do |projectId|
         next if projectTotal(projectId) <= 0.0
