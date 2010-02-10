@@ -29,7 +29,7 @@ require 'RichTextFunctionHandler'
 
     # Return a XMLElement tree that represents the navigator in HTML code.
     def to_html(args)
-      TaskJuggler::XMLElement.new('blockfunc:dummy', args)
+      TaskJuggler::XMLElement.new('blockfunc:dummy', args, true)
     end
   end
 
@@ -57,7 +57,7 @@ class TestRichText < Test::Unit::TestCase
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
-    ref = "<div/>\n"
+    ref = "<div></div>\n"
     assert_equal(ref, out)
 
     assert_equal(true, newRichText(inp).empty?)

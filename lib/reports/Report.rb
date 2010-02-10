@@ -138,9 +138,8 @@ EOT
       html << (body = XMLElement.new('body'))
 
       unless a('selfcontained')
-        body << (script = XMLElement.new('script', 'type' => 'text/javascript',
-                                         'src' => 'scripts/wz_tooltip.js'))
-        script.mayNotBeEmpty = true
+        body << XMLElement.new('script', 'type' => 'text/javascript',
+                               'src' => 'scripts/wz_tooltip.js')
         body << (noscript = XMLElement.new('noscript'))
         noscript << (nsdiv = XMLElement.new('div',
                                             'style' => 'text-align:center; ' +

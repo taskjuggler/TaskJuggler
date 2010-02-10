@@ -110,8 +110,7 @@ class TaskJuggler
         if i < items.length
           row << itemToHTML(items[i])
         else
-          row << (d = XMLElement.new('div', 'class' => 'tj_legend_item'))
-          d.mayNotBeEmpty = true
+          row << XMLElement.new('div', 'class' => 'tj_legend_item')
         end
       end
       rows
@@ -129,11 +128,10 @@ class TaskJuggler
       box << (div = XMLElement.new('div', 'class' => 'loadstackframe',
                                    'style' => 'position:absolute; ' +
                                    'left:5px; width:16px; height:15px;'))
-      div << (d = XMLElement.new('div', 'class' => "#{itemRef[1]}",
-                                 'style' => 'position:absolute; ' +
-                                            'left:1px; top:1px; ' +
-                                            'width:14px; height:13px;'))
-      d.mayNotBeEmpty = true
+      div << XMLElement.new('div', 'class' => "#{itemRef[1]}",
+                            'style' => 'position:absolute; ' +
+                                       'left:1px; top:1px; ' +
+                                       'width:14px; height:13px;')
       item
     end
 

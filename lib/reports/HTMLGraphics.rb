@@ -39,10 +39,7 @@ class TaskJuggler
       else
         raise "Can't draw diagonal line #{xs}/#{ys} to #{xe}/#{ye}!"
       end
-      div = XMLElement.new('div', 'class' => category, 'style' => style)
-      div.mayNotBeEmpty = true
-
-      div
+      XMLElement.new('div', 'class' => category, 'style' => style)
     end
 
     # Draw a filled rectable at position _x_ and _y_ with the dimension _w_ and
@@ -51,12 +48,7 @@ class TaskJuggler
     def rectToHTML(x, y, w, h, category)
       style = "left:#{x.to_i}px; top:#{y.to_i}px; " +
               "width:#{w.to_i}px; height:#{h.to_i}px;"
-      div = XMLElement.new('div', 'class' => category, 'style' => style)
-      # Most browsers don't like the <div/> notation. So we need to make sure we
-      # generate <div></div> sequences.
-      div.mayNotBeEmpty = true
-
-      div
+      XMLElement.new('div', 'class' => category, 'style' => style)
     end
 
   end

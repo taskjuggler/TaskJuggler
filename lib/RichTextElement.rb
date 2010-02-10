@@ -317,7 +317,7 @@ class TaskJuggler
         htmlTitle(3)
       when :hline
         noChilds = true
-        XMLElement.new('hr', attrs)
+        XMLElement.new('hr', attrs, true)
       when :paragraph
         XMLElement.new('p', attrs)
       when :pre

@@ -18,10 +18,8 @@ class TaskJuggler
   # trees can be constructed with the class constructor and converted into XML.
   class XMLElement
 
-    attr_writer :mayNotBeEmpty
-
     # Construct a new XML element and include it in an existing XMLElement tree.
-    def initialize(name, attributes = {})
+    def initialize(name, attributes = {}, selfClosing = false)
       if (name.nil? && attributes.length > 0) ||
          (!name.nil? && !name.is_a?(String))
         raise "Name must be nil or a String "
@@ -34,8 +32,8 @@ class TaskJuggler
       end
       @attributes = attributes
       @children = []
-      # This can be set to true if <name /> is illegal for this element.
-      @mayNotBeEmpty = false
+      # This can be set to true if <name /> is legal for this element.
+      @selfClosing = selfClosing
     end
 
     # Add a new child or a set of new childs to the element.
@@ -73,7 +71,7 @@ class TaskJuggler
       @attributes.keys.sort.each do |attrName|
         out << " #{attrName}=\"#{escape(@attributes[attrName], true)}\""
       end
-      if @children.empty? && !@mayNotBeEmpty
+      if @children.empty? && @selfClosing
         out << '/>'
       else
         out << '>'
