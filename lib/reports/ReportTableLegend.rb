@@ -86,11 +86,11 @@ class TaskJuggler
     # Turn the Gantt symbold descriptions into HTML elements.
     def ganttItemToHTML(itemRef, name, width)
       item = XMLElement.new('div', 'class' => 'tj_legend_item')
-      item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
-      label << XMLText.new(name)
       item << (symbol = XMLElement.new('div', 'class' => 'tj_legend_symbol',
                                        'style' => 'top:-11px'))
       symbol << itemRef.to_html
+      item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
+      label << XMLText.new(name)
       item
     end
 
@@ -119,11 +119,10 @@ class TaskJuggler
     # Turn a single color item into HTML elements.
     def itemToHTML(itemRef)
       item = XMLElement.new('div', 'class' => 'tj_legend_item')
-      item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
-      label << XMLText.new(itemRef[0])
       item << (symbol = XMLElement.new('div', 'class' => 'tj_legend_symbol'))
       symbol << (box = XMLElement.new('div',
                                       'style' => 'position:relative; ' +
+                                                 'top:2px;' +
                                                  'width:20px; height:15px'))
       box << (div = XMLElement.new('div', 'class' => 'loadstackframe',
                                    'style' => 'position:absolute; ' +
@@ -132,6 +131,8 @@ class TaskJuggler
                             'style' => 'position:absolute; ' +
                                        'left:1px; top:1px; ' +
                                        'width:14px; height:13px;')
+      item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
+      label << XMLText.new(itemRef[0])
       item
     end
 

@@ -69,6 +69,7 @@ p.alertmessage {
 .tj_table_caption {
   padding: 5px 13px 5px 13px;
   background-color:#ebf2ff;
+  text-align:left;
   white-space:normal;
   margin:1px;
   font-size:13px
@@ -91,23 +92,22 @@ p.alertmessage {
 /* A legend row has 3 items. An item contains a label and a symbol */
 .tj_legend_item {
   display: inline-block;
-  width: 29.3%;
-  margin-left:2%;
+  text-align:left;
+  width: 27.3%;
+  margin-left:4%;
   margin-right:2%;
-}
-
-.tj_legend_label {
-  text-align: left;
-  left:0px;
-  width: 65%;
-  padding-left:10%;
-  display:inline-block;
 }
 
 .tj_legend_symbol {
   position: relative;
   right:0px;
-  width:15%;
+  width:45px;
+  display:inline-block;
+}
+
+.tj_legend_label {
+  text-align: left;
+  left:0px;
   padding-right:10%;
   display:inline-block;
 }
