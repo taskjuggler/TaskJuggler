@@ -685,6 +685,8 @@ class TaskJuggler
           else
             nil
           end
+        cell.iconTooltip = RichText.new("'''ID:''' #{property.fullId}").
+          generateIntermediateFormat
       when 'no'
         cell.text = line.no.to_s
       when 'wbs'

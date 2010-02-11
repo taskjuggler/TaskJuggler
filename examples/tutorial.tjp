@@ -348,8 +348,7 @@ taskreport overview "" {
     === Original Project Plan ===
   ->8-
   columns hierarchindex,
-          name { tooltip 1 "'''ID''': <-query attribute='id'->" },
-          start, end, effort, duration, cost,
+          name, start, end, effort, duration, cost,
           revenue, chart
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.

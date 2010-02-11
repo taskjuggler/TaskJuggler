@@ -44,7 +44,7 @@ var config = new Object();
 
 
 //===================  GLOBAL TOOLTIP CONFIGURATION  =========================//
-var tt_Debug	= true		// false or true - recommended: false once you release your page to the public
+var tt_Debug	= false         // false or true - recommended: false once you release your page to the public
 var tt_Enabled	= true		// Allows to (temporarily) suppress tooltips, e.g. by providing the user with a button that sets this global variable to false
 var TagsToTip	= true		// false or true - if true, HTML elements to be converted to tooltips via TagToTip() are automatically hidden;
 							// if false, you should hide those HTML elements yourself
@@ -56,26 +56,26 @@ var TagsToTip	= true		// false or true - if true, HTML elements to be converted 
 // Example: onmouseover="Tip('Tooltip text', LEFT, true, BGCOLOR, '#FF9900', FADEIN, 400)"
 
 config. Above			= false		// false or true - tooltip above mousepointer
-config. BgColor			= '#E2E7FF'	// Background colour (HTML colour value, in quotes)
+config. BgColor			= '#C3C8DA'	// Background colour (HTML colour value, in quotes)
 config. BgImg			= ''		// Path to background image, none if empty string ''
-config. BorderColor		= '#003099'
+config. BorderColor		= '#999999'
 config. BorderStyle		= 'solid'	// Any permitted CSS value, but I recommend 'solid', 'dotted' or 'dashed'
 config. BorderWidth		= 1
-config. CenterMouse		= false		// false or true - center the tip horizontally below (or above) the mousepointer
-config. ClickClose		= false		// false or true - close tooltip if the user clicks somewhere
-config. ClickSticky		= false		// false or true - make tooltip sticky if user left-clicks on the hovered element while the tooltip is active
-config. CloseBtn		= false		// false or true - closebutton in titlebar
+config. CenterMouse		= true 		// false or true - center the tip horizontally below (or above) the mousepointer
+config. ClickClose		= true		// false or true - close tooltip if the user clicks somewhere
+config. ClickSticky		= true      	// false or true - make tooltip sticky if user left-clicks on the hovered element while the tooltip is active
+config. CloseBtn		= false 	// false or true - closebutton in titlebar
 config. CloseBtnColors	= ['#990000', '#FFFFFF', '#DD3333', '#FFFFFF']	// [Background, text, hovered background, hovered text] - use empty strings '' to inherit title colours
 config. CloseBtnText	= '&nbsp;X&nbsp;'	// Close button text (may also be an image tag)
 config. CopyContent		= true		// When converting a HTML element to a tooltip, copy only the element's content, rather than converting the element by its own
-config. Delay			= 400		// Time span in ms until tooltip shows up
+config. Delay			= 750		// Time span in ms until tooltip shows up
 config. Duration		= 0			// Time span in ms after which the tooltip disappears; 0 for infinite duration, < 0 for delay in ms _after_ the onmouseout until the tooltip disappears
 config. Exclusive		= false		// false or true - no other tooltip can appear until the current one has actively been closed
-config. FadeIn			= 100		// Fade-in duration in ms, e.g. 400; 0 for no animation
-config. FadeOut			= 100
+config. FadeIn			= 400		// Fade-in duration in ms, e.g. 400; 0 for no animation
+config. FadeOut			= 400
 config. FadeInterval	= 30		// Duration of each fade step in ms (recommended: 30) - shorter is smoother but causes more CPU-load
 config. Fix				= null		// Fixated position, two modes. Mode 1: x- an y-coordinates in brackets, e.g. [210, 480]. Mode 2: Show tooltip at a position related to an HTML element: [ID of HTML element, x-offset, y-offset from HTML element], e.g. ['SomeID', 10, 30]. Value null (default) for no fixated positioning.
-config. FollowMouse		= true		// false or true - tooltip follows the mouse
+config. FollowMouse		= false		// false or true - tooltip follows the mouse
 config. FontColor		= '#000044'
 config. FontFace		= 'Verdana,Geneva,sans-serif'
 config. FontSize		= '8pt'		// E.g. '9pt' or '12px' - unit is mandatory
@@ -87,20 +87,20 @@ config. Left			= false		// false or true - tooltip on the left of the mouse
 config. OffsetX			= 14		// Horizontal offset of left-top corner from mousepointer
 config. OffsetY			= 8			// Vertical offset
 config. Opacity			= 100		// Integer between 0 and 100 - opacity of tooltip in percent
-config. Padding			= 3			// Spacing between border and content
-config. Shadow			= false		// false or true
-config. ShadowColor		= '#C0C0C0'
-config. ShadowWidth		= 5
+config. Padding			= 10			// Spacing between border and content
+config. Shadow			= true 		// false or true
+config. ShadowColor		= '#A0A0A0'
+config. ShadowWidth		= 4
 config. Sticky			= false		// false or true - fixate tip, ie. don't follow the mouse and don't hide on mouseout
 config. TextAlign		= 'left'	// 'left', 'right' or 'justify'
 config. Title			= ''		// Default title text applied to all tips (no default title: empty string '')
-config. TitleAlign		= 'left'	// 'left' or 'right' - text alignment inside the title bar
-config. TitleBgColor	= ''		// If empty string '', BorderColor will be used
+config. TitleAlign		= 'center'	// 'left' or 'right' - text alignment inside the title bar
+config. TitleBgColor	= '#7A7A7A'		// If empty string '', BorderColor will be used
 config. TitleFontColor	= '#FFFFFF'	// Color of title text - if '', BgColor (of tooltip body) will be used
 config. TitleFontFace	= ''		// If '' use FontFace (boldified)
 config. TitleFontSize	= ''		// If '' use FontSize
 config. TitlePadding	= 2
-config. Width			= 0			// Tooltip width; 0 for automatic adaption to tooltip content; < -1 (e.g. -240) for a maximum width for that automatic adaption;
+config. Width			= -500			// Tooltip width; 0 for automatic adaption to tooltip content; < -1 (e.g. -240) for a maximum width for that automatic adaption;
 									// -1: tooltip width confined to the width required for the titlebar
 //=======  END OF TOOLTIP CONFIG, DO NOT CHANGE ANYTHING BELOW  ==============//
 

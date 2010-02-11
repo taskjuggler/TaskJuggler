@@ -21,7 +21,7 @@ class TaskJuggler
 
     attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
-                  :text, :tooltip, :selfcontained,
+                  :text, :tooltip, :iconTooltip, :selfcontained,
                   :cellColor, :indent, :icon, :fontSize, :fontColor,
                   :bold, :width,
                   :rows, :columns, :special
@@ -56,6 +56,8 @@ class TaskJuggler
       @indent = nil
       # The basename of the icon file
       @icon = nil
+      # A custom tooltip for the cell icon
+      @iconTooltip = nil
       @fontSize = nil
       @cellColor = nil
       @fontColor = nil
@@ -132,10 +134,20 @@ class TaskJuggler
         'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
       if @icon && !@selfcontained
-        div << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                     'align' => 'top',
-                                     'style' => 'margin-right:3px;' +
-                                                'margin-bottom:2px')
+        div << (icon = XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                      'align' => 'top',
+                                      'style' => 'margin-right:3px;' +
+                                                 'margin-bottom:2px'))
+        addHtmlTooltip(icon, @iconTooltip)
+
+        # If the icon has a separate tooltip, we need to create a new div to
+        # hold the cell text. We then use this new div to attach the cell
+        # tooltip to.
+        if @iconTooltip
+          div << (newDiv = XMLElement.new('div',
+                                          'style' => 'display:inline-block'))
+          div = newDiv
+        end
       end
 
       return cell if @text.nil?
@@ -165,20 +177,8 @@ class TaskJuggler
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
+      addHtmlTooltip(div, tooltip)
       if tooltip && !tooltip.empty? && !@selfcontained
-        if tooltip.respond_to?('functionHandler') &&
-           tooltip.functionHandler('query')
-          tooltip.functionHandler('query').setQuery(@query)
-        end
-        div['onmouseover'] = "TagToTip('#{cell.object_id}')"
-        div['onmouseout'] = 'UnTip()'
-        div << (ltDiv = XMLElement.new('div',
-                                       'style' => 'position:fixed; ' +
-                                       'visibility:hidden',
-                                       'id' => "#{cell.object_id}"))
-        ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
-                                                   XMLText.new(tooltip))
-
         div << XMLElement.new('img', 'src' => 'icons/details.png',
                               'width' => '6px',
                               'style' => 'vertical-align:top; ' +
@@ -227,6 +227,25 @@ class TaskJuggler
       # Add three dots to show that there is more info available.
       text += "..." if modified
       [ text, singleLine ]
+    end
+
+    def addHtmlTooltip(element, tooltip)
+      return unless tooltip && !tooltip.empty? && !@selfcontained
+
+      if tooltip.respond_to?('functionHandler') &&
+         tooltip.functionHandler('query')
+        tooltip.functionHandler('query').setQuery(@query)
+      end
+      @query.attributeId = 'name'
+      @query.process
+      title = @query.to_s
+      element['onmouseover'] = "TagToTip('#{element.object_id}', TITLE, '#{title}')"
+      element << (ltDiv = XMLElement.new('element',
+                                         'style' => 'position:fixed; ' +
+                                         'visibility:hidden',
+                                         'id' => "#{element.object_id}"))
+      ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
+                                                 XMLText.new(tooltip))
     end
 
   end
