@@ -134,19 +134,20 @@ class TaskJuggler
         'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
       if @icon && !@selfcontained
-        div << (icon = XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+        div << (scan = XMLElement.new('scan'))
+        scan << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
                                       'align' => 'top',
                                       'style' => 'margin-right:3px;' +
-                                                 'margin-bottom:2px'))
-        addHtmlTooltip(icon, @iconTooltip)
+                                                 'margin-bottom:2px')
+        addHtmlTooltip(scan, @iconTooltip)
 
         # If the icon has a separate tooltip, we need to create a new div to
         # hold the cell text. We then use this new div to attach the cell
         # tooltip to.
         if @iconTooltip
-          div << (newDiv = XMLElement.new('div',
-                                          'style' => 'display:inline-block'))
-          div = newDiv
+          div << (scan = XMLElement.new('scan',
+                                        'style' => 'display:inline-block'))
+          div = scan
         end
       end
 
@@ -243,7 +244,8 @@ class TaskJuggler
       else
         title = ''
       end
-      element['onmouseover'] = "TagToTip('#{element.object_id}', TITLE, '#{title}')"
+      element['onmouseover'] = "TagToTip('#{element.object_id}', " +
+                               "TITLE, '#{title}')"
       element << (ltDiv = XMLElement.new('element',
                                          'style' => 'position:fixed; ' +
                                          'visibility:hidden',
