@@ -553,7 +553,7 @@ class TaskJuggler
       begin
         rti = RichText.new(rText, handlers).generateIntermediateFormat
       rescue RichTextException => msg
-        $stderr.puts "Error in RichText of rule #{@keyword}\n" +
+        $stderr.puts "Error while processing Rich Text\n" +
                      "Line #{msg.lineNo}: #{msg.text}\n" +
                      "#{msg.line}"
         return nil

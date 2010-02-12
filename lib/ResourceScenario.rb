@@ -103,7 +103,9 @@ class TaskJuggler
       a('limits').inc(@scoreboard.idxToDate(sbIdx)) if a('limits')
 
       # Make sure the task is in the list of duties.
-      @property['duties', @scenarioIdx] << task unless a('duties').include?(task)
+      unless a('duties').include?(task)
+        @property['duties', @scenarioIdx] << task
+      end
 
       if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
         @firstBookedSlot = sbIdx

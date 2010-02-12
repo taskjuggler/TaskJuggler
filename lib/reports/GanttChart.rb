@@ -262,7 +262,7 @@ class TaskJuggler
       # Since we need the line and the index we use an index iterator.
       lines.length.times do |lineIndex|
         line = lines[lineIndex]
-        scenarioIdx = line.scenarioIdx
+        scenarioIdx = line.query.scenarioIdx
 
         # Generate the dependencies on the start of the task.
         collectAndSortArrows('startsuccs', task, scenarioIdx, lineIndex,

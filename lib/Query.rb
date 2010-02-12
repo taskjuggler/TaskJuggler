@@ -34,12 +34,12 @@ class TaskJuggler
 
     attr_accessor :project, :propertyType, :propertyId, :property,
                   :scopePropertyType, :scopePropertyId, :scopeProperty,
-                  :attributeId, :scenarioIdx, :startIdx, :endIdx,
+                  :attributeId, :scenarioIdx,
                   :timeFormat, :numberFormat, :currencyFormat, :costAccount,
                   :revenueAccount,
                   :loadUnit,
                   :ok, :errorMessage
-    attr_reader :end, :start
+    attr_reader :end, :endIdx, :start, :startIdx
     attr_writer :sortable, :numerical, :string, :rti
 
     # Create a new Query object. The _parameters_ need to be sufficent to
@@ -47,26 +47,66 @@ class TaskJuggler
     def initialize(parameters = { })
       ps = %w( project propertyType propertyId property scopePropertyId
                scopeProperty attributeId scenario scenarioIdx
-               start end startIdx endIdx
                loadUnit numberFormat currencyFormat timeFormat
                costAccount revenueAccount)
       ps.each do |p|
         instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
       end
 
+      # instance_variable_set does not call writer functions. So we need to
+      # handle @start, @end, @startIdx and @endIdx separately.
+      %w( end endIdx start startIdx ).each do |p|
+        send(p + '=', parameters[p]) if parameters[p]
+      end
+
       reset
     end
 
-    # Reset the @startIdx when a start date is set.
+    # We probably need the start and end dates as TjTime and Scoreboard index.
+    # We store both, but we need to assure they are always in sync.
+
     def start=(date)
-      @start = date
-      @startIdx = nil
+      if date.is_a?(TjTime)
+        @start = date
+        @startIdx = @project.dateToIdx(date, true)
+      #elsif date.is_a?(Fixnum)
+      #  self.startIdx=(date)
+      else
+        raise "Unsupported type #{date.class}"
+      end
     end
 
-    # Reset the @endIdx when an end date is set.
+    def startIdx=(idx)
+      if idx.is_a?(Fixnum)
+        @startIdx = idx
+        @start = @project.idxToDate(idx)
+      #elsif idx.is_a?(TjTime)
+      #  self.start=(idx)
+      else
+        raise "Unsupported type #{idx.class}"
+      end
+    end
+
     def end=(date)
-      @end = date
-      @endIdx = nil
+      if date.is_a?(TjTime)
+        @end = date
+        @endIdx = @project.dateToIdx(date, true) - 1
+      #elsif date.is_a?(Fixnum)
+      #  self.endIdx=(date)
+      else
+        raise "Unsupported type #{date.class}"
+      end
+    end
+
+    def endIdx=(idx)
+      if idx.is_a?(Fixnum)
+        @endIdx = idx
+        @end = @project.idxToDate(idx + 1)
+      #elsif idx.is_a?(TjTime)
+      #  self.end=(idx)
+      else
+        raise "Unsupported type #{idx.class}"
+      end
     end
 
     # This method tries to resolve the query and return a result. In case it
@@ -114,8 +154,6 @@ class TaskJuggler
             raise "Query cannot resolve scenario '#{@scenario}'"
           end
         end
-        @startIdx = @project.dateToIdx(@start, true) if @startIdx.nil? && @start
-        @endIdx = @project.dateToIdx(@end, true) - 1 if @endIdx.nil? && @end
 
         queryMethodName = 'query_' + @attributeId
         # First we check for non-scenario-specific query functions.

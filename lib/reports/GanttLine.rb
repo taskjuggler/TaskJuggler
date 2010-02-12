@@ -28,25 +28,19 @@ class TaskJuggler
 
     include HTMLGraphics
 
-    attr_reader :y, :height, :property, :scenarioIdx
+    attr_reader :y, :height, :query
 
     # Create a GanttLine object and generate the abstract representation.
-    def initialize(chart, property, scopeProperty, scenarioIdx, y, height)
+    def initialize(chart, query, y, height)
       # A reference to the chart that the line belongs to.
       @chart = chart
       # Register the line with the chart.
       @chart.addLine(self)
 
+      # The query is used to access the presented project data.
+      @query = query
       # The category determines the background color of the line.
       @category = nil
-      # The property that is displayed in this line.
-      @property = property
-      # In case this line lists the property in the scope of another property,
-      # this is a reference to the line of the enclosing property. Otherwise it
-      # is nil.
-      @scopeProperty = scopeProperty
-      # The scenario index.
-      @scenarioIdx = scenarioIdx
       # The y coordinate of the topmost pixel of this line.
       @y = y + chart.header.height + 1
       # The height of the line in screen pixels.
@@ -120,7 +114,7 @@ class TaskJuggler
 
       generateTimeOffZones
 
-      if @property.is_a?(Task)
+      if @query.property.is_a?(Task)
         generateTask
       else
         generateResource
@@ -131,13 +125,15 @@ class TaskJuggler
     # appear in the scope of a resource.
     def generateTask
       # Set the background color
-      @category = "taskcell#{(@property.get('index') + 1) % 2 + 1}"
+      @category = "taskcell#{(@query.property.get('index') + 1) % 2 + 1}"
 
-      project = @property.project
-      taskStart = @property['start', @scenarioIdx] || project['start']
-      taskEnd = @property['end', @scenarioIdx] || project['end']
+      project = @query.project
+      property = @query.property
+      scopeProperty = @query.scopeProperty
+      taskStart = property['start', @query.scenarioIdx] || project['start']
+      taskEnd = property['end', @query.scenarioIdx] || project['end']
 
-      if @scopeProperty
+      if scopeProperty
         # The task is nested into a resource. We show the work the resource is
         # doing for this task relative to the work the resource is doing for
         # all tasks.
@@ -170,14 +166,14 @@ class TaskJuggler
               w = @chart.dateToX(endDate) - x
             end
 
-            overallWork = @scopeProperty.getEffectiveWork(@scenarioIdx,
-                                                          startDate, endDate) +
-                          @scopeProperty.getEffectiveFreeWork(@scenarioIdx,
-                                                              startDate,
-                                                              endDate)
-            workThisTask = @property.getEffectiveWork(@scenarioIdx,
+            overallWork = scopeProperty.getEffectiveWork(@query.scenarioIdx,
+                                                         startDate, endDate) +
+                          scopeProperty.getEffectiveFreeWork(@query.scenarioIdx,
+                                                             startDate,
+                                                             endDate)
+            workThisTask = property.getEffectiveWork(@query.scenarioIdx,
                                                       startDate, endDate,
-                                                      @scopeProperty)
+                                                      scopeProperty)
             # If all values are 0 we make sure we show an empty frame.
             if overallWork == 0 && workThisTask == 0
               values = [ 0, 1 ]
@@ -199,14 +195,14 @@ class TaskJuggler
         # bars for the task.
         xStart = @chart.dateToX(taskStart)
         xEnd = @chart.dateToX(taskEnd)
-        @chart.addTask(@property, self)
-        if @property['milestone', @scenarioIdx]
-          @content << GanttMilestone.new(@property, @height, xStart, @y)
-        elsif @property.container?
-          @content << GanttContainer.new(@property, @scenarioIdx, @height,
+        @chart.addTask(property, self)
+        if property['milestone', @query.scenarioIdx]
+          @content << GanttMilestone.new(property, @height, xStart, @y)
+        elsif property.container?
+          @content << GanttContainer.new(property, @query.scenarioIdx, @height,
                                          xStart, xEnd, @y)
         else
-          @content << GanttTaskBar.new(@property, @scenarioIdx, @height,
+          @content << GanttTaskBar.new(property, @query.scenarioIdx, @height,
                                        xStart, xEnd, @y)
         end
 
@@ -220,7 +216,7 @@ class TaskJuggler
     # line or appear in the scope of a task.
     def generateResource
       # Set the alternating background color
-      @category = "resourcecell#{(@property.get('index') + 1) % 2 + 1}"
+      @category = "resourcecell#{(@query.property.get('index') + 1) % 2 + 1}"
 
       # The cellStartDate Array contains the end of the final cell as last
       # element. We need to use a shift mechanism to start and end
@@ -228,16 +224,21 @@ class TaskJuggler
       x = nil
       startDate = endDate = nil
 
+      property = @query.property
+      scopeProperty = @query.scopeProperty
+
       # For unnested resource lines we show the assigned work and the
       # available work. For resources in a task scope we show the work
       # allocated to this task, the work allocated to other tasks and the free
       # work.
-      if @scopeProperty
+      if scopeProperty
         categories = [ 'assigned', 'busy', 'free' ]
 
-        project = @property.project
-        taskStart = @scopeProperty['start', @scenarioIdx] || project['start']
-        taskEnd = @scopeProperty['end', @scenarioIdx] || project['end']
+        project = @query.project
+        taskStart = scopeProperty['start', @query.scenarioIdx] ||
+                    project['start']
+        taskEnd = scopeProperty['end', @query.scenarioIdx] ||
+                  project['end']
 
         if @chart.table
           @chart.table.legend.addGanttItem('Resource assigned to this task',
@@ -267,7 +268,7 @@ class TaskJuggler
         startDate = endDate
         endDate = date
 
-        if @scopeProperty
+        if scopeProperty
           # If we have a scope limiting task, we only want to generate load
           # stacks that overlap with the task interval.
           next if endDate <= taskStart || taskEnd <= startDate
@@ -281,20 +282,20 @@ class TaskJuggler
             # of the scope task.
             endDate = taskEnd
           end
-          taskWork = @property.getEffectiveWork(@scenarioIdx,
-                                                startDate, endDate,
-                                                @scopeProperty)
-          overallWork = @property.getEffectiveWork(@scenarioIdx,
+          taskWork = property.getEffectiveWork(@query.scenarioIdx,
+                                               startDate, endDate,
+                                               scopeProperty)
+          overallWork = property.getEffectiveWork(@query.scenarioIdx,
+                                                  startDate, endDate)
+          freeWork = property.getEffectiveFreeWork(@query.scenarioIdx,
                                                    startDate, endDate)
-          freeWork = @property.getEffectiveFreeWork(@scenarioIdx,
-                                                    startDate, endDate)
           values = [ taskWork, overallWork - taskWork, freeWork ]
         else
           values = []
-          values << @property.getEffectiveWork(@scenarioIdx,
-                                               startDate, endDate)
-          values << @property.getEffectiveFreeWork(@scenarioIdx,
-                                                   startDate, endDate)
+          values << property.getEffectiveWork(@query.scenarioIdx,
+                                              startDate, endDate)
+          values << property.getEffectiveFreeWork(@query.scenarioIdx,
+                                                  startDate, endDate)
         end
 
         x = @chart.dateToX(startDate)
@@ -313,8 +314,8 @@ class TaskJuggler
       return if (minTimeOff = @chart.scale['minTimeOff']) <= 0
 
       # Get the time-off intervals.
-      @timeOffZones = @property.collectTimeOffIntervals(@scenarioIdx, iv,
-                                                        minTimeOff)
+      @timeOffZones = @query.property.collectTimeOffIntervals(
+                        @query.scenarioIdx, iv, minTimeOff)
       # Convert the start/end dates to X coordinates of the chart. When
       # finished, the zones in @timeOffZones are [ startX, endX ] touples.
       @timeOffZones.each do |zone|

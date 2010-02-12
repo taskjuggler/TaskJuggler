@@ -124,7 +124,10 @@ class TaskJuggler
 
         assignedTaskList.each do |task|
           # Time sheet task records only make sense for leaf tasks.
-          next unless task.leaf?
+          reportIv = Interval.new(a('start'), a('end'))
+          taskIv = Interval.new(task['start', scenarioIdx],
+                                task['end', scenarioIdx])
+          next if !task.leaf? || !reportIv.overlaps?(taskIv)
 
           queryAttrs['property'] = task
           query = Query.new(queryAttrs)
