@@ -266,7 +266,7 @@ class TaskJuggler
     # Return a String that represents the keyword documentation in an XML
     # formatted form.
     def generateHTML(directory)
-      html = HTMLDocument.new(:transitional)
+      html = HTMLDocument.new(:strict)
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("#{keyword}", 'title') <<
         @manual.generateStyleSheet

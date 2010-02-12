@@ -105,7 +105,7 @@ class TaskJuggler
 
     # Generate an HTML version of the report.
     def generateHTML
-      html = HTMLDocument.new(:transitional)
+      html = HTMLDocument.new(:strict)
       html << (head = XMLElement.new('head'))
       head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
       if a('selfcontained')

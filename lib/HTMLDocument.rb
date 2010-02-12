@@ -22,10 +22,10 @@ class TaskJuggler
     # When creating a HTMLDocument the caller can specify the type of HTML that
     # will be used. The constructor then generates the proper XML declaration
     # for it. :strict, :transitional and :frameset are supported for _docType_.
-    def initialize(docType = :transitional)
+    def initialize(docType = :strict)
       super()
 
-      @elements << XMLBlob.new('<?xml version="1.0" encoding="utf-8"?>')
+      @elements << XMLBlob.new('<?xml version="1.0" encoding="UTF-8"?>')
       case docType
       when :strict
         dtdRef = 'Strict'
