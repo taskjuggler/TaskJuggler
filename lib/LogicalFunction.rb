@@ -37,6 +37,9 @@ class TaskJuggler
     # Create a new LogicalFunction. _opnd_ is the name of the function.
     def initialize(opnd)
       if opnd[-1] == ?_
+        # Function names with a trailing _ are like their counterparts without
+        # the _. But during evaluation the property and the scope properties
+        # will be switched.
         @name = opnd[0..-2]
         @invertProperties = true
       else

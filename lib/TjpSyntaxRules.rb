@@ -1662,9 +1662,17 @@ attributes like [[hidetask]] or [[hideresource]] the logical expression
 evaluates to true for a certain property, this property is hidden or rolled-up
 in the report.
 
-Operands can be declared flags, built-in [[functions]], property attributes
-(specified as scenario.attribute) or another logical expression. The latter
-should be enclosed in brackets to avoid ambiguities. An operand can also be just a number. 0 evaluates to false, all other numbers to true.
+Operands can be previously declared flags, built-in [[functions]], property
+attributes (specified as scenario.attribute) or another logical expression.
+When you combine logical operations to a more complex expression, the
+operators are evaluated from left to right. '''a | b & c''' is identical to
+'''(a | b) & c'''. It's highly recommended that you always use brackets to
+control the evaluation sequence. Currently, TaskJuggler does not support the
+concept of operator precedence or right-left associativity. This may change in
+the future.
+
+An operand can also be just a number. 0 evaluates to false, all other numbers
+to true.
 EOT
        )
     also(%w( functions ))
