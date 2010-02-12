@@ -236,9 +236,13 @@ class TaskJuggler
          tooltip.functionHandler('query')
         tooltip.functionHandler('query').setQuery(@query)
       end
-      @query.attributeId = 'name'
-      @query.process
-      title = @query.to_s
+      if @query
+        @query.attributeId = 'name'
+        @query.process
+        title = @query.to_s
+      else
+        title = ''
+      end
       element['onmouseover'] = "TagToTip('#{element.object_id}', TITLE, '#{title}')"
       element << (ltDiv = XMLElement.new('element',
                                          'style' => 'position:fixed; ' +
