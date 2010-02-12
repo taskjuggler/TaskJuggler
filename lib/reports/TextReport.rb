@@ -59,18 +59,14 @@ class TaskJuggler
 
       html << rt_to_html('header')
       if @lWidth > 0 || @cWidth > 0 || @rWidth > 0
-        html << (table = XMLElement.new('table', 'align' => 'center',
-                                        'cellspacing' => '1',
-                                        'cellpadding' => '2', 'width' => '100%',
-                                        'class' => 'textPageSkel'))
-        table << (tr = XMLElement.new('tr'))
+        html << (page = XMLElement.new('div', 'class' => 'tj_text_page'))
 
         %w( left center right).each do |i|
           width = instance_variable_get('@' + i[0].chr + 'Width')
           if width > 0
-            tr << (td = XMLElement.new('td', 'width' => "#{width}%",
-                                       'style' => 'vertical-align:top'))
-            td << (el = rt_to_html(i))
+            page << (col = XMLElement.new('div', 'class' => "tj_column_#{i}",
+                                          'style' => "width:#{width}%"))
+            col << rt_to_html(i)
           end
         end
 

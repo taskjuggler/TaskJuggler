@@ -13,7 +13,9 @@ h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
 
-.alertmessage { font-size:11px; }
+.alertmessage {
+  font-size:11px;
+}
 i.alertmessage { font-size:9px; }
 h1.alertmessage { 
   margin-top:5px;
@@ -25,6 +27,22 @@ h3.alertmessage { font-size:11px; }
 p.alertmessage {
   margin-top:1px;
   margin-bottom:5px;
+}
+
+/* The basic elements of a text report page. */
+.tj_text_page {
+}
+
+.tj_column_left {
+  display:inline-block;
+}
+
+.tj_column_center {
+  display:inline-block;
+}
+
+.tj_column_right {
+  display:inline-block;
 }
 
 /* The top-level page layout */
@@ -112,6 +130,19 @@ p.alertmessage {
   display:inline-block;
 }
 
+.tj_tooltip_trigger {
+  position:fixed; 
+  top:0px;
+  left:0px;
+  visibility:hidden;
+}
+
+.tj_cell_icon {
+  vertical-align:top;
+  margin-top:1px;
+  margin-right:3px;
+}
+
 .tabback {
   background-color:#9a9a9a;
 }
@@ -142,12 +173,10 @@ p.alertmessage {
   overflow:hidden;
 }
 .celldiv {
-  padding-top:3px;
-  padding-right:3px;
-  padding-left:3px;
-  padding-bottom:0px;
+  padding:1px 3px 2px 3px;
   white-space:nowrap;
   overflow:hidden;
+  position: relative;
 }
 .tabline { color:#000000 }
 .tabcell {

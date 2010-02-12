@@ -134,20 +134,19 @@ class TaskJuggler
         'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
 
       if @icon && !@selfcontained
-        div << (scan = XMLElement.new('scan'))
-        scan << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                      'align' => 'top',
-                                      'style' => 'margin-right:3px;' +
-                                                 'margin-bottom:2px')
-        addHtmlTooltip(scan, @iconTooltip)
+        div << (span = XMLElement.new('span'))
+        span << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                      'alt' => "Icon",
+                                      'class' => 'tj_cell_icon')
+        addHtmlTooltip(span, @iconTooltip, cell)
 
         # If the icon has a separate tooltip, we need to create a new div to
         # hold the cell text. We then use this new div to attach the cell
         # tooltip to.
         if @iconTooltip
-          div << (scan = XMLElement.new('scan',
+          div << (span = XMLElement.new('span',
                                         'style' => 'display:inline-block'))
-          div = scan
+          div = span
         end
       end
 
@@ -169,7 +168,7 @@ class TaskJuggler
         # The cell will adjust to the size of the content.
         if @text.is_a?(RichTextIntermediate)
           # Don't put the @text into a <div> but a <span>.
-          @text.blockMode = false #if singleLine
+          @text.blockMode = false # if singleLine
           div << @text.to_html
         else
           div << XMLText.new(shortText)
@@ -178,7 +177,7 @@ class TaskJuggler
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
-      addHtmlTooltip(div, tooltip)
+      addHtmlTooltip(div, tooltip, cell)
       if tooltip && !tooltip.empty? && !@selfcontained
         div << XMLElement.new('img', 'src' => 'icons/details.png',
                               'width' => '6px',
@@ -230,7 +229,7 @@ class TaskJuggler
       [ text, singleLine ]
     end
 
-    def addHtmlTooltip(element, tooltip)
+    def addHtmlTooltip(element, tooltip, parent)
       return unless tooltip && !tooltip.empty? && !@selfcontained
 
       if tooltip.respond_to?('functionHandler') &&
@@ -244,12 +243,10 @@ class TaskJuggler
       else
         title = ''
       end
-      element['onmouseover'] = "TagToTip('#{element.object_id}', " +
+      element['onmouseover'] = "TagToTip('ID#{element.object_id}', " +
                                "TITLE, '#{title}')"
-      element << (ltDiv = XMLElement.new('element',
-                                         'style' => 'position:fixed; ' +
-                                         'visibility:hidden',
-                                         'id' => "#{element.object_id}"))
+      parent << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_trigger',
+                                         'id' => "ID#{element.object_id}"))
       ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
                                                  XMLText.new(tooltip))
     end
