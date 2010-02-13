@@ -96,9 +96,11 @@ class TaskJuggler
       cell = XMLElement.new('td', attribs)
 
       # Determine cell style
-      alignSymbols = [ :left, :center, :right ]
-      aligns = %w( left center right)
-      style = "text-align:#{aligns[alignSymbols.index(@alignment)]}; "
+      style = "text-align:#{@alignment.to_s}; "
+      labelStyle = ''
+      # In tree sorting mode, some cells have to be indented to reflect the
+      # tree nesting structure. The indentation is achieved with cell padding
+      # and needs to be applied to the proper side depending on the alignment.
       paddingLeft = paddingRight = 0
       if @indent && @alignment != :center
         if @alignment == :left
@@ -120,7 +122,7 @@ class TaskJuggler
       # If we have a RichText content and a width limit, we enable line
       # wrapping.
       if @text.is_a?(RichTextIntermediate) && @width
-        style += "white-space:normal; "
+        labelStyle += "white-space:normal; max-width:#{@width}px"
       end
 
       style += "font-size: #{@fontSize}px; " if fontSize
@@ -131,24 +133,20 @@ class TaskJuggler
         style += "height:#{@line.height - 3}px; "
       end
       cell << (div = XMLElement.new('div',
-        'class' => @category ? 'celldiv' : 'headercelldiv', 'style' => style))
+        'class' => @category ? 'tj_table_cell' : 'tj_table_header_cell',
+        'style' => style))
 
       if @icon && !@selfcontained
-        div << (span = XMLElement.new('span'))
-        span << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                      'alt' => "Icon",
-                                      'class' => 'tj_cell_icon')
-        addHtmlTooltip(span, @iconTooltip, cell)
-
-        # If the icon has a separate tooltip, we need to create a new div to
-        # hold the cell text. We then use this new div to attach the cell
-        # tooltip to.
-        if @iconTooltip
-          div << (span = XMLElement.new('span',
-                                        'style' => 'display:inline-block'))
-          div = span
-        end
+        div << (iconDiv = XMLElement.new('div', 'class' => 'tj_table_cell_icon'))
+        iconDiv << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                         'alt' => "Icon")
+        addHtmlTooltip(iconDiv, @iconTooltip, cell)
       end
+
+      div << (labelDiv = XMLElement.new('div',
+                                        'onmouseover' => 'UnTip()',
+                                        'class' => 'tj_table_cell_label',
+                                        'style' => labelStyle))
 
       return cell if @text.nil?
 
@@ -162,28 +160,25 @@ class TaskJuggler
           !@category
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
-        div << XMLText.new(shortText)
+        labelDiv << XMLText.new(shortText)
         tooltip = @text if @text != shortText
       else
         # The cell will adjust to the size of the content.
         if @text.is_a?(RichTextIntermediate)
           # Don't put the @text into a <div> but a <span>.
           @text.blockMode = false # if singleLine
-          div << @text.to_html
+          labelDiv << @text.to_html
         else
-          div << XMLText.new(shortText)
+          labelDiv << XMLText.new(shortText)
         end
       end
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
-      addHtmlTooltip(div, tooltip, cell)
       if tooltip && !tooltip.empty? && !@selfcontained
-        div << XMLElement.new('img', 'src' => 'icons/details.png',
-                              'width' => '6px',
-                              'style' => 'vertical-align:top; ' +
-                                         'margin:2px; ' +
-                                         'top:5px')
+        div << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
+                                       'class' => 'tj_table_cell_tooltip'))
+        addHtmlTooltip(tIcon, tooltip, cell)
       end
 
       cell
@@ -245,7 +240,7 @@ class TaskJuggler
       end
       element['onmouseover'] = "TagToTip('ID#{element.object_id}', " +
                                "TITLE, '#{title}')"
-      parent << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_trigger',
+      parent << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_box',
                                          'id' => "ID#{element.object_id}"))
       ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
                                                  XMLText.new(tooltip))

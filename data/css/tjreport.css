@@ -83,6 +83,60 @@ p.alertmessage {
   border-spacing:1px;
 }
 
+/* The cells of the table header. */
+.tj_table_header_cell {
+  padding-top:1px;
+  padding-right:3px;
+  padding-left:3px;
+  padding-bottom:0px;
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+/* A regular table cell. It usually contains the cell icon, the text
+ * label and a tooltip trigger. */
+.tj_table_cell {
+  vertical-align:top;
+  padding:2px 4px 1px 2px;
+  white-space:nowrap;
+  overflow:hidden;
+  position: relative;
+  display:block;
+} 
+
+/* The symbol is the icon to the left of the text label in a table
+ * cell. */
+.tj_table_cell_icon {
+  vertical-align:top;
+  margin:2px 2px 1px 2px;
+  display:inline;
+}
+
+/* This is the text label of a cell. */
+.tj_table_cell_label {
+  vertical-align:top;
+  margin-top:0px;
+  display:inline-block;
+}
+
+/* The box around the icon to the right of the text label. This is
+ * optional and triggers the tooltip with the full text of the cell in
+ * case the cell is not large enough to show everything. */
+.tj_table_cell_tooltip {
+  vertical-align:top;
+  margin:1px 3px 1px 3px;
+  display:inline;
+}
+
+/* The container that holds the invisible tooltips. */
+.tj_tooltip_box{
+  position:fixed; 
+  top:0px;
+  left:0px;
+  display:none;
+  visibility:hidden;
+}
+
 /* The caption box for report tables */
 .tj_table_caption {
   padding: 5px 13px 5px 13px;
@@ -128,19 +182,6 @@ p.alertmessage {
   left:0px;
   padding-right:10%;
   display:inline-block;
-}
-
-.tj_tooltip_trigger {
-  position:fixed; 
-  top:0px;
-  left:0px;
-  visibility:hidden;
-}
-
-.tj_cell_icon {
-  vertical-align:top;
-  margin-top:1px;
-  margin-right:3px;
 }
 
 .tabback {

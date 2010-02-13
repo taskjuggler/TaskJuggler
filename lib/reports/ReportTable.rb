@@ -77,18 +77,33 @@ class TaskJuggler
       table << (tbody = XMLElement.new('tbody'))
 
       # Generate the 1st table header line.
+      allCellsHave2Rows = true
+      lineHeight = @headerLineHeight
+      @columns.each do |col|
+        if col.cell1.rows != 2 && !col.cell1.special
+          allCellsHave2Rows = false
+          break;
+        end
+      end
+      if allCellsHave2Rows
+        @columns.each { |col| col.cell1.rows = 1 }
+        lineHeight = @headerLineHeight * 2 + 1
+      end
+
       tbody << (tr =
                 XMLElement.new('tr', 'class' => 'tabhead',
-                               'style' => "height:#{@headerLineHeight}px; " +
+                               'style' => "height:#{lineHeight}px; " +
                                           "font-size:#{@headerFontSize}px;"))
       @columns.each { |col| tr << col.to_html(1) }
 
-      # Generate the 2nd table header line.
-      tbody << (tr =
-                XMLElement.new('tr', 'class' => 'tabhead',
-                               'style' => "height:#{@headerLineHeight}px; " +
-                                          "font-size:#{@headerFontSize}px;"))
-      @columns.each { |col| tr << col.to_html(2) }
+      unless allCellsHave2Rows
+        # Generate the 2nd table header line.
+        tbody << (tr =
+                  XMLElement.new('tr', 'class' => 'tabhead',
+                                 'style' => "height:#{@headerLineHeight}px; " +
+        "font-size:#{@headerFontSize}px;"))
+        @columns.each { |col| tr << col.to_html(2) }
+      end
 
       # Generate the rest of the table.
       @lines.each { |line| tbody << line.to_html }

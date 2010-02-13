@@ -70,7 +70,7 @@ config. CloseBtnText	= '&nbsp;X&nbsp;'	// Close button text (may also be an imag
 config. CopyContent		= true		// When converting a HTML element to a tooltip, copy only the element's content, rather than converting the element by its own
 config. Delay			= 750		// Time span in ms until tooltip shows up
 config. Duration		= 0			// Time span in ms after which the tooltip disappears; 0 for infinite duration, < 0 for delay in ms _after_ the onmouseout until the tooltip disappears
-config. Exclusive		= false		// false or true - no other tooltip can appear until the current one has actively been closed
+config. Exclusive		= false 		// false or true - no other tooltip can appear until the current one has actively been closed
 config. FadeIn			= 400		// Fade-in duration in ms, e.g. 400; 0 for no animation
 config. FadeOut			= 400
 config. FadeInterval	= 30		// Duration of each fade step in ms (recommended: 30) - shorter is smoother but causes more CPU-load
@@ -85,7 +85,7 @@ config. JumpHorz		= false		// false or true - jump horizontally to other side of
 config. JumpVert		= true		// false or true - jump vertically		"
 config. Left			= false		// false or true - tooltip on the left of the mouse
 config. OffsetX			= 14		// Horizontal offset of left-top corner from mousepointer
-config. OffsetY			= 8			// Vertical offset
+config. OffsetY			= 4			// Vertical offset
 config. Opacity			= 100		// Integer between 0 and 100 - opacity of tooltip in percent
 config. Padding			= 10			// Spacing between border and content
 config. Shadow			= true 		// false or true
@@ -100,7 +100,7 @@ config. TitleFontColor	= '#FFFFFF'	// Color of title text - if '', BgColor (of t
 config. TitleFontFace	= ''		// If '' use FontFace (boldified)
 config. TitleFontSize	= ''		// If '' use FontSize
 config. TitlePadding	= 2
-config. Width			= -500			// Tooltip width; 0 for automatic adaption to tooltip content; < -1 (e.g. -240) for a maximum width for that automatic adaption;
+config. Width			= -600			// Tooltip width; 0 for automatic adaption to tooltip content; < -1 (e.g. -240) for a maximum width for that automatic adaption;
 									// -1: tooltip width confined to the width required for the titlebar
 //=======  END OF TOOLTIP CONFIG, DO NOT CHANGE ANYTHING BELOW  ==============//
 
