@@ -106,10 +106,9 @@ class TaskJuggler
     # Generate an HTML version of the report.
     def generateHTML
       html = HTMLDocument.new(:strict)
-      html << (head = XMLElement.new('head'))
-      head << XMLNamedText.new("TaskJuggler Report - #{@name}", 'title')
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                                     'content' => 'text/html; charset=utf-8')
+      head = html.generateHead("TaskJuggler Report - #{@name}",
+                               'description' => 'TaskJuggler Report',
+                               'keywords' => 'taskjuggler, project, management')
       if a('selfcontained')
         auxSrcDir = AppConfig.dataDirs('data/css')[0]
         cssFileName = auxSrcDir + '/tjreport.css'

@@ -136,10 +136,7 @@ class TaskJuggler
     # support navigating through the syntax reference.
     def generateHTMLnavbar(directory, keywords)
       html = HTMLDocument.new
-      html << (head = XMLElement.new('head'))
-      head << XMLNamedText.new('TaskJuggler Syntax Reference Navigator', 'title')
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=utf-8')
+      head = html.generateHead('TaskJuggler Syntax Reference Navigator')
       head << XMLElement.new('base', 'target' => 'display')
       html << (body = XMLElement.new('body'))
 
@@ -168,9 +165,7 @@ class TaskJuggler
       html.write(directory + 'navbar.html')
 
       html = HTMLDocument.new
-      html << (head = XMLElement.new('head'))
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=utf-8')
+      head = html.generateHead('TaskJuggler Syntax Reference Navigator')
       head << XMLElement.new('base', 'target' => 'navigator')
       html << (body = XMLElement.new('body'))
 

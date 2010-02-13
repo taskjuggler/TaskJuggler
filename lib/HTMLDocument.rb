@@ -53,6 +53,22 @@ class TaskJuggler
       @html << element
     end
 
+    # Generate the 'head' section of an HTML page.
+    def generateHead(title, metaTags = {})
+      self << (head = XMLElement.new('head'))
+      head << XMLNamedText.new(title, 'title')
+      head << XMLElement.new('meta', { 'http-equiv' => 'Content-Type',
+                                       'content' => 'text/html; charset=utf-8' },
+                             true)
+
+      # Include optional meta tags.
+      metaTags.each do |name, content|
+        head << XMLElement.new('meta', { 'name' => name, 'content' => content },
+                               true)
+      end
+      head
+    end
+
   end
 
 end

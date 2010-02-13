@@ -267,11 +267,11 @@ class TaskJuggler
     # formatted form.
     def generateHTML(directory)
       html = HTMLDocument.new(:strict)
-      html << (head = XMLElement.new('head'))
-      head << XMLNamedText.new("#{keyword}", 'title') <<
-        @manual.generateStyleSheet
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                                     'content' => 'text/html; charset=utf-8')
+      head = html.generateHead(keyword,
+                               { 'description' => 'The TaskJuggler Manual',
+                                 'keywords' =>
+                                 'taskjuggler, project, management' })
+      head << @manual.generateStyleSheet
 
       html << (body = XMLElement.new('body'))
       body << @manual.generateHTMLHeader <<

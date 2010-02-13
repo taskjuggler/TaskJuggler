@@ -79,10 +79,7 @@ class TaskJuggler
     # directory.
     def generateHTML(directory = '')
       html = HTMLDocument.new
-      html << (head = XMLElement.new('head'))
-      head << XMLNamedText.new(@name, 'title')
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=utf-8')
+      head = html.generateHead(@name)
       head << @document.generateStyleSheet
 
       html << (body = XMLElement.new('body'))

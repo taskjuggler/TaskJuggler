@@ -184,12 +184,11 @@ class TaskJuggler
     # Generate the top-level file for the HTML user manual.
     def generateHTMLindex(directory)
       html = HTMLDocument.new(:frameset)
-      html << (head = XMLElement.new('head'))
-      head << (e = XMLNamedText.new("The #{AppConfig.softwareName} User Manual",
-                                    'title'))
-      head << XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                             'content' => 'text/html; charset=utf-8')
-
+      head = html.generateHead("The #{AppConfig.softwareName} User Manual",
+                               { 'description' =>
+                                 'A reference and user manual for the ' +
+                                 'TaskJuggler project management software.',
+                                 'keywords' => 'taskjuggler, manual, reference'})
       html << (frameset = XMLElement.new('frameset', 'cols' => '15%, 85%'))
       frameset << (navFrames = XMLElement.new('frameset', 'rows' => '15%, 85%'))
       navFrames << XMLElement.new('frame', 'src' => 'alphabet.html',

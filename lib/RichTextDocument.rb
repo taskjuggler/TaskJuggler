@@ -120,10 +120,7 @@ class TaskJuggler
     # Generate a HTML file with the table of contense for all registered files.
     def generateHTMLTableOfContents(directory)
       html = HTMLDocument.new
-      html << (head = XMLElement.new('head'))
-      head << XMLNamedText.new('Index', 'title') <<
-        XMLElement.new('meta', 'http-equiv' => 'Content-Type',
-                       'content' => 'text/html; charset=utf-8')
+      head = html.generateHead('Index')
       html << (body = XMLElement.new('body'))
 
       body << generateHTMLCover <<
