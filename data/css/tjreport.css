@@ -8,7 +8,7 @@ h1, h2, table, tr, td, div, span {
 table {
   font-size:13px;
 }
-td, div { white-space:nowrap; padding:0px; margin:0px; }
+td, div { padding:0px; margin:0px; }
 h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
@@ -153,11 +153,13 @@ p.alertmessage {
   margin:1px;
   padding:3px 1% 3px 1%;
   display: block;
+  font-size:11px;
 }
 
 /* A row of the table legend */
 .tj_legend_row {
   margin:3px;
+  white-space:nowrap;
   display: block;
 }
 

@@ -46,8 +46,6 @@ class TaskJuggler
       # Prepare the task list.
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
-      taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'))
       taskList.query = @report.project.reportContext.query
       taskList.sort!
 

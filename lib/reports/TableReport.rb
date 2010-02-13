@@ -763,10 +763,15 @@ class TaskJuggler
 
         # Determine cell category (mostly the background color)
         if cellIv.overlaps?(taskIv)
+          # The cell is either a container or leaf task
           cell.category = task.container? ? 'calconttask' : 'caltask'
+          # If the user has requested a custom tooltip, add it to each task cell.
+          cell.tooltip = columnDef.tooltip.getPattern(query) || nil
         elsif !@project.isWorkingTime(cellIv)
+          # The cell is a vacation cell.
           cell.category = 'offduty'
         else
+          # The cell is just filled with the background color.
           cell.category = 'taskcell'
         end
         cell.category += line.property.get('index') % 2  == 1 ? '1' : '2'
@@ -849,12 +854,17 @@ class TaskJuggler
           raise "Unknown column content #{column.content}"
         end
 
+        # Set the tooltip for the cell. We might delete it again.
+        cell.tooltip = columnDef.tooltip.getPattern(query) || nil
+        cell.showTooltipHint = false
+
         # Determine cell category (mostly the background color)
         cell.category = if task
                           if cellIv.overlaps?(taskIv)
                             if workLoadTask > 0.0 && freeLoad == 0.0
                               'busy'
                             elsif workLoad == 0.0 && freeLoad == 0.0
+                              cell.tooltip = nil
                               'offduty'
                             else
                               'loaded'
@@ -863,8 +873,10 @@ class TaskJuggler
                             if freeLoad > 0.0
                               'free'
                             elsif workLoad == 0.0 && freeLoad == 0.0
+                              cell.tooltip = nil
                               'offduty'
                             else
+                              cell.tooltip = nil
                               'resourcecell'
                             end
                           end
@@ -876,6 +888,7 @@ class TaskJuggler
                           elsif workLoad == 0.0 && freeLoad > 0.0
                             'free'
                           else
+                            cell.tooltip = nil
                             'offduty'
                           end
                         end

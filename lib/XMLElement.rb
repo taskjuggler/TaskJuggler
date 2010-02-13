@@ -65,6 +65,12 @@ class TaskJuggler
       @attributes[attribute] = value
     end
 
+    # Return the value of attribute _attribute_.
+    def [](attribute)
+      @attributes[attribute]
+    end
+
+
     # Return the element and all sub elements as properly formatted XML.
     def to_s(indent = 0)
       out = '<' + @name

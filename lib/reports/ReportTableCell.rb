@@ -21,7 +21,8 @@ class TaskJuggler
 
     attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
-                  :text, :tooltip, :iconTooltip, :selfcontained,
+                  :text, :tooltip, :showTooltipHint,
+                  :iconTooltip, :selfcontained,
                   :cellColor, :indent, :icon, :fontSize, :fontColor,
                   :bold, :width,
                   :rows, :columns, :special
@@ -43,6 +44,9 @@ class TaskJuggler
       self.text = text || ''
       # A custom text for the tooltip.
       @tooltip = nil
+      # Determines if the tooltip is triggered by an special hinting icon or
+      # the whole cell.
+      @showTooltipHint = true
       # The original data of the cell content (optional, nil if not provided)
       @data = nil
       @category = nil
@@ -95,90 +99,25 @@ class TaskJuggler
       attribs['style'] = "background-color: #{@cellColor}; " if @cellColor
       cell = XMLElement.new('td', attribs)
 
-      # Determine cell style
-      style = "text-align:#{@alignment.to_s}; "
-      labelStyle = ''
-      # In tree sorting mode, some cells have to be indented to reflect the
-      # tree nesting structure. The indentation is achieved with cell padding
-      # and needs to be applied to the proper side depending on the alignment.
-      paddingLeft = paddingRight = 0
-      if @indent && @alignment != :center
-        if @alignment == :left
-          paddingLeft = @padding + @indent * 8
-          paddingRight = @padding
-        elsif @alignment == :right
-          paddingLeft = @padding
-          paddingRight = @padding + (@line.table.maxIndent - @indent) * 8
-        end
-        style += "padding-left:#{paddingLeft}px; " unless paddingLeft == 3
-        style += "padding-right:#{paddingRight}px; " unless paddingRight == 3
-      elsif @padding != 3
-        style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
-        paddingLeft = paddingRight = @padding
-      end
-      style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
-      style += 'font-weight:bold; ' if @bold
-
-      # If we have a RichText content and a width limit, we enable line
-      # wrapping.
-      if @text.is_a?(RichTextIntermediate) && @width
-        labelStyle += "white-space:normal; max-width:#{@width}px"
-      end
-
-      style += "font-size: #{@fontSize}px; " if fontSize
-      if @fontColor
-        style += "color:#{@fontColor}; "
-      end
-      if @text.is_a?(RichTextIntermediate) && @line && @line.table.equiLines
-        style += "height:#{@line.height - 3}px; "
-      end
       cell << (div = XMLElement.new('div',
         'class' => @category ? 'tj_table_cell' : 'tj_table_header_cell',
-        'style' => style))
+        'style' => cellStyle))
 
-      if @icon && !@selfcontained
-        div << (iconDiv = XMLElement.new('div', 'class' => 'tj_table_cell_icon'))
-        iconDiv << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                         'alt' => "Icon")
-        addHtmlTooltip(iconDiv, @iconTooltip, cell)
-      end
+      div << cellIcon(cell)
 
-      div << (labelDiv = XMLElement.new('div',
-                                        'onmouseover' => 'UnTip()',
-                                        'class' => 'tj_table_cell_label',
-                                        'style' => labelStyle))
-
-      return cell if @text.nil?
-
-      if @text.respond_to?('functionHandler') && @text.functionHandler('query')
-        @text.functionHandler('query').setQuery(@query)
-      end
-
-      shortText, singleLine = shortVersion(@text)
-      tooltip = nil
-      if (@line && @line.table.equiLines && (!singleLine || @width )) ||
-          !@category
-        # The cell is size-limited. We only put a shortened plain-text version
-        # in the cell and provide the full content via a tooltip.
-        labelDiv << XMLText.new(shortText)
-        tooltip = @text if @text != shortText
-      else
-        # The cell will adjust to the size of the content.
-        if @text.is_a?(RichTextIntermediate)
-          # Don't put the @text into a <div> but a <span>.
-          @text.blockMode = false # if singleLine
-          labelDiv << @text.to_html
-        else
-          labelDiv << XMLText.new(shortText)
-        end
-      end
+      labelDiv, tooltip = cellLabel
+      div << labelDiv
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
       if tooltip && !tooltip.empty? && !@selfcontained
-        div << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
-                                       'class' => 'tj_table_cell_tooltip'))
-        addHtmlTooltip(tIcon, tooltip, cell)
+        if @showTooltipHint
+          div << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
+                                         'class' => 'tj_table_cell_tooltip'))
+          addHtmlTooltip(tIcon, tooltip, cell)
+        else
+          addHtmlTooltip(cell, tooltip, cell)
+        end
       end
 
       cell
@@ -202,6 +141,94 @@ class TaskJuggler
     end
 
     private
+
+    # Determine cell style
+    def cellStyle
+      style = "text-align:#{@alignment.to_s}; "
+      # In tree sorting mode, some cells have to be indented to reflect the
+      # tree nesting structure. The indentation is achieved with cell padding
+      # and needs to be applied to the proper side depending on the alignment.
+      paddingLeft = paddingRight = 0
+      if @indent && @alignment != :center
+        if @alignment == :left
+          paddingLeft = @padding + @indent * 8
+          paddingRight = @padding
+        elsif @alignment == :right
+          paddingLeft = @padding
+          paddingRight = @padding + (@line.table.maxIndent - @indent) * 8
+        end
+        style += "padding-left:#{paddingLeft}px; " unless paddingLeft == 3
+        style += "padding-right:#{paddingRight}px; " unless paddingRight == 3
+      elsif @padding != 3
+        style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
+        paddingLeft = paddingRight = @padding
+      end
+      style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
+      style += 'font-weight:bold; ' if @bold
+
+      style += "font-size: #{@fontSize}px; " if fontSize
+      if @fontColor
+        style += "color:#{@fontColor}; "
+      end
+      if @text.is_a?(RichTextIntermediate) && @line && @line.table.equiLines
+        style += "height:#{@line.height - 3}px; "
+      end
+
+      style
+    end
+
+    def cellIcon(cell)
+      if @icon && !@selfcontained
+        iconDiv = XMLElement.new('div', 'class' => 'tj_table_cell_icon')
+        iconDiv << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                         'alt' => "Icon")
+        addHtmlTooltip(iconDiv, @iconTooltip, cell)
+        return iconDiv
+      end
+
+      nil
+    end
+
+    def cellLabel
+      # If we have a RichText content and a width limit, we enable line
+      # wrapping.
+      if @text.is_a?(RichTextIntermediate) && @width
+        labelStyle = "white-space:normal; max-width:#{@width}px; "
+      else
+        labelStyle = "white-space:nowrap; "
+      end
+      labelDiv = XMLElement.new('div', 'onmouseover' => 'UnTip()',
+                                'class' => 'tj_table_cell_label',
+                                'style' => labelStyle)
+
+      tooltip = nil
+      unless @text.nil? || @text.empty?
+        if @text.respond_to?('functionHandler') &&
+           @text.functionHandler('query')
+          @text.functionHandler('query').setQuery(@query)
+        end
+
+        shortText, singleLine = shortVersion(@text)
+        if (@line && @line.table.equiLines && (!singleLine || @width )) ||
+            !@category
+          # The cell is size-limited. We only put a shortened plain-text version
+          # in the cell and provide the full content via a tooltip.
+          labelDiv << XMLText.new(shortText)
+          tooltip = @text if @text != shortText
+        else
+          # The cell will adjust to the size of the content.
+          if @text.is_a?(RichTextIntermediate)
+            # Don't put the @text into a <div> but a <span>.
+            # @text.blockMode = false # if singleLine
+            labelDiv << @text.to_html
+          else
+            labelDiv << XMLText.new(shortText)
+          end
+        end
+      end
+
+      return labelDiv, tooltip
+    end
 
     # Convert a RichText String into a small one-line plain text
     # version that fits the column.
