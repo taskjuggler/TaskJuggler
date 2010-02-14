@@ -43,7 +43,8 @@ class TaskJuggler
       resourceList.query = @report.project.reportContext.query
       resourceList.sort!
 
-      # Prepare the task list.
+      # Prepare the task list. Don't filter it yet! It would break the
+      # *_() LogicalFunctions.
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList.query = @report.project.reportContext.query

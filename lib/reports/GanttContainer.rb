@@ -81,6 +81,9 @@ class TaskJuggler
 
       html = []
 
+      # Invisible trigger frame for tooltips.
+      html << rectToHTML(xStart - @@size, 0, width + 2 * @@size, @lineHeight,
+                         'tj_gantt_frame')
       # If the container is too small we make it wider so it is recognizeable.
       xStart -= (@@size + 1) - (width / 2) if width < 2
 

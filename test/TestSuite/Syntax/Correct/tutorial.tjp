@@ -410,6 +410,19 @@ navigator navbar {
 }
 # *** EXAMPLE: navigator -
 
+macro TaskTip [
+  tooltip istask() -8<-
+    '''Start: ''' <-query attribute='start'->
+    '''End: ''' <-query attribute='end'->
+    ----
+    '''Resources:''' <-query attribute='resources'->
+    ----
+    '''Depends on: ''' <-query attribute='depends'->
+    ----
+    '''Precedes: ''' <-query attribute='precedes'->
+    ->8-
+]
+
 # *** EXAMPLE: overview_report1 +
 # *** EXAMPLE: overview_report2 +
 textreport "" {
@@ -489,7 +502,7 @@ taskreport overview "" {
 # *** EXAMPLE: overview1 +
   columns hierarchindex,
           name, start, end, effort, duration, cost,
-          revenue, chart
+          revenue, chart { ${TaskTip} }
 # *** EXAMPLE: overview1 -
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
@@ -564,7 +577,7 @@ taskreport development "" {
   scenarios delayed
   headline "Development - Resource Allocation Report"
   columns hierarchindex, name, start, end, effort { title "Work" },
-          duration, chart { scale day width 500 }
+          duration, chart { ${TaskTip} scale day width 500 }
   timeformat "%Y-%m-%d"
   hideresource ~(isleaf() & isleaf_())
   sortresources name.up
@@ -573,7 +586,8 @@ taskreport development "" {
 # A list of all tasks with the percentage completed for each task
 taskreport deliveries "" {
   headline "Project Deliverables"
-  columns hierarchindex, name, start, end, note { width 150 }, complete, chart
+  columns hierarchindex, name, start, end, note { width 150 }, complete,
+          chart { ${TaskTip} } 
   taskroot AcSo.deliveries
   hideresource 1
   scenarios plan, delayed
@@ -596,7 +610,7 @@ resourcereport contactList "" {
 resourcereport resourceGraph "" {
   scenarios delayed
   headline "Resource Allocation Graph"
-  columns no, name, effort, rate, weekly
+  columns no, name, effort, rate, weekly { ${TaskTip} }
   loadunit shortauto
   # We only like to show leaf tasks for leaf resources.
   hidetask ~(isleaf() & isleaf_())

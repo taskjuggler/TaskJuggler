@@ -266,6 +266,9 @@ p.alertmessage {
   background-color:#9a9a9a;
   position:absolute;
 }
+.tj_gantt_frame {
+  position:absolute;
+}
 .containerbar {
   background-color:#09090a;
   position:absolute;

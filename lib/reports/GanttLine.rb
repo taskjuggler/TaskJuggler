@@ -31,7 +31,7 @@ class TaskJuggler
     attr_reader :y, :height, :query
 
     # Create a GanttLine object and generate the abstract representation.
-    def initialize(chart, query, y, height)
+    def initialize(chart, query, y, height, tooltip)
       # A reference to the chart that the line belongs to.
       @chart = chart
       # Register the line with the chart.
@@ -39,6 +39,9 @@ class TaskJuggler
 
       # The query is used to access the presented project data.
       @query = query
+      # A CellSettingPatternList object to determine the tooltips for the
+      # line's content.
+      @tooltip = tooltip
       # The category determines the background color of the line.
       @category = nil
       # The y coordinate of the topmost pixel of this line.
@@ -76,7 +79,11 @@ class TaskJuggler
 
       # Now render the content as HTML elements.
       @content.each do |c|
-        div << c.to_html
+        html = c.to_html
+        if html && html[0]
+          addHtmlTooltip(@tooltip, @query, html[0], div)
+          div << html
+        end
       end
 
       # Render the 'now' line
@@ -196,15 +203,16 @@ class TaskJuggler
         xStart = @chart.dateToX(taskStart)
         xEnd = @chart.dateToX(taskEnd)
         @chart.addTask(property, self)
-        if property['milestone', @query.scenarioIdx]
-          @content << GanttMilestone.new(property, @height, xStart, @y)
-        elsif property.container?
-          @content << GanttContainer.new(property, @query.scenarioIdx, @height,
-                                         xStart, xEnd, @y)
-        else
-          @content << GanttTaskBar.new(property, @query.scenarioIdx, @height,
-                                       xStart, xEnd, @y)
-        end
+        @content <<
+          if property['milestone', @query.scenarioIdx]
+            GanttMilestone.new(property, @height, xStart, @y)
+          elsif property.container?
+            GanttContainer.new(property, @query.scenarioIdx, @height,
+                               xStart, xEnd, @y)
+          else
+            GanttTaskBar.new(property, @query.scenarioIdx, @height,
+                             xStart, xEnd, @y)
+          end
 
         # Make sure the legend includes the Gantt symbols.
         @chart.table.legend.showGanttItems = true if @chart.table
@@ -322,6 +330,32 @@ class TaskJuggler
         zone[0] = @chart.dateToX(zone[0])
         zone[1] = @chart.dateToX(zone[1]) - zone[0]
       end
+    end
+
+    def addHtmlTooltip(tooltip, query, trigger, hook = nil)
+      return unless tooltip
+
+      tooltip = tooltip.getPattern(query)
+      return unless tooltip && !tooltip.empty?
+
+      if tooltip.respond_to?('functionHandler') &&
+         tooltip.functionHandler('query')
+        tooltip.functionHandler('query').setQuery(query)
+      end
+      if query
+        query.attributeId = 'name'
+        query.process
+        title = query.to_s
+      else
+        title = ''
+      end
+      trigger['onmouseover'] = "TagToTip('ID#{trigger.object_id}', " +
+                               "TITLE, '#{title}')"
+      hook = trigger unless hook
+      hook << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_box',
+                                      'id' => "ID#{trigger.object_id}"))
+      ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
+                                                 XMLText.new(tooltip))
     end
 
   end

@@ -77,9 +77,13 @@ class TaskJuggler
 
       html = []
 
+      # Invisible trigger frame for tooltips.
+      html << rectToHTML(xStart, 0, width, @lineHeight, 'tj_gantt_frame')
+
       # First we draw the task frame.
-      html << rectToHTML(xStart, yCenter - @@size, width, 2 * @@size,
-                         'taskbarframe')
+      html << (frame = rectToHTML(xStart, yCenter - @@size, width, 2 * @@size,
+                                  'taskbarframe'))
+
       # The we draw the filling.
       html << rectToHTML(xStart + 1, yCenter - @@size + 1, width - 2,
                          2 * @@size - 2, 'taskbar')
