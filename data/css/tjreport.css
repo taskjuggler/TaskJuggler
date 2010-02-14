@@ -31,18 +31,24 @@ p.alertmessage {
 
 /* The basic elements of a text report page. */
 .tj_text_page {
+  display:table;	
+  position:relative;
+  width:100%;
 }
 
 .tj_column_left {
-  display:inline-block;
+  vertical-align:top;
+  display:table-cell;
 }
 
 .tj_column_center {
-  display:inline-block;
+  vertical-align:top;
+  display:table-cell;
 }
 
 .tj_column_right {
-  display:inline-block;
+  vertical-align:top;
+  display:table-cell;
 }
 
 /* The top-level page layout */

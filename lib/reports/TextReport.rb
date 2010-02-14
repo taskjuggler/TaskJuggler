@@ -30,22 +30,23 @@ class TaskJuggler
     def generateIntermediateFormat
       super
 
+      # A width of 0 means, the columns flexible.
       if a('center')
         if a('left') && a('right')
           @lWidth = @rWidth = 20
-          @cWidth = 60
+          @cWidth = 59
         elsif a('left') && !a('right')
           @lWidth = 25
-          @cWidth = 75
+          @cWidth = 74
         elsif !a('left') && a('right')
-          @cWidth = 75
+          @cWidth = 74
           @rWidth = 25
         else
           @cWidth = 100
         end
       else
         if a('left') && a('right')
-          @lWidth = @rWidth = 50
+          @lWidth = @rWidth = 49.5
         elsif a('left') && !a('right')
           @lWidth = 100
         elsif !a('left') && a('right')
@@ -58,14 +59,14 @@ class TaskJuggler
       html = []
 
       html << rt_to_html('header')
-      if @lWidth > 0 || @cWidth > 0 || @rWidth > 0
+      if a('left') || a('center') || a('right')
         html << (page = XMLElement.new('div', 'class' => 'tj_text_page'))
 
         %w( left center right).each do |i|
           width = instance_variable_get('@' + i[0].chr + 'Width')
-          if width > 0
-            page << (col = XMLElement.new('div', 'class' => "tj_column_#{i}",
-                                          'style' => "width:#{width}%"))
+          if a(i)
+            page << (col = XMLElement.new('div', 'class' => "tj_column_#{i}"))
+            col['style'] = "width:#{width}%" if width > 0
             col << rt_to_html(i)
           end
         end
