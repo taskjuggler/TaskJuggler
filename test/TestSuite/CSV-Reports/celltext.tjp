@@ -3,6 +3,6 @@ include "project-1.tji"
 
 taskreport csv "." {
   formats csv
-  columns wbs, name { celltext "$${name} ($${id})" }
+  columns wbs, name { celltext 1 "<-query-> (<-query attribute='id'->)" }
 }
 

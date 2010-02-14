@@ -77,9 +77,10 @@ class TestScheduler < Test::Unit::TestCase
   def test_CSV_Reports
     path = File.dirname(__FILE__)
 
-    Dir.glob(path + 'TestSuite/CSV-Reports/*.tjp').each do |f|
+    testDir = path + '/TestSuite/CSV-Reports/'
+    Dir.glob(testDir + '*.tjp').each do |f|
       baseName = f[22 + path.length, f.length - (path.length + 26)]
-      refFile = path + "TestSuite/CSV-Reports/#{baseName}-Reference.csv"
+      refFile = testDir + "#{baseName}-Reference.csv"
       tj = TaskJuggler.new(true)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
@@ -87,7 +88,8 @@ class TestScheduler < Test::Unit::TestCase
         # If there is a reference CSV file for this test case, compare the
         # output against it.
         out = captureStdout do
-          assert(tj.generateReports, "Report generation failed for #{f}")
+          assert(tj.generateReports(testDir),
+                 "Report generation failed for #{f}")
         end
         compareCSVs(out, refFile)
       else

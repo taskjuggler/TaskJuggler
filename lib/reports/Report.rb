@@ -210,8 +210,9 @@ EOT
 
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
-      CSVFile.new(csv, ';').write((@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name + (@name == '.' ? '' : '.csv'))
+      CSVFile.new(csv, ';').write(@name == '.' ? @name :
+                                  (@name[0] == '/' ? '' : @project.outputDir) +
+                                  @name + '.csv')
     end
 
     # Generate time sheet drafts.
