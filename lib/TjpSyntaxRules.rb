@@ -2652,9 +2652,6 @@ EOT
     singlePattern('_daily')
     descr('A group of columns with one column for each day')
 
-    singlePattern('_depends')
-    descr('A comma separated list of tasks that have to precede this task.')
-
     singlePattern('_duration')
     descr('The duration of a task')
 
@@ -2681,6 +2678,19 @@ EOT
 
     singlePattern('_flags')
     descr('List of attached flags')
+
+    singlePattern('_followers')
+    descr(<<'EOT'
+A list of tasks that depend on the current task. The list contains the names,
+the IDs, the date and the type of dependency. For the type the following
+symbols are used
+
+* ''']->[''': End-to-Start dependency
+* '''[->[''': Start-to-Start dependency
+* ''']->]''': End-to-End dependency
+* '''[->]''': Start-to-End dependency
+EOT
+         )
 
     singlePattern('_freetime')
     descr(<<'EOT'
@@ -2747,8 +2757,18 @@ EOT
     descr('The criticalness of the task with respect to all the paths that ' +
           'it is a part of.')
 
-    singlePattern('_precedes')
-    descr('A comma separated list of tasks that have to follow this task.')
+    singlePattern('_precursor')
+    descr(<<EOT
+A list of tasks the current task depends on. The list contains the names, the
+IDs, the date and the type of dependency. For the type the following symbols
+are used
+
+* ''']->[''': End-to-Start dependency
+* '''[->[''': Start-to-Start dependency
+* ''']->]''': End-to-End dependency
+* '''[->]''': Start-to-End dependency
+EOT
+         )
 
     singlePattern('_priority')
     descr('The priority of a task')

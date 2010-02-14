@@ -114,9 +114,9 @@ class TaskJuggler
         if @showTooltipHint
           div << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
                                          'class' => 'tj_table_cell_tooltip'))
-          addHtmlTooltip(tIcon, tooltip, cell)
+          addHtmlTooltip(tooltip, tIcon, cell)
         else
-          addHtmlTooltip(cell, tooltip, cell)
+          addHtmlTooltip(tooltip, cell)
         end
       end
 
@@ -182,7 +182,7 @@ class TaskJuggler
         iconDiv = XMLElement.new('div', 'class' => 'tj_table_cell_icon')
         iconDiv << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
                                          'alt' => "Icon")
-        addHtmlTooltip(iconDiv, @iconTooltip, cell)
+        addHtmlTooltip(@iconTooltip, iconDiv, cell)
         return iconDiv
       end
 
@@ -197,7 +197,7 @@ class TaskJuggler
       else
         labelStyle = "white-space:nowrap; "
       end
-      labelDiv = XMLElement.new('div', 'onmouseover' => 'UnTip()',
+      labelDiv = XMLElement.new('div',
                                 'class' => 'tj_table_cell_label',
                                 'style' => labelStyle)
 
@@ -251,9 +251,10 @@ class TaskJuggler
       [ text, singleLine ]
     end
 
-    def addHtmlTooltip(element, tooltip, parent)
+    def addHtmlTooltip(tooltip, trigger, hook = nil)
       return unless tooltip && !tooltip.empty? && !@selfcontained
 
+      hook = trigger if hook.nil?
       if tooltip.respond_to?('functionHandler') &&
          tooltip.functionHandler('query')
         tooltip.functionHandler('query').setQuery(@query)
@@ -265,10 +266,13 @@ class TaskJuggler
       else
         title = ''
       end
-      element['onmouseover'] = "TagToTip('ID#{element.object_id}', " +
-                               "TITLE, '#{title}')"
-      parent << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_box',
-                                         'id' => "ID#{element.object_id}"))
+      trigger['onclick'] = "TagToTip('ID#{trigger.object_id}', " +
+                           "TITLE, '#{title}')"
+      trigger['style'] = trigger['style'] ? trigger['style'] : 'cursor:help; '
+      hook << (ltDiv = XMLElement.new('div',
+                                      'class' => 'tj_tooltip_box',
+                                       'style' => 'cursor:help',
+                                       'id' => "ID#{trigger.object_id}"))
       ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
                                                  XMLText.new(tooltip))
     end

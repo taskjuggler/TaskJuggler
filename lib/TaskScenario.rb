@@ -1125,6 +1125,70 @@ class TaskJuggler
       query.string = query.scaleLoad(work)
     end
 
+    def query_followers(query)
+      str = ''
+
+      # First gather the task that depend on the start of this task.
+      a('startsuccs').each do |task, onEnd|
+        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
+        if onEnd
+          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          str += "[->[ #{taskEnd}"
+        else
+          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          str += "[->] #{taskStart}"
+        end
+        str += "\n"
+      end
+      # Than add the tasks that depend on the end of this task.
+      a('endsuccs').each do |task, onEnd|
+        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
+        if onEnd
+          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          str += "]->[ #{taskEnd}"
+        else
+          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          str += "]->] #{taskStart}"
+        end
+        str += "\n"
+      end
+
+      rText = RichText.new(str)
+      query.rti = rText.generateIntermediateFormat
+    end
+
+    def query_precursors(query)
+      str = ''
+
+      # First gather the task that depend on the start of this task.
+      a('startpreds').each do |task, onEnd|
+        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
+        if onEnd
+          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          str += "]->[ #{taskEnd}"
+        else
+          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          str += "[->[ #{taskStart}"
+        end
+        str += "\n"
+      end
+      # Than add the tasks that depend on the end of this task.
+      a('endpreds').each do |task, onEnd|
+        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
+        if onEnd
+          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          str += "[->] #{taskEnd}"
+        else
+          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          str += "]->] #{taskStart}"
+        end
+        str += "\n"
+      end
+
+      rText = RichText.new(str)
+      query.rti = rText.generateIntermediateFormat
+    end
+
     # A list of the resources that have been allocated to work on the task in
     # the report time frame.
     def query_resources(query)

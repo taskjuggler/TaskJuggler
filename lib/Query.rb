@@ -166,7 +166,7 @@ class TaskJuggler
         else
           # The result is a BaseAttribute
           unless (@attr = @property.getAttribute(@attributeId, @scenarioIdx))
-            errorMessage = "Unknown attribute #{@attributeId} queried"
+            @errorMessage = "Unknown attribute #{@attributeId} queried"
             return @ok = false
           end
         end
@@ -327,7 +327,7 @@ class TaskJuggler
     # result data.
     def reset
       @attr = @numerical = @sortable = @string = @rti = nil
-      @ok = nil
+      @ok = true
       @errorMessage = nil
     end
 
