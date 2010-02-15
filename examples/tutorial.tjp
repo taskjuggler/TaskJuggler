@@ -293,9 +293,9 @@ macro TaskTip [
     ----
     '''Resources:''' <-query attribute='resources'->
     ----
-    '''Depends on: ''' <-query attribute='depends'->
+    '''Precursors: ''' <-query attribute='precursors'->
     ----
-    '''Precedes: ''' <-query attribute='precedes'->
+    '''Followers: ''' <-query attribute='followers'->
     ->8-
 ]
 
