@@ -36,6 +36,9 @@ p.alertmessage {
   width:100%;
 }
 
+.tj_text_row {
+  display:table-row;	
+}
 .tj_column_left {
   vertical-align:top;
   display:table-cell;

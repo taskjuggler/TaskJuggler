@@ -25,6 +25,7 @@ class TaskJuggler
       super
 
       @lWidth = @cWidth = @rWidth = 0
+      @lPadding = @cPadding = @rPadding = 0
     end
 
     def generateIntermediateFormat
@@ -34,19 +35,23 @@ class TaskJuggler
       if a('center')
         if a('left') && a('right')
           @lWidth = @rWidth = 20
-          @cWidth = 59
+          @cWidth = 60
+          @lPadding = @cPadding = 2
         elsif a('left') && !a('right')
           @lWidth = 25
-          @cWidth = 74
+          @cWidth = 75
+          @lPadding = 2
         elsif !a('left') && a('right')
-          @cWidth = 74
+          @cWidth = 75
           @rWidth = 25
+          @cPadding = 2
         else
           @cWidth = 100
         end
       else
         if a('left') && a('right')
-          @lWidth = @rWidth = 49.5
+          @lWidth = @rWidth = 50
+          @lPadding = 2
         elsif a('left') && !a('right')
           @lWidth = 100
         elsif !a('left') && a('right')
@@ -56,17 +61,19 @@ class TaskJuggler
     end
 
     def to_html
-      html = []
-
-      html << rt_to_html('header')
+      html = rt_to_html('header')
       if a('left') || a('center') || a('right')
         html << (page = XMLElement.new('div', 'class' => 'tj_text_page'))
-
+        page << (row = XMLElement.new('div', 'class' => 'tj_text_row'))
         %w( left center right).each do |i|
           width = instance_variable_get('@' + i[0].chr + 'Width')
+          padding = instance_variable_get('@' + i[0].chr + 'Padding')
           if a(i)
-            page << (col = XMLElement.new('div', 'class' => "tj_column_#{i}"))
-            col['style'] = "width:#{width}%" if width > 0
+            row << (col = XMLElement.new('div', 'class' => "tj_column_#{i}"))
+            style = ''
+            style += "width:#{width}%; " if width > 0
+            style += "padding-right:#{padding}%; " if padding > 0
+            col['style'] = style
             col << rt_to_html(i)
           end
         end
