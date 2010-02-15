@@ -110,22 +110,21 @@ p.alertmessage {
   white-space:nowrap;
   overflow:hidden;
   position: relative;
-  display:block;
 } 
 
 /* The symbol is the icon to the left of the text label in a table
  * cell. */
 .tj_table_cell_icon {
   vertical-align:top;
-  margin:2px 2px 1px 2px;
-  display:inline;
+  margin:0px 2px 0px 2px;
+  float:left;
 }
 
 /* This is the text label of a cell. */
 .tj_table_cell_label {
   vertical-align:top;
   margin-top:0px;
-  display:inline-block;
+  float:left;
 }
 
 /* The box around the icon to the right of the text label. This is
@@ -134,7 +133,7 @@ p.alertmessage {
 .tj_table_cell_tooltip {
   vertical-align:top;
   margin:1px 3px 1px 3px;
-  display:inline;
+  float:left;
 }
 
 /* The container that holds the invisible tooltips. */
@@ -169,30 +168,31 @@ p.alertmessage {
 .tj_legend_row {
   margin:3px;
   white-space:nowrap;
-  display: block;
+  display:block;
+  height:19px;
 }
 
 /* A legend row has 3 items. An item contains a label and a symbol */
 .tj_legend_item {
-  display: inline-block;
   text-align:left;
   width: 27.3%;
   margin-left:4%;
   margin-right:2%;
+  float:left;
 }
 
 .tj_legend_symbol {
   position: relative;
   right:0px;
   width:45px;
-  display:inline-block;
+  float:left;
 }
 
 .tj_legend_label {
   text-align: left;
   left:0px;
   padding-right:10%;
-  display:inline-block;
+  float:left;
 }
 
 .tabback {
