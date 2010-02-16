@@ -45,12 +45,13 @@ class TaskJuggler
       return nil if !@showGanttItems && @ganttItems.empty? &&
                     @calendarItems.empty?
 
-      legend = XMLElement.new('div', 'class' => 'tj_table_legend')
+      frame = XMLElement.new('div', 'class' => 'tj_table_legend_frame')
+      frame << (legend = XMLElement.new('table', 'class' => 'tj_table_legend'))
 
       legend << headlineToHTML('Gantt Chart Symbols:')
       # Generate the Gantt chart symbols
       if @showGanttItems
-        legend << (row = XMLElement.new('div', 'class' => 'tj_legend_row'))
+        legend << (row = XMLElement.new('tr', 'class' => 'tj_legend_row'))
 
         row << ganttItemToHTML(GanttContainer.new(nil, 0, 15, 10, 35, 0),
                                'Container Task', 40)
@@ -58,6 +59,7 @@ class TaskJuggler
                                'Normal Task', 40)
         row << ganttItemToHTML(GanttMilestone.new(nil, 15, 10, 0),
                                'Milestone', 20)
+        row << XMLElement.new('td', 'class' => 'tj_legend_spacer')
       end
 
       legend << itemsToHTML(@ganttItems)
@@ -65,7 +67,7 @@ class TaskJuggler
       legend << headlineToHTML('Calendar Symbols:')
       legend << itemsToHTML(@calendarItems)
 
-      legend
+      frame
     end
 
   private
@@ -76,8 +78,8 @@ class TaskJuggler
     # the HTML version of the headlines.
     def headlineToHTML(text)
       unless @calendarItems.empty? || @ganttItems.empty?
-        div = XMLElement.new('div', 'tj_legend_headline')
-        div << XMLText.new(text)
+        div = XMLElement.new('tr', 'tj_legend_headline')
+        div << XMLNamedText.new(text, 'td', 'colspan' => '10')
         return div
       end
       nil
@@ -85,40 +87,29 @@ class TaskJuggler
 
     # Turn the Gantt symbold descriptions into HTML elements.
     def ganttItemToHTML(itemRef, name, width)
-      item = XMLElement.new('div', 'class' => 'tj_legend_item')
+      cells = []
+      # Empty cell for margin first.
+      cells << (item = XMLElement.new('td', 'class' => 'tj_legend_spacer'))
+      # The symbol cell
+      cells << (item = XMLElement.new('td', 'class' => 'tj_legend_item'))
       item << (symbol = XMLElement.new('div', 'class' => 'tj_legend_symbol',
-                                       'style' => 'top:-11px'))
+                                       'style' => 'top:3px'))
       symbol << itemRef.to_html
+      # The label cell
+      cells << (item = XMLElement.new('td', 'class' => 'tj_legend_item'))
       item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
       label << XMLText.new(name)
-      item
-    end
 
-    # Turn the color items into HTML elements.
-    def itemsToHTML(items)
-      rows = []
-      row = nil
-      gridCells = ((items.length / 3) + (items.length % 3 != 0 ? 1 : 0)) * 3
-      gridCells.times do |i|
-        # We show no more than 3 items in a row.
-        if i % 3 == 0
-          rows << (row = XMLElement.new('div', 'class' => 'tj_legend_row'))
-        end
-
-        # If we run out of items before the line is filled, we just insert
-        # empty divs to fill the line.
-        if i < items.length
-          row << itemToHTML(items[i])
-        else
-          row << XMLElement.new('div', 'class' => 'tj_legend_item')
-        end
-      end
-      rows
+      cells
     end
 
     # Turn a single color item into HTML elements.
     def itemToHTML(itemRef)
-      item = XMLElement.new('div', 'class' => 'tj_legend_item')
+      cells = []
+      # Empty cell for margin first.
+      cells << XMLElement.new('td', 'class' => 'tj_legend_spacer')
+      # The symbol cell
+      cells << (item = XMLElement.new('td', 'class' => 'tj_legend_item'))
       item << (symbol = XMLElement.new('div', 'class' => 'tj_legend_symbol'))
       symbol << (box = XMLElement.new('div',
                                       'style' => 'position:relative; ' +
@@ -131,9 +122,39 @@ class TaskJuggler
                             'style' => 'position:absolute; ' +
                                        'left:1px; top:1px; ' +
                                        'width:14px; height:13px;')
+      # The label cell
+      cells << (item = XMLElement.new('td', 'class' => 'tj_legend_item'))
       item << (label = XMLElement.new('div', 'class' => 'tj_legend_label'))
       label << XMLText.new(itemRef[0])
-      item
+
+      cells
+    end
+
+    # Turn the color items into HTML elements.
+    def itemsToHTML(items)
+      rows = []
+      row = nil
+      gridCells = ((items.length / 3) + (items.length % 3 != 0 ? 1 : 0)) * 3
+      gridCells.times do |i|
+        # We show no more than 3 items in a row.
+        if i % 3 == 0
+          rows << (row = XMLElement.new('tr', 'class' => 'tj_legend_row'))
+        end
+
+        # If we run out of items before the line is filled, we just insert
+        # empty cells to fill the line.
+        if i < items.length
+          row << itemToHTML(items[i])
+        else
+          row << XMLElement.new('td', 'class' => 'tj_legend_item',
+                                      'colspan' => '3')
+        end
+        if (i + 1) % 3 == 0
+          # Append an empty cell at the end of each row.
+          row << XMLElement.new('td', 'class' => 'tj_legend_spacer')
+        end
+      end
+      rows
     end
 
   end

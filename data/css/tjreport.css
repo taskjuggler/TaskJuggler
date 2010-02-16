@@ -60,18 +60,13 @@ p.alertmessage {
 }
 
 /* The container that holds report tables */
-.tj_table_block {
-  text-align:center;
-}
-
-/* The Frame around a report table that also encloses headline and
- * caption */
 .tj_table_frame {
+  margin-left:auto;
+  margin-right:auto;
   background-color:#9a9a9a;
   margin-top:15px;
   margin-bottom:15px;
-  padding:1px;
-  display:inline-block;
+  border-spacing:1px;
 }
 
 /* The headline box for report tables */
@@ -155,44 +150,42 @@ p.alertmessage {
   font-size:13px
 }
 
-/* The legend of resource tables */
-.tj_table_legend {
-  background-color:#d4dde6;
+.tj_table_legend_frame {
+  padding:5px;
   margin:1px;
-  padding:3px 1% 3px 1%;
-  display: block;
+  background-color:#d4dde6; 
+}
+
+/* The legend of reports with calendar and Gantt charts */
+.tj_table_legend {
+  margin-left:auto;
+  margin-right:auto;
   font-size:11px;
+  color:#000000;
+  table-layout:fixed;
 }
 
 /* A row of the table legend */
 .tj_legend_row {
-  margin:3px;
-  white-space:nowrap;
-  display:block;
   height:19px;
 }
 
 /* A legend row has 3 items. An item contains a label and a symbol */
 .tj_legend_item {
-  text-align:left;
-  width: 27.3%;
-  margin-left:4%;
-  margin-right:2%;
-  float:left;
 }
 
 .tj_legend_symbol {
   position: relative;
-  right:0px;
   width:45px;
-  float:left;
+  height:19px;
 }
 
 .tj_legend_label {
   text-align: left;
-  left:0px;
-  padding-right:10%;
-  float:left;
+}
+
+.tj_legend_spacer {
+  width:30px;
 }
 
 .tabback {
