@@ -99,22 +99,24 @@ class TaskJuggler
       attribs['style'] = "background-color: #{@cellColor}; " if @cellColor
       cell = XMLElement.new('td', attribs)
 
-      cell << (div = XMLElement.new('div',
+      cell << (table = XMLElement.new('table',
         'class' => @category ? 'tj_table_cell' : 'tj_table_header_cell',
         'style' => cellStyle))
+      table << (row = XMLElement.new('tr'))
 
-      div << cellIcon(cell)
+      row << cellIcon(cell)
 
       labelDiv, tooltip = cellLabel
-      div << labelDiv
+      row << labelDiv
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
       if tooltip && !tooltip.empty? && !@selfcontained
         if @showTooltipHint
-          div << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
-                                         'class' => 'tj_table_cell_tooltip'))
-          addHtmlTooltip(tooltip, tIcon, cell)
+          row << (td = XMLElement.new('td'))
+          td << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
+                                        'class' => 'tj_table_cell_tooltip'))
+          addHtmlTooltip(tooltip, td, cell)
         else
           addHtmlTooltip(tooltip, cell)
         end
@@ -164,14 +166,9 @@ class TaskJuggler
         paddingLeft = paddingRight = @padding
       end
       style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
-      style += 'font-weight:bold; ' if @bold
 
-      style += "font-size: #{@fontSize}px; " if fontSize
-      if @fontColor
-        style += "color:#{@fontColor}; "
-      end
-      if @text.is_a?(RichTextIntermediate) && @line && @line.table.equiLines
-        style += "height:#{@line.height - 3}px; "
+      if @line && @line.table.equiLines
+        style += "height:#{@line.height - 7}px; "
       end
 
       style
@@ -179,11 +176,11 @@ class TaskJuggler
 
     def cellIcon(cell)
       if @icon && !@selfcontained
-        iconDiv = XMLElement.new('div', 'class' => 'tj_table_cell_icon')
-        iconDiv << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
-                                         'alt' => "Icon")
-        addHtmlTooltip(@iconTooltip, iconDiv, cell)
-        return iconDiv
+        td = XMLElement.new('td', 'class' => 'tj_table_cell_icon')
+        td << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+                                    'alt' => "Icon")
+        addHtmlTooltip(@iconTooltip, td, cell)
+        return td
       end
 
       nil
@@ -193,13 +190,20 @@ class TaskJuggler
       # If we have a RichText content and a width limit, we enable line
       # wrapping.
       if @text.is_a?(RichTextIntermediate) && @width
-        labelStyle = "white-space:normal; max-width:#{@width}px; "
+        style = "white-space:normal; max-width:#{@width}px; "
       else
-        labelStyle = "white-space:nowrap; "
+        style = "white-space:nowrap; "
       end
-      labelDiv = XMLElement.new('div',
-                                'class' => 'tj_table_cell_label',
-                                'style' => labelStyle)
+      if @line && @line.table.equiLines
+        style += "height:#{@line.height - 3}px; "
+      end
+      style += 'font-weight:bold; ' if @bold
+      style += "font-size: #{@fontSize}px; " if fontSize
+      if @fontColor
+        style += "color:#{@fontColor}; "
+      end
+      td = XMLElement.new('td', 'class' => 'tj_table_cell_label',
+                                'style' => style)
 
       tooltip = nil
       unless @text.nil? || @text.empty?
@@ -213,21 +217,21 @@ class TaskJuggler
             !@category
           # The cell is size-limited. We only put a shortened plain-text version
           # in the cell and provide the full content via a tooltip.
-          labelDiv << XMLText.new(shortText)
+          td << XMLText.new(shortText)
           tooltip = @text if @text != shortText
         else
           # The cell will adjust to the size of the content.
           if @text.is_a?(RichTextIntermediate)
             # Don't put the @text into a <div> but a <span>.
             # @text.blockMode = false # if singleLine
-            labelDiv << @text.to_html
+            td << @text.to_html
           else
-            labelDiv << XMLText.new(shortText)
+            td << XMLText.new(shortText)
           end
         end
       end
 
-      return labelDiv, tooltip
+      return td, tooltip
     end
 
     # Convert a RichText String into a small one-line plain text

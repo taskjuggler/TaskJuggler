@@ -6,7 +6,6 @@ h1, h2, table, tr, td, div, span {
   font-family: Bitstream Vera Sans, Tahoma, sans-serif;
 }
 table {
-  font-size:13px;
 }
 td, div { padding:0px; margin:0px; }
 h1 { font-size:22px; }
@@ -67,6 +66,7 @@ p.alertmessage {
   margin-top:15px;
   margin-bottom:15px;
   border-spacing:1px;
+  font-size:13px;
 }
 
 /* The headline box for report tables */
@@ -89,10 +89,7 @@ p.alertmessage {
 
 /* The cells of the table header. */
 .tj_table_header_cell {
-  padding-top:1px;
-  padding-right:3px;
-  padding-left:3px;
-  padding-bottom:0px;
+  padding:0px 3px 0px 3px;
   white-space:nowrap;
   overflow:hidden;
 }
@@ -101,9 +98,9 @@ p.alertmessage {
  * label and a tooltip trigger. */
 .tj_table_cell {
   vertical-align:top;
-  padding:2px 4px 1px 2px;
-  white-space:nowrap;
-  overflow:hidden;
+  padding:0px 4px 0px 2px;
+  margin:0px;
+  border-spacing:0px;
   position: relative;
 } 
 
@@ -111,15 +108,13 @@ p.alertmessage {
  * cell. */
 .tj_table_cell_icon {
   vertical-align:top;
-  margin:0px 2px 0px 2px;
-  float:left;
+  padding:2px 3px 0px 0px;
 }
 
 /* This is the text label of a cell. */
 .tj_table_cell_label {
   vertical-align:top;
-  margin-top:0px;
-  float:left;
+  padding-top:1px;
 }
 
 /* The box around the icon to the right of the text label. This is
@@ -127,8 +122,7 @@ p.alertmessage {
  * case the cell is not large enough to show everything. */
 .tj_table_cell_tooltip {
   vertical-align:top;
-  margin:1px 3px 1px 3px;
-  float:left;
+  padding:2px 0px 0px 3px;
 }
 
 /* The container that holds the invisible tooltips. */
