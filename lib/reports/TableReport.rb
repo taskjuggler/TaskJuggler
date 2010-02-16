@@ -83,33 +83,32 @@ class TaskJuggler
       html = []
 
       html << rt_to_html('header')
-      html << (tableBlock = XMLElement.new('table', 'class' => 'tj_table_frame'))
-      tableBlock << (tableFrame = XMLElement.new('tr'))
-
-      # Headline box
-      if a('headline')
-        tableFrame << (td = XMLElement.new('td'))
-        td << (div = XMLElement.new('div', 'class' => 'tj_table_headline'))
-        div << a('headline').to_html
-      end
+      html << (tableFrame = generateHtmlTableFrame)
 
       # Now generate the actual table with the data.
-      tableFrame << (tr = XMLElement.new('tr'))
-      tr << (cell = XMLElement.new('td'))
-      cell << @table.to_html
+      tableFrame << generateHtmlTableRow do
+        td = XMLElement.new('td')
+        td << @table.to_html
+        td
+      end
 
       # Embedd the caption as RichText into the table footer.
       if a('caption')
-        tableFrame << (tr = XMLElement.new('tr'))
-        tr << (td = XMLElement.new('td', 'class' => 'tj_table_caption'))
-        a('caption').sectionNumbers = false
-        td << a('caption').to_html
+        tableFrame << generateHtmlTableRow do
+          td = XMLElement.new('td')
+          td << (div = XMLElement.new('div', 'class' => 'tj_table_caption'))
+          a('caption').sectionNumbers = false
+          div << a('caption').to_html
+          td
+        end
       end
 
       # The legend.
-      tableFrame << (tr = XMLElement.new('tr'))
-      tr << (td = XMLElement.new('td'))
-      td << @legend.to_html
+      tableFrame << generateHtmlTableRow do
+        td = XMLElement.new('td')
+        td << @legend.to_html
+        td
+      end
 
       html << rt_to_html('footer')
       html

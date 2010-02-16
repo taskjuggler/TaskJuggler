@@ -76,18 +76,11 @@ class TaskJuggler
     end
 
     def to_html
-      tableBlock = XMLElement.new('div', 'class' => 'tj_table_block')
-      tableBlock << (tableFrame =
-                     XMLElement.new('div', 'class' => 'tj_table_frame'))
+      tableFrame = generateHtmlTableFrame
 
-      # Headline box
-      if a('headline')
-        tableFrame << (div = XMLElement.new('div',
-                                            'class' => 'tj_table_headline'))
-        div << a('headline').to_html
-      end
-
-      tableFrame << (table = XMLElement.new('table', 'class' => 'tj_table'))
+      tableFrame << (tr = XMLElement.new('tr'))
+      tr << (td = XMLElement.new('td'))
+      td << (table = XMLElement.new('table', 'class' => 'tj_table'))
 
       # Table Header with two rows. First the project name, then the ID.
       table << (thead = XMLElement.new('thead'))
@@ -136,11 +129,11 @@ class TaskJuggler
       tr << htmlTabCell('Total', 'true', 'left')
       @projects.each_key do |projectId|
         next if projectTotal(projectId) <= 0.0
-        tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true, 'right')
+        tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true,
+                          'right')
       end
       tr << htmlTabCell(format("%.2f", total()), true, 'right')
-
-      tableBlock
+      tableFrame
     end
 
     def to_niku

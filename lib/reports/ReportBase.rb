@@ -109,6 +109,26 @@ class TaskJuggler
 
     private
 
+    def generateHtmlTableFrame
+      table = XMLElement.new('table', 'class' => 'tj_table_frame')
+
+      # Headline box
+      if a('headline')
+        table << generateHtmlTableRow do
+          td = XMLElement.new('td')
+          td << (div = XMLElement.new('div', 'class' => 'tj_table_headline'))
+          div << a('headline').to_html
+          td
+        end
+      end
+
+      table
+    end
+
+    def generateHtmlTableRow
+      XMLElement.new('tr') << yield
+    end
+
     # Convert the RichText object _name_ into a HTML form.
     def rt_to_html(name)
       return unless a(name)
