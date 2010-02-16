@@ -195,7 +195,7 @@ class TaskJuggler
     # Return a list of intervals that lay within _iv_ and are at least
     # minDuration long and contain no working time.
     def collectTimeOffIntervals(iv, minDuration)
-      @scoreboard.collectTimeOffIntervals(iv, minDuration) do |val|
+      @scoreboard.collectIntervals(iv, minDuration) do |val|
         (val & 0x3E) != 0
       end
     end
