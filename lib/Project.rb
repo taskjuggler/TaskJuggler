@@ -840,10 +840,10 @@ class TaskJuggler
       # This is used for debugging only
       if false
         resources.each do |resource|
-          puts resource
+          puts "#{resource}"
         end
         tasks.each do |task|
-          puts task
+          puts "#{task}"
         end
       end
     end
