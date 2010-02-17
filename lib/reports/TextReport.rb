@@ -63,13 +63,14 @@ class TaskJuggler
     def to_html
       html = rt_to_html('header')
       if a('left') || a('center') || a('right')
-        html << (page = XMLElement.new('div', 'class' => 'tj_text_page'))
-        page << (row = XMLElement.new('div', 'class' => 'tj_text_row'))
+        html << (table = XMLElement.new('table', 'class' => 'tj_text_page',
+                                                 'cellspacing' => '0'))
+        table << (row = XMLElement.new('tr', 'class' => 'tj_text_row'))
         %w( left center right).each do |i|
           width = instance_variable_get('@' + i[0].chr + 'Width')
           padding = instance_variable_get('@' + i[0].chr + 'Padding')
           if a(i)
-            row << (col = XMLElement.new('div', 'class' => "tj_column_#{i}"))
+            row << (col = XMLElement.new('td', 'class' => "tj_column_#{i}"))
             style = ''
             style += "width:#{width}%; " if width > 0
             style += "padding-right:#{padding}%; " if padding > 0

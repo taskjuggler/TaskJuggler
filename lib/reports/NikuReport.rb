@@ -80,7 +80,8 @@ class TaskJuggler
 
       tableFrame << (tr = XMLElement.new('tr'))
       tr << (td = XMLElement.new('td'))
-      td << (table = XMLElement.new('table', 'class' => 'tj_table'))
+      td << (table = XMLElement.new('table', 'class' => 'tj_table',
+                                             'cellspacing' => '1'))
 
       # Table Header with two rows. First the project name, then the ID.
       table << (thead = XMLElement.new('thead'))

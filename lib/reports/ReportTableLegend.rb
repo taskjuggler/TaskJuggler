@@ -46,7 +46,8 @@ class TaskJuggler
                     @calendarItems.empty?
 
       frame = XMLElement.new('div', 'class' => 'tj_table_legend_frame')
-      frame << (legend = XMLElement.new('table', 'class' => 'tj_table_legend'))
+      frame << (legend = XMLElement.new('table', 'class' => 'tj_table_legend',
+                                                 'cellspacing' => '1'))
 
       legend << headlineToHTML('Gantt Chart Symbols:')
       # Generate the Gantt chart symbols

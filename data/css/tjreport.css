@@ -30,27 +30,22 @@ p.alertmessage {
 
 /* The basic elements of a text report page. */
 .tj_text_page {
-  display:table;	
-  position:relative;
   width:100%;
+  border-spacing:0px;
 }
 
 .tj_text_row {
-  display:table-row;	
 }
 .tj_column_left {
   vertical-align:top;
-  display:table-cell;
 }
 
 .tj_column_center {
   vertical-align:top;
-  display:table-cell;
 }
 
 .tj_column_right {
   vertical-align:top;
-  display:table-cell;
 }
 
 /* The top-level page layout */
@@ -91,6 +86,7 @@ p.alertmessage {
 .tj_table_header_cell {
   padding:0px 3px 0px 3px;
   white-space:nowrap;
+  border-spacing:0px;
   overflow:hidden;
 }
 
@@ -156,6 +152,7 @@ p.alertmessage {
   margin-right:auto;
   font-size:11px;
   color:#000000;
+  border-spacing:1px;
   table-layout:fixed;
 }
 

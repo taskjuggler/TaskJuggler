@@ -101,7 +101,7 @@ class TaskJuggler
 
       cell << (table = XMLElement.new('table',
         'class' => @category ? 'tj_table_cell' : 'tj_table_header_cell',
-        'style' => cellStyle))
+        'cellspacing' => '0', 'style' => cellStyle))
       table << (row = XMLElement.new('tr'))
 
       row << cellIcon(cell)

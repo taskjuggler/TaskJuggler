@@ -110,7 +110,8 @@ class TaskJuggler
     private
 
     def generateHtmlTableFrame
-      table = XMLElement.new('table', 'class' => 'tj_table_frame')
+      table = XMLElement.new('table', 'class' => 'tj_table_frame',
+                                      'cellspacing' => '1')
 
       # Headline box
       if a('headline')
