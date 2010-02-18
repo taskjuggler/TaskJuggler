@@ -291,11 +291,17 @@ macro TaskTip [
     '''Start: ''' <-query attribute='start'->
     '''End: ''' <-query attribute='end'->
     ----
-    '''Resources:''' <-query attribute='resources'->
+    '''Resources:'''
+    
+    <-query attribute='resources'->
     ----
-    '''Precursors: ''' <-query attribute='precursors'->
+    '''Precursors: '''
+    
+    <-query attribute='precursors'->
     ----
-    '''Followers: ''' <-query attribute='followers'->
+    '''Followers: '''
+    
+    <-query attribute='followers'->
     ->8-
 ]
 
