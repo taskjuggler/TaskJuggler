@@ -57,6 +57,7 @@ p.alertmessage {
 .tj_table_frame {
   margin-left:auto;
   margin-right:auto;
+  text-align:center;
   background-color:#9a9a9a;
   margin-top:15px;
   margin-bottom:15px;
@@ -96,6 +97,7 @@ p.alertmessage {
   vertical-align:top;
   padding:0px 4px 0px 2px;
   margin:0px;
+  width:100%;
   border-spacing:0px;
   position: relative;
 } 
@@ -104,7 +106,9 @@ p.alertmessage {
  * cell. */
 .tj_table_cell_icon {
   vertical-align:top;
+  text-align:right;
   padding:2px 3px 0px 0px;
+  width:19px;
 }
 
 /* This is the text label of a cell. */
@@ -150,10 +154,10 @@ p.alertmessage {
 .tj_table_legend {
   margin-left:auto;
   margin-right:auto;
+  text-align:center;
   font-size:11px;
   color:#000000;
   border-spacing:1px;
-  table-layout:fixed;
 }
 
 /* A row of the table legend */

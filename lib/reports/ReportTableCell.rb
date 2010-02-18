@@ -104,6 +104,12 @@ class TaskJuggler
         'cellspacing' => '0', 'style' => cellStyle))
       table << (row = XMLElement.new('tr'))
 
+      calculateIndentation
+
+      # Insert a padding cell for the left side indentation.
+      if @leftIndent
+        row << XMLElement.new('td', 'style' => "width:#{@leftIndent}px; ")
+      end
       row << cellIcon(cell)
 
       labelDiv, tooltip = cellLabel
@@ -120,6 +126,11 @@ class TaskJuggler
         else
           addHtmlTooltip(tooltip, cell)
         end
+      end
+
+      # Insert a padding cell for the right side indentation.
+      if @rightIndent
+        row << XMLElement.new('td', 'style' => "width:#{@rightIndent}px; ")
       end
 
       cell
@@ -144,29 +155,23 @@ class TaskJuggler
 
     private
 
+    def calculateIndentation
+      # In tree sorting mode, some cells have to be indented to reflect the
+      # tree nesting structure. The indentation is achieved with padding cells
+      # and needs to be applied to the proper side depending on the alignment.
+      @leftIndent = @rightIndent = 0
+      if @indent && @alignment != :center
+        if @alignment == :left
+          @leftIndent = @indent * 8
+        elsif @alignment == :right
+          @rightIndent = (@line.table.maxIndent - @indent) * 8
+        end
+      end
+    end
+
     # Determine cell style
     def cellStyle
       style = "text-align:#{@alignment.to_s}; "
-      # In tree sorting mode, some cells have to be indented to reflect the
-      # tree nesting structure. The indentation is achieved with cell padding
-      # and needs to be applied to the proper side depending on the alignment.
-      paddingLeft = paddingRight = 0
-      if @indent && @alignment != :center
-        if @alignment == :left
-          paddingLeft = @padding + @indent * 8
-          paddingRight = @padding
-        elsif @alignment == :right
-          paddingLeft = @padding
-          paddingRight = @padding + (@line.table.maxIndent - @indent) * 8
-        end
-        style += "padding-left:#{paddingLeft}px; " unless paddingLeft == 3
-        style += "padding-right:#{paddingRight}px; " unless paddingRight == 3
-      elsif @padding != 3
-        style += "padding-left:#{@padding}px; padding-right:#{@padding}px; "
-        paddingLeft = paddingRight = @padding
-      end
-      style += "width:#{@width - paddingLeft - paddingRight}px; " if @width
-
       if @line && @line.table.equiLines
         style += "height:#{@line.height - 7}px; "
       end
@@ -189,13 +194,24 @@ class TaskJuggler
     def cellLabel
       # If we have a RichText content and a width limit, we enable line
       # wrapping.
-      if @text.is_a?(RichTextIntermediate) && @width
-        style = "white-space:normal; max-width:#{@width}px; "
-      else
-        style = "white-space:nowrap; "
-      end
-      if @line && @line.table.equiLines
+      #                Overfl. Wrap. Height Width
+      # Fixed Height:    x      -      x     -
+      # Fixed Width:     x      x      -     x
+      # Both:            x      -      x     x
+      # None:            -      x      -     -
+      fixedHeight = @line && @line.table.equiLines
+      fixedWidth = !@width.nil?
+      style = "overflow:hidden; " if fixedHeight || fixedWidth
+      style = "white-space:#{fixedWidth && !fixedHeight ?
+                             'normal' : 'nowrap'}; "
+      if fixedHeight && !fixedWidth
         style += "height:#{@line.height - 3}px; "
+      end
+      if fixedWidth && !fixedHeight
+        # @width does not really determine the column width. It only
+        # determines the with of the text label. Padding and icons can make
+        # the column significantly wider.
+        style += "max-width:#{@width}px; "
       end
       style += 'font-weight:bold; ' if @bold
       style += "font-size: #{@fontSize}px; " if fontSize
