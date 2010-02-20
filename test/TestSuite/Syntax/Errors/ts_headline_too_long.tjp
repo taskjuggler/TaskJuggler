@@ -1,0 +1,19 @@
+project "test" 2010-02-21 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+timesheet r1 2010-02-21 +1w {
+  task t1 {
+    work 100%
+    remaining 0d
+# MARK: error 16 ts_headline_too_long
+    status green
+    "0123456789012345678901234567890123456789012345678901234567891"
+  }
+}
+

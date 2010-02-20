@@ -1,0 +1,23 @@
+project "test" 2010-02-21 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+# MARK: error 11 ts_duplicate_task 
+timesheet r1 2010-02-21 +1w {
+  task t1 {
+    work 80%
+    remaining 0d
+    status green "Lots of work done"
+  }
+  task t1 {
+    work 80%
+    remaining 0d
+    status green "Lots of work done"
+  }
+}
+

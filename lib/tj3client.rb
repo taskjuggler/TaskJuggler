@@ -37,6 +37,10 @@ def processArguments(argv)
           'Generate reports despite scheduling errors') do |arg|
     @reports << arg
   end
+  opts.on('-t', '--timesheet',
+          'Check the time sheet') do |arg|
+    @timeSheet = true
+  end
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts.to_s
     exit 0
@@ -92,9 +96,13 @@ def main
   server = DRbObject.new(nil, uri)
   server.connect($stdout, $stderr)
 
-  files.each do |file|
-    fileContent = IO.read(file)
-    server.parse(fileContent)
+  files.each do |fileName|
+    fileContent = IO.read(fileName)
+    if @timeSheet
+      exit 1 unless server.checkTimeSheet(fileName, fileContent)
+    else
+      exit 1 unless server.parse(fileName, fileContent)
+    end
   end
 
   @reports.each do |id|

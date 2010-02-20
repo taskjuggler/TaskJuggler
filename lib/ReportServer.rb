@@ -22,6 +22,8 @@ class ReportServer
 
   def connect(stdout, stderr)
     # Make sure that all output to STDOUT and STDERR is sent to the client.
+    # We save a copy of the old file handles so we can restore then later
+    # again.
     @stdout = $stdout
     @stderr = $stderr
     $stdout = stdout
@@ -29,21 +31,43 @@ class ReportServer
   end
 
   def disconnect
-    # Signal to the RemoteServiceManager to exit the process.
+    # Restore the old stdout and stderr file handles so that error messages
+    # after the disconnect show up on the server again.
     $stdout = @stdout
     $stderr = @stderr
+    # Signal to the RemoteServiceManager to exit the process.
     @serviceManager.terminate = true
   end
 
-  def parse(tjiFileContent)
+  def parse(fileName, fileContent)
     begin
-      Log.enter('parser', 'Parsing buffer ...')
-      @parser.open(tjiFileContent, false, true)
-      @parser.setGlobalMacros
-      @parser.parse('properties')
+      setupParser(fileName, fileContent)
+      return false unless @parser.parse('properties')
       @parser.close
     rescue TjException
       Log.exit('parser')
+      return false
+    end
+    true
+  end
+
+  def checkTimeSheet(fileName, fileContent)
+    begin
+      Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
+      setupParser(fileName, fileContent)
+      return if (ts = @parser.parse('timeSheet')).nil?
+      @parser.close
+      return false unless @project.checkTimeSheets
+      queryAttrs = { 'project' => @project,
+                     'property' => ts.resource,
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => @project['trackingScenarioIdx'],
+                     'start' => ts.interval.start,
+                     'end' => ts.interval.end }
+      query = Query.new(queryAttrs)
+      puts ts.resource.query_journal(query).to_s
+    rescue TjException
+      Log.exit('checkTimeSheet')
       return false
     end
     true
@@ -59,6 +83,11 @@ class ReportServer
     end
     Log.exit('generateReport', "Generating report #{reportId} ...")
     true
+  end
+
+  def setupParser(fileName, fileContent)
+    @parser.open(fileContent, false, true)
+    @parser.setGlobalMacros
   end
 
 end

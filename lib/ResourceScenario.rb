@@ -297,8 +297,6 @@ class TaskJuggler
                                                     endIdx)
         end
       else
-        initScoreboard if @scoreboard.nil?
-
         freeTime = getFreeSlots(startIdx, endIdx) *
           @project['scheduleGranularity']
       end
@@ -318,8 +316,6 @@ class TaskJuggler
           work += resource.getEffectiveFreeWork(@scenarioIdx, startIdx, endIdx)
         end
       else
-        initScoreboard if @scoreboard.nil?
-
         work = @project.convertToDailyLoad(
                  getFreeSlots(startIdx, endIdx) *
                  @project['scheduleGranularity']) * a('efficiency')
@@ -448,6 +444,55 @@ class TaskJuggler
       end
     end
 
+    # Count the booked slots between the start and end index. If _task_ is not
+    # nil count only those slots that are assigned to this particular task.
+    def getAllocatedSlots(startIdx, endIdx, task)
+      # To speedup the counting we start with the first booked slot and end
+      # with the last booked slot.
+      startIdx = @firstBookedSlot if @firstBookedSlot &&
+                                     startIdx < @firstBookedSlot
+      endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
+                                      endIdx > @lastBookedSlot + 1
+
+      initScoreboard if @scoreboard.nil?
+      bookedSlots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        if (task.nil? && @scoreboard[idx].is_a?(Task)) ||
+           (task && @scoreboard[idx] == task)
+          bookedSlots += 1
+        end
+      end
+
+      bookedSlots
+    end
+
+    # Count the free slots between the start and end index.
+    def getFreeSlots(startIdx, endIdx)
+      initScoreboard if @scoreboard.nil?
+
+      freeSlots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        freeSlots += 1 if @scoreboard[idx].nil?
+      end
+
+      freeSlots
+    end
+
+    # Count the regular work time slots between the start and end index that
+    # have been blocked by a vacation.
+    def getVacationSlots(startIdx, endIdx)
+      initScoreboard if @scoreboard.nil?
+
+      vacationSlots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        val = @scoreboard[idx]
+        # Bit 1 needs to be unset and the vacation bits must not be 0.
+        vacationSlots += 1 if val.is_a?(Fixnum) && (val & 0x2) == 0 &&
+                                                   (val & 0x3C) != 0
+      end
+      vacationSlots
+    end
+
   private
 
     def initScoreboard
@@ -517,50 +562,6 @@ class TaskJuggler
       else
         @workinghours.onShift?(date)
       end
-    end
-
-    # Count the booked slots between the start and end index. If _task_ is not
-    # nil count only those slots that are assigned to this particular task.
-    def getAllocatedSlots(startIdx, endIdx, task)
-      # To speedup the counting we start with the first booked slot and end
-      # with the last booked slot.
-      startIdx = @firstBookedSlot if @firstBookedSlot &&
-                                     startIdx < @firstBookedSlot
-      endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
-                                      endIdx > @lastBookedSlot + 1
-
-      bookedSlots = 0
-      startIdx.upto(endIdx - 1) do |idx|
-        if (task.nil? && @scoreboard[idx].is_a?(Task)) ||
-           (task && @scoreboard[idx] == task)
-          bookedSlots += 1
-        end
-      end
-
-      bookedSlots
-    end
-
-    # Count the free slots between the start and end index.
-    def getFreeSlots(startIdx, endIdx)
-      freeSlots = 0
-      startIdx.upto(endIdx - 1) do |idx|
-        freeSlots += 1 if @scoreboard[idx].nil?
-      end
-
-      freeSlots
-    end
-
-    # Count the regular work time slots between the start and end index that
-    # have been blocked by a vacation.
-    def getVacationSlots(startIdx, endIdx)
-      vacationSlots = 0
-      startIdx.upto(endIdx - 1) do |idx|
-        val = @scoreboard[idx]
-        # Bit 1 needs to be unset and the vacation bits must not be 0.
-        vacationSlots += 1 if val.is_a?(Fixnum) && (val & 0x2) == 0 &&
-                                                   (val & 0x3C) != 0
-      end
-      vacationSlots
     end
 
     # Returns true if the resource or any of its children is allocated during

@@ -25,6 +25,7 @@ require 'Resource'
 require 'reports/Report'
 require 'ShiftAssignments'
 require 'WorkingHours'
+require 'TimeSheets'
 require 'ProjectFileParser'
 require 'BatchProcessor'
 require 'Journal'
@@ -46,7 +47,7 @@ class TaskJuggler
   class Project
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
-                :reports, :messageHandler
+                :timeSheets, :reports, :messageHandler
     attr_accessor :reportContext, :outputDir
 
     # Create a project with the specified +id+, +name+ and +version+.
@@ -373,6 +374,8 @@ class TaskJuggler
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
 
+      @timeSheets = TimeSheets.new
+
       # This holds a reference to the ReportContext for each Thread.
       @reportContext = nil
       @outputDir = ''
@@ -630,6 +633,11 @@ class TaskJuggler
       Log.stopProgressMeter
     end
 
+    def checkTimeSheets
+      @timeSheets.check
+    end
+
+
     ####################################################################
     # The following functions are not intended to be called from outside
     # the TaskJuggler library. There is no guarantee that these
@@ -834,6 +842,8 @@ class TaskJuggler
       tasks.each { |task| task.calcCriticalness(scIdx) }
       Log.progress(0.95)
       tasks.each { |task| task.calcPathCriticalness(scIdx) }
+      Log.progress(0.99)
+      @timeSheets.check
       Log.progress(1.0)
 
       Log.stopProgressMeter

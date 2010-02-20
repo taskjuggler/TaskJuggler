@@ -1,0 +1,27 @@
+project "test" 2009-11-30 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+# MARK: error 11 ts_work_too_high
+timesheet r1 2009-11-30 +1w {
+  task t1 {
+    work 8d
+    remaining 4d
+    status green "All work done" {
+      summary "I had good fun!"
+      details -8<-
+        This task went smoothly and I got three things done:
+        * Have fun
+        * Be on time
+        * Get things done
+      ->8-
+    }
+  }
+}
+
+

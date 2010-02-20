@@ -230,12 +230,12 @@ EOT
 
   # You can use the following section to report a personal status.
   # status green "A task title" {
-  #   summary -8<-\n" +
-  #   Uncomment and put one or two sentences here!\n" +
-  #   ->8-\n" +
-  #   details -8<-\n" +
-  #   Uncomment and put markup text here.\n" +
-  #   ->8-\n" +
+  #   summary -8<-
+  #   Uncomment and put one or two sentences here!
+  #   ->8-
+  #   details -8<-
+  #   Uncomment and put markup text here.
+  #   ->8-
   # }
 EOT
         @file << "}\n\n"

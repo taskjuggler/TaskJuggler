@@ -748,6 +748,20 @@ EOT
     descr('years')
   end
 
+  def rule_durationUnitOrPercent
+    pattern(%w( _% ), lambda { -1 })
+    descr('percentage of reported period')
+
+    pattern(%w( _min ), lambda { 0 })
+    descr('minutes')
+
+    pattern(%w( _h ), lambda { 1 })
+    descr('hours')
+
+    pattern(%w( _d ), lambda { 2 })
+    descr('days')
+  end
+
   def rule_export
     pattern(%w( !exportHeader !exportBody ))
     doc('export', <<'EOT'
@@ -3526,6 +3540,7 @@ EOT
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
         error('unknown_scenario_id', "Unknown scenario: #{@val[0]}")
       end
+      @scenarioIdx
     })
     arg(0, 'scenario', 'ID of a defined scenario')
   end
@@ -3850,13 +3865,20 @@ EOT
   end
   def rule_summary
     pattern(%w( _summary $STRING ), lambda {
+      if @val[1].length > 240
+        error('ts_summary_too_long',
+              "The summary text must be 240 characters long or shorter. " +
+              "This text has #{@val[1].length} characters.")
+      end
       rtTokenSetIntro =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
       @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
     })
     doc('summary', <<'EOT'
 This is the introductory part of the journal or status entry. It should
-summarize the full entry but should contain more details than the headline.
+only summarize the full entry but should contain more details than the
+headline. The text including formatting characters must be 240 characters long
+or less.
 EOT
        )
     arg(1, 'text', <<'EOT'
@@ -4726,7 +4748,7 @@ EOT
 
   def rule_timeSheet
     pattern(%w( !timeSheetHeader !timeSheetBody ), lambda {
-
+      @timeSheet
     })
     doc('timesheet', <<'EOT'
 This feature is not yet functional!
@@ -4806,11 +4828,17 @@ EOT
   end
 
   def rule_timeSheetHeader
-    pattern(%w( _timesheet !resourceId !valIntervalOrDate ),
-            lambda {
-      @sheetAuthor = @val[1]
-      @sheetStart = @val[2].start
-      @sheetEnd = @val[2].end
+    pattern(%w( _timesheet !resourceId !valIntervalOrDate ), lambda {
+      sheetAuthor = @val[1]
+      unless sheetAuthor.leaf?
+        error('ts_group_author',
+              'A resource group cannot file a time sheet')
+      end
+      # Currently time sheets are hardcoded for scenario 0.
+      @timeSheet = TimeSheet.new(sheetAuthor, @val[2],
+                                 @project['trackingScenarioIdx'])
+      @timeSheet.sourceFileInfo = @scanner.sourceFileInfo
+      @project.timeSheets << @timeSheet
     })
   end
 
@@ -4858,8 +4886,10 @@ EOT
   end
 
   def rule_tsNewTaskHeader
-    pattern(%w( _newtask !taskIdUnverifd ), lambda {
-
+    pattern(%w( _newtask !taskIdUnverifd $STRING ), lambda {
+      @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @val[1])
+      @timeSheetRecord.name = @val[2]
+      @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
     })
     arg(1, 'task', 'ID of the new task')
   end
@@ -4925,12 +4955,18 @@ EOT
 
   def rule_tsStatusHeader
     pattern(%w( _status !alertLevel $STRING ), lambda {
-      @journalEntry = JournalEntry.new(@project['journal'], @sheetEnd,
+      if @val[2].length > 60
+        error('ts_headline_too_long',
+              "The headline must be 60 or less characters long. This one " +
+              "has #{@val[2].length} characters.")
+      end
+      @journalEntry = JournalEntry.new(@project['journal'],
+                                       @timeSheet.interval.end,
                                        @val[2], @property,
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
-      @journalEntry.author = @sheetAuthor
-
+      @journalEntry.author = @timeSheet.resource
+      @timeSheetRecord.status = @journalEntry
     })
   end
 
@@ -4941,6 +4977,10 @@ The status attribute can be used to describe the current status of the task or
 resource. The content of the status messages is added to the project journal.
 EOT
        )
+    arg(2, 'headline', <<'EOT'
+A short headline for the status. Must be 60 characters or shorter.
+EOT
+       )
   end
 
   def rule_tsTaskAttributes
@@ -4948,7 +4988,12 @@ EOT
     repeatable
 
     pattern(%w( _end !valDate ), lambda {
-
+      if @val[1] < @timeSheet.interval.start
+        error('ts_end_too_early',
+              "The expected task end date must be after the start date of " +
+              "this time sheet report.")
+      end
+      @timeSheetRecord.expectedEnd = @val[1]
     })
     doc('end.timesheet', <<'EOT'
 The expected end date for the task. This can only be used for duration based
@@ -4957,7 +5002,12 @@ EOT
        )
 
     pattern(%w( _priority $INTEGER ), lambda {
-
+      priority = @val[1]
+      if priority < 1 || priority > 1000
+        error('ts_bad_priority',
+              "Priority value #{priority} must be between 1 and 1000.")
+      end
+      @timeSheetRecord.priority = priority
     })
     doc('priority.timesheet', <<'EOT'
 The priority is a value between 1 and 1000. It is used to determine the
@@ -4969,7 +5019,7 @@ EOT
        )
 
     pattern(%w( _remaining !workingDuration ), lambda {
-
+      @timeSheetRecord.remaining = @val[1]
     })
     doc('remaining', <<'EOT'
 The remaining effort for the task. This value is ignored if there are
@@ -4986,8 +5036,8 @@ EOT
 
     pattern(%w( !tsStatus ))
 
-    pattern(%w( _work !workingDuration ), lambda {
-
+    pattern(%w( _work !workingDurationPercent ), lambda {
+      @timeSheetRecord.work = @val[1]
     })
     doc('work', <<'EOT'
 The amount of time that the resource has spend with the task during the
@@ -5016,17 +5066,21 @@ EOT
   def rule_tsTaskHeader
     pattern(%w( _task !taskId ), lambda {
       @property = @val[1]
-      # TODO: This is not too useful here. Needs to be done in postScheduling.
-      #scenarioIdx = @project['trackingScenarioIdx']
-      #taskStart = @property['start', scenarioIdx] || @project['start']
-      #taskEnd = @property['end', scenarioIdx] || @project['end']
+      unless @property.leaf?
+        error('ts_task_not_leaf',
+              'You cannot specify a task that has sub tasks here.')
+      end
+      scenarioIdx = @timeSheet.scenarioIdx
+      taskStart = @property['start', scenarioIdx] || @project['start']
+      taskEnd = @property['end', scenarioIdx] || @project['end']
 
-      #if !Interval.new(@sheetStart, @sheetEnd).
-      #    overlaps?(Interval.new(taskStart, taskEnd))
-      #  warning('ts_task_not_active',
-      #          "Task #{@property.fullId} is not active during the time sheet " +
-      #          "reporting period")
-      #end
+      if !@timeSheet.interval.overlaps?(Interval.new(taskStart, taskEnd))
+        warning('ts_task_not_active',
+                "Task #{@property.fullId} is not active during the time sheet " +
+                "reporting period")
+      end
+      @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @property)
+      @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
     })
     arg(1, 'task', 'ID of an already existing task')
   end
@@ -5174,8 +5228,33 @@ EOT
                       60 * 60 * @project['dailyworkinghours'] *
                       @project['yearlyworkingdays'] # years
                     ]
+      # The result will always be in number of time slots.
       (@val[0] * convFactors[@val[1]] /
        @project['scheduleGranularity']).round.to_i
+    })
+    arg(0, 'value', 'A floating point or integer number')
+  end
+
+  def rule_workingDurationPercent
+    pattern(%w( !number !durationUnitOrPercent ), lambda {
+      if @val[1] >= 0
+        # Absolute value in minutes, hours or days.
+        convFactors = [ 60, # minutes
+          60 * 60, # hours
+          60 * 60 * @project['dailyworkinghours'] # days
+        ]
+        # The result will always be in number of time slots.
+        (@val[0] * convFactors[@val[1]] /
+         @project['scheduleGranularity']).round.to_i
+      else
+        # Percentage values are always returned as Float in the rage of 0.0 to
+        # 1.0.
+        if @val[0] < 0.0 || @val[0] > 100.0
+          error('illegal_percentage',
+                "Percentage values must be between 0 and 100%.")
+        end
+        @val[0] / 100.0
+      end
     })
     arg(0, 'value', 'A floating point or integer number')
   end

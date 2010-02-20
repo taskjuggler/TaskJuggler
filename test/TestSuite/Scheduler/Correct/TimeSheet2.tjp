@@ -1,0 +1,62 @@
+project "test" 2010-02-21 +2m
+
+vacation 2010-02-24
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+task t2 "Task 2" {
+  task t3 "Task 3" {
+    effort 10d
+    allocate r2
+  }
+}
+
+timesheet r1 2010-02-21 +1w {
+  task t1 {
+    work 80%
+    remaining 0d
+    status green "Lots of work done" {
+      summary "I had good fun!"
+      details -8<-
+        This task went smoothly and I got three things done:
+        * Have fun
+        * Be on time
+        * Get things done
+      ->8-
+    }
+  }
+}
+
+timesheet r1 2010-02-28 +1w {
+  newtask t4 "Something great" {
+    work 100%
+    remaining 10d
+    status green "I had a great idea!"
+  }
+}
+
+timesheet r2 2010-02-21 +1w {
+  task t1 {
+    work 20%
+    remaining 1d
+    status green "I helped r1"
+  }
+  task t2.t3 {
+    work 60%
+    remaining 8d
+    status red "I need more time" {
+      summary "This takes longer than expected" 
+      details -8<-
+        To finish on time, I need help. Get this r1 guy to help me out
+        here.
+        * I want to have fun too!
+      ->8-
+    }
+  }
+}
+
