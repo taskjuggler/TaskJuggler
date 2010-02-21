@@ -1,24 +1,37 @@
+# *** EXAMPLE: 2 +
 project "test" 2009-11-30 +2m
 
+# *** EXAMPLE: 1 +
 trackingscenario plan
 
+# *** EXAMPLE: 1 -
 resource r1 "R1"
+# *** EXAMPLE: 2 -
 resource r2 "R2"
 
+# *** EXAMPLE: 6 +
 task t1 "Task 1" {
   effort 5d
   allocate r1
 }
+# *** EXAMPLE: 6 -
+# *** EXAMPLE: 5 +
 task t2 "Task 2" {
   task t3 "Task 3" {
-    effort 10d
+    duration 10d
     allocate r2
   }
 }
+# *** EXAMPLE: 6 +
 
+# *** EXAMPLE: 5 -
+# *** EXAMPLE: 1 +
+# *** EXAMPLE: 3 +
+# *** EXAMPLE: 4 +
 timesheet r1 2009-11-30 +1w {
+# *** EXAMPLE: 3 -
   task t1 {
-    work 5d
+    work 3d
     remaining 0d
     status green "All work done" {
       summary "I had good fun!"
@@ -30,12 +43,28 @@ timesheet r1 2009-11-30 +1w {
       ->8-
     }
   }
+# *** EXAMPLE: 6 -
+# *** EXAMPLE: 4 -
+# *** EXAMPLE: 3 +
+  newtask t4 "Another fun job" {
+    work 2d
+    remaining 4d
+    status yellow "Had a cool idea" {
+      summary "Will have a schedule impact though."
+    }
+  }
+# *** EXAMPLE: 4 +
+# *** EXAMPLE: 6 +
 }
+# *** EXAMPLE: 6 -
+# *** EXAMPLE: 4 -
+# *** EXAMPLE: 3 -
 
+# *** EXAMPLE: 5 +
 timesheet r2 2009-11-30 +1w {
   task t2.t3 {
     work 5d
-    remaining 8d
+    end 2009-12-10
     status red "I need more time" {
       summary "This takes longer than expected" 
       details -8<-
@@ -46,4 +75,6 @@ timesheet r2 2009-11-30 +1w {
     }
   }
 }
+# *** EXAMPLE: 5 -
+# *** EXAMPLE: 1 -
 

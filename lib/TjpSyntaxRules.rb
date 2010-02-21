@@ -2497,6 +2497,7 @@ Specifies which scenario should be used for time sheet reports. By default,
 the top-level scenario will be used.
 EOT
        )
+    example('TimeSheet1', '2')
   end
 
   def rule_propertiesInclude
@@ -4784,7 +4785,7 @@ into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid
 columns]].
 EOT
        )
-    example('TimeSheet')
+    example('TimeSheet1', '1')
   end
 
   def rule_timeSheetAttributes
@@ -4799,6 +4800,7 @@ If the task exists already, an error is generated. The new task can be used
 immediately to report progress and status against it.
 EOT
        )
+    example('TimeSheet1', '3')
 
     pattern(%w( _shift !shiftId ), lambda {
 
@@ -4819,6 +4821,7 @@ Specifies an existing task that progress and status should be reported
 against.
 EOT
        )
+    example('TimeSheet1', '4')
   end
 
   def rule_timeSheetBody
@@ -4981,6 +4984,7 @@ EOT
 A short headline for the status. Must be 60 characters or shorter.
 EOT
        )
+    example('TimeSheet1', '4')
   end
 
   def rule_tsTaskAttributes
@@ -5000,6 +5004,7 @@ The expected end date for the task. This can only be used for duration based
 task. For effort based task [[remaining]] has to be used.
 EOT
        )
+    example('TimeSheet1', '5')
 
     pattern(%w( _priority $INTEGER ), lambda {
       priority = @val[1]
@@ -5033,6 +5038,7 @@ This attribute can only be used with tasks that are effort based. Duration
 based tasks need to have an [[end.timesheet end]] attribute.
 EOT
        )
+    example('TimeSheet1', '6')
 
     pattern(%w( !tsStatus ))
 
@@ -5055,6 +5061,7 @@ regular 40 hour work week, exactly 40 hours total or 5 working days have to be
 reported.
 EOT
        )
+    example('TimeSheet1', '4')
   end
 
   def rule_tsTaskBody
