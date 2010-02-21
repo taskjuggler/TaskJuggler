@@ -142,7 +142,7 @@ class TaskJuggler
           workPercent = (query.to_num / (weeksToReport * weeklyWorkingDays)) *
                         100.0
 
-          if task['effort', scenarioIdx]
+          if task['effort', scenarioIdx] > 0
             # The task is an effort based task.
             # Get the remaining effort for this task.
             query.start = a('end')
