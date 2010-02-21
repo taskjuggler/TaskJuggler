@@ -169,8 +169,8 @@ EOT
                              'href' => "#{AppConfig.contact}")
       div << XMLText.new(" v#{AppConfig.version}")
 
-      html.write((@name[0] == '/' ? '' : @project.outputDir) +
-                 @name + (@name == '.' ? '' : '.html'))
+      html.write(((@name[0] == '/' ? '' : @project.outputDir) +
+                  @name + (@name == '.' ? '' : '.html')).untaint)
     end
 
     # Generate a CSV version of the report.
@@ -210,25 +210,43 @@ EOT
 
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
-      CSVFile.new(csv, ';').write(@name == '.' ? @name :
+      begin
+        fileName = (@name == '.' ? @name :
                                   (@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name + '.csv')
+                                  @name + '.csv').untaint
+        CSVFile.new(csv, ';').write(fileName)
+      rescue
+        error('write_csv', "Cannot write to file #{fileName}.\n#{$!}")
+      end
     end
 
     # Generate time sheet drafts.
     def generateTJP
-      f = @name == '.' ? $stdout :
-                         File.new((@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name, 'w')
-      f.puts "#{@content.to_tjp}"
+      begin
+        fileName = '.'
+        if @name == '.'
+          f = $stdout
+        else
+          fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name
+          fileName.untaint
+          f = File.new(fileName, 'w')
+        end
+        f.puts "#{@content.to_tjp}"
+      rescue
+        error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}")
+      end
     end
 
     # Generate Niku report
     def generateNiku
-      f = @name == '.' ? $stdout :
-                         File.new((@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name + '.xml', 'w')
-      f.puts "#{@content.to_niku}"
+      begin
+        f = @name == '.' ? $stdout :
+          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
+                    @name + '.xml').untaint, 'w')
+        f.puts "#{@content.to_niku}"
+      rescue
+        error('write_niku', "Cannot write to file #{@name}.\n#{$!}")
+      end
     end
 
     def copyAuxiliaryFiles

@@ -4897,8 +4897,8 @@ EOT
     arg(1, 'task', 'ID of the new task')
   end
   def rule_tsReportHeader
-    pattern(%w( _timesheetreport $STRING ), lambda {
-      if (fileName = @val[1]) != '.'
+    pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
+      if (fileName = @val[2]) != '.'
         suffix = fileName[-4, 4]
         if suffix != '.tji'
           error('tsreport_bad_extn',
@@ -4912,7 +4912,7 @@ EOT
       else
         fileName = "timeSheet#{@project.reports.length + 1}"
       end
-      report = newReport(nil, fileName, :timeSheet, sourceFileInfo)
+      report = newReport(@val[1], fileName, :timeSheet, sourceFileInfo)
       report.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))

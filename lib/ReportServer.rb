@@ -20,6 +20,10 @@ class ReportServer
     @project = project
   end
 
+  def silent(bool)
+    TaskJuggler::Log.silent = bool
+  end
+
   def connect(stdout, stderr)
     # Make sure that all output to STDOUT and STDERR is sent to the client.
     # We save a copy of the old file handles so we can restore then later
@@ -42,7 +46,7 @@ class ReportServer
   def parse(fileName, fileContent)
     begin
       setupParser(fileName, fileContent)
-      return false unless @parser.parse('properties')
+      @parser.parse('properties')
       @parser.close
     rescue TjException
       Log.exit('parser')

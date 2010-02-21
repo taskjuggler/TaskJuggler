@@ -87,29 +87,47 @@ def main
   # Connect to the RemoteServiceManager object and request a new service
   # process.
   DRb.start_service
-  serviceManager = DRbObject.new(nil, 'druby://localhost:8474')
+  host = 'localhost'
+  port = '8474'
+  begin
+    serviceManager = DRbObject.new(nil, "druby://#{host}:#{port}")
 
-  uri = serviceManager.requestService
-  DRb.stop_service
+    uri = serviceManager.requestService
+    DRb.stop_service
 
-  DRb.start_service
-  server = DRbObject.new(nil, uri)
-  server.connect($stdout, $stderr)
+    DRb.start_service
+    server = DRbObject.new(nil, uri)
+    server.connect($stdout, $stderr)
+  rescue
+    $stderr.puts "ERROR: TaskJuggler server on host '#{host}' port #{port} " +
+                 "is not responding!"
+    exit 1
+  end
 
-  files.each do |fileName|
-    fileContent = IO.read(fileName)
-    if @timeSheet
-      exit 1 unless server.checkTimeSheet(fileName, fileContent)
-    else
-      exit 1 unless server.parse(fileName, fileContent)
+  begin
+    server.silent(@silent)
+
+    files.each do |fileName|
+      if fileName == '.'
+        fileContent = $stdin.read
+      else
+        fileContent = IO.read(fileName)
+      end
+      if @timeSheet
+        exit 1 unless server.checkTimeSheet(fileName, fileContent)
+      else
+        exit 1 unless server.parse(fileName, fileContent)
+      end
     end
-  end
+    @reports.each do |id|
+      server.generateReport(id)
+    end
 
-  @reports.each do |id|
-    server.generateReport(id)
+    server.disconnect
+  rescue
+    $stderr.puts "\nThe TaskJuggler server process died unexpectedly.\n#{$!}"
+    exit 1
   end
-
-  server.disconnect
 end
 
 main()
