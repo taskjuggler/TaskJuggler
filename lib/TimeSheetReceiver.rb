@@ -134,6 +134,7 @@ EOT
   end
 
   def sendEmail(subject, message)
+    log('INFO', "Sent email '#{subject}' to #{@submitter}")
     Mail.defaults do
       delivery_method :smtp, {
         :address => @smtpServer,
@@ -148,8 +149,8 @@ EOT
     mail.to = @submitter
     mail.from = @senderEmail
 
-    puts mail.to_s
-    #mail.deliver
+    #puts mail.to_s
+    mail.deliver
   end
 
   def checkTimeSheet(sheet)
