@@ -30,24 +30,39 @@ class TimeSheetReceiver
     @intervalFile = 'acceptable_intervals'
     @logFile = 'timesheets.log'
 
+    # Controls the amount of output that is sent to the terminal.
+    # 0: No output
+    # 1: only errors
+    # 2: errors and warnings
+    # 3: All messages
     @outputLevel = 0
+    # Controls the amount of information that is added to the log file. The
+    # levels are identical to @outputLevel.
     @logLevel = 3
+    # Set to true to not send any emails. Instead the email (header + body) is
+    # printed to the terminal.
     @noEmails = false
 
     # Global settings
     @timeSheetHeader = /^timesheet ([a-z][a-z0-9_]*) [0-9\-:+]* - ([0-9]*-[0-9]*-[0-9]*)/
+
+    # These variables store information from the incoming email/time sheet.
     @submitter = nil
+    @timeSheet = nil
+    # The stdout content from tj3client
+    @report = nil
+    # The stderr content from tj3client
+    @warnings = nil
   end
 
-  def processSheet
+  def processEmail
     # Make sure the user has provided a properly setup config file.
     error('\'smtpServer\' not configured') unless @smtpServer
     error('\'senderEmail\' not configured') unless @senderEmail
-    error('\'workingDir\' not configured') unless @workingDir
 
     # Change into the specified working directory
     begin
-      Dir.chdir(@workingDir)
+      Dir.chdir(@workingDir) if @workingDir
     rescue
       error("Working directory #{@workingDir} not found")
     end
@@ -67,28 +82,44 @@ class TimeSheetReceiver
       f.write(mail)
     end
 
+    # First we search the attachments and then the body.
     mail.attachments.each do |attachment|
       # We are looking for an attached file with a .tji extension.
       fileName = attachment.filename
       next unless fileName && fileName[-4..-1] == '.tji'
 
-      timeSheet = attachment.body.to_s
-      # A valid time sheet must have the poper header line.
-      if @timeSheetHeader.match(timeSheet)
-        # Ok, found. Now check the full sheet.
-        if checkTimeSheet(timeSheet)
-          # Everything is fine. Store it away.
-          fileTimeSheet(timeSheet)
-          # Remove the mail from the failedMailsDir
-          File.delete("#{@failedMailsDir}/#{@messageId}")
-          return true
-        end
-      end
+      # Further inspect the attachment. If we could process it, we are done.
+      return true if processSheet(attachment.body.to_s)
     end
-    error('No time sheet attachement found')
+    # None of the attachements worked, so let's try the mail body.
+    return true if processSheet(mail.body.decoded)
+
+    error(<<'EOT'
+No time sheet found in email. Please make sure the header syntax is
+correct and contained in a single line that starts at the begining of
+the line.
+EOT
+         )
   end
 
   private
+
+  def processSheet(timeSheet)
+    # Store the detected sheet so we can include it with error reports if
+    # needed.
+    @timeSheet = timeSheet
+    # A valid time sheet must have the poper header line.
+    if @timeSheetHeader.match(timeSheet)
+      # Ok, found. Now check the full sheet.
+      if checkTimeSheet(timeSheet)
+        # Everything is fine. Store it away.
+        fileTimeSheet(timeSheet)
+        # Remove the mail from the failedMailsDir
+        File.delete("#{@failedMailsDir}/#{@messageId}")
+        return true
+      end
+    end
+  end
 
   def createDirectories
     [ @timeSheetDir, @failedMailsDir ].each do |dir|
@@ -111,6 +142,10 @@ class TimeSheetReceiver
 
   def error(message)
     $stderr.puts message if @outputLevel >= 1
+
+    # Append the submitted sheet for further tries.
+    message += "\n" + @timeSheet if @timeSheet
+
     sendEmail('Your time sheet submission failed!', message)
     log('ERROR', "#{message}") if @logLevel >= 1
 
@@ -119,6 +154,10 @@ class TimeSheetReceiver
 
   def fatal(message)
     log('FATAL', "#{message}")
+
+    # Append the submitted sheet for further tries.
+    message += "\n" + @timeSheet if @timeSheet
+
     sendEmail('Temporary server error', <<'EOT'
 We are sorry! The time sheet server detected a configuration
 problem and is temporarily out of service. The administrator
@@ -135,7 +174,7 @@ EOT
                                            ": #{message}\n") }
   end
 
-  def sendEmail(subject, message)
+  def sendEmail(subject, message, attachment = nil)
     log('INFO', "Sent email '#{subject}' to #{@submitter}")
     Mail.defaults do
       delivery_method :smtp, {
@@ -150,6 +189,7 @@ EOT
     end
     mail.to = @submitter
     mail.from = @senderEmail
+    mail.add_file attachment if attachment
 
     if @noEmails
       # For testing and debugging, we only print out the email.
@@ -163,20 +203,19 @@ EOT
   def checkTimeSheet(sheet)
     checkInterval(sheet)
 
-    tmpFile = @timeSheetDir + 'ts-temp.tji'
     err = ''
     status = nil
     begin
-      File.open(tmpFile, 'w') { |f| f.write(sheet) }
-      command = "tj3client --silent -t #{tmpFile}"
+      command = "tj3client --silent -t ."
       status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
+        # Send the report definition to the tj3client process via stdin.
+        stdin.write(sheet)
+        stdin.close
         @report = stdout.read
         @warnings = stderr.read
       end
     rescue
       fatal("Cannot check time sheet: #{$!}")
-    ensure
-      File.delete(tmpFile)
     end
     return true if status.exitstatus == 0
 

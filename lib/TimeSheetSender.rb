@@ -10,9 +10,14 @@
 # published by the Free Software Foundation.
 #
 
-require 'open3'
+require 'rubygems'
+require 'open4'
+require 'mail'
+
 
 class TimeSheetSender
+
+  attr_accessor :noEmails
 
   def initialize
     # User specific settings
@@ -27,6 +32,7 @@ class TimeSheetSender
 
     @logLevel = 1
     @outputLevel = 2
+    @noEmails = false
 
     @date = Time.new.strftime('%Y-%m-%d')
 
@@ -98,7 +104,27 @@ EOT
 
   def sendReportTemplates(resources)
     resources.each do |id, name, email|
-      sendMail(email, name, "@{templateDir}/#{id}_#{@date}.tji")
+      attachment = "#{@templateDir}/#{id}_#{@date}.tji"
+      unless File.exist?(attachment)
+        error("sendReportTemplates: " +
+              "time sheet #{attachment} for #{name} not found")
+      end
+      message = <<"EOT"
+Hello #{name}!
+
+Please find enclosed your weekly report template. Please fill out
+the form and send it back to the sender of this email. You can either
+use the attached file or the body of the email. In case you send it
+in the body of the email, make sure it only contains the 'timesheet'
+syntax. No quote marks are allowed. It must be plain text, UTF-8
+encoded and the time sheet header from 'timesheet' to the period end
+date must be in a single line that starts at the beginning of the line.
+
+EOT
+
+      message += File.read(attachment)
+
+      sendEmail(email, 'Your weekly report template', message, attachment)
     end
   end
 
@@ -173,14 +199,16 @@ EOT
   def generateReport(id, reportDef)
     out = ''
     begin
-      stdin, stdout, stderr = Open3.popen3("tj3client --silent -g #{id} .")
-      # Send the report definition to the tj3client process via stdin.
-      stdin.write(reportDef)
-      stdin.close
-      # Retrieve the output
-      out = stdout.read
-      err = stderr.read
-      if err && !err.empty?
+      command = "tj3client --silent -g #{id} ."
+      status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
+        # Send the report definition to the tj3client process via stdin.
+        stdin.write(reportDef)
+        stdin.close
+        # Retrieve the output
+        out = stdout.read
+        err = stderr.read
+      end
+      if status.exitstatus != 0
         error("generateReport: #{err}")
       end
     rescue
@@ -189,23 +217,30 @@ EOT
     out
   end
 
-  def sendMail(email, name, attachment)
-    unless File.exist?(attachment)
-      error("sendMail: time sheet #{attachment} for #{name} not found")
+  def sendEmail(to, subject, message, attachment = nil)
+    log('INFO', "Sent email '#{subject}' to #{to}")
+    Mail.defaults do
+      delivery_method :smtp, {
+        :address => @smtpServer,
+        :port => 25
+      }
     end
-    info("Sending timesteet for #{name} to #{email}")
-    runCommand(<<"EOT"
-mailx -S smtp=#{@smtpServer} \
-         -r '#{@senderEmail}' \
-         -s 'Your weekly report template' \
-         -a #{attachment} #{email} << EOF
-Hello #{name}!
 
-Please find attached your weekly report template. Please use the
-contained information to write your weekly status report.
-EOF
-EOT
-              )
+    mail = Mail.new do
+      subject subject
+      body message
+    end
+    mail.to = to
+    mail.from = @senderEmail
+    mail.add_file attachment if attachment
+
+    if @noEmails
+      # For testing and debugging, we only print out the email.
+      puts mail.to_s
+    else
+      # Actually send out the email via SMTP.
+      mail.deliver
+    end
   end
 
 end

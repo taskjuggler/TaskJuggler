@@ -109,7 +109,7 @@ def main
   ts.workingDir = @workingDir if @workingDir
   ts.noEmails = @noEmails
 
-  ts.processSheet
+  ts.processEmail
 end
 end
 

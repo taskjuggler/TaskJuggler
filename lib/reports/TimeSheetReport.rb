@@ -208,7 +208,7 @@ EOT
             if tr.remaining
               @file << "    remaining #{tr.remaining}d\n"
             else
-              @file << "    end #{tr.endDate.to_tjp}\n"
+              @file << "    end #{tr.endDate}\n"
             end
             @file << "    status green \"Your headline here!\" {\n" +
                      "    #  summary -8<-\n" +

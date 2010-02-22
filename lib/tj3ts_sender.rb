@@ -24,6 +24,10 @@ AppConfig.appName = 'tj3ts_sender'
 def processArguments(argv)
   opts = OptionParser.new
 
+  # Show some progress information by default
+  @silent = false
+  @noEmails = false
+
   opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                 "#{AppConfig.packageInfo}\n\n" +
                 "Copyright (c) #{AppConfig.copyright.join(', ')}" +
@@ -34,6 +38,9 @@ def processArguments(argv)
                 "Usage: #{AppConfig.appName} [options] file.tjp " +
                 "[ file1.tji ... ]"
   opts.separator ""
+  opts.on('--nomail', "Don't send out any emails") do
+    @noEmails = true
+  end
   opts.on('--silent', "Don't show program and progress information") do
     @silent = true
   end
@@ -48,8 +55,6 @@ def processArguments(argv)
     exit 0
   end
 
-  # Show some progress information by default
-  @silent = false
   begin
     files = opts.parse(argv)
   rescue OptionParser::ParseError => msg
@@ -82,6 +87,7 @@ def main
   ts = TimeSheetSender.new
   rc.configure(ts, 'global')
   rc.configure(ts, 'timesheets.sender')
+  ts.noEmails = @noEmails
 
   ts.sendTemplates
 end

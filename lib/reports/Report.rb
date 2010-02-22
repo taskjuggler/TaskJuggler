@@ -215,7 +215,7 @@ EOT
                                   (@name[0] == '/' ? '' : @project.outputDir) +
                                   @name + '.csv').untaint
         CSVFile.new(csv, ';').write(fileName)
-      rescue
+      rescue IOError
         error('write_csv', "Cannot write to file #{fileName}.\n#{$!}")
       end
     end
@@ -232,7 +232,7 @@ EOT
           f = File.new(fileName, 'w')
         end
         f.puts "#{@content.to_tjp}"
-      rescue
+      rescue IOError
         error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}")
       end
     end
@@ -244,7 +244,7 @@ EOT
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
                     @name + '.xml').untaint, 'w')
         f.puts "#{@content.to_niku}"
-      rescue
+      rescue IOError
         error('write_niku', "Cannot write to file #{@name}.\n#{$!}")
       end
     end
