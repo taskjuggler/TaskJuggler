@@ -46,7 +46,7 @@ class TimeSheetReceiver
     # Who sent this email?
     @submitter = mail.from.respond_to?('[]') ? mail.from[0] : mail.from
     # Getting the message ID.
-    @messageId = mail.message_id
+    @messageId = mail.message_id || 'unknown'
     info("Processing time sheet from #{@submitter} with ID #{@messageId}")
 
     # Store the mail in the failedMailsDir in case something goes wrong.

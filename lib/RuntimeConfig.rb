@@ -37,7 +37,7 @@ class RuntimeConfig
     sections = section.split('.')
     p = @config
     sections.each do |sec|
-      return false if p[sec].nil?
+      return false if p.nil? || !p.include?(sec)
       p = p[sec]
     end
 
