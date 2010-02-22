@@ -171,7 +171,7 @@ EOT
       command = "tj3client --silent -t #{tmpFile}"
       status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
         @report = stdout.read
-        err = stderr.read
+        @warnings = stderr.read
       end
     rescue
       fatal("Cannot check time sheet: #{$!}")
@@ -180,7 +180,9 @@ EOT
     end
     return true if status.exitstatus == 0
 
-    error(err)
+    # The exit status was not 0. The stderr output should not be empty and
+    # will contain error and warning messages.
+    error(@warnings)
   end
 
   def fileTimeSheet(sheet)
@@ -200,12 +202,27 @@ EOT
       return false
     end
 
-    sendEmail('Your time sheet has been accepted!', <<"EOT"
+    text = <<'EOT'
 Thank you very much for submitting your time sheet!
 
-#{@report}
 EOT
-             )
+
+    # Add warnings if we had any.
+    unless @warnings.empty?
+      text += <<"EOT"
+Your time sheet does contain some issues that you may want to fix
+or address with your manager or project manager:
+
+#{@warnings}
+
+EOT
+    end
+
+    # Append the pretty printed version of the submitted time sheet status.
+    text += @report
+
+    # Send out the email.
+    sendEmail('Your time sheet has been accepted!', text)
     true
   end
 
