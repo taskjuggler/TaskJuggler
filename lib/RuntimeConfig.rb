@@ -24,8 +24,8 @@ class RuntimeConfig
 
     if configFile
       # Read user specified config file.
-      if File.exist?(file)
-        @config = YAML::load(File.open(configFile))
+      if File.exist?(configFile)
+        @config = YAML::load(File.read(configFile))
       else
         raise "Config file #{configFile} not found!"
       end

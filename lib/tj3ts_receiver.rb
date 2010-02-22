@@ -47,7 +47,7 @@ sheets was accepted or rejected.
 EOT
 
   opts.separator ""
-  opts.on('-c', '--config', String,
+  opts.on('-c', '--config <FILE>', String,
           'Use the specified YAML configuration file') do |arg|
     @configFile = arg
   end
