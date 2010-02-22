@@ -28,6 +28,7 @@ def processArguments(argv)
 
   # Show some progress information by default
   @silent = false
+  @noEmails = false
   @configFile = nil
   @workingDir = nil
 
@@ -54,6 +55,9 @@ EOT
   opts.on('-d', '--directory <DIR>', String,
           'Use the specified directory as working directory') do |arg|
     @workingDir = arg
+  end
+  opts.on('--nomail', "Don't send out any emails") do
+    @noEmails = true
   end
   opts.on('--silent', "Don't show program and progress information") do
     @silent = true
@@ -103,6 +107,7 @@ def main
   rc.configure(ts, 'timesheets')
   rc.configure(ts, 'timesheets.receiver')
   ts.workingDir = @workingDir if @workingDir
+  ts.noEmails = @noEmails
 
   ts.processSheet
 end

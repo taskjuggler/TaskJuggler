@@ -10,12 +10,13 @@
 # published by the Free Software Foundation.
 #
 
+require 'rubygems'
 require 'mail'
-require 'open3'
+require 'open4'
 
 class TimeSheetReceiver
 
-  attr_accessor :workingDir
+  attr_accessor :workingDir, :noEmails
 
   def initialize
     # User configs that must be provided in config file
@@ -31,6 +32,7 @@ class TimeSheetReceiver
 
     @outputLevel = 0
     @logLevel = 3
+    @noEmails = false
 
     # Global settings
     @timeSheetHeader = /^timesheet ([a-z][a-z0-9_]*) [0-9\-:+]* - ([0-9]*-[0-9]*-[0-9]*)/
@@ -149,8 +151,13 @@ EOT
     mail.to = @submitter
     mail.from = @senderEmail
 
-    #puts mail.to_s
-    mail.deliver
+    if @noEmails
+      # For testing and debugging, we only print out the email.
+      puts mail.to_s
+    else
+      # Actually send out the email via SMTP.
+      mail.deliver
+    end
   end
 
   def checkTimeSheet(sheet)
@@ -158,17 +165,20 @@ EOT
 
     tmpFile = @timeSheetDir + 'ts-temp.tji'
     err = ''
+    status = nil
     begin
       File.open(tmpFile, 'w') { |f| f.write(sheet) }
-      stdin, stdout, stderr = Open3.popen3("tj3client --silent -t #{tmpFile}")
-      @report = stdout.read
-      err = stderr.read
+      command = "tj3client --silent -t #{tmpFile}"
+      status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
+        @report = stdout.read
+        err = stderr.read
+      end
     rescue
       fatal("Cannot check time sheet: #{$!}")
     ensure
       File.delete(tmpFile)
     end
-    return true if err.nil? || err.empty?
+    return true if status.exitstatus == 0
 
     error(err)
   end
