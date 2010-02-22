@@ -880,6 +880,35 @@ EOT
     assert_equal(ref, out)
   end
 
+# Need to find out why == without spaces don't work properly.
+#  def test_many_chapters
+#    inp = <<EOT
+#==Red:==
+#
+#./.
+#
+#==Yellow:==
+#
+#./.
+#
+#==Green:==
+#
+#=== Task Graphical User Interface ===
+#(ID: AcSo.software.gui)
+#
+#Your headline here!
+#
+#EOT
+#
+#    # Check tagged output.
+#    out = newRichText(inp).to_tagged + "\n"
+#    ref = <<EOT
+#<div></div>
+#EOT
+#    assert_equal(ref, out)
+#
+#  end
+
   def test_hline_and_link
     inp = <<EOT
 ----

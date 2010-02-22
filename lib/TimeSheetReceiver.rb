@@ -23,6 +23,7 @@ class TimeSheetReceiver
     # Standard settings that probably don't have to be changed.
     @timeSheetDir = 'timesheets'
     @failedMailsDir = "#{@timeSheetDir}/failedMails"
+    @intervalFile = 'acceptable_intervals'
     @logFile = 'timesheets.log'
 
     @outputLevel = 0
@@ -141,6 +142,8 @@ EOT
   end
 
   def checkTimeSheet(sheet)
+    checkInterval(sheet)
+
     tmpFile = @timeSheetDir + 'ts-temp.tji'
     err = ''
     begin
@@ -156,8 +159,6 @@ EOT
     return true if err.nil? || err.empty?
 
     error(err)
-
-    false
   end
 
   def fileTimeSheet(sheet)
@@ -184,6 +185,33 @@ Thank you very much for submitting your time sheet!
 EOT
              )
     true
+  end
+
+  def checkInterval(sheet)
+    filter = /^timesheet [a-z][a-z0-9_]* ([0-9:\-+]* - [0-9:\-+]*)/
+    if matches = filter.match(sheet)
+      interval = matches[1]
+    else
+      fatal('No time sheet period found')
+    end
+
+    acceptedIntervals = []
+    if File.exist?(@intervalFile)
+      File.open(@intervalFile, 'r') do |file|
+        acceptedIntervals = file.gets
+      end
+    else
+      error("#{@intervalFile} does not exist yet.")
+    end
+
+    unless acceptedIntervals.include?(interval)
+      error(<<"EOT"
+The reporting period #{interval}
+was not accepted!  Either you have modified the interval,
+you are submitting the sheet too late or too early.
+EOT
+           )
+    end
   end
 
 end

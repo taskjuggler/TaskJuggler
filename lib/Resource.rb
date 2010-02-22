@@ -49,25 +49,43 @@ class TaskJuggler
       # we compose the result as RichText markup first.
       rText = ''
       list = @project['journal'].entriesByResource(self, query.start, query.end)
-      first = true
+      # Sort all entries in buckets by their alert level.
+      numberOfLevels = project['alertLevels'].length
+      listByLevel = []
+      0.upto(numberOfLevels - 1) { |i| listByLevel[i] = [] }
       list.each do |entry|
-        # Separate the messages with a horizontal line.
-        if first
-          first = false
+        listByLevel[entry.alertLevel] << entry
+      end
+      first = true
+      (numberOfLevels - 1).downto(0) do |level|
+        levelList = listByLevel[level]
+        alertName = @project['alertLevels'][level][1]
+        rText += "== #{alertName}: ==\n\n"
+        if levelList.empty?
+          rText += "./.\n\n"
         else
-          rText += '----'
-        end
-        if entry.property.is_a?(Task)
-          rText += "Task #{entry.property.name} (#{entry.property.fullId}):\n"
-        end
-        rText += "== " + entry.headline + " ==\n\n"
-        if entry.summary
-          rText += entry.summary.richText.inputText + "\n\n"
-        end
-        if longVersion && entry.details
-          rText += entry.details.richText.inputText + "\n\n"
+          levelList.each do |entry|
+            # Separate the messages with a horizontal line.
+            if first
+              first = false
+            else
+              rText += "----\n"
+            end
+            if entry.property.is_a?(Task)
+              rText += "=== Task #{entry.property.name} ===\n" +
+                "(ID: #{entry.property.fullId})\n\n"
+            end
+            rText += entry.headline + "\n\n"
+            if entry.summary
+              rText += entry.summary.richText.inputText + "\n\n"
+            end
+            if longVersion && entry.details
+              rText += entry.details.richText.inputText + "\n\n"
+            end
+          end
         end
       end
+
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
       handlers = [
@@ -84,7 +102,7 @@ class TaskJuggler
         return nil
       end
       # No section numbers, please!
-      rti.sectionNumbers = false
+      # rti.sectionNumbers = false
       # We use a special class to allow CSS formating.
       rti.cssClass = 'alertmessage'
       query.rti = rti
