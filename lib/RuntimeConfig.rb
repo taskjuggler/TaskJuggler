@@ -18,17 +18,30 @@ require 'yaml'
 # the instance variable of a passed object.
 class RuntimeConfig
 
-  def initialize(appName)
+  def initialize(appName, configFile = nil)
     @appName = appName
-
-    @path = %w( ./ )
     @config = nil
 
-    @path.each do |path|
-      file = "#{path}.#{appName}rc"
+    if configFile
+      # Read user specified config file.
       if File.exist?(file)
-        @config = YAML::load(File.open(path + '.' + appName + 'rc'))
-        break
+        @config = YAML::load(File.open(configFile))
+      else
+        raise "Config file #{configFile} not found!"
+      end
+    else
+      # Search config files in certain directories.
+      @path = [ '.', ENV['HOME'], '/etc' ]
+
+      @path.each do |path|
+        # Try UNIX style hidden file first, then .rc.
+        [ "#{path}/.#{appName}rc", "#{path}/#{appName}.rc" ].each do |file|
+          if File.exist?(file)
+            @config = YAML::load(File.read(file))
+            break
+          end
+        end
+        break if @config
       end
     end
   end

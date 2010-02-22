@@ -15,10 +15,13 @@ require 'open3'
 
 class TimeSheetReceiver
 
+  attr_accessor :workingDir
+
   def initialize
-    # User configs
+    # User configs that must be provided in config file
     @smtpServer = nil
     @senderEmail = nil
+    @workingDir = nil
 
     # Standard settings that probably don't have to be changed.
     @timeSheetDir = 'timesheets'
@@ -38,6 +41,14 @@ class TimeSheetReceiver
     # Make sure the user has provided a properly setup config file.
     error('\'smtpServer\' not configured') unless @smtpServer
     error('\'senderEmail\' not configured') unless @senderEmail
+    error('\'workingDir\' not configured') unless @workingDir
+
+    # Change into the specified working directory
+    begin
+      Dir.chdir(@workingDir)
+    rescue
+      error("Working directory #{@workingDir} not found")
+    end
 
     createDirectories
 

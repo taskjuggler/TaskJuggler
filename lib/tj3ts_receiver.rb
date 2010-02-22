@@ -26,6 +26,11 @@ class App
 def processArguments(argv)
   opts = OptionParser.new
 
+  # Show some progress information by default
+  @silent = false
+  @configFile = nil
+  @workingDir = nil
+
   opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                 "#{AppConfig.packageInfo}\n\n" +
                 "Copyright (c) #{AppConfig.copyright.join(', ')}" +
@@ -42,6 +47,14 @@ sheets was accepted or rejected.
 EOT
 
   opts.separator ""
+  opts.on('-c', '--config', String,
+          'Use the specified YAML configuration file') do |arg|
+    @configFile = arg
+  end
+  opts.on('-d', '--directory <DIR>', String,
+          'Use the specified directory as working directory') do |arg|
+    @workingDir = arg
+  end
   opts.on('--silent', "Don't show program and progress information") do
     @silent = true
   end
@@ -56,8 +69,6 @@ EOT
     exit 0
   end
 
-  # Show some progress information by default
-  @silent = false
   begin
     files = opts.parse(argv)
   rescue OptionParser::ParseError => msg
@@ -86,10 +97,12 @@ def main
 
   processArguments(ARGV)
 
-  rc = RuntimeConfig.new(AppConfig.packageName)
+  rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
   ts = TimeSheetReceiver.new
   rc.configure(ts, 'global')
+  rc.configure(ts, 'timesheets')
   rc.configure(ts, 'timesheets.receiver')
+  ts.workingDir = @workingDir if @workingDir
 
   ts.processSheet
 end
