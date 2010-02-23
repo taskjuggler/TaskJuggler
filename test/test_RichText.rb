@@ -197,7 +197,7 @@ EOT
 Line above and below
 
 --------------------------------------------------------
-1 A heading
+1) A heading
 
 --------------------------------------------------------
 --------------------------------------------------------
@@ -420,11 +420,11 @@ EOT
     ref = <<'EOT'
 = This is not a headline
 
-1 This is level 1
+1) This is level 1
 
-1.1 This is level 2
+1.1) This is level 2
 
-1.1.1 This is level 3
+1.1.1) This is level 3
 
 EOT
     assert_equal(ref, out)
@@ -727,9 +727,9 @@ EOT
     rt = newRichText(inp)
     out = rt.to_s
     ref = <<'EOT'
-1 This the first section
+1) This the first section
 
-1.1 This is the section 1.1
+1.1) This is the section 1.1
 
 Not sure what to put here. Maybe just some silly text.
 
@@ -743,7 +743,7 @@ Not sure what to put here. Maybe just some silly text.
 
 0.1 Number 0.1, I guess
 
-2 Section 2
+2) Section 2
 
 * Starts with bullets
 
@@ -828,9 +828,9 @@ EOT
     rt = newRichText(inp)
     out = rt.to_s
     ref = <<'EOT'
-1 This the first section
+1) This the first section
 
-1.1 This is the section 1.1
+1.1) This is the section 1.1
 
 Not sure ''what'' to put here. Maybe just some silly text.
 
@@ -967,7 +967,7 @@ EOT
     rt.lineWidth = 60
     out = rt.to_s
     ref = <<EOT
-0.1 Header
+0.1) Header
 
 some text
 

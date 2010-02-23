@@ -128,13 +128,13 @@ class TaskJuggler
       case @category
       when :richtext
       when :title1
-        pre = "#{@data[0]} "
+        pre = sTitle(1)
         post = "\n\n"
       when :title2
-        pre = "#{@data[0]}.#{@data[1]} "
+        pre = sTitle(2)
         post = "\n\n"
       when :title3
-        pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
+        pre = sTitle(3)
         post = "\n\n"
       when :hline
         return "#{'-' * (@richText.lineWidth - 4)}\n"
@@ -421,6 +421,18 @@ class TaskJuggler
     end
 
     private
+
+    def sTitle(level)
+      s = ''
+      if @richText.sectionNumbers
+        1.upto(level) do |i|
+          s += '.' unless s.empty?
+          s += "#{@data[i - 1]}"
+        end
+        s += ') '
+      end
+      s
+    end
 
     def htmlTitle(level)
       attrs = { 'id' => convertToID(children_to_s) }

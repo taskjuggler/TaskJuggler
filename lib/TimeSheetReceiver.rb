@@ -44,7 +44,7 @@ class TimeSheetReceiver
     @noEmails = false
 
     # Global settings
-    @timeSheetHeader = /^timesheet ([a-z][a-z0-9_]*) [0-9\-:+]* - ([0-9]*-[0-9]*-[0-9]*)/
+    @timeSheetHeader = /^\stimesheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
 
     # These variables store information from the incoming email/time sheet.
     @submitter = nil
@@ -266,7 +266,7 @@ EOT
   end
 
   def checkInterval(sheet)
-    filter = /^timesheet [a-z][a-z0-9_]* ([0-9:\-+]* - [0-9:\-+]*)/
+    filter = /^\stimesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
     if matches = filter.match(sheet)
       interval = matches[1]
     else

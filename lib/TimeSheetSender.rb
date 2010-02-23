@@ -135,7 +135,7 @@ EOT
   end
 
   def enableIntervalForReporting(templateFile)
-    filter = /^timesheet [a-z][a-z0-9_]* ([0-9:\-+]* - [0-9:\-+]*)/
+    filter = /^\stimesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
     interval = nil
     # That's a pretty bad hack to make reasonably certain that the tj3 server
     # process has put the file into the file system.

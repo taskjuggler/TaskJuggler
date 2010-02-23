@@ -176,11 +176,12 @@ class TaskJuggler
 
       # This String will hold the result.
       @file =  <<'EOT'
-# The status headline should be no more than 60 characters and may not be
-# empty! The status summary is optional and should be no longer than one or
-# two sentences of plain text. The details section is also optional has no
-# length limitation. You can use simple markup in this section.
-# It is recommended that you provide at least a summary or a details section.
+# The status headline should be no more than 60 characters and may
+# not be empty! The status summary is optional and should be no
+# longer than one or two sentences of plain text. The details section
+# is also optional has no length limitation. You can use simple
+# markup in this section.  It is recommended that you provide at
+# least a summary or a details section.
 # See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
 EOT
 
@@ -222,7 +223,8 @@ EOT
           end
         end
         @file << <<'EOT'
-  # If you had unplanned tasks, uncomment and fill out the following lines:
+  # If you had unplanned tasks, uncomment and fill out the
+  # following lines:
   # newtask new.task.id "A task title" {
   #   work X%
   #   remaining Y.Yd
