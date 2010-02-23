@@ -74,6 +74,8 @@ class TaskJuggler
             if entry.property.is_a?(Task)
               rText += "=== Task #{entry.property.name} "+
                 "(ID: #{entry.property.fullId}) ===\n\n"
+            else
+              rText += "=== Personal Notes ===\n\n"
             end
             rText += entry.headline + "\n\n"
             if entry.summary

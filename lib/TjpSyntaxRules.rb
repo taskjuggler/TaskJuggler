@@ -4822,6 +4822,8 @@ work time for the report period.
 EOT
        )
 
+    pattern(%w( !tsStatus ))
+
     pattern(%w( !tsTaskHeader !tsTaskBody ))
     doc('task.timesheet', <<'EOT'
 Specifies an existing task that progress and status should be reported
@@ -4972,7 +4974,7 @@ EOT
       end
       @journalEntry = JournalEntry.new(@project['journal'],
                                        @timeSheet.interval.end,
-                                       @val[2], @property,
+                                       @val[2], @property || @timeSheet.resource,
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
       @journalEntry.author = @timeSheet.resource

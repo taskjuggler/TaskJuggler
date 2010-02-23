@@ -74,6 +74,9 @@ timesheet r2 2009-11-30 +1w {
       ->8-
     }
   }
+  status yellow "My wife got ill" {
+    summary "I might have to work from home for a few days next week."
+  }
 }
 # *** EXAMPLE: 5 -
 # *** EXAMPLE: 1 -

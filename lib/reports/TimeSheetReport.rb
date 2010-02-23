@@ -230,8 +230,8 @@ EOT
   #   remaining Y.Yd
   # }
 
-  # You can use the following section to report a personal status.
-  # status green "A task title" {
+  # You can use the following section to report personal notes.
+  # status green "A headline" {
   #   summary -8<-
   #   Uncomment and put one or two sentences here!
   #   ->8-
