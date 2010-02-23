@@ -13,6 +13,7 @@
 # This script is used to send out the time sheet templates to the employees.
 # It should be run from a cron job once a week.
 
+require 'rubygems'
 require 'optparse'
 require 'Tj3Config'
 require 'RuntimeConfig'

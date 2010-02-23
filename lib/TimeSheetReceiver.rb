@@ -10,7 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'rubygems'
 require 'mail'
 require 'open4'
 require 'SheetHandlerBase'
@@ -104,6 +103,22 @@ EOT
     end
   end
 
+  def generateInclusionFile(dir)
+    pwd = Dir.pwd
+    begin
+      Dir.chdir(dir)
+      File.open('all.tji', 'w') do |file|
+        Dir.glob('*.tji').each do |tji|
+          file.puts("include '#{tji}'") unless tji == 'all.tji'
+        end
+      end
+    rescue
+      error("Can't create inclusion file: #{$!}")
+    ensure
+      Dir.chdir(pwd)
+    end
+  end
+
   def error(message)
     $stderr.puts message if @outputLevel >= 1
 
@@ -172,6 +187,9 @@ EOT
       fatal("Cannot store time sheet #{fileName}: #{$!}")
       return false
     end
+
+    # Create or update the file that includes all *.tji in the directory.
+    generateInclusionFile(dir)
 
     text = <<'EOT'
 Thank you very much for submitting your time sheet!

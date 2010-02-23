@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'rubygems'
 require 'optparse'
 require 'drb'
 require 'Tj3Config'

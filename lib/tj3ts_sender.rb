@@ -13,6 +13,7 @@
 # This script is used to send out the time sheet templates to the employees.
 # It should be run from a cron job once a week.
 
+require 'rubygems'
 require 'optparse'
 require 'Tj3Config'
 require 'RuntimeConfig'
@@ -30,6 +31,7 @@ class Tj3TsSender
     @configFile = nil
     @workingDir = nil
 
+    @date = nil
     @resourceList = []
   end
 
@@ -63,11 +65,16 @@ EOT
       @noEmails = true
     end
     opts.on('-r', '--resource <ID>', String,
-            "Only generate template for given resource") do |arg|
+            'Only generate template for given resource') do |arg|
       @resourceList << arg
     end
     opts.on('--silent', "Don't show program and progress information") do
       @silent = true
+    end
+    opts.on('-e', '--enddate <YYYY-MM-DD>', String,
+            'The end date of the reporting period') do |arg|
+      @date = Time.mktime(*(/([0-9]{4})-([0-9]{2})-([0-9]{2})/.match(arg)[1..3]))
+      @date = @date.strftime('%Y-%m-%d')
     end
     opts.on_tail('-h', '--help', 'Show this message') do
       puts opts.to_s
@@ -115,6 +122,7 @@ EOT
     rc.configure(ts, 'timesheets.sender')
     ts.workingDir = @workingDir if @workingDir
     ts.noEmails = @noEmails
+    ts.date = @date if @date
 
     ts.sendTemplates(@resourceList)
   end
