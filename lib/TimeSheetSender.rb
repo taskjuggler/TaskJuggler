@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = tj3client.rb -- The TaskJuggler III Project Management Software
+# = TimeSheetSender.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #
@@ -13,35 +13,27 @@
 require 'rubygems'
 require 'open4'
 require 'mail'
+require 'SheetHandlerBase'
 
+class TaskJuggler
 
-class TimeSheetSender
+class TimeSheetSender < SheetHandlerBase
 
   attr_accessor :noEmails
 
-  def initialize
-    # User specific settings
-    @smtpServer= nil
-    @senderEmail = nil
+  def initialize(appName)
+    super
 
     # Probably standard settings that don't need to be changed.
     @hideResource = '0'
-    @logFile = 'timesheets.log'
     @intervalFile = 'acceptable_intervals'
     @templateDir = 'TimeSheetTemplates'
 
-    @logLevel = 2
-    @outputLevel = 2
-    @noEmails = false
-
     @date = Time.new.strftime('%Y-%m-%d')
-
   end
 
   def sendTemplates(resourceList)
-    # Make sure the user has provided a properly setup config file.
-    error('\'smtpServer\' not configured') unless @smtpServer
-    error('\'senderEmail\' not configured') unless @senderEmail
+    setWorkingDir
 
     createDirectories
     resources = genResourceList(resourceList)
@@ -135,7 +127,7 @@ EOT
   end
 
   def enableIntervalForReporting(templateFile)
-    filter = /^\stimesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+    filter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
     interval = nil
     # That's a pretty bad hack to make reasonably certain that the tj3 server
     # process has put the file into the file system.
@@ -177,28 +169,6 @@ EOT
     end
   end
 
-  def info(message)
-    puts message if @outputLevel >= 3
-    log('INFO', message) if @logLevel >= 3
-  end
-
-  def warning(message)
-    puts message if @outputLevel >= 2
-    log('WARN', message) if @logLevel >= 2
-  end
-
-  def error(message)
-    $stderr.puts message if @outputLevel >= 1
-    log("ERROR", message) if @logLevel >= 1
-    exit 1
-  end
-
-  def log(type, message)
-    timeStamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
-    File.open(@logFile, 'a') { |f| f.write("#{timeStamp} #{type} " +
-                                           ": #{message}\n") }
-  end
-
   def createDirectories
     unless File.directory?(@templateDir)
       warning("Creating directory #{@templateDir}")
@@ -232,32 +202,6 @@ EOT
     out
   end
 
-  def sendEmail(to, subject, message, attachment = nil)
-    log('INFO', "Sent email '#{subject}' to #{to}")
-    Mail.defaults do
-      delivery_method :smtp, {
-        :address => @smtpServer,
-        :port => 25
-      }
-    end
-
-    mail = Mail.new do
-      subject subject
-      body message
-    end
-    mail.to = to
-    mail.from = @senderEmail
-    mail.add_file attachment if attachment
-
-    if @noEmails
-      # For testing and debugging, we only print out the email.
-      puts mail.to_s
-    else
-      # Actually send out the email via SMTP.
-      mail.deliver
-    end
-  end
-
 end
 
-
+end

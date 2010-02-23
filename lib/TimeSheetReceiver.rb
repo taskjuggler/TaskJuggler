@@ -13,38 +13,21 @@
 require 'rubygems'
 require 'mail'
 require 'open4'
+require 'SheetHandlerBase'
 
-class TimeSheetReceiver
+class TaskJuggler
 
-  attr_accessor :workingDir, :noEmails
+class TimeSheetReceiver < SheetHandlerBase
 
-  def initialize
-    # User configs that must be provided in config file
-    @smtpServer = nil
-    @senderEmail = nil
-    @workingDir = nil
-
+  def initialize(appName)
+    super
     # Standard settings that probably don't have to be changed.
     @timeSheetDir = 'timesheets'
     @failedMailsDir = "#{@timeSheetDir}/failedMails"
     @intervalFile = 'acceptable_intervals'
-    @logFile = 'timesheets.log'
-
-    # Controls the amount of output that is sent to the terminal.
-    # 0: No output
-    # 1: only errors
-    # 2: errors and warnings
-    # 3: All messages
-    @outputLevel = 0
-    # Controls the amount of information that is added to the log file. The
-    # levels are identical to @outputLevel.
-    @logLevel = 3
-    # Set to true to not send any emails. Instead the email (header + body) is
-    # printed to the terminal.
-    @noEmails = false
 
     # Global settings
-    @timeSheetHeader = /^\stimesheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
+    @timeSheetHeader = /^[ ]*timesheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
 
     # These variables store information from the incoming email/time sheet.
     @submitter = nil
@@ -56,16 +39,7 @@ class TimeSheetReceiver
   end
 
   def processEmail
-    # Make sure the user has provided a properly setup config file.
-    error('\'smtpServer\' not configured') unless @smtpServer
-    error('\'senderEmail\' not configured') unless @senderEmail
-
-    # Change into the specified working directory
-    begin
-      Dir.chdir(@workingDir) if @workingDir
-    rescue
-      error("Working directory #{@workingDir} not found")
-    end
+    setWorkingDir
 
     createDirectories
 
@@ -130,23 +104,13 @@ EOT
     end
   end
 
-  def info(message)
-    puts message if @outputLevel >= 3
-    log('INFO', message) if @logLevel >= 3
-  end
-
-  def warning(message)
-    puts message if @outputLevel >= 2
-    log('WARN', message) if @logLevel >= 2
-  end
-
   def error(message)
     $stderr.puts message if @outputLevel >= 1
 
     # Append the submitted sheet for further tries.
     message += "\n" + @timeSheet if @timeSheet
 
-    sendEmail('Your time sheet submission failed!', message)
+    sendEmail(@submitter, 'Your time sheet submission failed!', message)
     log('ERROR', "#{message}") if @logLevel >= 1
 
     exit 1
@@ -158,7 +122,7 @@ EOT
     # Append the submitted sheet for further tries.
     message += "\n" + @timeSheet if @timeSheet
 
-    sendEmail('Temporary server error', <<'EOT'
+    sendEmail(@submitter, 'Temporary server error', <<'EOT'
 We are sorry! The time sheet server detected a configuration
 problem and is temporarily out of service. The administrator
 has been notified and will try to rectify the situation as
@@ -166,38 +130,6 @@ soon as possible. Please re-submit your time sheet later!
 EOT
              )
     exit 1
-  end
-
-  def log(type, message)
-    timeStamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
-    File.open(@logFile, 'a') { |f| f.write("#{timeStamp} #{type} " +
-                                           ": #{message}\n") }
-  end
-
-  def sendEmail(subject, message, attachment = nil)
-    log('INFO', "Sent email '#{subject}' to #{@submitter}")
-    Mail.defaults do
-      delivery_method :smtp, {
-        :address => @smtpServer,
-        :port => 25
-      }
-    end
-
-    mail = Mail.new do
-      subject subject
-      body message
-    end
-    mail.to = @submitter
-    mail.from = @senderEmail
-    mail.add_file attachment if attachment
-
-    if @noEmails
-      # For testing and debugging, we only print out the email.
-      puts mail.to_s
-    else
-      # Actually send out the email via SMTP.
-      mail.deliver
-    end
   end
 
   def checkTimeSheet(sheet)
@@ -261,12 +193,12 @@ EOT
     text += @report
 
     # Send out the email.
-    sendEmail('Your time sheet has been accepted!', text)
+    sendEmail(@submitter, 'Your time sheet has been accepted!', text)
     true
   end
 
   def checkInterval(sheet)
-    filter = /^\stimesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+    filter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
     if matches = filter.match(sheet)
       interval = matches[1]
     else
@@ -291,6 +223,8 @@ EOT
            )
     end
   end
+
+end
 
 end
 
