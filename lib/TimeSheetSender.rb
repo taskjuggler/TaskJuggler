@@ -139,15 +139,18 @@ EOT
     interval = nil
     # That's a pretty bad hack to make reasonably certain that the tj3 server
     # process has put the file into the file system.
-    sleep(1)
-    File.open(templateFile, 'r') do |file|
-      while (line = file.gets)
-      puts "******"
-        if matches = filter.match(line)
-          interval = matches[1]
+    i = 0
+    begin
+      File.open(templateFile, 'r') do |file|
+        while (line = file.gets)
+          if matches = filter.match(line)
+            interval = matches[1]
+          end
         end
       end
-    end
+      i += 1
+      sleep(0.3) unless interval
+    end while interval.nil? && i < 10
     unless interval
       error("enableIntervalForReporting: Cannot find interval in file " +
             "#{templateFile}")
