@@ -1310,6 +1310,10 @@ EOT
       mode = @val[1][0]
       endSpec = @val[1][1]
       if mode == 0
+        unless @val[0] < endSpec
+          error('start_before_end', "The end date (#{endSpec}) must be after " +
+                "the start date (#{@val[0]}).")
+        end
         Interval.new(@val[0], endSpec)
       else
         Interval.new(@val[0], @val[0] + endSpec)
@@ -1337,12 +1341,15 @@ EOT
                       60 * 60 * 24 * 30.4167, # months
                       60 * 60 * 24 * 365 # years
                      ]
+      if @val[0] == 0.0
+        error('zero_duration', "The interval duration may not be 0.")
+      end
       duration = @val[0] * convFactors[@val[1]]
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
       # Make sure the interval aligns with the timing resolution.
       (duration / resolution).to_i * resolution
     })
-    arg(0, 'duration', 'The duration of the interval')
+    arg(0, 'duration', 'The duration of the interval. May not be 0.')
   end
 
   def rule_intervalEnd
@@ -5083,8 +5090,8 @@ EOT
 
       if !@timeSheet.interval.overlaps?(Interval.new(taskStart, taskEnd))
         warning('ts_task_not_active',
-                "Task #{@property.fullId} is not active during the time sheet " +
-                "reporting period")
+                "Task #{@property.fullId} is not active during the time " +
+                "sheet reporting period")
       end
       @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @property)
       @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
@@ -5123,6 +5130,10 @@ EOT
         mode = @val[1][0]
         endSpec = @val[1][1]
         if mode == 0
+          unless @val[0] < endSpec
+            error('start_before_end', "The end date (#{endSpec}) must be " +
+                  "after the start date (#{@val[0]}).")
+          end
           iv = Interval.new(@val[0], endSpec)
         else
           iv = Interval.new(@val[0], @val[0] + endSpec)

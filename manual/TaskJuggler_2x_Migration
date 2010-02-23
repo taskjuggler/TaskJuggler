@@ -64,7 +64,7 @@ format.
 optional. If you don't need to reference a property, you can omit the
 ID. TaskJuggler will automatically assign an ID then.
 
-=== Using TaskJuggler 2.4.3 and TaskJuggler 3.x in parallel ===
+=== Using TaskJuggler 2.x and TaskJuggler 3.x in parallel ===
 
 While TaskJuggler 3.x has many new features over TaskJuggler 2.x like
 the much improved HTML reports, many 2.x users will miss the
@@ -79,7 +79,9 @@ allocations.
 
 To export all tasks and resources into a TJP file that can be read by
 TaskJuggler 3.x include the following export report definition in your
-TaskJuggler 2.x project plan.
+TaskJuggler 2.x project plan. The necessary patches to support this
+only made it into TaskJuggler 2.x after the 2.4.3 release. So be sure
+to use a recent version from the Git repository to try this.
 
  export "FullProject.tjp" {
    taskattributes all
