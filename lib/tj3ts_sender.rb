@@ -27,6 +27,7 @@ def processArguments(argv)
   # Show some progress information by default
   @silent = false
   @noEmails = false
+  @resourceList = []
 
   opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                 "#{AppConfig.packageInfo}\n\n" +
@@ -38,6 +39,10 @@ def processArguments(argv)
                 "Usage: #{AppConfig.appName} [options] file.tjp " +
                 "[ file1.tji ... ]"
   opts.separator ""
+  opts.on('-r', '--resource <ID>', String,
+          "Only generate template for given resource") do |arg|
+    @resourceList << arg
+  end
   opts.on('--nomail', "Don't send out any emails") do
     @noEmails = true
   end
@@ -89,7 +94,7 @@ def main
   rc.configure(ts, 'timesheets.sender')
   ts.noEmails = @noEmails
 
-  ts.sendTemplates
+  ts.sendTemplates(@resourceList)
 end
 
 main()

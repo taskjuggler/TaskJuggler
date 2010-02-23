@@ -30,7 +30,7 @@ class TimeSheetSender
     @intervalFile = 'acceptable_intervals'
     @templateDir = 'TimeSheetTemplates'
 
-    @logLevel = 1
+    @logLevel = 2
     @outputLevel = 2
     @noEmails = false
 
@@ -38,20 +38,20 @@ class TimeSheetSender
 
   end
 
-  def sendTemplates
+  def sendTemplates(resourceList)
     # Make sure the user has provided a properly setup config file.
     error('\'smtpServer\' not configured') unless @smtpServer
     error('\'senderEmail\' not configured') unless @senderEmail
 
     createDirectories
-    resources = genResourceList
+    resources = genResourceList(resourceList)
     genTemplates(resources)
     sendReportTemplates(resources)
   end
 
   private
 
-  def genResourceList
+  def genResourceList(resourceList)
     list = []
     info('Retrieving resource list...')
     reportDef = <<"EOF"
@@ -72,7 +72,13 @@ EOF
       id, name, email = line.split(';')
       # Last item has trailing linebreak
       email = email[0..-2]
-      list << [ id, name, email ]
+      # When the user specified resource list is empty, we generate templates
+      # for all users that don't match the @hideResource filter. Otherwise we
+      # only generate templates for those in the list and that are not hidden
+      # by the filter.
+      if resourceList.empty? || resourceList.include?(id)
+        list << [ id, name, email ]
+      end
     end
 
     error('genResourceList: list is empty') if list.empty?
@@ -131,15 +137,20 @@ EOT
   def enableIntervalForReporting(templateFile)
     filter = /^timesheet [a-z][a-z0-9_]* ([0-9:\-+]* - [0-9:\-+]*)/
     interval = nil
+    # That's a pretty bad hack to make reasonably certain that the tj3 server
+    # process has put the file into the file system.
+    sleep(1)
     File.open(templateFile, 'r') do |file|
       while (line = file.gets)
+      puts "******"
         if matches = filter.match(line)
           interval = matches[1]
         end
       end
     end
     unless interval
-      error('enableIntervalForReporting: Cannot find interval')
+      error("enableIntervalForReporting: Cannot find interval in file " +
+            "#{templateFile}")
     end
 
     acceptedIntervals = []
@@ -198,6 +209,7 @@ EOT
 
   def generateReport(id, reportDef)
     out = ''
+    err = ''
     begin
       command = "tj3client --silent -g #{id} ."
       status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
