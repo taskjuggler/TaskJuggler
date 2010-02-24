@@ -182,7 +182,7 @@ class TaskJuggler
                       "#{format(indent, argText, textW - indent)}\n"
             end
           end
-          str += format(tagW, argStr, textW)
+          str += indent(tagW, argStr)
         end
         str += "\n"
       end
@@ -504,18 +504,19 @@ class TaskJuggler
           end
         end
 
-        if str[i] == ?\n
+        if str[i] == ?\n && str[i + 1] == ?\n
           # If the input contains line breaks we generate line breaks as well.
           # Insert the just finished word and wrap the line. We only put the
           # indentation in a buffer as we don't know if more words will be
           # following. We don't want to generate an indentation after the last
           # line break.
-          out += indentBuf + word + "\n"
+          out += indentBuf + word + "\n\n"
           indentBuf = ' ' * indent
           word = ''
           linePos = 0
+          i += 1
           firstWord = true
-        elsif str[i] == ?\s
+        elsif str[i] == ?\s || str[i] == ?\n
           # We have finished processing a word of the input string.
           unless indentBuf.empty?
             # In case we have a pending indentation we now know that we can
@@ -543,6 +544,15 @@ class TaskJuggler
         out += indentBuf
       end
       out += word
+    end
+
+    def indent(width, str)
+      out = ''
+      str.each_utf8_char do |c|
+        out << c
+        out << ' ' * width if c == "\n"
+      end
+      out
     end
 
     # Generate the navigation bar.

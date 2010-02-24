@@ -988,6 +988,89 @@ EOT
     assert_equal(ref, out)
   end
 
+  def test_stringLineWrapping
+    inp = <<EOT
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+----
+EOT
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+The quick brown fox jumps over the lazy dog. The quick
+brown fox jumps over the lazy dog. The quick brown fox
+jumps over the lazy dog. The quick brown fox jumps over the
+lazy dog.
+
+--------------------------------------------------------
+EOT
+    assert_equal(ref, out)
+
+    inp = <<EOT
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
+----
+EOT
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+The quick brown fox jumps over the lazy dog. The quick
+brown fox jumps over the lazy dog. The quick brown fox
+jumps over the lazy dog. The quick brown fox jumps over the
+lazy dog. The quick brown fox jumps over the lazy dog.
+
+--------------------------------------------------------
+EOT
+    assert_equal(ref, out)
+
+    inp = <<EOT
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+----
+EOT
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+The_quick_brown_fox_jumps_over_the_lazy_dog.
+
+--------------------------------------------------------
+EOT
+    assert_equal(ref, out)
+
+    inp = <<EOT
+The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.
+----
+EOT
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 60
+    out = rt.to_s
+    ref = <<EOT
+The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.
+
+--------------------------------------------------------
+EOT
+    assert_equal(ref, out)
+  end
+
   def newRichText(text)
     begin
       rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ])
