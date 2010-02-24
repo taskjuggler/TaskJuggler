@@ -76,7 +76,6 @@ class TaskJuggler
     end
 
     def sendEmail(to, subject, message, attachment = nil)
-      log('INFO', "Sent email '#{subject}' to #{to}")
       Mail.defaults do
         delivery_method :smtp, {
           :address => @smtpServer,
@@ -95,9 +94,15 @@ class TaskJuggler
       if @noEmails
         # For testing and debugging, we only print out the email.
         puts mail.to_s
+        log('INFO', "Show email '#{subject}' to #{to}")
       else
         # Actually send out the email via SMTP.
-        mail.deliver
+        begin
+          mail.deliver
+        rescue
+          log('ERROR', "Email delivery failed: #{$!}")
+        end
+        log('INFO', "Sent email '#{subject}' to #{to}")
       end
     end
 

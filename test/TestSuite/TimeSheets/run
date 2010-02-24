@@ -5,7 +5,7 @@ function cleanup
   /bin/rm -rf timesheets.log acceptable_intervals \
               TimeSheets TimeSheetTemplates \
 	      sender.log receiver.log
-  killall -9 tj3
+  killall -9 tj3 2> /dev/null
 }
 
 cleanup
@@ -24,6 +24,14 @@ if test `fgrep ERROR timesheets.log | wc -l` != 0 ; then
 fi  
 if test `fgrep WARN timesheets.log | wc -l` != 1 ; then
   echo "ERROR: Warnings don't match!"
+  exit 1
+fi  
+if test `fgrep INFO timesheets.log | wc -l` != 26 ; then
+  echo "ERROR: Info messages don't match!"
+  exit 1
+fi  
+if test `fgrep 'Your weekly report template' timesheets.log | wc -l` != 8 ; then
+  echo "ERROR: Wrong number of emails send out!"
   exit 1
 fi  
 

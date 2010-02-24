@@ -39,6 +39,8 @@ class TaskJuggler
       @templateDir = 'TimeSheetTemplates'
 
       @date = Time.new.strftime('%Y-%m-%d')
+      # We need this to determine if we already sent out a report.
+      @timeStamp = Time.new
     end
 
     def sendTemplates(resourceList)
@@ -115,6 +117,14 @@ EOF
         info("Generating template for #{res}...")
         reportId = "tstmpl_#{res}"
         templateFile = "#{@templateDir}/#{res}_#{@date}.tji"
+
+        # Don't re-generate already existing templates. We probably have sent
+        # them out earlier with a manual trigger.
+        if File.exist?(templateFile)
+          info("Skipping already existing #{templateFile}.")
+          next
+        end
+
         # We use the first template file to get the time sheet interval.
         firstTemplateFile = templateFile unless firstTemplateFile
         reportDef = <<"EOT"
@@ -125,7 +135,6 @@ timesheetreport #{reportId} \"#{templateFile}\" {
 EOT
         generateReport(reportId, reportDef)
       end
-      # It doesn't really matter which file we use. The last one will do fine.
       enableIntervalForReporting(firstTemplateFile)
     end
 
@@ -136,6 +145,13 @@ EOT
           error("sendReportTemplates: " +
                 "time sheet #{attachment} for #{name} not found")
         end
+        # Don't send out old templates again. @timeStamp has a higher
+        # resolution. We add 1s to avoid truncation errors.
+        if (File.mtime(attachment) + 1) < @timeStamp
+          info("Old template #{attachment} found. Not sending it out.")
+          next
+        end
+
         message = <<"EOT"
 Hello #{name}!
 
