@@ -87,6 +87,7 @@ EOT
     @timeSheet = timeSheet
     # A valid time sheet must have the poper header line.
     if @timeSheetHeader.match(timeSheet)
+      checkInterval(timeSheet)
       # Extract the resource ID and the end date from the sheet.
       matches = @timeSheetHeader.match(timeSheet)
       @resourceId, @date = matches[1..2]
@@ -158,8 +159,6 @@ EOT
   end
 
   def checkTimeSheet(sheet)
-    checkInterval(sheet)
-
     err = ''
     status = nil
     begin
