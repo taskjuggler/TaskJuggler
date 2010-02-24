@@ -67,11 +67,16 @@ class TaskJuggler
         @file.close
       end
 
-      def getcPortable
+      def getc19
+        Log.activity if @bytes & 0x3FFF == 0
+
         begin
+          # This function converts CR+LF or CR into LF on the fly.
           if (c1 = @file.getc) == ?\r
+            @bytes += 1
             # CR or CR/LF linebreaks
             if (c2 = @file.getc) == ?\n
+              @bytes += 1
               # Ok, CR, LF
               return c2
             else
@@ -80,7 +85,8 @@ class TaskJuggler
               return ?\n
             end
           else
-            # This is for LF linebreaks
+            # This is for LF linebreaks and all other characters
+            @bytes += 1
             return c1
           end
         rescue
@@ -88,20 +94,8 @@ class TaskJuggler
         end
       end
 
-      def getc19
-        Log.activity if @bytes & 0x3FFF == 0
-        @bytes += 1
-        getcPortable
-      end
-
       def getc18
-        Log.activity if @bytes & 0x3FFF == 0
-        @bytes += 1
-        begin
-          c = getcPortable
-        rescue
-          return nil
-        end
+        c = getc19
         return nil if c.nil?
         '' << c
       end
@@ -131,16 +125,18 @@ class TaskJuggler
 
       def getc18
         return nil if @pos >= @length
-
-        c = @buffer[@pos]
-        @pos += 1
-        '' << c
+        '' << getc19
       end
 
       def getc19
         return nil if @pos >= @length
 
-        c = @buffer[@pos]
+        # This function converts CR+LF or CR into LF on the fly.
+        if (c = @buffer[@pos]) == "\r"
+          # CR or CR+LF
+          @pos += 1 if @buffer[@pos + 1] == "\n"
+          c = "\n"
+        end
         @pos += 1
         c
       end
