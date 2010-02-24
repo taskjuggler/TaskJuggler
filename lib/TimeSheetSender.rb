@@ -12,6 +12,7 @@
 
 require 'open4'
 require 'mail'
+require 'yaml'
 require 'SheetHandlerBase'
 
 class TaskJuggler
@@ -57,9 +58,11 @@ class TaskJuggler
       reportDef = <<"EOF"
 resourcereport rl_21497214 '.' {
   formats csv
-  columns id, name, Email
+  columns id, name, Email, effort, freework
   hideresource #{@hideResource}
   sortresources id.up
+  loadunit days
+  period %{#{@date} - 1w} +1w
 }
 EOF
       report = generateReport('rl_21497214', reportDef)
@@ -69,19 +72,37 @@ EOF
           first = false
           next
         end
-        id, name, email = line.split(';')
-        # Last item has trailing linebreak
-        email = email[0..-2]
+        id, name, email, effort, free = line.split(';')
+        # Convert effort and free values into Float objects.
+        effort = effort.to_f
+        free = free.to_f
+
+        # Ignore resources that are on vacation for the whole period.
+        if effort == 0.0 && free == 0.0
+          info("Resource #{id} was on vacation the whole period")
+          next
+        end
+
         # When the user specified resource list is empty, we generate templates
         # for all users that don't match the @hideResource filter. Otherwise we
         # only generate templates for those in the list and that are not hidden
         # by the filter.
         if resourceList.empty? || resourceList.include?(id)
-          list << [ id, name, email ]
+          list << [ id, name, email, effort, free ]
         end
       end
 
       error('genResourceList: list is empty') if list.empty?
+
+      # Save the resource list to a file. We'll need it in the receiver again.
+      begin
+        fileName = @templateDir + '/resources.yml'
+        File.open(fileName, 'w') do |file|
+          YAML.dump(list, file)
+        end
+      rescue
+        error("Saving of #{fileName} failed: #{$!}")
+      end
 
       info("#{list.length} resources found")
       list
@@ -138,19 +159,21 @@ EOT
       filter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
       interval = nil
       # That's a pretty bad hack to make reasonably certain that the tj3 server
-      # process has put the file into the file system.
+      # process has put the complete file into the file system.
       i = 0
       begin
-        File.open(templateFile, 'r') do |file|
-          while (line = file.gets)
-            if matches = filter.match(line)
-              interval = matches[1]
+        if File.exist?(templateFile)
+          File.open(templateFile, 'r') do |file|
+            while (line = file.gets)
+              if matches = filter.match(line)
+                interval = matches[1]
+              end
             end
           end
         end
         i += 1
         sleep(0.3) unless interval
-      end while interval.nil? && i < 10
+      end while interval.nil? && i < 100
       unless interval
         error("enableIntervalForReporting: Cannot find interval in file " +
               "#{templateFile}")

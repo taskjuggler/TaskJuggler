@@ -28,7 +28,7 @@ class TaskJuggler
       # 1: only errors
       # 2: errors and warnings
       # 3: All messages
-      @outputLevel = 0
+      @outputLevel = 2
       # Controls the amount of information that is added to the log file. The
       # levels are identical to @outputLevel.
       @logLevel = 3

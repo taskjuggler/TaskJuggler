@@ -12,6 +12,7 @@
 
 require 'mail'
 require 'open4'
+require 'yaml'
 require 'SheetHandlerBase'
 
 class TaskJuggler
@@ -21,8 +22,9 @@ class TimeSheetReceiver < SheetHandlerBase
   def initialize(appName)
     super
     # Standard settings that probably don't have to be changed.
-    @timeSheetDir = 'timesheets'
-    @failedMailsDir = "#{@timeSheetDir}/failedMails"
+    @timeSheetDir = 'TimeSheets'
+    @templateDir = 'TimeSheetTemplates'
+    @failedMailsDir = "#{@timeSheetDir}/FailedMails"
     @intervalFile = 'acceptable_intervals'
 
     # Global settings
@@ -83,6 +85,13 @@ EOT
     @timeSheet = timeSheet
     # A valid time sheet must have the poper header line.
     if @timeSheetHeader.match(timeSheet)
+      # Extract the resource ID and the end date from the sheet.
+      matches = @timeSheetHeader.match(timeSheet)
+      @resourceId, @date = matches[1..2]
+      getResourceList(@date)
+      # Email answers will only go the email address on file!
+      @submitter = getResourceEmail(@resourceId)
+      info("Found sheet for #{@resourceId} dated #{@date}")
       # Ok, found. Now check the full sheet.
       if checkTimeSheet(timeSheet)
         # Everything is fine. Store it away.
@@ -172,15 +181,12 @@ EOT
   end
 
   def fileTimeSheet(sheet)
-    # Extract the resource id and end date from the time sheet.
-    matches = @timeSheetHeader.match(sheet)
-    resource, date = matches[1..2]
     # Create the appropriate directory structure if it doesn't exist.
-    dir = "#{@timeSheetDir}/#{date}"
+    dir = "#{@timeSheetDir}/#{@date}"
     unless File.directory?(dir)
       Dir.mkdir(dir)
     end
-    fileName = "#{dir}/#{resource}_#{date}.tji"
+    fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
     begin
       File.open(fileName, 'w') { |f| f.write(sheet) }
     rescue
@@ -240,6 +246,24 @@ you are submitting the sheet too late or too early.
 EOT
            )
     end
+  end
+
+  def getResourceList(date)
+    fileName = "#{@templateDir}/#{date}/resources.yml"
+    begin
+      @resourceList = YAML.load(File.read(fileName))
+      info("#{@resourceList.length} resources loaded")
+    rescue
+      error("Cannot read resource file #{fileName}: #{$!}")
+    end
+    @resourceList
+  end
+
+  def getResourceEmail(id)
+    @resourceList.each do |resource|
+      return resource[2] if resource[0] == id
+    end
+    error("Resource ID '#{id}' not found in list")
   end
 
 end

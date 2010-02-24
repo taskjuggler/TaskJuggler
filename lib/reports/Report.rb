@@ -225,13 +225,12 @@ EOT
       begin
         fileName = '.'
         if @name == '.'
-          f = $stdout
+          $stdout.write(@content.to_tjp)
         else
           fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name
           fileName.untaint
-          f = File.new(fileName, 'w')
+          File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
-        f.puts "#{@content.to_tjp}"
       rescue IOError
         error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}")
       end
