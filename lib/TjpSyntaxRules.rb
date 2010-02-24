@@ -4759,8 +4759,6 @@ EOT
       @timeSheet
     })
     doc('timesheet', <<'EOT'
-This feature is not yet functional!
-
 A time sheet record can be used to capture the current status of the tasks
 assigned to a specific resource and the achieved progress for a given period
 of time. The status is assumed to be for the end of this time period. There
@@ -4790,6 +4788,10 @@ The status messages are interpreted as [[journalentry journal entries]]. The
 alert level will be evaluated and the current state of the project can be put
 into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid
 columns]].
+
+Currently, the provided effort values and dates are not yet used to
+automatically update the plan data. This feature will be added in future
+versions.
 EOT
        )
     example('TimeSheet1', '1')

@@ -33,6 +33,8 @@ class TimeSheetReceiver < SheetHandlerBase
     # These variables store information from the incoming email/time sheet.
     @submitter = nil
     @timeSheet = nil
+    @resourceId = nil
+    @date = nil
     # The stdout content from tj3client
     @report = nil
     # The stderr content from tj3client
@@ -88,7 +90,6 @@ EOT
       # Extract the resource ID and the end date from the sheet.
       matches = @timeSheetHeader.match(timeSheet)
       @resourceId, @date = matches[1..2]
-      getResourceList(@date)
       # Email answers will only go the email address on file!
       @submitter = getResourceEmail(@resourceId)
       info("Found sheet for #{@resourceId} dated #{@date}")
@@ -197,8 +198,8 @@ EOT
     # Create or update the file that includes all *.tji in the directory.
     generateInclusionFile(dir)
 
-    text = <<'EOT'
-Thank you very much for submitting your time sheet!
+    text = <<"EOT"
+Status report from #{getResourceName} for the period ending #{@date}:
 
 EOT
 
@@ -217,7 +218,7 @@ EOT
     text += @report
 
     # Send out the email.
-    sendEmail(@submitter, 'Your time sheet has been accepted!', text)
+    sendEmail(@submitter, "Status report from #{getResourceName}", text)
     true
   end
 
@@ -248,8 +249,10 @@ EOT
     end
   end
 
-  def getResourceList(date)
-    fileName = "#{@templateDir}/#{date}/resources.yml"
+  def getResourceList
+    fatal('@date not set') unless @date
+
+    fileName = "#{@templateDir}/#{@date}/resources.yml"
     begin
       @resourceList = YAML.load(File.read(fileName))
       info("#{@resourceList.length} resources loaded")
@@ -259,9 +262,20 @@ EOT
     @resourceList
   end
 
-  def getResourceEmail(id)
+  def getResourceEmail(id = @resourceId)
+    getResourceList unless @resourceList
+
     @resourceList.each do |resource|
       return resource[2] if resource[0] == id
+    end
+    error("Resource ID '#{id}' not found in list")
+  end
+
+  def getResourceName(id = @resourceId)
+    getResourceList unless @resourceList
+
+    @resourceList.each do |resource|
+      return resource[1] if resource[0] == id
     end
     error("Resource ID '#{id}' not found in list")
   end
