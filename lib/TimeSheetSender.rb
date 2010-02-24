@@ -85,16 +85,8 @@ EOF
           next
         end
 
-        # When the user specified resource list is empty, we generate templates
-        # for all users that don't match the @hideResource filter. Otherwise we
-        # only generate templates for those in the list and that are not hidden
-        # by the filter.
-        if resourceList.empty? || resourceList.include?(id)
-          list << [ id, name, email, effort, free ]
-        end
+        list << [ id, name, email, effort, free ]
       end
-
-      error('genResourceList: list is empty') if list.empty?
 
       # Save the resource list to a file. We'll need it in the receiver again.
       begin
@@ -105,6 +97,16 @@ EOF
       rescue
         error("Saving of #{fileName} failed: #{$!}")
       end
+
+      unless resourceList.empty?
+        # When the user specified resource list is empty, we generate templates
+        # for all users that don't match the @hideResource filter. Otherwise we
+        # only generate templates for those in the list and that are not hidden
+        # by the filter.
+        list.delete_if { |item| !resourceList.include?(item[0]) }
+      end
+
+      error('genResourceList: list is empty') if list.empty?
 
       info("#{list.length} resources found")
       list
@@ -117,6 +119,8 @@ EOF
         info("Generating template for #{res}...")
         reportId = "tstmpl_#{res}"
         templateFile = "#{@templateDir}/#{res}_#{@date}.tji"
+        # We use the first template file to get the time sheet interval.
+        firstTemplateFile = templateFile unless firstTemplateFile
 
         # Don't re-generate already existing templates. We probably have sent
         # them out earlier with a manual trigger.
@@ -125,8 +129,6 @@ EOF
           next
         end
 
-        # We use the first template file to get the time sheet interval.
-        firstTemplateFile = templateFile unless firstTemplateFile
         reportDef = <<"EOT"
 timesheetreport #{reportId} \"#{templateFile}\" {
   hideresource ~(plan.id = \"#{res}\")
