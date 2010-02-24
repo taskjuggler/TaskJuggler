@@ -37,6 +37,7 @@ class TaskJuggler
       @noEmails = false
 
       @logFile = 'timesheets.log'
+      @emailFailure = false
     end
 
     def setWorkingDir
@@ -100,7 +101,15 @@ class TaskJuggler
         begin
           mail.deliver
         rescue
-          log('ERROR', "Email delivery failed: #{$!}")
+          # We try to send out another email. If that fails again, we abort
+          # without further attempts.
+          if @emailFailure
+            log('ERROR', "Email double fault: #{$!}")
+            exit 1
+          else
+            @emailFailure = true
+            error("Email transmission failed: #{$!}")
+          end
         end
         log('INFO', "Sent email '#{subject}' to #{to}")
       end
