@@ -67,21 +67,38 @@ class TaskJuggler
         @file.close
       end
 
+      def getcPortable
+        begin
+          if (c1 = @file.getc) == ?\r
+            # CR or CR/LF linebreaks
+            if (c2 = @file.getc) == ?\n
+              # Ok, CR, LF
+              return c2
+            else
+              # Just CR
+              @file.ungetc(c2)
+              return ?\n
+            end
+          else
+            # This is for LF linebreaks
+            return c1
+          end
+        rescue
+          return nil
+        end
+      end
+
       def getc19
         Log.activity if @bytes & 0x3FFF == 0
         @bytes += 1
-        begin
-          @file.getc
-        rescue
-          nil
-        end
+        getcPortable
       end
 
       def getc18
         Log.activity if @bytes & 0x3FFF == 0
         @bytes += 1
         begin
-          c = @file.getc
+          c = getcPortable
         rescue
           return nil
         end
