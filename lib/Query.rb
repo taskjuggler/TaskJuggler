@@ -90,7 +90,7 @@ class TaskJuggler
     def end=(date)
       if date.is_a?(TjTime)
         @end = date
-        @endIdx = @project.dateToIdx(date, true) - 1
+        @endIdx = @project.dateToIdx(date, true)
       #elsif date.is_a?(Fixnum)
       #  self.endIdx=(date)
       else
@@ -101,7 +101,7 @@ class TaskJuggler
     def endIdx=(idx)
       if idx.is_a?(Fixnum)
         @endIdx = idx
-        @end = @project.idxToDate(idx + 1)
+        @end = @project.idxToDate(idx)
       #elsif idx.is_a?(TjTime)
       #  self.end=(idx)
       else
