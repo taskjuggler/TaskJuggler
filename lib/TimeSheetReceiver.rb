@@ -123,7 +123,7 @@ EOT
           file.puts("include '#{tji}'") unless tji == 'all.tji'
         end
       end
-      scmAdd('Adding/updating summary include file.', "#{dir}/all.tji")
+      addToScm('Adding/updating summary include file.', "#{dir}/all.tji")
     rescue
       error("Can't create inclusion file: #{$!}")
     ensure

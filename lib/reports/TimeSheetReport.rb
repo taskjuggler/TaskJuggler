@@ -147,6 +147,7 @@ class TaskJuggler
             # Get the remaining effort for this task.
             query.start = a('end')
             query.end = task['end', scenarioIdx]
+            query.loadUnit = :days
             query.process
             remaining = query.to_s
             endDate = nil

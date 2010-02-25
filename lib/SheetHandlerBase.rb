@@ -61,7 +61,7 @@ class TaskJuggler
       cmd.gsub!(/%f/, fileName)
       `#{cmd}`
       if $? == 0
-        info('Added #{fileName} to SCM')
+        info("Added #{fileName} to SCM")
       else
         error("SCM command #{cmd} failed: #{$?}")
       end
