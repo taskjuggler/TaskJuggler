@@ -123,6 +123,7 @@ EOT
           file.puts("include '#{tji}'") unless tji == 'all.tji'
         end
       end
+      scmAdd('Adding/updating summary include file.', "#{dir}/all.tji")
     rescue
       error("Can't create inclusion file: #{$!}")
     ensure
@@ -183,12 +184,15 @@ EOT
   def fileTimeSheet(sheet)
     # Create the appropriate directory structure if it doesn't exist.
     dir = "#{@timeSheetDir}/#{@date}"
-    unless File.directory?(dir)
-      Dir.mkdir(dir)
-    end
-    fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
+    fileName = ''
     begin
+      unless File.directory?(dir)
+        Dir.mkdir(dir)
+        addToScm('Adding new directory', dir))
+      end
+      fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
       File.open(fileName, 'w') { |f| f.write(sheet) }
+      addToScm("Adding/updating #{fileName}", fileName)
     rescue
       fatal("Cannot store time sheet #{fileName}: #{$!}")
       return false

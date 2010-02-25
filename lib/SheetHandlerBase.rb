@@ -22,6 +22,7 @@ class TaskJuggler
       @smtpServer= nil
       @senderEmail = nil
       @workingDir = nil
+      @scmCommand = nil
 
       # Controls the amount of output that is sent to the terminal.
       # 0: No output
@@ -50,6 +51,19 @@ class TaskJuggler
         Dir.chdir(@workingDir) if @workingDir
       rescue
         error("Working directory #{@workingDir} not found")
+      end
+    end
+
+    def addToScm(message, fileName)
+      return unless @scmCommand
+
+      cmd = @scmCommand.gsub(/%m/, message)
+      cmd.gsub!(/%f/, fileName)
+      `#{cmd}`
+      if $? == 0
+        info('Added #{fileName} to SCM')
+      else
+        error("SCM command #{cmd} failed: #{$?}")
       end
     end
 
