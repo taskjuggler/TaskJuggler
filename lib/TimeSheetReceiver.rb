@@ -188,7 +188,7 @@ EOT
     begin
       unless File.directory?(dir)
         Dir.mkdir(dir)
-        addToScm('Adding new directory', dir))
+        addToScm('Adding new directory', dir)
       end
       fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
       File.open(fileName, 'w') { |f| f.write(sheet) }
