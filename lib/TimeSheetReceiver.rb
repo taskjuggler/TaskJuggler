@@ -120,7 +120,7 @@ EOT
       Dir.chdir(dir)
       File.open('all.tji', 'w') do |file|
         Dir.glob('*.tji').each do |tji|
-          file.puts("include '#{tji}'") unless tji == 'all.tji'
+          file.puts("include '#{tji}' { }") unless tji == 'all.tji'
         end
       end
     rescue
