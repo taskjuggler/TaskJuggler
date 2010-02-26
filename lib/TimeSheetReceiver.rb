@@ -134,11 +134,12 @@ EOT
   def error(message)
     $stderr.puts message if @outputLevel >= 1
 
+    log('ERROR', "#{message}") if @logLevel >= 1
+
     # Append the submitted sheet for further tries.
     message += "\n" + @timeSheet if @timeSheet
 
     sendEmail(@submitter, 'Your time sheet submission failed!', message)
-    log('ERROR', "#{message}") if @logLevel >= 1
 
     exit 1
   end
