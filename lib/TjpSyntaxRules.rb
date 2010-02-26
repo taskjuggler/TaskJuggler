@@ -2360,6 +2360,8 @@ where they are defined in.
 
 The included files may only contain content that may be present in a project
 header section.
+
+If the include statement is the last statement in the file it must have the option block. The option block can be empty, but the curly braces must be present.
 EOT
        )
   end
@@ -2747,6 +2749,12 @@ EOT
 
     singlePattern('_index')
     descr('The index of the item based on the nesting hierachy')
+
+    singlePattern('_journal')
+    descr(<<'EOT'
+The journal entries for the task or resource for the reported interval.
+EOT
+         )
 
     singlePattern('_line')
     descr('The line number in the report')

@@ -206,7 +206,7 @@ class TaskJuggler
     def include(fileName)
       if fileName[0] != '/'
         if @fileStack.empty?
-          path = @masterPath
+          path = @masterPath == './' ? '' : @masterPath
         else
           pathOfCallingFile = @fileStack.last[0].dirname
           path = pathOfCallingFile.empty? ? '' : pathOfCallingFile + '/'
