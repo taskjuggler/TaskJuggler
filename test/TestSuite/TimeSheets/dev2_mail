@@ -19,7 +19,7 @@ timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
   task AcSo.software.gui {        
     work 5.0%                     
     remaining 137.0d              
-    status green "Your headline here!" {
+    status green "Some headline here!" {
     #  summary -8<-                     
     #  Uncomment and put one or two sentences here!
     #  ->8-                                        
@@ -33,7 +33,7 @@ timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
   task AcSo.software.backend {
     work 95.0%                
     remaining 0.0d            
-    status green "Your headline here!" {
+    status green "My headline here!" {
     #  summary -8<-                     
     #  Uncomment and put one or two sentences here!
     #  ->8-                                        

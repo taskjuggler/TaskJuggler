@@ -88,7 +88,7 @@ class TaskJuggler
       html << rectToHTML(xStart + 1, yCenter - @@size + 1, width - 2,
                          2 * @@size - 2, 'taskbar')
       # And then the progress bar. If task is null we assume 50% completion.
-      completion = @task ? @task['complete', @scenarioIdx] / 100 : 0.5
+      completion = @task ? @task['complete', @scenarioIdx] / 100.0 : 0.5
       html << rectToHTML(xStart + 1, yCenter - @@size / 2,
                          (width - 2) * completion, @@size, 'progressbar')
     end

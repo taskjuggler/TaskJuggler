@@ -58,6 +58,7 @@ class TaskJuggler
     # Perform all kinds of consistency checks.
     def check
       scIdx = @timeSheet.scenarioIdx
+      taskId = @task.is_a?(Task) ? @task.fullId : @task
       # All TimeSheetRecords must have a 'work' attribute.
       if @work.nil?
         error('ts_no_work',
@@ -65,9 +66,9 @@ class TaskJuggler
               "have a 'work' attribute to specify how much was done " +
               "for this task during the reported period.")
       end
-      if task.is_a?(Task)
+      if @task.is_a?(Task)
         # This is already known tasks.
-        if task['effort', scIdx] > 0
+        if @task['effort', scIdx] > 0
           unless @remaining
             error('ts_no_remaining',
                   "The time sheet record for task #{taskId} must " +
@@ -86,26 +87,33 @@ class TaskJuggler
         # This is for new tasks.
         if @remaining.nil? && @expectedEnd.nil?
           error('ts_no_rem_or_end',
-                "New tasks require either a 'remaining' or a 'end' attribute.")
+                "New task #{taskId} requires either a 'remaining' or a " +
+                "'end' attribute.")
         end
       end
 
       if @work >= @timeSheet.daysToSlots(1) && @status.nil?
         error('ts_no_status_work',
-              "You must specify a status for tasks that have been worked " +
-              "on for a day or longer.")
+              "You must specify a status for task #{taskId}.")
       end
 
       if @status
-        if status.alertLevel > 0 && status.summary.nil? && status.details.nil?
-          error('ts_alert1_more_details',
-                "Tasks with an elevated alert level must have a summary " +
-                "or details section.")
+        if @work >= @timeSheet.daysToSlots(1) &&
+          (@status.headline.empty? ||
+           @status.headline == 'Your headline here!')
+          error('ts_no_headline',
+                "You must provide a headline for task #{@task.fullId}")
         end
-        if status.alertLevel > 1 && status.details.nil?
-          error('ts_alert2_no_details',
-                "Tasks with a high alert level must have a detailed " +
-                "status report.")
+        if @status.alertLevel > 0 && @status.summary.nil? &&
+          @status.details.nil?
+          error('ts_alert1_more_details',
+                "Task #{taskId} has an elevated alert level and must " +
+                "have a summary or details section.")
+        end
+        if @status.alertLevel > 1 && @status.details.nil?
+          error('ts_alert2_more_details',
+                "Task #{taskId} has a high alert level and must have " +
+                "a details section.")
         end
       end
     end

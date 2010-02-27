@@ -1,0 +1,18 @@
+project "test" 2009-11-30 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+timesheet r1 2009-11-30 +1w {
+# MARK: error 12 ts_no_status_work
+  task t1 {
+    work 2d
+    remaining 0d
+  }
+}
+
+

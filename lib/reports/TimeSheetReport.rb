@@ -32,11 +32,11 @@ class TaskJuggler
   # Utility class for the intermediate TimeSheetReport format.
   class TSTaskRecord
 
-    attr_reader :task, :workHours, :workPercent, :remaining, :endDate
+    attr_reader :task, :workDays, :workPercent, :remaining, :endDate
 
-    def initialize(task, workHours, workPercent, remaining = nil, endDate = nil)
+    def initialize(task, workDays, workPercent, remaining = nil, endDate = nil)
       @task = task
-      @workHours = workHours
+      @workDays = workDays
       @workPercent = workPercent
       @remaining = remaining
       @endDate = endDate
@@ -137,9 +137,9 @@ class TaskJuggler
           query.start = a('start')
           query.end = a('end')
           query.process
-          workHours = query.to_s
           # The Query.to_num of an effort always returns the value in days.
-          workPercent = (query.to_num / (weeksToReport * weeklyWorkingDays)) *
+          workDays = query.to_num
+          workPercent = (workDays / (weeksToReport * weeklyWorkingDays)) *
                         100.0
 
           if task['effort', scenarioIdx] > 0
@@ -161,7 +161,7 @@ class TaskJuggler
           # Put all data into a TSTaskRecord and push it into the resource
           # record.
           resourceRecord.tasks <<
-            TSTaskRecord.new(task, workHours, workPercent, remaining, endDate)
+            TSTaskRecord.new(task, workDays, workPercent, remaining, endDate)
         end
       end
     end
@@ -205,21 +205,23 @@ EOT
 
             @file << "  # Task: #{task.name}\n"
             @file << "  task #{task.fullId} {\n"
-            #@file << "    work #{tr.workHours}h\n"
+            #@file << "    work #{tr.workDays *
+            #                     @project['dailyworkinghours']}h\n"
             @file << "    work #{tr.workPercent}%\n"
             if tr.remaining
               @file << "    remaining #{tr.remaining}d\n"
             else
               @file << "    end #{tr.endDate}\n"
             end
-            @file << "    status green \"Your headline here!\" {\n" +
+            c = tr.workDays > 1.0 ? '' : '# '
+            @file << "    #{c}status green \"Your headline here!\" {\n" +
                      "    #  summary -8<-\n" +
                      "    #  Uncomment and put one or two sentences here!\n" +
                      "    #  ->8-\n" +
                      "    #  details -8<-\n" +
                      "    #  Uncomment and put markup text here.\n" +
                      "    #  ->8-\n" +
-                     "    }\n"
+                     "    #{c}}\n"
             @file << "  }\n\n"
           end
         end

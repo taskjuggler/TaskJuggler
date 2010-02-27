@@ -1536,6 +1536,10 @@ class TaskJuggler
     def bookResource(resource, sbIdx, date)
       booked = false
       resource.allLeaves.each do |r|
+        # Prevent overbooking when multiple resources are allocated and
+        # available.
+        break if @doneEffort >= a('effort')
+
         if r.book(@scenarioIdx, sbIdx, @property)
 
           if a('assignedresources').empty?
@@ -1805,18 +1809,8 @@ class TaskJuggler
           @property['end', @scenarioIdx] <= @project['now'] ? 100.0 : 0.0
         @property['status', @scenarioIdx] =
           a('end') <= @project['now'] ? 'done' : 'not reached'
-      elsif @property.container?
-        #TODO
-        @property['status', @scenarioIdx] =
-          if a('end') < @project['now']
-            'done'
-          elsif a('start') > @project['now']
-            'not started'
-          else
-            'in progress'
-          end
       else
-        # Normal leaf task
+        completion = 0.0
         if a('end') <= @project['now']
           # The task has ended already. It's 100% complete.
           completion = 100.0
@@ -1824,9 +1818,24 @@ class TaskJuggler
           # The task has not started yet. Its' 0% complete.
           completion = 0.0
         else
-          # The task is in progress. Calculate the current completion degree.
-          completion = ((@project['now'] - a('start')) /
-                        (a('end') - a('start'))) * 100.0
+          # The task is in progress. Calculate the current completion
+          # degree.
+          if @property.leaf? && a('effort') > 0
+            # Effort based leaf tasks. The completion degree is the percantage
+            # of effort that has been done already.
+            done = getEffectiveWork(@project.dateToIdx(a('start')),
+                                    @project.dateToIdx(@project['now']))
+            total = @project.convertToDailyLoad(
+              a('effort') * @project['scheduleGranularity'])
+            completion = done / total * 100.0
+          else
+            # Container tasks and length/duration leaf tasks. There is no way
+            # we can compute the completion degree of a container task with a
+            # mix of effort and duration task in a meaningful way.  So, we
+            # just go by duration.
+            completion = ((@project['now'] - a('start')) /
+                          (a('end') - a('start'))) * 100.0
+          end
         end
         @property['complete', @scenarioIdx] = completion
         calcStatus

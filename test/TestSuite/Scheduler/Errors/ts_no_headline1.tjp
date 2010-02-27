@@ -1,0 +1,27 @@
+project "test" 2009-11-30 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+timesheet r1 2009-11-30 +1w {
+# MARK: error 12 ts_no_headline
+  task t1 {
+    work 2d
+    remaining 0d
+    status green "" {
+      summary "I had good fun!"
+      details -8<-
+        This task went smoothly and I got three things done:
+        * Have fun
+        * Be on time
+        * Get things done
+      ->8-
+    }
+  }
+}
+
+
