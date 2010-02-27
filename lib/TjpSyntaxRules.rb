@@ -1476,7 +1476,7 @@ EOT
     pattern(%w( _end !valDate ), lambda {
       @limitInterval.end = @val[1]
     })
-    doc('limit.end', <<'EOT'
+    doc('end.limit', <<'EOT'
 The end date of the limit interval. It must be within the project time frame.
 EOT
     )
@@ -1484,7 +1484,7 @@ EOT
     pattern(%w( _period !valInterval ), lambda {
       @limitInterval = @val[1]
     })
-    doc('limit.period', <<'EOT'
+    doc('period.limit', <<'EOT'
 This property is a shortcut for setting the start and end dates of the limit
 interval. Both dates must be within the project time frame.
 EOT
@@ -1493,19 +1493,20 @@ EOT
     pattern(%w( _resources !resourceLeafList ), lambda {
       @limitResources = @val[1]
     })
-    doc('limit.resources', <<'EOT'
+    doc('resources.limit', <<'EOT'
 When [[limits]] are used in a [[task]] context, the limits can be restricted
 to a list of resources that are allocated to the task. In that case each
-resource will not be allocated more than the specified upper limit.  Lower
-limits have no impact on the scheduler but do generate a warning when not met.
-All specified resources must be leaf resources.
+listed resource will not be allocated more than the specified upper limit.
+Lower limits have no impact on the scheduler but do generate a warning when
+not met.  All specified resources must be leaf resources.
 EOT
        )
+    example('Limits-1', '5')
 
     pattern(%w( _start !valDate ), lambda {
       @limitInterval.start = @val[1]
     })
-    doc('limit.start', <<'EOT'
+    doc('start.limit', <<'EOT'
 The start date of the limit interval. It must be within the project time frame.
 EOT
     )

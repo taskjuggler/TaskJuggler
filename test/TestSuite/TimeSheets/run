@@ -16,7 +16,8 @@ sleep 5
 # Run a sender test.
 tj3ts_sender --nomail -e 2002-03-01 > sender.log
 # Run a receiver test
-tj3ts_receiver --nomail < dev2_mail > receiver.log
+tj3ts_receiver --nomail < dev2_mail1 > receiver.log
+tj3ts_receiver --nomail < dev2_mail2 > receiver.log
 
 if test `fgrep ERROR timesheets.log | wc -l` != 0 ; then
   echo "ERROR: Something went wrong!"
@@ -30,7 +31,7 @@ if test `fgrep INFO timesheets.log | wc -l` != 26 ; then
   echo "ERROR: Info messages don't match!"
   exit 1
 fi  
-if test `fgrep 'Your weekly report template' timesheets.log | wc -l` != 8 ; then
+if test `fgrep 'Your weekly report template' timesheets.log | wc -l` != 6 ; then
   echo "ERROR: Wrong number of emails send out!"
   exit 1
 fi  

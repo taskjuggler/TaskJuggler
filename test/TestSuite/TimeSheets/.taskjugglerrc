@@ -2,3 +2,5 @@ global:
   smtpServer: foobar.com
 timesheets:
   senderEmail: foo@bar.com
+  sender:
+    hideResource: '~isleaf()'

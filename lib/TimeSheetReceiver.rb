@@ -66,15 +66,16 @@ class TimeSheetReceiver < SheetHandlerBase
       next unless fileName && fileName[-4..-1] == '.tji'
 
       # Further inspect the attachment. If we could process it, we are done.
-      return true if processSheet(attachment.body.to_s)
+      return true if processSheet(attachment.body.decoded)
     end
     # None of the attachements worked, so let's try the mail body.
     return true if processSheet(mail.body.decoded)
 
     error(<<'EOT'
 No time sheet found in email. Please make sure the header syntax is
-correct and contained in a single line that starts at the begining of
-the line.
+correct and contained in a single line that starts at the begining of the
+line. If you had the time sheet attached, the file name must have a '.tji'
+extension to be found.
 EOT
          )
   end
@@ -84,20 +85,20 @@ EOT
   def processSheet(timeSheet)
     # Store the detected sheet so we can include it with error reports if
     # needed.
-    @timeSheet = timeSheet
+    @timeSheet = cutOut(timeSheet)
     # A valid time sheet must have the poper header line.
-    if @timeSheetHeader.match(timeSheet)
-      checkInterval(timeSheet)
+    if @timeSheetHeader.match(@timeSheet)
+      checkInterval(@timeSheet)
       # Extract the resource ID and the end date from the sheet.
-      matches = @timeSheetHeader.match(timeSheet)
+      matches = @timeSheetHeader.match(@timeSheet)
       @resourceId, @date = matches[1..2]
       # Email answers will only go the email address on file!
       @submitter = getResourceEmail(@resourceId)
       info("Found sheet for #{@resourceId} dated #{@date}")
       # Ok, found. Now check the full sheet.
-      if checkTimeSheet(timeSheet)
+      if checkTimeSheet(@timeSheet)
         # Everything is fine. Store it away.
-        fileTimeSheet(timeSheet)
+        fileTimeSheet(@timeSheet)
         # Remove the mail from the failedMailsDir
         File.delete("#{@failedMailsDir}/#{@messageId}")
         return true

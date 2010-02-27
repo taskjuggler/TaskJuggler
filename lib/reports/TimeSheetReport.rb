@@ -184,6 +184,8 @@ class TaskJuggler
 # markup in this section.  It is recommended that you provide at
 # least a summary or a details section.
 # See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
+#
+# --------8<--------8<--------
 EOT
 
       # Iterate over all the resources that we have TSResourceRecords for.
@@ -197,7 +199,7 @@ EOT
 
         if rr.tasks.empty?
           # If there were no assignments, just write a comment.
-          @file << "  # There were no planned tasks assignements for " +
+          @file << "  # There were no planned tasks assignments for " +
                    "this period!\n\n"
         else
           rr.tasks.each do |tr|
@@ -243,7 +245,7 @@ EOT
   #   ->8-
   # }
 EOT
-        @file << "}\n\n"
+        @file << "}\n# -------->8-------->8--------\n\n"
       end
       @file
     end

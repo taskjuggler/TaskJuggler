@@ -41,6 +41,38 @@ class TaskJuggler
       @emailFailure = false
     end
 
+    # Extract the text between the cut-marker lines and remove any email
+    # quotes from the beginnin of the line.
+    def cutOut(text)
+      mark1 = /(.*)# --------8<--------8<--------/
+      mark2 = /# -------->8-------->8--------/
+      # This is a simple state machine.
+      # Value   State
+      #   0     before mark1
+      #   1     gathering text
+      #   2     after mark2
+      cutOutText = nil
+      quoteLen = 0
+      text.each_line do |line|
+        if cutOutText.nil?
+          # We are looking for the line with the start marker (mark1)
+          if (matches = mark1.match(line))
+            quoteLen = matches[1].length
+            cutOutText = line[quoteLen..-1]
+          end
+        else
+          puts line
+          cutOutText << line[quoteLen..-1]
+          # We are gathering text until we hit the end marker (mark2)
+          return cutOutText if mark2.match(line)
+        end
+      end
+
+      # There are no cut markers. We just return the original text.
+      text
+    end
+
+
     def setWorkingDir
       # Make sure the user has provided a properly setup config file.
       error('\'smtpServer\' not configured') unless @smtpServer
@@ -100,11 +132,20 @@ class TaskJuggler
 
       mail = Mail.new do
         subject subject
-        body message
+        text_part do
+          body message
+          content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
+          content_transfer_encoding '8bit'
+        end
       end
       mail.to = to
       mail.from = @senderEmail
-      mail.add_file attachment if attachment
+      if attachment
+        mail.add_file ({
+          :filename => File.basename(attachment),
+          :content => File.read(attachment),
+        })
+      end
 
       if @noEmails
         # For testing and debugging, we only print out the email.
