@@ -85,7 +85,7 @@ EOT
   def processSheet(timeSheet)
     # Store the detected sheet so we can include it with error reports if
     # needed.
-    @timeSheet = cutOut(timeSheet)
+    @timeSheet = cutOut(fixLineBreaks(timeSheet))
     # A valid time sheet must have the poper header line.
     if @timeSheetHeader.match(@timeSheet)
       checkInterval(@timeSheet)

@@ -53,16 +53,19 @@ class TaskJuggler
       #   2     after mark2
       cutOutText = nil
       quoteLen = 0
+      quoteMarks = ''
       text.each_line do |line|
         if cutOutText.nil?
           # We are looking for the line with the start marker (mark1)
           if (matches = mark1.match(line))
-            quoteLen = matches[1].length
+            quoteMarks = matches[1]
+            quoteLen = quoteMarks.length
             cutOutText = line[quoteLen..-1]
           end
         else
-          puts line
-          cutOutText << line[quoteLen..-1]
+          # Remove quote marks from the beginning of the line.
+          line = line[quoteLen..-1] if line[0, quoteLen] == quoteMarks
+          cutOutText << line
           # We are gathering text until we hit the end marker (mark2)
           return cutOutText if mark2.match(line)
         end
@@ -72,6 +75,25 @@ class TaskJuggler
       text
     end
 
+    # Convert all CR+LF and CR line breaks into LF line breaks.
+    def fixLineBreaks(text)
+      out = ''
+      cr = false
+      text.each_utf8_char do |c|
+        if c == "\r"
+          # We don't know yet if it's a CR or CR+LF.
+          cr = true
+        else
+          if cr && c != "\n"
+            # We only found a CR. Replace it with a LF.
+            out << "\n"
+            cr = false
+          end
+          out << c
+        end
+      end
+      out
+    end
 
     def setWorkingDir
       # Make sure the user has provided a properly setup config file.
