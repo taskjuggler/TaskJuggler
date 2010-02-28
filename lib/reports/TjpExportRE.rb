@@ -37,7 +37,8 @@ class TaskJuggler
       @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      @report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
+      @report.set('hideResource',
+                  LogicalExpression.new(LogicalOperation.new(0)))
       @report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     end
 
@@ -64,7 +65,7 @@ class TaskJuggler
 
       @file = ''
 
-      generateProjectProperty if @mainFile
+      generateProjectProperty unless a('definitions').include?('project')
 
       generateFlagDeclaration if a('definitions').include?('flags')
       generateProjectIDs if a('definitions').include?('projectids')

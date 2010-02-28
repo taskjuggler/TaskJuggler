@@ -195,7 +195,7 @@ class TaskJuggler
         if (startDate.nil? || startDate <= entry.date) &&
            (endDate.nil? || endDate >= entry.date) &&
            (property.nil? || property == entry.property ||
-                             entry.property.isChildOf?(property)) ||
+                             entry.property.isChildOf?(property)) &&
            (alertLevel.nil? || alertLevel == entry.alertLevel)
           list << entry
         end

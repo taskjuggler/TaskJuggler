@@ -788,22 +788,8 @@ EOT
   end
 
   def rule_exportHeader
-    pattern(%w( _export $STRING ), lambda {
-      if @val[1] != '.'
-        suffix = @val[1][-4, 4]
-        if suffix != '.tjp' && suffix != '.tji'
-          error('export_bad_extn',
-              'Export report files must have a .tjp or .tji extension.')
-        end
-        # File name without extension.
-        name = @val[1][0..-5]
-      end
-
-      if @project.reports[@val[1]]
-        error('report_redefinition',
-              "A report with the name #{name} has already been defined.")
-      end
-      newReport(nil, @val[1], :export, sourceFileInfo)
+    pattern(%w( _export !optionalID $STRING ), lambda {
+      newReport(@val[1], @val[2], :export, sourceFileInfo)
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -820,11 +806,14 @@ EOT
       @property.set('definitions', @val[1])
     })
     doc('definitions', <<"EOT"
-This attributes controls what definitions will be contained in the report. By default, '.tjp' reports have all definitions included and '.tji' reports have no definitions included.
+This attributes controls what definitions will be contained in the report. If
+the list includes ''project'', the generated file will have a ''''.tjp''''
+extension. Otherwise it will have a ''''.tji'''' extension.
 EOT
        )
     allOrNothingListRule('exportDefinitions',
                          { 'flags' => 'Include flag definitions',
+                           'project' => 'Include project header',
                            'projecids' => 'Include project IDs',
                            'tasks' => 'Include task definitions',
                            'resources' => 'Include resource definitions' })
@@ -1866,15 +1855,7 @@ EOT
 
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
-      if (fileName = @val[2]) != '.'
-        if @project.reports[fileName]
-          error('report_redefinition',
-                "A report with the name '#{fileName}' has already been defined.")
-        end
-      else
-        fileName = "nikureport#{@project.reports.length + 1}"
-      end
-      @property = newReport(@val[1], fileName, :niku, sourceFileInfo)
+      @property = newReport(@val[1], @val[2], :niku, sourceFileInfo)
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -2470,6 +2451,7 @@ EOT
     pattern(%w( !resource ))
     pattern(%w( !shift ))
     pattern(%w( !statusSheet ))
+    pattern(%w( !statusSheetReport ))
 
     pattern(%w( _supplement !supplement ))
     doc('supplement', <<'EOT'
@@ -3776,6 +3758,48 @@ EOT
     arg(0, 'tree',
         'Use \'tree\' as first criteria to keep the breakdown structure.')
   end
+  def rule_ssReportHeader
+    pattern(%w( _statussheetreport !optionalID $STRING ), lambda {
+      if (fileName = @val[2]) != '.'
+        if @project.reports[fileName]
+          error('report_redefinition',
+                "A report with the name '#{fileName}' has already been " +
+                "defined.")
+        end
+      else
+        fileName = "statusSheet#{@project.reports.length + 1}"
+      end
+      report = newReport(@val[1], fileName, :statusSheet, sourceFileInfo)
+      report.set('scenarios', [ 0 ])
+      # Show all tasks, sorted by id-up.
+      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortTasks', [ [ 'id', true, -1 ] ])
+      # Show all resources, sorted by seqno-up.
+      report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      report.set('loadUnit', :hours)
+      report.set('definitions', [])
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the status sheet report file to generate. It must end with a .tji
+extension, or use . to use the standard output channel.
+EOT
+       )
+  end
+
+  def rule_ssReportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !hideresource ))
+    pattern(%w( !reportEnd ))
+    pattern(%w( !reportPeriod ))
+    pattern(%w( !reportStart ))
+  end
+
+  def rule_ssReportBody
+    optionsRule('ssReportAttributes')
+  end
 
   def rule_ssStatusAttributes
     optional
@@ -3843,6 +3867,18 @@ EOT
 The ID of a defined resource. This identifies the status reporter. Unless the
 status entries provide a different author, the sheet author will be used as
 status entry author.
+EOT
+       )
+  end
+
+  def rule_statusSheetReport
+    pattern(%w( !ssReportHeader !ssReportBody ))
+    doc('statussheetreport', <<'EOT'
+A status sheet report is a template for a status sheet. It collects all the
+status information of the top-level task that a resource is responsible for.
+This report is typically used by managers or team leads to review the time
+sheet status information and destill it down to a summary that can be
+forwarded to the next person in the reporting chain.
 EOT
        )
   end
@@ -4918,21 +4954,7 @@ EOT
   end
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
-      if (fileName = @val[2]) != '.'
-        suffix = fileName[-4, 4]
-        if suffix != '.tji'
-          error('tsreport_bad_extn',
-              'time sheet report files must have a .tji extension.')
-        end
-
-        if @project.reports[fileName]
-          error('report_redefinition',
-                "A report with the name '#{fileName}' has already been defined.")
-        end
-      else
-        fileName = "timeSheet#{@project.reports.length + 1}"
-      end
-      report = newReport(@val[1], fileName, :timeSheet, sourceFileInfo)
+      report = newReport(@val[1], @val[2], :timeSheet, sourceFileInfo)
       report.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
@@ -4941,6 +4963,7 @@ EOT
       report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortResources', [ [ 'seqno', true, -1 ] ])
       report.set('loadUnit', :hours)
+      report.set('definitions', [])
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji

@@ -16,6 +16,7 @@ require 'reports/TextReport'
 require 'reports/TaskListRE'
 require 'reports/ResourceListRE'
 require 'reports/TjpExportRE'
+require 'reports/StatusSheetReport'
 require 'reports/TimeSheetReport'
 require 'reports/NikuReport'
 require 'reports/CSVFile'
@@ -59,6 +60,8 @@ class TaskJuggler
           @content = TextReport.new(self)
         when :taskreport
           @content = TaskListRE.new(self)
+        when :statusSheet
+          @content = StatusSheetReport.new(self)
         when :timeSheet
           @content = TimeSheetReport.new(self)
         else
@@ -228,6 +231,7 @@ EOT
           $stdout.write(@content.to_tjp)
         else
           fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name
+          fileName += a('definitions').include?('project') ? '.tjp' : '.tji'
           fileName.untaint
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end

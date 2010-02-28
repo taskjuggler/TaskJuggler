@@ -161,6 +161,7 @@ task AcSo "Accounting Software" {
 # *** EXAMPLE: charge +
   charge 170 perday
 # *** EXAMPLE: charge -
+  responsible boss
 
 # *** EXAMPLE: task1 +
 # *** EXAMPLE: spec +
@@ -210,6 +211,7 @@ task AcSo "Accounting Software" {
     # All subtasks depend on the specification task.
     depends !spec
 
+    responsible dev1
 # *** EXAMPLE: software +
 # *** EXAMPLE: database +
     task database "Database coupling" {
