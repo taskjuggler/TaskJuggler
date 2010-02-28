@@ -50,6 +50,10 @@ def processArguments(argv)
           'requests') do
     @reportServer = true
   end
+  opts.on('--warn-ts-deltas',
+          'Turn on warnings for requested changes in time sheets') do
+   @warnTsDeltas = true
+  end
   opts.on('-o', '--output-dir <directory>', String,
           'Directory the reports should go into') do |arg|
     @outputDir = arg + '/'
@@ -99,6 +103,7 @@ def main
   @maxCpuCores = 1
   @forceReports = false
   @reportServer = false
+  @warnTsDeltas = false
   @outputDir = ''
 
   # Install signal handler to exit gracefully on CTRL-C.
@@ -110,6 +115,7 @@ def main
   files = processArguments(ARGV)
   tj = TaskJuggler.new(true)
   tj.maxCpuCores = @maxCpuCores
+  tj.warnTsDeltas = @warnTsDeltas
   exit 1 unless tj.parse(files, @reportServer)
   if !tj.schedule
     exit 1 unless @forceReports

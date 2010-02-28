@@ -22,7 +22,7 @@ require 'Log'
 class TaskJuggler
 
   attr_reader :messageHandler
-  attr_accessor :maxCpuCores
+  attr_accessor :maxCpuCores, :warnTsDeltas
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
   # whether or not messsages can be written to $stderr.
@@ -31,6 +31,7 @@ class TaskJuggler
     @parser = nil
     @messageHandler = MessageHandler.new(console)
     @maxCpuCores = 1
+    @warnTsDeltas = false
   end
 
   # Read in the files passed as file names in _files_, parse them and
@@ -72,6 +73,7 @@ class TaskJuggler
   def schedule
     Log.enter('scheduler', 'Scheduling project ...')
     #puts @project.to_s
+    @project.warnTsDeltas = @warnTsDeltas
     res = @project.schedule
     Log.exit('scheduler')
     res

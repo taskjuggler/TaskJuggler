@@ -21,7 +21,7 @@ class TaskJuggler
 
     attr_reader :task, :work
     attr_accessor :sourceFileInfo, :remaining, :expectedEnd, :status,
-                  :priority, :name
+                   :priority, :name
 
     def initialize(timeSheet, task)
       # This is a reference to a Task object for existing tasks or an ID as
@@ -118,6 +118,62 @@ class TaskJuggler
       end
     end
 
+    def warnOnDelta(startIdx, endIdx)
+      # Ignore personal entries.
+      return unless @task
+
+      resource = @timeSheet.resource
+      if @task.is_a?(String)
+        # A resource has requested a new Task to be created.
+        warning('ts_res_new_task',
+                "#{resource.name} is requesting a new task:\n" +
+                "ID: #{@task}\n" +
+                "Name: #{@name}\n" +
+                "Work: #{@work}d  " +
+                (@remaining ? "Remaining: #{@remaining}d" :
+                              "End: #{@end.to_s}"))
+        return
+      end
+
+      scenarioIdx = @timeSheet.scenarioIdx
+      project = resource.project
+      plannedWork = @task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
+                                           resource)
+      # Convert the @work slots into a daily load.
+      work = project.convertToDailyLoad(@work * project['scheduleGranularity'])
+
+      if work != plannedWork
+        warning('ts_res_work_delta',
+                "#{resource.name} worked " +
+                "#{work < plannedWork ? 'less' : 'more'} " +
+                "on #{@task.fullId}\n" +
+                "#{work}d instead of #{plannedWork}d")
+      end
+      if @task['effort', scenarioIdx] > 0
+        startIdx = endIdx
+        endIdx = project.dateToIdx(@task['end', scenarioIdx])
+        remainingWork = @task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
+                                               resource)
+        # Convert the @remaining slots into a daily load.
+        remaining = project.convertToDailyLoad(@remaining *
+                                               project['scheduleGranularity'])
+        if remaining != remainingWork
+          warning('ts_res_remain_delta',
+                  "#{resource.name} requests " +
+                  "#{remaining < remainingWork ? 'less' : 'more'} " +
+                  "remaining effort for task #{@task.fullId}\n" +
+                  "#{remaining}d instead of #{remainingWork}d")
+        end
+      else
+        if @expectedEnd != @task['end', scenarioIdx]
+          warning('ts_res_end_delta',
+                  "#{resource.name} requests " +
+                  "#{@expectedEnd < @task['end', scenarioIdx] ?
+                    'earlier' : 'later'} end for task #{@task.fullId}")
+        end
+      end
+    end
+
     def taskId
       @task.is_a?(Task) ? @task.fullId : task
     end
@@ -191,6 +247,16 @@ class TaskJuggler
               "The total work to be reported for this time sheet " +
               "is #{workWithUnit(targetSlots)} but " +
               "#{workWithUnit(totalSlots)} were reported.")
+      end
+    end
+
+    def warnOnDelta
+      project = @resource.project
+      startIdx = project.dateToIdx(@interval.start)
+      endIdx = project.dateToIdx(@interval.end)
+
+      @records.each do |record|
+        record.warnOnDelta(startIdx, endIdx)
       end
     end
 
@@ -278,6 +344,10 @@ class TaskJuggler
 
     def check
       each { |s| s.check }
+    end
+
+    def warnOnDelta
+      each { |s| s.warnOnDelta }
     end
 
   end

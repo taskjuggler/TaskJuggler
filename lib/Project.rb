@@ -48,7 +48,7 @@ class TaskJuggler
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
                 :timeSheets, :reports, :messageHandler
-    attr_accessor :reportContext, :outputDir
+    attr_accessor :reportContext, :outputDir, :warnTsDeltas
 
     # Create a project with the specified +id+, +name+ and +version+.
     # +messageHandler+ is a MessageHandler reference that is used to handle
@@ -379,6 +379,7 @@ class TaskJuggler
       # This holds a reference to the ReportContext for each Thread.
       @reportContext = nil
       @outputDir = ''
+      @warnTsDeltas = false
     end
 
     # Overload the deep_clone function so that references to the project don't
@@ -576,6 +577,7 @@ class TaskJuggler
         return false
       end
 
+      @timeSheets.warnOnDelta if @warnTsDeltas
       true
     end
 

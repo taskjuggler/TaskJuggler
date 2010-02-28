@@ -19,7 +19,7 @@ task t2 "Task 2" {
 timesheet r1 2010-02-21 +1w {
   task t1 {
     work 80%
-    remaining 0d
+    remaining 1.0d
     status green "Lots of work done" {
       summary "I had good fun!"
       details -8<-
