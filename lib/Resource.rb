@@ -59,31 +59,59 @@ class TaskJuggler
       first = true
       (numberOfLevels - 1).downto(0) do |level|
         levelList = listByLevel[level]
-        alertName = @project['alertLevels'][level][1]
-        rText += "== #{alertName}: ==\n\n"
-        if levelList.empty?
-          rText += "./.\n\n"
-        else
-          levelList.each do |entry|
-            # Separate the messages with a horizontal line.
-            if first
-              first = false
-            else
-              rText += "----\n"
+        alertName = "<nowiki>[#{@project['alertLevels'][level][1]}]</nowiki>"
+        levelList.each do |entry|
+          # The TimeSheetRecords associated with this entry.
+          tsRecord = entry.timeSheetRecord
+          # Separate the messages with a horizontal line.
+          if first
+            first = false
+          else
+            rText += "----\n"
+          end
+          if entry.property.is_a?(Task)
+            rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+
+              "(ID: #{entry.property.fullId}) ==\n\n"
+            if tsRecord
+              rText += "Work: #{tsRecord.actualWorkPercent}% "
+              if tsRecord.actualWorkPercent != tsRecord.planWorkPercent
+                rText += "(#{tsRecord.planWorkPercent}%) "
+              end
+              if tsRecord.remaining
+                rText += "Remaining: #{tsRecord.actualRemaining}d "
+                if tsRecord.actualRemaining !=  tsRecord.planRemaining
+                  rText += "(#{tsRecord.planRemaining}d) "
+                end
+              else
+                rText += "End: #{tsRecord.actualEnd.to_s(query.timeFormat)} "
+                if tsRecord.actualEnd != tsRecord.planEnd
+                  rText += "(#{tsRecord.planEnd.to_s(query.timeFormat)}) "
+                end
+              end
+              rText += "\n\n"
             end
-            if entry.property.is_a?(Task)
-              rText += "=== Task #{entry.property.name} "+
-                "(ID: #{entry.property.fullId}) ===\n\n"
-            else
-              rText += "=== Personal Notes ===\n\n"
+          elsif !(tsRecord = entry.timeSheetRecord).nil? &&
+                entry.timeSheetRecord.task.is_a?(String)
+            rText += "== #{alertLevel} New Task #{tsRecord.name} "+
+              "(ID: #{tsRecord.task}) ==\n\n"
+            if tsRecord
+              rText += "Work: #{tsRecord.actualWorkPercent}% "
+              if tsRecord.remaining
+                rText += "Remaining: #{tsRecord.actualRemaining}d "
+              else
+                rText += "End: #{tsRecord.actualEnd.to_s(query.timeFormat)} "
+              end
+              rText += "\n\n"
             end
-            rText += entry.headline + "\n\n"
-            if entry.summary
-              rText += entry.summary.richText.inputText + "\n\n"
-            end
-            if longVersion && entry.details
-              rText += entry.details.richText.inputText + "\n\n"
-            end
+          else
+            rText += "== Personal Notes ==\n\n"
+          end
+          rText += entry.headline + "\n\n"
+          if entry.summary
+            rText += entry.summary.richText.inputText + "\n\n"
+          end
+          if longVersion && entry.details
+            rText += entry.details.richText.inputText + "\n\n"
           end
         end
       end
@@ -104,7 +132,7 @@ class TaskJuggler
         return nil
       end
       # No section numbers, please!
-      # rti.sectionNumbers = false
+      rti.sectionNumbers = false
       # We use a special class to allow CSS formating.
       rti.cssClass = 'alertmessage'
       query.rti = rti

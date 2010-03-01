@@ -5011,6 +5011,7 @@ EOT
                                        @val[2], @property || @timeSheet.resource,
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
+      @journalEntry.timeSheetRecord = @timeSheetRecord
       @journalEntry.author = @timeSheet.resource
       @timeSheetRecord.status = @journalEntry
     })

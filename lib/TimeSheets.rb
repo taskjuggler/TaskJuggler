@@ -178,6 +178,50 @@ class TaskJuggler
       @task.is_a?(Task) ? @task.fullId : task
     end
 
+    # The reported work in % (0.0 - 100.0) of the average working time.
+    def actualWorkPercent
+      (@work.to_f / @timeSheet.totalGrossWorkingSlots) * 100.0
+    end
+
+    # The planned work in % (0.0 - 100.0) of the average working time.
+    def planWorkPercent
+      resource = @timeSheet.resource
+      project = resource.project
+      scenarioIdx = @timeSheet.scenarioIdx
+      startIdx = project.dateToIdx(@timeSheet.interval.start)
+      endIdx = project.dateToIdx(@timeSheet.interval.end)
+      (@timeSheet.resource.getAllocatedSlots(scenarioIdx, startIdx, endIdx,
+                                             @task).to_f /
+       @timeSheet.totalGrossWorkingSlots) * 100.0
+    end
+
+    # The reporting remaining effort in days.
+    def actualRemaining
+      project = @timeSheet.resource.project
+      project.convertToDailyLoad(@remaining * project['scheduleGranularity'])
+    end
+
+    # The remaining effort according to the plan.
+    def planRemaining
+      resource = @timeSheet.resource
+      project = resource.project
+      scenarioIdx = @timeSheet.scenarioIdx
+      startIdx = project.dateToIdx(project['now'])
+      endIdx = project.dateToIdx(@task['end', scenarioIdx])
+      remainingWork = @task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
+                                             resource)
+    end
+
+    # The reported expected end of the task.
+    def actualEnd
+      @expectedEnd
+    end
+
+    # The planned end of the task.
+    def planEnd
+      @task['end', @timeSheet.scenarioIdx]
+    end
+
     private
 
     def error(id, text)
