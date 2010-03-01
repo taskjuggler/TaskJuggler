@@ -260,15 +260,16 @@ class TaskJuggler
       end
     end
 
-    # Compute the total number of potential working time slots of the
-    # Resource. This is the sum of allocated, free and vacation slots.
+    # Compute the total number of potential working time slots during the
+    # report period. This value is not resource specific.
     def totalGrossWorkingSlots
       project = @resource.project
-      startIdx = project.dateToIdx(@interval.start)
-      endIdx = project.dateToIdx(@interval.end)
-      @resource.getAllocatedSlots(@scenarioIdx, startIdx, endIdx, nil) +
-        @resource.getFreeSlots(@scenarioIdx, startIdx, endIdx) +
-        @resource.getVacationSlots(@scenarioIdx, startIdx, endIdx)
+      # Calculate the average working days per week (usually 5)
+      weeklyWorkingDays = project['yearlyworkingdays'] / 52.1428
+      # Calculate the number of weeks in the report
+      weeksToReport = (@interval.end - @interval.start) / (60 * 60 * 24 * 7)
+
+      daysToSlots(weeklyWorkingDays * weeksToReport)
     end
 
     # Compute the total number of actual working time slots of the
