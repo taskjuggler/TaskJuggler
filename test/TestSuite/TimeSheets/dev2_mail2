@@ -29,9 +29,9 @@ Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
  > #
  > # --------8<--------8<--------
  > timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
- > 
+ >
  >   # Vacation time: 0.0%
- > 
+ >
  >   # Task: Graphical User Interface
  >   task AcSo.software.gui {
  >     work 5.0%
@@ -45,7 +45,7 @@ Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
  >     #  ->8-
  >     # }
  >   }
- > 
+ >
  >   # Task: Back-End Functions
  >   task AcSo.software.backend {
  >     work 95.0%
@@ -59,14 +59,14 @@ Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
  >     #  ->8-
  >     }
  >   }
- > 
+ >
  >   # If you had unplanned tasks, uncomment and fill out the
  >   # following lines:
  >   # newtask new.task.id "A task title" {
  >   #   work X%
  >   #   remaining Y.Yd
  >   # }
- > 
+ >
  >   # You can use the following section to report personal notes.
  >   # status green "A headline" {
  >   #   summary -8<-
@@ -79,6 +79,6 @@ Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
  > }
  > # -------->8-------->8--------
  > Some junk text
- > 
+ >
  > 
  > 

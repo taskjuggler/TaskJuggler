@@ -44,27 +44,29 @@ class TaskJuggler
     # Extract the text between the cut-marker lines and remove any email
     # quotes from the beginnin of the line.
     def cutOut(text)
+      # Pattern for the section start marker
       mark1 = /(.*)# --------8<--------8<--------/
+      # Pattern for the section end marker
       mark2 = /# -------->8-------->8--------/
-      # This is a simple state machine.
-      # Value   State
-      #   0     before mark1
-      #   1     gathering text
-      #   2     after mark2
+      # The cutOut section
       cutOutText = nil
       quoteLen = 0
-      quoteMarks = ''
+      quoteMarks = emptyLine = ''
       text.each_line do |line|
         if cutOutText.nil?
           # We are looking for the line with the start marker (mark1)
           if (matches = mark1.match(line))
             quoteMarks = matches[1]
             quoteLen = quoteMarks.length
+            # Special case for quoted empty lines without trailing spaces.
+            emptyLine = quoteMarks.chomp.chomp(' ') + "\n"
             cutOutText = line[quoteLen..-1]
           end
         else
           # Remove quote marks from the beginning of the line.
           line = line[quoteLen..-1] if line[0, quoteLen] == quoteMarks
+          line = "\n" if line == emptyLine
+
           cutOutText << line
           # We are gathering text until we hit the end marker (mark2)
           return cutOutText if mark2.match(line)
