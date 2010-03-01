@@ -137,8 +137,13 @@ EOT
 
     log('ERROR', "#{message}") if @logLevel >= 1
 
-    # Append the submitted sheet for further tries.
-    message += "\n" + @timeSheet if @timeSheet
+    # Append the submitted sheet for further tries. We may run into encoding
+    # errors here. In this case we send the answer without the incoming time
+    # sheet.
+    begin
+      message += "\n" + @timeSheet if @timeSheet
+    rescue
+    end
 
     sendEmail(@submitter, 'Your time sheet submission failed!', message)
 
