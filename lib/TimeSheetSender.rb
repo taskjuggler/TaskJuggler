@@ -169,7 +169,8 @@ EOT
 
         message += File.read(attachment)
 
-        sendEmail(email, 'Your weekly report template', message, attachment)
+        sendEmail(email, "Your weekly report template for #{@date}",
+                  message, attachment)
       end
     end
 

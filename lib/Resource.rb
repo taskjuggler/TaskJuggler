@@ -73,17 +73,18 @@ class TaskJuggler
             rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+
               "(ID: #{entry.property.fullId}) ==\n\n"
             if tsRecord
-              rText += "Work: #{tsRecord.actualWorkPercent}% "
+              rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
               if tsRecord.actualWorkPercent != tsRecord.planWorkPercent
-                rText += "(#{tsRecord.planWorkPercent}%) "
+                rText += "(#{tsRecord.planWorkPercent.to_i}%) "
               end
               if tsRecord.remaining
-                rText += "Remaining: #{tsRecord.actualRemaining}d "
+                rText += "'''Remaining:''' #{tsRecord.actualRemaining}d "
                 if tsRecord.actualRemaining !=  tsRecord.planRemaining
                   rText += "(#{tsRecord.planRemaining}d) "
                 end
               else
-                rText += "End: #{tsRecord.actualEnd.to_s(query.timeFormat)} "
+                rText += "'''End:''' " +
+                         "#{tsRecord.actualEnd.to_s(query.timeFormat)} "
                 if tsRecord.actualEnd != tsRecord.planEnd
                   rText += "(#{tsRecord.planEnd.to_s(query.timeFormat)}) "
                 end
@@ -92,21 +93,23 @@ class TaskJuggler
             end
           elsif !(tsRecord = entry.timeSheetRecord).nil? &&
                 entry.timeSheetRecord.task.is_a?(String)
-            rText += "== #{alertLevel} New Task #{tsRecord.name} "+
+            rText += "== #{alertName} <nowiki>[New Task] #{tsRecord.name} " +
+                     "</nowiki> "+
               "(ID: #{tsRecord.task}) ==\n\n"
             if tsRecord
-              rText += "Work: #{tsRecord.actualWorkPercent}% "
+              rText += "'''Work:''' #{tsRecord.actualWorkPercent}% "
               if tsRecord.remaining
-                rText += "Remaining: #{tsRecord.actualRemaining}d "
+                rText += "'''Remaining:''' #{tsRecord.actualRemaining}d "
               else
-                rText += "End: #{tsRecord.actualEnd.to_s(query.timeFormat)} "
+                rText += "'''End:''' " +
+                         "#{tsRecord.actualEnd.to_s(query.timeFormat)} "
               end
               rText += "\n\n"
             end
           else
-            rText += "== Personal Notes ==\n\n"
+            rText += "== #{alertName} Personal Notes ==\n\n"
           end
-          rText += entry.headline + "\n\n"
+          rText += "'''<nowiki>#{entry.headline}</nowiki>'''\n\n"
           if entry.summary
             rText += entry.summary.richText.inputText + "\n\n"
           end
