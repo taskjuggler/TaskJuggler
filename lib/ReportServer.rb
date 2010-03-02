@@ -77,6 +77,28 @@ class ReportServer
     true
   end
 
+  def checkStatusSheet(fileName, fileContent)
+    begin
+      Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
+      setupParser(fileName, fileContent)
+      return if (ss = @parser.parse('statusSheet')).nil?
+      @parser.close
+      queryAttrs = { 'project' => @project,
+                     'property' => ss[0],
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => @project['trackingScenarioIdx'],
+                     'timeFormat' => '%Y-%m-%d',
+                     'start' => @project['start'],
+                     'end' => ss[1] }
+      query = Query.new(queryAttrs)
+      puts ss[0].query_dashboard(query).to_s
+    rescue TjException
+      Log.exit('checkStatusSheet')
+      return false
+    end
+    true
+  end
+
   def generateReport(reportId)
     begin
       Log.enter('generateReport', "Generating report #{reportId} ...")

@@ -115,7 +115,7 @@ class TaskJuggler
 
       cmd = @scmCommand.gsub(/%m/, message)
       cmd.gsub!(/%f/, fileName)
-      `#{cmd}`
+      `#{cmd}` unless @noEmails
       if $? == 0
         info("Added #{fileName} to SCM")
       else

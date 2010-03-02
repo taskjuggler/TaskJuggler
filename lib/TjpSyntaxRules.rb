@@ -3836,7 +3836,9 @@ EOT
   end
 
   def rule_statusSheet
-    pattern(%w( !statusSheetHeader !statusSheetBody ))
+    pattern(%w( !statusSheetHeader !statusSheetBody ), lambda {
+      [ @sheetAuthor, @sheetEnd ]
+    })
     doc('statussheet', <<'EOT'
 A status sheet can be used to capture the status of various tasks outside of
 the regular task tree definition. It is intended for use by managers that

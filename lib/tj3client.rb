@@ -40,7 +40,11 @@ def processArguments(argv)
   end
   opts.on('-t', '--timesheet',
           'Check the time sheet') do |arg|
-    @timeSheet = true
+    @mode = :timesheet
+  end
+  opts.on('-s', '--statussheet',
+          'Check the status sheet') do |arg|
+    @mode = :statussheet
   end
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts.to_s
@@ -76,6 +80,7 @@ end
 
 def main
   @reports = []
+  @mode = :report
 
   # Install signal handler to exit gracefully on CTRL-C.
   Kernel.trap('INT') do
@@ -114,8 +119,11 @@ def main
       else
         fileContent = IO.read(fileName)
       end
-      if @timeSheet
+      case @mode
+      when :timesheet
         exit 1 unless server.checkTimeSheet(fileName, fileContent)
+      when :statussheet
+        exit 1 unless server.checkStatusSheet(fileName, fileContent)
       else
         exit 1 unless server.parse(fileName, fileContent)
       end

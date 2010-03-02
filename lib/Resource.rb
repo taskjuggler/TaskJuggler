@@ -40,6 +40,10 @@ class TaskJuggler
       journalMessages(query, true)
     end
 
+    def query_dashboard(query)
+      dashboard(query)
+    end
+
     private
 
     # Create a blog-style list of all alert messages that match the Query.
@@ -140,6 +144,52 @@ class TaskJuggler
       rti.cssClass = 'alertmessage'
       query.rti = rti
     end
+
+    # Create a dashboard-like list of all task that have a current alert
+    # status.
+    def dashboard(query)
+      # The components of the message are either UTF-8 text or RichText. For
+      # the RichText components, we use the originally provided markup since
+      # we compose the result as RichText markup first.
+      rText = ''
+      scenarioIdx = @project['trackingScenarioIdx']
+      first = true
+      @project.tasks.each do |task|
+        if task['responsible', scenarioIdx].include?(self) &&
+           !@project['journal'].currentEntries(query.end, task,
+                                              0, query.start).empty?
+          if first
+            first = false
+          else
+            rText += "----\n\n"
+          end
+          rText += "Task: <nowiki>#{task.name}</nowiki> (#{task.fullId})\n\n"
+          rText += task.query_alertmessage(query).richText.inputText + "\n"
+        end
+      end
+
+      # Now convert the RichText markup String into RichTextIntermediate
+      # format.
+      handlers = [
+        RTFNavigator.new(@project),
+        RTFQuery.new(@project),
+        RTFReport.new(@project)
+      ]
+      begin
+        rti = RichText.new(rText, handlers).generateIntermediateFormat
+      rescue RichTextException => msg
+        $stderr.puts "Error while processing Rich Text\n" +
+                     "Line #{msg.lineNo}: #{msg.text}\n" +
+                     "#{msg.line}"
+        return nil
+      end
+      # No section numbers, please!
+      rti.sectionNumbers = false
+      # We use a special class to allow CSS formating.
+      rti.cssClass = 'alertmessage'
+      query.rti = rti
+    end
+
   end
 
 end
