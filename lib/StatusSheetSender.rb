@@ -40,6 +40,7 @@ class TaskJuggler
       @date = Time.new.strftime('%Y-%m-%d')
       # We need this to determine if we already sent out a report.
       @timeStamp = Time.new
+      @logFile = 'statussheets.log'
     end
 
     def sendTemplates(resourceList)

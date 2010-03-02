@@ -124,7 +124,7 @@ class TaskJuggler
       # Iterate over all the ManagerStatusRecord objects.
       @managers.each do |manager|
         resource = manager.resource
-        @file = "# --------8<--------8<--------\n"
+        @file << "# --------8<--------8<--------\n"
         # Generate the time sheet header
         @file << "statussheet #{resource.fullId} #{a('end')} {\n\n"
 
@@ -142,6 +142,26 @@ class TaskJuggler
               alertLevel = @project['alertLevels'][entry.alertLevel][0]
               @file << "    # status #{alertLevel} \"#{entry.headline}\" {\n"
               @file << "    #   # Date: #{entry.date}\n"
+              if (tsRecord = entry.timeSheetRecord)
+                @file << "    #   # "
+                @file << "Work: #{tsRecord.actualWorkPercent.to_i}% "
+                if tsRecord.actualWorkPercent != tsRecord.planWorkPercent
+                  @file << "(#{tsRecord.planWorkPercent.to_i}%) "
+                end
+                if tsRecord.remaining
+                  @file << "   Remaining: #{tsRecord.actualRemaining}d "
+                  if tsRecord.actualRemaining !=  tsRecord.planRemaining
+                    @file << "(#{tsRecord.planRemaining}d) "
+                  end
+                else
+                  @file << "   End: " +
+                           "#{tsRecord.actualEnd.to_s(a('timeFormat'))} "
+                  if tsRecord.actualEnd != tsRecord.planEnd
+                    @file << "(#{tsRecord.planEnd.to_s(a('timeFormat'))}) "
+                  end
+                end
+                @file << "\n"
+              end
               @file << "    #   author #{entry.author.fullId}\n"
               if entry.summary
                 @file << "    #   summary -8<-\n" +
