@@ -26,6 +26,7 @@ class TaskJuggler
       @sheetDir = 'StatusSheets'
       @templateDir = 'StatusSheetTemplates'
       @failedMailsDir = "#{@sheetDir}/FailedMails"
+      @failedSheetsDir = "#{@sheetDir}/FailedSheets"
       @signatureFile = 'acceptable_dates'
       # The log file
       @logFile = 'statussheets.log'

@@ -26,6 +26,7 @@ class TaskJuggler
       @sheetDir = 'TimeSheets'
       @templateDir = 'TimeSheetTemplates'
       @failedMailsDir = "#{@sheetDir}/FailedMails"
+      @failedSheetsDir = "#{@sheetDir}/FailedSheets"
       @signatureFile = 'acceptable_intervals'
       @logFile = 'timesheets.log'
 

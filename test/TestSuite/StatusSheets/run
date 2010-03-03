@@ -27,7 +27,7 @@ if test `fgrep WARN statussheets.log | wc -l` != 1 ; then
   echo "ERROR: Warnings don't match!"
   exit 1
 fi  
-if test `fgrep INFO statussheets.log | wc -l` != 26 ; then
+if test `fgrep INFO statussheets.log | wc -l` != 27 ; then
   echo "ERROR: Info messages don't match!"
   exit 1
 fi  

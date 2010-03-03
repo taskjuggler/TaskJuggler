@@ -32,6 +32,8 @@ class TaskJuggler
       @templateDir = nil
       # Directory to store the failed emails.
       @failedMailsDir = nil
+      # Directory to store the failed sheets
+      @failedSheetsDir = nil
       # File that holds the acceptable signatures.
       @signatureFile = nil
       # The log file
@@ -133,6 +135,10 @@ EOT
       err = ''
       status = nil
       begin
+        # Save a copy of the sheet for debugging purposes.
+        File.open("#{@failedSheetsDir}/#{@resourceId}-#{@date}.tji", 'w') do |f|
+          f.write(sheet)
+        end
         command = "tj3client --silent #{@tj3clientOption} ."
         status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
           # Send the report to the tj3client process via stdin.
@@ -144,7 +150,10 @@ EOT
       rescue
         fatal("Cannot check #{@sheetType} sheet: #{$!}")
       end
-      return true if status.exitstatus == 0
+      if status.exitstatus == 0
+        File.delete("#{@failedSheetsDir}/#{@resourceId}-#{@date}.tji")
+        return true
+      end
 
       # The exit status was not 0. The stderr output should not be empty and
       # will contain error and warning messages.
@@ -253,7 +262,7 @@ EOT
     end
 
     def createDirectories
-      [ @sheetDir, @failedMailsDir ].each do |dir|
+      [ @sheetDir, @failedMailsDir, @failedSheetsDir ].each do |dir|
         unless File.directory?(dir)
           info("Creating directory #{dir}")
           Dir.mkdir(dir)
