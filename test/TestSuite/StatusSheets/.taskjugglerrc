@@ -1,5 +1,6 @@
 global:
   smtpServer: foobar.com
+  scmCommand: '/bin/true'
 statussheets:
   senderEmail: foo@bar.com
   sender:

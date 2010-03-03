@@ -157,9 +157,9 @@ class TaskJuggler
       mail = Mail.new do
         subject subject
         text_part do
-          body message
           content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
           content_transfer_encoding '8bit'
+          body message
         end
       end
       mail.to = to

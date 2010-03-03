@@ -72,7 +72,7 @@ class TaskJuggler
       @submitter = mail.from.respond_to?('[]') ? mail.from[0] : mail.from
       # Getting the message ID.
       @messageId = mail.message_id || 'unknown'
-      info("Processing #{@sheetType} sheet from #{@submitter} " +
+      info("Processing #{@sheetType} mail from #{@submitter} " +
            "with ID #{@messageId}")
 
       # Store the mail in the failedMailsDir in case something goes wrong.
