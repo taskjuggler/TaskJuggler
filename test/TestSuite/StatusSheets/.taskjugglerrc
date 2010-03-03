@@ -1,0 +1,6 @@
+global:
+  smtpServer: foobar.com
+statussheets:
+  senderEmail: foo@bar.com
+  sender:
+    hideResource: '~(isleaf() & manager)'

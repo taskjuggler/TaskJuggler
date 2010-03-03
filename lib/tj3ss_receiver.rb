@@ -24,7 +24,7 @@ class Tj3SsReceiver
   def initialize
     # Show some progress information by default
     @silent = false
-    @noEmails = false
+    @dryRun = false
     @configFile = nil
     @workingDir = nil
   end
@@ -56,8 +56,8 @@ EOT
             'Use the specified directory as working directory') do |arg|
       @workingDir = arg
     end
-    opts.on('--nomail', "Don't send out any emails") do
-      @noEmails = true
+    opts.on('--dryrun', "Don't send out any emails or do any SCM commits") do
+      @dryRun = true
     end
     opts.on('--silent', "Don't show program and progress information") do
       @silent = true
@@ -107,7 +107,7 @@ EOT
     rc.configure(ts, 'statussheets')
     rc.configure(ts, 'statussheets.receiver')
     ts.workingDir = @workingDir if @workingDir
-    ts.noEmails = @noEmails
+    ts.dryRun = @dryRun
 
     ts.processEmail
   end

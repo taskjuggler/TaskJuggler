@@ -26,12 +26,12 @@ class TaskJuggler
       @sheetType = type
       # The following settings must be provided by the deriving class.
       # This is a LogicalExpression string that controls what resources should
-      # not be getting a time sheet.
+      # not be getting a report sheet template.
       @hideResource = nil
       # This file contains the signature (date or interval) that the
       # SheetReceiver will accept as a valid signature.
       @signatureFile = nil
-      # The base directory of the time sheet templates.
+      # The base directory of the sheet templates.
       @templateDir = nil
 
       @signatureFilter = nil

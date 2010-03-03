@@ -27,7 +27,7 @@ class Tj3SsSender
   def initialize
     # Show some progress information by default
     @silent = false
-    @noEmails = false
+    @dryRun = false
     @configFile = nil
     @workingDir = nil
 
@@ -61,8 +61,8 @@ EOT
             'Use the specified directory as working directory') do |arg|
       @workingDir = arg
     end
-    opts.on('--nomail', "Don't send out any emails") do
-      @noEmails = true
+    opts.on('--dryrun', "Don't send out any emails or do SCM commits") do
+      @dryRun = true
     end
     opts.on('-r', '--resource <ID>', String,
             'Only generate template for given resource') do |arg|
@@ -121,7 +121,7 @@ EOT
     rc.configure(ts, 'statussheets')
     rc.configure(ts, 'statussheets.sender')
     ts.workingDir = @workingDir if @workingDir
-    ts.noEmails = @noEmails
+    ts.dryRun = @dryRun
     ts.date = @date if @date
 
     ts.sendTemplates(@resourceList)

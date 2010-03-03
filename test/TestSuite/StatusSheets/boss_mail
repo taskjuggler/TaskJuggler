@@ -1,0 +1,51 @@
+Date: Wed, 03 Mar 2010 09:46:45 +0100
+From: phb@crappysoftware.com
+To: statussheets@taskjuggler.foo.bar
+Message-ID: <4b8e21f53542c_17764375603597b@mime.mail>
+Subject: Your weekly report template for 2002-03-01
+
+# --------8<--------8<--------
+statussheet boss 2002-03-02-00:00-+0100 {
+
+  # Task: Accounting Software
+  task AcSo.software.database {
+    status red "Problems with the SQL Libary" {
+      # Date: 2002-02-03-00:00-+0100
+      author dev1
+      summary -8<-
+      We ran into some compatibility problems with the SQL
+      Library.
+      ->8-
+      details -8<-
+      We have already contacted the vendor and are now waiting for
+      their advise.
+      ->8-
+    }
+  }
+
+  task AcSo.manual {
+    status green "User manual completed" {
+      # Date: 2002-02-28-00:00-+0100
+      author boss
+      summary -8<-
+      The doc writers did a really great job to finish on time.
+      ->8-
+    }
+  }
+
+  task AcSo.test.alpha {
+    status yellow "Contract with Peter not yet signed" {
+      # Date: 2002-03-01-00:00-+0100
+      author boss
+      summary -8<-
+      The paperwork is stuck with HR and I can't hunt it down.
+      ->8-
+      details -8<-
+      If we don't get the contract closed within the next week,
+      the start of the testing is at risk.
+      ->8-
+    }
+  }
+
+}
+# -------->8-------->8--------

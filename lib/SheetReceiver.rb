@@ -123,6 +123,7 @@ EOT
           fileSheet(@sheet)
           # Remove the mail from the failedMailsDir
           File.delete("#{@failedMailsDir}/#{@messageId}")
+          info("Accepted sheet for #{@resourceId} dated #{@date}")
           return true
         end
       end
@@ -153,22 +154,32 @@ EOT
     def fileSheet(sheet)
       # Create the appropriate directory structure if it doesn't exist.
       dir = "#{@sheetDir}/#{@date}"
-      fileName = ''
+      fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
+      newDir = false
       begin
         unless File.directory?(dir)
           Dir.mkdir(dir)
           addToScm('Adding new directory', dir)
+          newDir = true
         end
-        fileName = "#{dir}/#{@resourceId}_#{@date}.tji"
         File.open(fileName, 'w') { |f| f.write(sheet) }
         addToScm("Adding/updating #{fileName}", fileName)
       rescue
         fatal("Cannot store #{@sheetType} sheet #{fileName}: #{$!}")
-        return false
+        return
       end
 
       # Create or update the file that includes all *.tji in the directory.
       generateInclusionFile(dir)
+
+      if newDir
+        # Add the new directory to the parent all.tji file.
+        allFile = "#{@sheetDir}/all.tji"
+        File.open(allFile, 'a') do |f|
+          f.write("\ninclude '#{@date}/all.tji' { }")
+        end
+        addToScm('Adding new directory to all.tji', allFile)
+      end
 
       text = <<"EOT"
 Report from #{getResourceName} for the period ending #{@date}:

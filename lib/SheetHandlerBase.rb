@@ -14,7 +14,7 @@ class TaskJuggler
 
   class SheetHandlerBase
 
-    attr_accessor :workingDir, :noEmails
+    attr_accessor :workingDir, :dryRun
 
     def initialize(appName)
       @appName = appName
@@ -35,7 +35,7 @@ class TaskJuggler
       @logLevel = 3
       # Set to true to not send any emails. Instead the email (header + body) is
       # printed to the terminal.
-      @noEmails = false
+      @dryRun = false
 
       @logFile = 'timesheets.log'
       @emailFailure = false
@@ -115,7 +115,7 @@ class TaskJuggler
 
       cmd = @scmCommand.gsub(/%m/, message)
       cmd.gsub!(/%f/, fileName)
-      `#{cmd}` unless @noEmails
+      `#{cmd}` unless @dryRun
       if $? == 0
         info("Added #{fileName} to SCM")
       else
@@ -171,7 +171,7 @@ class TaskJuggler
         })
       end
 
-      if @noEmails
+      if @dryRun
         # For testing and debugging, we only print out the email.
         puts mail.to_s
         log('INFO', "Show email '#{subject}' to #{to}")

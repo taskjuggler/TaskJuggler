@@ -48,5 +48,7 @@ end date must be in a single line that starts at the beginning of the line.
 EOT
     end
 
+  end
+
 end
 

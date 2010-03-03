@@ -1,0 +1,40 @@
+#! /bin/bash
+
+function cleanup
+{
+  /bin/rm -rf statussheets.log acceptable_dates \
+              StatusSheets StatusSheetTemplates \
+	      sender.log receiver.log
+  killall -9 tj3 2> /dev/null
+}
+
+cleanup
+tj3 -s project.tjp &
+# Wait some time so tj3 can go into server mode.
+sleep 5 
+
+# Run a sender test.
+tj3ss_sender --dryrun -e 2002-03-02 > sender.log
+# Run a receiver test
+tj3ss_receiver --dryrun < boss_mail > receiver.log
+tj3ss_receiver --dryrun < dev2_mail > receiver.log
+
+if test `fgrep ERROR statussheets.log | wc -l` != 0 ; then
+  echo "ERROR: Something went wrong!"
+  exit 1
+fi  
+if test `fgrep WARN statussheets.log | wc -l` != 1 ; then
+  echo "ERROR: Warnings don't match!"
+  exit 1
+fi  
+if test `fgrep INFO statussheets.log | wc -l` != 20 ; then
+  echo "ERROR: Info messages don't match!"
+  exit 1
+fi  
+if test `fgrep 'Your weekly report template' statussheets.log | wc -l` != 2 ; then
+  echo "ERROR: Wrong number of emails send out!"
+  exit 1
+fi  
+
+cleanup
+exit 0

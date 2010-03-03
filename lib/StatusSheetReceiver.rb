@@ -27,7 +27,8 @@ class TaskJuggler
       @templateDir = 'StatusSheetTemplates'
       @failedMailsDir = "#{@sheetDir}/FailedMails"
       @signatureFile = 'acceptable_dates'
-      @logFile = 'timesheets.log'
+      # The log file
+      @logFile = 'statussheets.log'
 
       # Regular expressions to identify a status sheet.
       @sheetHeader = /^[ ]*statussheet\s([a-z][a-z0-9_]*)\s([0-9]*-[0-9]*-[0-9]*)/
