@@ -721,7 +721,7 @@ class TaskJuggler
           if (c = nextChar) == '-'
             state = 3
           elsif c.nil?
-            error('eof_in_istring1', 'Unexpected end of file in string')
+            errorEOF(1, token)
           elsif c == "\n"
             token << c
             state = 6
@@ -731,8 +731,7 @@ class TaskJuggler
           end
         when 2 # reading content line
           while (c = nextChar) != "\n"
-            error('eof_in_istring2',
-                  'Unexpected end of file in string') if c.nil?
+            errorEOF(2, token) if c.nil?
             token << c
           end
           token << c
@@ -741,8 +740,7 @@ class TaskJuggler
           if (c = nextChar) == '>'
             state = 4
           else
-            error('eof_in_istring3',
-                  'Unexpected end of file in string') if c.nil?
+            errorEOF(3, token) if c.nil?
             token << '-'
             token << c
             state = 2
@@ -751,8 +749,7 @@ class TaskJuggler
           if (c = nextChar) == '8'
             state = 5
           else
-            error('eof_in_istring4',
-                  'Unexpected end of file in string') if c.nil?
+            errorEOF(4, token) if c.nil?
             token << c
             state = 2
           end
@@ -760,8 +757,7 @@ class TaskJuggler
           if (c = nextChar) == '-'
             return [ 'STRING', token ]
           else
-            error('eof_in_istring5',
-                  'Unexpected end of file in string') if c.nil?
+            errorEOF(5, token) if c.nil?
             token << c
             state = 2
           end
@@ -878,6 +874,12 @@ class TaskJuggler
         raise TjException.new, "Identifier expected"
       end
       token
+    end
+
+    def errorEOF(no, token)
+      error("eof_in_istring#{no}",
+            "Unexpected end of file in string '#{token[0,20]}...'" +
+            "starting in line #{@startOfToken.lineNo}.")
     end
 
   end
