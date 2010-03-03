@@ -364,7 +364,7 @@ class TaskJuggler
         # The next character may be a control character.
         @beginOfLine = true
         [ 'LINEBREAK', "\n" ]
-      elsif "\n*# =-".include?(c)
+      elsif "\n*#=-".include?(c)
         # These characters correspond to the first characters of a block
         # element. When they are found at the begin of the line, the newline
         # was really a line break.

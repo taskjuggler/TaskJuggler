@@ -639,6 +639,16 @@ EOT
  main() {
    printf("Hello, world!\n")
  }
+
+Some normal text.
+
+* A
+ bullet
+ item
+
+ Some code
+
+More text.
 EOT
 
     # Check tagged output.
@@ -649,6 +659,14 @@ main() {
   printf("Hello, world!\n")
 }
 </pre>
+
+<p>[Some] [normal] [text.]</p>
+
+<ul><li>* [A] [bullet] [item]</li>
+</ul><pre>Some code
+</pre>
+
+<p>[More] [text.]</p>
 
 </div>
 EOT
@@ -663,17 +681,32 @@ main() {
   printf("Hello, world!\n")
 }
 
+Some normal text.
+
+* A bullet item
+
+Some code
+
+More text.
+
 EOT
     assert_equal(ref, out)
 
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
-<div><div codesection="1"><pre codesection="1">#include &lt;stdin.h&gt;
+<div>
+ <div codesection="1"><pre codesection="1">#include &lt;stdin.h&gt;
 main() {
   printf("Hello, world!\n")
 }
-</pre></div></div>
+</pre></div>
+ <p>Some normal text.</p>
+ <ul><li>A bullet item</li></ul>
+ <div codesection="1"><pre codesection="1">Some code
+</pre></div>
+ <p>More text.</p>
+</div>
 EOT
     assert_equal(ref, out)
   end

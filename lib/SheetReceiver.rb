@@ -201,7 +201,7 @@ EOT
       text += @report
 
       # Send out the email.
-      sendEmail(@submitter, "Report from #{getResourceName}", text)
+      sendEmail(@submitter, "Report from #{getResourceName} for #{@date}", text)
       true
     end
 
