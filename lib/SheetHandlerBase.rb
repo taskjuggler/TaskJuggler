@@ -86,9 +86,9 @@ class TaskJuggler
           # We don't know yet if it's a CR or CR+LF.
           cr = true
         else
-          if cr && c != "\n"
-            # We only found a CR. Replace it with a LF.
-            out << "\n"
+          if cr
+            # If we only found a CR. Replace it with a LF.
+            out << "\n" if c != "\n"
             cr = false
           end
           out << c

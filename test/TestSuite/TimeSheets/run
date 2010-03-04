@@ -6,7 +6,7 @@ function cleanup
               TimeSheets TimeSheetTemplates \
 	      sender.log receiver.log
   killall -9 tj3 2> /dev/null
-}
+} 
 
 cleanup
 tj3 -s project.tjp &

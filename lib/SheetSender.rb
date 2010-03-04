@@ -201,10 +201,11 @@ EOT
 
       acceptedSignatures = []
       if File.exist?(@signatureFile)
-        # Read in the signatures from the already existing file.
         File.open(@signatureFile, 'r') do |file|
           acceptedSignatures = file.readlines
         end
+        acceptedSignatures.map! { |s| s.chomp }
+        acceptedSignatures.delete_if { |s| s.chomp.empty? }
       else
         info("#{@signatureFile} does not exist yet.")
       end

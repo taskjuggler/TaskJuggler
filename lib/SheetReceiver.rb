@@ -242,16 +242,18 @@ EOT
         fatal("No #{@sheetType}sheet header found")
       end
 
-      acceptedIntervals = []
+      acceptedSignatures = []
       if File.exist?(@signatureFile)
         File.open(@signatureFile, 'r') do |file|
-          acceptedIntervals = file.gets
+          acceptedSignatures = file.readlines
         end
+        acceptedSignatures.map! { |s| s.chomp }
+        acceptedSignatures.delete_if { |s| s.chomp.empty? }
       else
         error("#{@signatureFile} does not exist yet.")
       end
 
-      unless acceptedIntervals.include?(interval)
+      unless acceptedSignatures.include?(interval)
         error(<<"EOT"
 The reporting period #{interval}
 was not accepted!  Either you have modified the sheet header,
