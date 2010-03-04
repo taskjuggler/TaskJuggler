@@ -165,6 +165,11 @@ class TaskJuggler
     # attribute. @propertySet determines what property should be extended.
     # _type_ is the attribute type, _default_ is the default value.
     def extendPropertySetDefinition(type, default)
+      if @propertySet.knownAttribute?(@val[1])
+        error('extend_redefinition',
+              "The extended attribute #{@val[1]} has already been defined.")
+      end
+
       # Determine the values for scenarioSpecific and inheritable.
       inherit = false
       scenarioSpecific = false

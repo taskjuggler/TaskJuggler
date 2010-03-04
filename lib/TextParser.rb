@@ -243,7 +243,7 @@ class TaskJuggler
         transitions.each do |key, value|
           rule.transitions.each do |trans|
             if trans.has_key?(key)
-              raise "Fatal Error: Rule #{rule.name} has ambigeous " +
+              raise "Fatal Error: Rule #{rule.name} has ambiguous " +
                     "transitions for target #{key}"
             end
           end
