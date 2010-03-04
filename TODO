@@ -7,15 +7,24 @@ or should be done for TaskJuggler III.
 
 * Add missing functions for logical expressions.
 
-* Missing reports (calendar, journal)
-
-* Column attributes like subtitle, subtitleurl, titleurl
+* Missing reports (calendar)
 
 * Some dynamic report columns are still missing.
 
 * More unit tests for core classes.
 
 * Lots more test cases for the test suite.
+
+== Other items for 3.0 release ==
+
+* Add support for an optional account attribute to be
+used instead of the defined charge set.
+
+  task "Foo" {
+    charge 2000 onstart { account someacc }
+  }
+
+* Evaluate if account name space should be hierarchical.
 
 == New features (probably after first stable release)
 
@@ -25,6 +34,10 @@ or should be done for TaskJuggler III.
 
 * Delta reports that show only the differences between 2 arbitrary
   scenarios.
+
+* Per scenario purging
+
+* User defined numerial attributes that add-up.
 
 * Critical path detection after scheduling.
 
