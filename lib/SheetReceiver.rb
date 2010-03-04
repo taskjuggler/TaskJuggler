@@ -54,6 +54,8 @@ class TaskJuggler
 
       # The extracted sheet text.
       @sheet = nil
+      # Will indicate whether the sheet was attached or in mail body
+      @sheetWasAttached = true
       # The end date of the reporting period.
       @date = nil
     end
@@ -92,6 +94,7 @@ class TaskJuggler
         return true if processSheet(attachment.body.decoded)
       end
       # None of the attachements worked, so let's try the mail body.
+      @sheetWasAttached = false
       return true if processSheet(mail.body.decoded)
 
       error(<<"EOT"
@@ -118,7 +121,8 @@ EOT
         @resourceId, @date = matches[1..2]
         # Email answers will only go the email address on file!
         @submitter = getResourceEmail(@resourceId)
-        info("Found sheet for #{@resourceId} dated #{@date}")
+        info("Found #{@sheetWasAttached ? 'attached ' : ''}sheet for " +
+             "#{@resourceId} dated #{@date}")
         # Ok, found. Now check the full sheet.
         if checkSheet(@sheet)
           # Everything is fine. Store it away.
@@ -281,7 +285,7 @@ EOT
       # errors here. In this case we send the answer without the incoming time
       # sheet.
       begin
-        message += "\n" + @sheet if @sheet
+        message += "\n" + @sheet if @sheet && !@sheetWasAttached
       rescue
       end
 
