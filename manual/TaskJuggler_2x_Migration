@@ -42,7 +42,7 @@ replaced with [[taskattributes]] and [[resourceattributes]].
 * Shifts and limits for allocations have been deprecated. The concept
 was bogus and not compatible with bookings. The functionality is
 now provided by [[shifts.task shifts]] and [[limits.task limits]] on the
-task level. Limits for a task can be [[limit.resources selectively
+task level. Limits for a task can be [[resources.limit selectively
 applied]] to certain resources.
 
 * Support for reading and writing XML files is no longer available.
