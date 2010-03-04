@@ -159,7 +159,7 @@ class TaskJuggler
           subject subject
           text_part do
             content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
-            content_transfer_encoding '8bit'
+            content_transfer_encoding 'quoted-printable'
             body message
           end
         end
