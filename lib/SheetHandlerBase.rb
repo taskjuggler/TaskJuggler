@@ -154,21 +154,26 @@ class TaskJuggler
         }
       end
 
-      mail = Mail.new do
-        subject subject
-        text_part do
-          content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
-          content_transfer_encoding '8bit'
-          body message
+      begin
+        mail = Mail.new do
+          subject subject
+          text_part do
+            content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
+            content_transfer_encoding '8bit'
+            body message
+          end
         end
-      end
-      mail.to = to
-      mail.from = @senderEmail
-      if attachment
-        mail.add_file ({
-          :filename => File.basename(attachment),
-          :content => File.read(attachment),
-        })
+        mail.to = to
+        mail.from = @senderEmail
+        if attachment
+          mail.add_file ({
+            :filename => File.basename(attachment),
+            :content => File.read(attachment),
+          })
+        end
+      rescue
+        @emailFailure = true
+        error("Email processing failed: #{$!}")
       end
 
       if @dryRun
