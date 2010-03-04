@@ -52,7 +52,8 @@ class TaskJuggler
     def initialize(report)
       super(report)
 
-      @records = []
+      @current = []
+      @future = []
     end
 
     # In the future we might want to generate other output than TJP synatx. So
@@ -61,122 +62,16 @@ class TaskJuggler
     # records holds a TSTaskRecord for each assigned task.
     def generateIntermediateFormat
       super
-
-      # Prepare the resource list.
-      resourceList = PropertyList.new(@project.resources)
-      resourceList.setSorting(@report.get('sortResources'))
-      resourceList = filterResourceList(resourceList, nil,
-                                        @report.get('hideResource'),
-                                        @report.get('rollupResource'))
-      # Prepare a template for the Query we will use to get all the data.
-      scenarioIdx = a('scenarios')[0]
-      queryAttrs = { 'project' => @project,
-                     'scopeProperty' => nil,
-                     'scenarioIdx' => scenarioIdx,
-                     'loadUnit' => a('loadUnit'),
-                     'numberFormat' => a('numberFormat'),
-                     'timeFormat' => a('timeFormat'),
-                     'currencyFormat' => a('currencyFormat'),
-                     'start' => a('start'), 'end' => a('end'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
-      resourceList.query = Query.new(queryAttrs)
-      resourceList.sort!
-
-      # Prepare the task list.
-      taskList = PropertyList.new(@project.tasks)
-      taskList.setSorting(@report.get('sortTasks'))
-      taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'))
-
-      resourceList.each do |resource|
-        # Time sheets only make sense for leaf resources that actuall do work.
-        next unless resource.leaf?
-
-        # Create a new TSResourceRecord for the resource.
-        @records << (resourceRecord = TSResourceRecord.new(resource))
-
-        # Calculate the average working days per week (usually 5)
-        weeklyWorkingDays = @project['yearlyworkingdays'] / 52.1428
-        # Calculate the number of weeks in the report
-        weeksToReport = (a('end') - a('start')) / (60 * 60 * 24 * 7)
-
-        # Get the vacation days for the resource for this period.
-        queryAttrs['property'] = resource
-        query = Query.new(queryAttrs)
-        query.attributeId = 'vacationdays'
-        query.start = a('start')
-        query.end = a('end')
-        query.process
-        resourceRecord.vacationHours = query.to_s
-        resourceRecord.vacationPercent =
-          (query.to_num / (weeksToReport * weeklyWorkingDays)) * 100.0
-
-
-        # Now we have to find all the task that the resource is allocated to
-        # during the report period.
-        assignedTaskList = filterTaskList(taskList, resource,
-                                          a('hideTask'),
-                                          a('rollupTask'))
-        queryAttrs['scopeProperty'] = resource
-        assignedTaskList.query = Query.new(queryAttrs)
-        assignedTaskList.sort!
-
-        assignedTaskList.each do |task|
-          # Time sheet task records only make sense for leaf tasks.
-          reportIv = Interval.new(a('start'), a('end'))
-          taskIv = Interval.new(task['start', scenarioIdx],
-                                task['end', scenarioIdx])
-          next if !task.leaf? || !reportIv.overlaps?(taskIv)
-
-          queryAttrs['property'] = task
-          query = Query.new(queryAttrs)
-
-          # Get the allocated effort for the task for this period.
-          query.attributeId = 'effort'
-          query.start = a('start')
-          query.end = a('end')
-          query.process
-          # The Query.to_num of an effort always returns the value in days.
-          workDays = query.to_num
-          workPercent = (workDays / (weeksToReport * weeklyWorkingDays)) *
-                        100.0
-
-          if task['effort', scenarioIdx] > 0
-            # The task is an effort based task.
-            # Get the remaining effort for this task.
-            query.start = a('end')
-            query.end = task['end', scenarioIdx]
-            query.loadUnit = :days
-            query.process
-            remaining = query.to_s
-            endDate = nil
-          else
-            # The task is a duration task.
-            # Get the planned task end date.
-            remaining = nil
-            endDate = task['end', scenarioIdx]
-          end
-
-          # Put all data into a TSTaskRecord and push it into the resource
-          # record.
-          resourceRecord.tasks <<
-            TSTaskRecord.new(task, workDays, workPercent, remaining, endDate)
-        end
-      end
+      @current = collectRecords(a('start'), a('end'))
+      newEnd = a('end') + (a('end').to_i - a('start').to_i)
+      newEnd = @project['end'] if newEnd > @project['end']
+      @future = collectRecords(a('end'), a('end') + (a('end') - a('start')))
     end
 
     # Generate a time sheet in TJP syntax format.
     def to_tjp
-
-      # Prepare the task list.
-      @taskList = PropertyList.new(@project.tasks)
-      @taskList.setSorting(a('sortTasks'))
-      @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'))
-      @taskList.sort!
-
       # This String will hold the result.
-      @file =  <<'EOT'
+      @file = <<'EOT'
 # The status headline should be no more than 60 characters and may
 # not be empty! The status summary is optional and should be no
 # longer than one or two sentences of plain text. The details section
@@ -189,7 +84,7 @@ class TaskJuggler
 EOT
 
       # Iterate over all the resources that we have TSResourceRecords for.
-      @records.each do |rr|
+      @current.each do |rr|
         resource = rr.resource
         # Generate the time sheet header
         @file << "timesheet #{resource.fullId} " +
@@ -245,12 +140,136 @@ EOT
   #   ->8-
   # }
 EOT
+        future = @future[@future.index { |r| r.resource == resource }]
+        if future && !future.tasks.empty?
+          @file << <<'EOT'
+  #
+  # Your upcomming tasks for the next period
+  # Please check them carefully and discuss any necessary
+  # changes with your manager or project manager!
+  #
+EOT
+          future.tasks.each do |taskRecord|
+            @file << "  # #{taskRecord.task.name}: #{taskRecord.workPercent}%\n"
+          end
+          @file << "\n"
+        else
+          @file << "\n  # You have no future assignments for this project!\n"
+        end
         @file << "}\n# -------->8-------->8--------\n\n"
       end
       @file
     end
 
-  private
+    private
+
+    def collectRecords(from, to)
+      # Prepare the resource list.
+      resourceList = PropertyList.new(@project.resources)
+      resourceList.setSorting(@report.get('sortResources'))
+      resourceList = filterResourceList(resourceList, nil,
+                                        @report.get('hideResource'),
+                                        @report.get('rollupResource'))
+      # Prepare a template for the Query we will use to get all the data.
+      scenarioIdx = a('scenarios')[0]
+      queryAttrs = { 'project' => @project,
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => scenarioIdx,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
+                     'currencyFormat' => a('currencyFormat'),
+                     'start' => from, 'end' => to,
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
+      resourceList.query = Query.new(queryAttrs)
+      resourceList.sort!
+
+      # Prepare the task list.
+      taskList = PropertyList.new(@project.tasks)
+      taskList.setSorting(@report.get('sortTasks'))
+      taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
+                                @report.get('rollupTask'))
+
+      records = []
+      resourceList.each do |resource|
+        # Time sheets only make sense for leaf resources that actuall do work.
+        next unless resource.leaf?
+
+        # Create a new TSResourceRecord for the resource.
+        records << (resourceRecord = TSResourceRecord.new(resource))
+
+        # Calculate the average working days per week (usually 5)
+        weeklyWorkingDays = @project['yearlyworkingdays'] / 52.1428
+        # Calculate the number of weeks in the report
+        weeksToReport = (to - from) / (60 * 60 * 24 * 7)
+
+        # Get the vacation days for the resource for this period.
+        queryAttrs['property'] = resource
+        query = Query.new(queryAttrs)
+        query.attributeId = 'vacationdays'
+        query.start = from
+        query.end = to
+        query.process
+        resourceRecord.vacationHours = query.to_s
+        resourceRecord.vacationPercent =
+          (query.to_num / (weeksToReport * weeklyWorkingDays)) * 100.0
+
+
+        # Now we have to find all the task that the resource is allocated to
+        # during the report period.
+        assignedTaskList = filterTaskList(taskList, resource,
+                                          a('hideTask'),
+                                          a('rollupTask'))
+        queryAttrs['scopeProperty'] = resource
+        assignedTaskList.query = Query.new(queryAttrs)
+        assignedTaskList.sort!
+
+        assignedTaskList.each do |task|
+          # Time sheet task records only make sense for leaf tasks.
+          reportIv = Interval.new(from, to)
+          taskIv = Interval.new(task['start', scenarioIdx],
+                                task['end', scenarioIdx])
+          next if !task.leaf? || !reportIv.overlaps?(taskIv)
+
+          queryAttrs['property'] = task
+          query = Query.new(queryAttrs)
+
+          # Get the allocated effort for the task for this period.
+          query.attributeId = 'effort'
+          query.start = from
+          query.end = to
+          query.process
+          # The Query.to_num of an effort always returns the value in days.
+          workDays = query.to_num
+          workPercent = (workDays / (weeksToReport * weeklyWorkingDays)) *
+                        100.0
+
+          if task['effort', scenarioIdx] > 0
+            # The task is an effort based task.
+            # Get the remaining effort for this task.
+            query.start = to
+            query.end = task['end', scenarioIdx]
+            query.loadUnit = :days
+            query.process
+            remaining = query.to_s
+            endDate = nil
+          else
+            # The task is a duration task.
+            # Get the planned task end date.
+            remaining = nil
+            endDate = task['end', scenarioIdx]
+          end
+
+          # Put all data into a TSTaskRecord and push it into the resource
+          # record.
+          resourceRecord.tasks <<
+            TSTaskRecord.new(task, workDays, workPercent, remaining, endDate)
+        end
+      end
+
+      records
+    end
 
     # This utility function is used to indent multi-line attributes. All
     # attributes should be filtered through this function. Attributes that
