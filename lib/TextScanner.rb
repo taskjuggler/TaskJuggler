@@ -730,12 +730,21 @@ class TaskJuggler
             state = 2
           end
         when 2 # reading content line
-          while (c = nextChar) != "\n"
+          # The '->8-' is only valid if no other content preceded it on this
+          # line.
+          onlyBlanks = true
+          while (c = nextChar) != "\n" && !(c == '-' && onlyBlanks)
+            onlyBlanks = false if c != ' ' && c != "\t"
             errorEOF(2, token) if c.nil?
             token << c
           end
-          token << c
-          state = 6
+          if c == '-'
+            # we may have found the start of '->8-'
+            state = 3
+          else
+            token << c
+            state = 6
+          end
         when 3 # reading '>' of '->8-'
           if (c = nextChar) == '>'
             state = 4
