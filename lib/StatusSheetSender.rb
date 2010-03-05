@@ -20,7 +20,7 @@ class TaskJuggler
   # actual project data is accessed via tj3client on a tj3 server process.
   class StatusSheetSender < SheetSender
 
-    attr_accessor :date
+    attr_accessor :date, :hideResource
 
     def initialize(appName)
       super(appName, 'status')

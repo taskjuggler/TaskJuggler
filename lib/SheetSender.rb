@@ -137,8 +137,8 @@ EOF
 
         # Don't re-generate already existing templates. We probably have sent
         # them out earlier with a manual trigger.
-        if File.exist?(templateFile)
-          info("Skipping already existing #{templateFile}.")
+        if File.exist?(templateFile + '.tji')
+          info("Skipping already existing #{templateFile}.tji.")
           next
         end
 

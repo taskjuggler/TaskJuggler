@@ -30,6 +30,7 @@ class Tj3SsSender
     @dryRun = false
     @configFile = nil
     @workingDir = nil
+    @hideResource = nil
 
     @date = nil
     @resourceList = []
@@ -67,6 +68,10 @@ EOT
     opts.on('-r', '--resource <ID>', String,
             'Only generate template for given resource') do |arg|
       @resourceList << arg
+    end
+    opts.on('--hideresource <Expression>', String,
+            'Filter expression to limit the resource list') do |arg|
+      @hideResource = arg
     end
     opts.on('--silent', "Don't show program and progress information") do
       @silent = true
@@ -123,6 +128,7 @@ EOT
     ts.workingDir = @workingDir if @workingDir
     ts.dryRun = @dryRun
     ts.date = @date if @date
+    ts.hideResource = @hideResource if @hideResource
 
     ts.sendTemplates(@resourceList)
   end
