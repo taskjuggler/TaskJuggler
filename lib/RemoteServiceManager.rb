@@ -23,8 +23,8 @@ class RemoteServiceManager
 
   attr_writer :terminate
 
-  def initialize(parser, project)
-    @parser = parser
+  def initialize(taskjuggler, project)
+    @taskjuggler = taskjuggler
     @project = project
     @terminate = false
     @childPIDs = []
@@ -45,7 +45,7 @@ class RemoteServiceManager
       # We are in the child
       rd.close
       DRb.stop_service
-      server = ReportServer.new(self, @parser, @project)
+      server = ReportServer.new(self, @taskjuggler, @project)
       uri = DRb.start_service(nil, server).uri
       # Send URI of new server to parent
       wr.puts uri

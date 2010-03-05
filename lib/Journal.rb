@@ -184,7 +184,8 @@ class TaskJuggler
            (startDate.nil? || entry.date > startDate) &&
            (endDate.nil? || entry.date <= endDate) &&
            (task.nil? || entry.property == task) &&
-           (alertLevel.nil? || entry.alertLevel >= alertLevel)
+           (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
+           !entry.headline.empty?
           list << entry
         end
       end

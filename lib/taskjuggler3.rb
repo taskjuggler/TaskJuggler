@@ -50,6 +50,14 @@ def processArguments(argv)
           'requests') do
     @reportServer = true
   end
+  opts.on('--check-time-sheet <tji-file>', String,
+          "Check the given time sheet") do |arg|
+    @timeSheets << arg
+  end
+  opts.on('--check-status-sheet <tji-file>', String,
+          "Check the given status sheet") do |arg|
+    @statusSheets << arg
+  end
   opts.on('--warn-ts-deltas',
           'Turn on warnings for requested changes in time sheets') do
    @warnTsDeltas = true
@@ -105,6 +113,8 @@ def main
   @reportServer = false
   @warnTsDeltas = false
   @outputDir = ''
+  @timeSheets = []
+  @statusSheets = []
 
   # Install signal handler to exit gracefully on CTRL-C.
   Kernel.trap('INT') do
@@ -116,9 +126,19 @@ def main
   tj = TaskJuggler.new(true)
   tj.maxCpuCores = @maxCpuCores
   tj.warnTsDeltas = @warnTsDeltas
-  exit 1 unless tj.parse(files, @reportServer)
+  keepParser = @reportServer || !@timeSheets.empty? || !@statusSheets.empty?
+  exit 1 unless tj.parse(files, keepParser)
   if !tj.schedule
     exit 1 unless @forceReports
+  end
+
+  # The checks of time and status sheets is probably only used for debugging.
+  # Normally, this function is provided by tj3client.
+  @timeSheets.each do |ts|
+    exit 1 if !tj.checkTimeSheet(ts, File.read(ts)) || tj.errors > 0
+  end
+  @statusSheets.each do |ss|
+    exit 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
   end
 
   if @reportServer

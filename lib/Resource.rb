@@ -163,7 +163,8 @@ class TaskJuggler
           else
             rText += "----\n\n"
           end
-          rText += "Task: <nowiki>#{task.name}</nowiki> (#{task.fullId})\n\n"
+          rText += "<nowiki>[#{task.query_alert(query)}] Task: " +
+                   "#{task.name}</nowiki> (#{task.fullId})\n\n"
           rText += task.query_alertmessage(query).richText.inputText + "\n"
         end
       end

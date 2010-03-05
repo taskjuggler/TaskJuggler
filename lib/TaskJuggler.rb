@@ -90,11 +90,51 @@ class TaskJuggler
     res
   end
 
+  def checkTimeSheet(fileName, fileContent)
+    begin
+      Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
+      return false unless (ts = parseFile(fileName, fileContent, 'timeSheet'))
+      return false unless @project.checkTimeSheets
+      queryAttrs = { 'project' => @project,
+                     'property' => ts.resource,
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => @project['trackingScenarioIdx'],
+                     'start' => ts.interval.start,
+                     'end' => ts.interval.end }
+      query = Query.new(queryAttrs)
+      puts ts.resource.query_journal(query).to_s
+    rescue TjException
+      Log.exit('checkTimeSheet')
+      return false
+    end
+    true
+  end
+
+  def checkStatusSheet(fileName, fileContent)
+    begin
+      Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
+      return false unless (ss = parseFile(fileName, fileContent, 'statusSheet'))
+      queryAttrs = { 'project' => @project,
+                     'property' => ss[0],
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => @project['trackingScenarioIdx'],
+                     'timeFormat' => '%Y-%m-%d',
+                     'start' => @project['start'],
+                     'end' => ss[1] }
+      query = Query.new(queryAttrs)
+      puts ss[0].query_dashboard(query).to_s
+    rescue TjException
+      Log.exit('checkStatusSheet')
+      return false
+    end
+    true
+  end
+
   def serveReports
     $SAFE = 1
     Log.enter('reportserver', 'Starting Server Mode ...')
     Log.status("Report Server is now active!")
-    serviceManager = RemoteServiceManager.new(@parser, @project)
+    serviceManager = RemoteServiceManager.new(self, @project)
     DRb.start_service('druby://localhost:8474', serviceManager)
     DRb.thread.join
     # We'll probably never get here. The DRb threads may call exit().
@@ -104,6 +144,14 @@ class TaskJuggler
   # Return the number of errors that had been reported during processing.
   def errors
     @project.messageHandler.errors
+  end
+
+  def parseFile(fileName, fileContent, rule)
+    @parser.open(fileContent, false, true)
+    @parser.setGlobalMacros
+    return nil if (res = @parser.parse(rule)).nil?
+    @parser.close
+    res
   end
 
 end

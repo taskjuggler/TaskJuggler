@@ -14,9 +14,9 @@ class TaskJuggler
 
 class ReportServer
 
-  def initialize(serviceManager, parser, project)
+  def initialize(serviceManager, taskjuggler, project)
     @serviceManager = serviceManager
-    @parser = parser
+    @taskjuggler = taskjuggler
     @project = project
   end
 
@@ -45,9 +45,7 @@ class ReportServer
 
   def parse(fileName, fileContent)
     begin
-      setupParser(fileName, fileContent)
-      @parser.parse('properties')
-      @parser.close
+      @taskjuggler.parseFile(fileName, fileContent, 'properties')
     rescue TjException
       Log.exit('parser')
       return false
@@ -56,47 +54,11 @@ class ReportServer
   end
 
   def checkTimeSheet(fileName, fileContent)
-    begin
-      Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
-      setupParser(fileName, fileContent)
-      return if (ts = @parser.parse('timeSheet')).nil?
-      @parser.close
-      return false unless @project.checkTimeSheets
-      queryAttrs = { 'project' => @project,
-                     'property' => ts.resource,
-                     'scopeProperty' => nil,
-                     'scenarioIdx' => @project['trackingScenarioIdx'],
-                     'start' => ts.interval.start,
-                     'end' => ts.interval.end }
-      query = Query.new(queryAttrs)
-      puts ts.resource.query_journal(query).to_s
-    rescue TjException
-      Log.exit('checkTimeSheet')
-      return false
-    end
-    true
+    @taskjuggler.checkTimeSheet(fileName, fileContent)
   end
 
   def checkStatusSheet(fileName, fileContent)
-    begin
-      Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
-      setupParser(fileName, fileContent)
-      return if (ss = @parser.parse('statusSheet')).nil?
-      @parser.close
-      queryAttrs = { 'project' => @project,
-                     'property' => ss[0],
-                     'scopeProperty' => nil,
-                     'scenarioIdx' => @project['trackingScenarioIdx'],
-                     'timeFormat' => '%Y-%m-%d',
-                     'start' => @project['start'],
-                     'end' => ss[1] }
-      query = Query.new(queryAttrs)
-      puts ss[0].query_dashboard(query).to_s
-    rescue TjException
-      Log.exit('checkStatusSheet')
-      return false
-    end
-    true
+    @taskjuggler.checkStatusSheet(fileName, fileContent)
   end
 
   def generateReport(reportId)
@@ -109,11 +71,6 @@ class ReportServer
     end
     Log.exit('generateReport', "Generating report #{reportId} ...")
     true
-  end
-
-  def setupParser(fileName, fileContent)
-    @parser.open(fileContent, false, true)
-    @parser.setGlobalMacros
   end
 
 end
