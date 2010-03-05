@@ -1035,10 +1035,9 @@ EOT
     rt.lineWidth = 60
     out = rt.to_s
     ref = <<EOT
-The quick brown fox jumps over the lazy dog. The quick
-brown fox jumps over the lazy dog. The quick brown fox
-jumps over the lazy dog. The quick brown fox jumps over the
-lazy dog.
+The quick brown fox jumps over the lazy dog. The quick brown
+fox jumps over the lazy dog. The quick brown fox jumps over
+the lazy dog. The quick brown fox jumps over the lazy dog.
 
 --------------------------------------------------------
 EOT
@@ -1058,10 +1057,10 @@ EOT
     rt.lineWidth = 60
     out = rt.to_s
     ref = <<EOT
-The quick brown fox jumps over the lazy dog. The quick
-brown fox jumps over the lazy dog. The quick brown fox
-jumps over the lazy dog. The quick brown fox jumps over the
-lazy dog. The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog. The quick brown
+fox jumps over the lazy dog. The quick brown fox jumps over
+the lazy dog. The quick brown fox jumps over the lazy dog.
+The quick brown fox jumps over the lazy dog.
 
 --------------------------------------------------------
 EOT

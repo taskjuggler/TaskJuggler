@@ -13,6 +13,7 @@
 require 'HTMLDocument'
 require 'RichText'
 require 'TjpExample'
+require 'TextFormatter'
 require 'Project'
 
 class TaskJuggler
@@ -149,7 +150,7 @@ class TaskJuggler
     # string.
     def to_s
       tagW = 13
-      textW = 79 - tagW
+      textW = 79
 
       # Top line with multiple elements
       str = "Keyword:     #{@keyword}     " +
@@ -172,14 +173,14 @@ class TaskJuggler
             if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
               indent = arg.name.length + 2
               argStr += "#{arg.name}: " +
-                      "#{format(indent, argText, textW - indent)}\n"
+                      "#{format(indent, argText, textW - tagW)}\n"
             else
               typeSpec = arg.typeSpec
               typeSpec[0] = '['
               typeSpec[-1] = ']'
               indent = arg.name.length + typeSpec.size + 3
               argStr += "#{arg.name} #{typeSpec}: " +
-                      "#{format(indent, argText, textW - indent)}\n"
+                      "#{format(indent, argText, textW - tagW)}\n"
             end
           end
           str += indent(tagW, argStr)
@@ -474,85 +475,8 @@ class TaskJuggler
       true
     end
 
-    # Utility function that is used to format the str String as a block of the
-    # specified _width_. The left side is indented with _indent_ white spaces.
-    def format(indent, str, width)
-      # The result goes here.
-      out = ''
-      # Position in the currently generated line.
-      linePos = 0
-      # The currently processed word.
-      word = ''
-      # True if this is the first word in a line.
-      firstWord = true
-      # Currently processed position in the input String _str_.
-      i = 0
-      indentBuf = ''
-      while i < str.length
-        # If the current line has reached or exceeded the _width_ we generate
-        # a new line prefixed with the proper indentation.
-        if linePos >= width
-          out += "\n" + ' ' * indent
-          linePos = 0
-          firstWord = true
-          unless word.empty?
-            # Resume the input processing at the beginning of the word that
-            # did not fit into the old line anymore.
-            i -= word.length - 1
-            word = ''
-            next
-          end
-        end
-
-        if str[i] == ?\n && str[i + 1] == ?\n
-          # If the input contains line breaks we generate line breaks as well.
-          # Insert the just finished word and wrap the line. We only put the
-          # indentation in a buffer as we don't know if more words will be
-          # following. We don't want to generate an indentation after the last
-          # line break.
-          out += indentBuf + word + "\n\n"
-          indentBuf = ' ' * indent
-          word = ''
-          linePos = 0
-          i += 1
-          firstWord = true
-        elsif str[i] == ?\s || str[i] == ?\n
-          # We have finished processing a word of the input string.
-          unless indentBuf.empty?
-            # In case we have a pending indentation we now know that we can
-            # safely insert it. There will be more words following.
-            out += indentBuf
-            indentBuf = ''
-          end
-          # Append the word and initialize the word buffer with an single space.
-          out += word
-          firstWord = false
-          word = ' '
-          linePos += 1
-        else
-          # Just append the character to the word buffer and advance the
-          # position counter. We ignore spaces in front of the first word of
-          # each generated line.
-          unless str[i] == ' ' && firstWord
-            word << str[i]
-          end
-          linePos += 1
-        end
-        i += 1
-      end
-      unless word.empty? || indentBuf.empty?
-        out += indentBuf
-      end
-      out += word
-    end
-
     def indent(width, str)
-      out = ''
-      str.each_utf8_char do |c|
-        out << c
-        out << ' ' * width if c == "\n"
-      end
-      out
+      TextFormatter.new(0, width).indent(str)[width..-1]
     end
 
     # Generate the navigation bar.
@@ -603,6 +527,10 @@ class TaskJuggler
       end
 
       td
+    end
+
+    def format(indent, str, width)
+      TextFormatter.new(width, indent).format(str)[indent..-1]
     end
 
   end
