@@ -128,14 +128,16 @@ class TaskJuggler
       case @category
       when :richtext
       when :title1
-        pre = sTitle(1)
-        post = "\n\n"
+        return textBlockformat(0, sTitle(1) + children_to_s,
+                               @richText.lineWidth) + "\n\n"
       when :title2
+        return textBlockformat(0, sTitle(2) + children_to_s,
+                               @richText.lineWidth) + "\n\n"
         pre = sTitle(2)
         post = "\n\n"
       when :title3
-        pre = sTitle(3)
-        post = "\n\n"
+        return textBlockformat(0, sTitle(3) + children_to_s,
+                               @richText.lineWidth) + "\n\n"
       when :hline
         return "#{'-' * (@richText.lineWidth - 4)}\n"
       when :paragraph
@@ -481,7 +483,7 @@ class TaskJuggler
           end
         end
 
-        if str[i] == ?\n
+        if str[i] == ?\n && str[i + 1] == ?\n
           # If the input contains line breaks we generate line breaks as well.
           # Insert the just finished word and wrap the line. We only put the
           # indentation in a buffer as we don't know if more words will be
@@ -491,8 +493,9 @@ class TaskJuggler
           indentBuf = ' ' * indent
           word = ''
           linePos = 0
+          i += 1
           firstWord = true
-        elsif str[i] == ?\s
+        elsif str[i] == ?\s || str[i] == ?\n
           # We have finished processing a word of the input string.
           unless indentBuf.empty?
             # In case we have a pending indentation we now know that we can
@@ -521,6 +524,7 @@ class TaskJuggler
       end
       out += word
     end
+
   end
 
 end

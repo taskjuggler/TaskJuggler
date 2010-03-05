@@ -144,7 +144,7 @@ EOT
         if future && !future.tasks.empty?
           @file << <<'EOT'
   #
-  # Your upcomming tasks for the next period
+  # Your upcoming tasks for the next period
   # Please check them carefully and discuss any necessary
   # changes with your manager or project manager!
   #
