@@ -130,18 +130,18 @@ class TaskJuggler
       when :richtext
       when :title1
         return textBlockFormat(0, sTitle(1) + children_to_s,
-                               @richText.lineWidth) + "\n\n"
+                               @richText.lineWidth) + "\n"
       when :title2
         return textBlockFormat(0, sTitle(2) + children_to_s,
-                               @richText.lineWidth) + "\n\n"
+                               @richText.lineWidth) + "\n"
       when :title3
         return textBlockFormat(0, sTitle(3) + children_to_s,
-                               @richText.lineWidth) + "\n\n"
+                               @richText.lineWidth) + "\n"
       when :hline
         return "#{'-' * (@richText.lineWidth - 4)}\n"
       when :paragraph
         return textBlockFormat(0, children_to_s, @richText.lineWidth) +
-               "\n\n"
+               "\n"
       when :pre
         post = "\n"
       when :bulletlist1

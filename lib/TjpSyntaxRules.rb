@@ -2776,10 +2776,10 @@ A list of tasks the current task depends on. The list contains the names, the
 IDs, the date and the type of dependency. For the type the following symbols
 are used
 
-* ''']->[''': End-to-Start dependency
-* '''[->[''': Start-to-Start dependency
-* ''']->]''': End-to-End dependency
-* '''[->]''': Start-to-End dependency
+* '''<nowiki>]->[</nowiki>''': End-to-Start dependency
+* '''<nowiki>[->[</nowiki>''': Start-to-Start dependency
+* '''<nowiki>]->]</nowiki>''': End-to-End dependency
+* '''<nowiki>[->]</nowiki>''': Start-to-End dependency
 EOT
          )
 
