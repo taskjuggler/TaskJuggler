@@ -242,7 +242,7 @@ class TaskJuggler
             # @text.blockMode = false # if singleLine
             td << @text.to_html
           else
-            td << XMLText.new(shortText)
+            td << XMLText.new(@text)
           end
         end
       end
@@ -261,9 +261,9 @@ class TaskJuggler
         singleLine = false
         modified = true
       end
-      # Assuming an average character width of 9 pixels
-      if @width && (text.length > (@width / 9))
-        text = text[0, @width / 9]
+      # Assuming an average character width of 8 pixels
+      if @width && (text.length > (@width / 8))
+        text = text[0, @width / 8]
         modified = shortened = true
       end
       # Add three dots to show that there is more info available.
