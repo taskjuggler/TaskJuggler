@@ -26,7 +26,7 @@ class TaskJuggler
     SCROLLBARHEIGHT = 20
 
     attr_reader :maxIndent, :headerLineHeight, :headerFontSize
-    attr_accessor :equiLines
+    attr_accessor :equiLines, :embedded
 
     # Create a new ReportTable object.
     def initialize
@@ -41,6 +41,8 @@ class TaskJuggler
       @maxIndent = 0
       # Whether or not all table lines must have same height.
       @equiLines = false
+      # True if the table is embedded as a column of another ReportTable.
+      @embedded = false
     end
 
     # This function should only be called by the ReportTableColumn constructor.
@@ -73,8 +75,10 @@ class TaskJuggler
     def to_html
       determineMaxIndents
 
-      table = XMLElement.new('table', 'class' => 'tj_table',
-                                      'cellspacing' => '1')
+      attr = { 'class' => 'tj_table',
+               'cellspacing' => '1' }
+      attr['style'] = 'width:100%; ' if @embedded
+      table = XMLElement.new('table', attr)
       table << (tbody = XMLElement.new('tbody'))
 
       # Generate the 1st table header line.

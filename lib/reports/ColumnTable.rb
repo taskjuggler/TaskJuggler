@@ -29,6 +29,8 @@ class TaskJuggler
       # The header will have 2 lines. So, use a smaller font. This should match
       # the font size used for the GanttChart header.
       @headerFontSize = 10
+      # This is an embedded table.
+      @embedded = true
     end
 
     def to_html
