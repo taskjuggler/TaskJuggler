@@ -142,8 +142,10 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
-      rti.indent = 2
       rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
       rti.parIndent = 2
       rti.preIndent = 4
       # We use a special class to allow CSS formating.
@@ -203,8 +205,10 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
-      rti.indent = 2
       rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
       rti.parIndent = 2
       rti.preIndent = 4
       # We use a special class to allow CSS formating.

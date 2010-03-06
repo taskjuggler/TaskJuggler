@@ -65,7 +65,7 @@ class TaskJuggler
     @parser = nil unless keepParser
 
     Log.exit('parser')
-    @messageHandler.messages.empty?
+    @messageHandler.errors == 0
   end
 
   # Schedule all scenarios in the project. Return true if no error was
