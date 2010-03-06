@@ -106,7 +106,7 @@ def main
     server.connect($stdout, $stderr)
   rescue
     $stderr.puts "ERROR: TaskJuggler server on host '#{host}' port #{port} " +
-                 "is not responding!"
+                 "is not responding: #{$!}"
     exit 1
   end
 

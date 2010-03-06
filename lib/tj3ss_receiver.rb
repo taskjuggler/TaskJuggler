@@ -114,6 +114,5 @@ EOT
 
 end
 
-Tj3SsReceiver.new.main()
-exit 0
+exit Tj3SsReceiver.new.main() ? 0 : 1
 

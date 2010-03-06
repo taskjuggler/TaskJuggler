@@ -113,7 +113,9 @@ class TaskJuggler
           else
             rText += "== #{alertName} Personal Notes ==\n\n"
           end
-          rText += "'''<nowiki>#{entry.headline}</nowiki>'''\n\n"
+          unless entry.headline.empty?
+            rText += "'''<nowiki>#{entry.headline}</nowiki>'''\n\n"
+          end
           if entry.summary
             rText += entry.summary.richText.inputText + "\n\n"
           end
@@ -140,6 +142,10 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
+      rti.indent = 2
+      rti.lineWidth = 72
+      rti.parIndent = 2
+      rti.preIndent = 4
       # We use a special class to allow CSS formating.
       rti.cssClass = 'alertmessage'
       query.rti = rti
@@ -148,24 +154,35 @@ class TaskJuggler
     # Create a dashboard-like list of all task that have a current alert
     # status.
     def dashboard(query)
-      # The components of the message are either UTF-8 text or RichText. For
-      # the RichText components, we use the originally provided markup since
-      # we compose the result as RichText markup first.
-      rText = ''
       scenarioIdx = @project['trackingScenarioIdx']
-      first = true
+      taskList = []
       @project.tasks.each do |task|
         if task['responsible', scenarioIdx].include?(self) &&
            !@project['journal'].currentEntries(query.end, task,
                                               0, query.start).empty?
+          taskList << task
+        end
+      end
+
+      if taskList.empty?
+        rText = "We have no current status for any task that #{name} " +
+                "is responsible for."
+      else
+        # The components of the message are either UTF-8 text or RichText. For
+        # the RichText components, we use the originally provided markup since
+        # we compose the result as RichText markup first.
+        rText = ''
+        first = true
+
+        taskList.each do |task|
           if first
             first = false
           else
             rText += "----\n\n"
           end
-          rText += "<nowiki>[#{task.query_alert(query)}] Task: " +
-                   "#{task.name}</nowiki> (#{task.fullId})\n\n"
-          rText += task.query_alertmessage(query).richText.inputText + "\n"
+          rText += "== <nowiki>[#{task.query_alert(query)}] Task: " +
+            "#{task.name}</nowiki> (#{task.fullId}) ==\n\n"
+            rText += task.query_alertmessage(query).richText.inputText + "\n"
         end
       end
 
@@ -186,6 +203,10 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
+      rti.indent = 2
+      rti.lineWidth = 72
+      rti.parIndent = 2
+      rti.preIndent = 4
       # We use a special class to allow CSS formating.
       rti.cssClass = 'alertmessage'
       query.rti = rti

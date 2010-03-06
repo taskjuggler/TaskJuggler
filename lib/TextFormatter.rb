@@ -18,20 +18,20 @@ class TaskJuggler
   # can be indented and limited to a given text width.
   class TextFormatter
 
-    attr_accessor :indent, :width, :firstLineIndent
+    attr_accessor :indentation, :width, :firstLineIndent
 
-    def initialize(width = 80, indent = 0, firstLineIndent = nil)
+    def initialize(width = 80, indentation = 0, firstLineIndent = nil)
       # The width of the text including the indent.
       @width = width
       # The indent for the first line of a paragraph
-      @firstLineIndent = firstLineIndent || indent
+      @firstLineIndent = firstLineIndent || indentation
       # The indent for other lines.
-      @indent = indent
+      @indentation = indentation
     end
 
-    # Add @indent number of spaces at the beginning of each line. The first
-    # line will be indented by @firstLineIndent. Lines that are longer than
-    # @width will be clipped.
+    # Add @indentation number of spaces at the beginning of each line. The
+    # first line will be indented by @firstLineIndent. Lines that are longer
+    # than @width will be clipped.
     def indent(str)
       out = ''
       # Indentation to be used for the currently processed line. It will be
@@ -47,7 +47,7 @@ class TaskJuggler
             out += "\n"
           end
           # The indent buffer for the next line.
-          indentBuf = "\n" + ' ' * @indent
+          indentBuf = "\n" + ' ' * @indentation
         else
           # If we still have a indent buffer, we need to insert it first.
           if indentBuf
@@ -158,7 +158,7 @@ class TaskJuggler
         # @indentBuf.
         @out += @indentBuf
         @linePos = @indentBuf.delete("\n").length
-        @indentBuf = "\n" + ' ' * @indent
+        @indentBuf = "\n" + ' ' * @indentation
       else
         # Insert a space to separate the words.
         @out += ' '

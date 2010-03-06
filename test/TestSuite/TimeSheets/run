@@ -16,8 +16,8 @@ sleep 5
 # Run a sender test.
 tj3ts_sender --dryrun -e 2002-03-01 > sender.log
 # Run a receiver test
-tj3ts_receiver --dryrun < dev2_mail1 > receiver.log
-tj3ts_receiver --dryrun < dev2_mail2 > receiver.log
+tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || exit 1
+tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || exit 1
 
 if test `fgrep ERROR timesheets.log | wc -l` != 0 ; then
   echo "ERROR: Something went wrong!"

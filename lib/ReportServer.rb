@@ -54,11 +54,28 @@ class ReportServer
   end
 
   def checkTimeSheet(fileName, fileContent)
-    @taskjuggler.checkTimeSheet(fileName, fileContent)
+    ok = false
+    Log.enter('checktimesheet', "checking time sheet #{fileName} ...")
+    begin
+      ok = @taskjuggler.checkTimeSheet(fileName, fileContent)
+    rescue
+      return false
+    end
+    Log.exit('checkTimeSheet',
+             "Check of #{fileName} #{ok ? 'passed' : 'failed'}")
+    ok
   end
 
   def checkStatusSheet(fileName, fileContent)
-    @taskjuggler.checkStatusSheet(fileName, fileContent)
+    ok = false
+    Log.enter('checkstatussheet', "checking status sheet #{fileName} ...")
+    begin
+      ok = @taskjuggler.checkStatusSheet(fileName, fileContent)
+    rescue
+    end
+    Log.exit('checkStatusSheet',
+             "Check of #{fileName} #{ok ? 'passed' : 'failed'}")
+    ok
   end
 
   def generateReport(reportId)

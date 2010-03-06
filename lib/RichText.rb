@@ -125,8 +125,10 @@ class TaskJuggler
   class RichTextIntermediate
 
     attr_reader :richText
-    attr_accessor :blockMode, :sectionNumbers, :lineWidth, :linkTarget,
-                  :cssClass, :tree
+    attr_accessor :blockMode, :sectionNumbers,
+                  :lineWidth, :indent, :titleIndent, :parIndent, :listIndent,
+                  :preIndent,
+                  :linkTarget, :cssClass, :tree
 
     def initialize(richText)
       # A reference to the corresponding RichText object the RTI is derived
@@ -140,8 +142,18 @@ class TaskJuggler
       @blockMode = true
       # Set this to false to disable automatically generated section numbers.
       @sectionNumbers = true
-      # Set this to the width of your text area. Needed for horizonal lines.
+      # Set this to the maximum width used for text output.
       @lineWidth = 80
+      # The indentation used for all text output.
+      @indent = 0
+      # Additional indentation used for titles in text output.
+      @titleIndent = 0
+      # Additional indentation used for paragraph text output.
+      @parIndent = 0
+      # Additional indentation used for lists in text output.
+      @listIndent = 1
+      # Additional indentation used for <pre> sections in text output.
+      @preIndent = 0
       # The target used for hypertext links.
       @linkTarget = nil
       # The CSS class used for some key HTML elements.

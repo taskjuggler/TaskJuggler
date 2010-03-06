@@ -129,45 +129,57 @@ class TaskJuggler
       case @category
       when :richtext
       when :title1
-        return textBlockFormat(0, sTitle(1) + children_to_s,
+        return textBlockFormat(@richText.indent + @richText.titleIndent,
+                               sTitle(1), children_to_s,
                                @richText.lineWidth) + "\n"
       when :title2
-        return textBlockFormat(0, sTitle(2) + children_to_s,
+        return textBlockFormat(@richText.indent + @richText.titleIndent,
+                               sTitle(2), children_to_s,
                                @richText.lineWidth) + "\n"
       when :title3
-        return textBlockFormat(0, sTitle(3) + children_to_s,
+        return textBlockFormat(@richText.indent + @richText.titleIndent,
+                               sTitle(3), children_to_s,
                                @richText.lineWidth) + "\n"
       when :hline
-        return "#{'-' * (@richText.lineWidth - 4)}\n"
+        return "#{' ' * @richText.indent}" +
+               "#{'-' * (@richText.lineWidth - @richText.indent)}\n"
       when :paragraph
-        return textBlockFormat(0, children_to_s, @richText.lineWidth) +
-               "\n"
+        return textBlockFormat(@richText.indent + @richText.parIndent,
+                               '', children_to_s, @richText.lineWidth) + "\n"
       when :pre
-        post = "\n"
+        return TextFormatter.new(@richText.lineWidth,
+                                 @richText.indent + @richText.preIndent).
+          indent(children_to_s)
       when :bulletlist1
       when :bulletitem1
-        pre = '* '
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent,
+                               '* ', children_to_s,
+                               @richText.lineWidth) + "\n"
       when :bulletlist2
       when :bulletitem2
-        pre = ' * '
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent * 2,
+                               '* ', children_to_s,
+                               @richText.lineWidth) + "\n"
       when :bulletlist3
       when :bulletitem3
-        pre = '  * '
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent * 3,
+                               '* ', children_to_s,
+                               @richText.lineWidth) + "\n"
       when :numberlist1
       when :numberitem1
-        pre = "#{@data[0]}. "
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent,
+                               "#{@data[0]}. ", children_to_s,
+                               @richText.lineWidth) + "\n"
       when :numberlist2
       when :numberitem2
-        pre = "#{@data[0]}.#{@data[1]} "
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent,
+                               "#{@data[0]}.#{@data[1]} ", children_to_s,
+                               @richText.lineWidth) + "\n"
       when :numberlist3
       when :numberitem3
-        pre = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
-        post = "\n\n"
+        return textBlockFormat(@richText.indent + @richText.listIndent,
+                               "#{@data[0]}.#{@data[1]}.#{@data[2]} ",
+                               children_to_s, @richText.lineWidth) + "\n"
       when :ref
       when :href
       when :blockfunc
@@ -452,8 +464,13 @@ class TaskJuggler
       el
     end
 
-    def textBlockFormat(indent, str, width)
-      TextFormatter.new(width, indent).format(str)
+    def textBlockFormat(indent, label, str, width)
+      labLen = label.length
+      TextFormatter.new(width, indent + labLen, indent).format(label + str)
+    end
+
+    def textBlockIndent(indent, str, width)
+      TextFormatter.new(width, indent).indent(str)
     end
 
   end

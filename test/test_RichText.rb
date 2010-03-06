@@ -193,18 +193,18 @@ EOT
     rt.lineWidth = 60
     out = rt.to_s
     ref = <<'EOT'
---------------------------------------------------------
+------------------------------------------------------------
 Line above and below
 
---------------------------------------------------------
+------------------------------------------------------------
 1) A heading
 
---------------------------------------------------------
---------------------------------------------------------
---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
 Another bit of text.
 
---------------------------------------------------------
+------------------------------------------------------------
 EOT
     assert_equal(ref, out)
 
@@ -463,11 +463,11 @@ EOT
     rt = newRichText(inp)
     out = rt.to_s + "\n"
     ref = <<'EOT'
-* This is a bullet item
+ * This is a bullet item
 
- * This is a level 2 bullet item
+  * This is a level 2 bullet item
 
-  * This is a level 3 bullet item
+   * This is a level 3 bullet item
 
 
 EOT
@@ -548,45 +548,45 @@ EOT
     rt = newRichText(inp)
     out = rt.to_s + "\n"
     ref = <<'EOT'
-1. This is item 1
+ 1. This is item 1
 
-2. This is item 2
+ 2. This is item 2
 
-3. This is item 3
-
-Normal text.
-
-1. This is item 1
-
-1.1 This is item 1.1
-
-1.2 This is item 1.2
-
-1.3 This is item 1.3
-
-2. This is item 2
-
-2.1 This is item 2.1
-
-2.2 This is item 2.2
-
-2.2.1 This is item 2.2.1
-
-2.2.2 This is item 2.2.2
-
-3. This is item 3
-
-3.1 This is item 3.1
-
-3.1.1 This is item 3.1.1
-
-4. This is item 4
-
-4.0.1 This is item 4.0.1
+ 3. This is item 3
 
 Normal text.
 
-1. This is item 1
+ 1. This is item 1
+
+ 1.1 This is item 1.1
+
+ 1.2 This is item 1.2
+
+ 1.3 This is item 1.3
+
+ 2. This is item 2
+
+ 2.1 This is item 2.1
+
+ 2.2 This is item 2.2
+
+ 2.2.1 This is item 2.2.1
+
+ 2.2.2 This is item 2.2.2
+
+ 3. This is item 3
+
+ 3.1 This is item 3.1
+
+ 3.1.1 This is item 3.1.1
+
+ 4. This is item 4
+
+ 4.0.1 This is item 4.0.1
+
+Normal text.
+
+ 1. This is item 1
 
 
 EOT
@@ -683,7 +683,7 @@ main() {
 
 Some normal text.
 
-* A bullet item
+ * A bullet item
 
 Some code
 
@@ -766,21 +766,21 @@ EOT
 
 Not sure what to put here. Maybe just some silly text.
 
-* A bullet
+ * A bullet
 
- * Another bullet
+  * Another bullet
 
-1. A number item
+ 1. A number item
 
-* A bullet
+ * A bullet
 
-0.1 Number 0.1, I guess
+ 0.1 Number 0.1, I guess
 
 2) Section 2
 
-* Starts with bullets
+ * Starts with bullets
 
-* ...
+ * ...
 
 Some more text. And we're done.
 
@@ -867,21 +867,21 @@ EOT
 
 Not sure ''what'' to put here. Maybe just some silly text.
 
-* A bullet
+ * A bullet
 
- * Another bullet
+  * Another bullet
 
-1. A number item
+ 1. A number item
 
-* A bullet
+ * A bullet
 
 ## Number 0.1, I guess
 
 == Section 2 ==
 
-* Starts with bullets
+ * Starts with bullets
 
-* ...
+ * ...
 
 Some more text. And we're done.
 
@@ -963,7 +963,7 @@ EOT
     rt.lineWidth = 60
     out = rt.to_s
     ref = <<EOT
---------------------------------------------------------
+------------------------------------------------------------
 bar
 
 EOT
@@ -1039,7 +1039,7 @@ The quick brown fox jumps over the lazy dog. The quick brown
 fox jumps over the lazy dog. The quick brown fox jumps over
 the lazy dog. The quick brown fox jumps over the lazy dog.
 
---------------------------------------------------------
+------------------------------------------------------------
 EOT
     assert_equal(ref, out)
 
@@ -1062,7 +1062,7 @@ fox jumps over the lazy dog. The quick brown fox jumps over
 the lazy dog. The quick brown fox jumps over the lazy dog.
 The quick brown fox jumps over the lazy dog.
 
---------------------------------------------------------
+------------------------------------------------------------
 EOT
     assert_equal(ref, out)
 
@@ -1082,7 +1082,7 @@ The_quick_brown_fox_jumps_over_the_lazy_dog.
 The_quick_brown_fox_jumps_over_the_lazy_dog.
 The_quick_brown_fox_jumps_over_the_lazy_dog.
 
---------------------------------------------------------
+------------------------------------------------------------
 EOT
     assert_equal(ref, out)
 
@@ -1098,7 +1098,42 @@ EOT
     ref = <<EOT
 The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.The_quick_brown_fox_jumps_over_the_lazy_dog.
 
---------------------------------------------------------
+------------------------------------------------------------
+EOT
+    assert_equal(ref, out)
+  end
+
+  def test_bulletWrapping
+    inp = <<EOT
+* The quick brown fox jumps over the lazy dog.
+* The quick brown fox jumps over the lazy dog.
+** The quick brown fox jumps over the lazy dog.
+*** The quick brown fox jumps over the lazy dog.
+----
+EOT
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    rt.lineWidth = 22
+    out = rt.to_s
+    ref = <<EOT
+ * The quick brown fox
+   jumps over the lazy
+   dog.
+
+ * The quick brown fox
+   jumps over the lazy
+   dog.
+
+  * The quick brown
+    fox jumps over the
+    lazy dog.
+
+   * The quick brown
+     fox jumps over
+     the lazy dog.
+
+----------------------
 EOT
     assert_equal(ref, out)
   end

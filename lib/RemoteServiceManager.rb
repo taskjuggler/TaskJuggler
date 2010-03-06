@@ -37,8 +37,8 @@ class RemoteServiceManager
       # We are in the parent
       @childPIDs << pid
       wr.close
-      # Return the URI of the child's DRb ReportServer
-      Thread.new { waitForChild }
+      # Make sure we don't leave zombie processes around.
+      Thread.new { Process.wait2 }
       # TODO: Need to add some security and make it more robust.
       return rd.read
     else
@@ -58,7 +58,7 @@ class RemoteServiceManager
       end
       # Stop DRb service and wait for threads to finish
       DRb.stop_service
-      DRb.thread.join
+      DRb.thread.join if DRb.thread
     end
   end
 
@@ -66,13 +66,6 @@ class RemoteServiceManager
   # process.
   def terminateService
     @terminate = true
-  end
-
-  # Run forever in the parent and pick-up the terminated childs.
-  def waitForChild
-    while true do
-      Process.wait2
-    end
   end
 
 end

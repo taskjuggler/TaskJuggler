@@ -14,10 +14,10 @@ tj3 -s project.tjp &
 sleep 5 
 
 # Run a sender test.
-tj3ss_sender --dryrun -e 2002-03-02 > sender.log
+tj3ss_sender --dryrun -e 2002-03-02 > sender.log || exit 1
 # Run a receiver test
-tj3ss_receiver --dryrun < boss_mail > receiver.log
-tj3ss_receiver --dryrun < dev2_mail > receiver.log
+tj3ss_receiver --dryrun < boss_mail >> receiver.log || exit 1
+tj3ss_receiver --dryrun < dev2_mail >> receiver.log || exit 1
 
 if test `fgrep ERROR statussheets.log | wc -l` != 0 ; then
   echo "ERROR: Something went wrong!"
