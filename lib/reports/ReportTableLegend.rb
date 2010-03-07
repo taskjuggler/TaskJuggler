@@ -79,7 +79,7 @@ class TaskJuggler
     # the HTML version of the headlines.
     def headlineToHTML(text)
       unless @calendarItems.empty? || @ganttItems.empty?
-        div = XMLElement.new('tr', 'tj_legend_headline')
+        div = XMLElement.new('tr', 'class' => 'tj_legend_headline')
         div << XMLNamedText.new(text, 'td', 'colspan' => '10')
         return div
       end

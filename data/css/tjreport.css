@@ -165,6 +165,13 @@ p.alertmessage {
   height:19px;
 }
 
+/* Headlines used for the legend when both chart types are used in a
+ * report */
+.tj_legend_headline {
+  font-size:12px;
+  font-weight:bold;
+}
+
 /* A legend row has 3 items. An item contains a label and a symbol */
 .tj_legend_item {
 }
