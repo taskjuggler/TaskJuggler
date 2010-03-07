@@ -374,6 +374,18 @@ class TaskJuggler
       @time.strftime('%A %Y-%m-%d')
     end
 
+    # Return the start of the next _dow_ day of week after _date_. _dow_ must
+    # be 0 for Sundays, 1 for Mondays and 6 for Saturdays. If _date_ is a
+    # Tuesday and _dow_ is 5 (Friday) the date of next Friday 0:00 will be
+    # returned.
+    def nextDayOfWeek(dow)
+      raise "Day of week must be 0 - 6." unless dow >= 0 && dow <= 6
+      currentDoW = @time.strftime('w').to_i
+      d = midnight
+      0.upto((dow + 7 - currentDoW) % 7) { |i| d = d.sameTimeNextDay }
+      d
+    end
+
     # Pass any unknown function directoy to the @time variable.
     def method_missing(func, *args)
       @time.method(func).call(*args)
