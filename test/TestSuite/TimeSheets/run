@@ -14,6 +14,14 @@ function error
   exit 1
 }
 
+function check
+{
+  count=`grep "$1" "$2" | wc -l`	
+  if test $count != $3 ; then
+    error "$2 contains ${count} times \"${1}\" instead of $3 times!"
+  fi  
+}
+
 cleanup
 tj3 -s project.tjp &
 # Wait some time so tj3 can go into server mode.
@@ -21,22 +29,21 @@ sleep 5
 
 # Run a sender test.
 tj3ts_sender --dryrun -e 2002-03-01 > sender.log || error "sender"
+check "From: foo@bar.com" sender.log 6
+check "Content-Disposition: attachment;" sender.log 6
+check "^timesheet " sender.log 6
+
 # Run a receiver test
 tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || error "rec1"
 tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || error "rec2"
+check "From: foo@bar.com" receiver.log 2
+check "Report from " receiver.log 2
+check "\[Green\]" receiver.log 2
 
-if test `fgrep ERROR timesheets.log | wc -l` != 0 ; then
-  error "ERROR: Something went wrong!"
-fi  
-if test `fgrep WARN timesheets.log | wc -l` != 1 ; then
-  error "ERROR: Warnings don't match!"
-fi  
-if test `fgrep INFO timesheets.log | wc -l` != 29 ; then
-  error "ERROR: Info messages don't match!"
-fi  
-if test `fgrep 'Your weekly report template' timesheets.log | wc -l` != 6 ; then
-  error "ERROR: Wrong number of emails send out!"
-fi  
+check ERROR timesheets.log 0
+check WARN timesheets.log 1
+check INFO timesheets.log 29
+check "Your weekly report template" timesheets.log 6
 
-cleanup
+#cleanup
 exit 0

@@ -93,6 +93,9 @@ class TaskJuggler
   def checkTimeSheet(fileName, fileContent)
     begin
       Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
+      # Make sure we don't use data from old time sheets or Journal entries.
+      @project.timeSheets.clear
+      @project['journal'] = Journal.new
       return false unless (ts = parseFile(fileName, fileContent, 'timeSheet'))
       return false unless @project.checkTimeSheets
       queryAttrs = { 'project' => @project,
