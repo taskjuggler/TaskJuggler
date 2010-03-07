@@ -149,7 +149,7 @@ class TaskJuggler
       when :pre
         return TextFormatter.new(@richText.lineWidth,
                                  @richText.indent + @richText.preIndent).
-          indent(children_to_s)
+          indent(children_to_s) + "\n"
       when :bulletlist1
       when :bulletitem1
         return textBlockFormat(@richText.indent + @richText.listIndent,

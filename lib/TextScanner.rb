@@ -781,8 +781,10 @@ class TaskJuggler
                 returnChar(c)
                 break
               else
-                error('bad_indent',
-                      'All string lines must have the exact same indentation.')
+                warning('bad_indent',
+                        'Not all lines of string have same indentation.')
+                token << c
+                state = 2
               end
             end
           end

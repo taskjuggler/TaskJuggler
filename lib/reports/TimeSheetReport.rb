@@ -113,10 +113,10 @@ EOT
             c = tr.workDays > 1.0 ? '' : '# '
             @file << "    #{c}status green \"Your headline here!\" {\n" +
                      "    #  summary -8<-\n" +
-                     "    #  Uncomment and put one or two sentences here!\n" +
+                     "    #  A summary text\n" +
                      "    #  ->8-\n" +
                      "    #  details -8<-\n" +
-                     "    #  Uncomment and put markup text here.\n" +
+                     "    #  Some more details\n" +
                      "    #  ->8-\n" +
                      "    #{c}}\n"
             @file << "  }\n\n"
@@ -133,10 +133,10 @@ EOT
   # You can use the following section to report personal notes.
   # status green "A headline" {
   #   summary -8<-
-  #   Uncomment and put one or two sentences here!
+  #   A summary text
   #   ->8-
   #   details -8<-
-  #   Uncomment and put markup text here.
+  #   Some more details
   #   ->8-
   # }
 EOT

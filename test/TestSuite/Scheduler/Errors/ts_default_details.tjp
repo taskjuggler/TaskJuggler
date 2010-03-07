@@ -1,0 +1,22 @@
+project "test" 2010-02-21 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+timesheet r1 2010-02-21 +1w {
+# MARK: error 12 ts_default_details
+  task t1 {
+    work 100%
+    remaining 0d
+    status green "Green" {
+      details -8<-
+      Some more details
+      ->8-
+    }
+  }
+}
+

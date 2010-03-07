@@ -45,5 +45,5 @@ check WARN timesheets.log 1
 check INFO timesheets.log 29
 check "Your weekly report template" timesheets.log 6
 
-#cleanup
+cleanup
 exit 0
