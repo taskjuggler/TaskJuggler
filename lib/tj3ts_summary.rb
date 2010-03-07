@@ -26,7 +26,8 @@ class TaskJuggler
     def initialize
       super
 
-      @date = nil
+      # The default report period end is next Monday 0:00.
+      @date = TjTime.now.nextDayOfWeek(1)
       @resourceList = []
       @receipients = []
     end

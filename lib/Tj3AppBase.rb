@@ -122,7 +122,7 @@ class TaskJuggler
       @opts.on('-e', '--enddate <DAY>', String,
                format("The end date of the reporting period. Either as " +
                       "YYYY-MM-DD or day of week. 0: Sunday, 1: Monday and " +
-                      "so on. The default value is next Monday 0:00.")) do |arg|
+                      "so on. The default value is #{@date}.")) do |arg|
         ymdFilter = /([0-9]{4})-([0-9]{2})-([0-9]{2})/
         if ymdFilter.match(arg)
           @date = Time.mktime(*(ymdFilter.match(arg)[1..3]))

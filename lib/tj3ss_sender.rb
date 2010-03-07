@@ -28,7 +28,8 @@ class TaskJuggler
       @optsSummaryWidth = 25
 
       @hideResource = nil
-      @date = nil
+      # The default report period end is next Wednesday 0:00.
+      @date = TjTime.now.nextDayOfWeek(3)
       @resourceList = []
     end
 
