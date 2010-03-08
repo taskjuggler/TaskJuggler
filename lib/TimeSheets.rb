@@ -44,8 +44,8 @@ class TaskJuggler
     end
 
     # Store the number of worked time slots. If the value is a Fixnum, it can
-    # be directly assigned. A Float must is interpreted as percentage and must
-    # be in the rage of 0.0 to 1.0.
+    # be directly assigned. A Float is interpreted as percentage and must be
+    # in the rage of 0.0 to 1.0.
     def work=(value)
       if value.is_a?(Fixnum)
         @work = value

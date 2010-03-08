@@ -133,6 +133,8 @@ report period and the property set from the referencing report.
 ----
 '''Inline Generator''' ''''query''''
 
+Paramters:
+
 * ''''family'''' : Specifies whether a ''''task'''' or a ''''resource''''
 should be queried.
 

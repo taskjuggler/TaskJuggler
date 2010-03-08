@@ -169,6 +169,7 @@ class TaskJuggler
     @parser.open(fileContent, false, true)
     @parser.setGlobalMacros
     return nil if (res = @parser.parse(rule)).nil?
+    @parser.checkForEnd
     @parser.close
     res
   end

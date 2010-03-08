@@ -170,6 +170,15 @@ class TaskJuggler
       result
     end
 
+    # Return true if the scanner has processed all files.
+    def checkForEnd
+      token = @scanner.nextToken
+      unless token[0] == '.'
+        error('junk_at_expected_eof',
+              "Found garbage at expected end of file: #{token[1]}")
+      end
+    end
+
     # Return the SourceFileInfo of the TextScanner at the beginning of the
     # currently processed TextParser::Rule. Or return nil if we don't have a
     # current position.
