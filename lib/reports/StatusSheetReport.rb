@@ -101,7 +101,16 @@ class TaskJuggler
         @managers << (manager = ManagerStatusRecord.new(resource))
 
         topLevelTasks.each do |task|
-          entries = @project['journal'].entries(nil, a('end'), task)
+          entries = @project['journal'].entries(a('start'), a('end'), task)
+          # Get a list of all current Entries of this task. This list may not
+          # contain all entries of the previous list, but it will for sure
+          # contain older entries with higher alert levels.
+          oldEntries = @project['journal'].currentEntries(a('end'), task,
+                                                          0, a('start'))
+          # Remove entries that are in both lists.
+          oldEntries.delete_if { |e| entries.include?(e) }
+          # Combine the list with oldEntries going first.
+          entries = oldEntries + entries
           next if entries.empty?
 
           manager.responsibilities << ManagerResponsibilities.new(task, entries)
