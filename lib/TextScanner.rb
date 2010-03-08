@@ -782,9 +782,13 @@ class TaskJuggler
                 break
               else
                 warning('bad_indent',
-                        'Not all lines of string have same indentation.')
+                        "Not all lines of string have same indentation. " +
+                        "The first line of the string determines the " +
+                        "indentation for all subsequent lines of the same " +
+                        "string.")
                 token << c
                 state = 2
+                break
               end
             end
           end
