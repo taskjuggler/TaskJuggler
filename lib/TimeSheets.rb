@@ -141,8 +141,8 @@ class TaskJuggler
                 "#{resource.name} is requesting a new task:\n" +
                 "ID: #{@task}\n" +
                 "Name: #{@name}\n" +
-                "Work: #{@work}d  " +
-                (@remaining ? "Remaining: #{@remaining}d" :
+                "Work: #{slotsToDays(@work)}d  " +
+                (@remaining ? "Remaining: #{slotsToDays(@remaining)}d" :
                               "End: #{@end.to_s}"))
         return
       end
