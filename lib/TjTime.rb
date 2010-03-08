@@ -382,7 +382,7 @@ class TaskJuggler
       raise "Day of week must be 0 - 6." unless dow >= 0 && dow <= 6
       currentDoW = @time.strftime('w').to_i
       d = midnight
-      0.upto((dow + 7 - currentDoW) % 7) { |i| d = d.sameTimeNextDay }
+      0.upto(((dow + 7 - currentDoW) % 7) - 1) { |i| d = d.sameTimeNextDay }
       d
     end
 
