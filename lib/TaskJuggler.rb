@@ -103,9 +103,17 @@ class TaskJuggler
                      'scopeProperty' => nil,
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'start' => ts.interval.start,
-                     'end' => ts.interval.end }
+                     'end' => ts.interval.end,
+                     'timeFormat' => '%Y-%m-%d' }
       query = Query.new(queryAttrs)
-      puts ts.resource.query_journal(query).to_s
+      rti = ts.resource.query_journal(query)
+      rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
+      rti.parIndent = 2
+      rti.preIndent = 4
+      puts rti.to_s
     rescue TjException
       Log.exit('checkTimeSheet')
       return false
@@ -123,9 +131,17 @@ class TaskJuggler
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'timeFormat' => '%Y-%m-%d',
                      'start' => @project['start'],
-                     'end' => ss[1] }
+                     'end' => ss[1],
+                     'timeFormat' => '%Y-%m-%d' }
       query = Query.new(queryAttrs)
-      puts ss[0].query_dashboard(query).to_s
+      rti = ss[0].query_dashboard(query)
+      rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
+      rti.parIndent = 2
+      rti.preIndent = 4
+      puts rti.to_s
     rescue TjException
       Log.exit('checkStatusSheet')
       return false

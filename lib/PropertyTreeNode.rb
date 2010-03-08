@@ -575,7 +575,7 @@ class TaskJuggler
       # No section numbers, please!
       rti.sectionNumbers = false
       # We use a special class to allow CSS formating.
-      rti.cssClass = 'alertmessage'
+      rti.cssClass = 'tj_journal'
       query.rti = rti
     end
 

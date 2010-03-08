@@ -60,7 +60,6 @@ class TaskJuggler
       list.each do |entry|
         listByLevel[entry.alertLevel] << entry
       end
-      first = true
       (numberOfLevels - 1).downto(0) do |level|
         levelList = listByLevel[level]
         alertName = "<nowiki>[#{@project['alertLevels'][level][1]}]</nowiki>"
@@ -68,11 +67,6 @@ class TaskJuggler
           # The TimeSheetRecords associated with this entry.
           tsRecord = entry.timeSheetRecord
           # Separate the messages with a horizontal line.
-          if first
-            first = false
-          else
-            rText += "----\n"
-          end
           if entry.property.is_a?(Task)
             rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+
               "(ID: #{entry.property.fullId}) ==\n\n"
@@ -142,14 +136,8 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
-      rti.lineWidth = 72
-      rti.indent = 2
-      rti.titleIndent = 0
-      rti.listIndent = 2
-      rti.parIndent = 2
-      rti.preIndent = 4
       # We use a special class to allow CSS formating.
-      rti.cssClass = 'alertmessage'
+      rti.cssClass = 'tj_journal'
       query.rti = rti
     end
 
@@ -174,17 +162,11 @@ class TaskJuggler
         # the RichText components, we use the originally provided markup since
         # we compose the result as RichText markup first.
         rText = ''
-        first = true
 
         taskList.each do |task|
-          if first
-            first = false
-          else
-            rText += "----\n\n"
-          end
           rText += "== <nowiki>[#{task.query_alert(query)}] Task: " +
             "#{task.name}</nowiki> (#{task.fullId}) ==\n\n"
-            rText += task.query_alertmessage(query).richText.inputText + "\n"
+            rText += task.query_alertmessage(query).richText.inputText + "\n\n"
         end
       end
 
@@ -205,14 +187,8 @@ class TaskJuggler
       end
       # No section numbers, please!
       rti.sectionNumbers = false
-      rti.lineWidth = 72
-      rti.indent = 2
-      rti.titleIndent = 0
-      rti.listIndent = 2
-      rti.parIndent = 2
-      rti.preIndent = 4
       # We use a special class to allow CSS formating.
-      rti.cssClass = 'alertmessage'
+      rti.cssClass = 'tj_journal'
       query.rti = rti
     end
 

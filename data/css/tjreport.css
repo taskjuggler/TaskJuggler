@@ -12,20 +12,28 @@ h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
 
-.alertmessage {
+.tj_journal {
   font-size:11px;
 }
-i.alertmessage { font-size:9px; }
-h1.alertmessage { font-size:14px; }
-h2.alertmessage { 
+i.tj_journal { font-size:9px; }
+h1.tj_journal {
+  font-size:14px;
+  margin-left:10px;
+}
+h2.tj_journal { 
   margin-top:5px;
   font-size:13px; 
   margin-bottom:1px;
+  margin-left:20px;
 }
-h3.alertmessage { font-size:12px; }
-p.alertmessage {
+h3.tj_journal { 
+  font-size:12px;
+  margin-left:30px;
+}
+p.tj_journal {
   margin-top:1px;
   margin-bottom:5px;
+  margin-left:30px;
 }
 
 /* The basic elements of a text report page. */
