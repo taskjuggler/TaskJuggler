@@ -528,8 +528,8 @@ EOT
       @column = TableColumnDefinition.new(@val[0], title)
     })
     doc('columnid', <<'EOT'
-In addition to the listed IDs all user defined attributes can be used as
-column IDs.
+This is a comprehensive list of all pre-defined [[columns]]. In addition to
+the listed IDs all user defined attributes can be used as column IDs.
 EOT
        )
   end
