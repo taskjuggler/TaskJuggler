@@ -192,6 +192,26 @@ class TaskJuggler
       list
     end
 
+    # Return a list of all JournalEntry objects for the given _task_ that
+    # are dated between _startDate_ and _endDate_, are from Author _resource_
+    # and have at least the alert level _alertLevel. If an optional parameter
+    # is nil, it always matches the entry.
+    def entriesByTask(task, startDate = nil, endDate = nil,
+                      resource = nil, alertLevel = nil)
+      list = []
+      @entries.each do |entry|
+        if entry.property == task &&
+           (startDate.nil? || entry.date > startDate) &&
+           (endDate.nil? || entry.date <= endDate) &&
+           (resource.nil? || entry.author == resource) &&
+           (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
+           !entry.headline.empty?
+          list << entry
+        end
+      end
+      list
+    end
+
     def entries(startDate = nil, endDate = nil, property = nil,
                 alertLevel = nil)
       list = []

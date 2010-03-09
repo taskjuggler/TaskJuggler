@@ -66,7 +66,6 @@ class TaskJuggler
         levelList.each do |entry|
           # The TimeSheetRecords associated with this entry.
           tsRecord = entry.timeSheetRecord
-          # Separate the messages with a horizontal line.
           if entry.property.is_a?(Task)
             rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+
               "(ID: #{entry.property.fullId}) ==\n\n"

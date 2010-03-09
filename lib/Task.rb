@@ -31,6 +31,76 @@ class TaskJuggler
       @data[scenarioIdx].readyForScheduling?
     end
 
+    def query_journal(query)
+      journalMessages(query, true)
+    end
+
+    private
+
+    # Create a blog-style list of all alert messages that match the Query.
+    def journalMessages(query, longVersion)
+      # The components of the message are either UTF-8 text or RichText. For
+      # the RichText components, we use the originally provided markup since
+      # we compose the result as RichText markup first.
+      rText = ''
+      list = @project['journal'].entriesByTask(self, query.start, query.end)
+      list.reverse.each do |entry|
+        # The TimeSheetRecords associated with this entry.
+        tsRecord = entry.timeSheetRecord
+        if entry.property.is_a?(Task)
+          alertName = "<nowiki>" +
+                      "[#{@project['alertLevels'][entry.alertLevel][1]}]" +
+                      "</nowiki>"
+          rText += "== #{alertName} <nowiki>#{entry.headline}</nowiki> ==\n" +
+                   "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
+          if entry.author
+            rText += "''by <nowiki>#{entry.author.name}</nowiki>''"
+          end
+          rText += "\n\n"
+          if tsRecord
+            rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
+            if tsRecord.remaining
+              rText += "'''Remaining:''' #{tsRecord.actualRemaining}d "
+            else
+              rText += "'''End:''' " +
+                       "#{tsRecord.actualEnd.to_s(query.timeFormat)} "
+            end
+            rText += "\n\n"
+          end
+        end
+        unless entry.headline.empty?
+          rText += "'''<nowiki>#{entry.headline}</nowiki>'''\n\n"
+        end
+        if entry.summary
+          rText += entry.summary.richText.inputText + "\n\n"
+        end
+        if longVersion && entry.details
+          rText += entry.details.richText.inputText + "\n\n"
+        end
+      end
+
+      # Now convert the RichText markup String into RichTextIntermediate
+      # format.
+      handlers = [
+        RTFNavigator.new(@project),
+        RTFQuery.new(@project),
+        RTFReport.new(@project)
+      ]
+      begin
+        rti = RichText.new(rText, handlers).generateIntermediateFormat
+      rescue RichTextException => msg
+        $stderr.puts "Error while processing Rich Text\n" +
+                     "Line #{msg.lineNo}: #{msg.text}\n" +
+                     "#{msg.line}"
+        return nil
+      end
+      # No section numbers, please!
+      rti.sectionNumbers = false
+      # We use a special class to allow CSS formating.
+      rti.cssClass = 'tj_journal'
+      query.rti = rti
+    end
+
   end
 
 end
