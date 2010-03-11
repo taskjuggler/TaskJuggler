@@ -244,14 +244,14 @@ class TaskJuggler
     # This function returns a list of entries that have all the exact same
     # date and are the last entries before the deadline _date_. Only messages
     # with at least the required alert level _minLevel_ are returned. Messages
-    # with alert level _minLevel_ must not be older than _minDate_.
+    # with alert level _minLevel_ must not be newer than _minDate_.
     def currentEntries(date, property, minLevel, minDate)
       pEntries = @propertyToEntries[property] ?
                  @propertyToEntries[property].last(date) : []
       # Remove entries below the minium alert level or before the timeout
       # date.
       pEntries.delete_if { |e| e.alertLevel < minLevel  || e.headline.empty? ||
-                               (e.alertLevel == minLevel && e.date < minDate) }
+                               (e.alertLevel == minLevel && e.date <= minDate) }
 
       return [] if pEntries.empty?
 
