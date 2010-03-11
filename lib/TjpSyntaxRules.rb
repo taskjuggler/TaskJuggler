@@ -5318,8 +5318,16 @@ EOT
 
   def rule_workinghours
     pattern(%w( _workinghours !listOfDays !listOfTimes), lambda {
-      wh = @property.nil? ? @project['workinghours'] :
-           @property['workinghours', @scenarioIdx]
+      if @property.nil?
+        # We are changing global working hours.
+        wh = @project['workinghours']
+      else
+        unless (wh = @property['workinghours', @scenarioIdx])
+          # The property does not have it's own WorkingHours yet.
+          wh = WorkingHours.new(@project['workinghours'])
+          @property['workinghours', @scenarioIdx] = wh
+        end
+      end
       wh.timezone = @property.nil? ? @project['timezone'] :
                     @property['timezone', @scenarioIdx]
       7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
