@@ -26,6 +26,7 @@ class TaskJuggler
     def initialize
       super
       @optsSummaryWidth = 25
+      @force = false
 
       @hideResource = nil
       # The default report period end is next Wednesday 0:00.
@@ -44,6 +45,11 @@ EOT
                  format('Only generate template for given resource')) do |arg|
           @resourceList << arg
         end
+        @opts.on('-f', '--force',
+                format('Send out a new template even if one exists ' +
+                       'already')) do |arg|
+          @force = true
+        end
         @opts.on('--hideresource <EXPR>', String,
                  format('Filter expression to limit the resource list')) do |arg|
           @hideResource = arg
@@ -60,6 +66,7 @@ EOT
       @rc.configure(ts, 'statussheets.sender')
       ts.workingDir = @workingDir if @workingDir
       ts.dryRun = @dryRun
+      ts.force = @force
       ts.date = @date if @date
       ts.hideResource = @hideResource if @hideResource
 

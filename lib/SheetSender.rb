@@ -20,6 +20,8 @@ class TaskJuggler
   # A base class for sheet senders.
   class SheetSender < SheetHandlerBase
 
+    attr_accessor :force
+
     def initialize(appName, type)
       super(appName)
 
@@ -33,6 +35,9 @@ class TaskJuggler
       @signatureFile = nil
       # The base directory of the sheet templates.
       @templateDir = nil
+      # When true, existing templates will be regenerated and send out again.
+      # Otherwise the existing template will not be send out again.
+      @force = false
 
       @signatureFilter = nil
       @introText = nil
@@ -135,9 +140,9 @@ EOF
         # We use the first template file to get the sheet interval.
         firstTemplateFile = templateFile + '.tji' unless firstTemplateFile
 
-        # Don't re-generate already existing templates. We probably have sent
-        # them out earlier with a manual trigger.
-        if File.exist?(templateFile + '.tji')
+        # Don't re-generate already existing templates unless we are in force
+        # mode. We probably have sent them out earlier with a manual trigger.
+        if !@force && File.exist?(templateFile + '.tji')
           info("Skipping already existing #{templateFile}.tji.")
           next
         end

@@ -26,6 +26,7 @@ class TaskJuggler
     def initialize
       super
       @optsSummaryWidth = 22
+      @force = false
 
       # The default report period end is next Monday 0:00.
       @date = TjTime.now.nextDayOfWeek(1).to_s('%Y-%m-%d')
@@ -43,6 +44,11 @@ EOT
                 format('Only generate template for given resource')) do |arg|
           @resourceList << arg
         end
+        @opts.on('-f', '--force',
+                format('Send out a new template even if one exists ' +
+                       'already')) do |arg|
+          @force = true
+        end
         optsEndDate
       end
     end
@@ -55,6 +61,7 @@ EOT
       @rc.configure(ts, 'timesheets.sender')
       ts.workingDir = @workingDir if @workingDir
       ts.dryRun = @dryRun
+      ts.force = @force
       ts.date = @date if @date
 
       ts.sendTemplates(@resourceList)
