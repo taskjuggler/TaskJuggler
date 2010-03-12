@@ -763,7 +763,9 @@ EOT
   end
 
   def rule_export
-    pattern(%w( !exportHeader !exportBody ))
+    pattern(%w( !exportHeader !exportBody ), lambda {
+      @property = nil
+    })
     doc('export', <<'EOT'
 The export report looks like a regular TaskJuggler file but contains fixed
 start and end dates for all tasks. The tasks only have start and end times,
@@ -1855,7 +1857,7 @@ EOT
 
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
-      @property = newReport(@val[1], @val[2], :niku, sourceFileInfo)
+      newReport(@val[1], @val[2], :niku, sourceFileInfo)
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -1865,7 +1867,9 @@ EOT
   end
 
   def rule_nikuReport
-    pattern(%w( !nikuReportHeader !nikuReportBody ))
+    pattern(%w( !nikuReportHeader !nikuReportBody ), lambda {
+      @property = nil
+    })
     doc('nikureport', <<'EOT'
 This report generates an XML file to be imported into the enterprise resource
 management software Clarity(R) from Computer Associates(R). The files contains
@@ -3874,7 +3878,9 @@ EOT
   end
 
   def rule_statusSheetReport
-    pattern(%w( !ssReportHeader !ssReportBody ))
+    pattern(%w( !ssReportHeader !ssReportBody ), lambda {
+      @property = nil
+    })
     doc('statussheetreport', <<'EOT'
 A status sheet report is a template for a status sheet. It collects all the
 status information of the top-level task that a resource is responsible for.
@@ -4904,7 +4910,9 @@ EOT
   end
 
   def rule_timeSheetReport
-    pattern(%w( !tsReportHeader !tsReportBody ))
+    pattern(%w( !tsReportHeader !tsReportBody ), lambda {
+      @property = nil
+    })
     doc('timesheetreport', <<'EOT'
 For projects that flow mostly according to plan, TaskJuggler already knows
 much of the information that should be contained in the time sheets. With this

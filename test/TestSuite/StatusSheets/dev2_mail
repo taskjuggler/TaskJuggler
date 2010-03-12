@@ -20,7 +20,7 @@ statussheet dev2 2002-03-02-00:00-+0100 {
 
   # Task: Software Development
   task AcSo.software.database {
-    status green "" {
+    status green "A Bug" {
       # Date: 2002-02-03-00:00-+0100
       author dev1
       summary -8<-
@@ -30,6 +30,7 @@ statussheet dev2 2002-03-02-00:00-+0100 {
       details -8<-
       We have already contacted the vendor and are now waiting for
       their advise.
+      For details see http://bugzilla.com/bugs/show_bug.cgi?id\=647
       ->8-
     }
   }

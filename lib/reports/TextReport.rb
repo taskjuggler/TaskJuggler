@@ -61,7 +61,8 @@ class TaskJuggler
     end
 
     def to_html
-      html = rt_to_html('header')
+      html = []
+      html << rt_to_html('header')
       if a('left') || a('center') || a('right')
         html << (table = XMLElement.new('table', 'class' => 'tj_text_page',
                                                  'cellspacing' => '0'))
