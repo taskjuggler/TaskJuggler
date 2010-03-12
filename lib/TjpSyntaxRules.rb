@@ -5135,11 +5135,6 @@ EOT
       taskStart = @property['start', scenarioIdx] || @project['start']
       taskEnd = @property['end', scenarioIdx] || @project['end']
 
-      if !@timeSheet.interval.overlaps?(Interval.new(taskStart, taskEnd))
-        warning('ts_task_not_active',
-                "Task #{@property.fullId} is not active during the time " +
-                "sheet reporting period")
-      end
       @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @property)
       @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
     })
