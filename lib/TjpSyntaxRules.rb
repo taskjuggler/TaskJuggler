@@ -708,10 +708,16 @@ EOT
 
   def rule_details
     pattern(%w( _details $STRING ), lambda {
+      return if @val[1].empty?
+
       rtTokenSetMore =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
             REF REFEND HLINE TITLE2 TITLE3 TITLE2END TITLE3END BULLET1 BULLET2
             BULLET3 NUMBER1 NUMBER2 NUMBER3 )
+      if @val[1] == "Some more details\n"
+        error('ts_default_details',
+              "'Some more details' is not a valid value")
+      end
       @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
     })
     doc('details', <<'EOT'
@@ -1420,13 +1426,9 @@ EOT
 
     pattern(%w( !author ))
 
-    pattern(%w( !summary ), lambda {
-      @journalEntry.summary = @val[0]
-    })
+    pattern(%w( !summary ))
 
-    pattern(%w( !details ), lambda {
-      @journalEntry.details = @val[0]
-    })
+    pattern(%w( !details ))
   end
 
   def rule_journalEntryBody
@@ -3926,10 +3928,16 @@ EOT
   end
   def rule_summary
     pattern(%w( _summary $STRING ), lambda {
-      if @val[1].length > 240
+      return if @val[1].empty?
+
+      if @val[1].length > 480
         error('ts_summary_too_long',
-              "The summary text must be 240 characters long or shorter. " +
+              "The summary text must be 480 characters long or shorter. " +
               "This text has #{@val[1].length} characters.")
+      end
+      if @val[1] == "A summary text\n"
+          error('ts_default_summary',
+                "'A summary text' is not a valid summary")
       end
       rtTokenSetIntro =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
@@ -4879,7 +4887,10 @@ EOT
 
     pattern(%w( !tsStatus ))
 
-    pattern(%w( !tsTaskHeader !tsTaskBody ))
+    pattern(%w( !tsTaskHeader !tsTaskBody ), lambda {
+      @property = nil
+      @timeSheetRecord = nil
+    })
     doc('task.timesheet', <<'EOT'
 Specifies an existing task that progress and status should be reported
 against.
@@ -4897,6 +4908,7 @@ EOT
   def rule_timeSheetHeader
     pattern(%w( _timesheet !resourceId !valIntervalOrDate ), lambda {
       sheetAuthor = @val[1]
+      @property = nil
       unless sheetAuthor.leaf?
         error('ts_group_author',
               'A resource group cannot file a time sheet')
@@ -5011,19 +5023,24 @@ EOT
 
   def rule_tsStatusHeader
     pattern(%w( _status !alertLevel $STRING ), lambda {
-      if @val[2].length > 60
+      if @val[2].length > 120
         error('ts_headline_too_long',
-              "The headline must be 60 or less characters long. This one " +
+              "The headline must be 120 or less characters long. This one " +
               "has #{@val[2].length} characters.")
+      end
+      if @val[2] == 'Your headline here!'
+        error('ts_no_headline',
+              "'Your headline here!' is not a valid headline")
       end
       @journalEntry = JournalEntry.new(@project['journal'],
                                        @timeSheet.interval.end,
-                                       @val[2], @property || @timeSheet.resource,
+                                       @val[2],
+                                       @property || @timeSheet.resource,
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
       @journalEntry.timeSheetRecord = @timeSheetRecord
       @journalEntry.author = @timeSheet.resource
-      @timeSheetRecord.status = @journalEntry
+      @timeSheetRecord.status = @journalEntry if @timeSheetRecord
     })
   end
 
@@ -5119,9 +5136,7 @@ EOT
   end
 
   def rule_tsTaskBody
-    pattern(%w( _{ !tsTaskAttributes _} ), lambda {
-      @property = nil
-    })
+    pattern(%w( _{ !tsTaskAttributes _} ))
   end
 
   def rule_tsTaskHeader

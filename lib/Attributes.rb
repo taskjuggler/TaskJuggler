@@ -194,9 +194,9 @@ class TaskJuggler
       super
     end
 
-    def to_s(query)
+    def to_s(query = nil)
       if @value
-        @value.to_s(query.timeFormat)
+        @value.to_s(query ? query.timeFormat : '%Y-%m-%d')
       else
         'Error'
       end

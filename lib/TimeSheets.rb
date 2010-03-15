@@ -98,8 +98,7 @@ class TaskJuggler
       end
 
       if @status
-        if @status.headline.empty? ||
-           @status.headline == 'Your headline here!'
+        if @status.headline.empty?
           error('ts_no_headline',
                 "You must provide a headline for the status of " +
                 "task #{@task.fullId}")
@@ -107,20 +106,14 @@ class TaskJuggler
         if @status.summary &&
           @status.summary.richText.inputText == "A summary text\n"
           error('ts_default_summary',
-                "You must change the default summary text of the status" +
+                "You must change the default summary text of the status " +
                 "for task #{taskId}.")
         end
         if @status.alertLevel > 0 && @status.summary.nil? &&
-          @status.details.nil?
+           @status.details.nil?
           error('ts_alert1_more_details',
                 "Task #{taskId} has an elevated alert level and must " +
                 "have a summary or details section.")
-        end
-        if @status.details &&
-           @status.details.richText.inputText == "Some more details\n"
-          error('ts_default_details',
-                "You must change the default text for the details section" +
-                "of the status for task #{taskId}.")
         end
         if @status.alertLevel > 1 && @status.details.nil?
           error('ts_alert2_more_details',
