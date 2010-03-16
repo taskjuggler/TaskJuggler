@@ -148,7 +148,8 @@ class TaskJuggler
       end
     end
 
-    def sendEmail(to, subject, message, attachment = nil, from = nil)
+    def sendEmail(to, subject, message, attachment = nil, from = nil,
+                  inReplyTo = nil)
       Mail.defaults do
         delivery_method :smtp, {
           :address => @smtpServer,
@@ -167,6 +168,9 @@ class TaskJuggler
         end
         mail.to = to
         mail.from = from || @senderEmail
+        mail.in_reply_to = inReplyTo if inReplyTo
+        mail['User-Agent'] = "#{AppConfig.softwareName}/#{AppConfig.version}"
+        mail['X-TaskJuggler'] = @appName
         if attachment
           mail.add_file ({
             :filename => File.basename(attachment),

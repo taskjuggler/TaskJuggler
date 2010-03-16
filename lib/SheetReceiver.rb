@@ -58,6 +58,8 @@ class TaskJuggler
       @sheetWasAttached = true
       # The end date of the reporting period.
       @date = nil
+      # The id of the incomming message.
+      @messageId = nil
     end
 
     # Read the sheet from $stdin in email format. Extract the sheet from the
@@ -214,7 +216,8 @@ EOT
       text += @report
 
       # Send out the email.
-      sendEmail(@submitter, "Report from #{getResourceName} for #{@date}", text)
+      sendEmail(@submitter, "Report from #{getResourceName} for #{@date}", text,
+                nil, nil, @messageId)
       true
     end
 
