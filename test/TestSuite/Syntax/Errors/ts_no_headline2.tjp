@@ -8,10 +8,10 @@ task t1 "Task 1" {
 }
 
 timesheet r1 2009-11-30 +1w {
-# MARK: error 12 ts_no_headline
   task t1 {
     work 2d
     remaining 0d
+# MARK: error 15 ts_no_headline
     status green "Your headline here!" {
       summary "I had good fun!"
       details -8<-
