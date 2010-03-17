@@ -28,15 +28,15 @@ class TaskJuggler
       # This is a LogicalExpression string that controls what resources should
       # not be getting a status sheet.
       @hideResource = '0'
-      # This file contains the time intervals that the StatusSheetReceiver will
-      # accept as a valid interval.
-      @signatureFile = 'acceptable_dates'
       # The base directory of the status sheet templates.
       @templateDir = 'StatusSheetTemplates'
+      # This file contains the time intervals that the StatusSheetReceiver will
+      # accept as a valid interval.
+      @signatureFile = "#{@templateDir}/acceptable_intervals"
       # The log file
       @logFile = 'statussheets.log'
 
-      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*)/
+      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
       @introText = <<'EOT'
 Please find enclosed your weekly status report template. Please fill out the
 form and send it back to the sender of this email. You can either use the

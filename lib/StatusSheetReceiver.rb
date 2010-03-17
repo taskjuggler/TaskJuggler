@@ -27,14 +27,16 @@ class TaskJuggler
       @templateDir = 'StatusSheetTemplates'
       @failedMailsDir = "#{@sheetDir}/FailedMails"
       @failedSheetsDir = "#{@sheetDir}/FailedSheets"
-      @signatureFile = 'acceptable_dates'
+      # This file contains the time intervals that the StatusSheetReceiver will
+      # accept as a valid interval.
+      @signatureFile = "#{@templateDir}/acceptable_intervals"
       # The log file
       @logFile = 'statussheets.log'
 
-      # Regular expressions to identify a status sheet.
-      @sheetHeader = /^[ ]*statussheet\s([a-z][a-z0-9_]*)\s([0-9]*-[0-9]*-[0-9]*)/
-      # Regular expression to extract the sheet signature (date).
-      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*)/
+      # Regular expression to identify status sheets.
+      @sheetHeader = /^[ ]*statussheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
+      # Regular expression to extract the sheet signature (time period).
+      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
     end
 
   end

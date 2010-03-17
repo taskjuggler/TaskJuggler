@@ -135,7 +135,8 @@ class TaskJuggler
         resource = manager.resource
         @file << "# --------8<--------8<--------\n"
         # Generate the time sheet header
-        @file << "statussheet #{resource.fullId} #{a('end')} {\n\n"
+        @file << "statussheet #{resource.fullId} " +
+                 "#{a('start')} - #{a('end')} {\n\n"
 
         if manager.responsibilities.empty?
           # If there were no assignments, just write a comment.

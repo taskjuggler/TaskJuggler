@@ -16,7 +16,7 @@ text, UTF-8 encoded and the status sheet header from 'statussheet' to the period
 end date must be in a single line that starts at the beginning of the line.
 
 # --------8<--------8<--------
-statussheet dev2 2002-03-02-00:00-+0100 {
+statussheet dev2 2002-02-23-00:00-+0100 - 2002-03-02-00:00-+0100 {
 
   # Task: Software Development
   task AcSo.software.database {

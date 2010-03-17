@@ -130,8 +130,8 @@ class TaskJuggler
                      'scopeProperty' => nil,
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'timeFormat' => '%Y-%m-%d',
-                     'start' => @project['start'],
-                     'end' => ss[1],
+                     'start' => ss[1],
+                     'end' => ss[2],
                      'timeFormat' => '%Y-%m-%d' }
       query = Query.new(queryAttrs)
       rti = ss[0].query_dashboard(query)

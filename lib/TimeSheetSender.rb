@@ -29,11 +29,11 @@ class TaskJuggler
       # This is a LogicalExpression string that controls what resources should
       # not be getting a time sheet.
       @hideResource = '0'
-      # This file contains the time intervals that the TimeSheetReceiver will
-      # accept as a valid interval.
-      @signatureFile = 'acceptable_intervals'
       # The base directory of the time sheet templates.
       @templateDir = 'TimeSheetTemplates'
+      # This file contains the time intervals that the TimeSheetReceiver will
+      # accept as a valid interval.
+      @signatureFile = "#{@templateDir}/acceptable_intervals"
       # The log file
       @logFile = 'timesheets.log'
 

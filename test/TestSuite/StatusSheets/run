@@ -2,7 +2,7 @@
 
 function cleanup
 {
-  /bin/rm -rf statussheets.log acceptable_dates \
+  /bin/rm -rf statussheets.log \
               StatusSheets StatusSheetTemplates \
 	      sender.log receiver.log
   killall -9 tj3 2> /dev/null

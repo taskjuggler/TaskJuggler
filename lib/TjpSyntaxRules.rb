@@ -3843,7 +3843,7 @@ EOT
 
   def rule_statusSheet
     pattern(%w( !statusSheetHeader !statusSheetBody ), lambda {
-      [ @sheetAuthor, @sheetEnd ]
+      [ @sheetAuthor, @sheetStart, @sheetEnd ]
     })
     doc('statussheet', <<'EOT'
 A status sheet can be used to capture the status of various tasks outside of
@@ -3867,9 +3867,10 @@ EOT
   end
 
   def rule_statusSheetHeader
-    pattern(%w( _statussheet !resourceId !date ), lambda {
+    pattern(%w( _statussheet !resourceId !valIntervalOrDate ), lambda {
       @sheetAuthor = @val[1]
-      @sheetEnd = @val[2]
+      @sheetStart = @val[2].start
+      @sheetEnd = @val[2].end
     })
     arg(1, 'reporter', <<'EOT'
 The ID of a defined resource. This identifies the status reporter. Unless the

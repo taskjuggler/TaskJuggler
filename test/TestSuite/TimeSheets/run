@@ -2,7 +2,7 @@
 
 function cleanup
 {
-  /bin/rm -rf timesheets.log acceptable_intervals \
+  /bin/rm -rf timesheets.log \
               TimeSheets TimeSheetTemplates \
 	      sender.log receiver.log
   killall -9 tj3 2> /dev/null
