@@ -27,6 +27,7 @@ class TestScheduler < Test::Unit::TestCase
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
+      tj.warnTsDeltas = true
       tj.schedule
       checkMessages(tj, f)
     end

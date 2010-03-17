@@ -132,11 +132,12 @@ class TaskJuggler
         # A resource has requested a new Task to be created.
         warning('ts_res_new_task',
                 "#{resource.name} is requesting a new task:\n" +
-                "ID: #{@task}\n" +
-                "Name: #{@name}\n" +
-                "Work: #{slotsToDays(@work)}d  " +
-                (@remaining ? "Remaining: #{slotsToDays(@remaining)}d" :
-                              "End: #{@end.to_s}"))
+                "  ID: #{@task}\n" +
+                "  Name: #{@name}\n" +
+                "  Work: #{@timeSheet.slotsToDays(@work)}d  " +
+                (@remaining ?
+                 "Remaining: #{@timeSheet.slotsToDays(@remaining)}d" :
+                 "End: #{@end.to_s}"))
         return
       end
 

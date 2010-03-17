@@ -1,0 +1,20 @@
+project "test" 2009-11-30 +2m
+
+resource r1 "R1"
+
+task t1 "Task 1" {
+  effort 5d
+  allocate r1
+}
+
+timesheet r1 2009-11-30 +1w {
+# MARK: warning 12 ts_res_new_task
+  newtask t1 "T1" {
+    work 5d
+    remaining 0d
+    status yellow "Big problem" {
+      summary "Big problem"
+    }
+  }
+}
+
