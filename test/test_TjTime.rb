@@ -110,5 +110,20 @@ class TestTjTime < Test::Unit::TestCase
     end
   end
 
+  def test_nextDayOfWeek
+    probes = [
+      [ '2010-03-17', 0, '2010-03-21' ],
+      [ '2010-03-17', 1, '2010-03-22' ],
+      [ '2010-03-17', 2, '2010-03-23' ],
+      [ '2010-03-17', 3, '2010-03-24' ],
+      [ '2010-03-17', 4, '2010-03-18' ],
+      [ '2010-03-17', 5, '2010-03-19' ],
+      [ '2010-03-17', 6, '2010-03-20' ],
+    ]
+    probes.each do |p|
+      assert_equal(TaskJuggler::TjTime.new(p[2]),
+                   TaskJuggler::TjTime.new(p[0]).nextDayOfWeek(p[1]))
+    end
+  end
 end
 
