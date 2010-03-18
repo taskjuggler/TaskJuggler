@@ -19,8 +19,18 @@ class TaskJuggler
     attr_reader :resource, :responsibilities
 
     def initialize(resource)
+      # The Resource record of the manager
       @resource = resource
+      # A list of Task objects with their JournalEntry records. Stored as
+      # Array of ManagerResponsibilities objects.
       @responsibilities = []
+    end
+
+    def sort!(taskList)
+      @responsibilities.sort! do |r1, r2|
+        taskList.itemIndex(r1.task) <=> taskList.itemIndex(r2.task)
+      end
+      @responsibilities.each { |r| r.sort!(taskList) }
     end
 
   end
@@ -32,6 +42,12 @@ class TaskJuggler
     def initialize(task, journalEntries)
       @task = task
       @journalEntries = journalEntries.dup
+    end
+
+    def sort!(taskList)
+      @journalEntries.sort! do |e1, e2|
+        taskList.itemIndex(e1.property) <=> taskList.itemIndex(e2.property)
+      end
     end
 
   end
@@ -79,6 +95,7 @@ class TaskJuggler
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
                                 @report.get('rollupTask'))
+      taskList.sort!
 
       resourceList.each do |resource|
         # Status sheets only make sense for leaf resources.
@@ -115,17 +132,13 @@ class TaskJuggler
 
           manager.responsibilities << ManagerResponsibilities.new(task, entries)
         end
+        # Sort the responsibilities list according to the original taskList.
+        manager.sort!(taskList)
       end
     end
 
     # Generate a time sheet in TJP syntax format.
     def to_tjp
-
-      # Prepare the task list.
-      @taskList = PropertyList.new(@project.tasks)
-      @taskList.setSorting(a('sortTasks'))
-      @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'))
-      @taskList.sort!
 
       # This String will hold the result.
       @file = ''

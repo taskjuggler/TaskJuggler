@@ -3001,27 +3001,8 @@ used.
 EOT
        )
 
-    pattern(%w( _sortresources !sortCriteria ), lambda {
-      @property.set('sortResources', @val[1])
-    })
-    doc('sortresources', <<'EOT'
-Determines how the resources are sorted in the report. Multiple criteria can be
-specified as a comma separated list. If one criteria is not sufficient to sort
-a group of resources, the next criteria will be used to sort the resources in
-this group.
-EOT
-       )
-
-    pattern(%w( _sorttasks !sortCriteria ), lambda {
-      @property.set('sortTasks', @val[1])
-    })
-    doc('sorttasks', <<'EOT'
-Determines how the tasks are sorted in the report. Multiple criteria can be
-specified as comma separated list. If one criteria is not sufficient to sort a
-group of tasks, the next criteria will be used to sort the tasks within
-this group.
-EOT
-       )
+    pattern(%w( !sortResources ))
+    pattern(%w( !sortTasks ))
 
     pattern(%w( !reportStart ))
 
@@ -3752,6 +3733,32 @@ EOT
          )
   end
 
+  def rule_sortResources
+    pattern(%w( _sortresources !sortCriteria ), lambda {
+      @property.set('sortResources', @val[1])
+    })
+    doc('sortresources', <<'EOT'
+Determines how the resources are sorted in the report. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of resources, the next criteria will be used to sort the resources in
+this group.
+EOT
+       )
+  end
+
+  def rule_sortTasks
+    pattern(%w( _sorttasks !sortCriteria ), lambda {
+      @property.set('sortTasks', @val[1])
+    })
+    doc('sorttasks', <<'EOT'
+Determines how the tasks are sorted in the report. Multiple criteria can be
+specified as comma separated list. If one criteria is not sufficient to sort a
+group of tasks, the next criteria will be used to sort the tasks within
+this group.
+EOT
+       )
+  end
+
   def rule_sortTree
     pattern(%w( $ID ), lambda {
       if @val[0] != 'tree'
@@ -3798,9 +3805,12 @@ EOT
     repeatable
 
     pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
+    pattern(%w( !sortResources ))
+    pattern(%w( !sortTasks ))
   end
 
   def rule_ssReportBody

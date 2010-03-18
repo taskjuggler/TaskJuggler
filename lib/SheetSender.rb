@@ -20,7 +20,7 @@ class TaskJuggler
   # A base class for sheet senders.
   class SheetSender < SheetHandlerBase
 
-    attr_accessor :force
+    attr_accessor :force, :intervalDuration
 
     def initialize(appName, type)
       super(appName)
@@ -42,7 +42,10 @@ class TaskJuggler
       @signatureFilter = nil
       @introText = nil
 
+      # The end date of the reported interval.
       @date = Time.new.strftime('%Y-%m-%d')
+      # Determines the length of the reported interval.
+      @intervalDuration = '1w'
       # We need this to determine if we already sent out a report.
       @timeStamp = Time.new
     end
@@ -150,7 +153,8 @@ EOF
         reportDef = <<"EOT"
 #{@sheetType}sheetreport #{reportId} \"#{templateFile}\" {
   hideresource ~(plan.id = \"#{res}\")
-  period %{#{@date} - 1w} +1w
+  period %{#{@date} - #{@intervalDuration}} +#{@intervalDuration}
+  sorttasks id.up
 }
 EOT
         generateReport(reportId, reportDef)

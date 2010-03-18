@@ -27,6 +27,7 @@ class TaskJuggler
       super
       @optsSummaryWidth = 22
       @force = false
+      @intervalDuration = nil
 
       # The default report period end is next Monday 0:00.
       @date = TjTime.now.nextDayOfWeek(1).to_s('%Y-%m-%d')
@@ -62,6 +63,7 @@ EOT
       ts.workingDir = @workingDir if @workingDir
       ts.dryRun = @dryRun
       ts.force = @force
+      ts.intervalDuration = @intervalDuration if @intervalDuration
       ts.date = @date if @date
 
       ts.sendTemplates(@resourceList)

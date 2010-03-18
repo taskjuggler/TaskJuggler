@@ -162,6 +162,11 @@ class TaskJuggler
       index
     end
 
+    # Return the Array index of _item_ or nil.
+    def itemIndex(item)
+      @items.index(item)
+    end
+
     # This function sets the index attribute of all the properties in the list.
     # The index starts with 0 and increases for each property.
     def index
@@ -225,8 +230,13 @@ class TaskJuggler
             # If the scenario index is negative we have a non-scenario-specific
             # attribute.
             if @scenarioIdx[i] < 0
-              aVal = a.get(@sortingCriteria[i])
-              bVal = b.get(@sortingCriteria[i])
+              if @sortingCriteria[i] == 'id'
+                aVal = a.fullId
+                bVal = b.fullId
+              else
+                aVal = a.get(@sortingCriteria[i])
+                bVal = b.get(@sortingCriteria[i])
+              end
             else
               aVal = a[@sortingCriteria[i], @scenarioIdx[i]]
               bVal = b[@sortingCriteria[i], @scenarioIdx[i]]

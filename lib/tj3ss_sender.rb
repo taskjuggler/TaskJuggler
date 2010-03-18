@@ -27,6 +27,7 @@ class TaskJuggler
       super
       @optsSummaryWidth = 25
       @force = false
+      @intervalDuration = nil
 
       @hideResource = nil
       # The default report period end is next Wednesday 0:00.
@@ -67,6 +68,7 @@ EOT
       ts.workingDir = @workingDir if @workingDir
       ts.dryRun = @dryRun
       ts.force = @force
+      ts.intervalDuration = @intervalDuration if @intervalDuration
       ts.date = @date if @date
       ts.hideResource = @hideResource if @hideResource
 
