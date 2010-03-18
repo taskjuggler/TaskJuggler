@@ -29,8 +29,8 @@ class TaskJuggler
       # The default report period end is next Monday 0:00.
       @date = TjTime.now.nextDayOfWeek(1).to_s('%Y-%m-%d')
       @resourceList = []
-      @sheetReceipients = []
-      @digestReceipients = []
+      @sheetRecipients = []
+      @digestRecipients = []
     end
 
     def processArguments(argv)
@@ -48,16 +48,16 @@ EOT
         @opts.on('-t', '--to <EMAIL>', String,
                  format('Send all individual reports and a summary report ' +
                         'to this email address')) do |arg|
-          @sheetReceipients << arg
-          @digestReceipients << arg
+          @sheetRecipients << arg
+          @digestRecipients << arg
         end
         @opts.on('--sheet <EMAIL>', String,
                  format('Send all reports to this email address')) do |arg|
-          @sheetReceipients << arg
+          @sheetRecipients << arg
         end
         @opts.on('--digest <EMAIL>', String,
                  format('Send a summary report to this email address')) do |arg|
-          @digestReceipients << arg
+          @digestRecipients << arg
         end
         optsEndDate
       end
@@ -72,8 +72,8 @@ EOT
       ts.workingDir = @workingDir if @workingDir
       ts.dryRun = @dryRun
       ts.date = @date if @date
-      ts.sheetReceipients += @sheetReceipients
-      ts.digestReceipients += @digestReceipients
+      ts.sheetRecipients += @sheetRecipients
+      ts.digestRecipients += @digestRecipients
 
       ts.sendSummary(@resourceList)
     end

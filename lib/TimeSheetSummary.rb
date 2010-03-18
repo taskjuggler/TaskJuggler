@@ -21,7 +21,7 @@ class TaskJuggler
   # process.
   class TimeSheetSummary < SheetReceiver
 
-    attr_accessor :date, :sheetReceipients, :digestReceipients
+    attr_accessor :date, :sheetRecipients, :digestRecipients
 
     def initialize
       super('tj3ts_summary', 'summary')
@@ -37,9 +37,9 @@ class TaskJuggler
       @logFile = 'timesheets.log'
       # A list of email addresses to send the individual sheets. The sender
       # will be the sheet submitter.
-      @sheetReceipients = []
+      @sheetRecipients = []
       # A list of email addresses to send the summary to
-      @digestReceipients = []
+      @digestRecipients = []
     end
 
     def sendSummary(resourceIds)
@@ -62,7 +62,7 @@ class TaskJuggler
             summary += sheet
             info("Adding report from #{resourceName} to summary")
 
-            @sheetReceipients.each do |to|
+            @sheetRecipients.each do |to|
               sendEmail(to, "Weekly report #{@date}", sheet, nil, resourceEmail)
             end
           else
@@ -74,7 +74,7 @@ class TaskJuggler
         end
       end
 
-      @digestReceipients.each do |to|
+      @digestRecipients.each do |to|
         sendEmail(to, "Weekly OSRC reports #{@date}", summary)
       end
     end
