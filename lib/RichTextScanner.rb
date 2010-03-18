@@ -71,6 +71,8 @@ class TaskJuggler
         return nextTokenFuncArg
       elsif @mode == :href
         return nextTokenHRef
+      elsif @mode == :ref
+        return nextTokenRef
       end
       if @beginOfLine && @mode == :wiki
         if (res = nextTokenWikiBOL)
@@ -159,12 +161,36 @@ class TaskJuggler
       token
     end
 
+    def nextTokenRef
+      c = nextChar
+      return [ '.', '<END' ] if c.nil?
+
+      return [ 'LITERAL', '|' ] if c == '|'
+
+      if c == ']' && peek == ']'
+        nextChar
+        @mode = :wiki
+        return [ 'REFEND', ']]' ]
+      end
+
+      token = c
+      while (c = nextChar)
+        break if c.nil?
+        if c == '|' || (c == ']' && peek == ']')
+          returnChar
+          break
+        end
+        token << c
+      end
+      [ 'WORD', token ]
+    end
+
     def nextTokenHRef
       token = [ '.', '<END>' ]
       while (c = nextChar)
         if c.nil?
           # We've reached the end of the text.
-          return [ '.', '<END>' ]
+          return token
         elsif c == ' ' || c == "\t" || c == "\n"
           # Sequences of tabs, spaces and newlines are treated as token
           # boundaries, but otherwise they are ignored.
@@ -313,6 +339,7 @@ class TaskJuggler
           @mode = :href
           [ 'HREF' , '[' ]
         else
+          @mode = :ref
           [ 'REF', '[[' ]
         end
       elsif c == ']' && peek == ']'
@@ -414,13 +441,13 @@ class TaskJuggler
       while (c = nextChar) && !" \n\t".include?(c)
         case @mode
         when :wiki
-          # Or at least to ' characters in a row.
+          # Or at least two ' characters in a row.
           break if c == "'" && peek == "'"
-          # Or a -, ] or <
+          # Or a ] or <
           break if ']<'.include?(c)
         when :href
           # Look for - of the end mark -> end ']'
-          break if c == '-' || c == ']' || c == '<'
+          break if '-]<'.include?(c)
         else
           # Make sure we find the </nowiki> tag even within a word.
           break if c == '<'

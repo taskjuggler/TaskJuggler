@@ -353,7 +353,7 @@ EOT
     })
     doc('overtime.booking', <<'EOT'
 This attribute enables bookings during off-hours and vacations. It implicitly
-sets the [[sloppy.booking sloppy]] attribute accordingly.
+sets the [[sloppy.booking|sloppy]] attribute accordingly.
 EOT
        )
     arg(1, 'value', <<'EOT'
@@ -375,7 +375,7 @@ EOT
     doc('sloppy.booking', <<'EOT'
 Controls how strict TaskJuggler checks booking intervals for conflicts with
 working periods and vacations. This attribute only affects the check for
-conflicts. No assignments will be made unless the [[overtime.booking
+conflicts. No assignments will be made unless the [[overtime.booking|
 overtime]] attribute is set accordingly.
 EOT
        )
@@ -551,7 +551,7 @@ provided for a column, the first matching one is taken for each cell.
 EOT
         )
     arg(1, 'text',
-        'Alterntive cell text specified as [[Rich_Text_Attributes Rich Text]]')
+        'Alterntive cell text specified as [[Rich_Text_Attributes|Rich Text]]')
 
     pattern(%w( _cellcolor !logicalExpression !color ), lambda {
       @column.cellColor.addPattern(
@@ -594,8 +594,8 @@ EOT
       @column.end = @val[1].end
     })
     doc('period.column', <<'EOT'
-This property is a shortcut for setting the [[start.column start]] and
-[[end.column end]] property at the same time.
+This property is a shortcut for setting the [[start.column|start]] and
+[[end.column|end]] property at the same time.
 EOT
        )
 
@@ -641,7 +641,7 @@ column, the first matching one is taken for each cell.
 EOT
        )
     arg(2, 'text', <<'EOT'
-The content of the tooltip. The text is interpreted as [[Rich_Text_Attributes
+The content of the tooltip. The text is interpreted as [[Rich_Text_Attributes|
 Rich Text]].
 EOT
        )
@@ -726,7 +726,7 @@ can be several paragraphs long.
 EOT
        )
     arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+The text will be interpreted as [[Rich_Text_Attributes|Rich Text]]. Only a
 subset of the markup is supported for this attribute. You can use word
 formatting, paragraphs, hyperlinks, lists, section and subsection
 headers.
@@ -1155,7 +1155,7 @@ EOT
        )
     arg(1, 'text', <<'EOT'
 The text used for the headline. It is interpreted as
-[[Rich_Text_Attributes Rich Text]].
+[[Rich_Text_Attributes|Rich Text]].
 EOT
        )
   end
@@ -1442,7 +1442,7 @@ EOT
     })
     arg(2, 'headline', <<'EOT'
 The headline of the journal entry. It will be interpreted as
-[[Rich_Text_Attributes Rich Text]].
+[[Rich_Text_Attributes|Rich Text]].
 EOT
        )
   end
@@ -1955,7 +1955,7 @@ EOT
       operation
     })
     arg(0, 'operand', <<'EOT'
-An operand can consist of a date, a text string, a [[functions function]], a
+An operand can consist of a date, a text string, a [[functions|function]], a
 property attribute or a numerical value. It can also be the name of a declared
 flag. Use the scenario.attribute notation to use an attribute of the currently
 evaluated property. The scenario ID always has to be specified, also for
@@ -2856,7 +2856,7 @@ EOT
     })
     doc('caption', <<'EOT'
 The caption will be embedded in the footer of the table or data segment. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     arg(1, 'text', 'The caption text.')
@@ -2867,7 +2867,7 @@ EOT
     })
     doc('center', <<'EOT'
 This attribute defines the center section of the [[textreport]]. The text will
-be interpreted as [[Rich_Text_Attributes Rich Text]].
+be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     arg(1, 'text', 'The text')
@@ -2892,7 +2892,7 @@ EOT
     })
     doc('epilog', <<'EOT'
 Define a text section that is printed right after the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     also(%w( footer header prolog ))
@@ -2909,7 +2909,7 @@ EOT
     })
     doc('footer', <<'EOT'
 Define a text section that is put at the bottom of the report. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     also(%w( epilog header prolog ))
@@ -2921,7 +2921,7 @@ EOT
     })
     doc('header', <<'EOT'
 Define a text section that is put at the top of the report. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     also(%w( epilog footer prolog ))
@@ -2936,7 +2936,7 @@ EOT
     })
     doc('left', <<'EOT'
 This attribute defines the left margin section of the [[textreport]]. The text
-will be interpreted as [[Rich_Text_Attributes Rich Text]]. The margin will not
+will be interpreted as [[Rich_Text_Attributes|Rich Text]]. The margin will not
 span the [[header]] or [[footer]] sections.
 EOT
        )
@@ -2956,7 +2956,7 @@ EOT
     })
     doc('prolog', <<'EOT'
 Define a text section that is printed right before the actual report data. The
-text will be interpreted as [[Rich_Text_Attributes Rich Text]].
+text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     also(%w( epilog footer header ))
@@ -2968,7 +2968,7 @@ EOT
     })
     doc('right', <<'EOT'
 This attribute defines the right margin section of the [[textreport]]. The text
-will be interpreted as [[Rich_Text_Attributes Rich Text]]. The margin will not
+will be interpreted as [[Rich_Text_Attributes|Rich Text]]. The margin will not
 span the [[header]] or [[footer]] sections.
 EOT
        )
@@ -3393,7 +3393,7 @@ EOT
 
     pattern(%w( _shift !shiftAssignments ))
     doc('shift.resource', <<'EOT'
-This keyword has been deprecated. Please use [[shifts.resource shifts
+This keyword has been deprecated. Please use [[shifts.resource|shifts
 (resource)]] instead.
 EOT
        )
@@ -3962,7 +3962,7 @@ or less.
 EOT
        )
     arg(1, 'text', <<'EOT'
-The text will be interpreted as [[Rich_Text_Attributes Rich Text]]. Only a
+The text will be interpreted as [[Rich_Text_Attributes|Rich Text]]. Only a
 small subset of the markup is supported for this attribute. You can use word
 formatting, hyperlinks and paragraphs.
 EOT
@@ -4845,20 +4845,20 @@ The work is booked for the scenario specified by [[trackingscenario]].
 The intended use for time sheets is to have all resources report a time sheet
 every day, week or month. All time sheets can be added to the project plan.
 The status information is always used to determin the current status of the
-project. The [[work]], [[remaining]] and [[end.timesheet end]] attributes are
-ignored if there are also [[booking bookings]] for the resource in the time
+project. The [[work]], [[remaining]] and [[end.timesheet|end]] attributes are
+ignored if there are also [[booking|bookings]] for the resource in the time
 sheet period. The non-ignored attributes of the time sheets
 will be converted into [[booking]] statements internally. These bookings can
-then be [[export exported]] into a file which can then be added to the project
+then be [[export|exported]] into a file which can then be added to the project
 again. This way, you can use time sheets to incrementally record progress of
 your project. There is a possibility that time sheets conflict with other data
 in the plan. In case TaskJuggler cannot automatically resolve them, these
 conflicts have to be manually resolved by either changing the plan or the time
 sheet.
 
-The status messages are interpreted as [[journalentry journal entries]]. The
+The status messages are interpreted as [[journalentry|journal entries]]. The
 alert level will be evaluated and the current state of the project can be put
-into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid
+into a dashboard using the ''''alert'''' and ''''alertmessage'''' [[columnid|
 columns]].
 
 Currently, the provided effort values and dates are not yet used to
@@ -4889,7 +4889,7 @@ EOT
     doc('shift.timesheet', <<'EOT'
 Specifies an alternative [[shift]] for the time sheet period. This shift will
 override any existing working hour definitions for the resource. It will not
-override already declared [[vacation vacations]] though.
+override already declared [[vacation|vacations]] though.
 
 The primary use of this feature is to let the resources report different total
 work time for the report period.
@@ -5098,7 +5098,7 @@ EOT
     })
     doc('priority.timesheet', <<'EOT'
 The priority is a value between 1 and 1000. It is used to determine the
-sequence of task when converting [[work]] to [[booking bookings]]. Tasks that
+sequence of task when converting [[work]] to [[booking|bookings]]. Tasks that
 need to finish earlier in the period should have a high priority, tasks that
 end later in the period should have a low priority. For tasks that don't get
 finished in the reported period the priority should be set to 1.
@@ -5110,14 +5110,14 @@ EOT
     })
     doc('remaining', <<'EOT'
 The remaining effort for the task. This value is ignored if there are
-[[booking bookings]] for the resource that overlap with the time sheet period.
+[[booking|bookings]] for the resource that overlap with the time sheet period.
 If there are no bookings, the value is compared with the [[effort]]
 specification of the task. If there a mismatch between the accumulated effort
 specified with bookings, [[work]] and [[remaining]] on one side and the
 specified [[effort]] on the other, a warning is generated.
 
 This attribute can only be used with tasks that are effort based. Duration
-based tasks need to have an [[end.timesheet end]] attribute.
+based tasks need to have an [[end.timesheet|end]] attribute.
 EOT
        )
     example('TimeSheet1', '6')
@@ -5129,7 +5129,7 @@ EOT
     })
     doc('work', <<'EOT'
 The amount of time that the resource has spend with the task during the
-reported period. This value is ignored when there are [[booking bookings]] for
+reported period. This value is ignored when there are [[booking|bookings]] for
 the resource overlapping with the time sheet period. If there are no bookings,
 TaskJuggler will try to convert the work specification into bookings
 internally before the actual scheduling is started.

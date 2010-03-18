@@ -336,7 +336,7 @@ EOT
   def test_ref
     inp = <<'EOT'
 This is a reference [[item]].
-For more info see [[manual the user manual]].
+For more info see [[manual|the user manual]].
 EOT
 
     # Check tagged output.
@@ -945,7 +945,7 @@ EOT
   def test_hline_and_link
     inp = <<EOT
 ----
-[[foo bar]]
+[[foo|bar]]
 EOT
 
     # Check tagged output.

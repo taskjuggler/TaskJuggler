@@ -17,6 +17,18 @@ require 'TextFormatter'
 
 class TaskJuggler
 
+  class RichTextImage
+
+    attr_reader :fileName
+    attr_accessor :altText
+
+    def initialize(fileName)
+      @fileName = fileName
+      @altText = nil
+    end
+
+  end
+
   # The RichTextElement class models the nodes of the intermediate
   # representation that the RichTextParser generates. Each node can reference an
   # Array of other RichTextElement nodes, building a tree that represents the
@@ -180,6 +192,8 @@ class TaskJuggler
         return textBlockFormat(@richText.indent + @richText.listIndent,
                                "#{@data[0]}.#{@data[1]}.#{@data[2]} ",
                                children_to_s, @richText.lineWidth) + "\n"
+      when :img
+        pre = @data.altText
       when :ref
       when :href
       when :blockfunc
@@ -262,6 +276,8 @@ class TaskJuggler
       when :numberitem3
         pre = "<li>#{@data[0]}.#{@data[1]}.#{@data[2]} "
         post = "</li>\n"
+      when :img
+        pre = "<img file=\"#{@data.fileName}\"/>"
       when :ref
         pre = "<ref data=\"#{@data}\">"
         post = '</ref>'
@@ -365,6 +381,8 @@ class TaskJuggler
         XMLElement.new('ol')
       when :numberitem3
         XMLElement.new('li')
+      when :img
+        XMLElement.new('img', 'src' => @data.fileName, 'alt' => @data.altText)
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")
       when :href

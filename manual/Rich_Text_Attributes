@@ -80,7 +80,7 @@ form, ''''.html'''' is appended to the first word in the reference to
 create the URL.
 
  [[item]]
- [[item An item]]
+ [[item|An item]]
 
 In some situations, it is desirable to not interpret certain markup
 sequences and reproduce the text verbatim. Such text must be enclosed

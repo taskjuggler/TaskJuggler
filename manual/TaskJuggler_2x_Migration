@@ -41,8 +41,8 @@ replaced with [[taskattributes]] and [[resourceattributes]].
 
 * Shifts and limits for allocations have been deprecated. The concept
 was bogus and not compatible with bookings. The functionality is
-now provided by [[shifts.task shifts]] and [[limits.task limits]] on the
-task level. Limits for a task can be [[resources.limit selectively
+now provided by [[shifts.task|shifts]] and [[limits.task|limits]] on the
+task level. Limits for a task can be [[resources.limit|selectively
 applied]] to certain resources.
 
 * Support for reading and writing XML files is no longer available.
@@ -52,7 +52,7 @@ it. There is nothing in the TJ3 design that would prevent this
 feature from being added again, but there are no plans for this right
 now.
 
-* The format for [[report reports]] has been changed considerably.
+* The format for [[report|reports]] has been changed considerably.
 The old format was not very flexible and had some design flaws.
 TaskJuggler III now supports report nesting and composition. A report
 definition can be used to generated multiple output [[formats]]. The

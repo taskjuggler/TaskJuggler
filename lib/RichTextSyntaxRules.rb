@@ -225,15 +225,22 @@ class TaskJuggler
       pattern(%w( !plainText ), lambda {
         @val[0]
       })
-      pattern(%w( $REF $WORD !space !plainText $REFEND !space ), lambda {
-        el = RichTextElement.new(@richTextI, :ref,
-                                 RichTextElement.new(@richTextI,
-                                                     :text, @val[3].empty? ?
-                                                     @val[1] :
-                                                     @val[3].join(' ')))
-        el.data = @val[1]
-        el.appendSpace = !@val[5].empty?
-        el
+      pattern(%w( $REF !refToken !moreRefToken $REFEND !space ), lambda {
+        if @val[1].include?(':')
+          protocol, locator = @val[1].split(':')
+        else
+          protocol = nil
+        end
+        if protocol == 'File'
+        else
+          el = RichTextElement.new(@richTextI, :ref,
+                                   RichTextElement.new(@richTextI,
+                                                       :text, @val[2].empty? ?
+                                                       @val[1] : @val[2]))
+          el.data = @val[1]
+          el.appendSpace = !@val[4].empty?
+          el
+        end
       })
       pattern(%w( $HREF !wordWithQueries !space !plainTextWithQueries
                   $HREFEND !space ), lambda {
@@ -242,6 +249,20 @@ class TaskJuggler
         el.data = RichTextElement.new(@richTextI, :richtext, @val[1])
         el.appendSpace = !@val[5].empty?
         el
+      })
+    end
+
+    def rule_moreRefToken
+      repeatable
+      optional
+      pattern(%w( _| !refToken ), lambda {
+        @val[1]
+      })
+    end
+
+    def rule_refToken
+      pattern(%w( $WORD ), lambda {
+        @val[0]
       })
     end
 

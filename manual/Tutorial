@@ -54,7 +54,7 @@ Because each culture has its own way of specifying dates and numbers,
 the format for these are configurable.  Use the [[timeformat]]
 attribute to specify the default format for dates. This format is used
 for reports, it does not affect the way you specify dates in the
-project files. Here you always need to use the [[date ISO standardized
+project files. Here you always need to use the [[date|ISO standardized
 notation]].
 
 <[example file="tutorial" tag="formats"]>
@@ -124,7 +124,7 @@ does not do any resource assignments to tasks.
 Use the [[vacation]] attribute to define a global vacation. Global
 vacations must have a name and a date or date range. This is slightly
 different from vacations of individual resources. They are defined
-with the [[vacation.resource vacation attribute for resources]] where
+with the [[vacation.resource|vacation attribute for resources]] where
 the name is optional. The vacation name is purely for documentation
 purposes.
 
@@ -163,7 +163,7 @@ We will see further down, how we can make use of these flags.
 The use of our resources will create costs. For a profit and loss
 analysis, we need to balance the costs against the customer payments.
 In order not to get lost with all the various amounts, we declare 3
-[[account accounts]] to credit the amounts to. We create one account
+[[account|accounts]] to credit the amounts to. We create one account
 for the development costs, one for the documentation costs, and one
 for the customer payments.
 
@@ -194,7 +194,7 @@ project.
 
 <[example file="tutorial" tag="resources"]>
 
-This snippet of the example shows the use of the [[resource
+This snippet of the example shows the use of the [[resource|
 resource property]]. Just like accounts, resources always have an ID
 and a Name. These IDs also need to be unique within their property
 class.  Names are strings and as such enclosed in double quotes. As
@@ -227,8 +227,8 @@ end date is not included in the interval. So Klaus Müller's vacation
 ends exactly at 0:00:00 on February 4th, 2002.
 
 Peter Murphy only works 6.4 hours a day. So we use the
-[[limits.resource limits]] attribute to limit his daily working hours.
-We could also define exact working hours using the [[shift shift
+[[limits.resource|limits]] attribute to limit his daily working hours.
+We could also define exact working hours using the [[shift|shift
 property]], but we ignore this for now.
 
 Note that we have attached the flag team after the declaration of the
@@ -243,7 +243,7 @@ Let's focus on the real work now. The project should solve a problem:
 the creation of an accounting software. Because the job is quite
 complicated, we break it down into several subtasks. We need to do a
 specification, develop the software, test the software, and write a
-manual. Using the [[task task property]], thiis would look as follows:
+manual. Using the [[task|task property]], thiis would look as follows:
 
 <[example file="tutorial" tag="task1"]>
 
@@ -354,7 +354,7 @@ the AcSo scope that contains the spec tasks. For a change, we
 
 <[example file="tutorial" tag="gui"]>
 
-TaskJuggler can schedule your project for two different [[scenario
+TaskJuggler can schedule your project for two different [[scenario|
 scenarios]]. We have called the first scenario ''''plan'''' scenario
 and the second ''''delayed'''' scenario. Many of the reports allow you
 to put the values of both scenarios side by side to each other, so you
@@ -473,7 +473,7 @@ more generic report, you can use the [[textreport]].
 
 A ''''textreport'''' does not directly present the data in form of a
 task or resource list. It just consists of text building blocks that
-are described by [[Rich_Text_Attributes Rich Text]]. There can be a
+are described by [[Rich_Text_Attributes|Rich Text]]. There can be a
 building block at the top and bottom, as well as three columns in
 the center. The column are called ''''left'''', ''''center'''' and
 ''''right''''.
@@ -557,7 +557,7 @@ The ''''taskreport'''' can contain more than just the table. It is
 not as flexible as the ''''textreport'''', but still has support for
 a header and footer. Let's look at the header first. We not only
 like to put a headline here, but several paragraphs of text. The
-[[header]] attribute is a [[Rich_Text_Attributes Rich Text]]
+[[header]] attribute is a [[Rich_Text_Attributes|Rich Text]]
 attribute just like [[center]]. We could enclose it in single or
 double quotes again. But for Strings that span multiple lines and
 potentially include single or double quotes as well, scissor-marks or
