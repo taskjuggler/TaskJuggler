@@ -362,6 +362,35 @@ EOT
     assert_equal(ref, out)
   end
 
+  def test_img
+    inp = <<'EOT'
+This is an [[File:image.jpg]].
+For more info see [[File:icon.png|alt=this image]].
+EOT
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = <<'EOT'
+<div>[This] [is] [an] <img file="image.jpg"/>[.] [For] [more] [info] [see] <img file="icon.png"/>[.]</div>
+EOT
+    assert_equal(ref, out)
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    out = rt.to_s + "\n"
+    ref = <<'EOT'
+This is an . For more info see this image.
+EOT
+    assert_equal(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = <<'EOT'
+<div>This is an <img src="image.jpg"></img>. For more info see <img alt="this image" src="icon.png"></img>.</div>
+EOT
+    assert_equal(ref, out)
+  end
+
   def test_href
     inp = <<'EOT'
 This is a reference [http://www.taskjuggler.org].

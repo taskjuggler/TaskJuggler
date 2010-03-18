@@ -226,12 +226,24 @@ class TaskJuggler
         @val[0]
       })
       pattern(%w( $REF !refToken !moreRefToken $REFEND !space ), lambda {
-        if @val[1].include?(':')
+        if @val[1].index(':')
           protocol, locator = @val[1].split(':')
         else
           protocol = nil
         end
+        el = nil
         if protocol == 'File'
+          el = RichTextElement.new(@richTextI, :img)
+          el.data = img = RichTextImage.new(locator)
+          @val[2].each do |token|
+            if token[0, 4] == 'alt='
+              img.altText = token[4..-1]
+            else
+              error('rt_bad_file_option',
+                    "Unknown option '#{token}' for file reference " +
+                    "#{@val[1]}.")
+            end
+          end
         else
           el = RichTextElement.new(@richTextI, :ref,
                                    RichTextElement.new(@richTextI,
@@ -239,8 +251,8 @@ class TaskJuggler
                                                        @val[1] : @val[2]))
           el.data = @val[1]
           el.appendSpace = !@val[4].empty?
-          el
         end
+        el
       })
       pattern(%w( $HREF !wordWithQueries !space !plainTextWithQueries
                   $HREFEND !space ), lambda {

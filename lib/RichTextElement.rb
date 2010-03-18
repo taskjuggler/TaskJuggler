@@ -52,8 +52,8 @@ class TaskJuggler
           @children = arg
         else
           unless arg.is_a?(RichTextElement) || arg.is_a?(String)
-            raise TjException.new,
-              "Element must be of type RichTextElement instead of #{arg.class}"
+            raise "Element must be of type RichTextElement instead of " +
+                  "#{arg.class}"
           end
           @children = [ arg ]
         end
@@ -193,7 +193,7 @@ class TaskJuggler
                                "#{@data[0]}.#{@data[1]}.#{@data[2]} ",
                                children_to_s, @richText.lineWidth) + "\n"
       when :img
-        pre = @data.altText
+        pre = @data.altText if @data.altText
       when :ref
       when :href
       when :blockfunc
@@ -382,7 +382,9 @@ class TaskJuggler
       when :numberitem3
         XMLElement.new('li')
       when :img
-        XMLElement.new('img', 'src' => @data.fileName, 'alt' => @data.altText)
+        el = XMLElement.new('img', 'src' => @data.fileName)
+        el['alt'] = @data.altText if @data.altText
+        el
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")
       when :href
