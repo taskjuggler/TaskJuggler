@@ -48,9 +48,9 @@ class TaskJuggler
         # The TimeSheetRecords associated with this entry.
         tsRecord = entry.timeSheetRecord
         if entry.property.is_a?(Task)
-          alertName = "<nowiki>" +
-                      "[#{@project['alertLevels'][entry.alertLevel][1]}]" +
-                      "</nowiki>"
+          levelRecord = @project['alertLevels'][entry.alertLevel]
+          alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
+                      "alt=[#{levelRecord[1]}]|text-bottom]]"
           rText += "== #{alertName} <nowiki>#{entry.headline}</nowiki> ==\n" +
                    "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
           if entry.author

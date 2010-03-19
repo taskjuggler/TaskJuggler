@@ -385,7 +385,9 @@ class TaskJuggler
       when :img
         el = XMLElement.new('img', 'src' => @data.fileName)
         el['alt'] = @data.altText if @data.altText
-        el['style'] = "vertical-align:#{@data.verticalAlign}; "
+        if @data.verticalAlign
+          el['style'] = "vertical-align:#{@data.verticalAlign}; "
+        end
         el
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")

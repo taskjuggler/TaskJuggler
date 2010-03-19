@@ -62,10 +62,9 @@ class TaskJuggler
       end
       (numberOfLevels - 1).downto(0) do |level|
         levelList = listByLevel[level]
-        alertName = "[[File:icons/flag-" +
-                    "#{@project['alertLevels'][level][0]}.png|" +
-                    "alt=[#{@project['alertLevels'][level][1]}]|" +
-                    "text-bottom]]"
+        levelRecord = @project['alertLevels'][level]
+        alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
+                    "alt=[#{levelRecord[1]}]|text-bottom]]"
         levelList.each do |entry|
           # The TimeSheetRecords associated with this entry.
           tsRecord = entry.timeSheetRecord
