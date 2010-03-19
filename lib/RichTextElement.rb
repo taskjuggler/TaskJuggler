@@ -20,11 +20,12 @@ class TaskJuggler
   class RichTextImage
 
     attr_reader :fileName
-    attr_accessor :altText
+    attr_accessor :altText, :verticalAlign
 
     def initialize(fileName)
       @fileName = fileName
       @altText = nil
+      @verticalAlign = nil
     end
 
   end
@@ -384,6 +385,7 @@ class TaskJuggler
       when :img
         el = XMLElement.new('img', 'src' => @data.fileName)
         el['alt'] = @data.altText if @data.altText
+        el['style'] = "vertical-align:#{@data.verticalAlign}; "
         el
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")

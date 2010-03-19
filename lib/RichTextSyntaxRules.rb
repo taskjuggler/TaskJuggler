@@ -238,6 +238,9 @@ class TaskJuggler
           @val[2].each do |token|
             if token[0, 4] == 'alt='
               img.altText = token[4..-1]
+            elsif %w( top middle bottom baseline sub super text-top text-bottom).
+                  include?(token)
+              img.verticalAlign = token
             else
               error('rt_bad_file_option',
                     "Unknown option '#{token}' for file reference " +
