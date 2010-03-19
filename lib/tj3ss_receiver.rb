@@ -10,7 +10,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'Tj3AppBase'
+require 'Tj3SheetAppBase'
 require 'StatusSheetReceiver'
 
 # Name of the application
@@ -18,7 +18,7 @@ AppConfig.appName = 'tj3ss_receiver'
 
 class TaskJuggler
 
-  class Tj3SsReceiver < Tj3AppBase
+  class Tj3SsReceiver < Tj3SheetAppBase
 
     def initialize
       super

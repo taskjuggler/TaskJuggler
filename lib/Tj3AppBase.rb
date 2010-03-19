@@ -10,9 +10,6 @@
 # published by the Free Software Foundation.
 #
 
-# This script is used to send out the time sheet templates to the employees.
-# It should be run from a cron job once a week.
-
 require 'rubygems'
 require 'optparse'
 require 'Tj3Config'
@@ -31,9 +28,7 @@ class TaskJuggler
       @optsSummaryIndent = 5
       # Show some progress information by default
       @silent = false
-      @dryRun = false
       @configFile = nil
-      @workingDir = nil
     end
 
     def processArguments(argv)
@@ -53,15 +48,6 @@ class TaskJuggler
       @opts.on('-c', '--config <FILE>', String,
                format('Use the specified YAML configuration file')) do |arg|
          @configFile = arg
-      end
-      @opts.on('-d', '--directory <DIR>', String,
-               format('Use the specified directory as working ' +
-                      'directory')) do |arg|
-        @workingDir = arg
-      end
-      @opts.on('--dryrun',
-               format("Don't send out any emails or do SCM commits")) do
-        @dryRun = true
       end
       @opts.on('--silent',
                format("Don't show program and progress information")) do
@@ -116,21 +102,6 @@ class TaskJuggler
     def format(str)
       indent = @optsSummaryWidth + @optsSummaryIndent + 1
       TextFormatter.new(79, indent).format(str)[indent..-1]
-    end
-
-    def optsEndDate
-      @opts.on('-e', '--enddate <DAY>', String,
-               format("The end date of the reporting period. Either as " +
-                      "YYYY-MM-DD or day of week. 0: Sunday, 1: Monday and " +
-                      "so on. The default value is #{@date}.")) do |arg|
-        ymdFilter = /([0-9]{4})-([0-9]{2})-([0-9]{2})/
-        if ymdFilter.match(arg)
-          @date = Time.mktime(*(ymdFilter.match(arg)[1..3]))
-        else
-          @date = TjTime.now.nextDayOfWeek(arg.to_i % 7)
-        end
-        @date = @date.strftime('%Y-%m-%d')
-      end
     end
 
   end

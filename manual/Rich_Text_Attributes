@@ -82,6 +82,16 @@ create the URL.
  [[item]]
  [[item|An item]]
 
+Images can be added with a similar syntax.
+
+ [[image.jpg]]
+ [[image.jpg|alt=An image]]
+
+This first version will be replaced with the file ''''image.jpg''''
+when the output format supports this. Otherwise a blank space will be
+inserted. The second version inserts the text ''''An image'''' if the
+output format does not support images.
+
 In some situations, it is desirable to not interpret certain markup
 sequences and reproduce the text verbatim. Such text must be enclosed
 in nowiki tags.

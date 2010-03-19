@@ -13,7 +13,7 @@
 # This script is used to send out the time sheet templates to the employees.
 # It should be run from a cron job once a week.
 
-require 'Tj3AppBase'
+require 'Tj3SheetAppBase'
 require 'TimeSheetSender'
 
 # Name of the application suite
@@ -21,7 +21,7 @@ AppConfig.appName = 'tj3ts_sender'
 
 class TaskJuggler
 
-  class Tj3TsSender < Tj3AppBase
+  class Tj3TsSender < Tj3SheetAppBase
 
     def initialize
       super
