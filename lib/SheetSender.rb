@@ -237,7 +237,7 @@ EOT
       out = ''
       err = ''
       begin
-        command = "tj3client --silent -g #{id} ."
+        command = "tj3client --silent report #{@projectId} #{id} ."
         status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
           # Send the report definition to the tj3client process via stdin.
           stdin.write(reportDef)

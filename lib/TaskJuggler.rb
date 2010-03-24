@@ -13,7 +13,6 @@
 require 'drb'
 require 'Project'
 require 'MessageHandler'
-require 'RemoteServiceManager'
 require 'Log'
 
 # The TaskJuggler class models the object that provides access to the
@@ -90,13 +89,30 @@ class TaskJuggler
     res
   end
 
-  def checkTimeSheet(fileName, fileContent)
+  def projectId
+    return nil if @project.nil?
+    @project['projectid']
+  end
+
+  def generateReport(reportId)
+    begin
+      Log.enter('generateReport', 'Generating report #{reportId} ...')
+      @project.generateReport(reportId)
+    rescue TjException
+      Log.exit('generateReport')
+      return false
+    end
+    Log.exit('generateReport')
+    true
+  end
+
+  def checkTimeSheet(fileName)
     begin
       Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
       # Make sure we don't use data from old time sheets or Journal entries.
       @project.timeSheets.clear
       @project['journal'] = Journal.new
-      return false unless (ts = parseFile(fileName, fileContent, 'timeSheet'))
+      return false unless (ts = parseFile(fileName, 'timeSheet'))
       return false unless @project.checkTimeSheets
       queryAttrs = { 'project' => @project,
                      'property' => ts.resource,
@@ -118,13 +134,14 @@ class TaskJuggler
       Log.exit('checkTimeSheet')
       return false
     end
+    Log.exit('checkTimeSheet')
     true
   end
 
-  def checkStatusSheet(fileName, fileContent)
+  def checkStatusSheet(fileName)
     begin
       Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
-      return false unless (ss = parseFile(fileName, fileContent, 'statusSheet'))
+      return false unless (ss = parseFile(fileName, 'statusSheet'))
       queryAttrs = { 'project' => @project,
                      'property' => ss[0],
                      'scopeProperty' => nil,
@@ -146,32 +163,22 @@ class TaskJuggler
       Log.exit('checkStatusSheet')
       return false
     end
+    Log.exit('checkStatusSheet')
     true
   end
 
-  def serveReports
-    $SAFE = 1
-    Log.enter('reportserver', 'Starting Server Mode ...')
-    Log.status("Report Server is now active!")
-    serviceManager = RemoteServiceManager.new(self, @project)
-    DRb.start_service('druby://localhost:8474', serviceManager)
-    DRb.thread.join
-    # We'll probably never get here. The DRb threads may call exit().
-    Log.exit('reportserver')
-  end
-
-  # Return the number of errors that had been reported during processing.
-  def errors
-    @project.messageHandler.errors
-  end
-
-  def parseFile(fileName, fileContent, rule)
-    @parser.open(fileContent, false, true)
+  def parseFile(fileName, rule)
+    @parser.open(fileName, false)
     @parser.setGlobalMacros
     return nil if (res = @parser.parse(rule)).nil?
     @parser.checkForEnd
     @parser.close
     res
+  end
+
+  # Return the number of errors that had been reported during processing.
+  def errors
+    @project.messageHandler.errors
   end
 
 end

@@ -17,6 +17,10 @@ or should be done for TaskJuggler III.
 
 == Other items for 3.0 release ==
 
+* Document new time sheet and status sheet process.
+
+* Document TaskJuggler daemon usage.
+
 * Add support for an optional account attribute to be
 used instead of the defined charge set.
 

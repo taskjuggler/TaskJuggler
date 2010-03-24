@@ -15,7 +15,7 @@ browser is all you need.
 
 = Copyright and License
 
-#{PROJECT_NAME[0..-5]} is (c) 2006, 2007, 2008 by #{USER_NAME} <cs (at) kde (dot) org>
+#{PROJECT_NAME[0..-5]} is (c) 2006, 2007, 2008, 2009, 2010 by #{USER_NAME} <cs (at) kde (dot) org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of {version 2 of the GNU General Public

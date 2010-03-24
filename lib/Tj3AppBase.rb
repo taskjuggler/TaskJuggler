@@ -29,6 +29,7 @@ class TaskJuggler
       # Show some progress information by default
       @silent = false
       @configFile = nil
+      @mandatoryArgs = ''
     end
 
     def processArguments(argv)
@@ -43,7 +44,8 @@ class TaskJuggler
                      "#{AppConfig.license}\n" +
                      "For more info about #{AppConfig.softwareName} see " +
                      "#{AppConfig.contact}\n\n" +
-                     "Usage: #{AppConfig.appName} [options]\n\n"
+                     "Usage: #{AppConfig.appName} [options] " +
+                     "#{@mandatoryArgs}\n\n"
       @opts.separator ""
       @opts.on('-c', '--config <FILE>', String,
                format('Use the specified YAML configuration file')) do |arg|
@@ -71,7 +73,7 @@ class TaskJuggler
       rescue OptionParser::ParseError => msg
         puts @opts.to_s + "\n"
         $stderr.puts msg
-        exit 0
+        exit 2
       end
 
       files
@@ -84,7 +86,7 @@ class TaskJuggler
         exit 1
       end
 
-      processArguments(ARGV)
+      args = processArguments(ARGV)
 
       unless @silent
         puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
@@ -95,12 +97,14 @@ class TaskJuggler
       end
 
       @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
+
+      args
     end
 
     private
 
-    def format(str)
-      indent = @optsSummaryWidth + @optsSummaryIndent + 1
+    def format(str, indent = nil)
+      indent = @optsSummaryWidth + @optsSummaryIndent + 1 unless indent
       TextFormatter.new(79, indent).format(str)[indent..-1]
     end
 

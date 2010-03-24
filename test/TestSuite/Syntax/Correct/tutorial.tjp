@@ -433,7 +433,7 @@ macro TaskTip [
 
 # *** EXAMPLE: overview_report1 +
 # *** EXAMPLE: overview_report2 +
-textreport "" {
+textreport frame "" {
 # *** EXAMPLE: overview_report1 -
   header -8<-
     == Accounting Software Project ==
@@ -443,7 +443,7 @@ textreport "" {
   ->8-
   footer "----"
 # *** EXAMPLE: overview_report1 +
-  textreport "Overview" {
+  textreport index "Overview" {
     formats html
     center '<[report id="overview"]>'
   }

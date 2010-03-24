@@ -20,7 +20,7 @@ class TaskJuggler
     def initialize(appName)
       super(appName, 'status')
 
-      @tj3clientOption = '-s'
+      @tj3clientOption = 'check-ss'
 
       # File name and directory settings.
       @sheetDir = 'StatusSheets'

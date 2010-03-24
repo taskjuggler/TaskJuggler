@@ -2,10 +2,11 @@
 
 function cleanup
 {
+  tj3client --silent terminate 2> /dev/null
+  killall -9 tj3d 2> /dev/null
   /bin/rm -rf timesheets.log \
               TimeSheets TimeSheetTemplates \
-	      sender.log receiver.log
-  killall -9 tj3 2> /dev/null
+	      sender.log receiver.log summary.log tj3d.log
 } 
 
 function error
@@ -23,9 +24,8 @@ function check
 }
 
 cleanup
-tj3 -s project.tjp &
-# Wait some time so tj3 can go into server mode.
-sleep 5 
+tj3d --silent
+tj3client --silent add project.tjp || error "add1"
 
 # Run a sender test.
 tj3ts_sender --dryrun -e 2002-03-01 > sender.log || error "sender"
@@ -38,11 +38,36 @@ tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || error "rec1"
 tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
 check "Report from " receiver.log 2
-check "\[Green\]" receiver.log 2
+check "\[Green\]" receiver.log 3
+
+# Update the project with the server to include the submitted time
+# sheets. This is only to test the time sheet data surpression.
+tj3client --silent add project.tjp TimeSheets/all.tji || error "add2"
+
+# Run the summary report
+tj3ts_summary --dryrun -e 2002-03-01 >> summary.log || error "summary"
+check "To: archive@bar.com" summary.log 2
+check "To: crew@bar.com" summary.log 1
+check "From: foo@bar.com" summary.log 2
+check "From: SBono@crappysoftware.com" summary.log 1
+check "Report from .* is missing" summary.log 10
+check "Weekly Report from" summary.log 2
+check "\[Green\]" summary.log 6
+
+tj3client --silent terminate
+sleep 2
+check "TaskJuggler daemon is listening" tj3d.log 1
+check "TaskJuggler daemon terminated" tj3d.log 1
+check "Project server is listening" tj3d.log 2
+check "Project server terminated" tj3d.log 2
+check "Report server is listening" tj3d.log 10
+check "Report server terminated" tj3d.log 10
+check "ERROR" tj3d.log 0
+check "WARN" tj3d.log 0
 
 check ERROR timesheets.log 0
 check WARN timesheets.log 1
-check INFO timesheets.log 29
+check INFO timesheets.log 39
 check "Your weekly report template" timesheets.log 6
 
 cleanup

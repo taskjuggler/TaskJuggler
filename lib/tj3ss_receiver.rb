@@ -46,10 +46,11 @@ EOT
       ts.dryRun = @dryRun
 
       ts.processEmail
+      0
     end
 
   end
 
 end
 
-TaskJuggler::Tj3SsReceiver.new.main()
+exit TaskJuggler::Tj3SsReceiver.new.main()

@@ -20,7 +20,7 @@ class TaskJuggler
     def initialize(appName)
       super(appName, 'time')
 
-      @tj3clientOption = '-t'
+      @tj3clientOption = 'check-ts'
 
       # File name and directory settings.
       @sheetDir = 'TimeSheets'

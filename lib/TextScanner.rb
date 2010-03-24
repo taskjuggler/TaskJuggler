@@ -56,15 +56,15 @@ class TaskJuggler
 
       def initialize(fileName)
         super()
-        @fileName = fileName
-        @file = File.new(fileName, 'r')
+        @fileName = fileName.dup.untaint
+        @file = fileName == '.' ? $stdin : File.new(@fileName, 'r')
         @bytes = 0
         Log << "Parsing file #{@fileName} ..."
         Log.startProgressMeter("Reading file #{fileName}")
       end
 
       def close
-        @file.close
+        @file.close unless @file == $stdin
       end
 
       def getc19

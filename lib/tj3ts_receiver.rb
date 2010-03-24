@@ -55,5 +55,5 @@ EOT
 
 end
 
-TaskJuggler::Tj3TsReceiver.new.main()
+exit TaskJuggler::Tj3TsReceiver.new.main()
 

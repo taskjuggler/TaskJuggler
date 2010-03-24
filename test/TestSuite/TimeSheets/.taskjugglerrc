@@ -1,6 +1,17 @@
-global:
+_global:
   smtpServer: foobar.com
-timesheets:
+  authKey: topsecret
+  _log:
+    logLevel: 4
+    outputLevel: 2
+_timesheets:
+  projectId: prj
   senderEmail: foo@bar.com
-  sender:
+  _sender:
     hideResource: '~isleaf()'
+  _summary:
+    sheetRecipients:
+      - archive@bar.com
+    digestRecipients:
+      - archive@bar.com
+      - crew@bar.com

@@ -76,11 +76,12 @@ EOT
       ts.digestRecipients += @digestRecipients
 
       ts.sendSummary(@resourceList)
+      0
     end
 
   end
 
 end
 
-TaskJuggler::Tj3TsSummary.new.main()
+exit TaskJuggler::Tj3TsSummary.new.main()
 

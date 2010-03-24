@@ -73,11 +73,12 @@ EOT
       ts.hideResource = @hideResource if @hideResource
 
       ts.sendTemplates(@resourceList)
+      0
     end
 
   end
 
 end
 
-TaskJuggler::Tj3SsSender.new.main()
+exit TaskJuggler::Tj3SsSender.new.main()
 

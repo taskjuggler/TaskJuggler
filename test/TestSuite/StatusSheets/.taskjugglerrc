@@ -1,7 +1,11 @@
-global:
+_global:
   smtpServer: foobar.com
   scmCommand: '/bin/true'
-statussheets:
+  authKey: topsecret
+  _log:
+    logLevel: 4
+    outputLevel: 2
+_statussheets:
   senderEmail: foo@bar.com
-  sender:
+  _sender:
     hideResource: '~(isleaf() & manager)'

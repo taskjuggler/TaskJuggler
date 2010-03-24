@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'TjException'
+require 'Message'
 require 'TjTime'
 require 'Booking'
 require 'PropertySet'
@@ -794,6 +796,7 @@ class TaskJuggler
     def error(id, text)
       message = Message.new(id, 'error', text)
       @messageHandler.send(message)
+      raise TjException
     end
 
   protected

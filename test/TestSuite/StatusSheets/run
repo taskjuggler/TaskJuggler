@@ -2,10 +2,11 @@
 
 function cleanup
 {
+  tj3client --silent terminate 2> /dev/null
+  killall -9 tj3d 2> /dev/null
   /bin/rm -rf statussheets.log \
               StatusSheets StatusSheetTemplates \
-	      sender.log receiver.log
-  killall -9 tj3 2> /dev/null
+	      sender.log receiver.log tj3d.log
 }
 
 function error
@@ -23,9 +24,8 @@ function check
 }
 
 cleanup
-tj3 -s project.tjp &
-# Wait some time so tj3 can go into server mode.
-sleep 5 
+tj3d --silent
+tj3client --silent add project.tjp
 
 # Run a sender test.
 tj3ss_sender --dryrun -e 2002-03-02 > sender.log || error "sender1"

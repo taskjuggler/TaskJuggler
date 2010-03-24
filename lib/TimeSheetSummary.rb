@@ -75,7 +75,7 @@ class TaskJuggler
       end
 
       @digestRecipients.each do |to|
-        sendEmail(to, "Weekly OSRC reports #{@date}", summary)
+        sendEmail(to, "Weekly staff reports #{@date}", summary)
       end
     end
 
@@ -86,7 +86,7 @@ class TaskJuggler
       warnings = nil
       begin
         # Save a copy of the sheet for debugging purposes.
-        command = "tj3client --silent -t #{sheetFile}"
+        command = "tj3client --silent check-ts #{@projectId} #{sheetFile}"
         status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
           # Send the report to the tj3client process via stdin.
           report = stdout.read

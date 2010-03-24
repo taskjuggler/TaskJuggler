@@ -45,11 +45,6 @@ def processArguments(argv)
           'Generate reports despite scheduling errors') do
     @forceReports = true
   end
-  opts.on('-s', '--report-server',
-          'Parse and schedule the project and wait for remote report ' +
-          'requests') do
-    @reportServer = true
-  end
   opts.on('--check-time-sheet <tji-file>', String,
           "Check the given time sheet") do |arg|
     @timeSheets << arg
@@ -110,7 +105,6 @@ end
 def main
   @maxCpuCores = 1
   @forceReports = false
-  @reportServer = false
   @warnTsDeltas = false
   @outputDir = ''
   @timeSheets = []
@@ -126,7 +120,7 @@ def main
   tj = TaskJuggler.new(true)
   tj.maxCpuCores = @maxCpuCores
   tj.warnTsDeltas = @warnTsDeltas
-  keepParser = @reportServer || !@timeSheets.empty? || !@statusSheets.empty?
+  keepParser = !@timeSheets.empty? || !@statusSheets.empty?
   exit 1 unless tj.parse(files, keepParser)
   if !tj.schedule
     exit 1 unless @forceReports
@@ -141,11 +135,7 @@ def main
     exit 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
   end
 
-  if @reportServer
-    tj.serveReports
-  else
-    exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
-  end
+  exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
 
 end
 

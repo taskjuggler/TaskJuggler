@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = Tj3AppBase.rb -- The TaskJuggler III Project Management Software
+# = Tj3SheetAppBase.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #

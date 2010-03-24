@@ -145,7 +145,7 @@ EOT
         File.open("#{@failedSheetsDir}/#{@resourceId}-#{@date}.tji", 'w') do |f|
           f.write(sheet)
         end
-        command = "tj3client --silent #{@tj3clientOption} ."
+        command = "tj3client --silent #{@tj3clientOption} #{@projectId} ."
         status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
           # Send the report to the tj3client process via stdin.
           stdin.write(sheet)

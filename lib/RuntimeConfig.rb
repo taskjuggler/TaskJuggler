@@ -18,9 +18,12 @@ require 'yaml'
 # the instance variable of a passed object.
 class RuntimeConfig
 
+  attr_accessor :debugMode
+
   def initialize(appName, configFile = nil)
     @appName = appName
     @config = nil
+    @debugMode = false
 
     if configFile
       # Read user specified config file.
@@ -43,7 +46,9 @@ class RuntimeConfig
         # Try UNIX style hidden file first, then .rc.
         [ "#{path}/.#{appName}rc", "#{path}/#{appName}.rc" ].each do |file|
           if File.exist?(file)
+            debug("Loading #{file}")
             @config = YAML::load(File.read(file))
+            debug(@config.to_s)
             break
           end
         end
@@ -53,19 +58,36 @@ class RuntimeConfig
   end
 
   def configure(object, section)
+    debug("Configuring object of type #{object.class}")
     sections = section.split('.')
     p = @config
     sections.each do |sec|
-      return false if p.nil? || !p.include?(sec)
-      p = p[sec]
+      if p.nil? || !p.include?('_' + sec)
+        debug("Section #{section} not found in config file")
+        return false
+      end
+      p = p['_' + sec]
     end
 
     object.instance_variables.each do |iv|
       ivName = iv[1..-1]
-      object.instance_variable_set(iv, p[ivName]) if p.include?(ivName)
+      debug("Processing class variable #{ivName}")
+      if p.include?(ivName)
+        debug("Setting @#{ivName} to #{p[ivName]}")
+        object.instance_variable_set(iv, p[ivName])
+      end
     end
 
     true
   end
+
+  private
+
+  def debug(message)
+    return unless @debugMode
+
+    puts message
+  end
+
 end
 

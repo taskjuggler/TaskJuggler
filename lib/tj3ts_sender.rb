@@ -67,11 +67,12 @@ EOT
       ts.date = @date if @date
 
       ts.sendTemplates(@resourceList)
+      0
     end
 
   end
 
 end
 
-TaskJuggler::Tj3TsSender.new.main()
+exit TaskJuggler::Tj3TsSender.new.main()
 

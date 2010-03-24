@@ -25,6 +25,8 @@ class TaskJuggler
       @senderEmail = nil
       @workingDir = nil
       @scmCommand = nil
+      # The default project ID
+      @projectId = 'prj'
 
       # Controls the amount of output that is sent to the terminal.
       # 0: No output
@@ -174,7 +176,7 @@ class TaskJuggler
         if attachment
           mail.add_file ({
             :filename => File.basename(attachment),
-            :content => File.read(attachment),
+            :content => File.read(attachment)
           })
         end
       rescue

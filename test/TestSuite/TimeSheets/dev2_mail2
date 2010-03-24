@@ -9,76 +9,79 @@ Content-Type: text/plain;
 Content-Transfer-Encoding: 8bit
 Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
 
- > Hello Sébastien Bono!
- > 
- > Please find enclosed your weekly report template. Please fill out
- > the form and send it back to the sender of this email. You can either
- > use the attached file or the body of the email. In case you send it
- > in the body of the email, make sure it only contains the 'timesheet'
- > syntax. No quote marks are allowed. It must be plain text, UTF-8
- > encoded and the time sheet header from 'timesheet' to the period end
- > date must be in a single line that starts at the beginning of the line.
- > 
- > # The status headline should be no more than 60 characters and may
- > # not be empty! The status summary is optional and should be no
- > # longer than one or two sentences of plain text. The details section
- > # is also optional has no length limitation. You can use simple
- > # markup in this section.  It is recommended that you provide at
- > # least a summary or a details section.
- > # See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
- > #
- > # --------8<--------8<--------
- > timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
- >
- >   # Vacation time: 0.0%
- >
- >   # Task: Graphical User Interface
- >   task AcSo.software.gui {
- >     work 5.0%
- >     remaining 17.3d
- >     # status green "Your headline here!" {
- >     #  summary -8<-
- >     #  Uncomment and put one or two sentences here!
- >     #  ->8-
- >     #  details -8<-
- >     #  Uncomment and put markup text here.
- >     #  ->8-
- >     # }
- >   }
- >
- >   # Task: Back-End Functions
- >   task AcSo.software.backend {
- >     work 95.0%
- >     remaining 0.0d
- >     status green "My headline here!" {
- >     #  summary -8<-
- >     #  Uncomment and put one or two sentences here!
- >     #  ->8-
- >     #  details -8<-
- >     #  Uncomment and put markup text here.
- >     #  ->8-
- >     }
- >   }
- >
- >   # If you had unplanned tasks, uncomment and fill out the
- >   # following lines:
- >   # newtask new.task.id "A task title" {
- >   #   work X%
- >   #   remaining Y.Yd
- >   # }
- >
- >   # You can use the following section to report personal notes.
- >   # status green "A headline" {
- >   #   summary -8<-
- >   #   Uncomment and put one or two sentences here!
- >   #   ->8-
- >   #   details -8<-
- >   #   Uncomment and put markup text here.
- >   #   ->8-
- >   # }
- > }
- > # -------->8-------->8--------
- > Some junk text
- >
- > 
- > 
+Hello Sébastien Bono!
+
+Please find enclosed your weekly report template. Please fill out
+the form and send it back to the sender of this email. You can either
+use the attached file or the body of the email. In case you send it
+in the body of the email, make sure it only contains the 'timesheet'
+syntax. No quote marks are allowed. It must be plain text, UTF-8
+encoded and the time sheet header from 'timesheet' to the period end
+date must be in a single line that starts at the beginning of the line.
+
+# The status headline should be no more than 60 characters and may
+# not be empty! The status summary is optional and should be no
+# longer than one or two sentences of plain text. The details section
+# is also optional has no length limitation. You can use simple
+# markup in this section.  It is recommended that you provide at
+# least a summary or a details section.
+# See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
+#
+# --------8<--------8<--------
+timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
+
+  # Vacation time: 0.0%
+
+  # Task: Graphical User Interface
+  task AcSo.software.gui {
+    work 10.0%
+    remaining 14.3d
+    status green "Another week of hard work!" {
+    #  summary -8<-
+    #  Uncomment and put one or two sentences here!
+    #  ->8-
+    details -8<-
+    * Build a house.
+    * Planted a tree.
+    * Got a child.
+    ->8-
+    }
+  }
+
+  # Task: Back-End Functions
+  task AcSo.software.backend {
+    work 90.0%
+    remaining 2.0d
+    status green "Had a busy week" {
+    summary -8<-
+    Not much to say here. Just code, sweat and tears. Some bugs
+    haunted me but I went after them with fury.
+    ->8-
+    #  details -8<-
+    #  Uncomment and put markup text here.
+    #  ->8-
+    }
+  }
+
+  # If you had unplanned tasks, uncomment and fill out the
+  # following lines:
+  # newtask new.task.id "A task title" {
+  #   work X%
+  #   remaining Y.Yd
+  # }
+
+  # You can use the following section to report personal notes.
+  # status green "A headline" {
+  #   summary -8<-
+  #   Uncomment and put one or two sentences here!
+  #   ->8-
+  #   details -8<-
+  #   Uncomment and put markup text here.
+  #   ->8-
+  # }
+}
+# -------->8-------->8--------
+Some junk text
+
+
+
