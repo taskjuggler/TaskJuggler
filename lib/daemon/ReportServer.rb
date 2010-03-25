@@ -13,42 +13,9 @@
 require 'daemon/ProcessIntercom'
 require 'TjException'
 require 'Message'
+require 'TjTime'
 
 class TaskJuggler
-
-  class ReportServerIface
-
-    include ProcessIntercomIface
-
-    def initialize(server)
-      @server = server
-    end
-
-    def addFile(authKey, file)
-      return false unless @server.checkKey(authKey, 'addFile')
-
-      @server.addFile(file)
-    end
-
-    def generateReport(authKey, reportId)
-      return false unless @server.checkKey(authKey, 'generateReport')
-
-      @server.generateReport(reportId)
-    end
-
-    def checkTimeSheet(authKey, sheet)
-      return false unless @server.checkKey(authKey, 'checkTimeSheet')
-
-      @server.checkTimeSheet(sheet)
-    end
-
-    def checkStatusSheet(authKey, sheet)
-      return false unless @server.checkKey(authKey, 'checkStatusSheet')
-
-      @server.checkStatusSheet(sheet)
-    end
-
-  end
 
   class ReportServer
 
@@ -64,6 +31,8 @@ class TaskJuggler
 
       # A reference to the TaskJuggler object that holds the project data.
       @tj = tj
+
+      @lastPing = TjTime.now
 
       # We've started a DRb server before. This will continue to live somewhat
       # in the child. All attempts to create a DRb connection from the child
@@ -97,6 +66,7 @@ class TaskJuggler
         # Start a Thread that waits for the @terminate flag to be set and does
         # other background tasks.
         startTerminator
+        startWatchDog
 
         # Cleanup the DRb threads
         DRb.thread.join
@@ -109,6 +79,10 @@ class TaskJuggler
         @uri = rd.read
         rd.close
       end
+    end
+
+    def ping
+      @lastPing = TjTime.now
     end
 
     def addFile(file)
@@ -142,6 +116,59 @@ class TaskJuggler
       ok = @tj.checkStatusSheet(sheet)
       @log.debug("Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
       ok
+    end
+
+    private
+
+    def startWatchDog
+      Thread.new do
+        loop do
+          if TjTime.now - @lastPing > 120
+            @log.fatal('Hartbeat from ProjectServer lost. Terminating.')
+          end
+          sleep 30
+        end
+      end
+    end
+
+  end
+
+  class ReportServerIface
+
+    include ProcessIntercomIface
+
+    def initialize(server)
+      @server = server
+    end
+
+    def ping(authKey)
+      return false unless @server.checkKey(authKey, 'addFile')
+
+      @server.ping
+    end
+
+    def addFile(authKey, file)
+      return false unless @server.checkKey(authKey, 'addFile')
+
+      @server.addFile(file)
+    end
+
+    def generateReport(authKey, reportId)
+      return false unless @server.checkKey(authKey, 'generateReport')
+
+      @server.generateReport(reportId)
+    end
+
+    def checkTimeSheet(authKey, sheet)
+      return false unless @server.checkKey(authKey, 'checkTimeSheet')
+
+      @server.checkTimeSheet(sheet)
+    end
+
+    def checkStatusSheet(authKey, sheet)
+      return false unless @server.checkKey(authKey, 'checkStatusSheet')
+
+      @server.checkStatusSheet(sheet)
     end
 
   end

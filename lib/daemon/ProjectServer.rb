@@ -18,44 +18,19 @@ require 'daemon/ReportServer'
 require 'LogFile'
 require 'TaskJuggler'
 require 'Log'
+require 'TjTime'
 
 class TaskJuggler
 
-  class ProjectServerIface
-
-    include ProcessIntercomIface
-
-    def initialize(server)
-      @server = server
-    end
-
-    def loadProject(authKey, args)
-      return false unless @server.checkKey(authKey, 'loadProject')
-
-      @server.loadProject(args)
-    end
-
-    def getReportServer(authKey)
-      return false unless @server.checkKey(authKey, 'getReportServer')
-
-      @server.getReportServer
-    end
-
-  end
-
-  class ReportServerRecord
-
-    attr_reader :tag
-    attr_accessor :uri, :authKey
-
-    def initialize(tag)
-      @tag = tag
-      @uri = nil
-      @authKey = nil
-    end
-
-  end
-
+  # The ProjectServer objects are created from the ProjectBroker to handle the
+  # data of a particular project. Each ProjectServer runs in a separate
+  # process that is forked-off in the constructor. Any action such as adding
+  # more files or generating a report will cause the process to fork again,
+  # creating a ReportServer object. This way the initially loaded project can
+  # be modified but the original version is always preserved for subsequent
+  # calls. Each ProjectServer process has a unique secret authentication key
+  # that only the ProjectBroker knows. It will pass it with the URI of the
+  # ProjectServer to the client to permit direct access to the ProjectServer.
   class ProjectServer
 
     include ProcessIntercom
@@ -63,7 +38,10 @@ class TaskJuggler
     attr_reader :authKey, :uri
 
     def initialize
+      # Since we are still in the ProjectBroker process, the current DRb
+      # server is still the ProjectBroker DRb server.
       @daemonURI = DRb.current_server.uri
+      # Used later to store the DRbObject of the ProjectBroker.
       @daemon = nil
       initIntercom
 
@@ -83,6 +61,8 @@ class TaskJuggler
       # A list of active ReportServer objects
       @reportServers = []
       @reportServers.extend(MonitorMixin)
+
+      @lastPing = TjTime.now
 
       # We've started a DRb server before. This will continue to live somewhat
       # in the child. All attempts to create a DRb connection from the child
@@ -116,6 +96,8 @@ class TaskJuggler
         # Start a Thread that waits for the @terminate flag to be set and does
         # other background tasks.
         startTerminator
+        # Start another Thread that will be used to fork-off ReportServer
+        # processes.
         startHousekeeping
 
         # Cleanup the DRb threads
@@ -165,13 +147,21 @@ class TaskJuggler
       true
     end
 
+    # This function triggers the creation of a new ReportServer process. It
+    # will return the URI and the authentication key of this new server.
     def getReportServer
+      # ReportServer objects only make sense for successfully scheduled
+      # projects.
       return [ nil, nil ] unless @state == :ready
 
+      # The ReportServer will be created asynchronously in another Thread. To
+      # find it in the @reportServers list, we create a unique tag to identify
+      # it.
       tag = rand(99999999999999)
       @log.debug("Pushing #{tag} onto report server request queue")
       @reportServerRequests.push(tag)
 
+      # Now wait until the new ReportServer shows up in the list.
       reportServer = nil
       while reportServer.nil?
         @reportServers.synchronize do
@@ -179,15 +169,37 @@ class TaskJuggler
             reportServer = rs if rs.tag == tag
           end
         end
-        sleep 1 if reportServer.nil?
+        # It should not take that long, so we use a short idle time here.
+        sleep 0.1 if reportServer.nil?
       end
 
       @log.debug("Got report server with URI #{reportServer.uri} for tag #{tag}")
       [ reportServer.uri, reportServer.authKey ]
     end
 
+    # This function is called regularly by the ProjectBroker process to check
+    # that the ProjectServer is still operating properly.
+    def ping
+      # Store the time stamp. If we don't get the ping for some time, we
+      # assume the ProjectServer has died.
+      @lastPing = TjTime.now
+
+      # Now also check our ReportServers if they are still there. If not, we
+      # can remove them from the @reportServers list.
+      @reportServers.synchronize do
+        deadServers = []
+        @reportServers.each do |rs|
+          unless rs.ping
+            deadServers << rs
+          end
+        end
+        @reportServers.delete_if { |rs| deadServers.include?(rs) }
+      end
+    end
+
     private
 
+    # Update the _state_ and _id_ of the project locally and remotely.
     def updateState(state, id)
       begin
         @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
@@ -203,20 +215,100 @@ class TaskJuggler
     def startHousekeeping
       Thread.new do
         loop do
+          # Check for pending requests for new ReportServers.
           unless @reportServerRequests.empty?
             tag = @reportServerRequests.pop
+            # Create an new entry for the @reportServers list.
             rsr = ReportServerRecord.new(tag)
+            # Create a new ReportServer object that runs as a separate
+            # process. The constructor will tell us the URI and authentication
+            # key of the new ReportServer.
             rs = ReportServer.new(@tj)
             rsr.uri = rs.uri
             rsr.authKey = rs.authKey
             @log.debug("Adding ReportServer with URI #{rsr.uri} to list")
+            # Add the new ReportServer to our list.
             @reportServers.synchronize do
               @reportServers << rsr
             end
           end
+
+          # If we have not received a ping from the ProjectBroker for 2
+          # minutes, we assume it has died and terminate as well.
+          if TjTime.now - @lastPing > 120
+            @log.fatal('Hartbeat from daemon lost. Terminating.')
+          end
           sleep 1
         end
       end
+    end
+
+  end
+
+  # This is the DRb call interface of the ProjectServer class. All functions
+  # must be authenticated with the proper key.
+  class ProjectServerIface
+
+    include ProcessIntercomIface
+
+    def initialize(server)
+      @server = server
+    end
+
+    def loadProject(authKey, args)
+      return false unless @server.checkKey(authKey, 'loadProject')
+
+      @server.loadProject(args)
+    end
+
+    def getReportServer(authKey)
+      return false unless @server.checkKey(authKey, 'getReportServer')
+
+      @server.getReportServer
+    end
+
+    def ping(authKey)
+      return false unless @server.checkKey(authKey, 'ping')
+
+      @server.ping
+      true
+    end
+
+  end
+
+  # This class stores the information about a ReportServer that was created by
+  # the ProjectServer.
+  class ReportServerRecord
+
+    attr_reader :tag
+    attr_accessor :uri, :authKey
+
+    def initialize(tag)
+      # A random tag to uniquely identify the entry.
+      @tag = tag
+      # The URI of the ReportServer process.
+      @uri = nil
+      # The authentication key of the ReportServer.
+      @authKey = nil
+      # The DRbObject of the ReportServer.
+      @reportServer = nil
+      @log = LogFile.instance
+    end
+
+    # Send a ping to the ReportServer process to check that it is still
+    # functioning properly.
+    def ping
+      return true unless @uri
+
+      @log.debug("Sending ping to ReportServer #{@uri}")
+      begin
+        @reportServer = DRbObject.new(nil, @uri) unless @reportServer
+        @reportServer.ping(@authKey)
+      rescue
+        @log.error("Ping failed: #{$!}")
+        return false
+      end
+      true
     end
 
   end

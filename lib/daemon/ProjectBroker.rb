@@ -189,6 +189,8 @@ EOT
       end
     end
 
+    # Return the ProjectServer URI and authKey for the project with project ID
+    # _projectId_.
     def getProject(projectId)
       # Find the project with the ID args[0].
       project = nil
@@ -205,6 +207,8 @@ EOT
       [ project.uri, project.authKey ]
     end
 
+    # This is a callback from the ProjectServer process. It's used to update
+    # the current state of the ProjectServer in the ProjectRecord list.
     def updateState(authKey, id, state)
       result = false
       @projects.synchronize do
@@ -248,6 +252,7 @@ EOT
 
     def startHousekeeping
       Thread.new do
+        cntr = 0
         loop do
           if @terminate
             # Give the caller a chance to properly terminate the connection.
@@ -274,6 +279,19 @@ EOT
             end
             # And then send them a termination command.
             termList.each { |p| p.terminateServer }
+
+            # Check every 60 seconds that the ProjectServer processes are
+            # still alive. If not, remove them from the list.
+            if (cntr += 1) > 60
+              @projects.synchronize do
+                @projects.each do |p|
+                  unless p.ping
+                    termList << p unless termList.include?(p)
+                  end
+                end
+              end
+              cntr = 0
+            end
 
             # The housekeeping thread rarely needs to so something. Make sure
             # it's sleeping most of the time.
@@ -305,12 +323,19 @@ EOT
 
   end
 
+  # This class is the DRb interface for ProjectBroker. We only want to expose
+  # these methods for remote access.
   class ProjectBrokerIface
 
     def initialize(broker)
       @broker = broker
     end
 
+    # Check the authentication key and the client/server version match.
+    # The following return values can be generated:
+    # 0 : authKey does not match
+    # 1 : client and server versions match
+    # -1 : client and server versions don't match
     def apiVersion(authKey, version)
       return 0 unless @broker.checkKey(authKey, 'apiVersion')
 
@@ -331,6 +356,8 @@ EOT
         @broker.removeProject(args)
       when :getProject
         @broker.getProject(args)
+      else
+        LogFile.instance.fatal('Unknown command #{cmd} called')
       end
     end
 
@@ -340,36 +367,62 @@ EOT
 
   end
 
+  # The ProjectRecord objects are used to manage the loaded projects. There is
+  # one entry for each project in the @projects list.
   class ProjectRecord < Monitor
 
     attr_accessor :authKey, :uri, :id, :state, :readySince
     attr_reader :tag
 
     def initialize(tag)
+      # Before we know the project ID we use this tag to uniquely identify the
+      # project.
       @tag = tag
+      # The authentication key for the ProjectServer process.
       @authKey = nil
+      # The DRb URI where the ProjectServer process is listening.
       @uri = nil
+      # The ID of the project.
       @id = nil
+      # The state of the project. :loading, :ready, :failed and :obsolete are
+      # supported.
       @state = :loading
+      # A time stamp when the project became ready for service.
       @readySince = nil
+
+      @log = LogFile.instance
+      @projectServer = nil
     end
 
+    def ping
+      return true unless @uri
+
+      @log.debug("Sending ping to ProcessServer #{@uri}")
+      begin
+        @projectServer = DRbObject.new(nil, @uri) unless @projectServer
+        @projectServer.ping(@authKey)
+      rescue
+        @log.error("Ping failed: #{$!}")
+        return false
+      end
+      true
+    end
+
+    # Call this function to terminate the ProjectServer.
     def terminateServer
       return unless @uri
 
-      log = LogFile.instance
       begin
-        if (projectServer = DRbObject.new(nil, @uri))
-          log.debug("Sending termination request to ProcessServer " +
-                    "#{@uri}")
-          projectServer.terminate(@authKey)
-        end
+        @log.debug("Sending termination request to ProcessServer #{@uri}")
+        @projectServer = DRbObject.new(nil, @uri) unless @projectServer
+        @projectServer.terminate(@authKey)
       rescue
-        log.error("Termination of ProjectServer failed: #{$!}")
+        @log.error("Termination of ProjectServer failed: #{$!}")
       end
       @uri = nil
     end
 
+    # This is used to generate the status table.
     def to_s(format)
       sprintf(format, @id, @state,
               @readySince ? @readySince.to_s('%Y-%m-%d %H:%M:%S') : '')
