@@ -20,19 +20,35 @@ AppConfig.appName = 'tj3client'
 
 class TaskJuggler
 
+  # The Tj3Client class provides the primary interface to the TaskJuggler
+  # daemon. It exposes a rich commandline interface that supports key
+  # operations like add/removing a project, generating a report or checking a
+  # time or status sheet. All connections are made via DRb and tj3client
+  # requires a properly configured tj3d to work.
   class Tj3Client < Tj3AppBase
 
     def initialize
       super
 
+      # For security reasons, this will probably not change. All DRb
+      # operations are limited to localhost only. The client and the sever
+      # must have access to the identical file system.
       @host = 'localhost'
+      # The default port. 'T' and 'J' in ASCII decimal
       @port = 8474
+      # This must must be changed for the communication to work.
       @authKey = nil
 
-      @reports = []
-      @mode = :report
       @mandatoryArgs = '<command> [arg1 arg2 ...]'
 
+      # This list describes the supported command line commands and their
+      # parameter.
+      # :label : The command name
+      # :args : A list of parameters. If the first character is a '+' the
+      # parameter must be provided 1 or more times. If the first character is
+      # a '*' the parameter must be provided 0 or more times. Repeatable and
+      # optional paramters must follow the mandatory ones.
+      # :descr : A short description of the command used for the help text.
       @commands = [
         { :label => 'status',
           :args  => [],
@@ -71,6 +87,7 @@ The following commands are supported:
 
 EOT
 
+        # Convert the command list into a help text.
         @commands.each do |cmd|
           args = cmd[:args]
           args.map! do |c|
@@ -86,25 +103,15 @@ EOT
           @opts.banner += "     #{cmd[:label] + ' ' + args}" +
                           "\n\n#{' ' * 10 + format(cmd[:descr], 10)}\n"
         end
-
-        @opts.on('-g', '--generate-report <ID>', String,
-                 format('Generate reports despite scheduling errors')) do |arg|
-          @reports << arg
-        end
-        @opts.on('-t', '--timesheet',
-                 format('Check the time sheet')) do |arg|
-          @mode = :timesheet
-        end
-        @opts.on('-s', '--statussheet',
-                 format('Check the status sheet')) do |arg|
-          @mode = :statussheet
-        end
       end
     end
 
     def main
       args = super
+      # Run a first check of the non-option command line arguments.
       checkCommand(args)
+      # Read some configuration variables. Except for the authKey, they are
+      # all optional.
       @rc.configure(self, 'global')
 
       connectDaemon
@@ -146,13 +153,30 @@ EOT
     end
 
     def connectDaemon
+      unless @authKey
+        $stderr.puts <<'EOT'
+You must set an authentication key in the configuration file. Create a file
+named .taskjugglerrc or taskjuggler.rc that contains at least the following
+lines. Replace 'your_secret_key' with some random character sequence.
+
+_global:
+  authKey: your_secret_key
+EOT
+      end
+
+      # We try to play it safe here. The client also starts a DRb server, so
+      # we need to make sure it's constricted to localhost only. We require
+      # the DRb server for the standard IO redirection to work.
       $SAFE = 1
       DRb.install_acl(ACL.new(%w[ deny all
                                   allow localhost ]))
       DRb.start_service('druby://localhost:0')
 
       begin
+        # Get the ProjectBroker object from the tj3d.
         @broker = DRbObject.new(nil, "druby://#{@host}:#{@port}")
+        # Client and server should always come from the same Gem. Since we
+        # restict communication to localhost, that's probably not a problem.
         if (check = @broker.apiVersion(@authKey, 1)) < 0
           error('This client is too old for the server. Please ' +
                 'upgrade to a more recent version of the software.')
@@ -172,25 +196,6 @@ EOT
       DRb.stop_service
     end
 
-    def callDaemon(command, args)
-      begin
-        return @broker.command(@authKey, command, args)
-      rescue
-        error("Call to TaskJuggler server on host '#{@host}' " +
-              "port #{@port} failed: #{$!}")
-      end
-    end
-
-    def getReportServer(uri, authKey)
-      begin
-        projectServer = DRbObject.new(nil, uri)
-        uri, authKey = projectServer.getReportServer(authKey)
-      rescue
-        error("Cannot get report server")
-      end
-      [ uri, authKey ]
-    end
-
     def executeCommand(command, args)
       case command
       when 'status'
@@ -198,27 +203,16 @@ EOT
       when 'terminate'
         callDaemon(:stop, [])
       when 'add'
-        uri, authKey = callDaemon(:addProject, [])
-        begin
-          projectServer = DRbObject.new(nil, uri)
-        rescue
-          error("Can't get ProjectServer object: #{$!}")
-        end
-        begin
-          projectServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
-        rescue
-          error("Can't connect IO: #{$!}")
-        end
+        # Ask the daemon to create a new ProjectServer process and return a
+        # DRbObject to access it.
+        projectServer, authKey = connectToProjectServer
+        # Ask the server to load the files in _args_ into the ProjectServer.
         begin
           res = projectServer.loadProject(authKey, [ Dir.getwd, *args ])
         rescue
           error("Loading of project failed: #{$!}")
         end
-        begin
-          projectServer.disconnect(authKey)
-        rescue
-          error("Can't disconnect IO: #{$!}")
-        end
+        disconnectProjectServer(projectServer, authKey)
         return res ? 0 : 1
       when 'remove'
         callDaemon(:removeProject, args)
@@ -237,7 +231,10 @@ EOT
             tjiFiles << arg
           end
         end
+        # Ask the ProjectServer to launch a new ReportServer process and
+        # provide a DRbObject reference to it.
         reportServer, authKey = connectToReportServer(projectId)
+        # Send the provided .tji files to the ReportServer.
         failed = false
         tjiFiles.each do |file|
           unless reportServer.addFile(authKey, file)
@@ -245,6 +242,7 @@ EOT
             break
           end
         end
+        # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
             unless reportServer.generateReport(authKey, reportId)
@@ -253,6 +251,7 @@ EOT
             end
           end
         end
+        # Terminate the ReportServer
         disconnectReportServer(reportServer, authKey)
         return failed ? 1 : 0
       when 'check-ts'
@@ -277,6 +276,29 @@ EOT
         raise "Unknown command #{command}"
       end
       0
+    end
+
+    def connectToProjectServer
+      uri, authKey = callDaemon(:addProject, [])
+      begin
+        projectServer = DRbObject.new(nil, uri)
+      rescue
+        error("Can't get ProjectServer object: #{$!}")
+      end
+      begin
+        projectServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
+      rescue
+        error("Can't connect IO: #{$!}")
+      end
+      [ projectServer, authKey ]
+    end
+
+    def disconnectProjectServer(projectServer, authKey)
+      begin
+        projectServer.disconnect(authKey)
+      rescue
+        error("Can't disconnect IO: #{$!}")
+      end
     end
 
     def connectToReportServer(projectId)
@@ -309,6 +331,27 @@ EOT
         reportServer.terminate(authKey)
       rescue
         error("Report server termination failed: #{$!}")
+      end
+    end
+
+    def getReportServer(uri, authKey)
+      begin
+        projectServer = DRbObject.new(nil, uri)
+        uri, authKey = projectServer.getReportServer(authKey)
+      rescue
+        error("Cannot get report server")
+      end
+      [ uri, authKey ]
+    end
+
+    # Call the TaskJuggler daemon (ProjectBroker) and execute the provided
+    # command with the provided arguments.
+    def callDaemon(command, args)
+      begin
+        return @broker.command(@authKey, command, args)
+      rescue
+        error("Call to TaskJuggler server on host '#{@host}' " +
+              "port #{@port} failed: #{$!}")
       end
     end
 
