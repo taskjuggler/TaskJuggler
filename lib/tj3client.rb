@@ -198,21 +198,21 @@ EOT
       when 'terminate'
         callDaemon(:stop, [])
       when 'add'
-        uri, authKey = callDaemon(:addProject, [ Dir.getwd, *args ])
+        uri, authKey = callDaemon(:addProject, [])
         begin
           projectServer = DRbObject.new(nil, uri)
         rescue
           error("Can't get ProjectServer object: #{$!}")
         end
         begin
-          projectServer.connect(authKey, $stdout, $stderr, $stdin)
+          projectServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
         rescue
           error("Can't connect IO: #{$!}")
         end
         begin
-          res = projectServer.waitForProject(authKey)
+          res = projectServer.loadProject(authKey, [ Dir.getwd, *args ])
         rescue
-          error("WaitForProject failed: #{$!}")
+          error("Loading of project failed: #{$!}")
         end
         begin
           projectServer.disconnect(authKey)
@@ -291,7 +291,7 @@ EOT
         error("Can't get ReportServer object: #{$!}")
       end
       begin
-        reportServer.connect(authKey, $stdout, $stderr, $stdin)
+        reportServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
       rescue
         error("Can't connect IO: #{$!}")
       end

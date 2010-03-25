@@ -67,6 +67,19 @@ class TaskJuggler
     @messageHandler.errors == 0
   end
 
+  # Parse a file and add the content to the existing project. _fileName_ is
+  # the name of the file. _rule_ is the TextParser::Rule to start with.
+  def parseFile(fileName, rule)
+    @parser.open(fileName, false)
+    @parser.setGlobalMacros
+    return nil if (res = @parser.parse(rule)).nil?
+    # Make sure that _rule_ described the full content of the file. There
+    # should be no more content left.
+    @parser.checkForEnd
+    @parser.close
+    res
+  end
+
   # Schedule all scenarios in the project. Return true if no error was
   # detected, false otherwise.
   def schedule
@@ -89,11 +102,7 @@ class TaskJuggler
     res
   end
 
-  def projectId
-    return nil if @project.nil?
-    @project['projectid']
-  end
-
+  # Generate the report with the ID _reportId_.
   def generateReport(reportId)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
@@ -106,6 +115,9 @@ class TaskJuggler
     true
   end
 
+  # Check the content of the file _fileName_ and interpret it as a time sheet.
+  # If the sheet is syntaxtically correct and matches the loaded project, true
+  # is returned. Otherwise false.
   def checkTimeSheet(fileName)
     begin
       Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
@@ -138,6 +150,9 @@ class TaskJuggler
     true
   end
 
+  # Check the content of the file _fileName_ and interpret it as a status
+  # sheet.  If the sheet is syntaxtically correct and matches the loaded
+  # project, true is returned. Otherwise false.
   def checkStatusSheet(fileName)
     begin
       Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
@@ -167,13 +182,10 @@ class TaskJuggler
     true
   end
 
-  def parseFile(fileName, rule)
-    @parser.open(fileName, false)
-    @parser.setGlobalMacros
-    return nil if (res = @parser.parse(rule)).nil?
-    @parser.checkForEnd
-    @parser.close
-    res
+  # Return the ID of the project or nil if no project has been loaded yet.
+  def projectId
+    return nil if @project.nil?
+    @project['projectid']
   end
 
   # Return the number of errors that had been reported during processing.

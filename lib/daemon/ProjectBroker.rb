@@ -135,28 +135,27 @@ EOT
       if @projects.empty?
         "No projects registered\n"
       else
-        out = ''
+        format = "  %-25s | %-14s | %-20s\n"
+        out = sprintf(format, 'Project ID', 'Status', 'Loaded since')
+        out += "  " + '-' * 26 + '+' + '-' * 16 + '+' + '-' * 21 + "\n"
         @projects.synchronize do
           @projects.each do |project|
-            out += project.to_s
+            out += project.to_s(format)
           end
         end
         out
       end
     end
 
-    # Adding a new project or replacing an existing one. _args_ is an Array of
-    # Strings. The first element is the working directory. The second one is
-    # the master project file (.tjp file). Additionally a list of optional
-    # .tji files can be provided. The command waits until the project has been
-    # loaded or the load has failed.
-    def addProject(args)
+    # Adding a new project or replacing an existing one. The command waits
+    # until the project has been loaded or the load has failed.
+    def addProject
       # We need some tag to identify the ProjectRecord that this project was
       # associated to. Just use a large enough random number.
       tag = rand(9999999999999)
 
       @log.debug("Pushing #{tag} to load Queue")
-      @projectsToLoad.push([ tag, args ])
+      @projectsToLoad.push(tag)
 
       # Now we have to wait until the loaded project shows up in the @projects
       # list. We use our tag to identify the right entry.
@@ -231,6 +230,10 @@ EOT
               project.readySince = TjTime.now
             end
 
+            # Failed ProjectServers are terminated automatically. We can't
+            # reach them any more.
+            project.uri = nil if state == :failed
+
             project.state = state
             result = true
             break
@@ -248,7 +251,7 @@ EOT
         loop do
           if @terminate
             # Give the caller a chance to properly terminate the connection.
-            sleep 1
+            sleep 0.5
             @log.debug('Shutting down DRb server')
             DRb.stop_service
             break
@@ -261,7 +264,12 @@ EOT
             termList = []
             @projects.synchronize do
               @projects.each do |p|
-                termList << p if p.state == :obsolete
+                if p.state == :obsolete
+                  termList << p
+                elsif p.state == :failed && p.id.nil?
+                  # Start removal of entries that didn't parse.
+                  p.state = :obsolete
+                end
               end
             end
             # And then send them a termination command.
@@ -280,12 +288,10 @@ EOT
       end
     end
 
-    def loadProject(xargs)
-      tag = xargs[0]
-      args = xargs[1]
-      @log.debug("Loading project #{args.join(' ')}")
+    def loadProject(tag)
+      @log.debug("Loading project for tag #{tag}")
       pr = ProjectRecord.new(tag)
-      ps = ProjectServer.new(args)
+      ps = ProjectServer.new
       # The ProjectServer can be reached via this DRb URI
       pr.uri = ps.uri
       # Method calls must be authenticated with this key
@@ -320,7 +326,7 @@ EOT
       when :stop
         @broker.stop
       when :addProject
-        @broker.addProject(args)
+        @broker.addProject
       when :removeProject
         @broker.removeProject(args)
       when :getProject
@@ -364,10 +370,9 @@ EOT
       @uri = nil
     end
 
-    def to_s
-      out = "#{@id}: #{@state}"
-      out += " #{@readySince}" if @readySince
-      out += "\n"
+    def to_s(format)
+      sprintf(format, @id, @state,
+              @readySince ? @readySince.to_s('%Y-%m-%d %H:%M:%S') : '')
     end
 
   end

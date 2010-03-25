@@ -11,6 +11,7 @@
 #
 
 require 'singleton'
+require 'monitor'
 
 class TaskJuggler
 
@@ -18,7 +19,7 @@ class TaskJuggler
   # trace messages are filtered based on their segment name and the nesting
   # level of the segments. The class is a Singleton, so there is only one
   # instance in the program.
-  class Log
+  class Log < Monitor
 
     include Singleton
 
@@ -27,6 +28,7 @@ class TaskJuggler
     @@segments = []
     @@silent = true
     @@progress = 0
+    @@progressMeter = ''
 
     # Set the maximum nesting level that should be shown. Segments with a
     # nesting level greater than _l_ will be silently dropped.

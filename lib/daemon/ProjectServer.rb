@@ -29,10 +29,10 @@ class TaskJuggler
       @server = server
     end
 
-    def waitForProject(authKey)
-      return false unless @server.checkKey(authKey, 'waitForProject')
+    def loadProject(authKey, args)
+      return false unless @server.checkKey(authKey, 'loadProject')
 
-      @server.waitForProject
+      @server.loadProject(args)
     end
 
     def getReportServer(authKey)
@@ -62,8 +62,9 @@ class TaskJuggler
 
     attr_reader :authKey, :uri
 
-    def initialize(args)
+    def initialize
       @daemonURI = DRb.current_server.uri
+      @daemon = nil
       initIntercom
 
       @pid = nil
@@ -117,8 +118,6 @@ class TaskJuggler
         startTerminator
         startHousekeeping
 
-        @terminate = true unless loadProject(args)
-
         # Cleanup the DRb threads
         DRb.thread.join
         @log.debug('Project server terminated')
@@ -134,25 +133,36 @@ class TaskJuggler
 
     # Wait until the project load has been finished. The result is true if the
     # project scheduled without errors. Otherwise the result is false.
-    def waitForProject
-      @log.debug('Waiting for project load to finish')
-      loading = true
-      res = false
-      delay = 0.02
-      while loading
-        @stateLock.synchronize do
-          loading = false if @state != :loading
-        end
-        # Implement an exponential back-off to wait for the state to be
-        # changed.
-        sleep delay
-        delay *= 2 if delay < 2
+    # _args_ is an Array of Strings. The first element is the working
+    # directory. The second one is the master project file (.tjp file).
+    # Additionally a list of optional .tji files can be provided.
+    def loadProject(args)
+      # The first argument is the working directory
+      Dir.chdir(args.shift.untaint)
+
+      @tj = TaskJuggler.new(true)
+
+      # Parse all project files
+      unless @tj.parse(args, true)
+        @log.error("Parsing of #{args.join(' ')} failed")
+        updateState(:failed, @tj.projectId)
+        @terminate = true
+        return false
       end
-      @stateLock.synchronize do
-        res = @state == :ready
+
+      # Then schedule the project
+      unless @tj.schedule
+        @log.error("Scheduling of project #{@tj.projectId} failed")
+        updateState(:failed, @tj.projectId)
+        Log.exit('scheduler')
+        @terminate = true
+        return false
       end
-      @log.debug("Project loading #{res ? 'succeded' : 'failed'}")
-      res
+
+      # Great, everything went fine. We've got a project to work with.
+      updateState(:ready, @tj.projectId)
+      @log.info("Project #{@tj.projectId} loaded")
+      true
     end
 
     def getReportServer
@@ -178,31 +188,10 @@ class TaskJuggler
 
     private
 
-    def loadProject(args)
-      # The first argument is the working directory
-      Dir.chdir(args.shift.untaint)
-
-      #Log.silent = false
-      @tj = TaskJuggler.new(true)
-      unless @tj.parse(args, true)
-        @log.error("Parsing of #{args.join(' ')} failed")
-        updateState(:failed, @tj.projectId)
-        return false
-      end
-      unless @tj.schedule
-        @log.error("Scheduling of project #{@tj.projectId} failed")
-        updateState(:failed, @tj.projectId)
-        return false
-      end
-      @log.info("Project #{@tj.projectId} loaded")
-      updateState(:ready, @tj.projectId)
-      true
-    end
-
     def updateState(state, id)
       begin
-        daemon = DRbObject.new(nil, @daemonURI)
-        daemon.updateState(@authKey, id, state)
+        @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
+        @daemon.updateState(@authKey, id, state)
       rescue
         @log.fatal("Can't update state with daemon: #{$!}")
       end

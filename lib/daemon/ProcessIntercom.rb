@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'Log'
+
 class TaskJuggler
 
   module ProcessIntercomIface
@@ -20,10 +22,10 @@ class TaskJuggler
       @server.terminate
     end
 
-    def connect(authKey, stdout, stderr, stdin)
+    def connect(authKey, stdout, stderr, stdin, silent)
       return false unless @server.checkKey(authKey, 'connect')
 
-      @server.connect(stdout, stderr, stdin)
+      @server.connect(stdout, stderr, stdin, silent)
     end
 
     def disconnect(authKey)
@@ -52,8 +54,8 @@ class TaskJuggler
       @terminate = true
     end
 
-    def connect(stdout, stderr, stdin)
-      @log.debug('Connecting ProjectServer STDOUT and STDERR to client')
+    def connect(stdout, stderr, stdin, silent)
+      @log.debug('Rerouting ProjectServer standard IO to client')
       # Make sure that all output to STDOUT and STDERR is sent to the client.
       # Input is read from the client STDIN.  We save a copy of the old file
       # handles so we can restore then later again.
@@ -63,14 +65,18 @@ class TaskJuggler
       $stdout = stdout
       $stderr = stderr
       $stdin = stdin
+      @log.debug('IO is now routed to the client')
+      Log.silent = silent
       true
     end
 
     def disconnect
       @log.debug('Restoring IO')
+      Log.silent = true
       $stdout = @stdout
       $stderr = @stderr
       $stdin = @stdin
+      @log.debug('Standard IO has been restored')
       true
     end
 
