@@ -17,6 +17,7 @@ require 'daemon/ProcessIntercom'
 require 'daemon/ReportServer'
 require 'LogFile'
 require 'TaskJuggler'
+require 'Log'
 
 class TaskJuggler
 
@@ -137,10 +138,15 @@ class TaskJuggler
       @log.debug('Waiting for project load to finish')
       loading = true
       res = false
+      delay = 0.02
       while loading
         @stateLock.synchronize do
           loading = false if @state != :loading
         end
+        # Implement an exponential back-off to wait for the state to be
+        # changed.
+        sleep delay
+        delay *= 2 if delay < 2
       end
       @stateLock.synchronize do
         res = @state == :ready
@@ -176,6 +182,7 @@ class TaskJuggler
       # The first argument is the working directory
       Dir.chdir(args.shift.untaint)
 
+      #Log.silent = false
       @tj = TaskJuggler.new(true)
       unless @tj.parse(args, true)
         @log.error("Parsing of #{args.join(' ')} failed")
