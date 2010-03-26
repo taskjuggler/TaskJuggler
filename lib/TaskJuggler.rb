@@ -103,15 +103,28 @@ class TaskJuggler
   end
 
   # Generate the report with the ID _reportId_.
-  def generateReport(reportId)
+  def generateReport(reportId, regExpMode)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
-      @project.generateReport(reportId)
+      @project.generateReport(reportId, regExpMode)
     rescue TjException
       Log.exit('generateReport')
       return false
     end
     Log.exit('generateReport')
+    true
+  end
+
+  # Generate the report with the ID _reportId_.
+  def listReports(reportId, regExpMode)
+    begin
+      Log.enter('listReports', 'Generating report list for #{reportId} ...')
+      @project.listReports(reportId, regExpMode)
+    rescue TjException
+      Log.exit('listReports')
+      return false
+    end
+    Log.exit('listReports')
     true
   end
 

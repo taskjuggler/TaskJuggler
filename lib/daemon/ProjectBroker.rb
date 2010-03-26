@@ -108,7 +108,7 @@ EOT
       if authKey == @authKey
         @log.debug("Accepted authentication key for command '#{command}'")
       else
-        @log.warning("Rejected wrong authentication key #{authKey} " +
+        @log.warning("Rejected wrong authentication key '#{authKey}' " +
                      "for command '#{command}'")
         return false
       end

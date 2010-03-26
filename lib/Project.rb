@@ -626,15 +626,32 @@ class TaskJuggler
       true
     end
 
-    def generateReport(reportId)
-      unless (report = @reports[reportId])
-        error('unknown_report_id',
-              "Request to generate unknown report #{reportId}")
+    def generateReport(reportId, regExpMode)
+      reportList = regExpMode ? reportList = matchingReports(reportId) :
+                                [ reportId ]
+      reportList.each do |id|
+        unless (report = @reports[id])
+          error('unknown_report_id',
+                "Request to generate unknown report #{id}")
+        end
+        Log.startProgressMeter("Report #{report.name}")
+        @reportContext = ReportContext.new(self, report)
+        report.generate
+        Log.stopProgressMeter
       end
-      Log.startProgressMeter("Report #{report.name}")
-      @reportContext = ReportContext.new(self, report)
-      report.generate
-      Log.stopProgressMeter
+    end
+
+    def listReports(reportId, regExpMode)
+      reportList = regExpMode ? reportList = matchingReports(reportId) :
+                                @reports[reportId] ? [ reportId ] : []
+      puts "No match for #{reportId}" if reportList.empty?
+      reportList.each do |id|
+        report = @reports[id]
+        formats = report.get('formats')
+        next if formats.empty?
+
+        puts sprintf("%-20s %-15s %s", id, formats.join(', '), report.name)
+      end
     end
 
     def checkTimeSheets
@@ -962,6 +979,17 @@ class TaskJuggler
       Log.stopProgressMeter
       Log.exit('scheduleScenario', "Scheduling of scenario #{scIdx} finished")
       true
+    end
+
+    private
+
+    def matchingReports(reportId)
+      list = []
+      @reports.each do |report|
+        id = report.fullId
+        list << id if Regexp.new(reportId) =~ id
+      end
+      list
     end
 
   end

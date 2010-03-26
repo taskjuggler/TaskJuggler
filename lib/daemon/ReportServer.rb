@@ -94,12 +94,22 @@ class TaskJuggler
       true
     end
 
-    def generateReport(id)
+    def generateReport(id, regExpMode)
       @log.debug("Generating report #{id}")
-      if (ok = @tj.generateReport(id))
+      if (ok = @tj.generateReport(id, regExpMode))
         @log.debug("Report #{id} generated")
       else
         @log.error("Report generation of #{id} failed")
+      end
+      ok
+    end
+
+    def listReports(id, regExpMode)
+      @log.debug("Listing report #{id}")
+      if (ok = @tj.listReports(id, regExpMode))
+        @log.debug("Report list for #{id} generated")
+      else
+        @log.error("Report list compilation of #{id} failed")
       end
       ok
     end
@@ -153,10 +163,17 @@ class TaskJuggler
       @server.addFile(file)
     end
 
-    def generateReport(authKey, reportId)
+    def generateReport(authKey, reportId, regExpMode)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      @server.generateReport(reportId)
+      @server.generateReport(reportId, regExpMode)
+    end
+
+
+    def listReports(authKey, reportId, regExpMode)
+      return false unless @server.checkKey(authKey, 'generateReport')
+
+      @server.listReports(reportId, regExpMode)
     end
 
     def checkTimeSheet(authKey, sheet)

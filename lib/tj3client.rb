@@ -38,6 +38,9 @@ class TaskJuggler
       @port = 8474
       # This must must be changed for the communication to work.
       @authKey = nil
+      # Determines whether report IDs are fix IDs or regular expressions that
+      # match a set of reports.
+      @regExpMode = false
 
       @mandatoryArgs = '<command> [arg1 arg2 ...]'
 
@@ -63,9 +66,13 @@ class TaskJuggler
           :args  => [ '+project ID' ],
           :descr => 'Remove the project with the specified ID from the daemon' },
         { :label => 'report',
-          :args  => [ 'project ID', '+report ID', '*tji file'],
+          :args  => [ 'project ID', '+report ID', '!=', '*tji file'],
           :descr => 'Generate the report with the provided ID for ' +
                     'the project with the given ID'},
+        { :label => 'list-reports',
+          :args  => [ 'project ID', '!report ID' ],
+          :descr => 'List all available reports of the project or those ' +
+                    'that match the provided report ID' },
         { :label => 'check-ts',
           :args  => [ 'project ID', 'time sheet' ],
           :descr => 'Check the provided time sheet for correctness' +
@@ -89,19 +96,28 @@ EOT
 
         # Convert the command list into a help text.
         @commands.each do |cmd|
-          args = cmd[:args]
+          tail = ''
+          args = cmd[:args].dup
           args.map! do |c|
             if c[0] == '*'
               "[<#{c[1..-1]}> ...]"
             elsif c[0] == '+'
               "<#{c[1..-1]}> [<#{c[1..-1]}> ...]"
+            elsif c[0] == '!'
+              tail += ']'
+              "[#{c[1..-1]} "
             else
               "<#{c}>"
             end
           end
           args = args.join(' ')
-          @opts.banner += "     #{cmd[:label] + ' ' + args}" +
+          @opts.banner += "     #{cmd[:label] + ' ' + args + tail}" +
                           "\n\n#{' ' * 10 + format(cmd[:descr], 10)}\n"
+        end
+        @opts.on('-r', '--regexp',
+                format('The report IDs are not fixed but regular expressions ' +
+                       'that match a set of reports')) do |arg|
+          @regExpMode = true
         end
       end
     end
@@ -138,8 +154,8 @@ EOT
             cmd[:args].each do |arg|
               # Arguments starting with '+' must have 1 or more showings.
               # Arguments starting with '*' may show up 0 or more times.
-              minArgs += 1 if arg[0] == '+' && args[0] != '*'
-              varArgs = true if arg[0] == '+' || args[0] == '*'
+              minArgs += 1 unless '!*'.include?(arg[0])
+              varArgs = true if '!*+'.include?(arg[0])
             end
             return true if args.length - 1 >= minArgs
             errorMessage = "Command #{args[0]} must have " +
@@ -199,7 +215,7 @@ EOT
     def executeCommand(command, args)
       case command
       when 'status'
-        puts callDaemon(:status, [])
+        $stdout.puts callDaemon(:status, [])
       when 'terminate'
         callDaemon(:stop, [])
       when 'add'
@@ -218,34 +234,51 @@ EOT
         callDaemon(:removeProject, args)
       when 'report'
         # The first value of args is the project ID. The following values
-        # could be either report IDs (which never have a '.') or TJI file
-        # names (which must have a '.').
+        # could be either report IDs or TJI file # names ('.' or '*.tji').
         projectId = args.shift
-        reportIds = []
-        tjiFiles = []
-        # Sort the remaining arguments into a report ID and a TJI file list.
-        args.each do |arg|
-          if /^[a-zA-Z0-9_]*$/.match(arg)
-            reportIds << arg
-          else
-            tjiFiles << arg
-          end
-        end
         # Ask the ProjectServer to launch a new ReportServer process and
         # provide a DRbObject reference to it.
         reportServer, authKey = connectToReportServer(projectId)
-        # Send the provided .tji files to the ReportServer.
-        failed = false
-        tjiFiles.each do |file|
-          unless reportServer.addFile(authKey, file)
-            failed = true
-            break
-          end
+
+        reportIds, tjiFiles = splitIdsAndFiles(args)
+        if reportIds.empty?
+          disconnectReportServer(reportServer, authKey)
+          error('You must provide at least one report ID')
         end
+        # Send the provided .tji files to the ReportServer.
+        failed = !addFiles(authKey, reportServer, tjiFiles)
         # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
-            unless reportServer.generateReport(authKey, reportId)
+            unless reportServer.generateReport(authKey, reportId, @regExpMode)
+              failed = true
+              break
+            end
+          end
+        end
+        # Terminate the ReportServer
+        disconnectReportServer(reportServer, authKey)
+        return failed ? 1 : 0
+      when 'list-reports'
+        # The first value of args is the project ID. The following values
+        # could be either report IDs or TJI file # names ('.' or '*.tji').
+        projectId = args.shift
+        # Ask the ProjectServer to launch a new ReportServer process and
+        # provide a DRbObject reference to it.
+        reportServer, authKey = connectToReportServer(projectId)
+
+        reportIds, tjiFiles = splitIdsAndFiles(args)
+        if reportIds.empty?
+          # If the user did not provide a report ID we generate a full list.
+          reportIds = [ '.*' ]
+          @regExpMode = true
+        end
+        # Send the provided .tji files to the ReportServer.
+        failed = !addFiles(authKey, reportServer, tjiFiles)
+        # Ask the ReportServer to generate the reports with the provided IDs.
+        unless failed
+          reportIds.each do |reportId|
+            unless reportServer.listReports(authKey, reportId, @regExpMode)
               failed = true
               break
             end
@@ -353,6 +386,41 @@ EOT
         error("Call to TaskJuggler server on host '#{@host}' " +
               "port #{@port} failed: #{$!}")
       end
+    end
+
+    # Sort the remaining arguments into a report ID and a TJI file list.
+    # If .tji files are present, they must be separated from the report ID
+    # list by a '='.
+    def splitIdsAndFiles(args)
+      reportIds = []
+      tjiFiles = []
+      addToReports = true
+      args.each do |arg|
+        if arg == '='
+          # Switch to tji file list.
+          addToReports = false
+        elsif addToReports
+          reportIds << arg
+        else
+          tjiFiles << arg
+        end
+      end
+
+      [ reportIds, tjiFiles ]
+    end
+
+    # Transfer the _tjiFiles_ to the _reportServer_.
+    def addFiles(authKey, reportServer, tjiFiles)
+      tjiFiles.each do |file|
+        begin
+          unless reportServer.addFile(authKey, file)
+            return false
+          end
+        rescue
+          error("Cannot add file #{file} to ReportServer")
+        end
+      end
+      true
     end
 
     def error(message)
