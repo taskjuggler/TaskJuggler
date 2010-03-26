@@ -40,12 +40,33 @@ class TaskJuggler
       @sheetRecipients = []
       # A list of email addresses to send the summary to
       @digestRecipients = []
+
+      @resourceIntro = "  Weekly Report from %s\n\n"
+      @resourceSheetSubject = "Weekly report %s"
+      @summarySubject = "Weekly staff reports %s"
+      @reminderSubject = "Your weekly report %s is overdue!"
+      @reminderText = <<'EOT'
+The deadline for your report submission has passed but we haven't
+received it yet. Please submit your report immediately so the content
+can still be included in the management reports. Please send a copy
+of your submission noticiation email to your manager. If possible,
+your manager will still try to include your report data in his/her
+report.
+
+Please be aware that post deadline submissions must be processed
+manually and create an additional load for your manager and/or
+project manager.  Please try to submit in time in the future.
+
+Thanks for your cooperation!
+
+EOT
     end
 
     def sendSummary(resourceIds)
       setWorkingDir
 
       summary = ''
+      defaulterList = []
       getResourceList.each do |resource|
         resourceId = resource[0]
         resourceName = resource[1]
@@ -58,14 +79,16 @@ class TaskJuggler
           if File.exists?(sheetFile)
             # Resource has submitted a time sheet
             sheet = getResourceJournal(sheetFile)
-            summary += "  Weekly Report from #{resourceName}\n\n"
+            summary += sprintf(@resourceIntro, resourceName)
             summary += sheet
             info("Adding report from #{resourceName} to summary")
 
             @sheetRecipients.each do |to|
-              sendEmail(to, "Weekly report #{@date}", sheet, nil, resourceEmail)
+              sendEmail(to, sprintf(@resourceSheetSubject, @date), sheet,
+                        nil, resourceEmail)
             end
           else
+            defaulterList << resource
             # Resource did not submit a time sheet
             summary += "\n  Report from #{resourceName} is missing\n\n"
             info("Report from #{resourceId} is missing")
@@ -74,9 +97,31 @@ class TaskJuggler
         end
       end
 
-      @digestRecipients.each do |to|
-        sendEmail(to, "Weekly staff reports #{@date}", summary)
+      # If there is a reminder text defined, resend the template to those
+      # individuals that have not yet submitted their report yet.
+      if @reminderText && !@reminderText.empty?
+        defaulterList.each do |resource|
+          sendReminder(resource[0], resource[1], resource[2])
+        end
       end
+
+      @digestRecipients.each do |to|
+        sendEmail(to, sprintf(@summarySubject, @date), summary)
+      end
+    end
+
+    private
+
+    def sendReminder(id, name, email)
+      attachment = "#{@templateDir}/#{@date}/#{id}_#{@date}.tji"
+      unless File.exist?(attachment)
+        error("sendReportTemplates: " +
+              "#{@sheetType} sheet #{attachment} for #{name} not found")
+      end
+
+      message = "Hello #{name}!\n\n#{@reminderText}" + File.read(attachment)
+
+      sendEmail(email, sprintf(@reminderSubject, @date), message, attachment)
     end
 
     def getResourceJournal(sheetFile)
