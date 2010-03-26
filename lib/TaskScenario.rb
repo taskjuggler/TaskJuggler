@@ -438,7 +438,7 @@ class TaskJuggler
           error('task_pred_before',
                 "Task #{@property.fullId} must start after " +
                 "#{dependency.onEnd ? 'end' : 'start'} of task " +
-                "#{@property.fullId}.")
+                "#{task.fullId}.")
         end
       end
 
