@@ -330,7 +330,7 @@ EOT
                 "ClarityPName of task #{task.fullId} has not been set!"
         end
         if name.empty?
-          raise TjException.new.
+          raise TjException.new,
                 "ClarityPName of task #{task.fullId} may not be empty!"
         end
 

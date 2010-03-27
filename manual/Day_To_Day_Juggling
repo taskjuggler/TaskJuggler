@@ -32,6 +32,8 @@ but it needs your help. You have to provide the additional information in the
 project file. In return you get current status reports and an updated project
 plan based on the current status of the project.
 
+==== Using completion values ====
+
 The most simple form of capturing the current status of the project is to use
 the complete attribute.
 
@@ -43,25 +45,236 @@ the complete attribute.
  }
 
 This tells TaskJuggler that 50% of the task's effort has been completed by the
-current date. Tasks that have no completion specification will be assumed to be
-on track. TaskJuggler calculates the completion degree based on the current
-date. Completion specifications only need to be supplied for tasks that are
-either ahead of schedule or behind schedule. Please keep in mind that the
-completion degree does not affect the scheduling and resource allocation. It is
-only for reporting purposes. It also does not tell TaskJuggler which resource
-actually worked on the tasks.
+[[now|current date]]. Tasks that have no completion specification will
+be assumed to be on track. TaskJuggler calculates the expected
+completion degree based on the current date. Completion specifications
+only need to be supplied for tasks that are either ahead of schedule
+or behind schedule. Please be aware that the completion degree does
+not affect the scheduling and resource allocation. It is only for
+reporting purposes. It also does not tell TaskJuggler which resource
+actually worked on the tasks, nor does it update the total or
+remaining effort.
 
-If you want the past work to affect scheduling you must use the booking
-statements as outlined in the next section.
+==== Using bookings ====
 
-When your project plan reflects the current status of your project, TaskJuggler
-can generate nice status reports for you. To generate an HTML report for the
-last week listing all tasks that are running late, all tasks that are ongoing,
-tasks that have been completed last week, and task that will be started next
-week, you just specify 
+When TaskJuggler schedules your plan, it can tell you who should work
+when on what. Now, that's the plan. But reality might be different.
+To tell TaskJuggler what really happened, you can use
+[[booking.task|booking statements]]. When the past is exactly
+described by providing booking statements, you can enable
+[[projection|projection mode]].
 
- htmlstatusreport "Status-Report.html" {
- }
+Entering all the bookings for each resource and task may sound like a
+daunting task at first. If you do it manually, it certainly is.
+Fortunately, TaskJuggler can generate them for you by using
+[[export|export reports]]. Before we discuss this in more detail, we
+need to make sure that the plan is up-to-date.
+
+=== Tracking status and actuals ===
+
+Creating a good project plan is one thing. Executing it is a whole
+new story. Usually, the first plan is never fully correct and the
+only way to make sure that you are making progress according to plan
+is to regularly get status updates from all resources.
+
+Status updates should be provided by all project contributors on a
+regular basis, usually once a week. These updates should tell project
+managers who really worked how much on what tasks and how much work
+the contributors believe is really left now. There are two categories
+of tasks in a project that need to be treated slightly differently.
+
+A task can either be effort based or duration based. In the former
+case, the contributors must tell how much effort is left. For
+duration based task, this doesn't make much sense. For these task,
+the expected end date should be reported.
+
+In addition to those numbers, managers in the reporting chain usually
+want to have a textual status that describes what happened and what
+kind of issues were encountered. Usually, these textual status
+reports are combined with alert levels like green, yellow and red.
+Green means everything is progressing according to plan, yellow means
+there is some schedule risk and red means serious trouble. Usually
+first line managers like to get all the details while people further
+up in the reporting chain only like to see summaries varying level of
+details.
+
+All of this creates additional overhead but is usually inevitable to
+ensure that you complete the project within time and budget. As a
+comprehensive project management solution, TaskJuggler provides full
+support for all those tracking and reporting steps. It comes with a
+powerful email and web based communication system that simplifies the
+tracking process for individual contributors as well as managers.
+
+==== The reporting and tracking cycle ====
+
+In this description, we assume that you are using a weekly reporting
+cycle. TaskJuggler does support arbitrary cycles, but we highly
+recommend the described weekly cycle.
+
+# '''Time sheets''': Every project contributor needs to fill out a
+[[timesheet|time sheet]] once a week. To simplify this task as much
+as possible, a template will be send out by email. The template
+already lists all tasks that were planned for this week to work on
+with the respective effort values and end dates. It also provides
+sections for textual status reports. The contributor needs to review
+and complete the time sheet and has to send it back via email.
+TaskJuggler validates the submission and returns an email with either
+an error message or a nicely formatted version of the time sheet.
+
+# All time sheets must be submitted by a certain deadline, e. g.
+midnight on Sunday. TaskJuggler will then compile a summary report
+and sent it out to a list of interested parties. It will also detect
+missing time sheets and will send out a reminder to those
+contributors that have not submitted their report.
+
+# On Monday the project managers need to review the time sheets and
+update the plan accordingly. TaskJuggler can compile a list changes
+compared to the plan. This makes it easy to update the plan according
+to the actual progress that was made. The close the actuals match the
+plan the less work this is. The project managers now generate
+bookings for the last week and add them to the database with previous
+bookings. Doing so, will prevent changes to the plan to affect the
+past. Only the future will be modified.
+
+# Once the plan has been updated, managers will receive their status
+sheet templates per email. Each manager will get the information for
+the tasks that they are [[responsible]] for. To consolidate the
+information for the next manager in the reporting chain they can
+moderate the reports in three ways. Consolidated manager reports are
+called dashboard reports.
+
+## A status report for a task can be removed from the dashboard.
+
+## A status report for a task can be corrected or updated.
+
+## All reports for sub tasks of a task can be summarized by creating
+a new status for that task. This will remove all reports for sub
+tasks of that particular tasks from the dashboard.
+
+# Managers than need to send back the edited status report via email.
+Like with time sheets, TaskJuggler will check them and return either
+an error message or a plain text version of the dashboard report of
+the manager.
+
+In addition to the plain text versions of the time sheet summaries
+and the dashboards, TaskJuggler provides support for publishing them
+as HTML pages from a web server.
+
+=== Implementing the status tracking system ===
+
+==== Prerequesites ====
+
+The .tjp and .tji files of your project plan should be managed by a
+revision control system. TaskJuggler does not require a particular
+software, but for this manual we illustrate the implementation with
+[http://subversion.apache.org Subversion]. It should be obvious how
+to do this with other software though.
+
+All communication of time sheets and status sheets is done via email.
+TaskJuggler has build-in support for sending emails. To receive
+emails and to feed them to the correct program, TaskJuggler needs
+support from a mail transfer agent (MTA) and a mail processor. In
+this documentation we describe the setup with
+[http://www.postfix.org/ postfix] as MTA and
+[http://www.procmail.org/ procmail] as mail processor. These are
+standard parts of any Linux distribution and should be easy to setup.
+It's certainly possible to use other MTAs and mail processors, but
+this is not the scope of this manual.
+
+Finally, you need a web server to publish your reports. This can
+really be any web server. The generated reports are static HTML pages
+that can simply be copied into a directory that the web server is
+serving.
+
+==== The TaskJuggler Server ====
+
+Depending on the size of your project the scheduling time can take
+several minutes or more. Since all operations need to be done on the
+data of a scheduled project, it makes sense to have this data readily
+available. This is the job of the TaskJuggler server or daemon in
+Linux lingo. The program is called ''''tj3d''''. When started, it
+automatically disconnects from the terminal and runs in the
+background. All interactions with the server are done via the TCP/IP
+protocol. For security reasons, only connections from the same
+machine (localhost) are accepted. To get access all clients must
+provide an authentication key. A TaskJuggler server can serve any
+number of projects. Once a project has been loaded successfully,
+clients can retrieve the data in form of reports. Projects are
+identified by their project ID. If a newly added project has the same
+ID such as an already loaded project, the new project will replace
+the old project once it was scheduled successfully. Before you start
+the server, you need to provide a configuration file with some basic
+settings.
+
+All taskjuggler components can use the same configuration file. The
+format is a simple plain text format that follows the
+[http://www.yaml.org/ YAML specification]. The file should be called
+''''.taskjuglerrc'''' or ''''taskjuggler.rc''''. The settings are
+structured by sections. Section names always start with an underscore.
+
+ _global:
+   authKey: topsecret
+   _log:
+     logLevel: 3
+     outputLevel: 3
+
+This file sets the authentication key for all TaskJuggler components.
+You must replace ''topsecret'' with your own random character
+sequence.
+
+The log section controls the content of the log file. Since the
+daemon does not have a terminal attached to it, all messages are
+stored in a file called ''''tj3d.log''''. For debugging purposes, you
+can use the ''''-d'''' option to prevent the daemon from
+disconnecting from the terminal. In this case the ''''outputLevel''''
+configuration option controls the amount of details to be printed out.
+
+* 0: No output
+* 1: Only fatal errors
+* 2: Fatal and normal errors
+* 3: Like 2, but additionally with information messages
+* 4: Like 3, but additionally with debug messages
+
+The configuration file will be searched in the current directory,
+your home directory or ''''/etc''''. You can also explicitly tell the
+server where to find the configuration file with the ''''-c''''
+option. See
+
+ tj3d --help
+
+for details.
+
+==== The TaskJuggler Client ====
+
+To control the TaskJuggler server, you need to use the TaskJuggler
+client. You can use the client to add or remove projects from the
+server, inquire the status of loaded projects. It can also be used to
+show the available reports for each project and to generate report or
+check time or status sheets.
+
+The client must provide the correct authentication key to the server.
+You need to ensure that it can find the proper configuration file
+with the authentication key.
+
+ tj3client --help
+
+will provide a full lust of supported commands. To load a project
+simply type
+
+ tj3client add yourproject.tjp
+
+In case there were no errors
+
+ tj3client status
+
+should now list your project.
+
+ tj3client list-reports <project_id>
+
+shows a list of available reports for the project with the provided
+ID. To generate a report, you can type
+
+ tj3client report <project_id> <report_id>
 
 === Recording Resource Usage ===
 
