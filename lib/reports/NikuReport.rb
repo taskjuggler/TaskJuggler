@@ -63,6 +63,8 @@ class TaskJuggler
 
       # Resources total effort during the report period hashed by ClarityId
       @resourcesTotalEffort = {}
+
+      @scenarioIdx = nil
     end
 
     def generateIntermediateFormat
@@ -109,7 +111,7 @@ class TaskJuggler
       end
       tr << htmlTabCell('Total', true, 'center')
 
-      # The actuable content. One line per resource.
+      # The actual content. One line per resource.
       table << (tbody = XMLElement.new('tbody'))
       @resourcesTotalEffort.each_key do |resourceId|
         tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
@@ -318,15 +320,18 @@ EOT
         # Ignore tasks without a ClarityPID attribute.
         next if id.nil?
         if id.empty?
-          raise "ClarityPID of task #{task.fullId} may not be empty"
+          raise TjException.new,
+                "ClarityPID of task #{task.fullId} may not be empty"
         end
 
         name = task.get('ClarityPName')
         if name.nil?
-          raise "ClarityPName of task #{task.fullId} has not been set!"
+          raise TjException.new,
+                "ClarityPName of task #{task.fullId} has not been set!"
         end
         if name.empty?
-          raise "ClarityPName of task #{task.fullId} may not be empty!"
+          raise TjException.new.
+                "ClarityPName of task #{task.fullId} may not be empty!"
         end
 
         if (project = @projects[id]).nil?
