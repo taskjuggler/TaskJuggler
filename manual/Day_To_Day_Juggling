@@ -171,7 +171,7 @@ software, but for this manual we illustrate the implementation with
 to do this with other software though.
 
 All communication of time sheets and status sheets is done via email.
-TaskJuggler has build-in support for sending emails. To receive
+TaskJuggler has built-in support for sending emails. To receive
 emails and to feed them to the correct program, TaskJuggler needs
 support from a mail transfer agent (MTA) and a mail processor. In
 this documentation we describe the setup with
@@ -183,7 +183,7 @@ this is not the scope of this manual.
 
 Finally, you need a web server to publish your reports. This can
 really be any web server. The generated reports are static HTML pages
-that can simply be copied into a directory that the web server is
+that can simply be put into a directory that the web server is
 serving.
 
 For the email based communication you need to provide email addresses
@@ -205,7 +205,7 @@ email addresses for each resource
 In this manual, we assume you have a dedicated Linux machine with a
 local user called ''''taskjuggler''''. Your project files (*.tjp and
 *.tji) is under Subversion control and the taskjuggler user has a
-checkout version in ''''/home/taskjuggler/projects/prj''''. You can
+checked-out version in ''''/home/taskjuggler/projects/prj''''. You can
 use another user name, another source code management system and even
 another operating system like Windows or MacOS. This is all possible,
 but not the scope of this manual.
@@ -247,10 +247,10 @@ You must replace ''topsecret'' with your own random character
 sequence.
 
 For the purpose of this documentation we assume you have a local user
-called taskjuggler and your project data in
+called ''taskjuggler'' and your project data in
 ''''/home/taskjuggler/project/prj''''. Your TaskJuggler configuration
 should then be put into
-''''home/taskjuggler/project/prj/.taskjugglerrc''''.
+''''/home/taskjuggler/project/prj/.taskjugglerrc''''.
 
 The log section controls the content of the log file. Since the
 daemon does not have a terminal attached to it, all messages are
@@ -266,9 +266,9 @@ configuration option controls the amount of details to be printed out.
 * 4: Like 3, but additionally with debug messages
 
 The configuration file will be searched in the current directory,
-your home directory or ''''/etc''''. You can also explicitly tell the
-server where to find the configuration file with the ''''-c''''
-option. See
+the current user's home directory or ''''/etc''''. You can also
+explicitly tell the server where to find the configuration file with
+the ''''-c'''' option. See
 
  tj3d --help
 
