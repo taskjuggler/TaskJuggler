@@ -186,6 +186,30 @@ really be any web server. The generated reports are static HTML pages
 that can simply be copied into a directory that the web server is
 serving.
 
+For the email based communication you need to provide email addresses
+for all project contributors. This is done in the project plan in the
+resource definition. As there is no built-in attribute for email
+addresses, you need to create one first using the [[extend]] attribute.
+
+ extend resource {
+   text Email "Email address"
+ }
+
+This attribute can now be used in the resource definitions to specify
+email addresses for each resource
+
+ resource joe "Joe Avergage" {
+   Email "joe@your_company.com
+ }
+
+In this manual, we assume you have a dedicated Linux machine with a
+local user called ''''taskjuggler''''. Your project files (*.tjp and
+*.tji) is under Subversion control and the taskjuggler user has a
+checkout version in ''''/home/taskjuggler/projects/prj''''. You can
+use another user name, another source code management system and even
+another operating system like Windows or MacOS. This is all possible,
+but not the scope of this manual.
+
 ==== The TaskJuggler Server ====
 
 Depending on the size of your project the scheduling time can take
@@ -206,8 +230,8 @@ the old project once it was scheduled successfully. Before you start
 the server, you need to provide a configuration file with some basic
 settings.
 
-All taskjuggler components can use the same configuration file. The
-format is a simple plain text format that follows the
+All taskjuggler components can use the same TaskJuggler configuration
+file. The format is a simple plain text format that follows the
 [http://www.yaml.org/ YAML specification]. The file should be called
 ''''.taskjuglerrc'''' or ''''taskjuggler.rc''''. The settings are
 structured by sections. Section names always start with an underscore.
@@ -221,6 +245,12 @@ structured by sections. Section names always start with an underscore.
 This file sets the authentication key for all TaskJuggler components.
 You must replace ''topsecret'' with your own random character
 sequence.
+
+For the purpose of this documentation we assume you have a local user
+called taskjuggler and your project data in
+''''/home/taskjuggler/project/prj''''. Your TaskJuggler configuration
+should then be put into
+''''home/taskjuggler/project/prj/.taskjugglerrc''''.
 
 The log section controls the content of the log file. Since the
 daemon does not have a terminal attached to it, all messages are
@@ -275,6 +305,267 @@ shows a list of available reports for the project with the provided
 ID. To generate a report, you can type
 
  tj3client report <project_id> <report_id>
+
+==== The Time Sheet Template Sender ====
+
+Each project contributor needs to fill out a time sheet each week. To
+simplify the process each contributor will receive a template that
+already contains a lot of the information they need to provide.
+
+To send out the time sheets, the command ''''tj3ts_sender'''' must be
+used. It will call ''''tj3client'''' with appropriate parameters. To
+use it, you need to have a properly configured daemon running and the
+appropriate project loaded. Then you need to add the configuration
+data for ''''tj3ts_sender'''' to your TaskJuggler configuration file.
+The time sheet related settings have their own top-level section:
+
+ _global:
+   smtpServer: smtp.your_company.com
+   authKey: topsecret
+   scmCommand: "svn add %f ; svn commit -m '%m' %f"
+   projectId: prj
+ _timesheets:
+   senderEmail: 'TaskJuggler <timesheets@taskjuggler.your_company.com>'
+   _sender:
+     hideResource: '~isleaf()'
+   _summary:
+     sheetRecipients:
+       - team@your_company.com
+     digestRecipients:
+       - managers@your_company.com
+
+The ''''smtpServer'''' defines which host will handle your emails. Replace the
+host name with your local SMTP server. The 'scmCommand' setting contains the
+command to add and commit new and old files to the source code management
+system. The command in this example works for Subversion.
+
+The TaskJuggler server may serve multiple projects. With the
+''''projectId'''' option you have to specify which project you would
+like to work with. ''''senderEmail'''' is the email address the time
+sheet infrastructure will use. Outgoing emails will have this address
+as sender so that replies will come back to this email address. We'll
+cover later how these are processed.
+
+The hideResource option works similarly to the [[hideresource]]
+attribute in the report definitions of the project plan. It allows
+you to restrict the sending of time sheet templates to a subset of
+your defined resources. In this example, we only want to send
+templates to individual resources and not the teams you might have
+defined.
+
+By default the time sheets will cover the week from Monday morning
+0:00 to Sunday night 24:00. When called without the ''''-e''''
+option, ''''tj3ts_sender'''' will send out templates for the current
+week.
+
+To call the ''''tj3ts_sender'''' command you either need to be in the
+''''/home/taskjuggler/projects/prj'''' directory or use the
+''''-c'''' command line option to point it to the configuration file
+to use. In the latter case you also need to call it with the
+''''-d'''' option to change the output directory to your project
+directory.
+
+To test the command without sending out actual emails you can use the
+''''--dryrun'''' option on the command line. To do its job,
+''''tj3ts_sender'''' needs to generate a number of files and
+directories. A copy of the generated templates will be stored in
+''''TimeSheetTemplates/<date>/'''' under
+''''<resource_id>-date.tji''''. ''''<date>'''' is replaced with the
+end date of the reporting interval and ''''<resoruce_id>'''' is the ID
+of the resource.
+
+If you re-run the command existing templates will not be regenerated
+nor will they be sent out again. You can use the ''''-f''''
+command line option to force them to be generated and sent out again.
+
+The ''''tj3ts_sender'''' command will also add the reporting interval
+to a file called ''''TimeSheetTemplates/acceptable_invervals''''.
+We'll cover this file later on when we deal with the time sheet
+receiver.
+
+==== The Time Sheet Receiver ====
+
+To receive the filled-out time sheets and to process them
+automatically you need to create a special user. TaskJuggler requires
+a number of email addresses to be setup to receive emails. We
+recommend to use the following setup. Create a special user called
+''''taskjuggler'''' on a dedicated Linux machine. Then create the
+following email aliases for this user.
+
+ timesheets
+ timesheet-request
+ statussheets
+ statussheet-request
+
+Your MTA must be configured to use procmail for email delivery. See
+the manual of your MTA for details on how to configure aliases and
+for using procmail for delivery. If you have a resident MTA expert
+you should ask him or her for support.
+
+The next step is to configure procmail to forward the incoming emails
+to the appropriate TaskJuggler components. Create a file called
+''''.procmailrc'''' in the home directory of the taskjuggler user and
+put in the following content:
+
+For debugging and testing purposes, all incoming emails are archived
+in a directory called ''''Mail''''. If there is no such directory in
+the taskjuggler home directory, you need to create it now.
+
+ PATH=$HOME/bin:/usr/bin:/bin:/usr/local/bin            
+ MAILDIR=$HOME/Mail/                                    
+ DEFAULT=$HOME/Mail/all                                 
+ LOGFILE=$MAILDIR/procmail.log                          
+ SHELL=/bin/sh                                          
+ PROJECTDIR=/home/taskjuggler/projects/prj       
+ LANG=en_US.UTF-8                                       
+ LC_ALL=en_US.UTF-8                                     
+
+ # Archive all incoming emails in a file called all 
+ :0 c
+ all 
+ 
+ :0
+ * ^Subject:.*Out of Office.*
+ /dev/null                   
+ 
+ :0
+ * ^To:.*timesheets@taskjuggler\.your_company\.com
+ {                                       
+   :0 c:                                 
+   timesheets                            
+ 
+   :0 w: tj3ts_receiver.lock
+   | tj3ts_receiver --silent -c $PROJECTDIR/.taskjugglerrc -d $PROJECTDIR
+ 
+   :0
+   failed_sheets
+ }
+ 
+ :0
+ * ^To:.*timesheet-request@taskjuggler\.your_company\.com
+ {
+   ID=`formail -xSubject:`
+ 
+   :0 c:
+   timesheet-request
+ 
+   :0 w: tj3ts_sender.lock
+   | tj3ts_sender -r $ID -f --silent -c $PROJECTDIR/.taskjugglerrc -d $PROJECTDIR
+ }
+ 
+ :0
+ * ^To:.*statussheets@taskjuggler\.your_company\.com
+ {
+   :0 c:
+   statussheets
+ 
+   :0 w: tj3ss_receiver.lock
+   | tj3ss_receiver --silent -c $PROJECTDIR/.taskjugglerrc -d $PROJECTDIR
+ 
+   :0
+   failed_sheets
+ }
+ 
+ :0
+ * ^To:.*statussheet-request@taskjuggler\.your_company\.com
+ {
+   ID=`formail -xSubject:`
+ 
+   :0 c:
+   statussheet-request
+ 
+   :0 w: tj3ss_sender.lock
+   | tj3ss_sender -r $ID -f --silent -c $PROJECTDIR/.taskjugglerrc -d $PROJECTDIR
+ }
+ 
+ # Forward a copy to project admins
+ :0 c
+ ! taskjuggler-admin@your_company.com
+ 
+ # Since we have archived a copy we can discard all mails here.
+ :0
+ /dev/null
+
+This procmail configuration will cause incoming emails that are
+addressed to timesheets@taskjuggler.your_company.com to be forwarded
+to the ''''tj3ts_receiver'''' program. Of course you need to replace
+''your_comany.com'' with whatever domain you are using.
+
+The received emails are then checked for syntactical and logical
+errors. If such are found, an email is sent back with an appropriate
+error message. The time sheet contains the resource ID of the
+reporting resource. As soon as this has been detected, all email
+communication will be sent to the email address in the project plan.
+Only when the resource ID could not be identified, the sender of the
+email will get the answer. This was implemented as a security measure
+so other users cannot easily retrieve project related information
+from other users.
+
+Correct time sheets are archived in the ''''TimeSheets/<date>/''''
+directory where ''''<date>'''' is the end date of the reporting
+period. If the directory does not exist yet, it will be created. The
+file will be called ''''<resource_id>-<date>.tji''''. If
+a SCM command was specified, the file will be automatically put under
+revision control. Subsequent submission of the same time sheet will
+simply overwrite the earlier submissions. The file name will also be
+added to a file called ''''all.tji'''' which consists of include
+statements of all time sheet files in the directory. There also is an
+automatically maintained file ''''all.tji'''' in the
+''''TimeSheets'''' directory that includes all the ''''<date>/all.tji''''
+files. To add all the submitted time sheets to your project plan,
+simply include the top-level ''''all.tji''''.
+
+''''tj3ts_receiver'''' will only accept time sheets for the time
+periods listed in ''''TimeSheetTemplates/acceptable_intervals''''.
+''''tj3ts_sender'''' will automatically enable the current period
+when it sends out the templates. If you want to stop receiving time
+sheet updates for a certain period, simply remove the period from the
+''''acceptable_intervals'''' file.
+
+==== Time Sheet Template Requests ====
+
+Normally, the time sheets are sent out once a week automatically. In
+case a project contributor leaves earlier for vacation or has lost
+the template, they can request the template for the current week
+again.
+
+By sending an email to
+''''timesheet-request@taskjuggler.your_company.com'''' and putting
+their resource ID in the subject of the email, they will receive an
+email with the time sheet template. The email will be sent to the
+email address in the project plan, not the sender of the request
+email.
+
+==== Time Sheet Summaries ====
+
+All time sheets should be successfully submitted by Sunday 24:00.
+After this deadline, your can send out a summary of all submitted
+time sheets. This summary will also contain a list of those project
+contributors that have not submitted their time sheet. These
+individuals will also get a reminder to submit their time sheets
+immediately.
+
+To send out the summary report, the program ''''tj3ts_summary'''' is
+used. Before you can use it, you need to add a few settings to the
+TaskJuggler configuration file.
+
+ _global:
+   smtpServer: smtp.your_company.com
+   authKey: topsecret
+   projectId: prj
+ _timesheets:
+   senderEmail: 'TaskJuggler <timesheets@taskjuggler.your_company.com>'
+   _summary:
+     sheetRecipients:
+       - team@your_company.com
+     digestRecipients:
+       - managers@your_company.com
+
+''''sheetRecipients'''' is a list of email addresses that should
+receive a copy of the submitted time sheet. Each email address must
+be put on a separate, properly indented line that starts with a dash
+followed by a space. The emails will have the email of the original
+time sheet author as sender address.
 
 === Recording Resource Usage ===
 
