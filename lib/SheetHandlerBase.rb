@@ -167,7 +167,7 @@ class TaskJuggler
           text_part do
             content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
             content_transfer_encoding 'quoted-printable'
-            body message
+            body message.to_quoted_printable
           end
         end
         mail.to = to
@@ -181,7 +181,7 @@ class TaskJuggler
             :content => File.read(attachment)
           })
         end
-        raise "Mail header problem" unless mail.errors.empty?
+        #raise "Mail header problem" unless mail.errors.empty?
       rescue
         @emailFailure = true
         error("Email processing failed: #{$!}")
