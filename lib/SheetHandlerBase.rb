@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'mail'
+
 require 'UTF8String'
 
 class TaskJuggler
@@ -165,7 +167,7 @@ class TaskJuggler
           text_part do
             content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
             content_transfer_encoding 'quoted-printable'
-            body message.to_quoted_printable
+            body message
           end
         end
         mail.to = to
@@ -179,6 +181,7 @@ class TaskJuggler
             :content => File.read(attachment)
           })
         end
+        raise "Mail header problem" unless mail.errors.empty?
       rescue
         @emailFailure = true
         error("Email processing failed: #{$!}")

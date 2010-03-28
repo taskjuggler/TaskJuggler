@@ -204,11 +204,12 @@ email addresses for each resource
 
 In this manual, we assume you have a dedicated Linux machine with a
 local user called ''''taskjuggler''''. Your project files (*.tjp and
-*.tji) is under Subversion control and the taskjuggler user has a
-checked-out version in ''''/home/taskjuggler/projects/prj''''. You can
-use another user name, another source code management system and even
-another operating system like Windows or MacOS. This is all possible,
-but not the scope of this manual.
+<nowiki>*</nowiki>.tji) is under Subversion control and the
+taskjuggler user has a checked-out version in
+''''/home/taskjuggler/projects/prj''''. You can use another user name,
+another source code management system and even another operating
+system like Windows or MacOS. This is all possible, but not the scope
+of this manual.
 
 ==== The TaskJuggler Server ====
 

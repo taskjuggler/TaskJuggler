@@ -98,8 +98,4 @@ class String
     alias length_utf8 length
   end
 
-  def to_quoted_printable
-    [self].pack('M').gsub(/\n/, "\r\n")
-  end
-
 end
