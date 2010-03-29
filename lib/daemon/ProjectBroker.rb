@@ -135,12 +135,14 @@ EOT
       if @projects.empty?
         "No projects registered\n"
       else
-        format = "  %-25s | %-14s | %-20s\n"
-        out = sprintf(format, 'Project ID', 'Status', 'Loaded since')
-        out += "  " + '-' * 26 + '+' + '-' * 16 + '+' + '-' * 21 + "\n"
+        format = "  %3s | %-25s | %-14s | %-20s\n"
+        out = sprintf(format, 'No.', 'Project ID', 'Status', 'Loaded since')
+        out += "  " + '-' * 4 + '+' + '-' * 26 + '+' + '-' * 16 + '+' +
+               '-' * 21 + "\n"
         @projects.synchronize do
+          i = 0
           @projects.each do |project|
-            out += project.to_s(format)
+            out += project.to_s(format, i += 1)
           end
         end
         out
@@ -180,13 +182,25 @@ EOT
       [ pr.uri, pr.authKey ]
     end
 
-    def removeProject(args)
-      # Find all projects with the IDs in args and mark them as :obsolete.
-      @projects.synchronize do
-        @projects.each do |p|
-          p.state = :obsolete if args.include?(p.id)
+    def removeProject(indexOrId)
+      # Find all projects with the IDs in indexOrId and mark them as :obsolete.
+      if /^[0-9]$/.match(indexOrId)
+        index = indexOrId.to_i - 1
+        if index >= 0 && index < @projects.length
+          @projects[index].state = :obsolete
+          return true
+        end
+      else
+        @projects.synchronize do
+          @projects.each do |p|
+            if indexOrId == p.id
+              p.state = :obsolete
+              return true
+            end
+          end
         end
       end
+      false
     end
 
     # Return the ProjectServer URI and authKey for the project with project ID
@@ -216,7 +230,7 @@ EOT
           # Don't accept updates for already obsolete entries.
           next if project.state == :obsolete
 
-          @log.debug("Updating state for #{authKey} to #{state}")
+          @log.debug("Updating state for #{id} to #{state}")
           # Only update the record that has the matching authKey
           if project.authKey == authKey
             project.id = id
@@ -271,7 +285,7 @@ EOT
               @projects.each do |p|
                 if p.state == :obsolete
                   termList << p
-                elsif p.state == :failed && p.id.nil?
+                elsif p.state == :failed
                   # Start removal of entries that didn't parse.
                   p.state = :obsolete
                 end
@@ -384,9 +398,9 @@ EOT
       @uri = nil
       # The ID of the project.
       @id = nil
-      # The state of the project. :loading, :ready, :failed and :obsolete are
-      # supported.
-      @state = :loading
+      # The state of the project. :new, :loading, :ready, :failed
+      # and :obsolete are supported.
+      @state = :new
       # A time stamp when the project became ready for service.
       @readySince = nil
 
@@ -423,8 +437,8 @@ EOT
     end
 
     # This is used to generate the status table.
-    def to_s(format)
-      sprintf(format, @id, @state,
+    def to_s(format, index)
+      sprintf(format, index, @id, @state,
               @readySince ? @readySince.to_s('%Y-%m-%d %H:%M:%S') : '')
     end
 

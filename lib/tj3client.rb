@@ -231,7 +231,11 @@ EOT
         disconnectProjectServer(projectServer, authKey)
         return res ? 0 : 1
       when 'remove'
-        callDaemon(:removeProject, args)
+        args.each do |arg|
+          unless callDaemon(:removeProject, arg)
+            error("Project '#{arg}' not found in list")
+          end
+        end
       when 'report'
         # The first value of args is the project ID. The following values
         # could be either report IDs or TJI file # names ('.' or '*.tji').

@@ -51,7 +51,9 @@ class TaskJuggler
       # A reference to the TaskJuggler object that holds the project data.
       @tj = nil
       # The current state of the project.
-      @state = :loading
+      @state = :new
+      # A time stamp when the last @state update happened.
+      @stateUpdated = TjTime.now
       # A lock to protect access to @state
       @stateLock = Monitor.new
 
@@ -122,12 +124,13 @@ class TaskJuggler
       # The first argument is the working directory
       Dir.chdir(args.shift.untaint)
 
+      updateState(:loading, File.basename(args[0]))
       @tj = TaskJuggler.new(true)
 
       # Parse all project files
       unless @tj.parse(args, true)
         @log.error("Parsing of #{args.join(' ')} failed")
-        updateState(:failed, @tj.projectId)
+        updateState(:failed, File.basename(args[0]))
         @terminate = true
         return false
       end
@@ -209,6 +212,7 @@ class TaskJuggler
       end
       @stateLock.synchronize do
         @state = state
+        @stateUpdated = TjTime.now
       end
     end
 
@@ -218,8 +222,10 @@ class TaskJuggler
           # Check for pending requests for new ReportServers.
           unless @reportServerRequests.empty?
             tag = @reportServerRequests.pop
+            @log.debug("Popped #{tag}")
             # Create an new entry for the @reportServers list.
             rsr = ReportServerRecord.new(tag)
+            @log.debug("RSR created")
             # Create a new ReportServer object that runs as a separate
             # process. The constructor will tell us the URI and authentication
             # key of the new ReportServer.
@@ -231,6 +237,17 @@ class TaskJuggler
             @reportServers.synchronize do
               @reportServers << rsr
             end
+          end
+
+          # Some state changing operations are not atomic. Since the client
+          # can die during the transaction, the server might hang in some
+          # states. Here we define timeout for each state. If the timeout is
+          # not 0 and exceeded, we immediately terminate the process.
+          timeouts = { :new => 10, :loading => 15 * 60, :failed => 60,
+                       :ready => 0 }
+          if timeouts[@state] > 0 &&
+             TjTime.now - @stateUpdated > timeouts[@state]
+            @log.fatal("Reached timeout for state #{@state}. Terminating.")
           end
 
           # If we have not received a ping from the ProjectBroker for 2
