@@ -4558,6 +4558,10 @@ resources. It does not mean that the task happens earlier, though that is
 usually the effect you will see. It also does not have any effect on tasks
 that don't have any resources assigned (e.g. milestones).
 
+For milestones it will raise or lower the chances that task leading up the
+milestone will get their resources over task with equal priority that compete
+for the same resources.
+
 This attribute is inherited by subtasks if specified prior to the definition
 of the subtask.
 EOT

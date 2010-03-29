@@ -660,8 +660,13 @@ class TaskJuggler
       @property['pathcriticalness', @scenarioIdx] = nil
 
       # Users feel that milestones are somewhat important. So we use an
-      # arbitrary value larger than 0 for them.
-      @property['criticalness', @scenarioIdx] = 1.0 if a('milestone')
+      # arbitrary value larger than 0 for them. We make it priority dependent,
+      # so the user has some control over it. Priority 0 is 0, 500 is 1.0 and
+      # 1000 is 2.0. These values are pretty much randomly picked and probably
+      # require some more tuning based on real projects.
+      if a('milestone')
+        @property['criticalness', @scenarioIdx] = a('priority') / 500.0
+      end
 
       # Task without efforts of allocations are not critical.
       return if a('effort') <= 0 || @candidates.empty?
