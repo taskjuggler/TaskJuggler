@@ -137,8 +137,8 @@ EOT
       else
         format = "  %3s | %-25s | %-14s | %-20s\n"
         out = sprintf(format, 'No.', 'Project ID', 'Status', 'Loaded since')
-        out += "  " + '-' * 4 + '+' + '-' * 26 + '+' + '-' * 16 + '+' +
-               '-' * 21 + "\n"
+        out += "  " + '-' * 4 + '+' + '-' * 27 + '+' + '-' * 16 + '+' +
+               '-' * 20 + "\n"
         @projects.synchronize do
           i = 0
           @projects.each do |project|

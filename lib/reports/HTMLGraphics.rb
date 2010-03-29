@@ -51,6 +51,29 @@ class TaskJuggler
       XMLElement.new('div', 'class' => category, 'style' => style)
     end
 
+    def jagToHTML(x, y)
+      XMLElement.new('div', 'class' => 'tj_gantt_jag',
+                            'style' => "left:#{x.to_i - 5}px; " +
+                                       "top:#{y.to_i}px;")
+    end
+
+    def diamondToHTML(x, y)
+      html = []
+      html << XMLElement.new('div', 'class' => 'tj_diamond_top',
+                             'style' => "left:#{x.to_i - 6}px; " +
+                                        "top:#{y.to_i - 7}px;")
+      html << XMLElement.new('div', 'class' => 'tj_diamond_bottom',
+                             'style' => "left:#{x.to_i - 6}px; " +
+                                        "top:#{y.to_i}px;")
+      html
+    end
+
+    def arrowHeadToHTML(x, y)
+      XMLElement.new('div', 'class' => 'tj_arrow_head',
+                            'style' => "left:#{x.to_i - 5}px; " +
+                                       "top:#{y.to_i - 5}px;")
+    end
+
   end
 
 end

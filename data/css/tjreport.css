@@ -198,6 +198,53 @@ p.tj_journal {
   width:30px;
 }
 
+.tj_gantt_jag {
+  position:absolute;
+  border-style: solid;
+  width: 0px;
+  height: 0px; 
+  line-height: 0px;
+  border-top: 5px solid black;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: none
+}
+
+.tj_diamond_top {
+  position:absolute;
+  border-style: solid;
+  width: 0px;
+  height: 0px; 
+  line-height: 0px;
+  border-top: none;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid black;
+}
+.tj_diamond_bottom {
+  position:absolute;
+  border-style: solid;
+  width: 0px;
+  height: 0px; 
+  line-height: 0px;
+  border-top: 7px solid black;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: none;
+}
+
+.tj_arrow_head {
+  position:absolute;
+  border-style: solid;
+  width: 0px;
+  height: 0px; 
+  line-height: 0px;
+  border-top: 5px solid transparent;
+  border-left: 5px solid black;
+  border-right: none; 
+  border-bottom: 5px solid transparent;
+}
+
 .tabback {
   background-color:#9a9a9a;
 }

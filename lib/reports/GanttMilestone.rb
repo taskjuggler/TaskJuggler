@@ -72,11 +72,8 @@ class TaskJuggler
       html << rectToHTML(@x - (@lineHeight / 2), 0, @lineHeight, @lineHeight,
                          'tj_gantt_frame')
 
-      # Draw a diamond shape with overlapping rectangles.
-      (@@size + 1).times do |i|
-        html << rectToHTML(@x - (@@size - 1) + i, (@lineHeight / 2) - i,
-                           2 * (@@size - i) + 1, 2 * i + 1, 'milestone')
-      end
+      # Draw a diamond shape.
+      html += diamondToHTML(@x, @lineHeight / 2)
       html
     end
 

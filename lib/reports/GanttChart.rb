@@ -191,9 +191,7 @@ class TaskJuggler
       end
       # And the corresponsing arrow heads.
       @arrowHeads.each do |x, y|
-        6.times do |i|
-          div << lineToHTML(x - i, y - i, x - i, y + i, 'depline')
-        end
+        div << arrowHeadToHTML(x, y)
       end
 
       td
