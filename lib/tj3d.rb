@@ -30,6 +30,7 @@ class TaskJuggler
       @log.logFile = Dir.getwd + "/#{AppConfig.appName}.log"
       @log.appName = AppConfig.appName
       @daemonize = true
+      @port = nil
     end
 
     def processArguments(argv)
@@ -44,6 +45,10 @@ EOT
                         'connected to the terminal and show debug output.')) do
           @daemonize = false
         end
+        @opts.on('-p', '--port <NUMBER>', Integer,
+                 format('Use the specified TCP/IP port')) do |arg|
+           @port = arg
+        end
       end
     end
 
@@ -54,6 +59,7 @@ EOT
       @rc.configure(@log, 'global.log')
       @rc.configure(broker, 'global')
       @rc.configure(broker, 'daemon')
+      broker.port = @port if @port
 
       projects = []
       project = nil

@@ -35,6 +35,8 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
+    attr_accessor :port
+
     def initialize
       super
       # We don't have a default key. The user must provice a key in the config

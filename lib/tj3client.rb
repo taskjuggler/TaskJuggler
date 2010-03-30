@@ -114,6 +114,10 @@ EOT
           @opts.banner += "     #{cmd[:label] + ' ' + args + tail}" +
                           "\n\n#{' ' * 10 + format(cmd[:descr], 10)}\n"
         end
+        @opts.on('-p', '--port <NUMBER>', Integer,
+                 format('Use the specified TCP/IP port')) do |arg|
+           @port = arg
+        end
         @opts.on('-r', '--regexp',
                 format('The report IDs are not fixed but regular expressions ' +
                        'that match a set of reports')) do |arg|
