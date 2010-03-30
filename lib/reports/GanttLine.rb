@@ -62,7 +62,7 @@ class TaskJuggler
       # boundaries of this div are cut off.
       div = XMLElement.new('div', 'class' => @category,
                            'style' => "margin:0px; padding:0px; " +
-                           "position:absolute; overflow:hidden; " +
+                           "position:absolute; " +
                            "left:0px; top:#{@y}px; " +
                            "width:#{@chart.width.to_i}px; " +
                            "height:#{@height}px; " +

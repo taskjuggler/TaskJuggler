@@ -247,6 +247,7 @@ p.tj_journal {
 
 .tabback {
   background-color:#9a9a9a;
+  overflow:visible;
 }
 .tabfront { background-color:#d4dde6; }
 .tabhead {

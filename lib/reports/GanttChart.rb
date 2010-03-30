@@ -163,9 +163,9 @@ class TaskJuggler
                              (hasScrollbar? ? SCROLLBARHEIGHT : 0)}px;"))
       scrollDiv << (div = XMLElement.new('div',
         'style' => "margin:0px; padding:0px; " +
-                   "position:absolute; " +
+                   "position:absolute; overflow:hidden; " +
                    "top:0px; left:0px; " +
-                   "width:#{@width.to_i}px; " +
+                   "width:#{@width}px; " +
                    "height:#{@height}px; " +
                    "font-size:10px;"))
       # Add the header.
@@ -219,7 +219,7 @@ class TaskJuggler
 
     # Returns true if the chart includes a scrollbar.
     def hasScrollbar?
-      @viewWidth && @viewWidth < @width
+      @viewWidth && (@viewWidth < @width)
     end
 
   private

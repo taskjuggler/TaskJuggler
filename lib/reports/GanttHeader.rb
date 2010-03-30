@@ -50,7 +50,7 @@ class TaskJuggler
     def to_html
       div = XMLElement.new('div', 'class' => 'tabback',
                            'style' => "margin:0px; padding:0px; " +
-                           "position:relative; overflow:hidden; " +
+                           "position:relative; " +
                            "width:#{@chart.width.to_i}px; " +
                            "height:#{@height.to_i}px; " +
                            "font-size:#{(@height / 4).to_i}px; ")
