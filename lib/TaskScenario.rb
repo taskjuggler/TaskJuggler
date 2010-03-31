@@ -460,6 +460,25 @@ class TaskJuggler
               "end date.")
       end
 
+      if a('fail')
+        queryAttrs = { 'project' => @project,
+                       'scenarioIdx' => @scenarioIdx,
+                       'property' => @property,
+                       'scopeProperty' => nil,
+                       'start' => @project['start'],
+                       'end' => @project['end'],
+                       'loadUnit' => :days,
+                       'numberFormat' => @project['numberFormat'],
+                       'timeFormat' => @project['timeFormat'],
+                       'currencyFormat' => @project['currencyFormat'] }
+        query = Query.new(queryAttrs)
+        if a('fail').eval(query)
+          error('failure_check',
+                "User defined check failed for task #{@property.fullId} \n" +
+                "Condition: #{a('fail').to_s}")
+        end
+      end
+
       @errors == 0
     end
 
@@ -1383,6 +1402,7 @@ class TaskJuggler
         # The doneDuration counts the number of scheduled slots. It is increased
         # by one with every scheduled slot. The doneLength is only increased for
         # global working time slots.
+        bookResources(slot, slotDuration)
         @doneDuration += 1
         if @project.isWorkingTime(slot, slot + slotDuration)
           @doneLength += 1
@@ -1460,13 +1480,15 @@ class TaskJuggler
     end
 
     def bookResources(date, slotDuration)
+      # If there are no allocations defined, we can't do any bookings.
       # In projection mode we do not allow bookings prior to the current date
       # for any task (in strict mode) or tasks which have user specified
       # bookings (sloppy mode).
-      if @project.scenario(@scenarioIdx).get('projection') &&
-         date < @project['now'] &&
-         (@project.scenario(@scenarioIdx).get('strict') ||
-          a('assignedresources').empty?)
+      if a('allocate').empty? ||
+         (@project.scenario(@scenarioIdx).get('projection') &&
+          date < @project['now'] &&
+          (@project.scenario(@scenarioIdx).get('strict') ||
+           a('assignedresources').empty?))
         return
       end
 
@@ -1543,7 +1565,7 @@ class TaskJuggler
       resource.allLeaves.each do |r|
         # Prevent overbooking when multiple resources are allocated and
         # available.
-        break if @doneEffort >= a('effort')
+        break if a('effort') > 0 && @doneEffort >= a('effort')
 
         if r.book(@scenarioIdx, sbIdx, @property)
 

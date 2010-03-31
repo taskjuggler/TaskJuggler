@@ -997,6 +997,18 @@ EOT
     singlePattern('_resource')
   end
 
+  def rule_fail
+    pattern(%w( _fail !logicalExpression ), lambda {
+      @property['fail', @scenarioIdx] = @val[1]
+    })
+    doc('fail', <<'EOT'
+The fail attribute adds a logical expression to the property. The condition is
+checked after the scheduling and an error is raised if the condition evaluates
+to true.
+EOT
+       )
+  end
+
   def rule_flag
     pattern(%w( $ID ), lambda {
       unless @project['flags'].include?(@val[0])
@@ -4424,6 +4436,8 @@ Attach a set of flags. The flags can be used in logical expressions to filter
 properties from the reports.
 EOT
        )
+
+    pattern(%w( !fail ))
 
     pattern(%w( _length !workingDuration ), lambda {
       checkContainer('length')

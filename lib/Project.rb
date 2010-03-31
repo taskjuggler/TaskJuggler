@@ -232,6 +232,8 @@ class TaskJuggler
               false, false,   true,  [] ],
         [ 'endsuccs',  'End Succs.',   TaskListAttribute,
               false, false,   true,  [] ],
+        [ 'fail',      'Failure Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'forward',   'Scheduling',   BooleanAttribute,

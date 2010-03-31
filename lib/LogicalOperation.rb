@@ -178,8 +178,6 @@ class TaskJuggler
     # the value.
     def eval(expr)
       query = expr.query
-      project = query.property.project
-      report = project.reportContext.report
       query.scenarioIdx = @scenarioIdx
       query.attributeId = @operand1
       query.process
