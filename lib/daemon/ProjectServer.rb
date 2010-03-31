@@ -84,15 +84,15 @@ class TaskJuggler
         DRb.start_service
         iFace = ProjectServerIface.new(self)
         begin
-          uri = DRb.start_service('druby://localhost:0', iFace).uri
-          @log.debug("Project server is listening on #{uri}")
+          @uri = DRb.start_service('druby://localhost:0', iFace).uri
+          @log.debug("Project server is listening on #{@uri}")
         rescue
           @log.fatal("ProjectServer can't start DRb: #{$!}")
         end
 
         # Send the URI of the newly started DRb server to the parent process.
         rd.close
-        wr.write uri
+        wr.write @uri
         wr.close
 
         # Start a Thread that waits for the @terminate flag to be set and does
@@ -107,8 +107,8 @@ class TaskJuggler
         @log.debug('Project server terminated')
         exit 0
       else
-        Process.detach(@pid)
         # This is the parent
+        Process.detach(@pid)
         wr.close
         @uri = rd.read
         rd.close
@@ -178,6 +178,14 @@ class TaskJuggler
 
       @log.debug("Got report server with URI #{reportServer.uri} for tag #{tag}")
       [ reportServer.uri, reportServer.authKey ]
+    end
+
+    # Remove a ReportServer that's no longer needed. The client is responsible
+    # for terminating it.
+    def dropReportServer(uri)
+      @reportServers.synchronize do
+        @reportServers.delete_if { |rs| rs.uri == uri }
+      end
     end
 
     # This function is called regularly by the ProjectBroker process to check
@@ -252,8 +260,8 @@ class TaskJuggler
 
           # If we have not received a ping from the ProjectBroker for 2
           # minutes, we assume it has died and terminate as well.
-          if TjTime.now - @lastPing > 120
-            @log.fatal('Hartbeat from daemon lost. Terminating.')
+          if TjTime.now - @lastPing > 180
+            @log.fatal('Heartbeat from daemon lost. Terminating.')
           end
           sleep 1
         end
@@ -282,6 +290,12 @@ class TaskJuggler
       return false unless @server.checkKey(authKey, 'getReportServer')
 
       @server.getReportServer
+    end
+
+    def dropReportServer(authKey, uri)
+      return false unless @server.checkKey(authKey, 'getReportServer')
+
+      @server.dropReportServer(uri)
     end
 
     def ping(authKey)
