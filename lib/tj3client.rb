@@ -225,14 +225,14 @@ EOT
       when 'add'
         # Ask the daemon to create a new ProjectServer process and return a
         # DRbObject to access it.
-        projectServer, authKey = connectToProjectServer
+        connectToProjectServer
         # Ask the server to load the files in _args_ into the ProjectServer.
         begin
-          res = projectServer.loadProject(authKey, [ Dir.getwd, *args ])
+          res = @projectServer.loadProject(@ps_authKey, [ Dir.getwd, *args ])
         rescue
           error("Loading of project failed: #{$!}")
         end
-        disconnectProjectServer(projectServer, authKey)
+        disconnectProjectServer
         return res ? 0 : 1
       when 'remove'
         args.each do |arg|
@@ -246,26 +246,27 @@ EOT
         projectId = args.shift
         # Ask the ProjectServer to launch a new ReportServer process and
         # provide a DRbObject reference to it.
-        reportServer, authKey = connectToReportServer(projectId)
+        connectToReportServer(projectId)
 
         reportIds, tjiFiles = splitIdsAndFiles(args)
         if reportIds.empty?
-          disconnectReportServer(reportServer, authKey)
+          disconnectReportServer
           error('You must provide at least one report ID')
         end
         # Send the provided .tji files to the ReportServer.
-        failed = !addFiles(authKey, reportServer, tjiFiles)
+        failed = !addFiles(tjiFiles)
         # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
-            unless reportServer.generateReport(authKey, reportId, @regExpMode)
+            unless @reportServer.generateReport(@rs_authKey, reportId,
+                                                @regExpMode)
               failed = true
               break
             end
           end
         end
         # Terminate the ReportServer
-        disconnectReportServer(reportServer, authKey)
+        disconnectReportServer
         return failed ? 1 : 0
       when 'list-reports'
         # The first value of args is the project ID. The following values
@@ -273,7 +274,7 @@ EOT
         projectId = args.shift
         # Ask the ProjectServer to launch a new ReportServer process and
         # provide a DRbObject reference to it.
-        reportServer, authKey = connectToReportServer(projectId)
+        connectToReportServer(projectId)
 
         reportIds, tjiFiles = splitIdsAndFiles(args)
         if reportIds.empty?
@@ -282,36 +283,36 @@ EOT
           @regExpMode = true
         end
         # Send the provided .tji files to the ReportServer.
-        failed = !addFiles(authKey, reportServer, tjiFiles)
+        failed = !addFiles(tjiFiles)
         # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
-            unless reportServer.listReports(authKey, reportId, @regExpMode)
+            unless @reportServer.listReports(@rs_authKey, reportId, @regExpMode)
               failed = true
               break
             end
           end
         end
         # Terminate the ReportServer
-        disconnectReportServer(reportServer, authKey)
+        disconnectReportServer
         return failed ? 1 : 0
       when 'check-ts'
-        reportServer, authKey = connectToReportServer(args[0])
+        connectToReportServer(args[0])
         begin
-          res = reportServer.checkTimeSheet(authKey, args[1])
+          res = @reportServer.checkTimeSheet(@rs_authKey, args[1])
         rescue
           error("Time sheet check failed: #{$!}")
         end
-        disconnectReportServer(reportServer, authKey)
+        disconnectReportServer
         return res ? 0 : 1
       when 'check-ss'
-        reportServer, authKey = connectToReportServer(args[0])
+        connectToReportServer(args[0])
         begin
-          res = reportServer.checkStatusSheet(authKey, args[1])
+          res = @reportServer.checkStatusSheet(@rs_authKey, args[1])
         rescue
           error("Status sheet check failed: #{$!}")
         end
-        disconnectReportServer(reportServer, authKey)
+        disconnectReportServer
         return res ? 0 : 1
       else
         raise "Unknown command #{command}"
@@ -320,69 +321,68 @@ EOT
     end
 
     def connectToProjectServer
-      uri, authKey = callDaemon(:addProject, [])
+      @ps_uri, @ps_authKey = callDaemon(:addProject, [])
       begin
-        projectServer = DRbObject.new(nil, uri)
+        @projectServer = DRbObject.new(nil, @ps_uri)
       rescue
         error("Can't get ProjectServer object: #{$!}")
       end
       begin
-        projectServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
+        @projectServer.connect(@ps_authKey, $stdout, $stderr, $stdin, @silent)
       rescue
         error("Can't connect IO: #{$!}")
       end
-      [ projectServer, authKey ]
     end
 
-    def disconnectProjectServer(projectServer, authKey)
+    def disconnectProjectServer
       begin
-        projectServer.disconnect(authKey)
+        @projectServer.disconnect(@ps_authKey)
       rescue
         error("Can't disconnect IO: #{$!}")
       end
     end
 
     def connectToReportServer(projectId)
-      uri, authKey = callDaemon(:getProject, projectId)
-      if uri.nil?
+      @ps_uri, @ps_authKey = callDaemon(:getProject, projectId)
+      if @ps_uri.nil?
         error("No project with ID #{projectId} loaded")
       end
-      uri, authKey = getReportServer(uri, authKey)
       begin
-        reportServer = DRbObject.new(nil, uri)
+        @projectServer = DRbObject.new(nil, @ps_uri)
+        @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
+        @reportServer = DRbObject.new(nil, @rs_uri)
       rescue
-        error("Can't get ReportServer object: #{$!}")
+        error("Cannot get report server")
       end
       begin
-        reportServer.connect(authKey, $stdout, $stderr, $stdin, @silent)
+        @reportServer.connect(@rs_authKey, $stdout, $stderr, $stdin, @silent)
       rescue
         error("Can't connect IO: #{$!}")
       end
-
-      [ reportServer, authKey ]
     end
 
-    def disconnectReportServer(reportServer, authKey)
+    def disconnectReportServer
       begin
-        reportServer.disconnect(authKey)
+        @reportServer.disconnect(@rs_authKey)
       rescue
         error("Can't disconnect IO: #{$!}")
       end
       begin
-        reportServer.terminate(authKey)
+        @reportServer.terminate(@rs_authKey)
       rescue
         error("Report server termination failed: #{$!}")
       end
-    end
-
-    def getReportServer(uri, authKey)
+      @reportServer = nil
       begin
-        projectServer = DRbObject.new(nil, uri)
-        uri, authKey = projectServer.getReportServer(authKey)
+        @projectServer.dropReportServer(@ps_authKey, @rs_uri)
       rescue
-        error("Cannot get report server")
+        error("Cannot drop report server: #{$!}")
       end
-      [ uri, authKey ]
+      @rs_uri = nil
+      @rs_authKey = nil
+      @projectServer = nil
+      @ps_uri = nil
+      @ps_authKey = nil
     end
 
     # Call the TaskJuggler daemon (ProjectBroker) and execute the provided
@@ -418,10 +418,10 @@ EOT
     end
 
     # Transfer the _tjiFiles_ to the _reportServer_.
-    def addFiles(authKey, reportServer, tjiFiles)
+    def addFiles(tjiFiles)
       tjiFiles.each do |file|
         begin
-          unless reportServer.addFile(authKey, file)
+          unless @reportServer.addFile(@rs_authKey, file)
             return false
           end
         rescue

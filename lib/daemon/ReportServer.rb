@@ -95,7 +95,7 @@ class TaskJuggler
     end
 
     def generateReport(id, regExpMode)
-      @log.debug("Generating report #{id}")
+      @log.info("Generating report #{id}")
       if (ok = @tj.generateReport(id, regExpMode))
         @log.debug("Report #{id} generated")
       else
@@ -105,7 +105,7 @@ class TaskJuggler
     end
 
     def listReports(id, regExpMode)
-      @log.debug("Listing report #{id}")
+      @log.info("Listing report #{id}")
       if (ok = @tj.listReports(id, regExpMode))
         @log.debug("Report list for #{id} generated")
       else
@@ -115,14 +115,14 @@ class TaskJuggler
     end
 
     def checkTimeSheet(sheet)
-      @log.debug("Checking time sheet #{sheet}")
+      @log.info("Checking time sheet #{sheet}")
       ok = @tj.checkTimeSheet(sheet)
       @log.debug("Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
       ok
     end
 
     def checkStatusSheet(sheet)
-      @log.debug("Checking status sheet #{sheet}")
+      @log.info("Checking status sheet #{sheet}")
       ok = @tj.checkStatusSheet(sheet)
       @log.debug("Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
       ok
@@ -134,7 +134,7 @@ class TaskJuggler
       Thread.new do
         loop do
           if TjTime.now - @lastPing > 120
-            @log.fatal('Hartbeat from ProjectServer lost. Terminating.')
+            @log.fatal('Heartbeat from ProjectServer lost. Terminating.')
           end
           sleep 30
         end
