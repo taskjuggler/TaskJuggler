@@ -1,0 +1,8 @@
+project "test" 2010-04-02 +1m
+
+# MARK: error 4 task_fail_check
+task "T" {
+  length 2d
+  fail plan.length != 3
+} 
+

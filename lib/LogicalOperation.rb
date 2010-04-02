@@ -84,22 +84,29 @@ class TaskJuggler
       end
     end
 
-    # Convert the operation into a textual representation. This function is used
-    # for error reporting and debugging.
-    def to_s
+    # Convert the operation into a textual representation.
+    def to_s(query)
       if @operator.nil?
-        "#{@operand1.to_s}"
+        operand_to_s(@operand1, query)
       elsif @operand2.nil?
-        "#{@operator}(#{@operand1.is_a?(String) ?
-                       "'" + @operand1 + "'" : @operand1})"
+        @operator + operand_to_s(@operand1, query)
       else
-        "(#{@operand1.is_a?(String) ? "'" + @operand1 + "'" :
-                                            @operand1} #{@operator} #{
-            @operand2.is_a?(String) ? "'" + @operand2 + "'" : @operand2})"
+        "(#{operand_to_s(@operand1, query)} #{@operator} " +
+        "#{operand_to_s(@operand2, query)})"
       end
     end
 
   private
+
+    def operand_to_s(operand, query)
+      if operand.is_a?(LogicalOperation)
+        operand.to_s(query)
+      elsif operand.is_a?(String)
+        "'#{operand}'"
+      else
+        operand.to_s
+      end
+    end
 
     # We need to do binary operator evaluation with various coerce functions.
     # This function does the evaluation of _opnd1_ and _opnd2_ with the
@@ -189,9 +196,15 @@ class TaskJuggler
       query.result || ''
     end
 
-    # Used for debugging and error reporting.
-    def to_s # :nodoc
-      "#{@scenarioIdx}.#{@operand1.to_s}"
+    # Dumps the LogicalOperation as String. If _query_ is nil, the variable
+    # names are shown, otherwise their values.
+    def to_s(query)
+      if query
+        query.process
+        query.to_s
+      else
+        "#{@scenarioIdx}.#{@operand1}"
+      end
     end
 
   end
@@ -209,9 +222,12 @@ class TaskJuggler
       expr.query.property['flags', 0].include?(@operand1)
     end
 
-    # Used for debugging and error reporting.
-    def to_s # :nodoc:
-      @operand1
+    def to_s(query)
+      if query
+        query.property['flags', 0].include(@operand1) ? 'true' : 'false'
+      else
+        @operand1
+      end
     end
 
   end

@@ -175,6 +175,8 @@ class TaskJuggler
               false, false,   true,  0 ],
         [ 'email',     'Email',        StringAttribute,
               true,  false,   false, nil ],
+        [ 'fail',      'Failure Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'fte',       'FTE',          FloatAttribute,
@@ -195,6 +197,8 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'vacations',  'Vacations',   IntervalListAttribute,
               true,  true,    true,  [] ],
+        [ 'warn',      'Warning Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
@@ -280,6 +284,8 @@ class TaskJuggler
               false, false,   true,  "" ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
+        [ 'warn',      'Warning Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ]
       ]
@@ -471,6 +477,11 @@ class TaskJuggler
     # Return the average number of working days per year.
     def yearlyWorkingDays
       @attributes['yearlyworkingdays'].to_f
+    end
+
+    # Convert timeSlots to working days.
+    def slotsToDays(slots)
+      slots * @attributes['scheduleGranularity'] / (60 * 60 * dailyWorkingHours)
     end
 
     # call-seq:
@@ -898,6 +909,12 @@ class TaskJuggler
         i += 1
         Log.progress(0.5 + (i.to_f / total) * 0.5)
       end
+
+      # This should be really fast so we don't log progess.
+      @resources.each do |resource|
+        resource.postScheduleCheck(scIdx)
+      end
+
       Log.stopProgressMeter
     end
 

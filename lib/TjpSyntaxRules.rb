@@ -1002,9 +1002,10 @@ EOT
       @property['fail', @scenarioIdx] = @val[1]
     })
     doc('fail', <<'EOT'
-The fail attribute adds a logical expression to the property. The condition is
-checked after the scheduling and an error is raised if the condition evaluates
-to true.
+The fail attribute adds a logical expression to the property. The condition
+described by the logical expression is checked after the scheduling and an
+error is raised if the condition evaluates to true. This attribute is
+primarily intended for testing purpuses.
 EOT
        )
   end
@@ -3387,6 +3388,8 @@ EOT
     also(%w( scheduling ))
     example('Booking')
 
+    pattern(%w( !fail ))
+
     pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
@@ -3430,6 +3433,8 @@ their work schedule from full-time to part-time, or vice versa, please refer
 to the 'Shift' property.
 EOT
        )
+
+    pattern(%w( !warn ))
 
     pattern(%w( !workinghoursResource ))
     # Other attributes will be added automatically.
@@ -4689,6 +4694,9 @@ will be inherited from the enclosing tasks or the project start date.
 EOT
        )
     also(%w( end period.task maxstart minstart scheduling ))
+
+    pattern(%w( !warn ))
+
     # Other attributes will be added automatically.
   end
 
@@ -5281,6 +5289,20 @@ EOT
   def rule_valIntervals
     listRule('moreValIntervals', '!valIntervalOrDate')
   end
+
+  def rule_warn
+    pattern(%w( _warn !logicalExpression ), lambda {
+      @property['warn', @scenarioIdx] = @val[1]
+    })
+    doc('warn', <<'EOT'
+The warn attribute adds a logical expression to the property. The condition
+described by the logical expression is checked after the scheduling and an
+warning is generated if the condition evaluates to true. This attribute is
+primarily intended for testing purpuses.
+EOT
+       )
+  end
+
 
   def rule_weekday
     pattern(%w( _sun ), lambda { 0 })
