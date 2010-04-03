@@ -48,11 +48,11 @@ class TaskJuggler
         # This is the child
         $SAFE = 1
         DRb.install_acl(ACL.new(%w[ deny all
-                                    allow localhost ]))
+                                    allow 127.0.0.1 ]))
         DRb.start_service
         iFace = ReportServerIface.new(self)
         begin
-          uri = DRb.start_service('druby://localhost:0', iFace).uri
+          uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
           @log.debug("Report server is listening on #{uri}")
         rescue
           @log.fatal("ReportServer can't start DRb: #{$!}")
