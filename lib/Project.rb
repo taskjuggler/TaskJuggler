@@ -169,6 +169,8 @@ class TaskJuggler
               false, false,   true,  0.0 ],
         [ 'duties',    'Duties',       TaskListAttribute,
               false, false,   true,  [] ],
+        [ 'directreports', 'Direct Reports', ResourceListAttribute,
+              false, false,   true,  [] ],
         [ 'efficiency','Efficiency',   FloatAttribute,
               true,  false,   true,  1.0 ],
         [ 'effort', 'Total Effort',    FixnumAttribute,
@@ -187,8 +189,12 @@ class TaskJuggler
               false, false,   false, -1 ],
         [ 'limits',    'Limits',       LimitsAttribute,
               true,  true,    true,  nil ],
+        [ 'managers', 'Managers',      ResourceListAttribute,
+              true,  false,   true,  [] ],
         [ 'rate',      'Rate',         FloatAttribute,
               true,  true,    true,  0.0 ],
+        [ 'reports', 'Reports', ResourceListAttribute,
+              false, false,   true,  [] ],
         [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
               true, false,    true,  nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
@@ -848,9 +854,13 @@ class TaskJuggler
       i = 0
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
+        resource.preScheduleCheck(scIdx)
         i += 1
         Log.progress((i.to_f / total) * 0.8)
       end
+
+      resources.each { |resource| resource.setDirectReports(scIdx) }
+      resources.each { |resource| resource.setReports(scIdx) }
 
       tasks.each { |task| task.prepareScheduling(scIdx) }
       tasks.each { |task| task.Xref(scIdx) }

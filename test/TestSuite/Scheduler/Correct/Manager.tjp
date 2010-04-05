@@ -1,0 +1,9 @@
+project "test" 2010-04-03 +1w
+
+resource boss "Big Boss"
+resource joe "Joe Average" {
+  managers boss
+}
+
+task "T"
+

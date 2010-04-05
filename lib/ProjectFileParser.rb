@@ -311,6 +311,10 @@ class TaskJuggler
 
     def listRule(name, listItem)
       pattern([ "#{listItem}", "!#{name}" ], lambda {
+        if @val[1] && @val[1].include?(@val[0])
+          error('duplicate_in_list',
+                "Duplicate items in list.")
+        end
         [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
       })
       newRule(name) {

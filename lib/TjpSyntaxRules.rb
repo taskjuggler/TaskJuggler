@@ -1795,10 +1795,6 @@ EOT
     commaListRule('$ID')
   end
 
-  def rule_moreResources
-    commaListRule('!resourceList')
-  end
-
   def rule_morePredTasks
     commaListRule('!taskPredList')
   end
@@ -2678,6 +2674,9 @@ EOT
     singlePattern('_daily')
     descr('A group of columns with one column for each day')
 
+    singlePattern('_directreports')
+    descr('The resources that have this resource assigned as manager.')
+
     singlePattern('_duration')
     descr('The duration of a task')
 
@@ -2810,6 +2809,12 @@ EOT
 
     singlePattern('_rate')
     descr('The daily cost of a resource.')
+
+    singlePattern('_reports')
+    descr(<<'EOT'
+All resources that have this resource assigned as a direct or indirect manager.
+EOT
+         )
 
     singlePattern('_resources')
     descr('A list of resources that are assigned to the task in the report ' +
@@ -3300,10 +3305,7 @@ EOT
 
   def rule_resourceId
     pattern(%w( $ID ), lambda {
-      id = @val[0]
-      id = @resourceprefix + '.' + id unless @resourceprefix.empty?
-      # In case we have a nested supplement, we need to prepend the parent ID.
-      id = @property.fullId + '.' + id if @property && @property.is_a?(Resource)
+      id = (@resourceprefix.empty? ? '' : @resourceprefix + '.') + @val[0]
       if (resource = @project.resource(id)).nil?
         error('resource_id_expected', "#{id} is not a defined resource.")
       end
@@ -3340,9 +3342,7 @@ EOT
   end
 
   def rule_resourceList
-    pattern(%w( !resourceId !moreResources ), lambda {
-      [ @val[0] ] + @val[1]
-    })
+    listRule('moreResources', '!resourceId')
   end
 
   def rule_resourceScenarioAttributes
@@ -3397,6 +3397,26 @@ EOT
 Set per-interval usage limits for the resource.
 EOT
        )
+
+    pattern(%w( _managers !resourceList ), lambda {
+      @property['managers', @scenarioIdx] =
+        @property['managers', @scenarioIdx] + @val[1]
+    })
+    doc('managers', <<'EOT'
+Defines one or more resources to be the manager who is responsible for this
+resource. Managers must be leaf resources. This attribute does not impact the
+scheduling. It can only be used for documentation purposes.
+
+You must only specify direct managers here. Do not list higher level managers
+here. If necessary, use the [[purge.resource purge]] attribute to clear
+inherited managers. For most use cases, there should be only one manager. But
+TaskJuggler is not limited to just one manager. Dotted reporting lines can be
+captured as well as long as the managers are not reporting to each other.
+EOT
+       )
+    also('statussheet')
+    example('Manager')
+
 
     pattern(%w( _rate !number ), lambda {
       @property['rate', @scenarioIdx] = @val[1]
@@ -4601,7 +4621,8 @@ EOT
        )
 
     pattern(%w( _responsible !resourceList ), lambda {
-      @property['responsible', @scenarioIdx] = @val[1]
+      @property['responsible', @scenarioIdx] =
+        @property['responsible', @scenarioIdx] + @val[1]
     })
     doc('responsible', <<'EOT'
 The ID of the resource that is responsible for this task. This value is for

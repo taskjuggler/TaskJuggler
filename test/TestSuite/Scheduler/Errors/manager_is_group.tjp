@@ -1,0 +1,15 @@
+project "test" 2010-04-03 +1w
+
+resource group "Group" {
+  resource "Stan"
+  resource "Oli"
+}
+# MARK: error 8 manager_is_group
+resource joe "Joe Average" {
+  managers group
+}
+
+task "T" {
+  effort 1d
+  allocate joe
+}

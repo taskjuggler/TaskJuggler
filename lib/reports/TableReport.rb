@@ -55,12 +55,13 @@ class TaskJuggler
       'wbs'          => [ 'WBS',           false,  :left,  false ]
     }
     @@propertiesByType = {
-      # Type                  Indent  Align
-      DateAttribute      => [ false,  :left ],
-      FixnumAttribute    => [ false,  :right ],
-      FloatAttribute     => [ false,  :right ],
-      RichTextAttribute  => [ false,  :left ],
-      StringAttribute    => [ false,  :left ]
+      # Type                     Indent  Align
+      DateAttribute         => [ false,  :left ],
+      FixnumAttribute       => [ false,  :right ],
+      FloatAttribute        => [ false,  :right ],
+      ResourceListAttribute => [ false, :left ],
+      RichTextAttribute     => [ false,  :left ],
+      StringAttribute       => [ false,  :left ]
     }
     # Generate a new TableReport object.
     def initialize(report)
