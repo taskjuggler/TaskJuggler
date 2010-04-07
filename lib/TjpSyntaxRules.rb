@@ -3668,6 +3668,11 @@ EOT
 Sets the time zone of the shift. The working hours of the shift are assumed to
 be within the specified time zone. The time zone does not effect the vaction
 interval. The latter is assumed to be within the project time zone.
+
+TaskJuggler stores all dates internally as UTC. Since all events must align
+with the [[timingresolution|timing resolution]] for time zones you may have to
+change the timing resolution appropriately. The time zone difference compared
+to UTC must be a multiple of the used timing resolution.
 EOT
         )
     arg(1, 'zone', <<'EOT'

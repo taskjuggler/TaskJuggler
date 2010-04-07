@@ -1,0 +1,87 @@
+== TaskJuggler Internals ==
+
+This chapter contains information that you don't need to know to use
+TaskJuggler. It describes internal algorithms that are provided for
+the curious.
+
+=== How the Scheduler works ===
+
+The scheduler needs to determine the start and end date for all tasks
+that don't have such dates yet. Additionally, it allocates resources
+to tasks.  All events such as start of a task, or allocation of a
+resource can only happen aligned with the [[timingresolution|timing
+resolution]]. The smallest possible allocation period is
+called a time slot. The duration of the slot  can be determined by the
+user. Possible values are 5, 10, 15, 30 and 60 minutes. Internally,
+all events are stored as UTC time.
+
+TaskJuggler keeps a scoreboard for each time slot for each leaf
+resource. This explains why the project duration and number of
+allocated resources determines the memory usage of the scheduler.
+
+During the scheduling process, tasks can have 3 different states.
+
+# ''''Not ready for scheduling'''': The task is missing a start or
+end date that depends on another task's date that hasn't been
+determined yet.
+
+# ''''Ready for scheduling'''': The task has at least a start or end
+date but one of them is still missing or resources have not yet been
+assigned for all time slots.
+
+# ''''Scheduling completed'''': The task has a start and end date and
+resources have been assigned for all time slots.
+
+The goal of the scheduler is to transfer all tasks in the completed
+state. Until this goal has been reached, at least one tasks needs to
+be in the ready state. If that's not the case, the project schedule
+cannot be determined and an error is raised. In case there are more
+than one task in the ready state, we need to have a well defined
+priority of the tasks. This is necessary since those ready tasks may
+compete for the same resource for the same time slot.
+
+The priority can be directly influenced by the user with the
+[[priority]] attribute. In case two tasks have the same priority, an
+additional measure is used. This measure is called path criticalness. The
+path criticalness is calculated for each leaf task. The path
+criticalness is a measure for how important the task is to keep the
+overall project duration (start of first task to end of last task) to
+a minimum.
+
+To determine the path criticalness, we first need to determine the
+resource criticalness. This is a measure for how likely the tasks
+that have this resource in their allocation list will actually get
+the resource. A resource criticalness larger than 1.0 means that
+statistically, at least one tasks will not get enough of this
+resource. This is just a statistical measure based on the total
+requested allocations and the number of available work time.
+
+Once we have determined the criticalness of all allocated resources,
+we can calculate the criticalness of each individual task. This
+really only matters for effort based tasks. These really need their
+allocations. For length and duration tasks, the allocations are
+optional. The user can still influence the allocation to length and
+duration tasks by adjusting the priority appropriately. The
+criticalness of a task is defined as the average of the criticalness
+of the resources allocated to this task.
+
+We also assign a criticalness to milestones. Based on their priority
+a criticalness between 0 and 2.0 is assigned.
+
+The final step is now the computation of the path criticalness for
+each effort-based leaf task. For each possible chain of task (path)
+that is going through a task, the sum of the criticalness values of
+the tasks of the path is computed. The largest sum is the path
+criticalness of that task.
+
+This heuristic will favor allocations to task with critical resources
+and long dependency chains. As a result, the critical paths of the
+project are tried to be kept short.
+
+This heuristic is certainly not perfect but has shown good results
+with fairly short computation overhead. The scheduling process is not
+an optimization process. It does not evaluate alternatives and it
+does not search for local extremes in a solution space.
+
+
+

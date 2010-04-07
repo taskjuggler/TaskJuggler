@@ -673,7 +673,8 @@ class TaskJuggler
     # Determine the criticalness of the individual task. This is a measure for
     # the likelyhood that this task will get the resources that it needs to
     # complete the effort. Tasks without effort are not cricital. The only
-    # exception are milestones which get an arbitrary value of 1.
+    # exception are milestones which get an arbitrary value between 0 and 2
+    # based on their priority.
     def calcCriticalness
       @property['criticalness', @scenarioIdx] = 0.0
       @property['pathcriticalness', @scenarioIdx] = nil
