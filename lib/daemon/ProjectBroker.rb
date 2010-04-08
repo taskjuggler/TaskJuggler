@@ -81,8 +81,8 @@ EOT
       begin
         $SAFE = 1
         DRb.install_acl(ACL.new(%w[ deny all
-                                    allow localhost ]))
-        @uri = DRb.start_service("druby://localhost:#{@port}", brokerIface).uri
+                                    allow 127.0.0.1 ]))
+        @uri = DRb.start_service("druby://127.0.0.1:#{@port}", brokerIface).uri
         @log.info("TaskJuggler daemon is listening on #{@uri}")
       rescue
         @log.fatal("Cannot listen on port #{@port}: #{$!}")

@@ -1,0 +1,11 @@
+project "test" 2010-04-03 +1w
+
+# MARK: error 4 manager_is_self
+resource joe "Joe Average" {
+  managers joe
+}
+
+task "T" {
+  effort 1d
+  allocate joe
+}

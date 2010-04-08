@@ -1,0 +1,12 @@
+project "test" 2010-04-02 +1m
+
+# MARK: warning 4 resource_warn_check
+resource r "R" {
+  warn plan.effort != 6
+}
+
+task "T" {
+  allocate r
+  effort 5d
+} 
+

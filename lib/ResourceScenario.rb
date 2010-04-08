@@ -46,6 +46,8 @@ class TaskJuggler
     def prepareScheduling
       @property['effort', @scenarioIdx] = 0
       initScoreboard
+
+      setDirectReports
     end
 
     # The criticalness of a resource is a measure for the probabilty that all
@@ -64,6 +66,72 @@ class TaskJuggler
         end
         @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
           a('alloctdeffort') / freeSlots
+      end
+    end
+
+    def setDirectReports
+      # Only leaf resources have reporting lines.
+      return unless @property.leaf?
+
+      # The 'directreports' attribute is the reverse link for the 'managers'
+      # attribute. In contrast to the 'managers' attribute, the
+      # 'directreports' list has no duplicate entries.
+      a('managers').each do |manager|
+        unless manager['directreports', @scenarioIdx].include?(@property)
+          manager['directreports', @scenarioIdx] << @property
+        end
+      end
+    end
+
+    def setReports
+      return unless a('directreports').empty?
+
+      a('managers').each do |r|
+        r.setReports_i(@scenarioIdx, [ @property ])
+      end
+    end
+
+
+    def preScheduleCheck
+      a('managers').each do |manager|
+        unless manager.leaf?
+          error('manager_is_group',
+                "Resource #{@property.fullId} has group #{manager.fullId} " +
+                "assigned as manager. Managers must be leaf resources.")
+        end
+        if manager == @property
+          error('manager_is_self',
+                "Resource #{@property.fullId} cannot manage itself.")
+        end
+      end
+    end
+
+    def postScheduleCheck
+      if a('fail') || a('warn')
+        queryAttrs = { 'project' => @project,
+                       'scenarioIdx' => @scenarioIdx,
+                       'property' => @property,
+                       'scopeProperty' => nil,
+                       'start' => @project['start'],
+                       'end' => @project['end'],
+                       'loadUnit' => :days,
+                       'numberFormat' => @project['numberFormat'],
+                       'timeFormat' => @project['timeFormat'],
+                       'currencyFormat' => @project['currencyFormat'] }
+        query = Query.new(queryAttrs)
+        if a('fail') && a('fail').eval(query)
+          error('resource_fail_check',
+                "User defined check failed for resource #{@property.fullId} \n" +
+                "Condition: #{a('fail').to_s}\n" +
+                "Result:    #{a('fail').to_s(query)}")
+        end
+        if a('warn') && a('warn').eval(query)
+          warning('resource_warn_check',
+                  "User defined warning triggered for resource " +
+                  "#{@property.fullId} \n" +
+                  "Condition: #{a('warn').to_s}\n" +
+                  "Result:    #{a('warn').to_s(query)}")
+        end
       end
     end
 
@@ -553,6 +621,23 @@ class TaskJuggler
             @scoreboard[i] = v & 0x3E
           end
         end
+      end
+    end
+
+    def setReports_i(reports)
+      if reports.include?(@property)
+        # A manager must never show up in the list of his/her own reports.
+        error('manager_loop',
+              "Management loop detected. #{@property.fullId} has self " +
+              "in list of reports")
+      end
+      @property['reports', @scenarioIdx] += reports
+      # Resources can end up multiple times in the list if they have multiple
+      # reporting chains. We only need them once in the list.
+      a('reports').uniq!
+
+      a('managers').each do |r|
+        r.setReports_i(@scenarioIdx, a('reports'))
       end
     end
 

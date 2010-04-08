@@ -1,0 +1,30 @@
+project "test" 2010-04-03 +1w
+
+resource "The Company" {
+  resource ceo "Big Boss"
+  managers ceo
+
+  resource "R&D Team" {
+    resource vpe "VP Engineering"
+    purge managers
+    managers vpe
+
+    resource "The Hacker"
+    resource "Doc Writer"
+  }
+  resource "F&A Team" {
+    resource coo "Chief Operating Officer"
+    purge managers
+    managers coo
+
+    resource "HR Lady"
+    resource "Accountant"
+  }
+}
+      
+task "T"
+
+resourcereport "Managers" {
+  formats html
+  columns name, directreports, reports
+}

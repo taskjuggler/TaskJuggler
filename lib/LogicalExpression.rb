@@ -45,12 +45,13 @@ class TaskJuggler
       return res != 0
     end
 
-    # This function is only used for debugging.
-    def to_s # :nodoc:
+    # Dump the LogicalExpression as a String. If _query_ is provided, it will
+    # show the actual values, otherwise just the variable names.
+    def to_s(query = nil)
       if @sourceFileInfo.nil?
-        "#{@operation}"
+        "#{@operation.to_s(query)}"
       else
-        str = "#{@sourceFileInfo} #{@operation}"
+        str = "#{@sourceFileInfo} #{@operation.to_s(query)}"
       end
     end
 

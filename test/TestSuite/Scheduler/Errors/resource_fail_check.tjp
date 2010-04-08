@@ -1,0 +1,12 @@
+project "test" 2010-04-02 +1m
+
+# MARK: error 4 resource_fail_check
+resource r "R" {
+  fail plan.effort != 6
+}
+
+task "T" {
+  allocate r
+  effort 5d
+} 
+

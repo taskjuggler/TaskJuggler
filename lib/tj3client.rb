@@ -33,7 +33,7 @@ class TaskJuggler
       # For security reasons, this will probably not change. All DRb
       # operations are limited to localhost only. The client and the sever
       # must have access to the identical file system.
-      @host = 'localhost'
+      @host = '127.0.0.1'
       # The default port. 'T' and 'J' in ASCII decimal
       @port = 8474
       # This must must be changed for the communication to work.
@@ -189,8 +189,8 @@ EOT
       # the DRb server for the standard IO redirection to work.
       $SAFE = 1
       DRb.install_acl(ACL.new(%w[ deny all
-                                  allow localhost ]))
-      DRb.start_service('druby://localhost:0')
+                                  allow 127.0.0.1 ]))
+      DRb.start_service('druby://127.0.0.1:0')
 
       begin
         # Get the ProjectBroker object from the tj3d.

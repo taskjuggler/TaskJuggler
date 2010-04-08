@@ -169,12 +169,16 @@ class TaskJuggler
               false, false,   true,  0.0 ],
         [ 'duties',    'Duties',       TaskListAttribute,
               false, false,   true,  [] ],
+        [ 'directreports', 'Direct Reports', ResourceListAttribute,
+              false, false,   true,  [] ],
         [ 'efficiency','Efficiency',   FloatAttribute,
               true,  false,   true,  1.0 ],
         [ 'effort', 'Total Effort',    FixnumAttribute,
               false, false,   true,  0 ],
         [ 'email',     'Email',        StringAttribute,
               true,  false,   false, nil ],
+        [ 'fail',      'Failure Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'fte',       'FTE',          FloatAttribute,
@@ -185,8 +189,12 @@ class TaskJuggler
               false, false,   false, -1 ],
         [ 'limits',    'Limits',       LimitsAttribute,
               true,  true,    true,  nil ],
+        [ 'managers', 'Managers',      ResourceListAttribute,
+              true,  false,   true,  [] ],
         [ 'rate',      'Rate',         FloatAttribute,
               true,  true,    true,  0.0 ],
+        [ 'reports', 'Reports', ResourceListAttribute,
+              false, false,   true,  [] ],
         [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
               true, false,    true,  nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
@@ -195,6 +203,8 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'vacations',  'Vacations',   IntervalListAttribute,
               true,  true,    true,  [] ],
+        [ 'warn',      'Warning Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
@@ -280,6 +290,8 @@ class TaskJuggler
               false, false,   true,  "" ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
+        [ 'warn',      'Warning Condition', LogicalExpressionAttribute,
+              false, false,   true,  nil ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ]
       ]
@@ -471,6 +483,11 @@ class TaskJuggler
     # Return the average number of working days per year.
     def yearlyWorkingDays
       @attributes['yearlyworkingdays'].to_f
+    end
+
+    # Convert timeSlots to working days.
+    def slotsToDays(slots)
+      slots * @attributes['scheduleGranularity'] / (60 * 60 * dailyWorkingHours)
     end
 
     # call-seq:
@@ -837,9 +854,13 @@ class TaskJuggler
       i = 0
       usedResources.each do |resource|
         resource.prepareScheduling(scIdx)
+        resource.preScheduleCheck(scIdx)
         i += 1
         Log.progress((i.to_f / total) * 0.8)
       end
+
+      resources.each { |resource| resource.setDirectReports(scIdx) }
+      resources.each { |resource| resource.setReports(scIdx) }
 
       tasks.each { |task| task.prepareScheduling(scIdx) }
       tasks.each { |task| task.Xref(scIdx) }
@@ -898,6 +919,12 @@ class TaskJuggler
         i += 1
         Log.progress(0.5 + (i.to_f / total) * 0.5)
       end
+
+      # This should be really fast so we don't log progess.
+      @resources.each do |resource|
+        resource.postScheduleCheck(scIdx)
+      end
+
       Log.stopProgressMeter
     end
 

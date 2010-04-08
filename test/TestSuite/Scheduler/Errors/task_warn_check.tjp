@@ -1,0 +1,8 @@
+project "test" 2010-04-02 +1m
+
+# MARK: warning 4 task_warn_check
+task "T" {
+  length 2d
+  warn plan.length != 3
+} 
+

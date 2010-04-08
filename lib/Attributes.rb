@@ -251,6 +251,10 @@ class TaskJuggler
       @type.id + ' ' + @value.to_s + 'h'
     end
 
+    def to_s(query)
+      query ? query.scaleDuration(query.project.slotsToDays(@value)) : @value
+    end
+
   end
 
   class FixnumAttribute < AttributeBase
