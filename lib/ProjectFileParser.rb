@@ -378,6 +378,7 @@ class TaskJuggler
     # Add a reference to another pattern. This information is only used to
     # generate the documentation for the patterns of this rule.
     def also(seeAlso)
+      seeAlso = [ seeAlso ] unless seeAlso.is_a?(Array)
       @cr.setSeeAlso(seeAlso)
     end
 

@@ -3408,13 +3408,13 @@ resource. Managers must be leaf resources. This attribute does not impact the
 scheduling. It can only be used for documentation purposes.
 
 You must only specify direct managers here. Do not list higher level managers
-here. If necessary, use the [[purge.resource purge]] attribute to clear
+here. If necessary, use the [[purge]] attribute to clear
 inherited managers. For most use cases, there should be only one manager. But
 TaskJuggler is not limited to just one manager. Dotted reporting lines can be
 captured as well as long as the managers are not reporting to each other.
 EOT
        )
-    also('statussheet')
+    also(%w( statussheet ))
     example('Manager')
 
 
