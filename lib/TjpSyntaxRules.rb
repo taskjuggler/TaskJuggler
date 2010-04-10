@@ -3258,6 +3258,12 @@ EOT
   def rule_resourceAttributes
     repeatable
     optional
+    pattern(%w( _email $STRING ), lambda {
+      @property.set('email', @val[1])
+    })
+    doc('email',
+        'The email address of the resource.')
+
     pattern(%w( !journalEntry ))
     pattern(%w( !purge ))
     pattern(%w( !resource ))

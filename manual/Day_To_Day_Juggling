@@ -201,18 +201,10 @@ serving.
 
 For the email based communication you need to provide email addresses
 for all project contributors. This is done in the project plan in the
-resource definition. As there is no built-in attribute for email
-addresses, you need to create one first using the [[extend]] attribute.
-
- extend resource {
-   text Email "Email address"
- }
-
-This attribute can now be used in the resource definitions to specify
-email addresses for each resource
+resource definition by using the [[email]] attribute.
 
  resource joe "Joe Avergage" {
-   Email "joe@your_company.com
+   email "joe@your_company.com
  }
 
 In this manual, we assume you have a dedicated Linux machine with a
