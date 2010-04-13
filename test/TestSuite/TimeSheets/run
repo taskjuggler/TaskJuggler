@@ -37,7 +37,7 @@ check "^timesheet " sender.log 6
 tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || error "rec1"
 tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
-check "Report from " receiver.log 2
+check "Report from " receiver.log 4
 check "Green" receiver.log 3
 
 # Update the project with the server to include the submitted time

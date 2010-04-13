@@ -97,7 +97,7 @@ EOF
         end
         id, name, email, effort, free = line.split(';')
         if email.empty?
-          error("Resource #{id} must have a valid email address")
+          error("Resource '#{id}' must have a valid email address")
         end
         # Convert effort and free values into Float objects.
         effort = effort.to_f
@@ -105,7 +105,7 @@ EOF
 
         # Ignore resources that are on vacation for the whole period.
         if effort == 0.0 && free == 0.0
-          info("Resource #{id} was on vacation the whole period")
+          info("Resource '#{id}' was on vacation the whole period")
           next
         end
 
