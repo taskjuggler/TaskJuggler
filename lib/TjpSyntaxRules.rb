@@ -3258,6 +3258,12 @@ EOT
   def rule_resourceAttributes
     repeatable
     optional
+    pattern(%w( _email $STRING ), lambda {
+      @property.set('email', @val[1])
+    })
+    doc('email',
+        'The email address of the resource.')
+
     pattern(%w( !journalEntry ))
     pattern(%w( !purge ))
     pattern(%w( !resource ))
@@ -3408,13 +3414,13 @@ resource. Managers must be leaf resources. This attribute does not impact the
 scheduling. It can only be used for documentation purposes.
 
 You must only specify direct managers here. Do not list higher level managers
-here. If necessary, use the [[purge.resource purge]] attribute to clear
+here. If necessary, use the [[purge]] attribute to clear
 inherited managers. For most use cases, there should be only one manager. But
 TaskJuggler is not limited to just one manager. Dotted reporting lines can be
 captured as well as long as the managers are not reporting to each other.
 EOT
        )
-    also('statussheet')
+    also(%w( statussheet ))
     example('Manager')
 
 
@@ -3693,6 +3699,11 @@ EOT
 Sets the time zone of the shift. The working hours of the shift are assumed to
 be within the specified time zone. The time zone does not effect the vaction
 interval. The latter is assumed to be within the project time zone.
+
+TaskJuggler stores all dates internally as UTC. Since all events must align
+with the [[timingresolution|timing resolution]] for time zones you may have to
+change the timing resolution appropriately. The time zone difference compared
+to UTC must be a multiple of the used timing resolution.
 EOT
         )
     arg(1, 'zone', <<'EOT'

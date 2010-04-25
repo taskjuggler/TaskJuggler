@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'digest/md5'
 require 'mail'
 require 'open4'
 require 'yaml'
@@ -78,11 +79,12 @@ class TaskJuggler
       @submitter = mail.from.respond_to?('[]') ? mail.from[0] : mail.from
       # Getting the message ID.
       @messageId = mail.message_id || 'unknown'
+      @idDigest = Digest::MD5.hexdigest(@messageId)
       info("Processing #{@sheetType} mail from #{@submitter} " +
-           "with ID #{@messageId}")
+           "with ID #{@messageId} (#{@idDigest})")
 
       # Store the mail in the failedMailsDir in case something goes wrong.
-      File.open("#{@failedMailsDir}/#{@messageId}", 'w') do |f|
+      File.open("#{@failedMailsDir}/#{@idDigest}", 'w') do |f|
         f.write(mail)
       end
 
@@ -130,7 +132,7 @@ EOT
           # Everything is fine. Store it away.
           fileSheet(@sheet)
           # Remove the mail from the failedMailsDir
-          File.delete("#{@failedMailsDir}/#{@messageId}")
+          File.delete("#{@failedMailsDir}/#{@idDigest}")
           info("Accepted sheet for #{@resourceId} dated #{@date}")
           return true
         end

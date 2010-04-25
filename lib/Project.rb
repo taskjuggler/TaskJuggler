@@ -176,7 +176,7 @@ class TaskJuggler
         [ 'effort', 'Total Effort',    FixnumAttribute,
               false, false,   true,  0 ],
         [ 'email',     'Email',        StringAttribute,
-              true,  false,   false, nil ],
+              false,  false,   false, nil ],
         [ 'fail',      'Failure Condition', LogicalExpressionAttribute,
               false, false,   true,  nil ],
         [ 'flags',     'Flags',        FlagListAttribute,

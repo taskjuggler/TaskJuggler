@@ -105,6 +105,19 @@ support for all those tracking and reporting steps. It comes with a
 powerful email and web based communication system that simplifies the
 tracking process for individual contributors as well as managers.
 
+As a side note we would like to mention that the recording of the work
+time of employees is regulated by labor law in certain countries. You
+might also require approval from a Worker's Council before you can
+deploy time recording tools.
+
+We also would like to point out that introducing status reporting and
+time sheets is usually a big change for every staff. Don't
+underestimate the psychological impact and the training requirements.
+We also recommend to test the described process with a small group of
+employees first to get familiar with the process and to adapt it to
+your needs. Don't rush a deployment! You usually only have one chance
+to roll-out such a process.
+
 ==== The reporting and tracking cycle ====
 
 In this description, we assume that you are using a weekly reporting
@@ -188,18 +201,10 @@ serving.
 
 For the email based communication you need to provide email addresses
 for all project contributors. This is done in the project plan in the
-resource definition. As there is no built-in attribute for email
-addresses, you need to create one first using the [[extend]] attribute.
-
- extend resource {
-   text Email "Email address"
- }
-
-This attribute can now be used in the resource definitions to specify
-email addresses for each resource
+resource definition by using the [[email]] attribute.
 
  resource joe "Joe Avergage" {
-   Email "joe@your_company.com
+   email "joe@your_company.com
  }
 
 In this manual, we assume you have a dedicated Linux machine with a
@@ -568,7 +573,74 @@ be put on a separate, properly indented line that starts with a dash
 followed by a space. The emails will have the email of the original
 time sheet author as sender address.
 
-=== Recording Resource Usage ===
+==== Updating the Project Plan ====
+
+The time sheets contain two kind of information that are intended for
+two sets of audiences. Project managers will be interested primarily
+in the scheduling related information but surely like to look at the
+task status as well.
+
+Managers responsible for certain parts of the project will be
+primarily interested in the status reports for the ongoing tasks.
+We'll cover the processing of the status information in the next
+sections.
+
+This section deals with the processing of the scheduling related
+information. Project contributors can specify several deviations of
+the current project plan.
+
+* Task may need more effort or time than was originally planned for.
+
+* They may have not worked the planned amounts on the tasks.
+
+* They may have started to work on new tasks that are not even in the
+project plan. The is usually a sign of project discipline and should
+be avoided. But in reality this will happen and TaskJuggler is able
+to handle it.
+
+TaskJuggler can print a summary of all the deltas between the plan
+and the actual reports in the time sheets.
+
+ tj3 --warn-ts-deltas YourProject.tjp TimeSheets/all.tji
+
+In this example call ''''YourProject.tjp'''' is your main project
+file and all submitted time sheets are included by
+TimeSheets/all.tji. This file and all subsequent include files are
+automatically generated and updated by ''''tj3ts_receiver''''.
+
+Project managers should use the printed output of this command to
+update the project plan accordingly. The specified deltas of existing
+tasks must be updated in the main project plan. For new tasks in the
+time sheets, the task has to be created in the project plan. Then the
+newtask statement in the time sheet needs to be converted into a
+normal task report.
+
+  newtask some.task.id "My new task" {
+     ...
+  }
+
+Needs to be converted into
+
+  task some.task.id {
+    ...
+  }
+
+The task ID in the status sheet must match the newly created task in
+the project plan.
+
+To check that all deltas were properly processed, re-run the check
+command.
+
+ tj3 --warn-ts-deltas YourProject.tjp TimeSheets/all.tji
+
+You may also want to remove the interval from the
+''''TimeSheetTemplates/acceptable_intervals'''' file to prevent
+further submissions of time sheets for this time period.
+
+=== Recording actual Resource Usage ===
+
+To ensure that future changes won't change the past of the project,
+you should follow the procedure described in this section. 
 
 The initial project plan should be made by entering the minimum amount of
 required information such as task dependencies and efforts. TaskJuggler will
@@ -601,15 +673,30 @@ The sloppy attribute defines the accuracy of your bookings. If it's missing or
 hours. With higher values the interval may overlap with off-hour or vacation
 time slots. See details on sloppy.
 
+The booking statements are designed to describe actual work performed
+by resources at a very accurate level. Many project managers are too
+lazy to record information at such a level of detail. TaskJuggler
+offers some mechanisms to simplify your work. Using ''''sloppy'''' is
+one of them, but you should read very carefully what it does. In
+almost every case we recommend to use the procedure described below
+instead.
+
+Another popular mistake is that user forget that dates for bookings
+behave just like every other date in TaskJuggler.
+
+ resource dev1 "Developer 1" {
+   booking impl 2005-04-11 +8h { sloppy 2 }
+ }
+
+This is almost a classic on the mailing list. 2005-04-11 means
+2005-04-11-0:00. So you are trying to allocate dev1 from midnight to
+8am. Since dev1 is usually is off duty at this time no allocations
+will be performed. By using the ''''sloppy 2'''' attribute you won't
+even get a warning for this mistake.
+
 If you don't like to mix the resource definitions and their bookings, you can
 specify the bookings with supplement statements. These supplement statements
-can even reside in an other file. Some companies have created a web front-end
-for their developers to report the completed work against the project plan. The
-reports are stored in a database and include files for TaskJuggler are
-generated from this database. This way the project manager gets a very current
-status of the project and can compute the current project plan based on these
-data without much effort. If you are interested in this you should have a look
-at the download section of the TaskJuggler web site.
+can even reside in an other file.
 
 It is ok to specify bookings beyond the effort value found in the task
 definition. In case you want to declare a task as done, even if the bookings do
@@ -618,11 +705,6 @@ not reach the specified effort or length, you can use the scheduled property.
  supplement task impl {
    actual:scheduled
  }
-
-As a side note we would like to mention that the recording of the work time of
-employees is regulated by labor law in certain countries. You might also
-require approval from a Worker's Council before you can deploy time recording
-tools.
 
 In case your actual progress does not deviate a lot from your project plan, you
 can generate the file with the booking statements automatically.
@@ -670,4 +752,146 @@ account and generate a new project plan based on your current project status.
 Each time you review your project status you should generate such an include
 file for the period that you are reviewing. Then you sync the content with the
 feedback that you get from your resources and add the file to the project plan.
+
+==== Status Sheets =====
+
+For larger projects with many contributors the flood of time sheets
+can become hard to manage. Higher level managers are usually not
+interested in all the details as long as the project executes
+according to plan. To keep the managers on each level informed with
+the proper amount and content TaskJuggler provides the concept of
+status sheets.
+
+To use status sheets, the reporting chains must be reflected in the
+task hierarchy of the project. The [[responsible]] attribute must be
+used to assign tasks to managers. Leaf tasks or whole sub trees must
+be assigned to the lowest level of management. The responsibility for
+one or more level of parent tasks must be assigned to the next level
+of managers and so on.
+
+When all time sheets have been submitted, the reports for all tasks
+are sent to the responsible managers for these tasks. The information
+is generated by the ''''tj3ss_sender'''' program and is called a status
+report template. Each manager will get one template that includes the
+status reports for the tasks they are responsible for.
+
+It's not the managers task to prepare the report for the next level
+of management. To do this, the manager has 3 options:
+
+* Forward the status report of a task directly to the next level. The
+original authorship can be keep or removed. The content can also be
+edited if needed.
+
+* Similar reports for a task or a whole task sub-tree can be combined
+into just one report. To achieve this a new task report must be
+created for the parent tasks of these lower-level tasks. This will
+replace all reports for sub tasks with this newly created report.
+
+* A task report can simply be removed from the status report.
+
+The status sheet template is designed to perform all three actions in
+a simple manner. The original reports are commented out. To remove a
+report, it needs to be uncommented and the headline must be set to an
+empty string. To change a report, the text must be edited after
+the comment marks have been removed. To create a summary report for a
+group of tasks, a new report for the common parent task must be
+created.
+
+==== The Status Sheet Template Sender ====
+
+To send out the time sheets, the command ''''tj3ts_sender'''' must be
+used. It will use the ''''tj3client'''' program to do retrieve the
+necessary data from the TaskJuggler server.
+
+Before the program can be used, a new section must be added to the
+TaskJuggelr configuration file.
+
+ _statussheets:
+   projectId: prj
+   _sender:
+     senderEmail: 'TaskJuggler <statussheets@taskjuggler.amd.com>'
+     hideResource: '~(isleaf()  & manager)'
+
+If you are using status sheets for only one level of management you
+can hardcode that like in the example above. For multiple level of
+management you need to specify which group of managers should the
+report templates be generated for and pass that information on the
+command line. Use the ''''--hideresource'''' option to specify a
+logicalexpression to filter away the resources you don't want
+templates to be generated for. The easiest way to achieve this is by
+using unique flags for each management level. In the example above we
+assume you have assigned the flag ''''manager'''' to each first-level
+manager.
+
+For the override mechanism to work, the manager reports must always
+have a newer date than the original report. So, the end date of the
+first-level manager status sheets must be after the time sheet
+interval. The second-level mangers must use a later date than the
+first-level managers and so on.
+
+By default ''''tj3ss_sender'''' will use the next Wednesday as end
+date. If you need a different date, you must use the ''''-e''''
+option to specify that date.
+
+Let's say you have two levels of managers that use status sheets. The
+time sheets are due midnight on Sunday. The project managers can work
+in the deltas and new tasks on Monday. After that you generate the
+reports for the first level managers with and end date of Wednesday.
+This implies a submission deadline of midnight on Tuesday. The second
+level manager templates will be sent out right after this deadline
+with an end date of Thursday. That would be the deadline for the
+second-level managers. The final report can than be generated by
+TaskJuggler automatically right after that deadline.
+
+==== Requesting Status Sheet Templates ====
+
+Usually the status sheets templates should be send out automatically.
+But sometimes a manager needs them earlier or needs an updated
+version due to a late incoming downstream report.
+
+The above provided procmail configuration supports the generation of
+status sheets templates on request by email.
+
+By sending an email to statussheet-request@taskjuggler.your_company.com
+and putting their resource ID in the subject of the email, managers will
+receive an email with the status sheet template. The email will be sent
+to the email address in the project plan, not the sender of the
+request email.
+
+The setup described here only works for first-level managers. By
+adding more email addresses, this can easily be extended for more
+levels of management. You just need to make sure that
+''''tj3ss_sender'''' is called with the proper parameters to change
+the resource selection and end date.
+
+==== The Status Sheet Receiver ====
+
+Similarly to the time sheets a the completed status sheets must be
+send back by email. We already described how the necessary email
+aliases should be configured. For status sheets the address
+''''statussheets@taskjuggler.your_company.com'''' can be used.
+
+The incoming emails will then be forwarded to the
+''''tj3ss_receiver'''' program that will process them. To use it, you
+first need to add the following settings to the ''''statussheets''''
+section of your TaskJuggler configuration file:
+
+ _statussheets:
+   projectId: prj
+   _receiver:
+     senderEmail: 'TaskJuggler <statussheets@taskjuggler.amd.com>'
+ 
+This will set the sender email of outgoing emails. Every incoming
+status sheet will be checked and either an error message will be
+returned or a consolidated status report for all tasks that the
+resource is responsible for. This report can either be directly
+forwarded to the next level manager or interested groups, or an HTML
+report can be generated and shared. This is especially useful in case
+the next level management is not getting status sheet templates.
+
+Usually status reports only contain task reports for the current
+reporting period. But if there were tasks with an elevated status,
+these will be carried forward until they were removed by providing an
+empty headline or replaced with a new report for the same task or a
+parent task.
 
