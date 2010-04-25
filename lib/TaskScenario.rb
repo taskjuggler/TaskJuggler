@@ -304,7 +304,7 @@ class TaskJuggler
         if ((startSpeced && endSpeced) ||
             (hasDependencies(false) && a('forward') && endSpeced) ||
             (hasDependencies(true) && !a('forward') && startSpeced)) &&
-           durationSpecs > 0 && !a('scheduled')
+           durationSpecs > 0 && !@property.provided('scheduled', @scenarioIdx)
           error('task_overspecified',
                 "Task #{@property.fullId} has a start, an end and a " +
                 'duration specification.')
@@ -841,6 +841,8 @@ class TaskJuggler
           propagateDate(a(thisEnd), !atEnd)
         end
         Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
+      elsif !a('scheduled') && a('start') && a('end')
+        @property['scheduled', @scenarioIdx] = true
       end
 
       # Propagate date to all dependent tasks.
@@ -941,8 +943,6 @@ class TaskJuggler
         end
       end
 
-      @property['scheduled', @scenarioIdx] = true
-
       startSet = endSet = false
       # Propagate the dates to other dependent tasks.
       if a('start').nil? || a('start') > nStart
@@ -953,6 +953,10 @@ class TaskJuggler
         @property['end', @scenarioIdx] = nEnd
         endSet = true
       end
+      unless a('start') && a('end')
+        raise "Start (#{a('start')}) and end (#{a('end')}) must be set"
+      end
+      @property['scheduled', @scenarioIdx] = true
       Log << "Container task #{@property.fullId}: #{a('start')} -> #{a('end')}"
 
       # If we have modified the start or end date, we need to communicate this
@@ -1420,7 +1424,6 @@ class TaskJuggler
         # or start date and propagate the value to neighbouring tasks.
         if (a('length') > 0 && @doneLength >= a('length')) ||
            (a('duration') > 0 && @doneDuration >= a('duration'))
-          @property['scheduled', @scenarioIdx] = true
           if a('forward')
             propagateDate(slot + slotDuration, true)
           else
@@ -1433,7 +1436,6 @@ class TaskJuggler
         if @doneEffort >= a('effort')
           # The specified effort has been reached. The has been fully scheduled
           # now.
-          @property['scheduled', @scenarioIdx] = true
           if a('forward')
             propagateDate(@tentativeEnd, true)
           else
@@ -1616,7 +1618,7 @@ class TaskJuggler
                 "Booked resources may not be group resources", true,
                 booking.sourceFileInfo)
         end
-        unless a('forward') || a('scheduled')
+        unless a('forward') || scheduled
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
@@ -1638,7 +1640,7 @@ class TaskJuggler
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
               @tentativeEnd = tEnd if @tentativeEnd.nil? ||
                 @tentativeEnd < tEnd
-              if !a('scheduled') && (a('start').nil? || date < a('start'))
+              if !scheduled && (a('start').nil? || date < a('start'))
                 @property['start', @scenarioIdx] = date
               end
 
