@@ -128,10 +128,18 @@ EOT
   # newtask new.task.id "A task title" {
   #   work X%
   #   remaining Y.Yd
+  #   status green "Your headline here!" {
+  #     summary -8<-
+  #     A summary text
+  #     -8<-
+  #     details -8<-
+  #     Some more details
+  #     ->8-
+  #   }
   # }
 
   # You can use the following section to report personal notes.
-  # status green "A headline" {
+  # status green "Your headline here!" {
   #   summary -8<-
   #   A summary text
   #   ->8-
