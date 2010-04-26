@@ -34,7 +34,7 @@ DIST_FILES.include("#{RDOC_DIR}/**/*.{html,css}", 'man/*.[0-9]')
 DIST_FILES.exclude('**/tmp_*', '**/*.tmp')
 
 # 
-CLEAN.include( MANUAL_DIR + '/html' )
+CLEAN.include( MANUAL_DIR + '/html/*' )
 CLEAN.include( 'README' ) if File.exist? 'README.rb'
 CLEAN.include( 'CHANGES' ) if File.exist? 'CHANGES.rb'
 
