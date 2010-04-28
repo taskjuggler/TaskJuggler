@@ -380,7 +380,7 @@ class TaskJuggler
     def getAttribute(attributeId, scenarioIdx = nil)
       case attributeId
       when 'id'
-        StringAttribute.new(self, @id)
+        StringAttribute.new(self, fullId)
       when 'name'
         StringAttribute.new(self, @name)
       when 'seqno'
