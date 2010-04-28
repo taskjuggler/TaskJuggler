@@ -84,20 +84,26 @@ class TaskJuggler
     # be marked unsorted.
     def +(list)
       @entries + list
+      @sorted = false
     end
 
     # Return the _index_-th entry.
     def[](index)
-      sort
+      sort!
       @entries[index]
     end
 
     # The well known iterator. The list will be sorted first.
     def each
-      sort
+      sort!
       @entries.each do |entry|
         yield entry
       end
+    end
+
+    # Like Array::empty?
+    def empty?
+      @entries.empty?
     end
 
     # Like Array::include?
@@ -112,7 +118,7 @@ class TaskJuggler
     # will be empty.
     def last(date = nil)
       result = []
-      sort
+      sort!
       # If we have no date, return the latest entry.
       return [ @entries.last ] unless date
 
@@ -128,19 +134,21 @@ class TaskJuggler
       result
     end
 
-    private
-
     # Sort the list of entries. First by ascending by date, than by alertLevel
     # and finally by PropertyTreeNode sequence number.
-    def sort
-      return if @sorted
+    def sort!
+      if block_given?
+        @entries.sort! { |a, b| yield(a, b) }
+      else
+        return if @sorted
 
-      @entries.sort! { |a, b| a.date != b.date ?
-                              a.date <=> b.date :
-                              (a.alertLevel != b.alertLevel ?
-                               a.alertLevel <=> b.alertLevel :
-                               a.property.sequenceNo <=>
-                               b.property.sequenceNo) }
+        @entries.sort! { |a, b| a.date != b.date ?
+                                a.date <=> b.date :
+                                (a.alertLevel != b.alertLevel ?
+                                 a.alertLevel <=> b.alertLevel :
+                                 a.property.sequenceNo <=>
+                                 b.property.sequenceNo) }
+      end
       @sorted = true
     end
 
@@ -277,7 +285,7 @@ class TaskJuggler
     # property unless there is a property in the sub-tree specified by the
     # root _property_ with more up-to-date entries. The result is a
     # JournalEntryList.
-    def currentEntriesR(date, property)
+    def currentEntriesR(date, property, minLevel = 0, minDate = nil)
       # See if this property has any current JournalEntry objects.
       pEntries = @propertyToEntries[property] ?
                  @propertyToEntries[property].last(date) : []
@@ -289,6 +297,8 @@ class TaskJuggler
       property.children.each do |p|
         currentEntriesR(date, p).each do |e|
           latestDate = e.date if latestDate.nil? || e.date > latestDate
+          next if e.headline.empty? || e.alertLevel < minLevel ||
+                  (e.alertLevel == minLevel && minDate && e.date < minDate)
           entries << e
         end
       end
@@ -298,7 +308,11 @@ class TaskJuggler
       if !pEntries.empty? && (latestDate.nil? ||
                               pEntries.first.date >= latestDate)
         entries = JournalEntryList.new
-        entries += pEntries
+        pEntries.each do |e|
+          next if e.headline.empty? || e.alertLevel < minLevel ||
+                  (e.alertLevel == minLevel && minDate && e.date < minDate)
+          entries << e
+        end
       end
       # Otherwise return the list provided by the childen.
       entries

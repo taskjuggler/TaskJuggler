@@ -118,16 +118,10 @@ class TaskJuggler
         @managers << (manager = ManagerStatusRecord.new(resource))
 
         topLevelTasks.each do |task|
-          entries = @project['journal'].entries(a('start') + 1, a('end'), task)
-          # Get a list of all current Entries of this task. This list may not
-          # contain all entries of the previous list, but it will for sure
-          # contain older entries with higher alert levels.
-          oldEntries = @project['journal'].currentEntries(a('end'), task,
-                                                          0, a('start') + 1)
-          # Remove entries that are in both lists.
-          oldEntries.delete_if { |e| entries.include?(e) }
-          # Combine the list with oldEntries going first.
-          entries = oldEntries + entries
+          # Get a list of all the current Journal entries for this task and
+          # all it's sub tasks.
+          entries = @project['journal'].currentEntriesR(a('end'), task,
+                                                        0, a('start') + 1)
           next if entries.empty?
 
           manager.responsibilities << ManagerResponsibilities.new(task, entries)
@@ -185,7 +179,7 @@ class TaskJuggler
                 end
                 @file << "\n"
               end
-              @file << "    #   author #{entry.author.fullId}\n"
+              @file << "    #   author #{entry.author.fullId}\n" if entry.author
               if entry.summary
                 @file << "    #   summary -8<-\n" +
                          indentBlock(4, entry.summary.richText.inputText) +
