@@ -4642,6 +4642,12 @@ EOT
        )
 
     pattern(%w( _scheduled ), lambda {
+      if @property['start', @scenarioIdx].nil? ||
+         @property['end', @scenarioIdx].nil?
+        error('not_scheduled',
+              "Task #{@property.fullId} is marked as scheduled but does not " +
+              'have a fixed start and end date.')
+      end
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'

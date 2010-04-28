@@ -1,8 +1,0 @@
-project test "Test" "1.0" 2008-02-02 +1m
-
-# MARK: error 4 not_scheduled 
-task t "T" {
-  start ${projectstart}
-  length 2d
-  scheduled
-}

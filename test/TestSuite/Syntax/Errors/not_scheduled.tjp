@@ -1,0 +1,13 @@
+project test "Test" "1.0" 2010-04-28 +1w
+
+resource r "R"
+
+task "Foo" {
+  task bar "Bar" {
+    start ${projectstart}
+    effort 1d
+    allocate r
+# MARK: error 11 not_scheduled
+    scheduled
+  }
+}

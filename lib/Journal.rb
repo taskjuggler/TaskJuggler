@@ -80,12 +80,13 @@ class TaskJuggler
       @sorted = false
     end
 
+    # This function is probably obsolete!
     # Add a list of JournalEntry objects to the existing list. The list will
     # be marked unsorted.
-    def +(list)
-      @entries + list
-      @sorted = false
-    end
+    #def +(list)
+    #  @entries += list
+    #  @sorted = false
+    #end
 
     # Return the _index_-th entry.
     def[](index)
