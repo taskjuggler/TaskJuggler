@@ -422,14 +422,12 @@ class TaskJuggler
            return '$'
         end
 
-        @ignoreMacros = true
         returnChar(c)
         macroParser = MacroParser.new(self, @messageHandler)
         begin
           macroParser.parse('macroCall')
         rescue TjException
         end
-        @ignoreMacros = false
         return nextCharI
       else
         return c

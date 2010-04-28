@@ -1,0 +1,6 @@
+project "Test" 2010-04-28 +1w
+
+macro task [ task "${0}" ]
+macro tname [ "foo" ]
+${task ${tname}} { }
+
