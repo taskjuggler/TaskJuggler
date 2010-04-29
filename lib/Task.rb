@@ -45,8 +45,10 @@ class TaskJuggler
       rText = ''
       list = @project['journal'].entriesByTask(self, query.start, query.end)
       list.reverse.each do |entry|
-        # The TimeSheetRecords associated with this entry.
-        tsRecord = entry.timeSheetRecord
+        # Get the TimeSheetRecords associated with this entry. Ignore the
+        # entry if there is no record.
+        next if (tsRecord = entry.timeSheetRecord).nil?
+
         if entry.property.is_a?(Task)
           levelRecord = @project['alertLevels'][entry.alertLevel]
           alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
