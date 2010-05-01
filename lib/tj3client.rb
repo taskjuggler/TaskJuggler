@@ -206,7 +206,7 @@ EOT
         end
       rescue
         error("TaskJuggler server on host '#{@host}' port " +
-              "#{@port} is not responding: #{$!}")
+              "#{@port} is not responding")
       end
     end
 
@@ -222,6 +222,7 @@ EOT
         $stdout.puts callDaemon(:status, [])
       when 'terminate'
         callDaemon(:stop, [])
+        info('Daemon terminated')
       when 'add'
         # Ask the daemon to create a new ProjectServer process and return a
         # DRbObject to access it.
@@ -240,6 +241,7 @@ EOT
             error("Project '#{arg}' not found in list")
           end
         end
+        info('Project removed')
       when 'report'
         # The first value of args is the project ID. The following values
         # could be either report IDs or TJI file # names ('.' or '*.tji').
@@ -429,6 +431,11 @@ EOT
         end
       end
       true
+    end
+
+    def info(message)
+      return if @silent
+      $stdout.puts "#{message}"
     end
 
     def error(message)

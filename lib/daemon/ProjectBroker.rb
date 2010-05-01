@@ -35,20 +35,23 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
-    attr_accessor :port
+    attr_accessor :port, :projectFiles
 
     def initialize
       super
       # We don't have a default key. The user must provice a key in the config
       # file. Otherwise the daemon will not start.
       @authKey = nil
-      # The default TCP/IP port. ASCII decimal codes for 'T' and 'J'.
+      # The default TCP/IP port. ASCII code decimals for 'T' and 'J'.
       @port = 8474
       # A list of loaded projects as Array of ProjectRecord objects.
       @projects = []
       # We operate with multiple threads so we need a Monitor to synchronize
       # the access to the list.
       @projects.extend(MonitorMixin)
+
+      # A list of the initial projects. Array with Array of files names.
+      @projectFiles = []
 
       # This Queue is used to load new projects. The DRb thread pushes load
       # requests that the housekeeping thread will then perform.
@@ -58,7 +61,7 @@ class TaskJuggler
       @terminate = false
     end
 
-    def start(projects)
+    def start
       # To ensure a certain level of security, the user must provide an
       # authentication key to authenticate the client to this server.
       unless @authKey
@@ -90,8 +93,8 @@ EOT
 
       # If project files were specified on the command line, we add them here.
       i = 0
-      projects.each do |project|
-        @projectsToLoad.push([ i += 1, project ])
+      @projectFiles.each do |project|
+        @projectsToLoad.push(project)
       end
 
       # Start a Thread that waits for the @terminate flag to be set and does
@@ -322,10 +325,19 @@ EOT
       end
     end
 
-    def loadProject(tag)
-      @log.debug("Loading project for tag #{tag}")
+    def loadProject(tagOrProject)
+      if tagOrProject.is_a?(Array)
+        tag = rand(9999999999999)
+        project = tagOrProject
+        # The 2nd element of the Array is the *.tjp file name.
+        @log.debug("Loading project #{tagOrProject[1]} with tag #{tag}")
+      else
+        tag = tagOrProject
+        project = nil
+        @log.debug("Loading project for tag #{tag}")
+      end
       pr = ProjectRecord.new(tag)
-      ps = ProjectServer.new
+      ps = ProjectServer.new(project)
       # The ProjectServer can be reached via this DRb URI
       pr.uri = ps.uri
       # Method calls must be authenticated with this key

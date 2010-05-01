@@ -60,7 +60,25 @@ EOT
       @rc.configure(broker, 'global')
       @rc.configure(broker, 'daemon')
       broker.port = @port if @port
+      broker.projectFiles = sortInputFiles(files) unless files.empty?
 
+      broker.daemonize = @daemonize
+
+      broker.start
+    end
+
+    def error(message)
+      $stderr.puts "ERROR: #{message}"
+      exit 1
+    end
+
+    private
+
+    # Sort the provided input files into groups of projects. Each *.tjp file
+    # starts a new project. A *.tjp file may be followed by any number of
+    # *.tji files. The result is an Array of projects. Each consists of an
+    # Array like this: [ <working directory>, <tjp file> (, <tji file> ...) ].
+    def sortInputFiles(files)
       projects = []
       project = nil
       files.each do |file|
@@ -92,14 +110,7 @@ EOT
         end
       end
 
-      broker.daemonize = @daemonize
-
-      broker.start(projects)
-    end
-
-    def error(message)
-      $stderr.puts "ERROR: #{message}"
-      exit 1
+      projects
     end
 
   end

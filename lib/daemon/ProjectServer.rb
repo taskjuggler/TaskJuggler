@@ -37,7 +37,8 @@ class TaskJuggler
 
     attr_reader :authKey, :uri
 
-    def initialize
+    def initialize(projectData = nil)
+      @projectData = projectData
       # Since we are still in the ProjectBroker process, the current DRb
       # server is still the ProjectBroker DRb server.
       @daemonURI = DRb.current_server.uri
@@ -227,6 +228,13 @@ class TaskJuggler
     def startHousekeeping
       Thread.new do
         loop do
+          # Was the project data provided during object creation?
+          # Then we load the data here.
+          if @projectData
+            loadProject(@projectData)
+            @projectData = nil
+          end
+
           # Check for pending requests for new ReportServers.
           unless @reportServerRequests.empty?
             tag = @reportServerRequests.pop
