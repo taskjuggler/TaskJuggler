@@ -31,6 +31,7 @@ class TaskJuggler
       @log.appName = AppConfig.appName
       @daemonize = true
       @port = nil
+      @webServer = false
     end
 
     def processArguments(argv)
@@ -47,7 +48,12 @@ EOT
         end
         @opts.on('-p', '--port <NUMBER>', Integer,
                  format('Use the specified TCP/IP port')) do |arg|
-           @port = arg
+          @port = arg
+        end
+        @opts.on('--webserver',
+                 format('Start a web server that serves the reports of ' +
+                        'the loaded projects.')) do
+          @webServer = true
         end
       end
     end
@@ -60,6 +66,7 @@ EOT
       @rc.configure(broker, 'global')
       @rc.configure(broker, 'daemon')
       broker.port = @port if @port
+      broker.enableWebServer = @webServer
       broker.projectFiles = sortInputFiles(files) unless files.empty?
 
       broker.daemonize = @daemonize

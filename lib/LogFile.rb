@@ -28,17 +28,17 @@ class TaskJuggler
     end
 
     def debug(message)
-      $stdout.puts message if @outputLevel >= 4
+      $stderr.puts message if @outputLevel >= 4
       log('DEBUG', message) if @logLevel >= 4
     end
 
     def info(message)
-      $stdout.puts message if @outputLevel >= 3
+      $stderr.puts message if @outputLevel >= 3
       log('INFO', message) if @logLevel >= 3
     end
 
     def warning(message)
-      $stdout.puts message if @outputLevel >= 2
+      $stderr.puts message if @outputLevel >= 2
       log('WARN', message) if @logLevel >= 2
     end
 

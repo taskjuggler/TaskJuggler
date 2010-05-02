@@ -102,7 +102,9 @@ class TaskJuggler
     res
   end
 
-  # Generate the report with the ID _reportId_.
+  # Generate the report with the ID _reportId_. If _regExpMode_ is true,
+  # _reportId_ is interpreted as a Regular Expression and all reports with
+  # matching IDs are generated.
   def generateReport(reportId, regExpMode)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
@@ -115,7 +117,9 @@ class TaskJuggler
     true
   end
 
-  # Generate the report with the ID _reportId_.
+  # Generate the report with the ID _reportId_. If _regExpMode_ is true,
+  # _reportId_ is interpreted as a Regular Expression and all reports with
+  # matching IDs are listed.
   def listReports(reportId, regExpMode)
     begin
       Log.enter('listReports', 'Generating report list for #{reportId} ...')

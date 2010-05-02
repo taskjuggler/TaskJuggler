@@ -55,6 +55,9 @@ class TaskJuggler
                format("Don't show program and progress information")) do
         @silent = true
       end
+      @opts.on('--debug', format('Enable Ruby debug mode')) do
+        $DEBUG = true
+      end
 
       yield
 
@@ -81,12 +84,16 @@ class TaskJuggler
 
     def main
       # Install signal handler to exit gracefully on CTRL-C.
-      Kernel.trap('INT') do
+      intHandler = Kernel.trap('INT') do
         puts "\nAborting on user request!"
         exit 1
       end
 
       args = processArguments(ARGV)
+
+      # If DEBUG mode has been enabled, we restore the INT trap handler again
+      # to get Ruby backtrackes.
+      Kernel.trap('INT', intHandler) if $DEBUG
 
       unless @silent
         puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +

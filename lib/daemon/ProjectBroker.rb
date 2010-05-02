@@ -16,6 +16,7 @@ require 'drb'
 require 'drb/acl'
 require 'daemon/Daemon'
 require 'daemon/ProjectServer'
+require 'daemon/WebServer'
 require 'TjTime'
 
 class TaskJuggler
@@ -35,7 +36,8 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
-    attr_accessor :port, :projectFiles
+    attr_accessor :port, :enableWebServer, :projectFiles
+    attr_reader :authKey
 
     def initialize
       super
@@ -56,6 +58,12 @@ class TaskJuggler
       # This Queue is used to load new projects. The DRb thread pushes load
       # requests that the housekeeping thread will then perform.
       @projectsToLoad = Queue.new
+
+      # Referece to WEBrick object.
+      @webServer = nil
+
+      # True if web server should be activated
+      @enableWebServer = false
 
       # This flag will be set to true to terminate the daemon.
       @terminate = false
@@ -78,6 +86,9 @@ EOT
 
       super()
       @log.debug("Starting project broker")
+
+      # The web server must be started before we turn SAFE mode on.
+      @webServer = WebServer.new(self) if @enableWebServer
 
       # Setup a DRb server to handle the incomming requests from the clients.
       brokerIface = ProjectBrokerIface.new(self)
@@ -123,6 +134,11 @@ EOT
     # This command will initiate the termination of the daemon.
     def stop
       @log.debug('Terminating on client request')
+
+      # Shut down the web server if we've started one.
+      if @webServer
+        @webServer.stop
+      end
 
       # Send termination signal to all ProjectServer instances
       @projects.synchronize do
@@ -224,6 +240,10 @@ EOT
         return [ nil, nil ]
       end
       [ project.uri, project.authKey ]
+    end
+
+    def report(projectId, reportId)
+      uri, key = getProject(projectId)
     end
 
     # This is a callback from the ProjectServer process. It's used to update

@@ -62,9 +62,9 @@ class TaskJuggler
       @stdout = $stdout
       @stderr = $stderr
       @stdin = $stdin
-      $stdout = stdout
-      $stderr = stderr
-      $stdin = stdin
+      $stdout = stdout if stdout
+      $stderr = stderr if stdout
+      $stdin = stdin if stdin
       @log.debug('IO is now routed to the client')
       Log.silent = silent
       true
@@ -73,9 +73,9 @@ class TaskJuggler
     def disconnect
       @log.debug('Restoring IO')
       Log.silent = true
-      $stdout = @stdout
-      $stderr = @stderr
-      $stdin = @stdin
+      $stdout = @stdout if @stdout
+      $stderr = @stderr if @stderr
+      $stdin = @stdin if @stdin
       @log.debug('Standard IO has been restored')
       true
     end
