@@ -55,6 +55,13 @@ EOT
                  format('Filter expression to limit the resource list')) do |arg|
           @hideResource = arg
         end
+        @opts.on('-i', '--interval <DURATION>', String,
+                 format('The duration of the interval. This is a number ' +
+                        'directly followed by a unit. 1w means one week ' +
+                        '(the default), 5d means 5 days and 72h means 72 ' +
+                        'hours.')) do |arg|
+          @intervalDuration = arg
+        end
         optsEndDate
       end
     end
