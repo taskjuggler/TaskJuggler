@@ -73,7 +73,11 @@ class TaskJuggler
 
       createDirectories
 
-      mail = Mail.new($stdin.read)
+      begin
+        mail = Mail.new($stdin.read)
+      rescue
+        error("Incoming mail could not be processed: #{$!}")
+      end
 
       # Who sent this email?
       @submitter = mail.from.respond_to?('[]') ? mail.from[0] : mail.from
