@@ -30,6 +30,9 @@ timesheet r1 2010-02-21 +1w {
       ->8-
     }
   }
+  status yellow "About me" {
+    summary "I'm not feeling good."
+  }
 }
 
 timesheet r1 2010-02-28 +1w {
@@ -60,3 +63,7 @@ timesheet r2 2010-02-21 +1w {
   }
 }
 
+resourcereport "TimeSheet2" {
+  formats html
+  columns name, journal
+}

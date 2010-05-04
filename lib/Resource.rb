@@ -66,9 +66,7 @@ class TaskJuggler
         alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
                     "alt=[#{levelRecord[1]}]|text-bottom]]"
         levelList.each do |entry|
-          # Get the TimeSheetRecords associated with this entry. If there is
-          # no record, we skip this entry.
-          next if (tsRecord = entry.timeSheetRecord).nil?
+          tsRecord = entry.timeSheetRecord
 
           if entry.property.is_a?(Task)
             rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+

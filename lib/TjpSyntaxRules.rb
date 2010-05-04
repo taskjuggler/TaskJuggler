@@ -4955,7 +4955,7 @@ EOT
     example('TimeSheet1', '3')
 
     pattern(%w( _shift !shiftId ), lambda {
-
+      #TODO
     })
     doc('shift.timesheet', <<'EOT'
 Specifies an alternative [[shift]] for the time sheet period. This shift will
@@ -4989,14 +4989,14 @@ EOT
 
   def rule_timeSheetHeader
     pattern(%w( _timesheet !resourceId !valIntervalOrDate ), lambda {
-      sheetAuthor = @val[1]
+      @sheetAuthor = @val[1]
       @property = nil
-      unless sheetAuthor.leaf?
+      unless @sheetAuthor.leaf?
         error('ts_group_author',
               'A resource group cannot file a time sheet')
       end
       # Currently time sheets are hardcoded for scenario 0.
-      @timeSheet = TimeSheet.new(sheetAuthor, @val[2],
+      @timeSheet = TimeSheet.new(@sheetAuthor, @val[2],
                                  @project['trackingScenarioIdx'])
       @timeSheet.sourceFileInfo = @scanner.sourceFileInfo
       @project.timeSheets << @timeSheet
@@ -5121,7 +5121,7 @@ EOT
                                        @scanner.sourceFileInfo)
       @journalEntry.alertLevel = @val[1]
       @journalEntry.timeSheetRecord = @timeSheetRecord
-      @journalEntry.author = @timeSheet.resource
+      @journalEntry.author = @sheetAuthor
       @timeSheetRecord.status = @journalEntry if @timeSheetRecord
     })
   end
