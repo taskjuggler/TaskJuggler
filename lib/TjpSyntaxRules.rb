@@ -4941,7 +4941,10 @@ EOT
     optional
     repeatable
 
-    pattern(%w( !tsNewTaskHeader !tsTaskBody ))
+    pattern(%w( !tsNewTaskHeader !tsTaskBody ), lambda {
+      @property = nil
+      @timeSheetRecord = nil
+    })
     doc('newtask', <<'EOT'
 The keyword can be used add a new task to the project. If the task ID requires
 further parent task that don't exist yet, these tasks will be created as well.
