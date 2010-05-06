@@ -77,9 +77,9 @@ class TaskJuggler
     end
 
     def rule_title1
-      pattern(%w( $TITLE1 !text $TITLE1END ), lambda {
-        @val[1][-1].appendSpace = false
-        el = RichTextElement.new(@richTextI, :title1, @val[1])
+      pattern(%w( $TITLE1 !space !text $TITLE1END ), lambda {
+        @val[2][-1].appendSpace = false
+        el = RichTextElement.new(@richTextI, :title1, @val[2])
         @sectionCounter[0] += 1
         @sectionCounter[1] = @sectionCounter[2] = 0
         el.data = @sectionCounter.dup
@@ -88,9 +88,9 @@ class TaskJuggler
     end
 
     def rule_title2
-      pattern(%w( $TITLE2 !text $TITLE2END ), lambda {
-        @val[1][-1].appendSpace = false
-        el = RichTextElement.new(@richTextI, :title2, @val[1])
+      pattern(%w( $TITLE2 !space !text $TITLE2END ), lambda {
+        @val[2][-1].appendSpace = false
+        el = RichTextElement.new(@richTextI, :title2, @val[2])
         @sectionCounter[1] += 1
         @sectionCounter[2] = 0
         el.data = @sectionCounter.dup
@@ -99,9 +99,9 @@ class TaskJuggler
     end
 
     def rule_title3
-      pattern(%w( $TITLE3 !text $TITLE3END ), lambda {
-        @val[1][-1].appendSpace = false
-        el = RichTextElement.new(@richTextI, :title3, @val[1])
+      pattern(%w( $TITLE3 !space !text $TITLE3END ), lambda {
+        @val[2][-1].appendSpace = false
+        el = RichTextElement.new(@richTextI, :title3, @val[2])
         @sectionCounter[2] += 1
         el.data = @sectionCounter.dup
         el
