@@ -49,7 +49,7 @@ class TaskJuggler
 The deadline for your report submission has passed but we haven't
 received it yet. Please submit your report immediately so the content
 can still be included in the management reports. Please send a copy
-of your submission noticiation email to your manager. If possible,
+of your submission notification email to your manager. If possible,
 your manager will still try to include your report data in his/her
 report.
 
