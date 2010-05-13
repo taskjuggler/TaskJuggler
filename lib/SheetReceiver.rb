@@ -118,6 +118,10 @@ EOT
 
     # Isolate the actual syntax from _sheet_ and process it.
     def processSheet(sheet)
+      # Make sure the sheet is really valid UTF-8
+      unless sheet.force_encoding('UTF-8').valid_encoding?
+        error('The sheet contains illegal UTF-8 characters.')
+      end
       # Store the detected sheet so we can include it with error reports if
       # needed.
       @sheet = cutOut(fixLineBreaks(sheet))
