@@ -16,6 +16,9 @@ GEM_SPEC = Gem::Specification.new { |s|
     s.has_rdoc          = true
     s.extra_rdoc_files  = RDOC_FILES
     #s.rdoc_options      = GENERAL_RDOC_OPTS.to_a.flatten
+    DEPENDENCIES.each do |package, version|
+      s.add_dependency(package, version)
+    end
     s.date              = Time.now
     if HAVE_EXT
         s.extensions    = EXT_CONF_FILES
