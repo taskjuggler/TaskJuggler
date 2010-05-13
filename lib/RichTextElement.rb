@@ -98,6 +98,8 @@ class TaskJuggler
         number = "#{@data[0]}.#{@data[1]} "
       when :title3
         number = "#{@data[0]}.#{@data[1]}.#{@data[2]} "
+      when :title4
+        number = "#{@data[0]}.#{@data[1]}.#{@data[2]}.#{@data[3]} "
       end
       if number
         # We've found a section heading. The String value of the Element is the
@@ -153,6 +155,10 @@ class TaskJuggler
         return textBlockFormat(@richText.indent + @richText.titleIndent,
                                sTitle(3), children_to_s,
                                @richText.lineWidth) + "\n"
+      when :title4
+        return textBlockFormat(@richText.indent + @richText.titleIndent,
+                               sTitle(4), children_to_s,
+                               @richText.lineWidth) + "\n"
       when :hline
         return "#{' ' * @richText.indent}" +
                "#{'-' * (@richText.lineWidth - @richText.indent)}\n"
@@ -178,6 +184,11 @@ class TaskJuggler
         return textBlockFormat(@richText.indent + @richText.listIndent * 3,
                                '* ', children_to_s,
                                @richText.lineWidth) + "\n"
+      when :bulletlist4
+      when :bulletitem4
+        return textBlockFormat(@richText.indent + @richText.listIndent * 4,
+                               '* ', children_to_s,
+                               @richText.lineWidth) + "\n"
       when :numberlist1
       when :numberitem1
         return textBlockFormat(@richText.indent + @richText.listIndent,
@@ -192,6 +203,12 @@ class TaskJuggler
       when :numberitem3
         return textBlockFormat(@richText.indent + @richText.listIndent,
                                "#{@data[0]}.#{@data[1]}.#{@data[2]} ",
+                               children_to_s, @richText.lineWidth) + "\n"
+      when :numberlist4
+      when :numberitem4
+        return textBlockFormat(@richText.indent + @richText.listIndent,
+                               "#{@data[0]}.#{@data[1]}.#{@data[2]}." +
+                               "#{@data[3]} ",
                                children_to_s, @richText.lineWidth) + "\n"
       when :img
         pre = @data.altText if @data.altText
@@ -232,6 +249,9 @@ class TaskJuggler
       when :title3
         pre = "<h3>#{@data[0]}.#{@data[1]}.#{@data[2]} "
         post = "</h3>\n\n"
+      when :title4
+        pre = "<h4>#{@data[0]}.#{@data[1]}.#{@data[2]}.#{@data[3]} "
+        post = "</h4>\n\n"
       when :hline
         pre = '<hr>'
         post = "</hr>\n"
@@ -259,6 +279,12 @@ class TaskJuggler
       when :bulletitem3
         pre = '<li>  * '
         post = "</li>\n"
+      when :bulletlist4
+        pre = '<ul>'
+        post = '</ul>'
+      when :bulletitem4
+        pre = '<li>   * '
+        post = "</li>\n"
       when :numberlist1
         pre = '<ol>'
         post = '</ol>'
@@ -276,6 +302,12 @@ class TaskJuggler
         post = '</ol>'
       when :numberitem3
         pre = "<li>#{@data[0]}.#{@data[1]}.#{@data[2]} "
+        post = "</li>\n"
+      when :numberlist4
+        pre = '<ol>'
+        post = '</ol>'
+      when :numberitem4
+        pre = "<li>#{@data[0]}.#{@data[1]}.#{@data[2]}.#{@data[3]} "
         post = "</li>\n"
       when :img
         pre = "<img file=\"#{@data.fileName}\"/>"
@@ -346,6 +378,8 @@ class TaskJuggler
         htmlTitle(2)
       when :title3
         htmlTitle(3)
+      when :title4
+        htmlTitle(4)
       when :hline
         noChilds = true
         XMLElement.new('hr', attrs, true)
@@ -370,6 +404,10 @@ class TaskJuggler
         XMLElement.new('ul')
       when :bulletitem3
         XMLElement.new('li')
+      when :bulletlist4
+        XMLElement.new('ul')
+      when :bulletitem4
+        XMLElement.new('li')
       when :numberlist1
         XMLElement.new('ol')
       when :numberitem1
@@ -381,6 +419,10 @@ class TaskJuggler
       when :numberlist3
         XMLElement.new('ol')
       when :numberitem3
+        XMLElement.new('li')
+      when :numberlist4
+        XMLElement.new('ol')
+      when :numberitem4
         XMLElement.new('li')
       when :img
         el = XMLElement.new('img', 'src' => @data.fileName)

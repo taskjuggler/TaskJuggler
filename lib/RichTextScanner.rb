@@ -237,7 +237,7 @@ class TaskJuggler
       case (c = nextChar)
       when '='
         # Headings start with 2 or more = and must be followed by a space.
-        level = readSequenceMax('=', 4)
+        level = readSequenceMax('=', 5)
         if level == 1
           # 1 = does not mean anything. Push it back and process it as normal
           # text further down.
@@ -256,7 +256,7 @@ class TaskJuggler
         returnChar(level)
       when '*'
         # Bullet lists start with one to three * characters.
-        level = readSequenceMax('*')
+        level = readSequenceMax('*', 4)
         # Between the * characters and the bullet text must be exactly one
         # space.
         return [ "BULLET#{level}", '*' * level ] if nextChar == ' '
@@ -264,7 +264,7 @@ class TaskJuggler
         returnChar(level + 1)
       when '#'
         # Numbered list start with one to three # characters.
-        level = readSequenceMax('#')
+        level = readSequenceMax('#', 4)
         # Between the # characters and the bullet text must be exactly one
         # space.
         return [ "NUMBER#{level}", '#' * level ] if nextChar == ' '
@@ -322,7 +322,7 @@ class TaskJuggler
           nil
         end
       elsif c == '=' && !@ignoreInlineMarkup
-        level = readSequenceMax('=', 4)
+        level = readSequenceMax('=', 5)
         if level > 1
           [ "TITLE#{level - 1}END", '=' * level ]
         else

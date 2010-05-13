@@ -56,7 +56,7 @@ class TaskJuggler
         RichTextElement.new(@richTextI, :bulletlist1, @val[0])
       })
       pattern(%w( !numberList1 ), lambda {
-        @numberListCounter = [ 0, 0, 0 ]
+        @numberListCounter = [ 0, 0, 0, 0 ]
         RichTextElement.new(@richTextI, :numberlist1, @val[0])
       })
       pattern(%w( !blockFunction !blankLines ), lambda {
@@ -72,6 +72,9 @@ class TaskJuggler
         @val[0]
       })
       pattern(%w( !title3 ), lambda {
+        @val[0]
+      })
+      pattern(%w( !title4 ), lambda {
         @val[0]
       })
     end
@@ -103,6 +106,17 @@ class TaskJuggler
         @val[2][-1].appendSpace = false
         el = RichTextElement.new(@richTextI, :title3, @val[2])
         @sectionCounter[2] += 1
+        @sectionCounter[3] = 0
+        el.data = @sectionCounter.dup
+        el
+      })
+    end
+
+    def rule_title4
+      pattern(%w( $TITLE4 !space !text $TITLE4END ), lambda {
+        @val[2][-1].appendSpace = false
+        el = RichTextElement.new(@richTextI, :title4, @val[2])
+        @sectionCounter[3] += 1
         el.data = @sectionCounter.dup
         el
       })
@@ -133,6 +147,16 @@ class TaskJuggler
       repeatable
       pattern(%w( $BULLET3 !text $LINEBREAK), lambda {
         RichTextElement.new(@richTextI, :bulletitem3, @val[1])
+      })
+      pattern(%w( !bulletList4 ), lambda {
+        RichTextElement.new(@richTextI, :bulletlist4, @val[0])
+      })
+    end
+
+    def rule_bulletList4
+      repeatable
+      pattern(%w( $BULLET4 !text $LINEBREAK), lambda {
+        RichTextElement.new(@richTextI, :bulletitem4, @val[1])
       })
     end
 
@@ -170,6 +194,20 @@ class TaskJuggler
       pattern(%w( $NUMBER3 !text $LINEBREAK), lambda {
         el = RichTextElement.new(@richTextI, :numberitem3, @val[1])
         @numberListCounter[2] += 1
+        el.data = @numberListCounter.dup
+        el
+      })
+      pattern(%w( !numberList4 ), lambda {
+        @numberListCounter[3] = 0
+        RichTextElement.new(@richTextI, :numberlist4, @val[0])
+      })
+    end
+
+    def rule_numberList4
+      repeatable
+      pattern(%w( $NUMBER4 !text $LINEBREAK), lambda {
+        el = RichTextElement.new(@richTextI, :numberitem4, @val[1])
+        @numberListCounter[3] += 1
         el.data = @numberListCounter.dup
         el
       })

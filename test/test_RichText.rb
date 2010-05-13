@@ -426,6 +426,7 @@ EOT
 == This is level 1 ==
 === This is level 2 ===
 ==== This is level 3 ====
+===== This is level 4 =====
 EOT
 
     # Check tagged output.
@@ -438,6 +439,8 @@ EOT
 <h2>1.1 [This] [is] [level] [2]</h2>
 
 <h3>1.1.1 [This] [is] [level] [3]</h3>
+
+<h4>1.1.1.1 [This] [is] [level] [4]</h4>
 
 </div>
 EOT
@@ -455,6 +458,8 @@ EOT
 
 1.1.1) This is level 3
 
+1.1.1.1) This is level 4
+
 EOT
     assert_equal(ref, out)
 
@@ -466,6 +471,7 @@ EOT
  <h1 id="This_is_level_1">1 This is level 1</h1>
  <h2 id="This_is_level_2">1.1 This is level 2</h2>
  <h3 id="This_is_level_3">1.1.1 This is level 3</h3>
+ <h4 id="This_is_level_4">1.1.1.1 This is level 4</h4>
 </div>
 EOT
     assert_equal(ref, out)
@@ -476,6 +482,7 @@ EOT
 * This is a bullet item
 ** This is a level 2 bullet item
 *** This is a level 3 bullet item
+**** This is a level 4 bullet item
 EOT
 
     # Check tagged output.
@@ -484,7 +491,8 @@ EOT
 <div><ul><li>* [This] [is] [a] [bullet] [item]</li>
 <ul><li> * [This] [is] [a] [level] [2] [bullet] [item]</li>
 <ul><li>  * [This] [is] [a] [level] [3] [bullet] [item]</li>
-</ul></ul></ul></div>
+<ul><li>   * [This] [is] [a] [level] [4] [bullet] [item]</li>
+</ul></ul></ul></ul></div>
 EOT
     assert_equal(ref, out)
 
@@ -498,6 +506,8 @@ EOT
 
    * This is a level 3 bullet item
 
+    * This is a level 4 bullet item
+
 
 EOT
     assert_equal(ref, out)
@@ -509,7 +519,10 @@ EOT
   <li>This is a bullet item</li>
   <ul>
    <li>This is a level 2 bullet item</li>
-   <ul><li>This is a level 3 bullet item</li></ul>
+   <ul>
+    <li>This is a level 3 bullet item</li>
+    <ul><li>This is a level 4 bullet item</li></ul>
+   </ul>
   </ul>
  </ul></div>
 EOT
@@ -533,6 +546,7 @@ Normal text.
 ## This is item 2.2
 ### This is item 2.2.1
 ### This is item 2.2.2
+#### This is item 2.2.2.1
 # This is item 3
 ## This is item 3.1
 ### This is item 3.1.1
@@ -561,7 +575,8 @@ EOT
 <li>2.2 [This] [is] [item] [2.2]</li>
 <ol><li>2.2.1 [This] [is] [item] [2.2.1]</li>
 <li>2.2.2 [This] [is] [item] [2.2.2]</li>
-</ol></ol><li>3 [This] [is] [item] [3]</li>
+<ol><li>2.2.2.1 [This] [is] [item] [2.2.2.1]</li>
+</ol></ol></ol><li>3 [This] [is] [item] [3]</li>
 <ol><li>3.1 [This] [is] [item] [3.1]</li>
 <ol><li>3.1.1 [This] [is] [item] [3.1.1]</li>
 </ol></ol><li>4 [This] [is] [item] [4]</li>
@@ -602,6 +617,8 @@ Normal text.
  2.2.1 This is item 2.2.1
 
  2.2.2 This is item 2.2.2
+
+ 2.2.2.1 This is item 2.2.2.1
 
  3. This is item 3
 
@@ -645,6 +662,7 @@ EOT
    <ol>
     <li>This is item 2.2.1</li>
     <li>This is item 2.2.2</li>
+    <ol><li>This is item 2.2.2.1</li></ol>
    </ol>
   </ol>
   <li>This is item 3</li>

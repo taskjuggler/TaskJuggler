@@ -27,7 +27,7 @@ class TaskJuggler
 
     # Create the parser and initialize the rule set. _rt_ is the RichText object
     # the resulting tree of RichTextElement objects should belong to.
-    def initialize(rti, sectionCounter = [ 0, 0, 0], tokenSet = nil)
+    def initialize(rti, sectionCounter = [ 0, 0, 0, 0 ], tokenSet = nil)
       super()
       @richTextI = rti
       # These are the tokens that can be returned by the RichTextScanner.
@@ -36,15 +36,17 @@ class TaskJuggler
                        QUERY
                        INLINEFUNCSTART INLINEFUNCEND
                        BLOCKFUNCSTART BLOCKFUNCEND ID STRING
-                       TITLE1 TITLE2 TITLE3 TITLE1END TITLE2END TITLE3END
-                       BULLET1 BULLET2 BULLET3 NUMBER1 NUMBER2 NUMBER3 )
+                       TITLE1 TITLE2 TITLE3 TITLE4
+                       TITLE1END TITLE2END TITLE3END TITLE4END
+                       BULLET1 BULLET2 BULLET3 BULLET4
+                       NUMBER1 NUMBER2 NUMBER3 NUMBER4 )
       limitTokenSet(tokenSet)
       # Load the rule set into the parser.
       initRules
       # The sections and numbered list can each nest 3 levels deep. We use these
       # counter Arrays to generate proper 1.2.3 type labels.
       @sectionCounter = sectionCounter
-      @numberListCounter = [ 0, 0, 0 ]
+      @numberListCounter = [ 0, 0, 0, 0 ]
     end
 
     # Construct the parser and get ready to read.
