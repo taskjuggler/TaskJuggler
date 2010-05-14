@@ -46,4 +46,5 @@ SETUP_FILE      = 'setup.rb'
 PRJ_FILE        = 'prj_cfg.rb'
 GEM_SPEC_FILE   = 'gem_spec.rb'
 DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/*", "test/all.rb", "test/MessageChecker.rb", "test/TestSuite/**/*", "data/**/*"]
-
+DEPENDENCIES    = { 'mail' => '= 2.1.3',
+                    'open4' => '1.0.1' }
