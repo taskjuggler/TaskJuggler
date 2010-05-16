@@ -1005,7 +1005,7 @@ EOT
 The fail attribute adds a logical expression to the property. The condition
 described by the logical expression is checked after the scheduling and an
 error is raised if the condition evaluates to true. This attribute is
-primarily intended for testing purpuses.
+primarily intended for testing purposes.
 EOT
        )
   end
@@ -2132,8 +2132,9 @@ EOT
 Set the average number of working hours per day. This is used as
 the base to convert working hours into working days. This affects
 for example the length task attribute. The default value is 8 hours
-and should work for most Western countries. The value you specify
-should match the settings you specified for workinghours.
+and should work for most Western countries. The value you specify should match
+the settings you specified as your default [[workinghours.project|working
+hours]].
 EOT
        )
     example('Project')
@@ -3443,8 +3444,8 @@ EOT
     doc('shifts.resource', <<'EOT'
 Limits the working time of a resource to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
-Outside of the defined shift intervals the resource uses its normal working
-hours and vacations.
+In case a shift is defined for a certain interval, the shift working hours
+replace the standard resource working hours for this interval.
 EOT
         )
 
@@ -3613,6 +3614,7 @@ Shifts have a global name space. All IDs must be unique within the shifts of
 the project.
 EOT
        )
+    also(%w( shifts.task shifts.resource ))
   end
 
   def rule_shiftAssignment
@@ -5343,7 +5345,7 @@ EOT
 The warn attribute adds a logical expression to the property. The condition
 described by the logical expression is checked after the scheduling and an
 warning is generated if the condition evaluates to true. This attribute is
-primarily intended for testing purpuses.
+primarily intended for testing purposes.
 EOT
        )
   end
@@ -5454,8 +5456,12 @@ EOT
 Set the default working hours for all subsequent resource definitions.
 The working hours specification limits the availability of resources to
 certain time slots of week days.
+
+These default working hours can be replaced with other working hours for
+individual resources.
 EOT
        )
+    also(%w( dailyworkinghours workinghours.resource workinghours.shift ))
   end
 
   def rule_workinghoursResource
@@ -5465,16 +5471,26 @@ Set the working hours for a specific resource. The working hours specification
 limits the availability of resources to certain time slots of week days.
 EOT
        )
+    also(%w( workinghours.project workinghours.shift ))
   end
 
   def rule_workinghoursShift
     pattern(%w( !workinghours ))
     doc('workinghours.shift', <<'EOT'
-Set the default working hours for the shift. The working hours specification
-limits the availability of resources or the activity on a task to certain time
+Set the working hours for the shift. The working hours specification limits
+the availability of resources or the activity on a task to certain time
 slots of week days.
+
+The shift working hours will replace the default or resource working hours for
+the specified time frame when assigning the shift to a resource.
+
+In case the shift is used for a task, resources are only assigned during the
+working hours of this shift and during the working hours of the allocated
+resource. Allocations only happen when both the task shift and the resource
+work hours allow work to happen.
 EOT
        )
+    also(%w( workinghours.project workinghours.resource ))
   end
 
   def rule_yesNo
