@@ -124,7 +124,8 @@ EOT
       end
       # Store the detected sheet so we can include it with error reports if
       # needed.
-      @sheet = cutOut(fixLineBreaks(sheet))
+      @sheet = fixLineBreaks(sheet)
+      @sheet = cutOut(@sheet) unless @sheetWasAttached
       # A valid sheet must have the poper header line.
       if @sheetHeader.match(@sheet)
         checkSignature(@sheet)
