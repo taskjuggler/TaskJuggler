@@ -39,11 +39,13 @@ class TaskJuggler
       @signatureFile = nil
       # The log file
       @logFile = nil
+      # The subject of the confirmation email
+      @emailSubject = nil
 
       # Regular expressions to identify a status sheet.
-      @sheetHeader = /^[ ]*statussheet\s([a-z][a-z0-9_]*)\s([0-9]*-[0-9]*-[0-9]*)/
+      @sheetHeader = nil
       # Regular expression to extract the sheet signature (date).
-      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*)/
+      @signatureFilter = nil
       # The email address of the submitter of the sheet.
       @submitter = nil
       # The resource ID of the submitter.
@@ -227,7 +229,7 @@ EOT
       text += @report
 
       # Send out the email.
-      sendEmail(@submitter, "Report from #{getResourceName} for #{@date}", text,
+      sendEmail(@submitter, sprintf(@emailSubject, getResourceName, @date), text,
                 nil, nil, @messageId)
       true
     end
@@ -303,7 +305,7 @@ EOT
       rescue
       end
 
-      sendEmail(@submitter, 'Your time sheet submission failed!', message)
+      sendEmail(@submitter, 'Your #{@sheetType} sheet submission failed!', message)
 
       exit 1
     end

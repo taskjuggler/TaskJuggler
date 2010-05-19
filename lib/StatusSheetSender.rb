@@ -46,6 +46,7 @@ text, UTF-8 encoded and the status sheet header from 'statussheet' to the period
 end date must be in a single line that starts at the beginning of the line.
 
 EOT
+      @mailSubject = "Your weekly status report template for %s"
     end
 
   end

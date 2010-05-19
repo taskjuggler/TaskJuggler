@@ -40,6 +40,9 @@ class TaskJuggler
       @force = false
 
       @signatureFilter = nil
+      # The subject of the template email.
+      @mailSubject = nil
+      # The into text of the template email.
       @introText = nil
 
       # The end date of the reported interval.
@@ -181,8 +184,7 @@ EOT
 
         message = " Hello #{name}!\n\n#{@introText}" + File.read(attachment)
 
-        sendEmail(email, "Your weekly report template for #{@date}",
-                  message, attachment)
+        sendEmail(email, sprintf(@mailSubject, @date), message, attachment)
       end
     end
 

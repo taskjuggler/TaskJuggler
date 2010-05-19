@@ -48,6 +48,7 @@ encoded and the time sheet header from 'timesheet' to the period end
 date must be in a single line that starts at the beginning of the line.
 
 EOT
+      @mailSubject = 'Your weekly time sheet template for %s'
     end
 
   end

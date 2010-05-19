@@ -37,14 +37,15 @@ check "^statussheet " sender.log 2
 tj3ss_receiver --dryrun < boss_mail >> receiver.log || error "rec1"
 tj3ss_receiver --dryrun < dev2_mail >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
-check "Report from " receiver.log 3
+check "Status report from " receiver.log 1
+check "Report from " receiver.log 2
 check "Yellow" receiver.log 1
 check "Green" receiver.log 2
 
 check ERROR statussheets.log 0
 check WARN statussheets.log 1
 check INFO statussheets.log 27
-check "Your weekly report template" statussheets.log 2
+check "Your weekly status report template" statussheets.log 2
 
 cleanup
 exit 0

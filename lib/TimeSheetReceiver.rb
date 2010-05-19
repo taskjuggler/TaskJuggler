@@ -34,6 +34,7 @@ class TaskJuggler
       @sheetHeader = /^[ ]*timesheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
       # Regular expression to extract the sheet signature (time period).
       @signatureFilter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+      @emailSubject = "Report from %s for %s"
     end
 
   end

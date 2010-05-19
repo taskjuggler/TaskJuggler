@@ -69,7 +69,7 @@ check "WARN" tj3d.log 0
 check ERROR timesheets.log 0
 check WARN timesheets.log 1
 check INFO timesheets.log 44
-check "Your weekly report template" timesheets.log 6
+check "Your weekly time sheet template" timesheets.log 6
 
 cleanup
 exit 0
