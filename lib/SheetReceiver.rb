@@ -305,7 +305,7 @@ EOT
       rescue
       end
 
-      sendEmail(@submitter, 'Your #{@sheetType} sheet submission failed!', message)
+      sendEmail(@submitter, "Your #{@sheetType} sheet submission failed!", message)
 
       exit 1
     end
