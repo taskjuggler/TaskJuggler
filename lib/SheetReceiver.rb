@@ -76,8 +76,13 @@ class TaskJuggler
       createDirectories
 
       begin
-        mail = Mail.new($stdin.read)
+        rawMail = $stdin.read
+        mail = Mail.new(rawMail)
       rescue
+        # Try to extract the mail sender the dirty way so we can at least send
+        # a response to the submitter.
+        fromLine = rawMail.match('^From: .*')[0]
+        @submitter = fromLine[6..-1] if fromLine.is_a?(String)
         error("Incoming mail could not be processed: #{$!}")
       end
 

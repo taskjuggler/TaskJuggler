@@ -49,6 +49,7 @@ EOT
       ts.dryRun = @dryRun
 
       ts.processEmail
+      0
     end
 
   end
