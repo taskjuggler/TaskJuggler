@@ -1183,6 +1183,7 @@ report is sorted in tree mode (default) then enclosing resources are listed
 even if the expression matches the resource.
 EOT
        )
+    also(%w( sortresources ))
   end
 
   def rule_hidetask
@@ -1195,6 +1196,7 @@ report is sorted in tree mode (default) then enclosing tasks are listed even
 if the expression matches the task.
 EOT
        )
+    also(%w( sorttasks ))
   end
 
   def rule_idOrAbsoluteId
