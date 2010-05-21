@@ -22,7 +22,7 @@ class TaskJuggler
     # At construction time you need to specify the +data+ container. This is an
     # Array of Arrays that holds the table. Optionally, you can specify a
     # +separator+ and a +quote+ string for the CSV file.
-    def initialize(data, separator = ';', quote = '"')
+    def initialize(data = nil, separator = ';', quote = '"')
       @data = data
       @separator = separator
       @quote = quote
@@ -63,21 +63,22 @@ class TaskJuggler
         file = File.open(fileName, 'r')
       end
 
-      csv = []
+      @data = []
       file.each_line do |line|
-        csv << parseLine(line)
+        @data << parseLine(line)
       end
 
       file.close unless fileName == '.'
-      csv
+      @data
     end
 
     # Read the data as Array of Arrays from a CSV formated String +str+.
     def parse(str)
-      csv = []
+      @data = []
       str.each_line do |line|
-        csv << parseLine(line)
+        @data << parseLine(line)
       end
+      @data
     end
 
     private
