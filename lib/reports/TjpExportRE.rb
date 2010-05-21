@@ -18,14 +18,9 @@ class TaskJuggler
   # project data in the TJP syntax format.
   class TjpExportRE < ReportBase
 
-    attr_reader :mainFile
-
     # Create a new object and set some default values.
     def initialize(report)
       super(report)
-
-      # Indicates whether this is a full .tjp file or just an .tji include file.
-      @mainFile = a('name')[-4, 4] != '.tji'
 
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority
@@ -65,7 +60,7 @@ class TaskJuggler
 
       @file = ''
 
-      generateProjectProperty unless a('definitions').include?('project')
+      generateProjectProperty if a('definitions').include?('project')
 
       generateFlagDeclaration if a('definitions').include?('flags')
       generateProjectIDs if a('definitions').include?('projectids')
@@ -136,11 +131,11 @@ class TaskJuggler
       a('scenarios').each do |scenarioIdx|
         @taskList.each do |task|
           pid = task['projectid', scenarioIdx]
-          projectIDs << pid unless projectIDs.include?(pid)
+          projectIDs << pid unless pid.nil? || projectIDs.include?(pid)
         end
       end
 
-      @file << "projectids #{projectIDs.join(', ')}\n\n"
+      @file << "projectids #{projectIDs.join(', ')}\n\n" unless projectIDs.empty?
     end
 
     def generateResourceList
@@ -222,16 +217,13 @@ class TaskJuggler
           generateAttribute(task, 'start', indent + 2, scenarioIdx)
           unless task['milestone', scenarioIdx]
             generateAttribute(task, 'end', indent + 2, scenarioIdx)
+            generateAttributeText('scheduling ' +
+                                  (task['forward', scenarioIdx] ?
+                                   'asap' : 'alap'),
+                                  indent + 2, scenarioIdx)
           end
           if task['scheduled', scenarioIdx]
             generateAttributeText('scheduled', indent + 2, scenarioIdx)
-          end
-          generateAttributeText('scheduling ' +
-                                (task['forward', scenarioIdx] ?
-                                 'asap' : 'alap'),
-                                indent + 2, scenarioIdx)
-          if task['milestone', scenarioIdx]
-            generateAttributeText('milestone', indent + 2, scenarioIdx)
           end
         end
       end

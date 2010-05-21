@@ -2284,6 +2284,7 @@ EOT
                                           @messageHandler)
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
+      @projectId = @val[1]
       setGlobalMacros
       @property = nil
       @reportCounter = 0
@@ -2436,7 +2437,7 @@ EOT
     pattern(%w( _projectid $ID ), lambda {
       @project['projectids'] << @val[1]
       @project['projectids'].uniq!
-      @project['projectid'] = @val[1]
+      @project['projectid'] = @projectId = @val[1]
     })
     doc('projectid', <<'EOT'
 This declares a new project id and activates it. All subsequent
@@ -4251,6 +4252,7 @@ EOT
         end
       end
       @property = Task.new(@project, @val[1], @val[2], @property)
+      @property['projectid', 0] = @projectId
       @property.sourceFileInfo = @scanner.sourceFileInfo
       @property.inheritAttributes
       @scenarioIdx = 0
