@@ -392,8 +392,12 @@ class TaskJuggler
 
       @timeSheets = TimeSheets.new
 
-      # This holds a reference to the ReportContext for each Thread.
-      @reportContext = nil
+      # The ReportContext provides additional settings to the report that can
+      # complement or replace the report attributes. Reports can include other
+      # reports. During report generation, only one context is active, but the
+      # context of enclosing reports needs to be preserved. Therefor we use a
+      # stack to implement this.
+      @reportContext = []
       @outputDir = ''
       @warnTsDeltas = false
     end
@@ -611,8 +615,9 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             Log.startProgressMeter("Report #{report.name}")
-            @reportContext = ReportContext.new(self, report)
+            @reportContext.push(ReportContext.new(self, report))
             report.generate
+            @reportContext.pop
             Log.stopProgressMeter
           end
         else
@@ -620,8 +625,9 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             bp.queue(report) {
-              @reportContext = ReportContext.new(self, report)
+              @reportContext.push(ReportContext.new(self, report))
               report.generate
+              @reportContext.pop
             }
           end
           bp.wait do |report|
@@ -654,8 +660,9 @@ class TaskJuggler
                 "Request to generate unknown report #{id}")
         end
         Log.startProgressMeter("Report #{report.name}")
-        @reportContext = ReportContext.new(self, report)
+        @reportContext.push(ReportContext.new(self, report))
         report.generate
+        @reportContext.pop
         Log.stopProgressMeter
       end
     end

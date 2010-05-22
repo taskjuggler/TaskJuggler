@@ -333,7 +333,7 @@ class TaskJuggler
       taskList.each do |task|
         # Get the current Query from the report context and create a copy. We
         # are going to modify it.
-        query = @project.reportContext.query.dup
+        query = @project.reportContext.last.query.dup
         query.property = task
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 
@@ -397,7 +397,7 @@ class TaskJuggler
       resourceList.each do |resource|
         # Get the current Query from the report context and create a copy. We
         # are going to modify it.
-        query = @project.reportContext.query.dup
+        query = @project.reportContext.last.query.dup
         query.property = resource
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 

@@ -28,7 +28,7 @@ class TaskJuggler
     end
 
     def generateIntermediateFormat
-      query = @report.project.reportContext.query
+      query = @report.project.reportContext.last.query
       %w( header left center right footer
           prolog headline caption epilog ).each do |name|
         next unless text = a(name)
@@ -142,7 +142,7 @@ class TaskJuggler
     # of lists.
     def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)
       # Make a copy of the current Query.
-      query = @project.reportContext.query.dup
+      query = @project.reportContext.last.query.dup
       query.scopeProperty = scopeProperty
 
       # Remove all properties that the user wants to have hidden.

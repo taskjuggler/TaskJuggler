@@ -41,15 +41,12 @@ class TaskJuggler
         return nil
       end
 
-      # Save the old report context record
-      oldReportContext = @project.reportContext
       # Create a new context for the report.
-      @project.reportContext = ReportContext.new(@project, report)
+      @project.reportContext.push(ReportContext.new(@project, report))
       # Generate the report with the new context
       report.generate
       html = report.to_html
-      # Restore the global report context record again.
-      @project.reportContext = oldReportContext
+      @project.reportContext.pop
 
       html
     end

@@ -94,7 +94,7 @@ class TaskJuggler
       property, scopeProperty = properties(expr)
       query = expr.query
       project = property.project
-      date = project.reportContext.report.get('end')
+      date = project.reportContext.last.report.get('end')
       !project['journal'].currentEntries(query.end, property,
                                          args[0], query.start).empty?
     end
@@ -110,10 +110,9 @@ class TaskJuggler
         expr.error("Unknown scenario '#{args[0]}' used for function isactive()")
       end
 
-      property.getAllocatedTime(scenarioIdx,
-                                project.reportContext.report.get('start'),
-                                project.reportContext.report.get('end'),
-                                scopeProperty) > 0.0
+      query = expr.query
+      property.getAllocatedTime(scenarioIdx, query.get('start'),
+                                query.get('end'), scopeProperty) > 0.0
     end
 
     def isdependencyof(expr, args)
@@ -160,8 +159,8 @@ class TaskJuggler
         expr.error("Unknown scenario '#{args[0]}' used for function isongoing()")
       end
 
-      iv1 = Interval.new(project.reportContext.report.get('start'),
-                         project.reportContext.report.get('end'))
+      query = expr.query
+      iv1 = Interval.new(query.get('start'), query.get('end'))
       tStart = task['start', scenarioIdx]
       tEnd = task['end', scenarioIdx]
       # This helps to show tasks with scheduling errors.

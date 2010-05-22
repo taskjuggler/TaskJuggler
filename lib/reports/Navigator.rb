@@ -127,7 +127,8 @@ class TaskJuggler
     # Generate an output format independant version of the navigator. This is
     # a tree of NavigatorElement objects.
     def generate(reports, reportRoot, parentElement)
-      raise "Report context missing" unless @project.reportContext.report
+      reportDef = @project.reportContext.last.report
+      raise "Report context missing" unless reportDef
 
       reports.each do |report|
         hasURL = report.get('formats').include?(:html)
@@ -138,12 +139,12 @@ class TaskJuggler
         # Determine the URL for this element.
         if hasURL
           url = report.name + '.html'
-          url = normalizeURL(url, @project.reportContext.report.name)
+          url = normalizeURL(url, reportDef.name)
         end
         parentElement.elements <<
           (element =  NavigatorElement.new(parentElement, label, url))
 
-        if report == @project.reportContext.report
+        if report == reportDef
           element.currentUrl = url
           # Mark this element and all its parents as current.
           nEl = element
@@ -172,7 +173,7 @@ class TaskJuggler
       list.setSorting([[ 'seqno', true, -1 ]])
       list.sort!
       # Remove all reports that the user doesn't want to have include.
-      query = @project.reportContext.query.dup
+      query = @project.reportContext.last.query.dup
       query.scopeProperty = nil
       list.delete_if do |property|
         query.property = property
