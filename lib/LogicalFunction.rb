@@ -94,7 +94,7 @@ class TaskJuggler
       property, scopeProperty = properties(expr)
       query = expr.query
       project = property.project
-      date = project.reportContext.last.report.get('end')
+      date = project.reportContexts.last.report.get('end')
       !project['journal'].currentEntries(query.end, property,
                                          args[0], query.start).empty?
     end

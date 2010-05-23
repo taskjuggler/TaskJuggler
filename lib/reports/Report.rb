@@ -114,14 +114,10 @@ class TaskJuggler
                                'keywords' => 'taskjuggler, project, management')
       if a('selfcontained')
         auxSrcDir = AppConfig.dataDirs('data/css')[0]
-        cssFileName = auxSrcDir + '/tjreport.css'
+        cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')
+        # Raise an error if we haven't found the data directory
         if auxSrcDir.nil? || !File.exists?(cssFileName)
-          raise TjException.new, <<"EOT"
-Cannot find '#{cssFileName}'. This is usually the result of an improper
-TaskJuggler installation. If you know where to find the data directory, you
-can use the TASKJUGGLER_DATA_PATH environment variable to specify the
-location. The variable should be set to the path without the /data at the end.
-EOT
+          dataDirError(cssFileName)
         end
         cssFile = IO.read(cssFileName)
         if cssFile.empty?
@@ -266,14 +262,8 @@ EOT
                                @name) + '/'
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
-      if auxSrcDir.nil? || !File.exists?(auxSrcDir)
-        raise TjException.new, <<"EOT"
-Cannot find the #{dirName} directory. This is usually
-the result of an improper TaskJuggler installation. If you know the directory,
-you can use the TASKJUGGLER_DATA_PATH environment variable to specify the
-location.
-EOT
-      end
+      # Raise an error if we haven't found the data directory
+      dataDirError(dirName) if auxSrcDir.nil? || !File.exists?(auxSrcDir)
       # Don't copy directory if all files are up-to-date.
       return if directoryUpToDate?(auxSrcDir, auxDstDir + dirName)
 
@@ -293,6 +283,16 @@ EOT
                         File.mtime(srcFile) > File.mtime(dstFile)
       end
       true
+    end
+
+    def dataDirError(dirName)
+      raise TjException.new, <<"EOT"
+Cannot find the #{dirName} directory. This is usually the result of an
+improper TaskJuggler installation. If you know the directory, you can use the
+TASKJUGGLER_DATA_PATH environment variable to specify the location.  The
+variable should be set to the path without the /data at the end. Multiple
+directories must be separated by colons.
+EOT
     end
 
     def error(id, message)

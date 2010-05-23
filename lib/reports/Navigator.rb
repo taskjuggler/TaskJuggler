@@ -127,7 +127,7 @@ class TaskJuggler
     # Generate an output format independant version of the navigator. This is
     # a tree of NavigatorElement objects.
     def generate(reports, reportRoot, parentElement)
-      reportDef = @project.reportContext.last.report
+      reportDef = @project.reportContexts.last.report
       raise "Report context missing" unless reportDef
 
       reports.each do |report|
@@ -173,7 +173,7 @@ class TaskJuggler
       list.setSorting([[ 'seqno', true, -1 ]])
       list.sort!
       # Remove all reports that the user doesn't want to have include.
-      query = @project.reportContext.last.query.dup
+      query = @project.reportContexts.last.query.dup
       query.scopeProperty = nil
       list.delete_if do |property|
         query.property = property

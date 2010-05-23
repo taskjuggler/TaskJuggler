@@ -40,13 +40,26 @@ class TaskJuggler
         error('rtp_report_unknown_id', "Unknown report #{id}")
         return nil
       end
+      # Detect recursive nesting
+      if @project.reportContexts.find_index { |c| c.report == report }
+        stack = ""
+        @project.reportContexts.each do |context|
+          stack += ' -> ' unless stack.empty?
+          stack += '[ ' if context.report == report
+          stack += context.report.fullId
+        end
+        stack += " -> #{report.fullId} ] ..."
+        error('rtp_report_recursion',
+              "Recursive nesting of reports detected: #{stack}")
+        return nil
+      end
 
       # Create a new context for the report.
-      @project.reportContext.push(ReportContext.new(@project, report))
+      @project.reportContexts.push(ReportContext.new(@project, report))
       # Generate the report with the new context
       report.generate
       html = report.to_html
-      @project.reportContext.pop
+      @project.reportContexts.pop
 
       html
     end

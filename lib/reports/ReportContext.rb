@@ -15,7 +15,7 @@ class TaskJuggler
   # The ReportContext objects provide some settings that are used during the
   # generation of a report. Reports can be nested, so multiple objects can
   # exist at a time. But there is only one current ReportContext that is
-  # always accessable via Project.reportContext.
+  # always accessable via Project.reportContexts.last().
   class ReportContext
 
     attr_reader :project, :report, :query
@@ -36,7 +36,7 @@ class TaskJuggler
         'revenueAccount' => @report.get('revenueAccount')
       }
       @query = Query.new(queryAttrs)
-      if (@parent = @project.reportContext.last)
+      if (@parent = @project.reportContexts.last)
         # If the new ReportContext is created from within an existing context,
         # this is used as parent context and the settings are copied as
         # default initial values.

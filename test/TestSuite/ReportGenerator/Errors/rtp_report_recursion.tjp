@@ -1,0 +1,20 @@
+project "test" 2010-05-23 +1w
+
+task "foo"
+
+textreport "rtp_report_recursion" {
+  formats html
+  center "<[report id='r1']>"
+}
+
+textreport r1 "R1" {
+  center "<[report id='r2']>"
+}
+textreport r2 "R2" {
+  center "<[report id='r3']>"
+}
+textreport r3 "R3" {
+  left "Hello, world!"
+# MARK: error 19 rtp_report_recursion
+  center "<[report id='r1']>"
+}

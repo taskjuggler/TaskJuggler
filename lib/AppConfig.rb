@@ -111,7 +111,9 @@ class AppConfig
 
     dirs = []
     if ENV['TASKJUGGLER_DATA_PATH']
-      dirs << ENV['TASKJUGGLER_DATA_PATH'] + "/#{baseDir}/"
+      ENV['TASKJUGGLER_DATA_PATH'].split(':').each do |path|
+        dirs << path + "/#{baseDir}/"
+      end
     end
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.

@@ -39,14 +39,14 @@ class TaskJuggler
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
                                 @report.get('rollupTask'))
-      taskList.query = @report.project.reportContext.last.query
+      taskList.query = @report.project.reportContexts.last.query
       taskList.sort!
 
       # Prepare the resource list. Don't filter it yet! It would break the
       # *_() LogicalFunctions.
       resourceList = PropertyList.new(@project.resources)
       resourceList.setSorting(@report.get('sortResources'))
-      resourceList.query = @report.project.reportContext.last.query
+      resourceList.query = @report.project.reportContexts.last.query
       resourceList.sort!
 
       adjustReportPeriod(taskList, @report.get('scenarios'),

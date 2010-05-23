@@ -50,7 +50,7 @@ class TaskJuggler
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
                 :timeSheets, :reports, :messageHandler
-    attr_accessor :reportContext, :outputDir, :warnTsDeltas
+    attr_accessor :reportContexts, :outputDir, :warnTsDeltas
 
     # Create a project with the specified +id+, +name+ and +version+.
     # +messageHandler+ is a MessageHandler reference that is used to handle
@@ -397,7 +397,7 @@ class TaskJuggler
       # reports. During report generation, only one context is active, but the
       # context of enclosing reports needs to be preserved. Therefor we use a
       # stack to implement this.
-      @reportContext = []
+      @reportContexts = []
       @outputDir = ''
       @warnTsDeltas = false
     end
@@ -615,9 +615,9 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             Log.startProgressMeter("Report #{report.name}")
-            @reportContext.push(ReportContext.new(self, report))
+            @reportContexts.push(ReportContext.new(self, report))
             report.generate
-            @reportContext.pop
+            @reportContexts.pop
             Log.stopProgressMeter
           end
         else
@@ -625,9 +625,9 @@ class TaskJuggler
           @reports.each do |report|
             next if report.get('formats').empty?
             bp.queue(report) {
-              @reportContext.push(ReportContext.new(self, report))
+              @reportContexts.push(ReportContext.new(self, report))
               report.generate
-              @reportContext.pop
+              @reportContexts.pop
             }
           end
           bp.wait do |report|
@@ -660,9 +660,9 @@ class TaskJuggler
                 "Request to generate unknown report #{id}")
         end
         Log.startProgressMeter("Report #{report.name}")
-        @reportContext.push(ReportContext.new(self, report))
+        @reportContexts.push(ReportContext.new(self, report))
         report.generate
-        @reportContext.pop
+        @reportContexts.pop
         Log.stopProgressMeter
       end
     end
