@@ -25,7 +25,7 @@ class TestReportGenerator < Test::Unit::TestCase
 
   def setup
     @tmpDir = 'tmp-test_ReportGenerator'
-    Dir.delete(@tmpDir) if Dir.exists?(@tmpDir)
+    Dir.delete(@tmpDir) if File.directory?(@tmpDir)
     Dir.mkdir(@tmpDir)
     AppConfig.appName = 'taskjuggler3'
     ENV['TASKJUGGLER_DATA_PATH'] = './:../'
