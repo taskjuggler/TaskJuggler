@@ -49,8 +49,8 @@ tj3ts_summary --dryrun -e 2002-03-01 >> summary.log || error "summary"
 check "To: archive@bar.com" summary.log 2
 check "To: crew@bar.com" summary.log 1
 check "From: foo@bar.com" summary.log 7
-check "From: SBono@crappysoftware.com" summary.log 1
-check "Report from .* is missing" summary.log 10
+check "From: =?UTF-8?B?U8OpYmFzdGllbg==?= Bono <SBono@crappysoftware.com>" summary.log 1
+check "The following 5 person(s) have not yet submitted their time sheets" summary.log 2
 check "Weekly Report from" summary.log 2
 check "Green" summary.log 6
 check "Your weekly report 2002-03-01 is overdue" summary.log 5

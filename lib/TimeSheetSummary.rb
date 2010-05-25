@@ -46,20 +46,21 @@ class TaskJuggler
       @summarySubject = "Weekly staff reports %s"
       @reminderSubject = "Your weekly report %s is overdue!"
       @reminderText = <<'EOT'
-The deadline for your report submission has passed but we haven't
-received it yet. Please submit your report immediately so the content
-can still be included in the management reports. Please send a copy
-of your submission notification email to your manager. If possible,
-your manager will still try to include your report data in his/her
-report.
+The deadline for your time sheet submission has passed but we haven't received
+it yet. Please submit your time sheet immediately so the content can still be
+included in the management reports. Please send a copy of your submission
+notification email to your manager. If possible, your manager will still try
+to include your report data in his/her report.
 
-Please be aware that post deadline submissions must be processed
-manually and create an additional load for your manager and/or
-project manager.  Please try to submit in time in the future.
+Please be aware that post deadline submissions must be processed manually and
+create an additional load for your manager and/or project manager.  Please try
+to submit in time in the future.
 
 Thanks for your cooperation!
 
 EOT
+      @defaulterHeader = "The following %d person(s) have not yet submitted " +
+                         "their time sheets:\n\n"
     end
 
     def sendSummary(resourceIds)
@@ -80,21 +81,34 @@ EOT
             # Resource has submitted a time sheet
             sheet = getResourceJournal(sheetFile)
             summary += sprintf(@resourceIntro, resourceName)
-            summary += sheet
+            summary += sheet + "\n#{'-' * 74}\n\n"
             info("Adding report from #{resourceName} to summary")
 
             @sheetRecipients.each do |to|
               sendEmail(to, sprintf(@resourceSheetSubject, @date), sheet,
-                        nil, resourceEmail)
+                        nil, "#{resourceName} <#{resourceEmail}>")
             end
           else
             defaulterList << resource
             # Resource did not submit a time sheet
-            summary += "\n  Report from #{resourceName} is missing\n\n"
             info("Report from #{resourceId} is missing")
           end
-          summary += "\n#{'-' * 74}\n\n"
         end
+      end
+
+      # Prepend the defaulter list to the summary.
+      unless defaulterList.empty?
+        text = sprintf(@defaulterHeader, defaulterList.length)
+        defaulterList.each do |resource|
+          text += " * #{resource[1]}\n"
+        end
+        text += "\n#{'-' * 74}\n\n"
+        summary = text + summary
+      end
+
+      # Send out the summary text to the list of digest recipients.
+      @digestRecipients.each do |to|
+        sendEmail(to, sprintf(@summarySubject, @date), summary)
       end
 
       # If there is a reminder text defined, resend the template to those
@@ -103,10 +117,6 @@ EOT
         defaulterList.each do |resource|
           sendReminder(resource[0], resource[1], resource[2])
         end
-      end
-
-      @digestRecipients.each do |to|
-        sendEmail(to, sprintf(@summarySubject, @date), summary)
       end
     end
 

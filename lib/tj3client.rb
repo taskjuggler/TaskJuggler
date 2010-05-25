@@ -261,7 +261,7 @@ EOT
         unless failed
           reportIds.each do |reportId|
             unless @reportServer.generateReport(@rs_authKey, reportId,
-                                                @regExpMode)
+                                                @regExpMode, nil)
               failed = true
               break
             end
