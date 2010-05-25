@@ -19,11 +19,12 @@ class TaskJuggler
   class ReportContext
 
     attr_reader :project, :report, :query
-    attr_accessor :tasks, :resources
+    attr_accessor :tasks, :resources, :attributeBackup
 
     def initialize(project, report)
       @project = project
       @report = report
+      @attributeBackup = nil
       queryAttrs = {
         'project' => @project,
         'loadUnit' => @report.get('loadUnit'),

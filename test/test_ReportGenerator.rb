@@ -14,6 +14,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 $:.unshift File.dirname(__FILE__)
 
 require 'test/unit'
+require 'fileutils'
 require 'Tj3Config'
 require 'TaskJuggler'
 require 'MessageChecker'
@@ -23,7 +24,7 @@ class TestReportGenerator < Test::Unit::TestCase
   include MessageChecker
 
   def setup
-    @tmpDir = 'tmp'
+    @tmpDir = 'tmp-test_ReportGenerator'
     Dir.delete(@tmpDir) if Dir.exists?(@tmpDir)
     Dir.mkdir(@tmpDir)
     AppConfig.appName = 'taskjuggler3'
@@ -31,7 +32,7 @@ class TestReportGenerator < Test::Unit::TestCase
   end
 
   def teardown
-    Dir.delete(@tmpDir)
+    FileUtils::rm_rf(@tmpDir)
   end
 
   def test_ReportGeneratorErrors

@@ -94,9 +94,9 @@ class TaskJuggler
       true
     end
 
-    def generateReport(id, regExpMode)
+    def generateReport(id, regExpMode, dynamicAttributes)
       @log.info("Generating report #{id}")
-      if (ok = @tj.generateReport(id, regExpMode))
+      if (ok = @tj.generateReport(id, regExpMode, dynamicAttributes))
         @log.debug("Report #{id} generated")
       else
         @log.error("Report generation of #{id} failed")
@@ -163,10 +163,10 @@ class TaskJuggler
       @server.addFile(file)
     end
 
-    def generateReport(authKey, reportId, regExpMode)
+    def generateReport(authKey, reportId, regExpMode, dynamicAttributes)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      @server.generateReport(reportId, regExpMode)
+      @server.generateReport(reportId, regExpMode, dynamicAttributes)
     end
 
 

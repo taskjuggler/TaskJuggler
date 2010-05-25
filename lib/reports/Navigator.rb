@@ -138,8 +138,13 @@ class TaskJuggler
         label = report.get('title') || report.name
         # Determine the URL for this element.
         if hasURL
-          url = report.name + '.html'
-          url = normalizeURL(url, reportDef.name)
+          if report.project.reportContexts.first.report.get('interactive')
+            url = "taskjuggler?project=#{report.project['projectid']};" +
+                  "report=#{reportDef.name}"
+          else
+            url = report.name + '.html'
+            url = normalizeURL(url, reportDef.name)
+          end
         end
         parentElement.elements <<
           (element =  NavigatorElement.new(parentElement, label, url))

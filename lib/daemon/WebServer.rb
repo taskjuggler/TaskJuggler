@@ -16,16 +16,20 @@ require 'stringio'
 
 require 'AppConfig'
 
+# StringIO needs to be extended so we can send $stdout and $stderr over DRb.
 class StringIO
   include DRbUndumped
 end
 
 class TaskJuggler
 
+  # The WebServer class provides a self-contained HTTP server that can serve
+  # HTML versions of Report objects that are generated on the fly.
   class WebServer
 
     attr_reader :broker
 
+    # Create a web server object that runs in a separate thread.
     def initialize(broker)
       @broker = broker
 
@@ -43,9 +47,13 @@ class TaskJuggler
       @thread = Thread.new { @server.start }
     end
 
+    # Stop the web server.
     def stop
-      @server.shutdown
-      @thread.join
+      if @server
+        @server.shutdown
+        @server = nil
+        @thread.join
+      end
     end
 
   end
@@ -72,18 +80,21 @@ class TaskJuggler
         unless reportId
           error('Report ID missing in GET request')
         end
-        generateReport(projectId, reportId)
+        attributes = req.query['attributes'] || ''
+        generateReport(projectId, reportId, attributes)
       rescue
       end
     end
 
     private
 
-    def generateReport(projectId, reportId)
+    def generateReport(projectId, reportId, attributes)
+      # Request the Project credentials from the ProbjectBroker.
       @ps_uri, @ps_authKey = @broker.getProject(projectId)
       if @ps_uri.nil?
         error("No project with ID #{projectId} loaded")
       end
+      # Get the responsible ReportServer that can generate the report.
       begin
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
@@ -91,18 +102,25 @@ class TaskJuggler
       rescue
         error("Cannot get report server")
       end
-      # Create a StringIO buffer that will receive the $stdout text from the
-      # report server. This buffer will contain the generated report as HTML
-      # encoded text.
+      # Create two StringIO buffers that will receive the $stdout and $stderr
+      # text from the report server. This buffer will contain the generated
+      # report as HTML encoded text.
       stdOut = StringIO.new('')
+      stdErr = StringIO.new('')
       begin
-        @reportServer.connect(@rs_authKey, stdOut, $stderr, $stdin, true)
+        @reportServer.connect(@rs_authKey, stdOut, stdErr, $stdin, true)
       rescue
         error("Can't connect IO: #{$!}")
       end
 
       # Ask the ReportServer to generate the reports with the provided ID.
-      @reportServer.generateReport(@rs_authKey, reportId, false)
+      begin
+        @reportServer.generateReport(@rs_authKey, reportId, false, attributes)
+      rescue
+        stdOut.rewind
+        stdErr.rewind
+        error("Report server crashed: #{$!}\n#{stdOut.read}\n#{stdErr.read}")
+      end
       # Disconnect the ReportServer
       begin
         @reportServer.disconnect(@rs_authKey)
@@ -124,6 +142,8 @@ class TaskJuggler
       end
 
       @res['content-type'] = 'text/html'
+      stdErr.rewind
+      $stderr.puts stdErr.read
       # To read the $stdout of the ReportServer we need to rewind the buffer
       # and then read the full text.
       stdOut.rewind
@@ -134,7 +154,7 @@ class TaskJuggler
       @res.status = 412
       @res.body = "ERROR: #{message}"
       @res['content-type'] = 'text/plain'
-      raise "Error"
+      raise "Error: #{message}"
     end
 
   end

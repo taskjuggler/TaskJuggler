@@ -95,6 +95,7 @@ class TaskJuggler
   # this method can be called. It returns true if no error occured, false
   # otherwise.
   def generateReports(outputDir = './')
+    outputDir += '/' unless outputDir[-1] == '/'
     @project.outputDir = outputDir
     Log.enter('reports', 'Generating reports ...')
     res = @project.generateReports(@maxCpuCores)
@@ -104,11 +105,13 @@ class TaskJuggler
 
   # Generate the report with the ID _reportId_. If _regExpMode_ is true,
   # _reportId_ is interpreted as a Regular Expression and all reports with
-  # matching IDs are generated.
-  def generateReport(reportId, regExpMode)
+  # matching IDs are generated. _dynamicAtributes_ is a String that may
+  # contain attributes to supplement the report definition. The String must be
+  # in TJP format and may be nil if no additional attributes are provided.
+  def generateReport(reportId, regExpMode, dynamicAttributes = nil)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
-      @project.generateReport(reportId, regExpMode)
+      @project.generateReport(reportId, regExpMode, dynamicAttributes)
     rescue TjException
       Log.exit('generateReport')
       return false

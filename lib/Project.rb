@@ -335,6 +335,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
+        [ 'interactive', 'Interactive', BooleanAttribute,
+              false, false,   false, false ],
         [ 'left',      'Left',         RichTextAttribute,
               true,  false,   false, nil ],
         [ 'loadUnit',  'Load Unit',    StringAttribute,
@@ -651,7 +653,7 @@ class TaskJuggler
       true
     end
 
-    def generateReport(reportId, regExpMode)
+    def generateReport(reportId, regExpMode, dynamicAttributes = nil)
       reportList = regExpMode ? reportList = matchingReports(reportId) :
                                 [ reportId ]
       reportList.each do |id|
@@ -660,8 +662,27 @@ class TaskJuggler
                 "Request to generate unknown report #{id}")
         end
         Log.startProgressMeter("Report #{report.name}")
-        @reportContexts.push(ReportContext.new(self, report))
+        @reportContexts.push(context = ReportContext.new(self, report))
+
+        name = nil
+        # If we have dynamic attributes we need to backup the old attributes
+        # first, then parse the dynamicAttributes String replacing the
+        # original values.
+        if dynamicAttributes
+          context.attributeBackup = report.backupAttributes
+          parser = ProjectFileParser.new(@messageHandler)
+          parser.parseReportAttributes(report, dynamicAttributes)
+          report.set('interactive', true)
+          name = report.name
+          report.name = '.'
+        end
+
         report.generate
+
+        if dynamicAttributes
+          report.restoreAttributes(context.attributeBackup)
+          report.name = name
+        end
         @reportContexts.pop
         Log.stopProgressMeter
       end

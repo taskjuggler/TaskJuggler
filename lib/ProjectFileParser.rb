@@ -105,6 +105,13 @@ class TaskJuggler
                                   @scanner.sourceFileInfo))
     end
 
+    def parseReportAttributes(report, attributes)
+      @property = report
+      @project = report.project
+      open(attributes, false, true)
+      parse('reportAttributes')
+    end
+
   private
 
     # Utility function that convers English weekday names into their index
