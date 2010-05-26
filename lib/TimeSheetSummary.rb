@@ -27,7 +27,7 @@ class TaskJuggler
       super('tj3ts_summary', 'summary')
 
       # This is a LogicalExpression string that controls what resources should
-      # not be getting a time sheet.
+      # not be considered in the summary.
       @hideResource = '0'
       # The base directory of the time sheet templates.
       @templateDir = 'TimeSheetTemplates'
@@ -44,7 +44,7 @@ class TaskJuggler
       @resourceIntro = "  Weekly Report from %s\n\n"
       @resourceSheetSubject = "Weekly report %s"
       @summarySubject = "Weekly staff reports %s"
-      @reminderSubject = "Your weekly report %s is overdue!"
+      @reminderSubject = "Your time sheet for the period ending %s is overdue!"
       @reminderText = <<'EOT'
 The deadline for your time sheet submission has passed but we haven't received
 it yet. Please submit your time sheet immediately so the content can still be
@@ -96,14 +96,25 @@ EOT
         end
       end
 
-      # Prepend the defaulter list to the summary.
       unless defaulterList.empty?
+        # Prepend the defaulter list to the summary.
         text = sprintf(@defaulterHeader, defaulterList.length)
         defaulterList.each do |resource|
           text += " * #{resource[1]}\n"
         end
         text += "\n#{'-' * 74}\n\n"
         summary = text + summary
+
+        # Create a file with the IDs of the resources who's reports are
+        # missing.
+        missingFile = "#{@sheetDir}/#{@date}/missing-reports"
+        begin
+          File.open(missingFile, 'w') do |f|
+            defaulterList.each { |resource| f.puts resource[0] }
+          end
+        rescue
+          error("Cannot write file with missing reports (#missingFile): #{$!}")
+        end
       end
 
       # Send out the summary text to the list of digest recipients.
