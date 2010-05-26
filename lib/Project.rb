@@ -673,15 +673,12 @@ class TaskJuggler
           parser = ProjectFileParser.new(@messageHandler)
           parser.parseReportAttributes(report, dynamicAttributes)
           report.set('interactive', true)
-          name = report.name
-          report.name = '.'
         end
 
         report.generate
 
         if dynamicAttributes
           report.restoreAttributes(context.attributeBackup)
-          report.name = name
         end
         @reportContexts.pop
         Log.stopProgressMeter

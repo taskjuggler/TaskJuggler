@@ -130,17 +130,26 @@ class TaskJuggler
       reportDef = @project.reportContexts.last.report
       raise "Report context missing" unless reportDef
 
+      interactive = false
       reports.each do |report|
+        # The outermost (top-level) report determines whether the report
+        # should be rendered interactive or not.
+        unless interactive
+          interactive = report.project.reportContexts.first.
+            report.get('interactive')
+        end
         hasURL = report.get('formats').include?(:html)
+        # Only generate menu entries for reports that are not the reportRoot,
+        # that are leaf reports and have an HTML output format.
         next if (report.parent != reportRoot) ||
                 (report.leaf? && !hasURL)
 
         label = report.get('title') || report.name
         # Determine the URL for this element.
         if hasURL
-          if report.project.reportContexts.first.report.get('interactive')
-            url = "taskjuggler?project=#{report.project['projectid']};" +
-                  "report=#{reportDef.name}"
+          if interactive
+            url = "/taskjuggler?project=#{report.project['projectid']};" +
+                  "report=#{report.fullId}"
           else
             url = report.name + '.html'
             url = normalizeURL(url, reportDef.name)

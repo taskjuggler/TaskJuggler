@@ -168,8 +168,17 @@ EOT
                              'href' => "#{AppConfig.contact}")
       div << XMLText.new(" v#{AppConfig.version}")
 
-      html.write(((@name[0] == '/' ? '' : @project.outputDir) +
-                  @name + (@name == '.' ? '' : '.html')).untaint)
+      fileName =
+        if a('interactive') || @name == '.'
+          # Interactive HTML reports are always sent to stdout.
+          '.'
+        elsif @name != '.'
+          # Prepend the specified output directory unless the provided file
+          # name is an absolute file name.
+          ((@name[0] == '/' ? '' : @project.outputDir) +
+           @name + '.html').untaint
+        end
+      html.write(fileName)
     end
 
     # Generate a CSV version of the report.

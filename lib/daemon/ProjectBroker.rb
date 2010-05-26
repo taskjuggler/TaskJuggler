@@ -242,6 +242,17 @@ EOT
       [ project.uri, project.authKey ]
     end
 
+    # Return a list of IDs of projects that are in state :ready.
+    def getProjectList
+      list = []
+      @projects.synchronize do
+        @projects.each do |project|
+          list << project.id if project.state == :ready
+        end
+      end
+      list
+    end
+
     def report(projectId, reportId)
       uri, key = getProject(projectId)
     end

@@ -15,6 +15,7 @@ require 'webrick'
 require 'stringio'
 
 require 'AppConfig'
+require 'RichText'
 
 # StringIO needs to be extended so we can send $stdout and $stderr over DRb.
 class StringIO
@@ -73,15 +74,17 @@ class TaskJuggler
       @res = res
       begin
         projectId = req.query['project']
-        unless projectId
-          error('Project ID missing in GET request')
-        end
         reportId = req.query['report']
-        unless reportId
-          error('Report ID missing in GET request')
+        if projectId.nil?
+          generateProjectList
+        elsif reportId.nil?
+          unless reportId
+            error('Report ID missing in GET request')
+          end
+        else
+          attributes = req.query['attributes'] || ''
+          generateReport(projectId, reportId, attributes)
         end
-        attributes = req.query['attributes'] || ''
-        generateReport(projectId, reportId, attributes)
       rescue
       end
     end
@@ -148,6 +151,22 @@ class TaskJuggler
       # and then read the full text.
       stdOut.rewind
       @res.body = stdOut.read
+    end
+
+    def generateProjectList
+      projects = @broker.getProjectList
+
+      text = "== Welcome to the TaskJuggler Project Server ==\n----\n"
+      projects.each do |p|
+        text << "* [/taskjuggler?project=#{p} #{p}]\n"
+      end
+      rt = RichText.new(text)
+      rti = rt.generateIntermediateFormat
+      page = HTMLDocument.new
+      page.generateHead("The TaskJuggler Project Server")
+      page << rti.to_html
+      @res['content-type'] = 'text/html'
+      @res.body = page.to_s
     end
 
     def error(message)
