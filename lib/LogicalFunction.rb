@@ -111,8 +111,8 @@ class TaskJuggler
       end
 
       query = expr.query
-      property.getAllocatedTime(scenarioIdx, query.get('start'),
-                                query.get('end'), scopeProperty) > 0.0
+      property.getAllocatedTime(scenarioIdx, query.start, query.end,
+                                scopeProperty) > 0.0
     end
 
     def isdependencyof(expr, args)
@@ -160,7 +160,7 @@ class TaskJuggler
       end
 
       query = expr.query
-      iv1 = Interval.new(query.get('start'), query.get('end'))
+      iv1 = Interval.new(query.start, query.end)
       tStart = task['start', scenarioIdx]
       tEnd = task['end', scenarioIdx]
       # This helps to show tasks with scheduling errors.
