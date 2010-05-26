@@ -773,23 +773,19 @@ EOT
       @property = nil
     })
     doc('export', <<'EOT'
-The export report looks like a regular TaskJuggler file but contains fixed
-start and end dates for all tasks. The tasks only have start and end times,
-their description and their project id listed. No other attributes are
-exported unless they are requested using the taskattributes attribute. The
-contents also depends on the extension of the file name. If the file name ends
-with .tjp a complete project with header, resource and shift definitions is
-generated. In case it ends with .tji only the tasks and resource allocations
-are exported.
+The export report looks like a regular TaskJuggler file with the provided
+input data complemented by the results of the scheduling process. The content
+of the report can be controlled with the [[definitions]] attribute. In case
+the file contains the project header, a ''''.tjp'''' extension is added to the
+file name. Otherwise, a ''''.tji'''' extension is used.
 
-If specified the resource usage for the tasks is reported as well. But only
-those allocations are listed that belong to tasks listed in the same export
-report.
+The [[resourceattributes]] and [[taskattributes]] attributes provide even more
+control over the content of the file.
 
 The export report can be used to share certain tasks or milestones with other
 projects or to save past resource allocations as immutable part for future
 scheduling runs. When an export report is included the project IDs of the
-included tasks must be declared first with the project id property.`
+included tasks must be declared first with the project id property.
 EOT
        )
     example('Export')
@@ -817,6 +813,8 @@ EOT
 This attributes controls what definitions will be contained in the report. If
 the list includes ''project'', the generated file will have a ''''.tjp''''
 extension. Otherwise it will have a ''''.tji'''' extension.
+
+By default, the report contains everything and the generated files has a ''''.tjp'''' extension.
 EOT
        )
     allOrNothingListRule('exportDefinitions',
