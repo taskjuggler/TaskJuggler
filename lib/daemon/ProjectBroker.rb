@@ -36,7 +36,7 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
-    attr_accessor :port, :enableWebServer, :projectFiles
+    attr_accessor :port, :enableWebServer, :webServerPort, :projectFiles
     attr_reader :authKey
 
     def initialize
@@ -61,6 +61,9 @@ class TaskJuggler
 
       # Referece to WEBrick object.
       @webServer = nil
+
+      # Port used by the web server
+      @webServerPort = 8080
 
       # True if web server should be activated
       @enableWebServer = false
@@ -88,7 +91,7 @@ EOT
       @log.debug("Starting project broker")
 
       # The web server must be started before we turn SAFE mode on.
-      @webServer = WebServer.new(self) if @enableWebServer
+      @webServer = WebServer.new(self, @webServerPort) if @enableWebServer
 
       # Setup a DRb server to handle the incomming requests from the clients.
       brokerIface = ProjectBrokerIface.new(self)

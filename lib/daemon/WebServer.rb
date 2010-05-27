@@ -31,10 +31,10 @@ class TaskJuggler
     attr_reader :broker
 
     # Create a web server object that runs in a separate thread.
-    def initialize(broker)
+    def initialize(broker, port)
       @broker = broker
 
-      config = { :Port => 8080 }
+      config = { :Port => port }
       @server = WEBrick::HTTPServer.new(config)
       @server.mount('/taskjuggler', ReportServlet, @broker)
 
@@ -122,7 +122,7 @@ class TaskJuggler
       rescue
         stdOut.rewind
         stdErr.rewind
-        error("Report server crashed: #{$!}\n#{stdOut.read}\n#{stdErr.read}")
+        error("Report server crashed: #{$!}\n#{stdErr.read}\n#{stdOut.read}")
       end
       # Disconnect the ReportServer
       begin

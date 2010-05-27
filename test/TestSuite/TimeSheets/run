@@ -53,7 +53,7 @@ check "From: =?UTF-8?B?U8OpYmFzdGllbg==?= Bono <SBono@crappysoftware.com>" summa
 check "The following 5 person(s) have not yet submitted their time sheets" summary.log 2
 check "Weekly Report from" summary.log 2
 check "Green" summary.log 6
-check "Your weekly report 2002-03-01 is overdue" summary.log 5
+check "Your time sheet for the period ending 2002-03-01 is overdue" summary.log 5
 
 tj3client --silent terminate
 sleep 2
