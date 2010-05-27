@@ -151,6 +151,24 @@ class TaskJuggler
       true
     end
 
+    # Return the name of the loaded project or nil.
+    def getProjectName
+      return nil unless @tj
+      @tj.projectName
+    end
+
+    # Return a list of the HTML reports defined for the project.
+    def getReportList
+      return [] unless @tj && (project = @tj.project)
+      list = []
+      project.reports.each do |report|
+        if report.get('formats').include?(:html)
+          list << [ report.fullId, report.name ]
+        end
+      end
+      list
+    end
+
     # This function triggers the creation of a new ReportServer process. It
     # will return the URI and the authentication key of this new server.
     def getReportServer
@@ -292,6 +310,18 @@ class TaskJuggler
       return false unless @server.checkKey(authKey, 'loadProject')
 
       @server.loadProject(args)
+    end
+
+    def getProjectName(authKey)
+      return false unless @server.checkKey(authKey, 'getReportServer')
+
+      @server.getProjectName
+    end
+
+    def getReportList(authKey)
+      return false unless @server.checkKey(authKey, 'getReportServer')
+
+      @server.getReportList
     end
 
     def getReportServer(authKey)

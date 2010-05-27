@@ -75,12 +75,8 @@ class TaskJuggler
       begin
         projectId = req.query['project']
         reportId = req.query['report']
-        if projectId.nil?
-          generateProjectList
-        elsif reportId.nil?
-          unless reportId
-            error('Report ID missing in GET request')
-          end
+        if projectId.nil? || reportId.nil?
+          generateWelcomePage(projectId)
         else
           attributes = req.query['attributes'] || ''
           generateReport(projectId, reportId, attributes)
@@ -153,20 +149,52 @@ class TaskJuggler
       @res.body = stdOut.read
     end
 
-    def generateProjectList
+    def generateWelcomePage(projectId)
       projects = @broker.getProjectList
 
       text = "== Welcome to the TaskJuggler Project Server ==\n----\n"
-      projects.each do |p|
-        text << "* [/taskjuggler?project=#{p} #{p}]\n"
+      projects.each do |id|
+        if id == projectId
+          # Show the list of reports for this project.
+          text << "* [/taskjuggler #{getProjectName(id)}]\n"
+          reports = getReportList(id)
+          if reports.empty?
+            text << "** This project has no reports defined.\n"
+          else
+            reports.each do |reportId, reportName|
+              text << "** [/taskjuggler?project=#{id};report=#{reportId} " +
+                      "#{reportName}]\n"
+            end
+          end
+        else
+          # Just show a link to open the report list.
+          text << "* [/taskjuggler?project=#{id} #{getProjectName(id)}]\n"
+        end
       end
       rt = RichText.new(text)
       rti = rt.generateIntermediateFormat
+      rti.sectionNumbers = false
       page = HTMLDocument.new
       page.generateHead("The TaskJuggler Project Server")
       page << rti.to_html
       @res['content-type'] = 'text/html'
       @res.body = page.to_s
+    end
+
+    def getProjectName(id)
+      uri, authKey = @broker.getProject(id)
+      return nil unless uri
+      projectServer = DRbObject.new(nil, uri)
+      return nil unless projectServer
+      projectServer.getProjectName(authKey)
+    end
+
+    def getReportList(id)
+      uri, authKey = @broker.getProject(id)
+      return [] unless uri
+      projectServer = DRbObject.new(nil, uri)
+      return [] unless projectServer
+      projectServer.getReportList(authKey)
     end
 
     def error(message)

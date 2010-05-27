@@ -72,11 +72,13 @@ EOT
       @rc.configure(@log, 'global.log')
       @rc.configure(broker, 'global')
       @rc.configure(broker, 'daemon')
+
+      # Set some config variables if corresponding data was provided via the
+      # command line.
       broker.port = @port if @port
       broker.enableWebServer = @webServer
       broker.webServerPort = @webServerPort if @webServerPort
       broker.projectFiles = sortInputFiles(files) unless files.empty?
-
       broker.daemonize = @daemonize
 
       broker.start

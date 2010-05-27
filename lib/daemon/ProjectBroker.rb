@@ -87,11 +87,18 @@ EOT
                   )
       end
 
+      # In daemon mode, we fork twice and only the 2nd child continues here.
       super()
       @log.debug("Starting project broker")
 
-      # The web server must be started before we turn SAFE mode on.
-      @webServer = WebServer.new(self, @webServerPort) if @enableWebServer
+      begin
+        # The web server must be started before we turn SAFE mode on.
+        @webServer = WebServer.new(self, @webServerPort) if @enableWebServer
+        @log.info("TaskJuggler web server is listening on port " +
+                  "#{@webServerPort}")
+      rescue
+        @log.fatal("Cannot start web server: #{$!}")
+      end
 
       # Setup a DRb server to handle the incomming requests from the clients.
       brokerIface = ProjectBrokerIface.new(self)

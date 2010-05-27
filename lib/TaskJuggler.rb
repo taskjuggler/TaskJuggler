@@ -20,7 +20,7 @@ require 'Log'
 # files, schedule them and generate the reports.
 class TaskJuggler
 
-  attr_reader :messageHandler
+  attr_reader :project, :messageHandler
   attr_accessor :maxCpuCores, :warnTsDeltas
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
@@ -206,6 +206,12 @@ class TaskJuggler
   def projectId
     return nil if @project.nil?
     @project['projectid']
+  end
+
+  # Return the name of the project or nil if no project has been loaded yet.
+  def projectName
+    return nil if @project.nil?
+    @project['name']
   end
 
   # Return the number of errors that had been reported during processing.
