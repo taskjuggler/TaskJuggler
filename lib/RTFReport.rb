@@ -57,7 +57,7 @@ class TaskJuggler
       # Create a new context for the report.
       @project.reportContexts.push(ReportContext.new(@project, report))
       # Generate the report with the new context
-      report.generate
+      report.generateIntermediateFormat
       html = report.to_html
       @project.reportContexts.pop
 

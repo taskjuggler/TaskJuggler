@@ -48,6 +48,34 @@ class TaskJuggler
     # generated according the the requested output format(s).
     def generate
       begin
+        generateIntermediateFormat
+
+        # Then generate the actual output format.
+        get('formats').each do |format|
+          case format
+          when :html
+            generateHTML
+            copyAuxiliaryFiles
+          when :csv
+            generateCSV
+          when :niku
+            generateNiku
+          when :tjp
+            generateTJP
+          else
+            raise 'Unknown report output format #{format}.'
+          end
+        end
+      rescue TjException
+        error('reporting_failed', $!.message)
+      end
+      0
+    end
+
+    # Generate an output format agnostic version that can later be turned into
+    # the respective output formats.
+    def generateIntermediateFormat
+      begin
         @content = nil
         case @typeSpec
         when :export
@@ -71,27 +99,9 @@ class TaskJuggler
         # Most output format can be generated from a common intermediate
         # representation of the elements. We generate that IR first.
         @content.generateIntermediateFormat if @content
-
-        # Then generate the actual output format.
-        get('formats').each do |format|
-          case format
-          when :html
-            generateHTML
-            copyAuxiliaryFiles
-          when :csv
-            generateCSV
-          when :niku
-            generateNiku
-          when :tjp
-            generateTJP
-          else
-            raise 'Unknown report output format #{format}.'
-          end
-        end
       rescue TjException
-        error('reporting_failed', $!.message)
+        error('report_IR_generattion_failed', $!.message)
       end
-      0
     end
 
     # Render the content of the report as HTML (without the framing).
@@ -172,7 +182,7 @@ EOT
         if a('interactive') || @name == '.'
           # Interactive HTML reports are always sent to stdout.
           '.'
-        elsif @name != '.'
+        else
           # Prepend the specified output directory unless the provided file
           # name is an absolute file name.
           ((@name[0] == '/' ? '' : @project.outputDir) +
