@@ -1337,6 +1337,7 @@ class TaskJuggler
 
     # Check if the Task _task_ depends on this task. _depth_ specifies how
     # many dependent task are traversed at max. A value of 0 means no limit.
+    # TODO: Change this to a non-recursive implementation.
     def isDependencyOf(task, depth)
       return true if task == @property
 
@@ -1362,6 +1363,21 @@ class TaskJuggler
         unless dep[1]
           # must be an end->start dependency
           return true if dep[0].isDependencyOf(@scenarioIdx, task, depth - 1)
+        end
+      end
+
+      false
+    end
+
+    # If _task_ or any of its sub-tasks depend on this task or any of its
+    # sub-tasks, we call this task a feature of _task_.
+    def isFeatureOf(task)
+      sources = @property.all
+      destinations = task.all
+
+      sources.each do |s|
+        destinations.each do |d|
+          return true if s.isDependencyOf(@scenarioIdx, d, 0)
         end
       end
 

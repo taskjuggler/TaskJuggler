@@ -1131,6 +1131,15 @@ EOT
     arg(2, 'Resource ID', 'The ID of a defined resource')
     arg(4, 'Scenario ID', 'A scenario ID')
 
+    pattern(%w( _isfeatureof _( $ID _, $ID _) ))
+    doc('isfeatureof', <<'EOT'
+If the provided task or any of its sub-tasks depend on this task or any of its
+sub-tasks, we call this task a feature of the provided task.
+EOT
+       )
+    arg(2, 'Task ID', 'The ID of a defined task')
+    arg(4, 'Scenario ID', 'A scenario ID')
+
     pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
 

@@ -27,6 +27,7 @@ class TaskJuggler
         'isactive' => 1,
         'isdependencyof' => 3,
         'isdutyof' => 2,
+        'isfeatureof' => 2,
         'isleaf' => 0,
         'isongoing' => 1,
         'isresource' => 0,
@@ -141,6 +142,19 @@ class TaskJuggler
       return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
 
       task['assignedresources', scenarioIdx].include?(resource)
+    end
+
+    def isfeatureof(expr, args)
+      property, scopeProperty = properties(expr)
+      # The result can only be true when called for a Task property.
+      return false unless property.is_a?(Task)
+      project = property.project
+      # 1st arg must be a task ID.
+      return false if (task = project.task(args[0])).nil?
+      # 2nd arg must be a scenario index.
+      return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
+
+      property.isFeatureOf(scenarioIdx, task)
     end
 
     def isleaf(expr, args)
