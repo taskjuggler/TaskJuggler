@@ -258,7 +258,8 @@ EOT
     end
 
     def copyAuxiliaryFiles
-      return if @name == '.' # Don't copy files if output is stdout.
+      # Don't copy files if output is stdout.
+      return if @name == '.' || a('interactive')
 
       copyDirectory('css')
       copyDirectory('icons')
