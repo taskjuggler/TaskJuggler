@@ -463,7 +463,7 @@ textreport frame "" {
     ->8-   
   }
 
-  textreport "Development" {
+  textreport development "Development" {
     formats html
     center '<[report id="development"]>'
   }
@@ -501,7 +501,7 @@ taskreport overview "" {
     The project is structured into 3 phases.
     
     # Specification
-    # [[Development]]
+    # <-reportlink id='frame.development'->
     # Testing
     
     === Original Project Plan ===

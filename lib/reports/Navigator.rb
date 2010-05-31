@@ -134,10 +134,8 @@ class TaskJuggler
       reports.each do |report|
         # The outermost (top-level) report determines whether the report
         # should be rendered interactive or not.
-        unless interactive
-          interactive = report.project.reportContexts.first.
-            report.get('interactive')
-        end
+        interactive = report.interactive?  unless interactive
+
         hasURL = report.get('formats').include?(:html)
         # Only generate menu entries for reports that are not the reportRoot,
         # that are leaf reports and have an HTML output format.
