@@ -57,7 +57,7 @@ class TaskJuggler
   # The column is uniquely identified by an ID.
   class TableColumnDefinition
 
-    attr_reader :id, :cellText, :tooltip, :cellColor, :fontColor
+    attr_reader :id, :cellText, :tooltip, :hAlign, :cellColor, :fontColor
     attr_accessor :title, :start, :end, :scale, :width, :content, :column
 
     def initialize(id, title)
@@ -73,8 +73,10 @@ class TaskJuggler
       # the actual cell content.
       @cellText = CellSettingPatternList.new
       # The content attribute is only used for calendar columns. It specifies
-      # what content should be displayed in the colendar columns.
+      # what content should be displayed in the calendar columns.
       @content = 'load'
+      # Horizontal alignment of the cell content.
+      @hAlign = CellSettingPatternList.new
       # An alternative content for the tooltip message. It should be a
       # RichText object.
       @tooltip = CellSettingPatternList.new

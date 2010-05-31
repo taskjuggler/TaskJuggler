@@ -629,6 +629,11 @@ class TaskJuggler
       cellColor = columnDef.cellColor.getPattern(query)
       cell.cellColor = cellColor if cellColor
 
+      # Replace the default cell alignment if the user has requested a custom
+      # alignment.
+      hAlign = columnDef.hAlign.getPattern(query)
+      cell.alignment = hAlign if hAlign
+
       # If the user has requested a custom tooltip, add it to the cell.
       cell.tooltip = columnDef.tooltip.getPattern(query) || nil
 
