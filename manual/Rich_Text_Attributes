@@ -141,6 +141,14 @@ The report generator inserts the referenced report as a new block
 of this text. The referenced report inherits some context such as the
 report period and the property set from the referencing report.
 ----
+'''Inline Generator''' ''''reportlink''''
+
+Paramters:
+
+* ''''id'''' : ID of a defined [[report]]
+
+The report link generator inserts a link to the referenced report.
+----
 '''Inline Generator''' ''''query''''
 
 Paramters:
