@@ -372,6 +372,14 @@ class TaskJuggler
 
   end
 
+  class NodeListAttribute < AttributeBase
+    def initialize(propery, type)
+      super
+
+      @value = Array.new
+    end
+  end
+
   class PropertyAttribute < AttributeBase
     def initialize(property, type)
       super

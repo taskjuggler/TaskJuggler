@@ -250,7 +250,8 @@ EOT
       resourceList.setSorting(@report.get('sortResources'))
       resourceList = filterResourceList(resourceList, nil,
                                         @report.get('hideResource'),
-                                        @report.get('rollupResource'))
+                                        @report.get('rollupResource'),
+                                        @report.get('openNode'))
 
       resourceList.each do |resource|
         # We only care about leaf resources that have the custom attribute
@@ -307,7 +308,7 @@ EOT
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'))
+                                @report.get('rollupTask'), @report.get('openNodes'))
 
 
       taskList.each do |task|

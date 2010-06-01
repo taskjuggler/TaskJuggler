@@ -74,7 +74,8 @@ class TaskJuggler
       resourceList.setSorting(@report.get('sortResources'))
       resourceList = filterResourceList(resourceList, nil,
                                         @report.get('hideResource'),
-                                        @report.get('rollupResource'))
+                                        @report.get('rollupResource'),
+                                        @report.get('openNodes'))
       # Prepare a template for the Query we will use to get all the data.
       scenarioIdx = a('scenarios')[0]
       queryAttrs = { 'project' => @project,
@@ -94,7 +95,7 @@ class TaskJuggler
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'))
+                                @report.get('rollupTask'), @report.get('openNodes'))
       taskList.sort!
 
       resourceList.each do |resource|

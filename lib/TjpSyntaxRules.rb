@@ -1931,6 +1931,49 @@ EOT
     example('Niku')
   end
 
+  def rule_nodeId
+    pattern(%w( !idOrAbsoluteId !subNodeId ), lambda {
+      case @property.typeSpec
+      when :taskreport
+        if (p1 = @project.task(@val[0])).nil?
+          error('unknown_main_node',
+                "Unknown task ID #{@val[0]}")
+        end
+        if @val[1]
+          if (p2 = @project.resource(@val[1])).nil?
+            error('unknown_sub_node',
+                  "Unknown resource ID #{@val[0]}")
+          end
+          return [ p2, p1 ]
+        end
+        return [ p1, nil ]
+      when :resourcereport
+        if (p1 = @project.task(@val[0])).nil?
+          error('unknown_main_node',
+                "Unknown task ID #{@val[0]}")
+        end
+        if @val[1]
+          if (p2 = @project.resource(@val[1])).nil?
+            error('unknown_sub_node',
+                  "Unknown resource ID #{@val[0]}")
+          end
+          return [ p2, p1 ]
+        end
+        return [ p1, nil ]
+      end
+
+      raise "Node list is not supported for this report type: " +
+            "#{@property.typeSpec}"
+    })
+  end
+
+  def rule_nodeIdList
+    listRule('moreNodeIdList', '!nodeId')
+    pattern([ '_ - ' ], lambda {
+      []
+    })
+  end
+
   def rule_number
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')
@@ -3019,6 +3062,11 @@ EOT
        )
     also(%w( epilog footer header ))
 
+    pattern(%w( _opennodes !nodeIdList ), lambda {
+      @property.set('openNodes', @val[1])
+    })
+    doc('opennods', 'For internal use only!')
+
     pattern(%w( !report ))
 
     pattern(%w( _right $STRING ), lambda {
@@ -4026,6 +4074,14 @@ EOT
       @property = @val[1]
     })
   end
+
+  def rule_subNodeId
+    optional
+    pattern(%w( _: !idOrAbsoluteId ), lambda {
+      @val[1]
+    })
+  end
+
   def rule_summary
     pattern(%w( _summary $STRING ), lambda {
       return if @val[1].empty?

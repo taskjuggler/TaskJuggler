@@ -49,7 +49,7 @@ class TaskJuggler
     # hide expression, the rollup Expression or are not a descendent of
     # taskRoot. In case resource is not nil, a task is only included if
     # the resource is allocated to it in any of the reported scenarios.
-    def filterTaskList(list_, resource, hideExpr, rollupExpr)
+    def filterTaskList(list_, resource, hideExpr, rollupExpr, openNodes)
       list = PropertyList.new(list_)
       if (taskRoot = a('taskRoot'))
         # Remove all tasks that are not descendents of the taskRoot.
@@ -73,14 +73,14 @@ class TaskJuggler
         end
       end
 
-      standardFilterOps(list, hideExpr, rollupExpr, resource, taskRoot)
+      standardFilterOps(list, hideExpr, rollupExpr, openNodes, resource, taskRoot)
     end
 
     # Take the complete resource list and remove all resources that are matching
     # the hide expression, the rollup Expression or are not a descendent of
     # resourceRoot. In case task is not nil, a resource is only included if
     # it is assigned to the task in any of the reported scenarios.
-    def filterResourceList(list_, task, hideExpr, rollupExpr)
+    def filterResourceList(list_, task, hideExpr, rollupExpr, openNodes)
       list = PropertyList.new(list_)
       if (resourceRoot = a('resourceRoot'))
         # Remove all resources that are not descendents of the resourceRoot.
@@ -104,7 +104,7 @@ class TaskJuggler
         end
       end
 
-      standardFilterOps(list, hideExpr, rollupExpr, task, resourceRoot)
+      standardFilterOps(list, hideExpr, rollupExpr, openNodes, task, resourceRoot)
     end
 
     private
@@ -140,7 +140,7 @@ class TaskJuggler
 
     # This function implements the generic filtering functionality for all kinds
     # of lists.
-    def standardFilterOps(list, hideExpr, rollupExpr, scopeProperty, root)
+    def standardFilterOps(list, hideExpr, rollupExpr, openNodes, scopeProperty, root)
       # Make a copy of the current Query.
       query = @project.reportContexts.last.query.dup
       query.scopeProperty = scopeProperty
@@ -154,13 +154,17 @@ class TaskJuggler
       end
 
       # Remove all children of properties that the user has rolled-up.
-      if rollupExpr
+      if rollupExpr || openNodes
         list.delete_if do |property|
           parent = property.parent
           delete = false
           while (parent)
             query.property = parent
-            if rollupExpr.eval(query)
+            # If openNodes is not nil, only the listed nodes will be unrolled.
+            # If openNodes is nil, only the nodes that match rollupExpr will not be
+            # unrolled.
+            if (openNodes && !openNodes.include?([ parent, scopeProperty ])) ||
+               (!openNodes && rollupExpr.eval(query))
               delete = true
               break
             end

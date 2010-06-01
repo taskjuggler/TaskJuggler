@@ -363,7 +363,7 @@ class TaskJuggler
           # filter.
           resourceList.setSorting(a('sortResources'))
           assignedResourceList = filterResourceList(resourceList, task,
-              a('hideResource'), a('rollupResource'))
+              a('hideResource'), a('rollupResource'), a('openNodes'))
           assignedResourceList.sort!
           lineNo = generateResourceList(assignedResourceList, nil, line)
         end
@@ -427,8 +427,8 @@ class TaskJuggler
           # filter.
           taskList.setSorting(a('sortTasks'))
           assignedTaskList = filterTaskList(taskList, resource,
-                                            a('hideTask'),
-                                            a('rollupTask'))
+                                            a('hideTask'), a('rollupTask'),
+                                            a('openNodes'))
           assignedTaskList.sort!
           lineNo = generateTaskList(assignedTaskList, nil, line)
         end

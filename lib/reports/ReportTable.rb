@@ -131,8 +131,8 @@ class TaskJuggler
 
     # Convert the intermediate representation into an Array of Arrays. _csv_ is
     # the destination Array of Arrays. It may contain columns already.
-    def to_csv()
-      csv = [ [ ] ]
+    def to_csv(csv = nil)
+      csv = [ [ ] ] unless csv
       @columns.each { |col| col.to_csv(csv) }
 
       @lines.each do |line|

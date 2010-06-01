@@ -177,7 +177,8 @@ EOT
       resourceList.setSorting(@report.get('sortResources'))
       resourceList = filterResourceList(resourceList, nil,
                                         @report.get('hideResource'),
-                                        @report.get('rollupResource'))
+                                        @report.get('rollupResource'),
+                                        @report.get('openNodes'))
       # Prepare a template for the Query we will use to get all the data.
       scenarioIdx = a('scenarios')[0]
       queryAttrs = { 'project' => @project,
@@ -197,7 +198,7 @@ EOT
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'))
+                                @report.get('rollupTask'), @report.get('openNodes'))
 
       records = []
       resourceList.each do |resource|
@@ -227,8 +228,8 @@ EOT
         # Now we have to find all the task that the resource is allocated to
         # during the report period.
         assignedTaskList = filterTaskList(taskList, resource,
-                                          a('hideTask'),
-                                          a('rollupTask'))
+                                          a('hideTask'), a('rollupTask'),
+                                          a('openNodes'))
         queryAttrs['scopeProperty'] = resource
         assignedTaskList.query = Query.new(queryAttrs)
         assignedTaskList.sort!

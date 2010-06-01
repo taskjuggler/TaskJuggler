@@ -345,6 +345,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'numberFormat', 'Number Format', RealFormatAttribute,
               true,  true,    false, nil ],
+        [ 'openNodes', 'Open Nodes',   NodeListAttribute,
+              false, false,   false, nil ],
         [ 'prolog',    'Prolog',       RichTextAttribute,
               false, false,   false, nil],
         [ 'resourceAttributes', 'Resource Attributes', FormatListAttribute,

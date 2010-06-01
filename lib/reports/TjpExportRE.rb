@@ -47,13 +47,14 @@ class TaskJuggler
       @resourceList = PropertyList.new(@project.resources)
       @resourceList.setSorting(a('sortResources'))
       @resourceList = filterResourceList(@resourceList, nil, a('hideResource'),
-                                         a('rollupResource'))
+                                         a('rollupResource'), a('openNodes'))
       @resourceList.sort!
 
       # Prepare the task list.
       @taskList = PropertyList.new(@project.tasks)
       @taskList.setSorting(a('sortTasks'))
-      @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'))
+      @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'),
+                                 a('openNodes'))
       @taskList.sort!
 
       getBookings

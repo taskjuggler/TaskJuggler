@@ -39,7 +39,8 @@ class TaskJuggler
       resourceList.setSorting(@report.get('sortResources'))
       resourceList = filterResourceList(resourceList, nil,
                                         @report.get('hideResource'),
-                                        @report.get('rollupResource'))
+                                        @report.get('rollupResource'),
+                                        @report.get('openNodes'))
       resourceList.query = @report.project.reportContexts.last.query
       resourceList.sort!
 
