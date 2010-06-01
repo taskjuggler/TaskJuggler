@@ -78,15 +78,19 @@ EOT
         sheetFile = "#{@sheetDir}/#{@date}/#{resourceId}_#{@date}.tji"
         if File.exist?(templateFile)
           if File.exists?(sheetFile)
-            # Resource has submitted a time sheet
-            sheet = getResourceJournal(sheetFile)
-            summary += sprintf(@resourceIntro, resourceName)
-            summary += sheet + "\n#{'-' * 74}\n\n"
-            info("Adding report from #{resourceName} to summary")
+            # If there are no recipients specified, we don't need to compile
+            # the summary.
+            unless @digestRecipients.empty? && @sheetRecipients.empty?
+              # Resource has submitted a time sheet
+              sheet = getResourceJournal(sheetFile)
+              summary += sprintf(@resourceIntro, resourceName)
+              summary += sheet + "\n#{'-' * 74}\n\n"
+              info("Adding report from #{resourceName} to summary")
 
-            @sheetRecipients.each do |to|
-              sendEmail(to, sprintf(@resourceSheetSubject, @date), sheet,
-                        nil, "#{resourceName} <#{resourceEmail}>")
+              @sheetRecipients.each do |to|
+                sendEmail(to, sprintf(@resourceSheetSubject, @date), sheet,
+                          nil, "#{resourceName} <#{resourceEmail}>")
+              end
             end
           else
             defaulterList << resource
