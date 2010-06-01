@@ -5,7 +5,7 @@
  * TaskJuggler. Please see the TaskJuggler manual for a more detailed
  * description of the various syntax elements.
  */
-project "Accounting Software"  2002-01-16 +4m {
+project acso "Accounting Software"  2002-01-16 +4m {
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
   # Use US format for numbers
@@ -115,6 +115,7 @@ task AcSo "Accounting Software" {
   # For the duration of the project we have running cost that are not
   # included in the labor cost.
   charge 170 perday
+  responsible boss
 
   task spec "Specification" {
     # The effort to finish this task is 20 man-days.
@@ -144,6 +145,7 @@ task AcSo "Accounting Software" {
     # All subtasks depend on the specification task.
     depends !spec
 
+    responsible dev1
     task database "Database coupling" {
       effort 20d
       allocate dev1, dev2
@@ -305,7 +307,7 @@ macro TaskTip [
     ->8-
 ]
 
-textreport "" {
+textreport frame "" {
   header -8<-
     == Accounting Software Project ==
     ----
@@ -313,7 +315,7 @@ textreport "" {
     ----
   ->8-
   footer "----"
-  textreport "Overview" {
+  textreport index "Overview" {
     formats html
     center '<[report id="overview"]>'
   }
@@ -331,7 +333,7 @@ textreport "" {
     ->8-   
   }
 
-  textreport "Development" {
+  textreport development "Development" {
     formats html
     center '<[report id="development"]>'
   }
@@ -361,7 +363,7 @@ taskreport overview "" {
     The project is structured into 3 phases.
     
     # Specification
-    # [[Development]]
+    # <-reportlink id='frame.development'->
     # Testing
     
     === Original Project Plan ===

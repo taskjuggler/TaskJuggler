@@ -589,6 +589,18 @@ matching one is used for each cell.
 EOT
        )
 
+    pattern(%w( _halign !logicalExpression !hAlignment ), lambda {
+      @column.hAlign.addPattern(
+        CellSettingPattern.new(@val[2], @val[1]))
+    })
+    doc('halign.column', <<'EOT'
+Specifies the horizontal alignment of the cell content. The logical expression
+specifies for which cells the alignment setting should be used. If multiple
+halign patterns are provided for a column, the first matching one is used for
+each cell.
+EOT
+       )
+
     pattern(%w( _period !interval ), lambda {
       @column.start = @val[1].start
       @column.end = @val[1].end
@@ -1163,6 +1175,23 @@ Returns the nesting level of a property in the property tree.
 Top level properties have a level of 1, their children 2 and so on.
 EOT
        )
+  end
+
+  def rule_hAlignment
+    pattern(%w( _center ), lambda {
+      :center
+    })
+    doc('halign.center', 'Center the cell content')
+
+    pattern(%w( _left ), lambda {
+      :left
+    })
+    doc('halign.left', 'Left align the cell content')
+
+    pattern(%w( _right ), lambda {
+      :right
+    })
+    doc('halign.right', 'Right align the cell content')
   end
 
   def rule_headline

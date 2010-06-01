@@ -122,13 +122,9 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      handlers = [
-        RTFNavigator.new(@project),
-        RTFQuery.new(@project),
-        RTFReport.new(@project)
-      ]
       begin
-        rti = RichText.new(rText, handlers).generateIntermediateFormat
+        rti = RichText.new(rText, RTFHandlers.create(@project)).
+          generateIntermediateFormat
       rescue RichTextException => msg
         $stderr.puts "Error while processing Rich Text\n" +
                      "Line #{msg.lineNo}: #{msg.text}\n" +
@@ -173,13 +169,9 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      handlers = [
-        RTFNavigator.new(@project),
-        RTFQuery.new(@project),
-        RTFReport.new(@project)
-      ]
       begin
-        rti = RichText.new(rText, handlers).generateIntermediateFormat
+        rti = RichText.new(rText, RTFHandlers.create(@project)).
+          generateIntermediateFormat
       rescue RichTextException => msg
         $stderr.puts "Error while processing Rich Text\n" +
                      "Line #{msg.lineNo}: #{msg.text}\n" +

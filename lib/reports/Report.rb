@@ -109,6 +109,12 @@ class TaskJuggler
       @content ? @content.to_html : nil
     end
 
+    # Return true if the report should be rendered in the interactive version,
+    # false if not. The top-level report defines the output format and the
+    # interactive setting.
+    def interactive?
+      @project.reportContexts.first.report.get('interactive')
+    end
 
   private
     # Convenience function to access a report attribute

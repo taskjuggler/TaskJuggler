@@ -14,9 +14,7 @@ require 'TextParser'
 require 'TextScanner'
 require 'TjpSyntaxRules'
 require 'RichText'
-require 'RTFNavigator'
-require 'RTFQuery'
-require 'RTFReport'
+require 'RTFHandlers'
 
 class TaskJuggler
 
@@ -217,12 +215,7 @@ class TaskJuggler
     def newRichText(text, tokenSet = nil)
       sfi = sourceFileInfo
       begin
-        handlers = [
-          RTFNavigator.new(@project, sfi),
-          RTFQuery.new(@project, sfi),
-          RTFReport.new(@project, sfi)
-        ]
-        rText = RichText.new(text, handlers)
+        rText = RichText.new(text, RTFHandlers.create(@project, sfi))
         rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet)
         rti.sectionNumbers = false
       rescue RichTextException => msg
