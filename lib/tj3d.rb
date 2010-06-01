@@ -48,17 +48,17 @@ EOT
           @daemonize = false
         end
         @opts.on('-p', '--port <NUMBER>', Integer,
-                 format('Use the specified TCP/IP port to server tj3client ' +
+                 format('Use the specified TCP/IP port to serve tj3client ' +
                         'requests (Default: 8474).')) do |arg|
           @port = arg
         end
-        @opts.on('--webserver',
+        @opts.on('-w', '--webserver',
                  format('Start a web server that serves the reports of ' +
                         'the loaded projects.')) do
           @webServer = true
         end
         @opts.on('--webserver-port <NUMBER>', Integer,
-                 format('Use the specified TCP/IP port to server web browser ' +
+                 format('Use the specified TCP/IP port to serve web browser ' +
                         'requests (Default: 8080).')) do |arg|
           @webServerPort = arg
         end
