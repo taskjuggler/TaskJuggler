@@ -140,7 +140,8 @@ class TaskJuggler
 
     # This function implements the generic filtering functionality for all kinds
     # of lists.
-    def standardFilterOps(list, hideExpr, rollupExpr, openNodes, scopeProperty, root)
+    def standardFilterOps(list, hideExpr, rollupExpr, openNodes, scopeProperty,
+                          root)
       # Make a copy of the current Query.
       query = @project.reportContexts.last.query.dup
       query.scopeProperty = scopeProperty
@@ -161,8 +162,8 @@ class TaskJuggler
           while (parent)
             query.property = parent
             # If openNodes is not nil, only the listed nodes will be unrolled.
-            # If openNodes is nil, only the nodes that match rollupExpr will not be
-            # unrolled.
+            # If openNodes is nil, only the nodes that match rollupExpr will
+            # not be unrolled.
             if (openNodes && !openNodes.include?([ parent, scopeProperty ])) ||
                (!openNodes && rollupExpr.eval(query))
               delete = true

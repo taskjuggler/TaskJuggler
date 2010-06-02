@@ -376,7 +376,7 @@ class TaskJuggler
     def initialize(propery, type)
       super
 
-      @value = Array.new
+      @value = nil
     end
   end
 
