@@ -84,6 +84,9 @@ class TaskJuggler
     def to_html
       html = []
 
+      html << XMLComment.new("Dynamic Report ID: " +
+                             "#{@report.project.reportContexts.last.
+                                dynamicReportId}")
       html << rt_to_html('header')
       html << (tableFrame = generateHtmlTableFrame)
 

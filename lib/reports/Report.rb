@@ -151,6 +151,8 @@ EOT
                                'type' => 'text/css',
                                'href' => 'css/tjreport.css')
       end
+      html << XMLComment.new("Dynamic Report ID: " +
+                             "#{@project.reportContexts.last.dynamicReportId}")
       html << (body = XMLElement.new('body'))
 
       unless a('selfcontained')

@@ -251,7 +251,7 @@ EOT
       resourceList = filterResourceList(resourceList, nil,
                                         @report.get('hideResource'),
                                         @report.get('rollupResource'),
-                                        @report.get('openNode'))
+                                        @report.get('openNodes'))
 
       resourceList.each do |resource|
         # We only care about leaf resources that have the custom attribute

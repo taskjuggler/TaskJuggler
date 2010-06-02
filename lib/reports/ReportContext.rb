@@ -18,12 +18,13 @@ class TaskJuggler
   # always accessable via Project.reportContexts.last().
   class ReportContext
 
-    attr_reader :project, :report, :query
-    attr_accessor :tasks, :resources, :attributeBackup
+    attr_reader :dynamicReportId, :project, :report, :query
+    attr_accessor :childReportCounter, :tasks, :resources, :attributeBackup
 
     def initialize(project, report)
       @project = project
       @report = report
+      @childReportCounter = 0
       @attributeBackup = nil
       queryAttrs = {
         'project' => @project,
@@ -38,12 +39,25 @@ class TaskJuggler
       }
       @query = Query.new(queryAttrs)
       if (@parent = @project.reportContexts.last)
+        # For interactive reports we need some ID that uniquely identifies the
+        # report within the composed report. Since a project report can be
+        # included multiple times in the same report, we need to generate
+        # another ID for each instantiated report. We create this report by
+        # using a counter for the number of child reports that each report
+        # has. The unique ID is then the concatenated list of counters from
+        # parent to leaf, separating each value by a '.'.
+        @dynamicReportId = @parent.dynamicReportId +
+                           ".#{@parent.childReportCounter}"
+        @parent.childReportCounter += 1
         # If the new ReportContext is created from within an existing context,
         # this is used as parent context and the settings are copied as
         # default initial values.
         @tasks = @parent.tasks.dup
         @resources = @parent.resources.dup
       else
+        # The ID of the root report is always "0". The first child will then
+        # be "0.0", the seconds "0.1" and so on.
+        @dynamicReportId = "0"
         # There is no existing ReportContext yet, so we create one based on
         # the settings of the report.
         @tasks = @project.tasks.dup
