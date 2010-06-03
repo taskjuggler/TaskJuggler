@@ -111,7 +111,8 @@ class TaskJuggler
           raise TjException.new, "Unknown scenario index #{scIdx} used."
         end
         if !@propertySet.scenarioSpecific?(criteria)
-          raise TjException.new, "Attribute #{criteria} is not scenario specific"
+          raise TjException.new, "Attribute #{criteria} is not scenario " +
+                                 "specific"
         end
       end
       @sortingCriteria.push(criteria)

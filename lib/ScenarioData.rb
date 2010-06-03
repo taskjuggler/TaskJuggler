@@ -55,9 +55,11 @@ class TaskJuggler
       @project.sendMessage(message)
     end
 
-    def query_id(query)
-      query.sortable = query.string = @property.fullId
-    end
+    # Not sure why this method was put there. If needed, it should in
+    # PropertyTreeNode!
+    #def query_id(query)
+    #  query.sortable = query.string = @property.fullId
+    #end
 
   end
 

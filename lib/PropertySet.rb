@@ -113,10 +113,20 @@ class TaskJuggler
 
     # Return whether the attribute with _attrId_ is scenario specific or not.
     def scenarioSpecific?(attrId)
-      # All hardwired attributes are not scenario specific.
-      return false if @attributeDefinitions[attrId].nil?
-
-      @attributeDefinitions[attrId].scenarioSpecific
+      if @attributeDefinitions[attrId]
+        # Check the 'scenarioSpecific' flag of the attribute definition.
+        @attributeDefinitions[attrId].scenarioSpecific
+      elsif (property = @properties.first) &&
+            property && property.data &&
+            property.data[0].respond_to?("query_#{attrId}")
+        # We've found a query_ function for the attrId that is scenario
+        # specific.
+        true
+      else
+        # All hardwired, non-existing and non-scenario-specific query_
+        # candidates.
+        false
+      end
     end
 
     # Return whether the attribute with _attrId_ is inherited from the global

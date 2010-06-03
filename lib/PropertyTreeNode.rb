@@ -399,7 +399,7 @@ class TaskJuggler
         FixnumAttribute.new(self, @sequenceNo)
       else
         @attributes[attributeId] ||
-        @scenarioAttributes[scenarioIdx][attributeId]
+        (scenarioIdx && @scenarioAttributes[scenarioIdx][attributeId])
       end
     end
 

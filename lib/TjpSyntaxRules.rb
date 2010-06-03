@@ -3835,10 +3835,12 @@ EOT
       args = @val[0].split('.')
       case args.length
       when 2
+        # <attribute>.<up|down>
         scenario = -1
         direction = args[1] == 'up'
         attribute = args[0]
       when 3
+        # <scenario>.<attribute>.<up|down>
         if (scenario = @project.scenarioIdx(args[0])).nil?
           error('sort_unknown_scen',
                 "Unknown scenario #{args[0]} in sorting criterium")
@@ -3861,7 +3863,7 @@ EOT
       [ attribute, direction, scenario ]
     })
     arg(0, 'criteria', <<'EOT'
-The soring criteria must consist of a property attribute ID. See [[columnid]]
+The sorting criteria must consist of a property attribute ID. See [[columnid]]
 for a complete list of available attributes. The ID must be suffixed by '.up'
 or '.down' to determine the sorting direction. Optionally the ID may be
 prefixed with a scenario ID and a dot to determine the scenario that should be
