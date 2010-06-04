@@ -42,7 +42,6 @@ project acso "Accounting Software"  2002-01-16 +4m {
 # *** EXAMPLE: scenario -
 # *** EXAMPLE: extend +
   extend resource {
-    text Email "Email"
     text Phone "Phone"
   }
 # *** EXAMPLE: extend -
@@ -100,22 +99,22 @@ balance cost rev
 
 # *** EXAMPLE: resources +
 resource boss "Paul Henry Bullock" {
-  Email "phb@crappysoftware.com"
+  email "phb@crappysoftware.com"
   Phone "x100"
   rate 480
 }
 resource dev "Developers" {
   resource dev1 "Paul Smith" {
-    Email "paul@crappysoftware.com"
+    email "paul@crappysoftware.com"
     Phone "x362"
     rate 350.0
   }
   resource dev2 "Sébastien Bono" {
-    Email "SBono@crappysoftware.com"
+    email "SBono@crappysoftware.com"
     Phone "x234"
   }
   resource dev3 "Klaus Müller" {
-    Email "Klaus.Mueller@crappysoftware.com"
+    email "Klaus.Mueller@crappysoftware.com"
     Phone "x490"
     vacation 2002-02-01 - 2002-02-05
   }
@@ -124,13 +123,13 @@ resource dev "Developers" {
 }
 resource misc "The Others" {
   resource test "Peter Murphy" {
-    Email "murphy@crappysoftware.com"
+    email "murphy@crappysoftware.com"
     Phone "x666"
     limits { dailymax 6.4h }
     rate 310.0
   }
   resource doc "Dim Sung" { 
-    Email "sung@crappysoftware.com"
+    email "sung@crappysoftware.com"
     Phone "x482"
     rate 300.0 
     vacation 2002-03-11 - 2002-03-16
@@ -605,7 +604,7 @@ resourcereport contactList "" {
   scenarios delayed
   headline "Contact list and duty plan"
   columns name,
-          Email { celltext 1 "[mailto:<-Email-> <-Email->]" },
+          email { celltext 1 "[mailto:<-email-> <-email->]" },
           Phone,
           chart { scale day }
   hideresource ~isleaf()
