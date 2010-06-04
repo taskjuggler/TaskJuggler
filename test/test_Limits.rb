@@ -53,7 +53,7 @@ class TestLimits < Test::Unit::TestCase
     l = Limits.new
     l.setProject(@p)
     l.setLimit('weeklymax', 2, Interval.new(TjTime.new('2009-02-10'),
-                                                         TjTime.new('2009-02-15')))
+                                            TjTime.new('2009-02-15')))
     # Outside of limit interval, should be ignored
     l.inc(TjTime.new('2009-02-05-10:00'))
     l.inc(TjTime.new('2009-02-20-10:00'))
@@ -74,7 +74,9 @@ class TestLimits < Test::Unit::TestCase
     l.inc(TjTime.new('2009-02-01-10:00'))
     assert(l.ok?)
     l.inc(TjTime.new('2009-02-01-11:00'))
+    assert(l.ok?)
     l.inc(TjTime.new('2009-02-01-12:00'))
+    assert(l.ok?)
     l.inc(TjTime.new('2009-02-01-13:00'))
     assert(!l.ok?)
     assert(l.ok?(TjTime.new('2009-01-31')))
@@ -82,20 +84,76 @@ class TestLimits < Test::Unit::TestCase
     assert(l.ok?(TjTime.new('2009-02-01'), false))
   end
 
-  def test_with_resource
+  def test_with_resource_1
     l = Limits.new
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     r = Resource.new(@p, 'r', 'R', nil)
-    l.setLimit('dailymax', 3, nil, r)
+    l.setLimit('dailymax', 5, nil, r)
     l.inc(TjTime.new('2009-02-01-10:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'), r)
+    l.inc(TjTime.new('2009-02-01-11:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'), r)
-    assert(!l.ok?)
+    l.inc(TjTime.new('2009-02-01-12:00'))
+    assert(l.ok?)
     l.inc(TjTime.new('2009-02-01-13:00'))
     assert(!l.ok?)
+    assert(l.ok?(nil, true, r))
+  end
+
+  def test_with_resource_2
+    l = Limits.new
+    l.setProject(@p)
+    l.setLimit('dailymax', 5)
+    r = Resource.new(@p, 'r', 'R', nil)
+    l.setLimit('dailymax', 1, nil, r)
+    l.inc(TjTime.new('2009-02-01-10:00'))
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-11:00'))
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-12:00'))
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-13:00'))
+    assert(l.ok?)
+    assert(l.ok?(nil, true, r))
+    l.inc(TjTime.new('2009-02-01-14:00'), r)
+    assert(!l.ok?)
+    assert(!l.ok?(nil, true, r))
+  end
+
+  def test_with_resource_3
+    l = Limits.new
+    l.setProject(@p)
+    l.setLimit('dailymax', 5)
+    r = Resource.new(@p, 'r', 'R', nil)
+    l.setLimit('dailymax', 3, nil, r)
+    l.inc(TjTime.new('2009-02-01-10:00'), r)
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-11:00'))
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-12:00'), r)
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-13:00'), r)
+    assert(l.ok?)
+    assert(!l.ok?(nil, true, r))
+  end
+
+  def test_with_resource_4
+    l = Limits.new
+    l.setProject(@p)
+    l.setLimit('dailymax', 2)
+    r = Resource.new(@p, 'r', 'R', nil)
+    l.setLimit('dailymax', 3, nil, r)
+    l.inc(TjTime.new('2009-02-01-10:00'), r)
+    assert(l.ok?)
+    l.inc(TjTime.new('2009-02-01-11:00'))
+    assert(!l.ok?)
+    l.inc(TjTime.new('2009-02-01-12:00'), r)
+    assert(!l.ok?)
+    assert(l.ok?(nil, true, r))
+    l.inc(TjTime.new('2009-02-01-13:00'), r)
+    assert(!l.ok?)
+    assert(!l.ok?(nil, true, r))
   end
 
 end

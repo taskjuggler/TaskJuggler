@@ -95,10 +95,10 @@ class TaskJuggler
       markMilestone
     end
 
-    # The parser only stores the full task IDs for each of the dependencies. This
-    # function resolves them to task references and checks them. In addition
-    # to the 'depends' and 'precedes' property lists we also keep 4 additional
-    # lists.
+    # The parser only stores the full task IDs for each of the dependencies.
+    # This function resolves them to task references and checks them. In
+    # addition to the 'depends' and 'precedes' property lists we also keep 4
+    # additional lists.
     # startpreds: All precedessors to the start of this task
     # startsuccs: All successors to the start of this task
     # endpreds: All predecessors to the end of this task
@@ -1526,11 +1526,9 @@ class TaskJuggler
          return if !shifts.onShift?(date)
       end
 
-      # If the task has allocation limits we need to make sure that none of them
-      # is already exceeded.
-      @limits.each do |limit|
-        return if !limit.ok?(date)
-      end
+      # If the task has resource independent allocation limits we need to make
+      # sure that none of them is already exceeded.
+      return unless limitsOk?(date)
 
       sbIdx = @project.dateToIdx(date)
 
@@ -1548,8 +1546,11 @@ class TaskJuggler
           # group must be available.
           allAvailable = true
           candidate.allLeaves.each do |resource|
-            if !resource.available?(@scenarioIdx, sbIdx) ||
+            if !limitsOk?(date, resource) ||
+               !resource.available?(@scenarioIdx, sbIdx) ||
                takenMandatories.include?(resource)
+              # We've found a mandatory resource that is not available for
+              # the slot.
               allAvailable = false
               break
             else
@@ -1591,8 +1592,10 @@ class TaskJuggler
       booked = false
       resource.allLeaves.each do |r|
         # Prevent overbooking when multiple resources are allocated and
-        # available.
-        break if a('effort') > 0 && @doneEffort >= a('effort')
+        # available. If the task has allocation limits we need to make sure
+        # that none of them is already exceeded.
+        break if a('effort') > 0 && @doneEffort >= a('effort') ||
+                 !limitsOk?(date, resource)
 
         if r.book(@scenarioIdx, sbIdx, @property)
 
@@ -1611,7 +1614,7 @@ class TaskJuggler
           # Limits do not take efficiency into account. Limits are usage limits,
           # not effort limits.
           @limits.each do |limit|
-            limit.inc(date)
+            limit.inc(date, resource)
           end
 
           unless a('assignedresources').include?(r)
@@ -1623,6 +1626,18 @@ class TaskJuggler
 
       booked
     end
+
+    # Check if all of the task limits are not exceded at the given _date_. If
+    # a _resource_ is provided, the limit for that particular resource is
+    # checked. If no resource is provided, only non-resource-specific limits
+    # are checked.
+    def limitsOk?(date, resource = nil)
+      @limits.each do |limit|
+        return false if !limit.ok?(date, true, resource)
+      end
+      true
+    end
+
 
     # Register the user provided bookings with the Resource scoreboards. A
     # booking describes the assignment of a Resource to a certain Task for a
