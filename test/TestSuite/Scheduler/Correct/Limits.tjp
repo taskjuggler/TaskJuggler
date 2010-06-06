@@ -10,9 +10,11 @@ resource e "E"
 resource f "F"
 resource g "G"
 resource h "H"
+resource i "I"
+resource j "J"
+resource k "K"
 
 task tasks "Tasks" {
-  start ${projectstart}
   task t1 "40h with 4h daily limit" {
     effort 40h
     allocate a
@@ -40,7 +42,6 @@ task tasks "Tasks" {
 }
 
 task nested "Nested Tasks (20h/week limit)" {
-  start ${projectstart}
   limits { weeklymax 20h }
   task a "Task A" {
     allocate e
@@ -57,7 +58,6 @@ task nested "Nested Tasks (20h/week limit)" {
 }
 
 task interval "Interval Limit" {
-  start ${projectstart}
   effort 20d
   allocate g
   limits { weeklymax 8h { period 2007-09-05 +8d }}
@@ -65,11 +65,18 @@ task interval "Interval Limit" {
 }
 
 task resource "Resource Limit" {
-  start ${projectstart}
   effort 10d
   allocate h
   limits { weeklymax 16h { resources h }}
   ${FixEnd "2007-09-25-18:00"}
+}
+
+task resources "Multiple Resources" {
+  effort 20d
+  allocate i, j, k
+  limits { dailymax 2h { resources i}
+           dailymax 6h { resources j} }
+  ${FixEnd "2007-09-11-18:00"}
 }
 
 taskreport limits "Limits" {
