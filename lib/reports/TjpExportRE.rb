@@ -216,7 +216,9 @@ class TaskJuggler
       if isLeafTask
         a('scenarios').each do |scenarioIdx|
           generateAttribute(task, 'start', indent + 2, scenarioIdx)
-          unless task['milestone', scenarioIdx]
+          if task['milestone', scenarioIdx]
+            generateAttributeText('milestone', indent + 2, scenarioIdx)
+          else
             generateAttribute(task, 'end', indent + 2, scenarioIdx)
             generateAttributeText('scheduling ' +
                                   (task['forward', scenarioIdx] ?
