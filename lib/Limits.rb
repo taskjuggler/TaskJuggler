@@ -25,14 +25,16 @@ class TaskJuggler
     class Limit
 
       attr_accessor :resource
+      attr_reader :name, :interval, :upper
 
       # To create a new Limit object, the Interval +interval+ and the
-      # period duration (+period+ in seconds) must be specified. This creates a
-      # counter for each period within the overall interval. +value+ is the value
-      # of the limit. +upper+ specifies whether the limit is an upper or lower
-      # limit. The limit can also be restricted to certain a Resource specified
-      # by +resource+.
-      def initialize(interval, period, value, upper, resource)
+      # period duration (+period+ in seconds) must be specified. This creates
+      # a counter for each period within the overall interval. +value+ is the
+      # value of the limit. +upper+ specifies whether the limit is an upper or
+      # lower limit. The limit can also be restricted to certain a Resource
+      # specified by +resource+.
+      def initialize(name, interval, period, value, upper, resource)
+        @name = name
         @interval = interval
         @period = period
         @value = value
@@ -47,7 +49,7 @@ class TaskJuggler
 
       # Returns a deep copy of the class instance.
       def copy
-        Limit.new(@interval, @period, @value, @upper, @resource)
+        Limit.new(@name, @interval, @period, @value, @upper, @resource)
       end
 
       # This function can be used to reset the counter for a specific period
@@ -56,7 +58,8 @@ class TaskJuggler
         return unless @dirty
 
         if date.nil?
-          @scoreboard = Scoreboard.new(@interval.start, @interval.end, @period, 0)
+          @scoreboard = Scoreboard.new(@interval.start, @interval.end,
+                                       @period, 0)
         else
           return unless @interval.contains?(date)
           @scoreboard.set(date, 0)
@@ -64,54 +67,67 @@ class TaskJuggler
         @dirty = false
       end
 
-      # Increase the counter for a specific period specified by +date+. If
-      # +resource+ is not nil, the counter is only increased if +resource+
-      # matches resource.
+      # Increase the counter if the _date_ matches the @interval. The
+      # relationship between @resource and _resource_ is described below.
+      # @r \ _r_  nil    y
+      # nil       inc   inc
+      #  x         -    if x==y inc else -
       def inc(date, resource)
-        return if !@interval.contains?(date) || (!resource.nil? && @resource != resource)
-
-        @dirty = true
-        @scoreboard.set(date, @scoreboard.get(date) + 1)
+        if @interval.contains?(date) &&
+           (@resource.nil? || @resource == resource)
+          # The condition is met, increment the counter for the interval.
+          @dirty = true
+          @scoreboard.set(date, @scoreboard.get(date) + 1)
+        end
       end
 
-      # Returns true if the counter for the time slot specified by +date+ or all
-      # counters are within the limit. If +upper+ is true, only upper limits are
-      # checked. If not, only lower limits are checked. If +resource+ is not
-      # nil, only limits for this resource are checked.
+      # Returns true if the counter for the time slot specified by +date+ or
+      # all counters are within the limit. If +upper+ is true, only upper
+      # limits are checked. If not, only lower limits are checked. The
+      # dependency between _resource_ and @resource is described in the matrix
+      # below:
+      # @r \ _r_  nil   y
+      # nil       test  true
+      #  x        true  if x==y test else true
       def ok?(date, upper, resource)
-        if date.nil?
-          # if @upper does not match, we can ignore this limit.
-          return true if @upper != upper || (!resource.nil? && @resource != resource)
+        # if @upper does not match or the provided resource does not match,
+        # we can ignore this limit.
+        return true if @upper != upper ||
+                       (!@resource.nil? ^ !resource.nil?) ||
+                       (@resource && resource && @resource != resource)
 
-          # Check all counters.
+        if date.nil?
+          # No date given. We need to check all counters.
           @scoreboard.each do |i|
             return false if @upper ? i >= @value : i < @value
           end
           return true
         else
-          # If the date is outside the interval or @upper does not match, ignore
-          # this limit.
-          return true if !@interval.contains?(date) || @upper != upper
-          return @upper ? @scoreboard.get(date) < @value : @scoreboard.get(date) >= @value
+          # If the date is outside the interval we don't have to check
+          # anything. Everything is ok.
+          return true if !@interval.contains?(date)
+
+          return @upper ? @scoreboard.get(date) < @value :
+                          @scoreboard.get(date) >= @value
         end
       end
 
     end
 
-    attr_reader :limits, :project
+    attr_reader :project, :limits
 
     # Create a new Limits object. If an argument is passed, it acts as a copy
     # contructor.
     def initialize(limits = nil)
       if limits.nil?
         # Normal initialization
-        @limits = {}
+        @limits = []
         @project = nil
       else
         # Deep copy content from other instance.
-        @limits = {}
+        @limits = []
         limits.limits.each do |name, limit|
-          @limits[name] = limit.copy
+          @limits << limit.copy
         end
         @project = limits.project
       end
@@ -128,32 +144,40 @@ class TaskJuggler
 
     # Reset all counter for all limits.
     def reset
-      @limits.each_value { |limit| limit.reset }
+      @limits.each { |limit| limit.reset }
     end
 
-    # Call this function to create or change a limit. The limit must be uniquely
-    # identified by +name+. +value+ is the new limit value (in time slots).
-    # +period+ is the Interval where the limit is active. In case the interval
+    # Call this function to create or change a limit. The limit is uniquely
+    # identified by the combination of +name+, +interval+ and +resource+.
+    # +value+ is the new limit value (in time slots). In case the interval
     # is nil, the complete project time frame is used.
     def setLimit(name, value, interval = nil, resource = nil)
-      @limits.delete(name) if @limits[name]
-      newLimit(name, value, interval.nil? ?
-               Interval.new(@project['start'], @project['end']) : interval, resource)
+      iv = interval || Interval.new(@project['start'], @project['end'])
+      # If we have already a limit for the name + interval + resource
+      # combination, we delete it first.
+      @limits.delete_if do |l|
+        l.name == name && l.interval.start == iv.start &&
+        l.interval.end == iv.end && l.resource == resource
+      end
+
+      newLimit(name, value, iv, resource)
     end
 
     # This function increases the counters for all limits for a specific
     # interval identified by _date_.
     def inc(date, resource = nil)
-      @limits.each_value do |limit|
+      @limits.each do |limit|
         limit.inc(date, resource)
       end
     end
 
-    # Check all upper limits and return true if none is exceeded. If a _date_ is
-    # specified only the counter for that specific period is tested. Otherwise
-    # all periods are tested.
+    # Check all upper limits and return true if none is exceeded. If a _date_
+    # is specified only the counters for that specific period are tested.
+    # Otherwise all periods are tested. If _resource_ is nil, only
+    # non-resource-specific counters are checked, otherwise only the ones that
+    # match the _resource_.
     def ok?(date = nil, upper = true, resource = nil)
-      @limits.each_value do |limit|
+      @limits.each do |limit|
         return false unless limit.ok?(date, upper, resource)
       end
       true
@@ -176,12 +200,14 @@ class TaskJuggler
         period = 60 * 60 * 24
         upper = false
       when 'weeklymax'
-        interval.start = interval.start.beginOfWeek(@project['weekStartsMonday'])
+        interval.start = interval.start.beginOfWeek(
+          @project['weekStartsMonday'])
         interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = true
       when 'weeklymin'
-        interval.start = interval.start.beginOfWeek(@project['weekStartsMonday'])
+        interval.start = interval.start.beginOfWeek(
+          @project['weekStartsMonday'])
         interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = false
@@ -212,7 +238,7 @@ class TaskJuggler
       end
       endDate = @project['end']
 
-      @limits[name] = Limit.new(interval, period, value, upper, resource)
+      @limits << Limit.new(name, interval, period, value, upper, resource)
     end
 
   end
