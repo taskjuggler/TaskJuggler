@@ -175,7 +175,9 @@ class TaskJuggler
       token = @scanner.nextToken
       unless token[0] == '.'
         error('junk_at_expected_eof',
-              "Found garbage at expected end of file: #{token[1]}")
+              "Found garbage at expected end of file: #{token[1]}\n" +
+              "If you see this in the middle of your file, you probably " +
+              "have closed your context too early.")
       end
     end
 
