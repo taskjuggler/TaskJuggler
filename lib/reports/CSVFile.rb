@@ -19,12 +19,16 @@ class TaskJuggler
   # Hence we use our own class.
   class CSVFile
 
+    attr_reader :data
+
     # At construction time you need to specify the +data+ container. This is an
     # Array of Arrays that holds the table. Optionally, you can specify a
     # +separator+ and a +quote+ string for the CSV file.
     def initialize(data = nil, separator = ';', quote = '"')
       @data = data
+      raise "Illegal separator: #{separator}" if '."'.include?(separator)
       @separator = separator
+      raise "Illegal quote: #{separator}" if quote == '.'
       @quote = quote
     end
 
@@ -37,19 +41,7 @@ class TaskJuggler
         file = File.open(fileName, 'w')
       end
 
-      @data.each do |line|
-        first = true
-        line.each do |field|
-          # Don't output a separator before the first field of the line.
-           if first
-             first = false
-           else
-             file.write @separator
-           end
-           file.write(marshal(field))
-        end
-        file.write "\n"
-      end
+      file.write(to_s)
 
       file.close unless fileName == '.'
     end
@@ -63,82 +55,164 @@ class TaskJuggler
         file = File.open(fileName, 'r')
       end
 
-      @data = []
-      file.each_line do |line|
-        @data << parseLine(line)
-      end
+      @data = parse(file.read)
 
       file.close unless fileName == '.'
       @data
     end
 
+    # Convert the CSV data into a CSV formatted String.
+    def to_s
+      s = ''
+      @data.each do |line|
+        first = true
+        line.each do |field|
+          # Don't output a separator before the first field of the line.
+           if first
+             first = false
+           else
+             s << @separator
+           end
+           s << marshal(field)
+        end
+        s << "\n"
+      end
+      s
+    end
+
     # Read the data as Array of Arrays from a CSV formated String +str+.
     def parse(str)
       @data = []
-      str.each_line do |line|
-        @data << parseLine(line)
+      state = :startOfRecord
+      fields = field = quoted = nil
+
+      # Make sure the input is terminated with a record end.
+      str += "\n" unless str[-1] == ?\n
+
+      str.each_utf8_char do |c|
+        #puts "c: #{c}  State: #{state}"
+        case state
+        when :startOfRecord
+          # This will store the fields of a record
+          fields = []
+          state = :startOfField
+          redo
+        when :startOfField
+          field = ''
+          quoted = false
+          if c == @quote
+            # We've found the start of a quoted field.
+            state = :inQuotedField
+            quoted = true
+          elsif c == @separator || c == "\n"
+            # We've found an empty field
+            field = nil
+            state = :fieldEnd
+            redo
+          else
+            # We've found the first character of an unquoted field
+            field << c
+            state = :inUnquotedField
+          end
+        when :inQuotedField
+          # We are processing the content of a quoted field
+          if c == @quote
+            # This could be then end of the field or a quoted quote.
+            state = :quoteInQuotedField
+          else
+            # We've found a normal character of the quoted field
+            field << c
+          end
+        when :quoteInQuotedField
+          # We are processing a quoted quote or the end of a quoted field
+          if c == @quote
+            # We've found a quoted quote
+            field << c
+            state = :inQuotedField
+          elsif c == @separator || c == "\n"
+            state = :fieldEnd
+            redo
+          else
+            raise "Unexpected character #{c} in CSV"
+          end
+        when :inUnquotedField
+          # We are processing an unquoted field
+          if c == @separator || c == "\n"
+            # We've found the end of a unquoted field
+            state = :fieldEnd
+            redo
+          else
+            # A normal character of an unquoted field
+            field << c
+          end
+        when :fieldEnd
+          # We've completed processing a field. Add the field to the list of
+          # fields. Convert Fixnums and Floats in native types.
+          fields << unMarshal(field, quoted)
+
+          if c == "\n"
+            # The field end is an end of a record as well.
+            state = :recordEnd
+            redo
+          else
+            # Get the next field.
+            state = :startOfField
+          end
+        when :recordEnd
+          # We've found the end of a record. Add fields to the @data
+          # structure.
+          @data << fields
+          # Look for a new record.
+          state = :startOfRecord
+        else
+          raise "Unknown state #{state}"
+        end
       end
+
+      unless state == :startOfRecord
+        raise "CSV state machine error in state #{state}"
+      end
+
       @data
     end
 
     private
 
-    # This function is used to properly quote @quote and @separation characters
-    # contained in the +field+.
+    # This function is used to properly quote @quote and @separation
+    # characters contained in the +field+.
     def marshal(field)
-      if field.include?(@quote) || field.include?(@separator)
-        field.gsub!(/@quote/, '""')
-        field = '"' + field + '"'
+      if field.nil?
+        ''
+      elsif field.is_a?(Fixnum) || field.is_a?(Float)
+        # Numbers don't have to be quoted.
+        field.to_s
+      else
+        # Duplicate quote characters.
+        field.gsub!(/@quote/, "#{@quote * 2}")
+        # Enclose the field in quote characters
+        @quote + field.to_s + @quote
       end
-      field
     end
 
-    def parseLine(line)
-      @state = 0 # start of field
-      @fields = []
-      @field = ''
-      line.each_utf8_char do |c|
-        case @state
-        when 0 # start of field
-          if c == @quote
-            @state = 1
-          else
-            @field << c
-            @state = 2
-          end
-        when 1 # in quoted field
-          if c == @quote
-            @state = 3
-          elsif c == @separator
-            closeField
-          else
-            @field << c
-          end
-        when 2 # in unquoted field
-          if c == @separator
-            closeField
-          else
-            @field << c
-          end
-        when 3 # quote found in quoted field
-          if c == @quote
-            @field << c
-            @state = 2
-          else
-            closeField
-          end
+    # Convert the String _field_ into a native Ruby type. If field was
+    # _quoted_, the result is always the String.
+    def unMarshal(field, quoted)
+      # Quoted Strings and nil are returned verbatim.
+      if quoted || field.nil?
+        field
+      else
+        # Unquoted fields are inspected for special types
+        if /^[-+]?\d+$/ =~ field
+          # field is a Fixnum
+          field.to_i
+        elsif /^[-+]?\d*\.?\d+([eE][-+]?\d+)?$/ =~ field
+          # field is a Float
+          field.to_f
         else
-          raise "Unknown state #{state}"
+          # Everything else is treated as String
+          field
         end
       end
-      closeField if @state != 0
-      @fields
-    end
-
-    def closeField
-      @fields << @field
-      @field = ''
-      @state = 0
     end
 
   end

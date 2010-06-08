@@ -14,6 +14,7 @@ require 'open4'
 require 'mail'
 require 'yaml'
 require 'SheetHandlerBase'
+require 'reports/CSVFile'
 
 class TaskJuggler
 
@@ -81,6 +82,9 @@ class TaskJuggler
     def genResourceList(resourceList)
       list = []
       info('Retrieving resource list...')
+      # Create a TJP report definition for a CSV report that contains the id,
+      # name, email, effort and free work for each resource that is not hidden
+      # by @hideResource.
       reportDef = <<"EOF"
 resourcereport rl_21497214 '.' {
   formats csv
@@ -92,19 +96,17 @@ resourcereport rl_21497214 '.' {
 }
 EOF
       report = generateReport('rl_21497214', reportDef)
-      first = true
-      report.each_line do |line|
-        if first
-          first = false
-          next
-        end
-        id, name, email, effort, free = line.split(';')
+      # Parse the CSV report into an Array of Arrays
+      csv = CSVFile.new.parse(report)
+
+      # Get rid of the column title line
+      csv.delete_at(0)
+
+      # Process the CSV report line by line
+      csv.each do |id, name, email, effort, free|
         if email.empty?
           error("Resource '#{id}' must have a valid email address")
         end
-        # Convert effort and free values into Float objects.
-        effort = effort.to_f
-        free = free.to_f
 
         # Ignore resources that are on vacation for the whole period.
         if effort == 0.0 && free == 0.0
