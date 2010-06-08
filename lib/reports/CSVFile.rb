@@ -176,6 +176,24 @@ class TaskJuggler
       @data
     end
 
+    # Utility function that tries to convert a String into a native type that
+    # is supported by the CSVFile generator. If no native type is found, the
+    # input String _str_ will be returned unmodified. nil is returned as nil.
+    def CSVFile.strToNative(str)
+      if str.nil?
+        nil
+      elsif /^[-+]?\d+$/ =~ str
+        # field is a Fixnum
+        str.to_i
+      elsif /^[-+]?\d*\.?\d+([eE][-+]?\d+)?$/ =~ str
+        # field is a Float
+        str.to_f
+      else
+        # Everything else is kept as String
+        str
+      end
+    end
+
     private
 
     # This function is used to properly quote @quote and @separation
@@ -202,16 +220,7 @@ class TaskJuggler
         field
       else
         # Unquoted fields are inspected for special types
-        if /^[-+]?\d+$/ =~ field
-          # field is a Fixnum
-          field.to_i
-        elsif /^[-+]?\d*\.?\d+([eE][-+]?\d+)?$/ =~ field
-          # field is a Float
-          field.to_f
-        else
-          # Everything else is treated as String
-          field
-        end
+        CSVFile.strToNative(field)
       end
     end
 

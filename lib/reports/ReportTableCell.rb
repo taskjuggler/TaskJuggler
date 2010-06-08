@@ -141,16 +141,25 @@ class TaskJuggler
       # We only support left indentation in CSV files as the spaces for right
       # indentation will be disregarded by most applications.
       indent = @indent && @alignment == :left ? '  ' * @indent : ''
-      if @special
-        csv[-1] << @special.to_csv
-      elsif @data && @data.is_a?(String)
-        csv[-1] << indent + @data
-      elsif @text
-        if @text.respond_to?('functionHandler')
-          @text.functionHandler('query').setQuery(@query)
+      cell =
+        if @special
+          @special.to_csv
+          indent = nil
+        elsif @data && @data.is_a?(String)
+          @data
+        elsif @text
+          if @text.respond_to?('functionHandler')
+            @text.functionHandler('query').setQuery(@query)
+          end
+          @text.to_s
         end
-        csv[-1] << indent + shortVersion(@text)[0]
-      end
+
+      # Try to convert numbers and other types to their native Ruby type if
+      # they are supported by CSVFile.
+      native = CSVFile.strToNative(cell)
+
+      # Only for String objects, we add the indentation.
+      csv[-1] << (native.is_a?(String) ? indent + native : native)
     end
 
     private

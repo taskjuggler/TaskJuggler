@@ -1,0 +1,19 @@
+project "LogFunc2" 2010-06-07 +1m
+
+resource r1 "R1"
+resource r2 "R2" {
+  vacation 2010-06-14 +7d
+}
+
+task "Task" {
+  effort 25d
+  allocate r1, r2
+}
+
+resourcereport "LogicalFunctions2" {
+  formats csv
+  period 2010-06-14 +7d
+  hideresource ~isactive(plan)
+  columns name
+}
+

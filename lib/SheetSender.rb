@@ -104,7 +104,7 @@ EOF
 
       # Process the CSV report line by line
       csv.each do |id, name, email, effort, free|
-        if email.empty?
+        if email.nil? || email.empty?
           error("Resource '#{id}' must have a valid email address")
         end
 

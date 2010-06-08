@@ -310,27 +310,6 @@ class TaskJuggler
       work
     end
 
-    # Returns the allocated work of the resource (and its children).
-    def getAllocatedWork(startIdx, endIdx, task = nil)
-      # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
-
-      work = 0.0
-      if @property.container?
-        @property.children.each do |resource|
-          work += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
-        end
-      else
-        return 0.0 if @scoreboard.nil?
-
-        work = @project.convertToDailyLoad(
-                 getAllocatedSlots(startIdx, endIdx, task) *
-                 @project['scheduleGranularity'])
-      end
-      work
-    end
-
     # Returns the allocated accumulated time of this resource and its children.
     def getAllocatedTime(startIdx, endIdx, task = nil)
       # Convert the interval dates to indexes if needed.
@@ -340,7 +319,7 @@ class TaskJuggler
       time = 0
       if @property.container?
         @property.children.each do |resource|
-          time += resource.getAllocatedWork(@scenarioIdx, startIdx, endIdx, task)
+          time += resource.getAllocatedTime(@scenarioIdx, startIdx, endIdx, task)
         end
       else
         return 0 if @scoreboard.nil?
