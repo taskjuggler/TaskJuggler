@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = test_Scheduler.rb -- The TaskJuggler III Project Management Software
+# = test_ReportGenerator.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
 #
