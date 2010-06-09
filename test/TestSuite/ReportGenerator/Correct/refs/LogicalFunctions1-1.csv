@@ -1,0 +1,7 @@
+"Index";"Name";"Id";"Id";"Id"
+1;"Task 1";"Index < 3";"";""
+2;"Task 2";"Index < 3";"";""
+3;"Task 3";"Index >= 3";"This is task 3";""
+4;"Task 4";"Index >= 3";"";""
+5;"Task 5";"Index >= 3";"";""
+6;"";"Index >= 3";"";"Task with no name"
