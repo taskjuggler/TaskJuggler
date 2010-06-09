@@ -57,7 +57,25 @@ class TestReportGenerator < Test::Unit::TestCase
       assert(tj.schedule, "Scheduler failed for #{f}")
       assert(tj.generateReports(@tmpDir), "Report generator failed for #{f}")
       assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+
+      checkReports(f)
     end
+  end
+
+  private
+
+  def checkReports(tjpFile)
+    baseName = File.basename(tjpFile)[0..-5]
+    dirName = File.dirname(tjpFile)
+
+    counter = 0
+    Dir.glob(dirName + "/refs/#{baseName}-[0-9]*").each do |ref|
+      reportName = File.basename(ref)
+      assert(FileUtils.compare_file(ref, "#{@tmpDir}/#{reportName}"),
+             "Comparison of report #{reportName} of test case #{tjpFile} failed")
+      counter += 1
+    end
+    assert(counter > 0, "Each test project must have at least one report")
   end
 
 end

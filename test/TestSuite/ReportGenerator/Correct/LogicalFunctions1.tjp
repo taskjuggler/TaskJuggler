@@ -7,8 +7,8 @@ task "Task 4"
 task "Task 5"
 task ""
 
-taskreport "LogicalFunctions" {
-  formats html
+taskreport "LogicalFunctions1-1" {
+  formats csv
   columns index, name,
           id { celltext plan.index < 3 "Index < 3"
                celltext 1 "Index >= 3" },
