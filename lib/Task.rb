@@ -79,6 +79,9 @@ class TaskJuggler
         end
       end
 
+      # Don't generate a RichText object for an empty String.
+      return if rText.empty?
+
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
       begin

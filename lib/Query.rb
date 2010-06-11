@@ -179,7 +179,7 @@ class TaskJuggler
 
     # Return the result of the Query as String. The result may be nil.
     def to_s
-      @attr ? @attr.to_s(self) : (@string || '')
+      @attr ? @attr.to_s(self) : (@rti ? @rti.to_s : (@string || ''))
     end
 
     # Return the result of the Query as Fixnum or Float. The result may be
@@ -207,6 +207,8 @@ class TaskJuggler
         else
           @attr.value
         end
+      elsif @rti
+        @rti
       elsif @numerical
         @numerical
       else

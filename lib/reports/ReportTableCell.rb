@@ -227,33 +227,41 @@ class TaskJuggler
       if @fontColor
         style += "color:#{@fontColor}; "
       end
+
+      return nil, nil if @text.nil? || @text.empty?
+
       td = XMLElement.new('td', 'class' => 'tj_table_cell_label',
                                 'style' => style)
-
       tooltip = nil
-      unless @text.nil? || @text.empty?
-        if @text.respond_to?('functionHandler') &&
-           @text.functionHandler('query')
-          @text.functionHandler('query').setQuery(@query)
+
+      # @text can be a String or a RichText (with or without embedded
+      # queries). To find out if @text has multiple lines, we need to expand
+      # it and convert it to a plain text again.
+      textAsString =
+        if @text.is_a?(RichTextIntermediate)
+          # @text is a RichText.
+          if @text.respond_to?('functionHandler') &&
+             @text.functionHandler('query')
+            @text.functionHandler('query').setQuery(@query)
+          end
+          @text.to_s
+        else
+          @text
         end
 
-        shortText, singleLine = shortVersion(@text)
-        if (@line && @line.table.equiLines && (!singleLine || @width )) ||
-            !@category
-          # The cell is size-limited. We only put a shortened plain-text version
-          # in the cell and provide the full content via a tooltip.
-          td << XMLText.new(shortText)
-          tooltip = @text if @text != shortText
-        else
-          # The cell will adjust to the size of the content.
-          if @text.is_a?(RichTextIntermediate)
-            # Don't put the @text into a <div> but a <span>.
-            # @text.blockMode = false # if singleLine
-            td << @text.to_html
-          else
-            td << XMLText.new(@text)
-          end
-        end
+      return nil, nil if textAsString.empty?
+
+      shortText, singleLine = shortVersion(textAsString)
+
+      if (@line && @line.table.equiLines && (!singleLine || @width )) ||
+          !@category
+        # The cell is size-limited. We only put a shortened plain-text version
+        # in the cell and provide the full content via a tooltip.
+        tooltip = @text if shortText != textAsString
+        td << XMLText.new(shortText)
+      else
+        td << (@text.is_a?(RichTextIntermediate) ? @text.to_html :
+                                                   XMLText.new(@text))
       end
 
       return td, tooltip

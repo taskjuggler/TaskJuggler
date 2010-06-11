@@ -401,7 +401,8 @@ macro AlertColor [
 ]
 
 taskreport status "" {
-  columns wbs, name, start, end, effort, alert, status
+  columns wbs, name, start, end, effort, alert { tooltip plan.journal
+  != '' "<-query attribute='journal'->" }, status
   scenarios delayed 
 
   taskreport dashboard "" {

@@ -65,13 +65,17 @@ class TaskJuggler
           return evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceNumber(o, expr)
           end
+        elsif opnd1.is_a?(RichTextIntermediate)
+          return evalBinaryOperation(opnd1.to_s, operator, opnd2) do |o|
+            coerceString(o, expr)
+          end
         elsif opnd1.is_a?(String)
           return evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceString(o, expr)
           end
         else
           expr.error("First operand of a binary operation must be a date, " +
-                     "a number or a string: #{opnd1}")
+                     "a number or a string: #{opnd1.class}")
         end
       when '&'
         return coerceBoolean(@operand1.eval(expr), expr) &&
