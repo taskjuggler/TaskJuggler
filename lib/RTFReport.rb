@@ -41,7 +41,14 @@ class TaskJuggler
         return nil
       end
       # Detect recursive nesting
-      if @project.reportContexts.find_index { |c| c.report == report }
+      found = false
+      @project.reportContexts.each do |c|
+        if c.report == report
+          found = true
+          break
+        end
+      end
+      if found
         stack = ""
         @project.reportContexts.each do |context|
           stack += ' -> ' unless stack.empty?

@@ -842,7 +842,9 @@ class TaskJuggler
           propagateDate(a(thisEnd), !atEnd)
         end
         Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
-      elsif !a('scheduled') && a('start') && a('end')
+      elsif !a('scheduled') && a('start') && a('end') &&
+            !(a('length') == 0 && a('duration') == 0 && a('effort') == 0 &&
+              !a('allocate').empty?)
         @property['scheduled', @scenarioIdx] = true
       end
 

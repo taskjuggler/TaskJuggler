@@ -10,7 +10,7 @@ task "Task" {
   allocate r1, r2
 }
 
-resourcereport "LogicalFunctions2" {
+resourcereport "LogicalFunctions2-1" {
   formats csv
   period 2010-06-14 +7d
   hideresource ~isactive(plan)
