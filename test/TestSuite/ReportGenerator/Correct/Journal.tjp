@@ -1,0 +1,14 @@
+project "Journal" 2010-06-07 +1m
+
+task "T" {
+  duration 3w
+  journalentry 2010-06-07-8:00 "Entry 1"
+  journalentry 2010-06-14-8:00 "Entry 2"
+  journalentry 2010-06-21-8:00 "Entry 3"
+}
+
+taskreport "Journal-1" {
+  formats csv
+  # Only "Entry 2" should be included
+  columns name, journal { period 2010-06-14 +1w }
+}

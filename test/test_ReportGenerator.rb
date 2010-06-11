@@ -75,7 +75,7 @@ class TestReportGenerator < Test::Unit::TestCase
              "Comparison of report #{reportName} of test case #{tjpFile} failed")
       counter += 1
     end
-    assert(counter > 0, "Each test project must have at least one report")
+    assert(counter > 0, "Project #{tjpFile} has no reference report")
   end
 
 end
