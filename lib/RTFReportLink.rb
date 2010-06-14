@@ -12,6 +12,7 @@
 
 require 'RichTextFunctionHandler'
 require 'XMLElement'
+require 'URLParameter'
 
 class TaskJuggler
 
@@ -44,7 +45,12 @@ class TaskJuggler
       # The URL for interactive reports is different than for static reports.
       if report.interactive?
         # The project and report ID must be provided as query.
-        url = "taskjuggler?project=#{@project['projectid']};report=#{report.fullId}"
+        url = "taskjuggler?project=#{@project['projectid']};" +
+              "report=#{report.fullId}"
+
+        if args['attributes']
+          url += ";attributes=" + URLParameter.encode(args['attributes'])
+        end
       else
         # The report name just gets a '.html' extension.
         url = report.name + ".html"

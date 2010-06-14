@@ -70,14 +70,28 @@ double quotes.
  "This is a double quoted string."
 
 Single quoted strings may contain double quotes and vice versa.
+Alternatively, you can prefix the quote mark with a backslash to use
+it within a string.
 
-For multi-line strings cut mark strings are recommended. A
-cut-mark-string starts with ''''<nowiki>-8<-</nowiki>'''' (scissor on
-a dotted line) and ends with ''''->8-''''. The start mark must be
+ 'It\'s a string with a quote included.'
+
+If you want to use a backslash right before the included quote you
+need to escape the backslash with another backslash. Backslashes that
+aren't followed by a quote mark don't need to be escaped.
+
+ 'A backslash \\\' followed by a quote.'
+
+For multi-line strings or strings with many included quotes cut mark
+strings are recommended. A cut-mark-string starts with
+''''<nowiki>-8<-</nowiki>'''' (scissor on a dotted line) and ends with
+''''->8-''''(scissors looking the other way). The start mark must be
 immediately followed by a line break. The indentation of the first
-line must be repeated for all following lines of the string and is not
-included in the resulting strings. The terminating cut mark must only
-be preceded by white spaces in that line.
+line after the opening scissors must be repeated for all following
+lines of the string and is not included in the resulting strings. The
+terminating cut mark must only be preceded by white spaces in that
+line. When considering the indentation, tabs are not identical with
+some number of spaces. Each indented line must be prefixed by the
+exact same combination of tabs and spaces.
 
  -8<-
    This is a
