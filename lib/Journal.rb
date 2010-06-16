@@ -251,6 +251,25 @@ class TaskJuggler
       maxLevel
     end
 
+    # Return the list of JournalEntry objects that are dated at or before
+    # _date_, are for _property_ or any of its childs, have at least _level_
+    # alert and are after _minDate_.
+    def alertEntries(date, property, minLevel, minDate)
+      maxLevel = 0
+      entries = []
+      # Gather all the current (as of the specified _date_) JournalEntry
+      # objects for the property and than find the highest level.
+      currentEntriesR(date, property, minLevel, minDate).each do |e|
+        if maxLevel < e.alertLevel
+          maxLevel = e.alertLevel
+          entries = [ e ]
+        elsif maxLevel == e.alertLevel
+          entries << e
+        end
+      end
+      entries
+    end
+
     # This function returns a list of entries that have all the exact same
     # date and are the last entries before the deadline _date_. Only messages
     # with at least the required alert level _minLevel_ are returned. Messages

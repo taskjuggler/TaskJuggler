@@ -561,7 +561,7 @@ taskreport status "" {
             resources { width 200 ${AlertColor} 
                         start ${projectstart} end ${projectend} },
             alerttrend { title "Trend" ${AlertColor} },
-            alertmessage { width 260 ${AlertColor} }
+            journalmessages { width 260 ${AlertColor} }
     hidetask ~hasalert(0)
     sorttasks alert.down, delayed.end.up
     period %{${now} - 1w} +1w

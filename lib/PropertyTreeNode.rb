@@ -479,12 +479,28 @@ class TaskJuggler
       query.string = @project.alertLevelName(alert)
     end
 
-    def query_alertsummary(query)
-      alertMessages(query, false)
+    def query_alertmessages(query)
+      journalMessages(@project['journal'].alertEntries(query.end, self, 1,
+                                                       query.start),
+                      query, true)
     end
 
-    def query_alertmessage(query)
-      alertMessages(query, true)
+    def query_alertsummaries(query)
+      journalMessages(@project['journal'].alertEntries(query.end, self, 1,
+                                                       query.start),
+                      query, false)
+    end
+
+    def query_journalmessages(query)
+      journalMessages(@project['journal'].currentEntries(query.end, self, 0,
+                                                         query.start),
+                      query, true)
+    end
+
+    def query_journalsummaries(query)
+      journalMessages(@project['journal'].currentEntries(query.end, self, 0,
+                                                         query.start),
+                      query, false)
     end
 
     def query_alerttrend(query)
@@ -549,13 +565,12 @@ class TaskJuggler
   private
 
     # Create a blog-style list of all alert messages that match the Query.
-    def alertMessages(query, longVersion)
+    def journalMessages(entries, query, longVersion)
       # The components of the message are either UTF-8 text or RichText. For
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
       rText = ''
-      @project['journal'].currentEntries(query.end, self, 0,
-                                         query.start).each do |entry|
+      entries.each do |entry|
         rText += "=== <nowiki>" + entry.headline + "</nowiki> ===\n"
         rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
         if entry.author

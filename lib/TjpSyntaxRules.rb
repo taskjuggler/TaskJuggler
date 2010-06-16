@@ -2703,17 +2703,19 @@ properties.
 EOT
          )
 
-    singlePattern('_alertmessage')
+    singlePattern('_alertmessages')
     descr(<<'EOT'
 The headlines, the summary and the details of the message from the journal
-entries that caused the current alert level for this task.
+entries that caused the current alert level to be larger than the defaul level
+for this task or any of its sub tasks.
 EOT
          )
 
-    singlePattern('_alertsummary')
+    singlePattern('_alertsummaries')
     descr(<<'EOT'
 The headlines and the summary message from the journal entries that caused the
-current alert level for this task.
+current alert level to be larger than the default for this task or any of its
+sub tasks.
 EOT
          )
 
@@ -2837,6 +2839,20 @@ EOT
     singlePattern('_journal')
     descr(<<'EOT'
 The journal entries for the task or resource for the reported interval.
+EOT
+         )
+
+    singlePattern('_journalmessages')
+    descr(<<'EOT'
+The headlines, the summary and the details of the message from the journal
+entries that caused the current alert level for this task.
+EOT
+         )
+
+    singlePattern('_journalsummaries')
+    descr(<<'EOT'
+The headlines and the summary message from the journal entries that caused the
+current alert level for this task.
 EOT
          )
 
