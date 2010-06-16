@@ -327,7 +327,7 @@ class TaskJuggler
     def generateAttributeText(text, indent, scenarioIdx)
       @file << ' ' * indent
       tag = ''
-      unless scenarioIdx.nil?
+      if !scenarioIdx.nil? && scenarioIdx != 0
         tag = @project.scenario(scenarioIdx).id
         @file << "#{tag}:"
       end
