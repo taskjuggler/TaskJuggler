@@ -32,13 +32,13 @@ class TaskJuggler
     end
 
     def query_journal(query)
-      journalMessages(query, true)
+      journalText(query, true)
     end
 
     private
 
     # Create a blog-style list of all alert messages that match the Query.
-    def journalMessages(query, longVersion)
+    def journalText(query, longVersion)
       # The components of the message are either UTF-8 text or RichText. For
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
