@@ -33,7 +33,7 @@ class TestPropertySet < Test::Unit::TestCase
 
   def test_finalizer
     sas1 = TaskJuggler::ShiftAssignments.new
-    sas1.setProject(@p)
+    sas1.project = @p
     assert_equal(0, TaskJuggler::ShiftAssignments.scoreboards.length)
     sas1.addAssignment(sa1 = TaskJuggler::ShiftAssignment.new(@s1,
       TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
@@ -48,14 +48,14 @@ class TestPropertySet < Test::Unit::TestCase
 
   def test_SBsharing
     sas1 = TaskJuggler::ShiftAssignments.new
-    sas1.setProject(@p)
+    sas1.project = @p
     assert_equal(0, TaskJuggler::ShiftAssignments.scoreboards.length)
     sas1.addAssignment(TaskJuggler::ShiftAssignment.new(@s1,
       TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
                                 TaskJuggler::TjTime.new('2008-08-05'))))
 
     sas2 = TaskJuggler::ShiftAssignments.new
-    sas2.setProject(@p)
+    sas2.project = @p
     sas2.addAssignment(TaskJuggler::ShiftAssignment.new(@s1,
       TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
                                 TaskJuggler::TjTime.new('2008-08-05'))))
@@ -63,7 +63,7 @@ class TestPropertySet < Test::Unit::TestCase
     assert_equal(1, TaskJuggler::ShiftAssignments.scoreboards.length)
 
     sas3 = TaskJuggler::ShiftAssignments.new
-    sas3.setProject(@p)
+    sas3.project = @p
     sas3.addAssignment(TaskJuggler::ShiftAssignment.new(@s2,
       TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
                                 TaskJuggler::TjTime.new('2008-08-05'))))

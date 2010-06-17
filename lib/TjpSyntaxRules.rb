@@ -257,7 +257,7 @@ EOT
       # Make sure we have a ShiftAssignment for the allocation.
       if @allocate.shift.nil?
         @allocate.shift = ShiftAssignments.new
-        @allocate.shift.setProject(@project)
+        @allocate.shift.project = @project
       end
 
       if @val[1].nil?
@@ -3725,7 +3725,7 @@ EOT
       # Make sure we have a ShiftAssignment for the property.
       if @property['shifts', @scenarioIdx].nil?
         @property['shifts', @scenarioIdx] = ShiftAssignments.new
-        @property['shifts', @scenarioIdx].setProject(@project)
+        @property['shifts', @scenarioIdx].project = @project
       end
 
       if @val[1].nil?

@@ -506,7 +506,7 @@ class TaskJuggler
     end
 
     def setProject(project)
-      @value.setProject(project)
+      @value.project = project
     end
 
     def ShiftAssignmentsAttribute::tjpId

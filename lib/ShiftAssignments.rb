@@ -10,6 +10,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'monitor'
 require 'Scoreboard'
 
 class TaskJuggler
@@ -26,10 +27,8 @@ class TaskJuggler
       @interval = interval
     end
 
-    # Returns true if the ShiftAssignment objects are similar enough.
-    def ==(sa)
-      return @shiftScenario.object_id == sa.shiftScenario.object_id &&
-             @interval == sa.interval
+    def hashKey
+      return "#{@shiftScenario.object_id}|#{@interval.start}|#{@interval.end}"
     end
 
     # Return a deep copy of self.
@@ -91,38 +90,44 @@ class TaskJuggler
   # Bit 6:      Reserved
   # Bit 7:      0: No global override
   #             1: Override global setting
-  class ShiftAssignments
+  class ShiftAssignments < Monitor
 
     include ObjectSpace
 
-    attr_reader :project, :assignments
+    attr_accessor :project
+    attr_reader :assignments
 
     # This class is sharing the Scoreboard instances for ShiftAssignments that
-    # have identical assignement data. This class variable holds an array with
+    # have identical assignment data. This class variable holds a Hash with
     # records for each unique Scoreboard. A record is an array of references
     # to the owning ShiftAssignments objects and a reference to the Scoreboard
     # object.
-    @@scoreboards = []
+    @@scoreboards = {}
 
     def initialize(sa = nil)
       define_finalizer(self, self.class.method(:deleteScoreboard).to_proc)
 
+      # An Array of ShiftAssignment objects.
       @assignments = []
+
+      # A String that uniquely identifies the content of this ShiftAssignment
+      # object.
+      @hashKey = nil
+
       if sa
+        # A ShiftAssignments object was passed to the contructor. We create a
+        # deep copy of it.
         @project = sa.project
         sa.assignments.each do |assignment|
           @assignments << assignment.copy
         end
+        # Create a new ScoreBoard or share one with a ShiftAssignments object
+        # that has the same set of shift assignments.
         @scoreboard = newScoreboard
       else
         @project = nil
         @scoreboard = nil
       end
-    end
-
-    # Some operations require access to the whole project.
-    def setProject(project)
-      @project = project
     end
 
     # Add a new assignment to the list. In case there was no overlap the
@@ -200,24 +205,12 @@ class TaskJuggler
       end
     end
 
-    # Returns true if two ShiftAssignments object have the same assignment
-    # pattern.
-    def ==(shiftAssignments)
-      return false if @assignments.size != shiftAssignments.assignments.size ||
-                      @project != shiftAssignments.project
-
-      @assignments.size.times do |i|
-        return false if @assignments[i] != shiftAssignments.assignments[i]
-      end
-      true
-    end
-
     def ShiftAssignments.scoreboards
       @@scoreboards
     end
 
     def ShiftAssignments.sbClear
-      @@scoreboards = []
+      @@scoreboards = {}
     end
 
     # This function is primarily used for debugging purposes.
@@ -237,52 +230,63 @@ class TaskJuggler
       out
     end
 
+    def hashKey
+      @hashKey if @hashKey
+
+      @hashKey = "#{@project.object_id}|"
+      @assignments.sort! { |a, b| a.interval.start <=> b.interval.start }
+      @assignments.each { |a| @hashKey += a.hashKey + '||' }
+      @hashKey
+    end
+
   private
 
     # This function either returns a new Scoreboard or a reference to an
     # existing one in case we already have one for the same assigment patterns.
     def newScoreboard
-      @@scoreboards.each do |sbRecord|
-        # We only have to look at the first ShiftAssignment for a comparison.
-        # The others should match as well.
-        if self == ObjectSpace._id2ref(sbRecord[0][0])
-          # Register the ShiftAssignments object as a user of an existing
-          # scoreboard.  We have to store the object_id, not the reference. If
-          # we'd store a reference, the GC will never destroy it.
-          sbRecord[0] << object_id
-          # Return a reference to the existing scoreboard.
-          return sbRecord[1]
-        end
+      if (record = @@scoreboards[hashKey])
+        # If we already have a Scoreboard object for the hashKey of this
+        # ShiftAssignments object, we can re-use this. We just need to
+        # register the object as a user of it.
+        record[0] << object_id
+
+        # Return the re-used Scoreboard object.
+        return record[1]
       end
+
       # We have not found a matching scoreboard, so we have to create a new one.
       newSb = Scoreboard.new(@project['start'], @project['end'],
                              @project['scheduleGranularity'])
       # Create a new record for it and register the ShiftAssignments object as
-      # first user.
-      newRecord = [ [ object_id ], newSb ]
+      # first user. Add the record to the @@scoreboards list.
+      @@scoreboards[hashKey] = [ [ object_id ], newSb ]
+
       # Append the new record to the list.
-      @@scoreboards << newRecord
       return newSb
     end
 
     # This function is called whenever a ShiftAssignments object gets destroyed
     # by the GC.
     def ShiftAssignments.deleteScoreboard(objId)
-      # Attention: Due to the way this class is called, there will be no visible
-      # exceptions here. All runtime errors will go unnoticed!
+      # Attention: Due to the way this class is called, there will be no
+      # visible exceptions here. All runtime errors will go unnoticed!
       #
-      # Well search the @@scoreboards for an entry that holds a reference to the
-      # deleted ShiftAssignments object. If it's the last in the record, we
-      # delete the whole record. If not, we'll just remove it form the record.
-      @@scoreboards.each do |sbRecord|
-        assignmentObjectIDs = sbRecord[0]
-        assignmentObjectIDs.delete_if { |id| id == objId }
-        # No more ShiftAssignments in this record. Delete it from the list.
-        break if assignmentObjectIDs.empty?
+      # We'll search the @@scoreboards for an entry that holds a reference to
+      # the deleted ShiftAssignments object. If it's the last in the record,
+      # we delete the whole record. If not, we'll just remove the reference
+      # form the record.
+      @@scoreboards.each_value do |record|
+        if record[0].include?(objId)
+          # Remove the ShiftAssignments object as user of this Scoreboard
+          # object.
+          record[0].delete(objId)
+          # We've found what we were looking for.
+          break
+        end
       end
+
       # Delete all entries which have empty reference lists.
-      @@scoreboards.delete_if { |sbRecord| sbRecord[0].empty? }
-      ObjectSpace.undefine_finalizer(self)
+      @@scoreboards.delete_if { |key, record| record[0].empty? }
     end
 
     # Returns true if the interval overlaps with any of the assignment periods.
