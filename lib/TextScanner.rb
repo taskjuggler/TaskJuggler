@@ -32,8 +32,8 @@ class TaskJuggler
     # completely processed.
     class StreamHandle
 
-      attr_accessor :lineNo, :columnNo, :line, :charBuffer
-      attr_reader :fileName
+      attr_accessor :line, :charBuffer
+      attr_reader :fileName, :columnNo
 
       def initialize
         @lineNo = 1
@@ -42,6 +42,14 @@ class TaskJuggler
         @charBuffer = []
         @fileName = nil
       end
+
+      # Return the number of the currently processed line. If we have
+      # pushed-back characters in the @charBuffer, we have to substract the
+      # contained newlines from the @lineNo value.
+      def lineNo
+        @lineNo - @charBuffer.count("\n")
+      end
+
 
       def dirname
         @fileName ? File.dirname(@fileName) : ''
@@ -74,10 +82,11 @@ class TaskJuggler
           # This function converts CR+LF or CR into LF on the fly.
           if (c1 = @file.getc) == ?\r
             @bytes += 1
-            # CR or CR/LF linebreaks
+            @lineNo += 1
+            # CR or CR+LF linebreaks
             if (c2 = @file.getc) == ?\n
               @bytes += 1
-              # Ok, CR, LF
+              # Ok, CR+LF
               return c2
             else
               # Just CR
@@ -87,6 +96,7 @@ class TaskJuggler
           else
             # This is for LF linebreaks and all other characters
             @bytes += 1
+            @lineNo += 1 if c1 == ?\n
             return c1
           end
         rescue
@@ -138,6 +148,7 @@ class TaskJuggler
           c = "\n"
         end
         @pos += 1
+        @lineNo += 1 if c == "\n"
         c
       end
 
@@ -443,7 +454,6 @@ class TaskJuggler
       # Otherwise get next character from input stream.
       unless @cf.charBuffer.empty?
         c = @cf.charBuffer.pop
-        @cf.lineNo -= 1 if c == "\n" && !@macroStack.empty?
         while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == 0
           @cf.charBuffer.pop
           @macroStack.pop
@@ -478,7 +488,6 @@ class TaskJuggler
         end
       end
       unless c.nil?
-        @cf.lineNo += 1 if c == "\n"
         @cf.line = "" if @cf.line[-1] == ?\n
         @cf.line << c
       end
@@ -490,7 +499,6 @@ class TaskJuggler
 
       @cf.line.chop! if c
       @cf.charBuffer << c
-      @cf.lineNo -= 1 if c == "\n" && @macroStack.empty?
     end
 
     def skipComment
