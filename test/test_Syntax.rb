@@ -17,7 +17,7 @@ require 'test/unit'
 require 'TaskJuggler'
 require 'MessageChecker'
 
-class TestScheduler < Test::Unit::TestCase
+class TestSyntax < Test::Unit::TestCase
 
   include MessageChecker
 

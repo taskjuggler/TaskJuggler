@@ -32,7 +32,7 @@ class TaskJuggler
     # completely processed.
     class StreamHandle
 
-      attr_accessor :line, :charBuffer
+      attr_accessor :line, :eofCallback
       attr_reader :fileName, :columnNo
 
       def initialize
@@ -41,6 +41,7 @@ class TaskJuggler
         @line = ""
         @charBuffer = []
         @fileName = nil
+        @eofCallback = nil
       end
 
       # Return the number of the currently processed line. If we have
@@ -50,6 +51,10 @@ class TaskJuggler
         @lineNo - @charBuffer.count("\n")
       end
 
+      # Push a char as String or Fixnum into the @charBuffer.
+      def ungetc(c)
+        @charBuffer.push(c)
+      end
 
       def dirname
         @fileName ? File.dirname(@fileName) : ''
@@ -76,6 +81,8 @@ class TaskJuggler
       end
 
       def getc19
+        return @charBuffer.pop unless @charBuffer.empty?
+
         Log.activity if @bytes & 0x3FFF == 0
 
         begin
@@ -105,9 +112,7 @@ class TaskJuggler
       end
 
       def getc18
-        c = getc19
-        return nil if c.nil?
-        '' << c
+        (c = getc19).nil? ? nil : (c == 0 ? 0 : ('' << c))
       end
 
       if RUBY_VERSION < '1.9.0'
@@ -134,21 +139,22 @@ class TaskJuggler
       end
 
       def getc18
-        return nil if @pos >= @length
-        '' << getc19
+        (c = getc19).nil? ? nil : (c == 0 ? 0 : ('' << c))
       end
 
       def getc19
+        return @charBuffer.pop unless @charBuffer.empty?
+
         return nil if @pos >= @length
 
         # This function converts CR+LF or CR into LF on the fly.
-        if (c = @buffer[@pos]) == "\r"
+        if (c = @buffer[@pos]) == ?\r
           # CR or CR+LF
-          @pos += 1 if @buffer[@pos + 1] == "\n"
-          c = "\n"
+          @pos += 1 if @buffer[@pos + 1] == ?\n
+          c = ?\n
         end
         @pos += 1
-        @lineNo += 1 if c == "\n"
+        @lineNo += 1 if c == ?\n
         c
       end
 
@@ -214,7 +220,17 @@ class TaskJuggler
     # Continue processing with a new file specified by _fileName_. When this
     # file is finished, we will continue in the old file after the location
     # where we started with the new file.
-    def include(fileName)
+    def include(fileName, &callBack)
+      # If we have an unread token, we push this into the push-back buffer of
+      # the current file. Once the included file has been finished, the
+      # scanner will process this content again.
+      if @tokenBuffer && @cf
+        @tokenBuffer[1].reverse.each_utf8_char do |ch|
+          @cf.ungetc(ch)
+        end
+      end
+      @tokenBuffer = nil
+
       if fileName[0] != '/'
         if @fileStack.empty?
           path = @masterPath == './' ? '' : @masterPath
@@ -243,6 +259,7 @@ class TaskJuggler
       end
       begin
         @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
+        @cf.eofCallback = callBack
       rescue StandardError
         error('bad_include', "Cannot open include file #{fileName}")
       end
@@ -373,9 +390,9 @@ class TaskJuggler
       end
       @macroStack << [ macro, args ]
       # Mark end of macro with a 0 element
-      @cf.charBuffer << 0
+      @cf.ungetc(0)
       text.reverse.each_utf8_char do |c|
-        @cf.charBuffer << c
+        @cf.ungetc(c)
       end
       @cf.line = ''
     end
@@ -410,6 +427,12 @@ class TaskJuggler
     end
 
   private
+
+    #def nextChar
+    #  c = nextCharX
+    #  puts c
+    #  c
+    #end
 
     # This function is called by the scanner to get the next character. It
     # features a FIFO buffer that can hold any amount of returned characters.
@@ -449,44 +472,39 @@ class TaskJuggler
       # This can only happen when a previous call already returned nil.
       return nil if @cf.nil?
 
-      c = nil
-      # If there are characters in the return buffer process them first.
-      # Otherwise get next character from input stream.
-      unless @cf.charBuffer.empty?
-        c = @cf.charBuffer.pop
-        while !@cf.charBuffer.empty? && @cf.charBuffer[-1] == 0
-          @cf.charBuffer.pop
-          @macroStack.pop
-        end
-      else
+      # The end of injected macro snippets are marked with a 0. We use this to
+      # pop the @macroStack once for every 0 we find. Otherwise the 0 is
+      # ignored.
+      while (c = @cf.getc) == 0
+        @macroStack.pop
+      end
+
+      if c.nil?
         # If EOF has been reached, try the parent file until even the master
         # file has been processed completely.
-        if (c = @cf.getc).nil?
-          # Safe current position so an EOF related error can be properly
-          # reported.
-          @pos = sourceFileInfo
+        # Safe current position so an EOF related error can be properly
+        # reported.
+        @pos = sourceFileInfo
 
+        begin
+          # The current file has been processed to completion. Notify the
+          # parser by calling the provided call back block.
+          @cf.eofCallback.call if @cf.eofCallback
           @cf.close
           @fileStack.pop
+
           if @fileStack.empty?
             # We are done with the top-level file now.
             @cf = @tokenBuffer = nil
+            return nil
           else
+            # Continue parsing the file that included the current file.
             @cf, @tokenBuffer, @lastPos = @fileStack.last
             Log << "Parsing file #{@cf.fileName} ..."
-            # We have been called by nextToken() already, so we can't just
-            # restore @tokenBuffer and be done. We need to feed the token text
-            # back into the charBuffer and return the first character.
-            if @tokenBuffer
-              @tokenBuffer[1].reverse.each_utf8_char do |ch|
-                @cf.charBuffer.push(ch)
-              end
-              @tokenBuffer = nil
-            end
           end
-          return nil
-        end
+        end while (c = @cf.getc).nil?
       end
+
       unless c.nil?
         @cf.line = "" if @cf.line[-1] == ?\n
         @cf.line << c
@@ -498,7 +516,7 @@ class TaskJuggler
       return if @cf.nil?
 
       @cf.line.chop! if c
-      @cf.charBuffer << c
+      @cf.ungetc(c)
     end
 
     def skipComment

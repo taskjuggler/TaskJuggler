@@ -429,7 +429,6 @@ class TaskJuggler
         stackEntry = @fileStack.last
         instance_variable_set('@' + var, stackEntry[var])
       end
-      @property = nil
     end
 
   end

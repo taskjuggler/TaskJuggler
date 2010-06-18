@@ -34,7 +34,10 @@ class Object
   # This is a variant of Object#clone that returns a deep copy of an object.
   def deep_clone
     # We can't clone frozen objects. So just return a reference to them.
-    return self if frozen?
+    # Built-in classed can't be cloned either. The check below is probably
+    # cheaper than the frequent (hiddent) exceptions from those objects.
+    return self if frozen? || nil? || is_a?(Fixnum) || is_a?(Float) ||
+                   is_a?(TrueClass) || is_a?(FalseClass)
 
     # In case we have loops in our graph, we return references, not
     # deep-copied objects.
