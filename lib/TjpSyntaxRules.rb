@@ -1317,7 +1317,7 @@ EOT
   def rule_includeProperties
     pattern(%w( !includeFileName !includeAttributes ), lambda {
       pushFileStack
-      @scanner.include(@val[0]) { popFileStack }
+      @scanner.include(@val[0], method(:popFileStack))
     })
   end
 
@@ -2463,7 +2463,7 @@ EOT
   end
 
   def rule_properties
-    pattern(%w( !propertiesBody . ))
+    pattern(%w( !propertiesBody ))
   end
 
   def rule_propertiesBody
@@ -2591,7 +2591,7 @@ EOT
   end
 
   def rule_propertiesInclude
-    pattern(%w( _include !includeProperties !properties ))
+    pattern(%w( _include !includeProperties !properties . ))
     lastSyntaxToken(1)
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written

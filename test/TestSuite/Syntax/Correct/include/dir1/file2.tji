@@ -1,1 +1,4 @@
+resource "R"
+
 include "../dir2/file3.tji" { }
+include "file5.tji" { }

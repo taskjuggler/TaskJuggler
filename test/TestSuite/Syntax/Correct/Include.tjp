@@ -1,4 +1,4 @@
 project "Include Test" 2010-02-26 +1w
 
+include "include/dir3/all.tji"
 include "include/file1.tji"
-

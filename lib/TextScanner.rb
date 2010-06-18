@@ -94,7 +94,7 @@ class TaskJuggler
             if (c2 = @file.getc) == ?\n
               @bytes += 1
               # Ok, CR+LF
-              return c2
+              return c2.nil? ? 4 : c2
             else
               # Just CR
               @file.ungetc(c2)
@@ -104,15 +104,15 @@ class TaskJuggler
             # This is for LF linebreaks and all other characters
             @bytes += 1
             @lineNo += 1 if c1 == ?\n
-            return c1
+            return c1.nil? ? 4 : c1
           end
-        rescue
-          return nil
+        rescue EOFError
+          return 4  # ASCII End of Text
         end
       end
 
       def getc18
-        (c = getc19).nil? ? nil : (c == 0 ? 0 : ('' << c))
+        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
       end
 
       if RUBY_VERSION < '1.9.0'
@@ -139,13 +139,13 @@ class TaskJuggler
       end
 
       def getc18
-        (c = getc19).nil? ? nil : (c == 0 ? 0 : ('' << c))
+        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
       end
 
       def getc19
         return @charBuffer.pop unless @charBuffer.empty?
 
-        return nil if @pos >= @length
+        return 4 if @pos >= @length # ASCII End of Text
 
         # This function converts CR+LF or CR into LF on the fly.
         if (c = @buffer[@pos]) == ?\r
@@ -220,7 +220,7 @@ class TaskJuggler
     # Continue processing with a new file specified by _fileName_. When this
     # file is finished, we will continue in the old file after the location
     # where we started with the new file.
-    def include(fileName, &callBack)
+    def include(fileName, callBack = nil)
       # If we have an unread token, we push this into the push-back buffer of
       # the current file. Once the included file has been finished, the
       # scanner will process this content again.
@@ -248,12 +248,13 @@ class TaskJuggler
 
       # Check the current file stack to find recusions.
       if @pos && fileName == @pos.fileName
-        error('include_recursion', "Recursive inclusion of #{fileName} detected")
+        error('include_recursion',
+              "Recursive inclusion of #{fileName} detected")
       else
         @fileStack.each do |entry|
           if fileName == entry[0].fileName
-            error('include_recursion', "Recursive inclusion of #{fileName} " +
-                  "detected")
+            error('include_recursion',
+                  "Recursive inclusion of #{fileName} detected")
           end
         end
       end
@@ -428,11 +429,12 @@ class TaskJuggler
 
   private
 
-    #def nextChar
-    #  c = nextCharX
-    #  puts c
-    #  c
-    #end
+    def nextCharY
+      c = nextCharX
+      puts "getChar: #{c.nil? ? '<nil>' : "[#{c}]"} " +
+           "cf: #{@cf.nil? ? '-' : @cf.fileName}"
+      c
+    end
 
     # This function is called by the scanner to get the next character. It
     # features a FIFO buffer that can hold any amount of returned characters.
@@ -479,30 +481,28 @@ class TaskJuggler
         @macroStack.pop
       end
 
-      if c.nil?
-        # If EOF has been reached, try the parent file until even the master
-        # file has been processed completely.
-        # Safe current position so an EOF related error can be properly
-        # reported.
+      if c == 4  # End of File code
+        # If EOF has been reached, try the parent file until even the
+        # top-level file has been processed completely. Safe current position
+        # so an EOF related error can be properly reported.
         @pos = sourceFileInfo
 
-        begin
-          # The current file has been processed to completion. Notify the
-          # parser by calling the provided call back block.
-          @cf.eofCallback.call if @cf.eofCallback
-          @cf.close
-          @fileStack.pop
+        # The current file has been processed to completion. Notify the
+        # parser by calling the provided call back block.
+        @cf.eofCallback.call if @cf.eofCallback
+        @cf.close
+        @fileStack.pop
 
-          if @fileStack.empty?
-            # We are done with the top-level file now.
-            @cf = @tokenBuffer = nil
-            return nil
-          else
-            # Continue parsing the file that included the current file.
-            @cf, @tokenBuffer, @lastPos = @fileStack.last
-            Log << "Parsing file #{@cf.fileName} ..."
-          end
-        end while (c = @cf.getc).nil?
+        if @fileStack.empty?
+          # We are done with the top-level file now.
+          @cf = @tokenBuffer = nil
+          Log << "Completed master file ..."
+        else
+          # Continue parsing the file that included the current file.
+          @cf, @tokenBuffer, @lastPos = @fileStack.last
+          Log << "Parsing file #{@cf.fileName} ..."
+        end
+        return nil
       end
 
       unless c.nil?
@@ -513,6 +513,8 @@ class TaskJuggler
     end
 
     def returnChar(c)
+      #puts "<- [#{c.nil? ? '<nil>' : c}]"
+      # Ignore pushed back nil or any push-back after top-level file EOF.
       return if @cf.nil?
 
       @cf.line.chop! if c
