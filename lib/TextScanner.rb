@@ -113,8 +113,9 @@ class TaskJuggler
       def lineNo
         # The IO object counts the lines for us by counting the gets() calls.
         currentLine = @stream ? @stream.lineno : 0
-        # If we've just read the LF, we have to add 1.
-        currentLine += 1 if @line && @line[@pos - 1] == ?\n
+        # If we've just read the LF, we have to add 1. The LF can only be the
+        # last character of the line.
+        currentLine += 1 if @line && @pos == @endPos && @line[-1] == ?\n
         # If we have pushed-back characters in the @charBuffer, we have to
         # substract the contained newlines from the @stream.lineno value.
         currentLine - @charBuffer.count("\n")
@@ -208,7 +209,7 @@ class TaskJuggler
         end
       end
       @masterPath = @cf.dirname + '/'
-      @tokenBuffer = @pos = @lastPos = nil
+      @tokenBuffer = nil
     end
 
     # Finish processing and reset all data structures.
@@ -287,7 +288,6 @@ class TaskJuggler
       unless @tokenBuffer.nil?
         res = @tokenBuffer
         @tokenBuffer = nil
-        @pos = @tokenBufferPos
         return res
       end
 
@@ -315,62 +315,63 @@ class TaskJuggler
       end
 
       # Start processing characters from the input.
-      @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+      @startOfToken = sourceFileInfo
       token = [ '.', '<END>' ]
       while c = nextChar
-        case c
-        when ' ', "\n", "\t"
-          if (tok = readBlanks(c))
-            token = tok
-            break
-          end
-          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
-        when '#'
-          skipComment
-          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
-        when '/'
-          skipCPlusPlusComments
-          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
-        when '0'..'9'
-          token = readNumber(c)
-          break
-        when "'"
-          token = readString(c)
-          break
-        when '"'
-          token = readString(c)
-          break
-        when '-'
-          token = handleDash
-          break
-        when '!'
-          if (c = nextChar) == '='
-            token = [ 'LITERAL', '!=' ]
-          else
-            returnChar(c)
-            token = [ 'LITERAL', '!' ]
-          end
-          break
-        when 'a'..'z', 'A'..'Z', '_'
+        if isAlpha(c) || c == '_'
           token = readId(c)
           break
-        when '<', '>', '='
-          token = readOperator(c)
-          break
-        when '['
-          token = readMacro
-          break
-        when nil
-          # We've reached an end of file or buffer
+        elsif isDigit(c)
+          token = readNumber(c)
           break
         else
-          str = ""
-          str << c
-          token = [ 'LITERAL', str ]
-          break
+          case c
+          when ' ', "\n", "\t"
+            if (tok = readBlanks(c))
+              token = tok
+              break
+            end
+            @startOfToken = sourceFileInfo
+          when '#'
+            skipComment
+            @startOfToken = sourceFileInfo
+          when '/'
+            skipCPlusPlusComments
+            @startOfToken = sourceFileInfo
+          when "'"
+            token = readString(c)
+            break
+          when '"'
+            token = readString(c)
+            break
+          when '-'
+            token = handleDash
+            break
+          when '!'
+            if (c = nextChar) == '='
+              token = [ 'LITERAL', '!=' ]
+            else
+              returnChar(c)
+              token = [ 'LITERAL', '!' ]
+            end
+            break
+          when '<', '>', '='
+            token = readOperator(c)
+            break
+          when '['
+            token = readMacro
+            break
+          when nil
+            # We've reached an end of file or buffer
+            break
+          else
+            str = ""
+            str << c
+            token = [ 'LITERAL', str ]
+            break
+          end
         end
       end
-      @pos = @startOfToken
       return (token << @startOfToken)
     end
 
@@ -383,8 +384,6 @@ class TaskJuggler
         raise "Fatal Error: Cannot return more than 1 token in a row"
       end
       @tokenBuffer = token
-      @tokenBufferPos = @pos
-      @pos = @lastPos
     end
 
     # Add a Macro to the macro translation table.
@@ -455,14 +454,6 @@ class TaskJuggler
     # features a FIFO buffer that can hold any amount of returned characters.
     # When it has reached the end of the master file it returns nil.
     def nextChar
-      # We've started to find the next token. @pos no longer marks the
-      # position of the current token. Since we also store the EOF position in
-      # @pos, don't reset it if we have processed all files completely.
-      if @pos && @cf
-        @lastPos = @pos
-        @pos = nil
-      end
-
       if (c = nextCharI) == '$' && !@ignoreMacros
         # Double $ are reduced to a single $.
         return c if (c = nextCharI) == '$'
@@ -498,11 +489,6 @@ class TaskJuggler
 
       if c == 4  # End of File code
         @finishLastFile = true
-        # If EOF has been reached, try the parent file until even the
-        # top-level file has been processed completely. Safe current position
-        # so an EOF related error can be properly reported.
-        @pos = sourceFileInfo
-
         return nil
       end
 
@@ -736,7 +722,7 @@ class TaskJuggler
           while (c = nextChar) == ' ' || c == "\t"
             indent << c
           end
-          @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
+          @startOfToken = sourceFileInfo
           returnChar(c)
           state = 1
         when 1 # reading '-' or first content line character
@@ -823,9 +809,7 @@ class TaskJuggler
     def readId(c)
       token = ""
       token << c
-      while (c = nextChar) &&
-            (('a'..'z') === c || ('A'..'Z') === c || ('0'..'9')  === c ||
-             c == '_')
+      while (c = nextChar) && (isAlNum(c) || c == '_')
         token << c
       end
       if c == ':'
@@ -900,9 +884,7 @@ class TaskJuggler
 
     def readIdentifier(noDigit = true)
       token = ""
-      while (c = nextChar) &&
-            (('a'..'z') === c || ('A'..'Z') === c ||
-             (!noDigit && (('0'..'9')  === c)) || c == '_')
+      while (c = nextChar) && ((noDigit ? isAlNum(c) : isAlNum(c)) || c == '_')
         token << c
         noDigit = false
       end
@@ -912,6 +894,20 @@ class TaskJuggler
       end
       token
     end
+
+    def isAlpha(c)
+      ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+    end
+
+    def isDigit(c)
+      ('0' <= c && c <= '9')
+    end
+
+    def isAlNum(c)
+      ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
+      ('0' <= c && c <= '9')
+    end
+
 
     def errorEOF(no, token)
       error("eof_in_istring#{no}",
