@@ -32,7 +32,7 @@ class TaskJuggler
     # completely processed.
     class StreamHandle
 
-      attr_accessor :line, :eofCallback
+      attr_accessor :line
       attr_reader :fileName, :columnNo
 
       def initialize
@@ -41,7 +41,6 @@ class TaskJuggler
         @line = ""
         @charBuffer = []
         @fileName = nil
-        @eofCallback = nil
       end
 
       # Return the number of the currently processed line. If we have
@@ -80,6 +79,10 @@ class TaskJuggler
         @file.close unless @file == $stdin
       end
 
+      # Get the next character from the input file. Depending on the Ruby
+      # version, the characters are returned as String (1.9) or Fixnum (1.8).
+      # If the end of file has been reached, the result is ASCII EOT (Fixnum
+      # 4). Previously read and returned (via ungetc) EOFs are encoded as nil.
       def getc19
         return @charBuffer.pop unless @charBuffer.empty?
 
@@ -220,7 +223,7 @@ class TaskJuggler
     # Continue processing with a new file specified by _fileName_. When this
     # file is finished, we will continue in the old file after the location
     # where we started with the new file.
-    def include(fileName, callBack = nil)
+    def include(fileName)
       # If we have an unread token, we push this into the push-back buffer of
       # the current file. Once the included file has been finished, the
       # scanner will process this content again.
@@ -260,7 +263,6 @@ class TaskJuggler
       end
       begin
         @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
-        @cf.eofCallback = callBack
       rescue StandardError
         error('bad_include', "Cannot open include file #{fileName}")
       end
@@ -487,9 +489,8 @@ class TaskJuggler
         # so an EOF related error can be properly reported.
         @pos = sourceFileInfo
 
-        # The current file has been processed to completion. Notify the
-        # parser by calling the provided call back block.
-        @cf.eofCallback.call if @cf.eofCallback
+        # The current file has been processed to completion. Close it and
+        # remove the corresponding entry from the @fileStack.
         @cf.close
         @fileStack.pop
 
@@ -514,7 +515,7 @@ class TaskJuggler
 
     def returnChar(c)
       #puts "<- [#{c.nil? ? '<nil>' : c}]"
-      # Ignore pushed back nil or any push-back after top-level file EOF.
+      # Ignore any push backs after top-level file EOF has been reached.
       return if @cf.nil?
 
       @cf.line.chop! if c
