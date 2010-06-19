@@ -112,7 +112,7 @@ class TaskJuggler
     end
 
     # The parser uses this function to report any errors during parsing.
-    def error(id, text, foo = nil)
+    def error(id, text, foo = nil, bar = nil)
       if @debug
         $stderr.puts "Line #{@lineNo}: #{text}\n" +
                      "#{@text[@lineStart, @pos - @lineStart]}"

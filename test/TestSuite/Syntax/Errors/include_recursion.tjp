@@ -5,3 +5,4 @@ project "Test" 2009-10-06 +2m
 # MARK: error 1 include_recursion 
 include "include_recursion.tji"
 
+task "Foo"

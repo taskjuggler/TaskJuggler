@@ -186,7 +186,7 @@ class TaskJuggler
     # current position.
     def sourceFileInfo
       return nil if @stack.empty?
-      @stack.last.sourceFileInfo
+      @stack.last.sourceFileInfo[0]
     end
 
     def matchingRules(keyword)
@@ -198,12 +198,12 @@ class TaskJuggler
       matches
     end
 
-    def error(id, text, property = nil)
-      @scanner.error(id, text, property)
+    def error(id, text, property = nil, sfi = nil)
+      @scanner.error(id, text, property, sfi)
     end
 
-    def warning(id, text, property = nil)
-      @scanner.warning(id, text, property)
+    def warning(id, text, property = nil, sfi = nil)
+      @scanner.warning(id, text, property, sfi)
     end
 
   private
@@ -276,7 +276,8 @@ class TaskJuggler
           if type == ?$
             if @variables.index(token).nil?
               error('unsupported_token',
-                    "The token #{token} is not supported here.")
+                    "The token #{token} is not supported here.", nil,
+                    token[2])
             end
           elsif type == ?!
             if @rules[token].nil?
@@ -318,10 +319,10 @@ class TaskJuggler
           patIdx = rule.matchingPatternIndex('$' + token[0])
         end
 
-        # If no matching pattern is found for the token we have to check if the
-        # rule is optional or we are in repeat mode. If this is the case, return
-        # the token back to the scanner. Otherwise we have found a token we
-        # cannot handle at this point.
+        # If no matching pattern is found for the token we have to check if
+        # the rule is optional or we are in repeat mode. If this is the case,
+        # return the token back to the scanner. Otherwise, we have found a
+        # token we cannot handle at this point.
         if patIdx.nil?
           # Append the list of expected tokens to the @@expectedToken array.
           # This may be used in a later rule to provide more details when an
@@ -348,22 +349,24 @@ class TaskJuggler
         end
 
         pattern = rule.pattern(patIdx)
-        @stack << TextParser::StackElement.new(rule, pattern.function,
-                                               @scanner.sourceFileInfo)
+        @stack << TextParser::StackElement.new(rule, pattern.function)
 
         pattern.each do |element|
           # Separate the type and token text for pattern element.
           elType = element[0]
           elToken = element[1..-1]
           if elType == ?!
-            # The element is a reference to another rule. Return the token if we
-            # still have one and continue with the referenced rule.
+            # The element is a reference to another rule. Return the token if
+            # we still have one and continue with the referenced rule.
             unless token.nil?
+              sfi = token[2]
               returnToken(token)
               token = nil
+            else
+              sfi = nil
             end
-            @stack.last.store(parseRule(@rules[elToken]),
-                              @scanner.sourceFileInfo)
+            @stack.last.store(parseRule(@rules[elToken]), sfi)
+            #Log << "Resuming rule #{rule.name}"
           else
             # In case the element is a keyword or variable we have to get a new
             # token if we don't have one anymore.
@@ -382,9 +385,9 @@ class TaskJuggler
                 end
                 error('spec_keywork_expctd', text)
               end
-              @stack.last.store(elToken, @scanner.sourceFileInfo)
+              @stack.last.store(elToken, token[2])
             elsif elType == ?.
-              if token != [ '.', '<END>' ]
+              if token[0..1] != [ '.', '<END>' ]
                 error('end_expected', 'End expected but found ' +
                       "'#{token[1]}' (#{token[0]}).")
               end
@@ -399,7 +402,7 @@ class TaskJuggler
                 error('spec_token_expctd', text)
               end
               # If the element is a variable store the value of the token.
-              @stack.last.store(token[1], @scanner.sourceFileInfo)
+              @stack.last.store(token[1], token[2])
             end
             # The token has been consumed. Reset the variable.
             token = nil
@@ -411,6 +414,7 @@ class TaskJuggler
         # function for this pattern to operate on the value array. Then pop the
         # entry for this rule from the stack.
         @val = @stack.last.val
+        @sourceFileInfo = @stack.last.sourceFileInfo
         res = nil
         res = @stack.last.function.call unless @stack.last.function.nil?
         @stack.pop
@@ -435,13 +439,14 @@ class TaskJuggler
     def getNextToken
       begin
         token = nextToken
-        Log << "Token: [#{token[0]}][#{token[1]}]"
+        #Log << "Token: [#{token[0]}][#{token[1]}]"
       rescue TjException
         error('parse_rule', $!.message)
       end
       if @badVariables.include?(token[0])
         error('unsupported_token',
-              "The token #{token[1]} is not supported in this context.")
+              "The token #{token[1]} is not supported in this context.",
+              nil, token[2])
       end
       token
     end

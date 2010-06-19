@@ -74,15 +74,14 @@ class TaskJuggler
               @line = @line.chomp + "\n"
             end
 
-            # Store the end position in the line.
+            # Store the end position of the line.
             @endPos = @line.length
           else
+            # We've reached the end of the file.
             @endPos = 0
+            return 4 # ASCII EOT
           end
         end
-
-        # We've reached the end of the file.
-        return 4 if @line.nil?
 
         c = @line[@pos]
         @pos += 1
@@ -175,16 +174,24 @@ class TaskJuggler
       # This table contains all macros that may be expanded when found in the
       # text.
       @macroTable = MacroTable.new(messageHandler)
+      # The currently processed IO object.
+      @cf = nil
       # This Array stores the currently processed nested files. It's an Array
-      # of Arrays. The nested Array consists of 3 elements, the @cf,
-      # @tokenBuffer and the @pos of the file.
+      # of Arrays. The nested Array consists of 2 elements, the IO object and
+      # the @tokenBuffer.
       @fileStack = []
+      # This flag is set if we have reached the end of a file. Since we will
+      # only know when the next new token is requested that the file is really
+      # done now, we have to use this flag.
+      @finishLastFile = false
       # This Array stores the currently processed nested macros.
       @macroStack = []
       # In certain situation we want to ignore Macro replacement and this flag
       # is set to true.
       @ignoreMacros = false
       @fileNameIsBuffer = false
+      # A SourceFileInfo of the start of the currently processed token.
+      @startOfToken = nil
     end
 
     # Start the processing. if _fileNameIsBuffer_ is true, we operate on a
@@ -192,10 +199,10 @@ class TaskJuggler
     def open(fileNameIsBuffer = false)
       @fileNameIsBuffer = fileNameIsBuffer
       if fileNameIsBuffer
-        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil, nil ] ]
+        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil ] ]
       else
         begin
-          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil, nil ] ]
+          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil ] ]
         rescue StandardError
           raise TjException.new, "Cannot open file #{@masterFile}"
         end
@@ -214,57 +221,45 @@ class TaskJuggler
       @cf = @tokenBuffer = nil
     end
 
-    # Continue processing with a new file specified by _fileName_. When this
-    # file is finished, we will continue in the old file after the location
-    # where we started with the new file.
-    def include(fileName)
-      # If we have an unread token, we push this into the push-back buffer of
-      # the current file. Once the included file has been finished, the
-      # scanner will process this content again.
-      if @tokenBuffer && @cf
-        @tokenBuffer[1].reverse.each_utf8_char do |ch|
-          @cf.ungetc(ch)
-        end
-      end
-      @tokenBuffer = nil
-
-      if fileName[0] != '/'
-        if @fileStack.empty?
-          path = @masterPath == './' ? '' : @masterPath
-        else
-          pathOfCallingFile = @fileStack.last[0].dirname
-          path = pathOfCallingFile.empty? ? '' : pathOfCallingFile + '/'
-          @fileStack.last[1, 2] = [ @tokenBuffer, @pos ]
-        end
+    # Continue processing with a new file specified by _includeFileName_. When
+    # this file is finished, we will continue in the old file after the
+    # location where we started with the new file.
+    def include(includeFileName, sfi)
+      if includeFileName[0] != '/'
+        pathOfCallingFile = @fileStack.last[0].dirname
+        path = pathOfCallingFile.empty? ? '' : pathOfCallingFile + '/'
         # If the included file is not an absolute name, we interpret the file
         # name relative to the including file.
-        fileName = path + fileName
+        includeFileName = path + includeFileName
       end
 
-      @tokenBuffer = nil
-
-      # Check the current file stack to find recusions.
-      if @pos && fileName == @pos.fileName
-        error('include_recursion',
-              "Recursive inclusion of #{fileName} detected")
-      else
-        @fileStack.each do |entry|
-          if fileName == entry[0].fileName
-            error('include_recursion',
-                  "Recursive inclusion of #{fileName} detected")
-          end
+      # Try to dectect recursive inclusions. This will not work if files are
+      # accessed via filesystem links.
+      @fileStack.each do |entry|
+        if includeFileName == entry[0].fileName
+          error('include_recursion',
+                "Recursive inclusion of #{includeFileName} detected", nil, sfi)
         end
       end
+
+      # Save @tokenBuffer in the record of the parent file.
+      @fileStack.last[1] = @tokenBuffer unless @fileStack.empty?
+      @tokenBuffer = nil
+      @finishLastFile = false
+
+      # Open the new file and push the handle on the @fileStack.
       begin
-        @fileStack << [ (@cf = FileStreamHandle.new(fileName)), nil, nil ]
+        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName)), nil, ]
+        Log << "Parsing file #{includeFileName}"
       rescue StandardError
-        error('bad_include', "Cannot open include file #{fileName}")
+        error('bad_include', "Cannot open include file #{includeFileName}",
+              nil, sfi)
       end
     end
 
     # Return SourceFileInfo for the current processing prosition.
     def sourceFileInfo
-      @pos ? @pos.dup : SourceFileInfo.new(fileName, lineNo, columnNo)
+      SourceFileInfo.new(fileName, lineNo, columnNo)
     end
 
     # Return the name of the currently processed file. If we are working on a
@@ -296,6 +291,29 @@ class TaskJuggler
         return res
       end
 
+      if @finishLastFile
+        # The previously processed file has now really been processed to
+        # completion. Close it and remove the corresponding entry from the
+        # @fileStack.
+        @finishLastFile = false
+        Log << "Completed file #{@cf.fileName}"
+        @cf.close
+        @fileStack.pop
+
+        if @fileStack.empty?
+          # We are done with the top-level file now.
+          @cf = @tokenBuffer = nil
+        else
+          # Continue parsing the file that included the current file.
+          @cf, tokenBuffer = @fileStack.last
+          Log << "Parsing file #{@cf.fileName} ..."
+          # If we have a left over token from previously processing this file,
+          # return it now.
+          return tokenBuffer if tokenBuffer
+        end
+
+      end
+
       # Start processing characters from the input.
       @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
       token = [ '.', '<END>' ]
@@ -313,7 +331,7 @@ class TaskJuggler
         when '/'
           skipCPlusPlusComments
           @startOfToken = SourceFileInfo.new(fileName, lineNo, columnNo)
-          when '0'..'9'
+        when '0'..'9'
           token = readNumber(c)
           break
         when "'"
@@ -353,12 +371,13 @@ class TaskJuggler
         end
       end
       @pos = @startOfToken
-      return token
+      return (token << @startOfToken)
     end
 
     # Return a token to retrieve it with the next nextToken() call again. Only 1
     # token can be returned before the next nextToken() call.
     def returnToken(token)
+      #Log << "-> Returning Token: [#{token[0]}][#{token[1]}]"
       unless @tokenBuffer.nil?
         $stderr.puts @tokenBuffer
         raise "Fatal Error: Cannot return more than 1 token in a row"
@@ -395,18 +414,18 @@ class TaskJuggler
     end
 
     # Call this function to report any errors related to the parsed input.
-    def error(id, text, property = nil)
-      message('error', id, text, property)
+    def error(id, text, property = nil, sfi = nil)
+      message('error', id, text, property, sfi)
     end
 
-    def warning(id, text, property = nil)
-      message('warning', id, text, property)
+    def warning(id, text, property = nil, sfi = nil)
+      message('warning', id, text, property, sfi)
     end
 
-    def message(type, id, text, property)
+    def message(type, id, text, property, sfi)
       unless text.empty?
         message = Message.new(id, type, text + "\n" + line.to_s,
-                              property, nil, sourceFileInfo)
+                              property, nil, sfi || sourceFileInfo)
         @messageHandler.send(message)
 
         until @macroStack.empty?
@@ -427,7 +446,7 @@ class TaskJuggler
 
     def nextCharY
       c = nextCharX
-      puts "getChar: #{c.nil? ? '<nil>' : "[#{c}]"} " +
+      $stderr.puts "getChar: #{c.nil? ? '<nil>' : "[#{c}]"} " +
            "cf: #{@cf.nil? ? '-' : @cf.fileName}"
       c
     end
@@ -478,32 +497,15 @@ class TaskJuggler
       end
 
       if c == 4  # End of File code
+        @finishLastFile = true
         # If EOF has been reached, try the parent file until even the
         # top-level file has been processed completely. Safe current position
         # so an EOF related error can be properly reported.
         @pos = sourceFileInfo
 
-        # The current file has been processed to completion. Close it and
-        # remove the corresponding entry from the @fileStack.
-        @cf.close
-        @fileStack.pop
-
-        if @fileStack.empty?
-          # We are done with the top-level file now.
-          @cf = @tokenBuffer = nil
-          Log << "Completed master file ..."
-        else
-          # Continue parsing the file that included the current file.
-          @cf, @tokenBuffer, @lastPos = @fileStack.last
-          Log << "Parsing file #{@cf.fileName} ..."
-        end
         return nil
       end
 
-      #unless c.nil?
-      #  @cf.line = "" if @cf.line[-1] == ?\n
-      #  @cf.line << c
-      #end
       c
     end
 
@@ -512,7 +514,6 @@ class TaskJuggler
       # Ignore any push backs after top-level file EOF has been reached.
       return if @cf.nil?
 
-      #@cf.line.chop! if c
       @cf.ungetc(c)
     end
 

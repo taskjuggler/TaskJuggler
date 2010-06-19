@@ -57,6 +57,14 @@ def processArguments(argv)
           'Turn on warnings for requested changes in time sheets') do
    @warnTsDeltas = true
   end
+  opts.on('--check-syntax',
+          'Only parse the input files and check the syntax.') do
+   @checkSyntax = true
+  end
+  opts.on('--no-reports',
+          'Just schedule the project, but don\'t generate any reports.') do
+   @noReports = true
+  end
   opts.on('-o', '--output-dir <directory>', String,
           'Directory the reports should go into') do |arg|
     @outputDir = arg + '/'
@@ -106,6 +114,8 @@ def main
   @maxCpuCores = 1
   @forceReports = false
   @warnTsDeltas = false
+  @syntaxCheck = false
+  @noReports = false
   @outputDir = ''
   @timeSheets = []
   @statusSheets = []
@@ -122,6 +132,9 @@ def main
   tj.warnTsDeltas = @warnTsDeltas
   keepParser = !@timeSheets.empty? || !@statusSheets.empty?
   exit 1 unless tj.parse(files, keepParser)
+
+  exit 0 if @checkSyntax
+
   if !tj.schedule
     exit 1 unless @forceReports
   end
@@ -134,6 +147,8 @@ def main
   @statusSheets.each do |ss|
     exit 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
   end
+
+  exit 0 if @noReports
 
   exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
 

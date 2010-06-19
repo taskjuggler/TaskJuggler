@@ -56,10 +56,11 @@ EOT
         @property = @project.accout(@accountprefix)
       end
       if @val[1] && @project.account(@val[1])
-        error('account_exists', "Account #{@val[1]} has already been defined.")
+        error('account_exists', "Account #{@val[1]} has already been defined.",
+              @property, @sourceFileInfo[1])
       end
       @property = Account.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       @scenarioIdx = 0
     })
@@ -73,7 +74,8 @@ EOT
       # In case we have a nested supplement, we need to prepend the parent ID.
       id = @property.fullId + '.' + id if @property && @property.is_a?(Account)
       if (account = @project.account(id)).nil?
-        error('unknown_account', "Unknown account #{id}")
+        error('unknown_account', "Unknown account #{id}", nil,
+              @sourceFileInfo[0])
       end
       account
     })
@@ -107,7 +109,7 @@ EOT
       level = @project.alertLevelIndex(@val[0])
       unless level
         error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
-              'green, yellow or red')
+              'green, yellow or red', nil, @sourceFileInfo[0])
       end
       level
     })
@@ -270,7 +272,7 @@ EOT
           addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
                                             interval))
           error('shift_assignment_overlap',
-                'Shifts may not overlap each other.')
+                'Shifts may not overlap each other.', nil, @sourceFileInfo[0])
         end
       end
     })
@@ -313,16 +315,18 @@ EOT
     pattern(%w( _balance !accountId !accountId ), lambda {
       if @val[1].parent
         error('cost_acct_no_top',
-              "The cost account #{@val[1].fullId} is not a top-level account.")
+              "The cost account #{@val[1].fullId} is not a top-level account.",
+              nil, @sourceFileInfo[1])
       end
       if @val[2].parent
         error('rev_acct_no_top',
               "The revenue account #{@val[2].fullId} is not a top-level " +
-              "account.")
+              "account.", nil, @sourceFileInfo[2])
       end
       if @val[1] == @val[2]
         error('cost_rev_same',
-              'The cost and revenue accounts may not be the same.')
+              'The cost and revenue accounts may not be the same.', nil,
+              @sourceFileInfo[1])
       end
       [ @val[1], @val[2] ]
     })
@@ -347,7 +351,8 @@ EOT
     pattern(%w( _overtime $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 2
         error('overtime_range',
-              "Overtime value #{@val[1]} out of range (0 - 2).", @property)
+              "Overtime value #{@val[1]} out of range (0 - 2).", @property,
+              @sourceFileInfo[1])
       end
       @booking.overtime = @val[1]
     })
@@ -368,7 +373,8 @@ EOT
     pattern(%w( _sloppy $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 2
         error('sloppy_range',
-              "Sloppyness value #{@val[1]} out of range (0 - 2).", @property)
+              "Sloppyness value #{@val[1]} out of range (0 - 2).", @property,
+              @sourceFileInfo[1])
       end
       @booking.sloppy = @val[1]
     })
@@ -422,7 +428,7 @@ EOT
         end
         chargeSet.complete
       rescue TjException
-        error('chargeset', $!.message)
+        error('chargeset', $!.message, @property, @sourceFileInfo[0])
       end
       masterAccounts = []
       @property['chargeset', @scenarioIdx].each do |set|
@@ -431,7 +437,7 @@ EOT
       if masterAccounts.include?(chargeSet.master)
         error('chargeset_master',
               "All charge sets for this task must have different top-level " +
-              "accounts.")
+              "accounts.", @property, @sourceFileInfo[0])
       end
       @property['chargeset', @scenarioIdx] =
         @property['chargeset', @scenarioIdx] + [ chargeSet ]
@@ -499,7 +505,8 @@ EOT
       col = @val[0]
       unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{3}/ =~ col
         error('bad_color',
-              "Color values must be specified as '#RGB' or '#RRGGBB' values")
+              "Color values must be specified as '#RGB' or '#RRGGBB' values",
+              nil, @sourceFileInfo[0])
       end
       col
     })
@@ -678,7 +685,8 @@ EOT
       if @val[0] % resolution != 0
         error('misaligned_date',
               "The date must be aligned to the timing resolution (" +
-              "#{resolution / 60} min) of the project.")
+              "#{resolution / 60} min) of the project.", nil,
+              @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -728,7 +736,8 @@ EOT
             BULLET1 BULLET2 BULLET3 BULLET4 NUMBER1 NUMBER2 NUMBER3 NUMBER4 )
       if @val[1] == "Some more details\n"
         error('ts_default_details',
-              "'Some more details' is not a valid value")
+              "'Some more details' is not a valid value", nil,
+              @sourceFileInfo[1])
       end
       @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
     })
@@ -956,7 +965,8 @@ EOT
     pattern(%w( $ID ), lambda {
       unless (?A..?Z) === @val[0][0]
         error('extend_id_cap',
-              "User defined attributes IDs must start with a capital letter")
+              "User defined attributes IDs must start with a capital letter",
+              nil, @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -1023,7 +1033,8 @@ EOT
   def rule_flag
     pattern(%w( $ID ), lambda {
       unless @project['flags'].include?(@val[0])
-        error('undecl_flag', "Undeclared flag '#{@val[0]}'")
+        error('undecl_flag', "Undeclared flag '#{@val[0]}'", nil,
+              @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -1294,7 +1305,7 @@ EOT
 
   def rule_includeFile
     pattern(%w( !includeFileName ), lambda {
-      @scanner.include(@val[0])
+      @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
 
@@ -1302,7 +1313,8 @@ EOT
     pattern(%w( $STRING ), lambda {
       unless @val[0][-4, 4] == '.tji'
         error('bad_include_suffix', "Included files must have a '.tji'" +
-                                    "extension: '#{@val[0]}'")
+                                    "extension: '#{@val[0]}'",
+              nil, @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -1317,7 +1329,7 @@ EOT
   def rule_includeProperties
     pattern(%w( !includeFileName !includeAttributes ), lambda {
       pushFileStack
-      @scanner.include(@val[0])
+      @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
 
@@ -1329,7 +1341,7 @@ EOT
         if mode == 0
           unless @val[0] < endSpec
             error('start_before_end', "The end date (#{endSpec}) must be " +
-                  "after the start date (#{@val[0]}).")
+                  "after the start date (#{@val[0]}).", nil, @sourceFileInfo[0])
           end
           Interval.new(@val[0], endSpec)
         else
@@ -1360,7 +1372,7 @@ EOT
       if mode == 0
         unless @val[0] < endSpec
           error('start_before_end', "The end date (#{endSpec}) must be after " +
-                "the start date (#{@val[0]}).")
+                "the start date (#{@val[0]}).", nil, @sourceFileInfo[0])
         end
         Interval.new(@val[0], endSpec)
       else
@@ -1390,7 +1402,8 @@ EOT
                       60 * 60 * 24 * 365 # years
                      ]
       if @val[0] == 0.0
-        error('zero_duration', "The interval duration may not be 0.")
+        error('zero_duration', "The interval duration may not be 0.", nil,
+              @sourceFileInfo[1])
       end
       duration = @val[0] * convFactors[@val[1]]
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
@@ -1459,7 +1472,7 @@ EOT
       level = @project.alertLevelIndex(@val[1])
       unless level
         error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
-              'green, yellow or red')
+              'green, yellow or red', nil, @sourceFileInfo[0])
       end
       @journalEntry.alertLevel = level
     })
@@ -1489,7 +1502,7 @@ EOT
   def rule_journalEntryHeader
     pattern(%w( _journalentry !valDate $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @val[1], @val[2],
-                                       @property, @scanner.sourceFileInfo)
+                                       @property, @sourceFileInfo[0])
     })
     arg(2, 'headline', <<'EOT'
 The headline of the journal entry. It will be interpreted as
@@ -1502,7 +1515,7 @@ EOT
       resource = @val[0]
       unless resource.leaf?
         error('leaf_resource_id_expected',
-              "#{resource.id} is not a leaf resource.")
+              "#{resource.id} is not a leaf resource.", nil, @sourceFileInfo[0])
       end
       resource
     })
@@ -1749,7 +1762,7 @@ EOT
       if @scanner.macroDefined?(@val[1])
         warning('marco_redefinition', "Redefining macro #{@val[1]}")
       end
-      @scanner.addMacro(Macro.new(@val[1], @val[2], @scanner.sourceFileInfo))
+      @scanner.addMacro(Macro.new(@val[1], @val[2], @sourceFileInfo[0]))
     })
     doc('macro', <<'EOT'
 Defines a text fragment that can later be inserted by using the specified ID.
@@ -1878,7 +1891,8 @@ EOT
     pattern(%w( _navigator $ID ), lambda {
       if @project['navigators'][@val[1]]
         error('navigator_exists',
-              "The navigator #{@val[1]} has already been defined.")
+              "The navigator #{@val[1]} has already been defined.", nil,
+              @sourceFileInfo[0])
       end
       @navigator = Navigator.new(@val[1], @project)
     })
@@ -1937,12 +1951,12 @@ EOT
       when :taskreport
         if (p1 = @project.task(@val[0])).nil?
           error('unknown_main_node',
-                "Unknown task ID #{@val[0]}")
+                "Unknown task ID #{@val[0]}", nil, @sourceFileInfo[0])
         end
         if @val[1]
           if (p2 = @project.resource(@val[1])).nil?
             error('unknown_sub_node',
-                  "Unknown resource ID #{@val[0]}")
+                  "Unknown resource ID #{@val[0]}", nil, @sourceFileInfo[0])
           end
           return [ p2, p1 ]
         end
@@ -1950,12 +1964,12 @@ EOT
       when :resourcereport
         if (p1 = @project.task(@val[0])).nil?
           error('unknown_main_node',
-                "Unknown task ID #{@val[0]}")
+                "Unknown task ID #{@val[0]}", nil, @sourceFileInfo[0])
         end
         if @val[1]
           if (p2 = @project.resource(@val[1])).nil?
             error('unknown_sub_node',
-                  "Unknown resource ID #{@val[0]}")
+                  "Unknown resource ID #{@val[0]}", nil, @sourceFileInfo[0])
           end
           return [ p2, p1 ]
         end
@@ -1992,12 +2006,13 @@ EOT
     pattern(%w( $ABSOLUTE_ID ), lambda {
       if @val[0].count('.') > 1
         error('operand_attribute',
-              'Attributes must be specified as <scenarioID>.<attribute>')
+              'Attributes must be specified as <scenarioID>.<attribute>', nil,
+              @sourceFileInfo[0])
       end
       scenario, attribute = @val[0].split('.')
       if (scenarioIdx = @project.scenarioIdx(scenario)).nil?
-        error('operand_unkn_scen',
-              "Unknown scenario ID #{scenario}")
+        error('operand_unkn_scen', "Unknown scenario ID #{scenario}", nil,
+              @sourceFileInfo[0])
       end
       LogicalAttribute.new(attribute, scenarioIdx)
     })
@@ -2007,7 +2022,8 @@ EOT
     pattern(%w( $ID !argumentList ), lambda {
       if @val[1].nil?
         unless @project['flags'].include?(@val[0])
-          error('operand_unkn_flag', "Undeclared flag '#{@val[0]}'")
+          error('operand_unkn_flag', "Undeclared flag '#{@val[0]}'",
+                nil, @sourceFileInfo[0])
         end
         LogicalFlag.new(@val[0])
       else
@@ -2243,9 +2259,9 @@ EOT
     pattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
       @scanner.addMacro(Macro.new('now', @val[1].to_s,
-                                  @scanner.sourceFileInfo))
+                                  @sourceFileInfo[0]))
       @scanner.addMacro(Macro.new('today', @val[1].to_s(@project['timeFormat']),
-                                  @scanner.sourceFileInfo))
+                                  @sourceFileInfo[0]))
     })
     doc('now', <<'EOT'
 Specify the date that TaskJuggler uses for calculation as current
@@ -2290,12 +2306,14 @@ EOT
       goodValues = [ 5, 10, 15, 20, 30, 60 ]
       unless goodValues.include?(@val[1])
         error('bad_timing_res',
-              "Timing resolution must be one of #{goodValues.join(', ')} min.")
+              "Timing resolution must be one of #{goodValues.join(', ')} min.",
+              nil, @sourceFileInfo[1])
       end
       if @val[1] > (Project.maxScheduleGranularity / 60)
         error('too_large_timing_res',
               'The maximum allowed timing resolution for the timezone is ' +
-              "#{Project.maxScheduleGranularity / 60} minutes.")
+              "#{Project.maxScheduleGranularity / 60} minutes.", nil,
+              @sourceFileInfo[1])
       end
       @project['scheduleGranularity'] = @val[1] * 60
     })
@@ -2463,11 +2481,13 @@ EOT
   end
 
   def rule_properties
-    pattern(%w( !propertiesBody ))
+    pattern(%w( !propertiesBody . ))
+    lastSyntaxToken(1)
   end
 
   def rule_propertiesBody
     repeatable
+    optional
 
     pattern(%w( !account ))
 
@@ -2591,10 +2611,9 @@ EOT
   end
 
   def rule_propertiesInclude
-    pattern(%w( _include !includeProperties !properties . ), lambda {
+    pattern(%w( _include !includeProperties !properties ), lambda {
       popFileStack
     })
-    lastSyntaxToken(1)
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
@@ -2615,7 +2634,8 @@ EOT
     pattern(%w( _purge $ID ), lambda {
       if (attributeDefinition = @property.attributeDefinition(@val[1])).nil?
         error('purge_unknown_id',
-              "#{@val[1]} is not a known attribute for this property")
+              "#{@val[1]} is not a known attribute for this property", nil,
+              @sourceFileInfo[1])
       end
       if attributeDefinition.scenarioSpecific
         attr = @property[@val[1], 0]
@@ -2624,7 +2644,8 @@ EOT
       end
       unless attr.is_a?(Array)
         error('purge_no_list',
-              "#{@val[1]} is not a list attribute. Only those can be purged.")
+              "#{@val[1]} is not a list attribute. Only those can be purged.",
+              nil, @sourceFileInfo[1])
       end
       if attributeDefinition.scenarioSpecific
         @property[@val[1], @scenarioIdx] = attributeDefinition.default.dup
@@ -3150,7 +3171,8 @@ EOT
     pattern(%w( _end !date ), lambda {
       if @val[1] < @property.get('start')
         error('report_end',
-              "End date must be before start date #{@property.get('start')}")
+              "End date must be before start date #{@property.get('start')}",
+              nil, @sourceFileInfo[1])
       end
       @property.set('end', @val[1])
     })
@@ -3171,7 +3193,8 @@ EOT
       end
       # In case we have a nested supplement, we need to prepend the parent ID.
       if (report = @project.report(id)).nil?
-        error('report_id_expected', "#{id} is not a defined report.")
+        error('report_id_expected', "#{id} is not a defined report.", nil,
+              @sourceFileInfo[0])
       end
       report
     })
@@ -3199,7 +3222,8 @@ EOT
     pattern(%w( _start !date ), lambda {
       if @val[1] > @property.get('end')
         error('report_start',
-              "Start date must be before end date #{@property.get('end')}")
+              "Start date must be before end date #{@property.get('end')}",
+              nil, @sourceFileInfo[1])
       end
       @property.set('start', @val[1])
     })
@@ -3222,11 +3246,12 @@ EOT
       if @val[1]
         id = (@property ? @property.fullId + '.' : '') + @val[1]
         if @project.report(id)
-          error('report_exists', "report #{id} has already been defined.")
+          error('report_exists', "report #{id} has already been defined.",
+                @property, @sourceFileInfo[1])
         end
       end
       @property = Report.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       case @val[0]
       when 'taskreport'
@@ -3407,7 +3432,7 @@ EOT
     pattern(%w( !taskId !valIntervals ), lambda {
       checkBooking(@val[0], @property)
       @booking = Booking.new(@property, @val[0], @val[1])
-      @booking.sourceFileInfo = @scanner.sourceFileInfo
+      @booking.sourceFileInfo = @sourceFileInfo[0]
       @booking
     })
     arg(0, 'id', 'Absolute ID of a defined task')
@@ -3417,7 +3442,8 @@ EOT
     pattern(%w( $ID ), lambda {
       id = (@resourceprefix.empty? ? '' : @resourceprefix + '.') + @val[0]
       if (resource = @project.resource(id)).nil?
-        error('resource_id_expected', "#{id} is not a defined resource.")
+        error('resource_id_expected', "#{id} is not a defined resource.",
+              nil, @sourceFileInfo[0])
       end
       resource
     })
@@ -3430,10 +3456,12 @@ EOT
         @property = @project.resource(@resourceprefix)
       end
       if @val[1] && @project.resource(@val[1])
-        error('resource_exists', "Resource #{@val[1]} has already been defined.")
+        error('resource_exists',
+              "Resource #{@val[1]} has already been defined.", @property,
+              @sourceFileInfo[1])
       end
       @property = Resource.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       @scenarioIdx = 0
     })
@@ -3659,7 +3687,9 @@ EOT
       # first.
       @project.scenarios.clearProperties if @property.nil?
       if @project.scenario(@val[1])
-        error('scenario_exists', "Scenario #{@val[1]} has already been defined.")
+        error('scenario_exists',
+              "Scenario #{@val[1]} has already been defined.", nil,
+              @sourceFileInfo[1])
       end
       @property = Scenario.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
@@ -3671,7 +3701,8 @@ EOT
   def rule_scenarioId
     pattern(%w( $ID ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}")
+        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}", nil,
+              @sourceFileInfo[0])
       end
       @scenarioIdx
     })
@@ -3681,7 +3712,8 @@ EOT
   def rule_scenarioIdCol
     pattern(%w( $ID_WITH_COLON ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_id', "Unknown scenario: @val[0]")
+        error('unknown_scenario_id', "Unknown scenario: @val[0]", nil,
+              @sourceFileInfo[0])
       end
     })
   end
@@ -3693,7 +3725,8 @@ EOT
   def rule_scenarioIdx
     pattern(%w( $ID ), lambda {
       if (scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_idx', "Unknown scenario #{@val[0]}")
+        error('unknown_scenario_idx', "Unknown scenario #{@val[0]}", nil,
+              @sourceFileInfo[0])
       end
       scenarioIdx
     })
@@ -3738,7 +3771,8 @@ EOT
           addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
                                             interval))
           error('shift_assignment_overlap',
-                'Shifts may not overlap each other.')
+                'Shifts may not overlap each other.', @property,
+                @sourceFileInfo[0])
         end
       end
       # Set same value again to set the 'provided' state for the attribute.
@@ -3768,10 +3802,11 @@ EOT
   def rule_shiftHeader
     pattern(%w( _shift !optionalID $STRING ), lambda {
       if @val[1] && @project.shift(@val[1])
-        error('shift_exists', "Shift #{@val[1]} has already been defined.")
+        error('shift_exists', "Shift #{@val[1]} has already been defined.",
+              nil, @sourceFileInfo[1])
       end
       @property = Shift.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       @scenarioIdx = 0
     })
@@ -3781,7 +3816,8 @@ EOT
   def rule_shiftId
     pattern(%w( $ID ), lambda {
       if (shift = @project.shift(@val[0])).nil?
-        error('shift_id_expected', "#{@val[0]} is not a defined shift.")
+        error('shift_id_expected', "#{@val[0]} is not a defined shift.", nil,
+              @sourceFileInfo[0])
       end
       shift
     })
@@ -3859,22 +3895,25 @@ EOT
         # <scenario>.<attribute>.<up|down>
         if (scenario = @project.scenarioIdx(args[0])).nil?
           error('sort_unknown_scen',
-                "Unknown scenario #{args[0]} in sorting criterium")
+                "Unknown scenario #{args[0]} in sorting criterium", nil,
+                @sourceFileInfo[0])
         end
         attribute = args[1]
         if args[2] != 'up' && args[2] != 'down'
-          error('sort_direction', "Sorting direction must be 'up' or 'down'")
+          error('sort_direction', "Sorting direction must be 'up' or 'down'",
+                nil, @sourceFileInfo[0])
         end
         direction = args[2] == 'up'
       else
         error('sorting_crit_exptd1',
               "Sorting criterium expected (e.g. tree, start.up or " +
-              "plan.end.down).")
+              "plan.end.down).", nil, @sourceFileInfo[0])
       end
       if attribute == 'wbs'
         error('sorting_wbs',
               "Sorting by wbs is not supported. Please use 'tree' " +
-              '(without appended .up or .down) instead.')
+              '(without appended .up or .down) instead.', nil,
+              @sourceFileInfo[0])
       end
       [ attribute, direction, scenario ]
     })
@@ -3919,7 +3958,7 @@ EOT
       if @val[0] != 'tree'
         error('sorting_crit_exptd2',
               "Sorting criterium expected (e.g. tree, start.up or " +
-              "plan.end.down).")
+              "plan.end.down).", nil, @sourceFileInfo[0])
       end
       [ 'tree', true, -1 ]
     })
@@ -3932,7 +3971,7 @@ EOT
         if @project.reports[fileName]
           error('report_redefinition',
                 "A report with the name '#{fileName}' has already been " +
-                "defined.")
+                "defined.", nil, @sourceFileInfo[2])
         end
       else
         fileName = "statusSheet#{@project.reports.length + 1}"
@@ -3990,7 +4029,7 @@ EOT
     pattern(%w( _status !alertLevel $STRING ), lambda {
       @journalEntry = JournalEntry.new(@project['journal'], @sheetEnd,
                                        @val[2], @property,
-                                       @scanner.sourceFileInfo)
+                                       @sourceFileInfo[0])
       @journalEntry.alertLevel = @val[1]
       @journalEntry.author = @sheetAuthor
 
@@ -4107,11 +4146,13 @@ EOT
       if @val[1].length > 480
         error('ts_summary_too_long',
               "The summary text must be 480 characters long or shorter. " +
-              "This text has #{@val[1].length} characters.")
+              "This text has #{@val[1].length} characters.",
+              nil, @sourceFileInfo[1])
       end
       if @val[1] == "A summary text\n"
           error('ts_default_summary',
-                "'A summary text' is not a valid summary")
+                "'A summary text' is not a valid summary", nil,
+                @sourceFileInfo[1])
       end
       rtTokenSetIntro =
         %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
@@ -4245,7 +4286,7 @@ EOT
     pattern(%w( !resourceId !valIntervals ), lambda {
       checkBooking(@property, @val[0])
       @booking = Booking.new(@val[0], @property, @val[1])
-      @booking.sourceFileInfo = @scanner.sourceFileInfo
+      @booking.sourceFileInfo = @sourceFileInfo[0]
       @booking
     })
   end
@@ -4330,7 +4371,7 @@ EOT
       end
       error('too_many_bangs',
             "Too many '!' for relative task in this context.",
-            @property) if id[0] == ?!
+            @property, @sourceFileInfo[0]) if id[0] == ?!
       if task
         task.fullId + '.' + id
       else
@@ -4360,12 +4401,13 @@ EOT
       if @val[1]
         id = (@property ? @property.fullId + '.' : '') + @val[1]
         if @project.task(id)
-          error('task_exists', "Task #{id} has already been defined.")
+          error('task_exists', "Task #{id} has already been defined.", nil,
+                @sourceFileInfo[1])
         end
       end
       @property = Task.new(@project, @val[1], @val[2], @property)
       @property['projectid', 0] = @projectId
-      @property.sourceFileInfo = @scanner.sourceFileInfo
+      @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       @scenarioIdx = 0
     })
@@ -4382,7 +4424,7 @@ EOT
         id = @taskprefix + '.' + id unless @taskprefix.empty?
       end
       if (task = @project.task(id)).nil?
-        error('unknown_task', "Unknown task #{id}")
+        error('unknown_task', "Unknown task #{id}", nil, @sourceFileInfo[0])
       end
       task
     })
@@ -4447,7 +4489,8 @@ EOT
 
       if @property['chargeset', @scenarioIdx].empty?
         error('task_without_chargeset',
-              'The task does not have a chargeset defined.')
+              'The task does not have a chargeset defined.', @property,
+              @sourceFileInfo[0])
       end
       case @val[2]
       when 'onstart'
@@ -4484,7 +4527,7 @@ EOT
     pattern(%w( _complete !number), lambda {
       if @val[1] < 0.0 || @val[1] > 100.0
         error('task_complete', "Complete value must be between 0 and 100",
-              @property)
+              @property, @sourceFileInfo[1])
       end
       @property['complete', @scenarioIdx] = @val[1]
     })
@@ -4534,7 +4577,8 @@ EOT
     pattern(%w( _effort !workingDuration ), lambda {
       checkContainer('effort')
       if @val[1] <= 0.0
-        error('effort_zero', "Effort value must be larger than 0", @property)
+        error('effort_zero', "Effort value must be larger than 0", @property,
+              @sourceFileInfo[1])
       end
       @property['effort', @scenarioIdx] = @val[1]
     })
@@ -4711,7 +4755,7 @@ EOT
     pattern(%w( _priority $INTEGER ), lambda {
       if @val[1] < 0 || @val[1] > 1000
         error('task_priority', "Priority must have a value between 0 and 1000",
-              @property)
+              @property, @sourceFileInfo[1])
       end
       @property['priority', @scenarioIdx] = @val[1]
     })
@@ -4736,7 +4780,8 @@ EOT
 
     pattern(%w( _projectid $ID ), lambda {
       unless @project['projectids'].include?(@val[1])
-        error('unknown_projectid', "Unknown project ID #{@val[1]}")
+        error('unknown_projectid', "Unknown project ID #{@val[1]}", nil,
+              @sourceFileInfo[1])
       end
       @property['projectid', @scenarioIdx] = @val[1]
     })
@@ -4766,7 +4811,8 @@ EOT
            @property['end', @scenarioIdx].nil?))
         error('not_scheduled',
               "Task #{@property.fullId} is marked as scheduled but does not " +
-              'have a fixed start and end date.')
+              'have a fixed start and end date.', @property,
+              @sourceFileInfo[0])
       end
       @property['scheduled', @scenarioIdx] = true
     })
@@ -5004,7 +5050,8 @@ EOT
     pattern([ '$TIME', '_ - ', '$TIME' ], lambda {
       if @val[0] >= @val[2]
         error('time_interval',
-              "End time of interval must be larger than start time")
+              "End time of interval must be larger than start time", nil,
+              @sourceFileInfo[0])
       end
       [ @val[0], @val[2] ]
     })
@@ -5109,12 +5156,13 @@ EOT
       @property = nil
       unless @sheetAuthor.leaf?
         error('ts_group_author',
-              'A resource group cannot file a time sheet')
+              'A resource group cannot file a time sheet', nil,
+              @sourceFileInfo[1])
       end
       # Currently time sheets are hardcoded for scenario 0.
       @timeSheet = TimeSheet.new(@sheetAuthor, @val[2],
                                  @project['trackingScenarioIdx'])
-      @timeSheet.sourceFileInfo = @scanner.sourceFileInfo
+      @timeSheet.sourceFileInfo = @sourceFileInfo[0]
       @project.timeSheets << @timeSheet
     })
   end
@@ -5168,7 +5216,7 @@ EOT
     pattern(%w( _newtask !taskIdUnverifd $STRING ), lambda {
       @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @val[1])
       @timeSheetRecord.name = @val[2]
-      @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
+      @timeSheetRecord.sourceFileInfo = @sourceFileInfo[0]
     })
     arg(1, 'task', 'ID of the new task')
   end
@@ -5224,17 +5272,18 @@ EOT
       if @val[2].length > 120
         error('ts_headline_too_long',
               "The headline must be 120 or less characters long. This one " +
-              "has #{@val[2].length} characters.")
+              "has #{@val[2].length} characters.", nil, @sourceFileInfo[2])
       end
       if @val[2] == 'Your headline here!'
         error('ts_no_headline',
-              "'Your headline here!' is not a valid headline")
+              "'Your headline here!' is not a valid headline", nil,
+              @sourceFileInfo[2])
       end
       @journalEntry = JournalEntry.new(@project['journal'],
                                        @timeSheet.interval.end,
                                        @val[2],
                                        @property || @timeSheet.resource,
-                                       @scanner.sourceFileInfo)
+                                       @sourceFileInfo[0])
       @journalEntry.alertLevel = @val[1]
       @journalEntry.timeSheetRecord = @timeSheetRecord
       @journalEntry.author = @sheetAuthor
@@ -5264,7 +5313,7 @@ EOT
       if @val[1] < @timeSheet.interval.start
         error('ts_end_too_early',
               "The expected task end date must be after the start date of " +
-              "this time sheet report.")
+              "this time sheet report.", nil, @sourceFileInfo[1])
       end
       @timeSheetRecord.expectedEnd = @val[1]
     })
@@ -5279,7 +5328,8 @@ EOT
       priority = @val[1]
       if priority < 1 || priority > 1000
         error('ts_bad_priority',
-              "Priority value #{priority} must be between 1 and 1000.")
+              "Priority value #{priority} must be between 1 and 1000.", nil,
+              @sourceFileInfo[1])
       end
       @timeSheetRecord.priority = priority
     })
@@ -5342,14 +5392,15 @@ EOT
       @property = @val[1]
       unless @property.leaf?
         error('ts_task_not_leaf',
-              'You cannot specify a task that has sub tasks here.')
+              'You cannot specify a task that has sub tasks here.',
+              @property, @sourceFileInfo[1])
       end
       scenarioIdx = @timeSheet.scenarioIdx
       taskStart = @property['start', scenarioIdx] || @project['start']
       taskEnd = @property['end', scenarioIdx] || @project['end']
 
       @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @property)
-      @timeSheetRecord.sourceFileInfo = @scanner.sourceFileInfo
+      @timeSheetRecord.sourceFileInfo = @sourceFileInfo[0]
     })
     arg(1, 'task', 'ID of an already existing task')
   end
@@ -5364,7 +5415,8 @@ EOT
     pattern(%w( !date ), lambda {
       if @val[0] < @project['start'] || @val[0] > @project['end']
         error('date_in_range', "Date must be within the project time frame " +
-              "#{@project['start']} +  - #{@project['end']}")
+              "#{@project['start']} +  - #{@project['end']}", nil,
+              @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -5373,7 +5425,8 @@ EOT
   def rule_validTimeZone
     pattern(%w( $STRING ), lambda {
       unless TjTime.checkTimeZone(@val[0])
-        error('bad_time_zone', "#{@val[0]} is not a known time zone")
+        error('bad_time_zone', "#{@val[0]} is not a known time zone", nil,
+              @sourceFileInfo[0])
       end
       @val[0]
     })
@@ -5387,7 +5440,8 @@ EOT
         if mode == 0
           unless @val[0] < endSpec
             error('start_before_end', "The end date (#{endSpec}) must be " +
-                  "after the start date (#{@val[0]}).")
+                  "after the start date (#{@val[0]}).", nil,
+                  @sourceFileInfo[1])
           end
           iv = Interval.new(@val[0], endSpec)
         else
@@ -5423,7 +5477,7 @@ EOT
       if mode == 0
         unless @val[0] < endSpec
           error('start_before_end', "The end date (#{endSpec}) must be after " +
-                "the start date (#{@val[0]}).")
+                "the start date (#{@val[0]}).", nil, @sourceFileInfo[1])
         end
         iv = Interval.new(@val[0], endSpec)
       else
@@ -5538,7 +5592,8 @@ EOT
         # 1.0.
         if @val[0] < 0.0 || @val[0] > 100.0
           error('illegal_percentage',
-                "Percentage values must be between 0 and 100%.")
+                "Percentage values must be between 0 and 100%.", nil,
+                @sourceFileInfo[1])
         end
         @val[0] / 100.0
       end

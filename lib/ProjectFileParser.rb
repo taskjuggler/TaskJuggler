@@ -129,7 +129,8 @@ class TaskJuggler
       if @property.container?
         error('container_attribute',
               "The attribute #{attribute} may not be used for this property " +
-              'after sub properties have been added.')
+              'after sub properties have been added.', @property,
+              @sourceFileInfo[0])
       end
     end
 
@@ -152,13 +153,16 @@ class TaskJuggler
     # Convenience function to check the integrity of a booking statement.
     def checkBooking(task, resource)
       unless task.leaf?
-        error('booking_no_leaf', "#{task.fullId} is not a leaf task")
+        error('booking_no_leaf', "#{task.fullId} is not a leaf task",
+              task, @sourceFileInfo[0])
       end
       if task['milestone', @scenarioIdx]
-        error('booking_milestone', "You cannot add bookings to a milestone")
+        error('booking_milestone', "You cannot add bookings to a milestone",
+              task, @sourceFileInfo[0])
       end
       unless resource.leaf?
-        error('booking_group', "You cannot book a group resource")
+        error('booking_group', "You cannot book a group resource",
+              task, @sourceFileInfo[0])
       end
     end
 

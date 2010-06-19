@@ -52,18 +52,18 @@ EOT
       ['MACRO', 'A Macro', 6],
       ['TIME', ((15 * 60) + 23) * 60, 7],
       ['STRING', 'A string', 7],
-      ['.', '<END>', 0 ]
+      ['.', '<END>', 7 ]
     ]
 
     ref.each do |type, val, line|
       token = s.nextToken
-      assert_equal([ type, val ], token,
+      assert_equal([ type, val ], token[0..1],
                    "1: Bad token #{token[1]} instead of #{val}")
       assert_equal(line, s.lineNo,
                    "1: Bad line number #{s.lineNo} instead of #{line} for #{val}")
       s.returnToken(token)
       token = s.nextToken
-      assert_equal([ type, val ], token,
+      assert_equal([ type, val ], token[0..1],
                    "2: Bad token #{token[1]} instead of #{val}")
       assert_equal(line, s.lineNo,
                    "2: Bad line number #{s.lineNo} instead of #{line} for #{val}")
@@ -81,10 +81,10 @@ EOT
     s.open(true)
     s.addMacro(TaskJuggler::Macro.new('adj', 'great', nil))
 
-    assert_equal(['ID', 'This'], s.nextToken)
-    assert_equal(['ID', 'great'], s.nextToken)
-    assert_equal(['ID', 'software'], s.nextToken)
-    assert_equal(['.', '<END>'], s.nextToken)
+    assert_equal(['ID', 'This'], s.nextToken[0..1])
+    assert_equal(['ID', 'great'], s.nextToken[0..1])
+    assert_equal(['ID', 'software'], s.nextToken[0..1])
+    assert_equal(['.', '<END>'], s.nextToken[0..1])
 
     s.close
 
