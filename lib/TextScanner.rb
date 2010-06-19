@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'stringio'
+
 require 'UTF8String'
 require 'TjTime'
 require 'TjException'
@@ -32,23 +34,72 @@ class TaskJuggler
     # completely processed.
     class StreamHandle
 
-      attr_accessor :line
-      attr_reader :fileName, :columnNo
+      attr_reader :fileName
 
       def initialize
-        @lineNo = 1
-        @columnNo = 1
-        @line = ""
-        @charBuffer = []
         @fileName = nil
+        @stream = nil
+        @charBuffer = []
+        @line = nil
+        @pos = @endPos = 0
+        @bytes = 0
       end
 
-      # Return the number of the currently processed line. If we have
-      # pushed-back characters in the @charBuffer, we have to substract the
-      # contained newlines from the @lineNo value.
-      def lineNo
-        @lineNo - @charBuffer.count("\n")
+      def close
+        @stream = nil
       end
+
+      # Get the next character from the input file. Depending on the Ruby
+      # version, the characters are returned as String (1.9) or Fixnum (1.8).
+      # If the end of file has been reached, the result is ASCII EOT (Fixnum
+      # 4). Previously read and returned (via ungetc) EOFs are encoded as nil.
+      def getc19
+        return @charBuffer.pop unless @charBuffer.empty?
+
+        Log.activity if @bytes & 0x3FFF == 0
+        @bytes += 1
+
+        # We read the file line by line with gets(). If we don't have a line
+        # yet or we've reached the end of a line, we get the next one.
+        if @line.nil? || @pos >= @endPos
+          # @pos marks the current read position in the line.
+          @pos = 0
+          if (@line = @stream.gets)
+            # Check for DOS or Mac end of line signatures.
+            if @line[-1] == ?\r
+              # Mac: Convert CR into LF
+              @line[-1] = ?\n
+            elsif @line[-2] == ?\r
+              # DOS: Convert CR+LF into LF
+              @line = @line.chomp + "\n"
+            end
+
+            # Store the end position in the line.
+            @endPos = @line.length
+          else
+            @endPos = 0
+          end
+        end
+
+        # We've reached the end of the file.
+        return 4 if @line.nil?
+
+        c = @line[@pos]
+        @pos += 1
+
+        c
+      end
+
+      def getc18
+        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
+      end
+
+      if RUBY_VERSION < '1.9.0'
+        alias getc getc18
+      else
+        alias getc getc19
+      end
+
 
       # Push a char as String or Fixnum into the @charBuffer.
       def ungetc(c)
@@ -57,6 +108,29 @@ class TaskJuggler
 
       def dirname
         @fileName ? File.dirname(@fileName) : ''
+      end
+
+      # Return the number of the currently processed line.
+      def lineNo
+        # The IO object counts the lines for us by counting the gets() calls.
+        currentLine = @stream ? @stream.lineno : 0
+        # If we've just read the LF, we have to add 1.
+        currentLine += 1 if @line && @line[@pos - 1] == ?\n
+        # If we have pushed-back characters in the @charBuffer, we have to
+        # substract the contained newlines from the @stream.lineno value.
+        currentLine - @charBuffer.count("\n")
+      end
+
+      # Return the position in the current line.
+      def columnNo
+        @pos
+      end
+
+      # Return the already processed part of the current line.
+      def line
+        return '' unless @line
+
+        @line[0..@pos - 1]
       end
 
     end
@@ -69,59 +143,14 @@ class TaskJuggler
       def initialize(fileName)
         super()
         @fileName = fileName.dup.untaint
-        @file = fileName == '.' ? $stdin : File.new(@fileName, 'r')
-        @bytes = 0
+        @stream = fileName == '.' ? $stdin : File.new(@fileName, 'r')
         Log << "Parsing file #{@fileName} ..."
         Log.startProgressMeter("Reading file #{fileName}")
       end
 
       def close
-        @file.close unless @file == $stdin
-      end
-
-      # Get the next character from the input file. Depending on the Ruby
-      # version, the characters are returned as String (1.9) or Fixnum (1.8).
-      # If the end of file has been reached, the result is ASCII EOT (Fixnum
-      # 4). Previously read and returned (via ungetc) EOFs are encoded as nil.
-      def getc19
-        return @charBuffer.pop unless @charBuffer.empty?
-
-        Log.activity if @bytes & 0x3FFF == 0
-
-        begin
-          # This function converts CR+LF or CR into LF on the fly.
-          if (c1 = @file.getc) == ?\r
-            @bytes += 1
-            @lineNo += 1
-            # CR or CR+LF linebreaks
-            if (c2 = @file.getc) == ?\n
-              @bytes += 1
-              # Ok, CR+LF
-              return c2.nil? ? 4 : c2
-            else
-              # Just CR
-              @file.ungetc(c2)
-              return ?\n
-            end
-          else
-            # This is for LF linebreaks and all other characters
-            @bytes += 1
-            @lineNo += 1 if c1 == ?\n
-            return c1.nil? ? 4 : c1
-          end
-        rescue EOFError
-          return 4  # ASCII End of Text
-        end
-      end
-
-      def getc18
-        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
-      end
-
-      if RUBY_VERSION < '1.9.0'
-        alias getc getc18
-      else
-        alias getc getc19
+        @stream.close unless @stream == $stdin
+        super
       end
 
     end
@@ -131,45 +160,10 @@ class TaskJuggler
 
       def initialize(buffer)
         super()
-        @buffer = buffer
-        @length = @buffer.length_utf8
-        @pos = 0
-        Log << "Parsing buffer #{@buffer[0, 20]} ..."
+        @stream = StringIO.new(buffer)
+        Log << "Parsing buffer #{buffer[0, 20]} ..."
       end
 
-      def close
-        @buffer = nil
-      end
-
-      def getc18
-        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
-      end
-
-      def getc19
-        return @charBuffer.pop unless @charBuffer.empty?
-
-        return 4 if @pos >= @length # ASCII End of Text
-
-        # This function converts CR+LF or CR into LF on the fly.
-        if (c = @buffer[@pos]) == ?\r
-          # CR or CR+LF
-          @pos += 1 if @buffer[@pos + 1] == ?\n
-          c = ?\n
-        end
-        @pos += 1
-        @lineNo += 1 if c == ?\n
-        c
-      end
-
-      if RUBY_VERSION < '1.9.0'
-        alias getc getc18
-      else
-        alias getc getc19
-      end
-
-      def fileName
-        ''
-      end
     end
 
     # Create a new instance of TextScanner. _masterFile_ must be a String that
@@ -397,7 +391,7 @@ class TaskJuggler
       text.reverse.each_utf8_char do |c|
         @cf.ungetc(c)
       end
-      @cf.line = ''
+      #@cf.line = ''
     end
 
     # Call this function to report any errors related to the parsed input.
@@ -506,10 +500,10 @@ class TaskJuggler
         return nil
       end
 
-      unless c.nil?
-        @cf.line = "" if @cf.line[-1] == ?\n
-        @cf.line << c
-      end
+      #unless c.nil?
+      #  @cf.line = "" if @cf.line[-1] == ?\n
+      #  @cf.line << c
+      #end
       c
     end
 
@@ -518,7 +512,7 @@ class TaskJuggler
       # Ignore any push backs after top-level file EOF has been reached.
       return if @cf.nil?
 
-      @cf.line.chop! if c
+      #@cf.line.chop! if c
       @cf.ungetc(c)
     end
 
