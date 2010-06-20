@@ -161,7 +161,7 @@ class TaskJuggler
       @@expectedTokens = []
       updateParserTables
       begin
-        result = parseRule(@rules[ruleName])
+        result = parseRuleR(@rules[ruleName])
       rescue TjException
         # error('parse_error', $!.message)
         return nil
@@ -292,8 +292,10 @@ class TaskJuggler
     # This function processes the input starting with the syntax description of
     # _rule_. It recursively calls this function whenever the syntax description
     # contains the reference to another rule.
-    def parseRule(rule)
-      Log.enter('parseRule', "Parsing with rule #{rule.name}")
+    # This recursive version has cleaner code and is about 8% faster than
+    # parseRuleNR.
+    def parseRuleR(rule)
+      #Log.enter('parseRuleR', "Parsing with rule #{rule.name}")
       result = rule.repeatable ? TextParserResultArray.new : nil
       # Rules can be marked 'repeatable'. This flag will be set to true after
       # the first iteration has been completed.
@@ -303,52 +305,9 @@ class TaskJuggler
         # which pattern of the rule needs to be processed.
         token = getNextToken
 
-        # The scanner cannot differentiate between keywords and identifiers. So
-        # whenever an identifier is returned we have to see if we have a
-        # matching keyword first. If none is found, then look for normal
-        # identifiers.
-        if token[0] == 'ID'
-          if (patIdx = rule.matchingPatternIndex('_' + token[1])).nil?
-            patIdx = rule.matchingPatternIndex("$ID")
-          end
-        elsif token[0] == 'LITERAL'
-          patIdx = rule.matchingPatternIndex('_' + token[1])
-        elsif token[0] == false
-          patIdx = rule.matchingPatternIndex('.')
-        else
-          patIdx = rule.matchingPatternIndex('$' + token[0])
-        end
-
-        # If no matching pattern is found for the token we have to check if
-        # the rule is optional or we are in repeat mode. If this is the case,
-        # return the token back to the scanner. Otherwise, we have found a
-        # token we cannot handle at this point.
-        if patIdx.nil?
-          # Append the list of expected tokens to the @@expectedToken array.
-          # This may be used in a later rule to provide more details when an
-          # error occured.
-          rule.transitions.each do |transition|
-            keys = transition.keys
-            keys.collect! { |key| key[1..-1] }
-            @@expectedTokens += keys
-            @@expectedTokens.sort!
-          end
-
-          unless rule.optional?(@rules) || repeatMode
-            error('unexpctd_token',
-                  (token[0] != false ?
-                   "Unexpected token '#{token[1]}' of type '#{token[0]}'. " :
-                   "Unexpected end of file in #{@scanner.fileName}. ") +
-                  (@@expectedTokens.length > 1 ?
-                   "Expecting one of #{@@expectedTokens.join(', ')}" :
-                   "Expecting #{@@expectedTokens[0]}"))
-          end
-          returnToken(token)
-          Log.exit('parseRule', "Finished rule #{rule.name}")
-          return result
-        end
-
-        pattern = rule.pattern(patIdx)
+        return result unless (pattern = findPattern(rule, token, repeatMode))
+        # The @stack will store the resulting value of each element in the
+        # pattern.
         @stack << TextParser::StackElement.new(rule, pattern.function)
 
         pattern.each do |element|
@@ -365,7 +324,7 @@ class TaskJuggler
             else
               sfi = nil
             end
-            @stack.last.store(parseRule(@rules[elToken]), sfi)
+            @stack.last.store(parseRuleR(@rules[elToken]), sfi)
             #Log << "Resuming rule #{rule.name}"
           else
             # In case the element is a keyword or variable we have to get a new
@@ -374,36 +333,8 @@ class TaskJuggler
               token = getNextToken
             end
 
-            if elType == ?_
-              # If the element requires a keyword the token must match this
-              # keyword.
-              if elToken != token[1]
-                text = "'#{elToken}' expected but found " +
-                       "'#{token[1]}' (#{token[0]})."
-                unless @@expectedTokens.empty?
-                  text = "#{@@expectedTokens.join(', ')} or " + text
-                end
-                error('spec_keywork_expctd', text)
-              end
-              @stack.last.store(elToken, token[2])
-            elsif elType == ?.
-              if token[0..1] != [ '.', '<END>' ]
-                error('end_expected', 'End expected but found ' +
-                      "'#{token[1]}' (#{token[0]}).")
-              end
-            else
-              # The token must match the expected variable type.
-              if token[0] != elToken
-                text = "'#{elToken}' expected but found " +
-                       "'#{token[1]}' (#{token[0]})."
-                unless @@expectedTokens.empty?
-                  text = "#{@@expectedTokens.join(', ')} or " + text
-                end
-                error('spec_token_expctd', text)
-              end
-              # If the element is a variable store the value of the token.
-              @stack.last.store(token[1], token[2])
-            end
+            processNormalElements(elType, elToken, token)
+
             # The token has been consumed. Reset the variable.
             token = nil
             @@expectedTokens = []
@@ -432,7 +363,152 @@ class TaskJuggler
         repeatMode = true
       end
 
-      Log.exit('parseRule', "Finished rule #{rule.name}")
+      #Log.exit('parseRuleR', "Finished rule #{rule.name}")
+      return result
+    end
+
+    # This function processes the input starting with the syntax description
+    # of _rule_. It's implemented as an unrolled recursion.  It recursively
+    # iterates over the rule tree as controlled by the input file.
+    # This version is not limited by the size of the system stack. So far, I'm
+    # not aware of any project that is too large for the system stack. Since
+    # the recursive version parseRuleR is about 8% faster and has cleaner
+    # code, we use that by default.
+    def parseRuleNR(rule)
+      elementIdx = 0
+      recursionResult = nil
+      # These flags are used to managed the control flow to and from the
+      # recursion point.
+      recur = resume = false
+      # The stack that holds the context for the recursion levels. It's either
+      # just a rule to start a new recursion or an Array of state variables.
+      recursionStack = [ rule ]
+      begin
+        # Pop the top entry from the recursion stack.
+        se = recursionStack.pop
+        if se.is_a?(Array)
+          # We have essentially finished a recursion level and need to get
+          # back to the place where we started the recursion. First, we need
+          # to restore the state again.
+          rule, pattern, elementIdx, result, repeatMode, sfi = se
+          #Log << "Recursion loop started in resume mode for rule #{rule.name}"
+          # Now jump to the recursion point without doing anything else.
+          resume = true
+        else
+          # Start a new recursion level. The rule tells us how to interpret
+          # the input text.
+          rule = se
+          #Log.enter('parseRuleNR', "Parsing with rule #{rule.name}")
+          resume = false
+        end
+
+        unless resume
+          result = rule.repeatable ? TextParserResultArray.new : nil
+          # Rules can be marked 'repeatable'. This flag will be set to true
+          # after the first iteration has been completed.
+          repeatMode = false
+        end
+
+        loop do
+          unless resume
+            # At the beginning of a rule we need a token from the input to
+            # determine which pattern of the rule needs to be processed.
+            token = getNextToken
+
+            break unless (pattern = findPattern(rule, token, repeatMode))
+            # The @stack will store the resulting value of each element in the
+            # pattern.
+            @stack << TextParser::StackElement.new(rule, pattern.function)
+
+            # Once we've found the right pattern, we need to process each
+            # element.
+            elementIdx = 0
+          end
+
+          while elementIdx < pattern.length
+            element = pattern[elementIdx]
+            # Separate the type and token text for pattern element.
+            elType = element[0]
+            elToken = element[1..-1]
+            if elType == ?!
+              unless resume
+                # The element is a reference to another rule. Return the token
+                # if we still have one and continue with the referenced rule.
+                if token
+                  sfi = token[2]
+                  returnToken(token)
+                  token = nil
+                else
+                  sfi = nil
+                end
+                # This is where the recursion would happen. Instead, we push
+                # the state variables and then the next rule onto the
+                # recursion stack.
+                recursionStack.push([ rule, pattern, elementIdx, result,
+                                      repeatMode, sfi ])
+                recursionStack.push(@rules[elToken])
+                # Now terminate all but the outer loops without doing anything
+                # else.
+                recur = true
+                break
+              else
+                # We're back right after where the recursion started. Store
+                # the result and turn resume mode off again.
+                @stack.last.store(recursionResult, sfi)
+                resume = false
+              end
+            else
+              # In case the element is a keyword or variable we have to get a
+              # new token if we don't have one anymore.
+              token = getNextToken unless token
+
+              processNormalElements(elType, elToken, token)
+
+              # The token has been consumed. Reset the variable.
+              token = nil
+              @@expectedTokens = []
+            end
+            elementIdx += 1
+          end # of pattern while loop
+
+          # Skip the rest of the loop in recur mode.
+          break if recur
+
+          elementIdx = 0
+
+          # Once the complete pattern has been processed we call the
+          # processing function for this pattern to operate on the value
+          # array. Then pop the entry for this rule from the stack. The
+          # called function will use @val and @sourceFileInfo to retrieve
+          # data from the parser.
+          @val = @stack.last.val
+          @sourceFileInfo = @stack.last.sourceFileInfo
+          res = @stack.last.function ? @stack.last.function.call : nil
+          @stack.pop
+
+          # If the rule is not repeatable we can store the result and break
+          # the outer loop to exit the function.
+          unless rule.repeatable
+            result = res
+            break
+          end
+
+          # Otherwise we append the result to the result array and turn repeat
+          # mode on.
+          result << res
+          # We have completed the first iteration. Set the repeat mode flag to
+          # indicate that further iterations are already re-runs.
+          repeatMode = true
+        end # of rule processing loop
+
+        if recur
+          recur = false
+        else
+          #Log.exit('parseRuleNR', "Finished rule #{rule.name}")
+          recursionResult = result
+        end
+      end while !recursionStack.empty?
+
       return result
     end
 
@@ -449,6 +525,89 @@ class TaskJuggler
               nil, token[2])
       end
       token
+    end
+
+    def findPattern(rule, token, repeatMode)
+      # The scanner cannot differentiate between keywords and identifiers.  So
+      # whenever an identifier is returned we have to see if we have a
+      # matching keyword first. If none is found, then look for normal
+      # identifiers.
+      if token[0] == 'ID'
+        if (patIdx = rule.matchingPatternIndex('_' + token[1])).nil?
+          patIdx = rule.matchingPatternIndex("$ID")
+        end
+      elsif token[0] == 'LITERAL'
+        patIdx = rule.matchingPatternIndex('_' + token[1])
+      elsif token[0] == false
+        patIdx = rule.matchingPatternIndex('.')
+      else
+        patIdx = rule.matchingPatternIndex('$' + token[0])
+      end
+
+      # If no matching pattern is found for the token we have to check if the
+      # rule is optional or we are in repeat mode. If this is the case, return
+      # the token back to the scanner. Otherwise, we have found a token we
+      # cannot handle at this point.
+      if patIdx.nil?
+        # Append the list of expected tokens to the @@expectedToken array.
+        # This may be used in a later rule to provide more details when an
+        # error occured.
+        rule.transitions.each do |transition|
+          keys = transition.keys
+          keys.collect! { |key| key[1..-1] }
+          @@expectedTokens += keys
+          @@expectedTokens.sort!
+        end
+
+        unless rule.optional?(@rules) || repeatMode
+          error('unexpctd_token',
+                (token[0] != false ?
+                 "Unexpected token '#{token[1]}' of type " +
+                 "'#{token[0]}'. " :
+                 "Unexpected end of file in #{@scanner.fileName}. ") +
+                (@@expectedTokens.length > 1 ?
+                 "Expecting one of #{@@expectedTokens.join(', ')}" :
+                 "Expecting #{@@expectedTokens[0]}"))
+        end
+        returnToken(token)
+        return nil
+      end
+
+      rule.pattern(patIdx)
+    end
+
+    # Handle the elements that don't trigger a recursion.
+    def processNormalElements(elType, elToken, token)
+      if elType == ?_
+        # If the element requires a keyword the token must match this
+        # keyword.
+        if elToken != token[1]
+          text = "'#{elToken}' expected but found " +
+                 "'#{token[1]}' (#{token[0]})."
+          unless @@expectedTokens.empty?
+            text = "#{@@expectedTokens.join(', ')} or " + text
+          end
+          error('spec_keywork_expctd', text)
+        end
+        @stack.last.store(elToken, token[2])
+      elsif elType == ?.
+        if token[0..1] != [ '.', '<END>' ]
+          error('end_expected', 'End expected but found ' +
+                "'#{token[1]}' (#{token[0]}).")
+        end
+      else
+        # The token must match the expected variable type.
+        if token[0] != elToken
+          text = "'#{elToken}' expected but found " +
+                 "'#{token[1]}' (#{token[0]})."
+          unless @@expectedTokens.empty?
+            text = "#{@@expectedTokens.join(', ')} or " + text
+          end
+          error('spec_token_expctd', text)
+        end
+        # If the element is a variable store the value of the token.
+        @stack.last.store(token[1], token[2])
+      end
     end
 
   end

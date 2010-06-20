@@ -120,8 +120,10 @@ class TaskJuggler::TextParser
     # Return the pattern of this rule that matches the given +token+. If no
     # pattern matches, return nil.
     def matchingPatternIndex(token)
-      @transitions.length.times do |i|
-        return i if @transitions[i].has_key?(token)
+      i = 0
+      @transitions.each do |t|
+        return i if t.has_key?(token)
+        i += 1
       end
 
       nil
