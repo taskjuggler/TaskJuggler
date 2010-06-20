@@ -471,9 +471,9 @@ class TaskJuggler
         rescue TjException
         end
         return nextCharI
-      else
-        return c
       end
+
+      c
     end
 
     def nextCharI

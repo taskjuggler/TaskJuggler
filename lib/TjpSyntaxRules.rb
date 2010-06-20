@@ -4070,6 +4070,14 @@ EOT
     optionsRule('statusSheetAttributes')
   end
 
+  def rule_statusSheetFile
+    pattern(%w( !statusSheet . ), lambda {
+      @val[0]
+    })
+    lastSyntaxToken(1)
+  end
+
+
   def rule_statusSheetHeader
     pattern(%w( _statussheet !resourceId !valIntervalOrDate ), lambda {
       @sheetAuthor = @val[1]
@@ -5142,6 +5150,13 @@ against.
 EOT
        )
     example('TimeSheet1', '4')
+  end
+
+  def rule_timeSheetFile
+    pattern(%w( !timeSheet . ), lambda {
+      @val[0]
+    })
+    lastSyntaxToken(1)
   end
 
   def rule_timeSheetBody

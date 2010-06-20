@@ -73,9 +73,6 @@ class TaskJuggler
     @parser.open(fileName, false)
     @parser.setGlobalMacros
     return nil if (res = @parser.parse(rule)).nil?
-    # Make sure that _rule_ described the full content of the file. There
-    # should be no more content left.
-    @parser.checkForEnd
     @parser.close
     res
   end
@@ -144,7 +141,7 @@ class TaskJuggler
       # Make sure we don't use data from old time sheets or Journal entries.
       @project.timeSheets.clear
       @project['journal'] = Journal.new
-      return false unless (ts = parseFile(fileName, 'timeSheet'))
+      return false unless (ts = parseFile(fileName, 'timeSheetFile'))
       return false unless @project.checkTimeSheets
       queryAttrs = { 'project' => @project,
                      'property' => ts.resource,
@@ -176,7 +173,7 @@ class TaskJuggler
   def checkStatusSheet(fileName)
     begin
       Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
-      return false unless (ss = parseFile(fileName, 'statusSheet'))
+      return false unless (ss = parseFile(fileName, 'statusSheetFile'))
       queryAttrs = { 'project' => @project,
                      'property' => ss[0],
                      'scopeProperty' => nil,
