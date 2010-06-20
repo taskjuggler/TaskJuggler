@@ -297,7 +297,7 @@ class TaskJuggler
         return result unless (pattern = findPattern(rule, token, repeatMode))
         # The @stack will store the resulting value of each element in the
         # pattern.
-        @stack << TextParser::StackElement.new(rule, pattern.function)
+        @stack << TextParser::StackElement.new(pattern.function)
 
         pattern.each do |element|
           # Separate the type and token text for pattern element.
@@ -318,9 +318,7 @@ class TaskJuggler
           else
             # In case the element is a keyword or variable we have to get a new
             # token if we don't have one anymore.
-            if token.nil?
-              token = getNextToken
-            end
+            token = getNextToken unless token
 
             processNormalElements(elType, elToken, token)
 
@@ -407,14 +405,15 @@ class TaskJuggler
             break unless (pattern = findPattern(rule, token, repeatMode))
             # The @stack will store the resulting value of each element in the
             # pattern.
-            @stack << TextParser::StackElement.new(rule, pattern.function)
+            @stack << TextParser::StackElement.new(pattern.function)
 
             # Once we've found the right pattern, we need to process each
             # element.
             elementIdx = 0
           end
 
-          while elementIdx < pattern.length
+          elementCount = pattern.length
+          while elementIdx < elementCount
             element = pattern[elementIdx]
             # Separate the type and token text for pattern element.
             elType = element[0]

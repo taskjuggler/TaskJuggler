@@ -260,7 +260,8 @@ class TaskJuggler
 
     # Return SourceFileInfo for the current processing prosition.
     def sourceFileInfo
-      SourceFileInfo.new(fileName, lineNo, columnNo)
+      @cf ? SourceFileInfo.new(fileName, @cf.lineNo, @cf.columnNo) :
+            SourceFileInfo.new(@masterFile, 0, 0)
     end
 
     # Return the name of the currently processed file. If we are working on a
@@ -318,36 +319,37 @@ class TaskJuggler
       @startOfToken = sourceFileInfo
       token = [ '.', '<END>' ]
       while c = nextChar
-        if isAlpha(c) || c == '_'
+        ci = ord(c)
+        if isAlpha(ci) || ci == 95
           token = readId(c)
           break
-        elsif isDigit(c)
+        elsif isDigit(ci)
           token = readNumber(c)
           break
         else
-          case c
-          when ' ', "\n", "\t"
+          case ci
+          when 32, 10, 9 # Space, LF, TAB
             if (tok = readBlanks(c))
               token = tok
               break
             end
             @startOfToken = sourceFileInfo
-          when '#'
+          when 35 # '#'
             skipComment
             @startOfToken = sourceFileInfo
-          when '/'
+          when 47 # '/'
             skipCPlusPlusComments
             @startOfToken = sourceFileInfo
-          when "'"
+          when 39 # "'"
             token = readString(c)
             break
-          when '"'
+          when 34 # '"'
             token = readString(c)
             break
-          when '-'
+          when 45 # '-'
             token = handleDash
             break
-          when '!'
+          when 33 # '!'
             if (c = nextChar) == '='
               token = [ 'LITERAL', '!=' ]
             else
@@ -355,10 +357,10 @@ class TaskJuggler
               token = [ 'LITERAL', '!' ]
             end
             break
-          when '<', '>', '='
+          when 60, 62, 61 # '<', '>', '='
             token = readOperator(c)
             break
-          when '['
+          when 91 # '['
             token = readMacro
             break
           when nil
@@ -498,7 +500,7 @@ class TaskJuggler
     def returnChar(c)
       #puts "<- [#{c.nil? ? '<nil>' : c}]"
       # Ignore any push backs after top-level file EOF has been reached.
-      return if @cf.nil?
+      return unless @cf
 
       @cf.ungetc(c)
     end
@@ -572,7 +574,7 @@ class TaskJuggler
     def readNumber(c)
       token = ""
       token << c
-      while ('0'..'9') === (c = nextChar)
+      while isDigit(ord(c = nextChar))
         token << c
       end
       if c == '-'
@@ -809,7 +811,7 @@ class TaskJuggler
     def readId(c)
       token = ""
       token << c
-      while (c = nextChar) && (isAlNum(c) || c == '_')
+      while (c = nextChar) && (ci = ord(c)) && (isAlNum(ci) || ci == 95) # '_'
         token << c
       end
       if c == ':'
@@ -884,7 +886,8 @@ class TaskJuggler
 
     def readIdentifier(noDigit = true)
       token = ""
-      while (c = nextChar) && ((noDigit ? isAlNum(c) : isAlNum(c)) || c == '_')
+      while (c = nextChar) && (ci = ord(c)) &&
+            ((noDigit ? isAlpha(ci) : isAlNum(ci)) || ci == 95) # '_'
         token << c
         noDigit = false
       end
@@ -895,18 +898,40 @@ class TaskJuggler
       token
     end
 
-    def isAlpha(c)
-      ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+    if RUBY_VERSION < '1.9.0'
+
+    def ord(c)
+      c ? c[0] : nil
     end
 
-    def isDigit(c)
-      ('0' <= c && c <= '9')
+
+    else # Code for Ruby 1.9 and above
+
+    def ord(c)
+      c ? c.ord : nil
     end
 
-    def isAlNum(c)
-      ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
-      ('0' <= c && c <= '9')
     end
+
+    def isAlpha(ci)
+      # ASCII a to z and A to Z
+      (97 <= ci && ci <= 122) || (65 <= ci && ci <= 90)
+    end
+
+    def isDigit(ci)
+      # ASCII 0 to 9
+      (48 <= ci && ci <= 57)
+    end
+
+    def isAlNum(ci)
+      # ASCII a to z
+      (97 <= ci && ci <= 122) ||
+      # ASCII A to Z
+      (65 <= ci && ci <= 90) ||
+      # ASCII 0 to 9
+      (48 <= ci && ci <= 57)
+    end
+
 
 
     def errorEOF(no, token)

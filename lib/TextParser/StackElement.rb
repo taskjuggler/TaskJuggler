@@ -25,12 +25,14 @@ class TaskJuggler::TextParser
     # called at the end to store the collected data. _sourceFileInfo_ is a
     # SourceFileInfo reference that describes the TextScanner position when the
     # rule was entered.
-    def initialize(rule, function)
+    def initialize(function)
       # This Array stores the collected values.
       @val = []
+      # Array to store the source file references for the collected values.
       @sourceFileInfo = []
+      # Counter used for StackElement::store()
       @position = 0
-      @rule = rule
+      # The method that will process the collected values.
       @function = function
     end
 
