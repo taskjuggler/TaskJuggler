@@ -105,6 +105,15 @@ class TaskJuggler
         @charBuffer.push(c)
       end
 
+      def inject(text)
+        # Mark end of injected text with a 0 element. This is used to trigger
+        # an action in the TextScanner. It will be returned by getc.
+        @charBuffer.push(0)
+        text.reverse.each_utf8_char do |c|
+          @charBuffer.push(c)
+        end
+      end
+
       def dirname
         @fileName ? File.dirname(@fileName) : ''
       end
@@ -406,12 +415,7 @@ class TaskJuggler
         error('macro_stack_overflow', "Too many nested macro calls.")
       end
       @macroStack << [ macro, args ]
-      # Mark end of macro with a 0 element
-      @cf.ungetc(0)
-      text.reverse.each_utf8_char do |c|
-        @cf.ungetc(c)
-      end
-      #@cf.line = ''
+      @cf.inject(text)
     end
 
     # Call this function to report any errors related to the parsed input.
