@@ -630,8 +630,9 @@ class TaskJuggler
             next if report.get('formats').empty?
             bp.queue(report) {
               @reportContexts.push(ReportContext.new(self, report))
-              report.generate
+              res = report.generate
               @reportContexts.pop
+              res
             }
           end
           bp.wait do |report|
