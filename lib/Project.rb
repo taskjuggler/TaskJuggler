@@ -696,7 +696,7 @@ class TaskJuggler
         formats = report.get('formats')
         next if formats.empty?
 
-        puts sprintf("%-20s %-15s %s", id, formats.join(', '), report.name)
+        puts sprintf("%s\t%s\t%s", id, formats.join(', '), report.name)
       end
     end
 
