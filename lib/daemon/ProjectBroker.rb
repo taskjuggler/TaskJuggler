@@ -340,9 +340,9 @@ EOT
             # And then send them a termination command.
             termList.each { |p| p.terminateServer }
 
-            # Check every 60 seconds that the ProjectServer processes are
+            # Check every 30 seconds that the ProjectServer processes are
             # still alive. If not, remove them from the list.
-            if (cntr += 1) > 60
+            if (cntr += 1) > 30
               @projects.synchronize do
                 @projects.each do |p|
                   unless p.ping

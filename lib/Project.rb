@@ -630,8 +630,9 @@ class TaskJuggler
             next if report.get('formats').empty?
             bp.queue(report) {
               @reportContexts.push(ReportContext.new(self, report))
-              report.generate
+              res = report.generate
               @reportContexts.pop
+              res
             }
           end
           bp.wait do |report|
@@ -696,7 +697,7 @@ class TaskJuggler
         formats = report.get('formats')
         next if formats.empty?
 
-        puts sprintf("%-20s %-15s %s", id, formats.join(', '), report.name)
+        puts sprintf("%s\t%s\t%s", id, formats.join(', '), report.name)
       end
     end
 
