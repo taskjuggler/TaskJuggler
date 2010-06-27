@@ -11,7 +11,7 @@
 #
 
 require 'TextParser'
-require 'TextScanner'
+require 'ProjectFileScanner'
 require 'TjpSyntaxRules'
 require 'RichText'
 require 'RTFHandlers'
@@ -36,10 +36,10 @@ class TaskJuggler
       super()
 
       @messageHandler = messageHandler
-      # Define the token types that the TextScanner may return for variable
-      # elements.
+      # Define the token types that the ProjectFileScanner may return for
+      # variable elements.
       @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
-                       RELATIVE_ID ABSOLUTE_ID MACRO )
+                       ABSOLUTE_ID MACRO )
 
       initRules
 
@@ -50,8 +50,8 @@ class TaskJuggler
     # a set of TJP files.
     def open(file, master, fileNameIsBuffer = false)
       begin
-        @scanner = TextScanner.new(file, @messageHandler)
-        # We need the TextScanner object for error reporting.
+        @scanner = ProjectFileScanner.new(file, @messageHandler)
+        # We need the ProjectFileScanner object for error reporting.
         if master && !fileNameIsBuffer && file != '.' && file[-4, 4] != '.tjp'
           error('illegal_extension', "Project file name must end with " +
                 '\'.tjp\' extension')
@@ -90,7 +90,7 @@ class TaskJuggler
 
     # A set of standard marcros is defined in all files as soon as the project
     # header has been read. Calling this functions gets the values from @project
-    # and inserts the Macro objects into the TextScanner.
+    # and inserts the Macro objects into the ProjectFileScanner.
     def setGlobalMacros
       @scanner.addMacro(Macro.new('projectstart', @project['start'].to_s,
                                   @scanner.sourceFileInfo))
@@ -287,7 +287,7 @@ class TaskJuggler
         })
         descr('A shortcut for all items')
         # A '-' means the list should be empty.
-        pattern([ '_ - ' ], lambda {
+        pattern([ '_-' ], lambda {
           KeywordArray.new
         })
         descr('No items')

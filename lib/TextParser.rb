@@ -188,7 +188,13 @@ class TaskJuggler
     end
 
     def error(id, text, property = nil, sfi = nil)
-      @scanner.error(id, text, property, sfi)
+      if @scanner
+        @scanner.error(id, text, property, sfi)
+      else
+        message = Message.new(id, 'error', text, property, sfi)
+        @messageHandler.send(message)
+        raise TjException.new, ''
+      end
     end
 
     def warning(id, text, property = nil, sfi = nil)

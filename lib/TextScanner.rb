@@ -11,6 +11,7 @@
 #
 
 require 'stringio'
+require 'strscan'
 
 require 'UTF8String'
 require 'TjTime'
@@ -22,9 +23,26 @@ require 'Log'
 
 class TaskJuggler
 
-  # The TextScanner class can scan text files and chop then into tokens to be
-  # used by a parser. Files can be nested. A file can include an other file.
+  # The TextScanner class is an abstract text scanner with support for nested
+  # include files and text macros. The tokenizer will operate on rules that
+  # must be provided by a derived class. The scanner is modal. Each mode
+  # operates only with the subset of token patterns that are assigned to the
+  # current mode. The current line is tracked accurately and can be used for
+  # error reporting. The scanner can operate on Strings or Files.
   class TextScanner
+
+    class MacroStackEntry
+
+      attr_reader :macro, :args, :text, :endPos
+
+      def initialize(macro, args, text, endPos)
+        @macro = macro
+        @args = args
+        @text = text
+        @endPos = endPos
+      end
+
+    end
 
     # This class is used to handle the low-level input operations. It knows
     # whether it deals with a text buffer or a file and abstracts this to the
@@ -34,37 +52,43 @@ class TaskJuggler
     # completely processed.
     class StreamHandle
 
-      attr_reader :fileName
+      attr_reader :fileName, :macroStack
 
       def initialize
         @fileName = nil
         @stream = nil
-        @charBuffer = []
         @line = nil
-        @pos = @endPos = 0
-        @bytes = 0
+        @scanner = nil
+        @wrapped = false
+        @macroStack = []
+        @nextMacroEnd = nil
       end
 
       def close
         @stream = nil
       end
 
-      # Get the next character from the input file. Depending on the Ruby
-      # version, the characters are returned as String (1.9) or Fixnum (1.8).
-      # If the end of file has been reached, the result is ASCII EOT (Fixnum
-      # 4). Previously read and returned (via ungetc) EOFs are encoded as nil.
-      def getc19
-        return @charBuffer.pop unless @charBuffer.empty?
+      def injectMacro(macro, args, text)
+        pos = @scanner.pos
+        @nextMacroEnd = pos + text.length
+        @line = @line[0, pos] + text + @line[pos..-1]
+        @scanner = StringScanner.new(@line)
+        @scanner.pos = pos
 
-        Log.activity if @bytes & 0x3FFF == 0
-        @bytes += 1
+        # Simple detection for recursive macro calls.
+        return false if @macroStack.length > 20
 
+        @macroStack << MacroStackEntry.new(macro, args, text, @nextMacroEnd)
+        true
+      end
+
+      def scan(re)
         # We read the file line by line with gets(). If we don't have a line
         # yet or we've reached the end of a line, we get the next one.
-        if @line.nil? || @pos >= @endPos
-          # @pos marks the current read position in the line.
-          @pos = 0
+        if @scanner.nil? || @scanner.eos?
           if (@line = @stream.gets)
+            # Update activity meter about every 1024 lines.
+            Log.activity if (@stream.lineno & 0x3FF) == 0
             # Check for DOS or Mac end of line signatures.
             if @line[-1] == ?\r
               # Mac: Convert CR into LF
@@ -73,45 +97,32 @@ class TaskJuggler
               # DOS: Convert CR+LF into LF
               @line = @line.chomp + "\n"
             end
-
-            # Store the end position of the line.
-            @endPos = @line.length
           else
-            # We've reached the end of the file.
-            @endPos = 0
-            return 4 # ASCII EOT
+            # We've reached the end of the current file.
+            @scanner = nil
+            # Return special EOF symbol.
+            return :scannerEOF
           end
+          @scanner = StringScanner.new(@line)
+          @wrapped = @line[-1] == ?\n
         end
 
-        c = @line[@pos]
-        @pos += 1
+        token = @scanner.scan(re)
 
-        c
-      end
-
-      def getc18
-        (c = getc19).nil? ? nil : (c.is_a?(Fixnum) && c <= 4 ? c : ('' << c))
-      end
-
-      if RUBY_VERSION < '1.9.0'
-        alias getc getc18
-      else
-        alias getc getc19
-      end
-
-
-      # Push a char as String or Fixnum into the @charBuffer.
-      def ungetc(c)
-        @charBuffer.push(c)
-      end
-
-      def inject(text)
-        # Mark end of injected text with a 0 element. This is used to trigger
-        # an action in the TextScanner. It will be returned by getc.
-        @charBuffer.push(0)
-        text.reverse.each_utf8_char do |c|
-          @charBuffer.push(c)
+        while @nextMacroEnd && @nextMacroEnd < @scanner.pos
+          @macroStack.pop
+          @nextMacroEnd = @macroStack.empty? ? nil : @macroStack.last.endPos
         end
+
+        token
+      end
+
+      def peek(n)
+        @scanner ? @scanner.peek(n) : nil
+      end
+
+      def eof?
+        @stream.eof? && @scanner.eos?
       end
 
       def dirname
@@ -121,25 +132,18 @@ class TaskJuggler
       # Return the number of the currently processed line.
       def lineNo
         # The IO object counts the lines for us by counting the gets() calls.
-        currentLine = @stream ? @stream.lineno : 0
+        currentLine = @stream && @scanner ? @stream.lineno : 1
         # If we've just read the LF, we have to add 1. The LF can only be the
         # last character of the line.
-        currentLine += 1 if @line && @pos == @endPos && @line[-1] == ?\n
-        # If we have pushed-back characters in the @charBuffer, we have to
-        # substract the contained newlines from the @stream.lineno value.
-        currentLine - @charBuffer.count("\n")
-      end
-
-      # Return the position in the current line.
-      def columnNo
-        @pos
+        currentLine += 1 if @wrapped && @line && @scanner && @scanner.eos?
+        currentLine
       end
 
       # Return the already processed part of the current line.
       def line
         return '' unless @line
 
-        @line[0..@pos - 1]
+        @line[0..(@scanner.pos - 1)]
       end
 
     end
@@ -194,15 +198,41 @@ class TaskJuggler
       # only know when the next new token is requested that the file is really
       # done now, we have to use this flag.
       @finishLastFile = false
-      # This Array stores the currently processed nested macros.
-      @macroStack = []
-      # In certain situation we want to ignore Macro replacement and this flag
-      # is set to true.
-      @ignoreMacros = false
+      # True if the scanner operates on a buffer.
       @fileNameIsBuffer = false
       # A SourceFileInfo of the start of the currently processed token.
       @startOfToken = nil
+      # Line number correction for error messages.
+      @lineDelta = 0
+      # Lists of regexps that describe the detectable tokens. The Arrays are
+      # grouped by mode.
+      @patternsByMode = { }
+      # The currently active scanner mode.
+      @scannerMode = nil
+      # Points to the currently active pattern set as defined by the mode.
+      @activePatterns = nil
     end
+
+    # Add a new pattern to the scanner. _type_ is either nil for tokens that
+    # will be ignored, or some identifier that will be returned with each
+    # token of this type. _regExp_ is the RegExp that describes the token.
+    # _mode_ identifies the scanner mode where the pattern is active.
+    # _postProc_ is a method reference. This method is called after the token
+    # has been detected. The method gets the type and the matching String and
+    # returns them again in an Array.
+    def addPattern(type, regExp, mode, postProc = nil)
+      @patternsByMode[mode] = [] unless @patternsByMode.include?(mode)
+      @patternsByMode[mode] << [ type, regExp, postProc ]
+    end
+
+    # Switch the parser to another mode. The scanner will then only detect
+    # with pattens of that _newMode_.
+    def mode=(newMode)
+      @activePatterns = @patternsByMode[newMode]
+      raise "Undefined mode #{newMode}" unless @activePatterns
+      @scannerMode = newMode
+    end
+
 
     # Start the processing. if _fileNameIsBuffer_ is true, we operate on a
     # String, else on a File.
@@ -269,7 +299,7 @@ class TaskJuggler
 
     # Return SourceFileInfo for the current processing prosition.
     def sourceFileInfo
-      @cf ? SourceFileInfo.new(fileName, @cf.lineNo, @cf.columnNo) :
+      @cf ? SourceFileInfo.new(fileName, @cf.lineNo - @lineDelta, 0) :
             SourceFileInfo.new(@masterFile, 0, 0)
     end
 
@@ -284,15 +314,16 @@ class TaskJuggler
     end
 
     def columnNo # :nodoc:
-      @cf ? @cf.columnNo : 0
+      0
     end
 
     def line # :nodoc:
       @cf ? @cf.line : 0
     end
 
-    # Scan for the next token in the input stream and return it. The result will
-    # be an Array of the form [ TokenType, TokenValue ].
+    # Return the next token from the input stream. The result is an Array with
+    # 3 entries: the token type, the token String and the SourceFileInfo where
+    # the token started.
     def nextToken
       # If we have a pushed-back token, return that first.
       unless @tokenBuffer.nil?
@@ -306,13 +337,15 @@ class TaskJuggler
         # completion. Close it and remove the corresponding entry from the
         # @fileStack.
         @finishLastFile = false
-        Log << "Completed file #{@cf.fileName}"
+        #Log << "Completed file #{@cf.fileName}"
         @cf.close
         @fileStack.pop
 
         if @fileStack.empty?
           # We are done with the top-level file now.
           @cf = @tokenBuffer = nil
+          @finishLastFile = true
+          return [ '.', '<END>', @startOfToken ]
         else
           # Continue parsing the file that included the current file.
           @cf, tokenBuffer = @fileStack.last
@@ -321,69 +354,41 @@ class TaskJuggler
           # return it now.
           return tokenBuffer if tokenBuffer
         end
-
       end
 
       # Start processing characters from the input.
       @startOfToken = sourceFileInfo
-      token = [ '.', '<END>' ]
-      while c = nextChar
-        ci = ord(c)
-        if isAlpha(ci) || ci == 95
-          token = readId(c)
-          break
-        elsif isDigit(ci)
-          token = readNumber(c)
-          break
-        else
-          case ci
-          when 32, 10, 9 # Space, LF, TAB
-            if (tok = readBlanks(c))
-              token = tok
-              break
+      loop do
+        match = nil
+        @activePatterns.each do |type, re, postProc|
+          if (match = @cf.scan(re))
+            if match == :scannerEOF
+              # We've found the end of an input file. Return a special token
+              # that describes the end of a file.
+              @finishLastFile = true
+              return [ '.', '<END>', @startOfToken ]
             end
-            @startOfToken = sourceFileInfo
-          when 35 # '#'
-            skipComment
-            @startOfToken = sourceFileInfo
-          when 47 # '/'
-            skipCPlusPlusComments
-            @startOfToken = sourceFileInfo
-          when 39 # "'"
-            token = readString(c)
-            break
-          when 34 # '"'
-            token = readString(c)
-            break
-          when 45 # '-'
-            token = handleDash
-            break
-          when 33 # '!'
-            if (c = nextChar) == '='
-              token = [ 'LITERAL', '!=' ]
-            else
-              returnChar(c)
-              token = [ 'LITERAL', '!' ]
-            end
-            break
-          when 60, 62, 61 # '<', '>', '='
-            token = readOperator(c)
-            break
-          when 91 # '['
-            token = readMacro
-            break
-          when nil
-            # We've reached an end of file or buffer
-            break
+
+            raise "#{re} matches empty string" if match.empty?
+            # If we have a post processing method, call it now. It may modify
+            # the type or the found token String.
+            type, match = postProc.call(type, match) if postProc
+
+            break if type.nil? # Ignore certain tokens with nil type.
+
+            return [ type, match, @startOfToken ]
+          end
+        end
+        if match.nil?
+          if @cf.eof?
+            error('unexpected_eof',
+                  "Unexpected end of file found")
           else
-            str = ""
-            str << c
-            token = [ 'LITERAL', str ]
-            break
+            error('no_token_match',
+                  "Unexpected characters found: '#{@cf.peek(10)}...'")
           end
         end
       end
-      return (token << @startOfToken)
     end
 
     # Return a token to retrieve it with the next nextToken() call again. Only 1
@@ -407,15 +412,17 @@ class TaskJuggler
       @macroTable.include?(name)
     end
 
+    # Expand a macro and inject it into the input stream. _args_ is an Array
+    # of Strings. The first is the macro name, the rest are the parameters.
     def expandMacro(args)
+      # Get the expanded macro from the @macroTable.
       macro, text = @macroTable.resolve(args, sourceFileInfo)
+      # If the expanded macro is empty, we can ignore it.
       return if text == ''
 
-      if @macroStack.length > 20
+      unless @cf.injectMacro(macro, args, text)
         error('macro_stack_overflow', "Too many nested macro calls.")
       end
-      @macroStack << [ macro, args ]
-      @cf.inject(text)
     end
 
     # Call this function to report any errors related to the parsed input.
@@ -433,515 +440,24 @@ class TaskJuggler
                               property, nil, sfi || sourceFileInfo)
         @messageHandler.send(message)
 
-        until @macroStack.empty?
-          macro, args = @macroStack.pop
-          args.collect! { |a| '"' + a + '"' }
-          message = Message.new('macro_stack', 'info',
-                                "   #{macro.name} #{args.join(' ')}", nil, nil,
-                                macro.sourceFileInfo)
+        unless @cf.macroStack.empty?
+          message = Message.new('macro_stack', 'info', 'Macro call history:')
           @messageHandler.send(message)
+
+          @cf.macroStack.reverse_each do |entry|
+            macro = entry.macro
+            args = entry.args[1..-1]
+            args.collect! { |a| '"' + a + '"' }
+            message = Message.new('macro_stack', 'info',
+                                  "  ${#{macro.name} #{args.join(' ')}}",
+                                  nil, nil, macro.sourceFileInfo)
+            @messageHandler.send(message)
+          end
         end
       end
 
       # An empty strings signals an already reported error
       raise TjException.new, '' if type == 'error'
-    end
-
-  private
-
-    def nextCharY
-      c = nextCharX
-      $stderr.puts "getChar: #{c.nil? ? '<nil>' : "[#{c}]"} " +
-           "cf: #{@cf.nil? ? '-' : @cf.fileName}"
-      c
-    end
-
-    # This function is called by the scanner to get the next character. It
-    # features a FIFO buffer that can hold any amount of returned characters.
-    # When it has reached the end of the master file it returns nil.
-    def nextChar
-      if (c = nextCharI) == '$' && !@ignoreMacros
-        # Double $ are reduced to a single $.
-        return c if (c = nextCharI) == '$'
-
-        # Macros start with $( or ${. All other $. are ignored.
-        if c != '(' && c != '{'
-           returnChar(c)
-           return '$'
-        end
-
-        returnChar(c)
-        macroParser = MacroParser.new(self, @messageHandler)
-        begin
-          macroParser.parse('macroCall')
-        rescue TjException
-        end
-        return nextCharI
-      end
-
-      c
-    end
-
-    def nextCharI
-      # This can only happen when a previous call already returned nil.
-      return nil if @cf.nil?
-
-      # The end of injected macro snippets are marked with a 0. We use this to
-      # pop the @macroStack once for every 0 we find. Otherwise the 0 is
-      # ignored.
-      while (c = @cf.getc) == 0
-        @macroStack.pop
-      end
-
-      if c == 4  # End of File code
-        @finishLastFile = true
-        return nil
-      end
-
-      c
-    end
-
-    def returnChar(c)
-      #puts "<- [#{c.nil? ? '<nil>' : c}]"
-      # Ignore any push backs after top-level file EOF has been reached.
-      return unless @cf
-
-      @cf.ungetc(c)
-    end
-
-    def skipComment
-      # Read all characters until line or file end is found
-      @ignoreMacros = true
-      while (c = nextChar) && c != "\n"
-      end
-      @ignoreMacros = false
-      returnChar(c)
-    end
-
-    def skipCPlusPlusComments
-      if (c = nextChar) == '*'
-        # /* */ style multi-line comment
-        @ignoreMacros = true
-        begin
-          while (c = nextChar) != '*'
-          end
-        end until (c = nextChar) == '/'
-        @ignoreMacros = false
-      elsif c == '/'
-        # // style single line comment
-        skipComment
-      else
-        error('bad_comment', "'/' or '*' expected after start of comment")
-      end
-    end
-
-    def handleDash
-      if (c1 = nextChar) == '8'
-        if (c2 = nextChar) == '<'
-          if (c3 = nextChar) == '-'
-            return readIndentedString
-          else
-            returnChar(c3)
-            returnChar(c2)
-            returnChar(c1)
-          end
-        else
-          returnChar(c2)
-          returnChar(c1)
-        end
-      else
-        returnChar(c1)
-      end
-      return [ 'LITERAL', ' - ']
-    end
-
-    def readBlanks(c)
-      loop do
-        if c == ' '
-          if (c2 = nextChar) == '-'
-            # Special case for the dash between period dates. It must be
-            # surrounded by blanks.
-            if (c3 = nextChar) == ' '
-              return [ 'LITERAL', ' - ']
-            end
-            returnChar(c3)
-          end
-          returnChar(c2)
-        elsif c != "\n" && c != "\t"
-          returnChar(c)
-          return nil
-        end
-        c = nextChar
-      end
-    end
-
-    def readNumber(c)
-      token = ""
-      token << c
-      while isDigit(ord(c = nextChar))
-        token << c
-      end
-      if c == '-'
-        return readDate(token)
-      elsif c == '.'
-        frac = readDigits
-
-        return [ 'FLOAT', token.to_f + frac.to_f / (10.0 ** frac.length) ]
-      elsif c == ':'
-        hours = token.to_i
-        mins = readDigits.to_i
-        if hours < 0 || hours > 24
-          raise TjException.new, "Hour must be between 0 and 23"
-        end
-        if mins < 0 || mins > 59
-          raise TjException.new, "Minutes must be between 0 and 59"
-        end
-        if hours == 24 && mins != 0
-          raise TjException.new, "Time may not be larger than 24:00"
-        end
-
-        # Return time as seconds of day since midnight.
-        return [ 'TIME', hours * 60 * 60 + mins * 60 ]
-      else
-        returnChar(c)
-      end
-
-      [ 'INTEGER', token.to_i ]
-    end
-
-    def readDate(token)
-      year = token.to_i
-      if year < 1970 || year > 2030
-        raise TjException.new, "Year must be between 1970 and 2030"
-      end
-
-      month = readDigits.to_i
-      if month < 1 || month > 12
-        raise TjException.new, "Month must be between 1 and 12"
-      end
-      if nextChar != '-'
-        raise TjException.new, "Corrupted date"
-      end
-
-      day = readDigits.to_i
-      if day < 1 || day > 31
-        raise TjException.new, "Day must be between 1 and 31"
-      end
-
-      if (c = nextChar) != '-'
-        returnChar(c)
-        return [ 'DATE', TjTime.local(year, month, day) ]
-      end
-
-      hour = readDigits.to_i
-      if hour < 0 || hour > 23
-        raise TjException.new, "Hour must be between 0 and 23"
-      end
-
-      if nextChar != ':'
-        raise TjException.new, "Corrupted time. ':' expected."
-      end
-
-      minutes = readDigits.to_i
-      if minutes < 0 || minutes > 59
-        raise TjException.new, "Minutes must be between 0 and 59"
-      end
-
-      if (c = nextChar) == ':'
-        seconds = readDigits.to_i
-        if seconds < 0 || seconds > 59
-          raise TjException.new, "Seconds must be between 0 and 59"
-        end
-      else
-        seconds = 0
-        returnChar(c)
-      end
-
-      if (c = nextChar) != '-'
-        returnChar(c)
-        return [ 'DATE', TjTime.local(year, month, day, hour, minutes, seconds) ]
-      end
-
-      if (c = nextChar) == '-'
-        delta = 1
-      elsif c == '+'
-        delta = -1
-      else
-        # An actual time zone name
-        tz = readId(c)[1]
-        oldTz = ENV['TZ']
-        ENV['TZ'] = tz
-        timeVal = TjTime.local(year, month, day, hour, minutes, seconds)
-        ENV['TZ'] = oldTz
-        if timeVal.to_a[9] != tz
-          raise TjException.new, "Unknown time zone #{tz}"
-        end
-        return [ 'DATE', timeVal ]
-      end
-
-      utcDiff = readDigits
-      utcHour = utcDiff[0, 2].to_i
-      if utcHour < 0 || utcHour > 23
-        raise TjException.new, "Hour must be between 0 and 23"
-      end
-      utcMin = utcDiff[2, 2].to_i
-      if utcMin < 0 || utcMin > 59
-        raise TjException.new, "Minutes must be between 0 and 59"
-      end
-
-      [ 'DATE', TjTime.gm(year, month, day, hour, minutes, seconds) +
-                delta * ((utcHour * 3600) + utcMin * 60) ]
-    end
-
-    def readString(terminator)
-      token = ""
-      while (c = nextChar) && c != terminator
-        if c == "\\"
-          # Terminators can be used as regular characters when prefixed by a \.
-          if (c = nextChar) && c != terminator
-            # \ followed by non-terminator. Just add both.
-            token << "\\"
-          end
-        end
-        token << c
-      end
-
-      [ 'STRING', token ]
-    end
-
-    def readIndentedString
-      state = 0
-      indent = ''
-      token = ''
-      while true
-        case state
-        when 0 # Determining indent
-          # Skip trailing spaces and tabs.
-          while (c = nextChar) == ' ' || c == "\t" do
-            # empty on purpose
-          end
-          if c != "\n"
-            error('junk_after_cut',
-                  'The cut mark -8<- must be immediately followed by a ' +
-                  'line break.')
-          end
-          while (c = nextChar) == ' ' || c == "\t"
-            indent << c
-          end
-          @startOfToken = sourceFileInfo
-          returnChar(c)
-          state = 1
-        when 1 # reading '-' or first content line character
-          if (c = nextChar) == '-'
-            state = 3
-          elsif c.nil?
-            errorEOF(1, token)
-          elsif c == "\n"
-            token << c
-            state = 6
-          else
-            token << c
-            state = 2
-          end
-        when 2 # reading content line
-          # The '->8-' is only valid if no other content preceded it on this
-          # line.
-          onlyBlanks = true
-          while (c = nextChar) != "\n" && !(c == '-' && onlyBlanks)
-            onlyBlanks = false if c != ' ' && c != "\t"
-            errorEOF(2, token) if c.nil?
-            token << c
-          end
-          if c == '-'
-            # we may have found the start of '->8-'
-            state = 3
-          else
-            token << c
-            state = 6
-          end
-        when 3 # reading '>' of '->8-'
-          if (c = nextChar) == '>'
-            state = 4
-          else
-            errorEOF(3, token) if c.nil?
-            token << '-'
-            token << c
-            state = 2
-          end
-        when 4 # reading '8' of '->8-'
-          if (c = nextChar) == '8'
-            state = 5
-          else
-            errorEOF(4, token) if c.nil?
-            token << c
-            state = 2
-          end
-        when 5 # reading '-' of '->8-'
-          if (c = nextChar) == '-'
-            return [ 'STRING', token ]
-          else
-            errorEOF(5, token) if c.nil?
-            token << c
-            state = 2
-          end
-        when 6 # reading indentation
-          state = 1
-          indent.each_utf8_char do |ci|
-            if ci != (c = nextChar)
-              if c == '-'
-                state = 3
-                break
-              elsif c == "\n"
-                returnChar(c)
-                break
-              else
-                error('bad_indent',
-                      "Not all lines of string have same indentation. " +
-                      "The first line of the string determines the " +
-                      "indentation for all subsequent lines of the same " +
-                      "string. Make sure you don't mix tabs and spaces.")
-                token << c
-                state = 2
-                break
-              end
-            end
-          end
-        else
-          raise "State machine error"
-        end
-      end
-    end
-
-    def readId(c)
-      token = ""
-      token << c
-      while (c = nextChar) && (ci = ord(c)) && (isAlNum(ci) || ci == 95) # '_'
-        token << c
-      end
-      if c == ':'
-        return [ 'ID_WITH_COLON', token ]
-      elsif  c == '.'
-        token << c
-        loop do
-          token += readIdentifier
-          break if (c = nextChar) != '.'
-          token += '.'
-        end
-        returnChar c
-
-        return [ 'ABSOLUTE_ID', token ]
-      else
-        returnChar c
-        return [ 'ID', token ]
-      end
-    end
-
-    def readMacro
-      # We can deal with ']' inside of the macro as long as each ']' is
-      # preceeded by a corresponding '['.
-      token = ''
-      bracketLevel = 1
-      while bracketLevel > 0
-        case (c = nextCharI)
-        when nil
-          error('unterminated_macro', "Unterminated macro #{token}")
-        when '['
-          bracketLevel += 1
-        when ']'
-          bracketLevel -= 1
-        end
-        token << c unless bracketLevel == 0
-      end
-      return [ 'MACRO', token ]
-    end
-
-    # Read operators of logical expressions.
-    def readOperator(c)
-      case c
-      when '='
-        return [ 'LITERAL', '=' ]
-      when '>'
-        return [ 'LITERAL', '>=' ] if (c = nextChar) == '='
-        returnChar(c)
-        return [ 'LITERAL', '>' ]
-      when '<'
-        return [ 'LITERAL', '<=' ] if (c = nextChar) == '='
-        returnChar(c)
-        return [ 'LITERAL', '<' ]
-      else
-        raise "Unsupported operator #{c}"
-      end
-    end
-
-    # Read only decimal digits and return the result als Fixnum.
-    def readDigits
-      token = ""
-      while ('0'..'9') === (c = nextChar)
-        token << c
-      end
-      # Make sure that we have read at least one digit.
-      if token == ""
-        raise TjException.new, "Digit (0 - 9) expected"
-      end
-      # Push back the non-digit that terminated the digits.
-      returnChar(c)
-      token
-    end
-
-    def readIdentifier(noDigit = true)
-      token = ""
-      while (c = nextChar) && (ci = ord(c)) &&
-            ((noDigit ? isAlpha(ci) : isAlNum(ci)) || ci == 95) # '_'
-        token << c
-        noDigit = false
-      end
-      returnChar(c)
-      if token == ""
-        raise TjException.new, "Identifier expected"
-      end
-      token
-    end
-
-    if RUBY_VERSION < '1.9.0'
-
-    def ord(c)
-      c ? c[0] : nil
-    end
-
-
-    else # Code for Ruby 1.9 and above
-
-    def ord(c)
-      c ? c.ord : nil
-    end
-
-    end
-
-    def isAlpha(ci)
-      # ASCII a to z and A to Z
-      (97 <= ci && ci <= 122) || (65 <= ci && ci <= 90)
-    end
-
-    def isDigit(ci)
-      # ASCII 0 to 9
-      (48 <= ci && ci <= 57)
-    end
-
-    def isAlNum(ci)
-      # ASCII a to z
-      (97 <= ci && ci <= 122) ||
-      # ASCII A to Z
-      (65 <= ci && ci <= 90) ||
-      # ASCII 0 to 9
-      (48 <= ci && ci <= 57)
-    end
-
-
-
-    def errorEOF(no, token)
-      error("eof_in_istring#{no}",
-            "Unexpected end of file in string '#{token[0,20]}...'" +
-            "starting in line #{@startOfToken.lineNo}.")
     end
 
   end

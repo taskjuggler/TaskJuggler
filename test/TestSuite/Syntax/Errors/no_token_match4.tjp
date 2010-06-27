@@ -1,5 +1,6 @@
 project test "Test" "1.0" 2009-08-25 +2m 
 
-# MARK: error 5 eof_in_istring1
+# MARK: error 6 no_token_match
 task t -8<-
-   
+  foo
+  ->

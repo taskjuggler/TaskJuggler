@@ -348,6 +348,11 @@ class TaskJuggler
       @time.to_i
     end
 
+    def to_ary
+      to_s
+    end
+
+
     # Return the abbreviated month name.
     def shortMonthName
       @time.strftime('%b')

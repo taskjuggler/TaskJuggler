@@ -1,7 +1,0 @@
-project test "Test" "1.0" 2009-08-24 +2m 
-
-# MARK: error 4 bad_comment
-/foo
-
-task foo "Foo" {
-}

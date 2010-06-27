@@ -1414,7 +1414,7 @@ EOT
   end
 
   def rule_intervalEnd
-    pattern([ '_ - ', '!date' ], lambda {
+    pattern([ '_-', '!date' ], lambda {
       [ 0, @val[1] ]
     })
 
@@ -1425,7 +1425,7 @@ EOT
 
   def rule_intervalOptionalEnd
     optional
-    pattern([ '_ - ', '!date' ], lambda {
+    pattern([ '_-', '!date' ], lambda {
       [ 0, @val[1] ]
     })
 
@@ -1983,7 +1983,7 @@ EOT
 
   def rule_nodeIdList
     listRule('moreNodeIdList', '!nodeId')
-    pattern([ '_ - ' ], lambda {
+    pattern([ '_-' ], lambda {
       []
     })
   end
@@ -2184,11 +2184,11 @@ EOT
 
   def rule_plusOrMinus
     singlePattern('_+')
-    singlePattern('_ - ')
+    singlePattern('_-')
   end
 
   def rule_project
-    pattern(%w( !projectProlog !projectDeclaration !properties ), lambda {
+    pattern(%w( !projectProlog !projectDeclaration !properties . ), lambda {
       @val[1]
     })
   end
@@ -5055,7 +5055,7 @@ EOT
   end
 
   def rule_timeInterval
-    pattern([ '$TIME', '_ - ', '$TIME' ], lambda {
+    pattern([ '$TIME', '_-', '$TIME' ], lambda {
       if @val[0] >= @val[2]
         error('time_interval',
               "End time of interval must be larger than start time", nil,
@@ -5430,7 +5430,7 @@ EOT
     pattern(%w( !date ), lambda {
       if @val[0] < @project['start'] || @val[0] > @project['end']
         error('date_in_range', "Date must be within the project time frame " +
-              "#{@project['start']} +  - #{@project['end']}", nil,
+              "#{@project['start']}  - #{@project['end']}", nil,
               @sourceFileInfo[0])
       end
       @val[0]
@@ -5565,7 +5565,7 @@ EOT
 
   def rule_weekDayIntervalEnd
     optional
-    pattern([ '_ - ', '!weekday' ], lambda {
+    pattern([ '_-', '!weekday' ], lambda {
       @val[1]
     })
     arg(1, 'end weekday',
