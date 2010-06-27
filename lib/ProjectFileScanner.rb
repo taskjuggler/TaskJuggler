@@ -105,7 +105,7 @@ class TaskJuggler
           args << scanner.scan(/(\\"|[^"])*/).gsub(/\\"/, '"')
           scanner.scan(/"/)
         end
-        # Expoand the macro and inject it into the scanner.
+        # Expand the macro and inject it into the scanner.
         expandMacro([ macroName ] + args)
       end
 
