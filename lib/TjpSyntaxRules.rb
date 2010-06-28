@@ -1781,14 +1781,17 @@ numbers as names.  The number specifies the index of the argument.
  macro FOO [ This ${1} text ]
 
 will expand to ''''This stupid text'''' if called as ''''${FOO "stupid"}''''.
-Macros may call other macros.
+Macros may call other macros. All macro arguments must be enclosed by double
+quotes. In case the argument contains a double quote, it must be escaped by a
+slash (''''/'''').
 
 User defined macro IDs must have at least one uppercase letter as all
 lowercase letter IDs are reserved for built-in macros.
 
-Macro definitions may contain ''''<nowiki>]</nowiki>'''' as long as each
-''''<nowiki>]</nowiki>'''' is preceeded by a corresponding
-''''<nowiki>[</nowiki>''''.
+To terminate the macro definition, the ''''<nowiki>]</nowiki>'''' must be the
+last character in the line. If there are any other characters trailing it
+(even spaces or comments) the ''''<nowiki>]</nowiki>'''' will not be
+considered the end of the macro definition.
 
 In macro calls the macro names can be prefixed by a question mark. In this
 case the macro will expand to nothing if the macro is not defined. Otherwise

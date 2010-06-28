@@ -360,25 +360,30 @@ class TaskJuggler
       @startOfToken = sourceFileInfo
       loop do
         match = nil
-        @activePatterns.each do |type, re, postProc|
-          if (match = @cf.scan(re))
-            if match == :scannerEOF
-              # We've found the end of an input file. Return a special token
-              # that describes the end of a file.
-              @finishLastFile = true
-              return [ '.', '<END>', @startOfToken ]
+        begin
+          @activePatterns.each do |type, re, postProc|
+            if (match = @cf.scan(re))
+              if match == :scannerEOF
+                # We've found the end of an input file. Return a special token
+                # that describes the end of a file.
+                @finishLastFile = true
+                return [ '.', '<END>', @startOfToken ]
+              end
+
+              raise "#{re} matches empty string" if match.empty?
+              # If we have a post processing method, call it now. It may modify
+              # the type or the found token String.
+              type, match = postProc.call(type, match) if postProc
+
+              break if type.nil? # Ignore certain tokens with nil type.
+
+              return [ type, match, @startOfToken ]
             end
-
-            raise "#{re} matches empty string" if match.empty?
-            # If we have a post processing method, call it now. It may modify
-            # the type or the found token String.
-            type, match = postProc.call(type, match) if postProc
-
-            break if type.nil? # Ignore certain tokens with nil type.
-
-            return [ type, match, @startOfToken ]
           end
+        rescue
+          error('scan_encoding_error', $!.to_s)
         end
+
         if match.nil?
           if @cf.eof?
             error('unexpected_eof',

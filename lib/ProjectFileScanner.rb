@@ -25,9 +25,9 @@ class TaskJuggler
         # Any white spaces
         [ nil, /\s+/, :tjp, method('newPos') ],
         # Single line comments starting with #
-        [ nil, /#.*\n/, :tjp, method('newPos') ],
+        [ nil, /#.*\n?/, :tjp, method('newPos') ],
         # C++ style single line comments starting with //
-        [ nil, /\/\/.*\n/, :tjp, method('newPos') ],
+        [ nil, /\/\/.*\n?/, :tjp, method('newPos') ],
         # C style single line comment /* .. */.
         [ nil, /\/\*.*\*\//, :tjp, method('newPos') ],
         # C style multi line comment
@@ -59,14 +59,16 @@ class TaskJuggler
         [ 'ABSOLUTE_ID', /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
         # A normal ID: bar
         [ 'ID', /[a-zA-Z_]\w*/ ],
-        #[ nil, /\$\{.*\}/, :tjp, method('defineMacro') ],
-        [ nil, /\$\{\s*([a-zA-Z_]\w*)(\s"(\\"|.)*")*\}/, :tjp, method('replaceMacro') ],
         # Single line macro definition
-        [ 'MACRO', /\[(\\\]|.)*\]/, :tjp, method('chop2') ],
+        [ 'MACRO', /\[.*\]\n/, :tjp, method('chop2nl') ],
         # Multi line macro definition
-        [ nil, /\[(\\\]|.)*\n/, :tjp, method('startMacroDef') ],
-        [ nil, /(\\\]|[^\]])*\n/, :macroDef, method('midMacroDef') ],
-        [ 'MACRO', /(\\\]|.)*\]/, :macroDef, method('endMacroDef') ],
+        [ nil, /\[.*\n/, :tjp, method('startMacroDef') ],
+        [ 'MACRO', /.*\]\n/, :macroDef, method('endMacroDef') ],
+        [ nil, /.*\n/, :macroDef, method('midMacroDef') ],
+        # Macro Call
+        [ nil, /\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/, :tjp, method('startMacroCall') ],
+        [ nil, /(\s*"(\\"|[^"])*")*\s*\}/, :macroCall, method('endMacroCall') ],
+        [ nil, /.*\n/, :macroCall, method('midMacroCall') ],
         # Some multi-char literals.
         [ 'LITERAL', /<=?/ ],
         [ 'LITERAL', />=?/ ],
@@ -86,31 +88,6 @@ class TaskJuggler
     end
 
     private
-
-    def replaceMacro(type, match)
-      # Remove '${' and '}'
-      argsStr = match[2..-2]
-      # Extract the macro name.
-      if (nameEnd = argsStr.index(' ')).nil?
-        expandMacro([ argsStr ])
-      else
-        macroName = argsStr[0, argsStr.index(' ')]
-        # Remove the name part from argsStr
-        argsStr = argsStr[macroName.length..-1]
-        # Array to hold the arguments
-        args = []
-        # We use another StringScanner to clean the double quotes.
-        scanner = StringScanner.new(argsStr)
-        while (scanner.scan(/\s*"/))
-          args << scanner.scan(/(\\"|[^"])*/).gsub(/\\"/, '"')
-          scanner.scan(/"/)
-        end
-        # Expand the macro and inject it into the scanner.
-        expandMacro([ macroName ] + args)
-      end
-
-      [ nil, '' ]
-    end
 
     def tjpMode(type, match)
       self.mode = :tjp
@@ -152,7 +129,13 @@ class TaskJuggler
     end
 
     def chop2(type, match)
+      # Remove first and last character.
       [ type, match[1..-2] ]
+    end
+
+    def chop2nl(type, match)
+      # remove first and last 2 characters.
+      [ type, match[1..-3] ]
     end
 
     def cleanStringDQ(type, match)
@@ -208,7 +191,9 @@ class TaskJuggler
     end
 
     def startStringSZR(type, match)
-      if match.length != 5
+      # There should be a line break after the cut mark, but we allow some
+      # spaces between the mark and the line break as well.
+      if match.length != 5 && /-8<-\s*\n$/.match(match).nil?
         @lineDelta = 1
         error('junk_after_cut',
               'The cut mark -8<- must be immediately followed by a ' +
@@ -227,14 +212,17 @@ class TaskJuggler
     end
 
     def midStringSZR(type, match)
-      if match[0, @indent.length] != @indent
-        error('bad_indent',
-              "Not all lines of string have same indentation. " +
-              "The first line of the string determines the " +
-              "indentation for all subsequent lines of the same " +
-              "string. Make sure you don't mix tabs and spaces.")
+      # Ignore all the characters from the begining of match that are the same
+      # in @indent.
+      i = 0
+      @indent.each_utf8_char do |ic|
+        if match[i] == ic
+          i += 1
+        else
+          break
+        end
       end
-      @string += match[@indent.length..-1]
+      @string += match[i..-1]
       [ nil, '' ]
     end
 
@@ -245,19 +233,64 @@ class TaskJuggler
 
     def startMacroDef(type, match)
       self.mode = :macroDef
-      @macroDef = match[1..-1].gsub(/\\\]/, ']')
+      # Remove the opening '['
+      @macroDef = match[1..-1]
       [ nil, '' ]
     end
 
     def midMacroDef(type, match)
-      @macroDef += match.gsub(/\\\]/, ']')
+      @macroDef += match
       [ nil, '' ]
     end
 
     def endMacroDef(type, match)
       self.mode = :tjp
-      @macroDef += match[0..-2].gsub(/\\\]/, ']')
+      # Remove "]\n"
+      @macroDef += match[0..-3]
       [ 'MACRO', @macroDef ]
+    end
+
+    def startMacroCall(type, match)
+      self.mode = :macroCall
+      @macroCall = match
+      [ nil, '' ]
+    end
+
+    def midMacroCall(type, match)
+      @macroCall += match
+      [ nil, '' ]
+    end
+
+    def endMacroCall(type, match)
+      self.mode = :tjp
+      @macroCall += match
+      # Remove '${' and '}'
+      argsStr = @macroCall[2..-2]
+      # Extract the macro name.
+      if (nameEnd = argsStr.index(' ')).nil?
+        expandMacro([ argsStr ])
+      else
+        macroName = argsStr[0, argsStr.index(' ')]
+        # Remove the name part from argsStr
+        argsStr = argsStr[macroName.length..-1]
+        # Array to hold the arguments
+        args = []
+        # We use another StringScanner to clean the double quotes.
+        scanner = StringScanner.new(argsStr)
+        while (scanner.scan(/\s*"/))
+          args << scanner.scan(/(\\"|[^"])*/).gsub(/\\"/, '"')
+          scanner.scan(/"\s*/)
+        end
+
+        unless scanner.eos?
+          raise "Junk found at end of macro: #{argsStr[scanner.pos..-1]}"
+        end
+
+        # Expand the macro and inject it into the scanner.
+        expandMacro([ macroName ] + args)
+      end
+
+      [ nil, '' ]
     end
 
   end

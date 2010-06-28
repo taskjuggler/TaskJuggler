@@ -118,6 +118,18 @@ EOT
     check(text, ref)
   end
 
+  def test_macroCall
+    text = '${foo}'
+    macros = [
+      [ 'foo', 'hello' ]
+    ]
+    ref = [
+      [ 'ID', 'hello', 1 ]
+    ]
+
+    check(text, ref, macros)
+  end
+
   private
 
   def check(text, ref, macros = [])

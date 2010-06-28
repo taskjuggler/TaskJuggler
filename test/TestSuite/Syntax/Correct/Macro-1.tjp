@@ -2,7 +2,7 @@ project sample "Example Project" "1.0" 2008-01-18 +2m
 
 macro allocateGroup [
   allocate tux1, tux2
-] 
+]
 
 resource tux1 "Tux1"
 resource tux2 "Tux2"

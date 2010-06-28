@@ -64,6 +64,13 @@ format.
 optional. If you don't need to reference a property, you can omit the
 ID. TaskJuggler will automatically assign an ID then.
 
+* The syntax for macros has changed slightly. The terminating
+''''<nowiki>]</nowiki>'''' must be the last character before the
+line break. No spaces or comments are allowed here. Parameters of
+macro calls must always be enclosed by double quotes. In contrast to
+regular strings, single quotes are not allowed here. The parameter
+may not span multiple lines.
+
 === Using TaskJuggler 2.x and TaskJuggler 3.x in parallel ===
 
 While TaskJuggler 3.x has many new features over TaskJuggler 2.x like
