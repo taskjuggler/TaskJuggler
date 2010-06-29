@@ -216,13 +216,23 @@ class TaskJuggler
     # Add a new pattern to the scanner. _type_ is either nil for tokens that
     # will be ignored, or some identifier that will be returned with each
     # token of this type. _regExp_ is the RegExp that describes the token.
-    # _mode_ identifies the scanner mode where the pattern is active.
-    # _postProc_ is a method reference. This method is called after the token
-    # has been detected. The method gets the type and the matching String and
-    # returns them again in an Array.
+    # _mode_ identifies the scanner mode where the pattern is active. If it's
+    # only a single mode, _mode_ specifies the mode directly. For multiple
+    # modes, it's an Array of modes.  _postProc_ is a method reference. This
+    # method is called after the token has been detected. The method gets the
+    # type and the matching String and returns them again in an Array.
     def addPattern(type, regExp, mode, postProc = nil)
-      @patternsByMode[mode] = [] unless @patternsByMode.include?(mode)
-      @patternsByMode[mode] << [ type, regExp, postProc ]
+      if mode.is_a?(Array)
+        mode.each do |m|
+          # The pattern is active in multiple modes
+          @patternsByMode[m] = [] unless @patternsByMode.include?(mode)
+          @patternsByMode[m] << [ type, regExp, postProc ]
+        end
+      else
+        # The pattern is only active in one specific mode.
+        @patternsByMode[mode] = [] unless @patternsByMode.include?(mode)
+        @patternsByMode[mode] << [ type, regExp, postProc ]
+      end
     end
 
     # Switch the parser to another mode. The scanner will then only detect
@@ -417,15 +427,17 @@ class TaskJuggler
       @macroTable.include?(name)
     end
 
-    # Expand a macro and inject it into the input stream. _args_ is an Array
-    # of Strings. The first is the macro name, the rest are the parameters.
-    def expandMacro(args)
+    # Expand a macro and inject it into the input stream. _prefix_ is any
+    # string that was found right before the macro call. We have to inject it
+    # before the expanded macro. _args_ is an Array of Strings. The first is
+    # the macro name, the rest are the parameters.
+    def expandMacro(prefix, args)
       # Get the expanded macro from the @macroTable.
       macro, text = @macroTable.resolve(args, sourceFileInfo)
       # If the expanded macro is empty, we can ignore it.
       return if text == ''
 
-      unless @cf.injectMacro(macro, args, text)
+      unless @cf.injectMacro(macro, args, prefix + text)
         error('macro_stack_overflow', "Too many nested macro calls.")
       end
     end
