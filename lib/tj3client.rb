@@ -375,11 +375,6 @@ EOT
         error("Report server termination failed: #{$!}")
       end
       @reportServer = nil
-      begin
-        @projectServer.dropReportServer(@ps_authKey, @rs_uri)
-      rescue
-        error("Cannot drop report server: #{$!}")
-      end
       @rs_uri = nil
       @rs_authKey = nil
       @projectServer = nil

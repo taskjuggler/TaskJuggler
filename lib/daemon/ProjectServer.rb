@@ -199,19 +199,11 @@ class TaskJuggler
       [ reportServer.uri, reportServer.authKey ]
     end
 
-    # Remove a ReportServer that's no longer needed. The client is responsible
-    # for terminating it.
-    def dropReportServer(uri)
-      @reportServers.synchronize do
-        @reportServers.delete_if { |rs| rs.uri == uri }
-      end
-    end
-
     # This function is called regularly by the ProjectBroker process to check
     # that the ProjectServer is still operating properly.
     def ping
       # Store the time stamp. If we don't get the ping for some time, we
-      # assume the ProjectServer has died.
+      # assume the ProjectBroker has died.
       @lastPing = TjTime.now
 
       # Now also check our ReportServers if they are still there. If not, we
@@ -330,12 +322,6 @@ class TaskJuggler
       @server.getReportServer
     end
 
-    def dropReportServer(authKey, uri)
-      return false unless @server.checkKey(authKey, 'getReportServer')
-
-      @server.dropReportServer(uri)
-    end
-
     def ping(authKey)
       return false unless @server.checkKey(authKey, 'ping')
 
@@ -374,7 +360,7 @@ class TaskJuggler
         @reportServer = DRbObject.new(nil, @uri) unless @reportServer
         @reportServer.ping(@authKey)
       rescue
-        @log.error("Ping failed: #{$!}")
+        @log.info("Ping failed: #{$!}")
         return false
       end
       true

@@ -133,12 +133,6 @@ class TaskJuggler
         error("Report server termination failed: #{$!}")
       end
       @reportServer = nil
-      # Tell the ProjectServer to drop the ReportServer
-      begin
-        @projectServer.dropReportServer(@ps_authKey, @rs_uri)
-      rescue
-        error("Cannot drop report server: #{$!}")
-      end
 
       @res['content-type'] = 'text/html'
       stdErr.rewind
