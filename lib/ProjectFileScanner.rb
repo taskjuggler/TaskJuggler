@@ -215,12 +215,8 @@ class TaskJuggler
       # Ignore all the characters from the begining of match that are the same
       # in @indent.
       i = 0
-      @indent.each_utf8_char do |ic|
-        if match[i] == ic
-          i += 1
-        else
-          break
-        end
+      while i < @indent.length && @indent[i] == match[i]
+        i += 1
       end
       @string += match[i..-1]
       [ nil, '' ]

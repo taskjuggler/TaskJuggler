@@ -114,7 +114,7 @@ def main
   @maxCpuCores = 1
   @forceReports = false
   @warnTsDeltas = false
-  @syntaxCheck = false
+  @checkSyntax = false
   @noReports = false
   @outputDir = ''
   @timeSheets = []
