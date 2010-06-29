@@ -70,11 +70,20 @@ class TaskJuggler
         # neither the start nor the end of the macro.
         [ nil, /.*\n/, :macroCall, method('midMacroCall') ],
 
-        # A time of day
-        [ 'TIME', /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
+        # An ID with a colon suffix: foo:
+        [ 'ID_WITH_COLON', /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
+
+        # An absolute ID: a.b.c
+        [ 'ABSOLUTE_ID', /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
+
+        # A normal ID: bar
+        [ 'ID', /[a-zA-Z_]\w*/ ],
 
         # A date
         [ 'DATE', /\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?/, :tjp, method('to_date') ],
+
+        # A time of day
+        [ 'TIME', /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
 
         # A floating point number (e. g. 3.143)
         [ 'FLOAT', /\d*\.\d+/, :tjp, method('to_f') ],
@@ -111,15 +120,6 @@ class TaskJuggler
         # Any line not containing the start or end.
         [ 'nil', /.*\n/, :szrString1, method('firstStringSZR') ],
         [ 'nil', /.*\n/, :szrString, method('midStringSZR') ],
-
-        # An ID with a colon suffix: foo:
-        [ 'ID_WITH_COLON', /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
-
-        # An absolute ID: a.b.c
-        [ 'ABSOLUTE_ID', /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
-
-        # A normal ID: bar
-        [ 'ID', /[a-zA-Z_]\w*/ ],
 
         # Single line macro definition
         [ 'MACRO', /\[.*\]\n/, :tjp, method('chop2nl') ],

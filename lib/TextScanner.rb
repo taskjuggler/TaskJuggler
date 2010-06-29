@@ -58,6 +58,8 @@ class TaskJuggler
         @fileName = nil
         @stream = nil
         @line = nil
+        @pos = 0
+        @endPos = 1
         @scanner = nil
         @wrapped = false
         @macroStack = []
@@ -69,11 +71,10 @@ class TaskJuggler
       end
 
       def injectMacro(macro, args, text)
-        pos = @scanner.pos
-        @nextMacroEnd = pos + text.length
-        @line = @line[0, pos] + text + @line[pos..-1]
+        @nextMacroEnd = @pos + text.length
+        @line = @line[0, @pos] + text + @line[@pos..-1]
         @scanner = StringScanner.new(@line)
-        @scanner.pos = pos
+        @scanner.pos = @pos
 
         # Simple detection for recursive macro calls.
         return false if @macroStack.length > 20
@@ -106,10 +107,10 @@ class TaskJuggler
           @scanner = StringScanner.new(@line)
           @wrapped = @line[-1] == ?\n
         end
+        return nil if (token = @scanner.scan(re)).nil?
 
-        token = @scanner.scan(re)
-
-        while @nextMacroEnd && @nextMacroEnd < @scanner.pos
+        @pos = @scanner.pos
+        while @nextMacroEnd && @nextMacroEnd < @pos
           @macroStack.pop
           @nextMacroEnd = @macroStack.empty? ? nil : @macroStack.last.endPos
         end
