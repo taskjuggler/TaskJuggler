@@ -155,7 +155,7 @@ class TaskJuggler
           str = @text.to_s
           # Remove any trailing line breaks. These don't really make much
           # sense in CSV files.
-          while str[-1] == "\n"
+          while str[-1] == ?\n
             str.chomp!
           end
           str
