@@ -91,6 +91,7 @@ class TaskJuggler
       rescue TjException
         return false
       end
+      restartTimer
       true
     end
 
@@ -101,6 +102,7 @@ class TaskJuggler
       else
         @log.error("Report generation of #{id} failed")
       end
+      restartTimer
       ok
     end
 
@@ -111,6 +113,7 @@ class TaskJuggler
       else
         @log.error("Report list compilation of #{id} failed")
       end
+      restartTimer
       ok
     end
 
@@ -118,6 +121,7 @@ class TaskJuggler
       @log.info("Checking time sheet #{sheet}")
       ok = @tj.checkTimeSheet(sheet)
       @log.debug("Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      restartTimer
       ok
     end
 
@@ -125,6 +129,7 @@ class TaskJuggler
       @log.info("Checking status sheet #{sheet}")
       ok = @tj.checkStatusSheet(sheet)
       @log.debug("Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      restartTimer
       ok
     end
 

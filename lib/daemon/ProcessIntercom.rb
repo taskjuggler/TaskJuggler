@@ -47,6 +47,13 @@ class TaskJuggler
       # This flag will be set to true by DRb method calls to terminate the
       # process.
       @terminate = false
+
+      # This mutex is locked while a client is connected.
+      @clientConnection = Mutex.new
+      # This lock protects the @timerStart
+      @timeLock = Monitor.new
+      # The time stamp of the last client interaction.
+      @timerStart = nil
     end
 
     def terminate
@@ -55,6 +62,8 @@ class TaskJuggler
     end
 
     def connect(stdout, stderr, stdin, silent)
+      # Set the client lock.
+      @clientConnection.lock
       @log.debug('Rerouting ProjectServer standard IO to client')
       # Make sure that all output to STDOUT and STDERR is sent to the client.
       # Input is read from the client STDIN.  We save a copy of the old file
@@ -77,6 +86,8 @@ class TaskJuggler
       $stderr = @stderr if @stderr
       $stdin = @stdin if @stdin
       @log.debug('Standard IO has been restored')
+      # Release the client lock
+      @clientConnection.unlock
       true
     end
 
@@ -95,13 +106,43 @@ class TaskJuggler
       true
     end
 
+    # This function must be called after each client interaction to restart the
+    # client connection timer.
+    def restartTimer
+      @timeLock.synchronize do
+        @log.debug('Reseting client connection timer')
+        @timerStart = Time.new
+      end
+    end
+
+    # Check if the client interaction timer has already expired.
+    def timerExpired?
+      res = nil
+      @timeLock.synchronize do
+        res = (Time.new > @timerStart + 2 * 60 * 60)
+      end
+      res
+    end
+
+    # This method starts a new thread and waits for the @terminate variable to
+    # be true. If that happens, it waits for the @clientConnection lock or
+    # forces an exit after the timeout has been reached. It shuts down the DRb
+    # server.
     def startTerminator
       Thread.new do
         loop do
           if @terminate
-            # Give the caller a chance to properly terminate the connection.
-            sleep 1
-            @log.debug('Shutting down DRb server')
+            # We wait for the client to propery disconnect. In case this does
+            # not happen, we'll wait for the timeout and exit anyway.
+            restartTimer
+            while @clientConnection.locked? && !timerExpired? do
+              sleep 1
+            end
+            if timerExpired?
+              @log.warning('Shutting down DRb server due to timeout')
+            else
+              @log.debug('Shutting down DRb server')
+            end
             DRb.stop_service
             break
           else

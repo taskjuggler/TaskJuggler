@@ -148,12 +148,14 @@ class TaskJuggler
       # Great, everything went fine. We've got a project to work with.
       updateState(:ready, @tj.projectId)
       @log.info("Project #{@tj.projectId} loaded")
+      restartTimer
       true
     end
 
     # Return the name of the loaded project or nil.
     def getProjectName
       return nil unless @tj
+      restartTimer
       @tj.projectName
     end
 
@@ -166,6 +168,7 @@ class TaskJuggler
           list << [ report.fullId, report.name ]
         end
       end
+      restartTimer
       list
     end
 
@@ -196,6 +199,7 @@ class TaskJuggler
       end
 
       @log.debug("Got report server with URI #{reportServer.uri} for tag #{tag}")
+      restartTimer
       [ reportServer.uri, reportServer.authKey ]
     end
 
@@ -360,7 +364,7 @@ class TaskJuggler
         @reportServer = DRbObject.new(nil, @uri) unless @reportServer
         @reportServer.ping(@authKey)
       rescue
-        @log.info("Ping failed: #{$!}")
+        @log.info("ReportServer (#{@uri}) has terminated")
         return false
       end
       true
