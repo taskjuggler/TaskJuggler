@@ -1172,10 +1172,10 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->[ #{taskEnd}"
+          str += "[->] #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->] #{taskStart}"
+          str += "[->[ #{taskStart}"
         end
         str += "\n"
       end
@@ -1184,10 +1184,10 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->[ #{taskEnd}"
+          str += "]->] #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->] #{taskStart}"
+          str += "]->[ #{taskStart}"
         end
         str += "\n"
       end
@@ -1204,7 +1204,7 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->[ #{taskEnd}"
+          str += "]->] #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
           str += "[->[ #{taskStart}"
@@ -1219,7 +1219,7 @@ class TaskJuggler
           str += "[->] #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->] #{taskStart}"
+          str += "]->[ #{taskStart}"
         end
         str += "\n"
       end

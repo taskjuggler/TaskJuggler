@@ -457,7 +457,7 @@ class TaskJuggler
                               property, nil, sfi || sourceFileInfo)
         @messageHandler.send(message)
 
-        unless @cf.macroStack.empty?
+        if @cf && !@cf.macroStack.empty?
           message = Message.new('macro_stack', 'info', 'Macro call history:')
           @messageHandler.send(message)
 

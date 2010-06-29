@@ -148,10 +148,17 @@ class TaskJuggler
         elsif @data && @data.is_a?(String)
           @data
         elsif @text
-          if @text.respond_to?('functionHandler')
+          if @text.respond_to?('functionHandler') &&
+             @text.functionHandler('query')
             @text.functionHandler('query').setQuery(@query)
           end
-          @text.to_s
+          str = @text.to_s
+          # Remove any trailing line breaks. These don't really make much
+          # sense in CSV files.
+          while str[-1] == "\n"
+            str.chomp!
+          end
+          str
         end
 
       # Try to convert numbers and other types to their native Ruby type if

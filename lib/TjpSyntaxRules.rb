@@ -2911,7 +2911,7 @@ EOT
     descr('The criticalness of the task with respect to all the paths that ' +
           'it is a part of.')
 
-    singlePattern('_precursor')
+    singlePattern('_precursors')
     descr(<<EOT
 A list of tasks the current task depends on. The list contains the names, the
 IDs, the date and the type of dependency. For the type the following symbols
