@@ -332,11 +332,11 @@ class TaskJuggler
     def declareAttribute(attributeType)
       if attributeType.scenarioSpecific
         @project.scenarioCount.times do |i|
-          attribute = newAttribute(attributeType)
+          attribute = attributeType.objClass.new(self, attributeType)
           @scenarioAttributes[i][attribute.id] = attribute
         end
       else
-        attribute = newAttribute(attributeType)
+        attribute = attributeType.objClass.new(self, attributeType)
         @attributes[attribute.id] = attribute
       end
     end
@@ -600,16 +600,6 @@ class TaskJuggler
       # We use a special class to allow CSS formating.
       rti.cssClass = 'tj_journal'
       query.rti = rti
-    end
-
-    def newAttribute(attributeType)
-      attribute = attributeType.objClass.new(self, attributeType)
-      # If the attribute requires a pointer to the project, we'll hand it over.
-      if !attribute.value.nil? && attribute.respond_to?('setProject')
-        attribute.setProject(@project)
-      end
-
-      attribute
     end
 
     def indent(tag, str)

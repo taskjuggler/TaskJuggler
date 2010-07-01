@@ -344,10 +344,7 @@ class TaskJuggler
 
     def initialize(property, type)
       super
-    end
-
-    def setProject(project)
-      @value.setProject(project)
+      @value.setProject(property.project) if @value
     end
 
     def LimitsAttribute::tjpId
@@ -503,10 +500,7 @@ class TaskJuggler
 
     def initialize(property, type)
       super
-    end
-
-    def setProject(project)
-      @value.project = project
+      @value.project = property.project if @value
     end
 
     def ShiftAssignmentsAttribute::tjpId
