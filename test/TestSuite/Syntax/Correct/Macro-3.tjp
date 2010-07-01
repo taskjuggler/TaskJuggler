@@ -1,0 +1,14 @@
+macro major         [6]
+macro minor         [0]
+macro maint         [0]
+macro content       [foo]
+macro content_title [Project]
+macro start_date    [2009-12-01]
+macro end_date      [2012-09-30]
+
+project ${content}${major}${minor}${maint} "${content_title}"
+"${major}" 2009-12-01 - 2012-09-30 {
+}
+
+task "foo"
+

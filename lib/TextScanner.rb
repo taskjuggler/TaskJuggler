@@ -108,6 +108,7 @@ class TaskJuggler
           @wrapped = @line[-1] == ?\n
         end
         return nil if (token = @scanner.scan(re)).nil?
+        #puts "#{re.to_s[0..20]}: [#{token}]"
 
         @pos = @scanner.pos
         while @nextMacroEnd && @nextMacroEnd < @pos
@@ -226,7 +227,7 @@ class TaskJuggler
       if mode.is_a?(Array)
         mode.each do |m|
           # The pattern is active in multiple modes
-          @patternsByMode[m] = [] unless @patternsByMode.include?(mode)
+          @patternsByMode[m] = [] unless @patternsByMode.include?(m)
           @patternsByMode[m] << [ type, regExp, postProc ]
         end
       else
@@ -239,6 +240,7 @@ class TaskJuggler
     # Switch the parser to another mode. The scanner will then only detect
     # with pattens of that _newMode_.
     def mode=(newMode)
+      #puts "**** New mode: #{newMode}"
       @activePatterns = @patternsByMode[newMode]
       raise "Undefined mode #{newMode}" unless @activePatterns
       @scannerMode = newMode

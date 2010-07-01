@@ -58,10 +58,12 @@ class TaskJuggler
         [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*|'(\\'|[^'])*|-8<-.*)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :tjp, method('startMacroCall') ],
         # This pattern is similar to the previous one, but is active inside of
-        # multi-line strings.
-        [ nil, /(.*)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
-          [ :dqString, :sqString, :szrString, :szrString1 ],
-          method('startMacroCall') ],
+        # multi-line strings. The corresponding rule for sizzors strings
+        # can be found below.
+        [ nil, /(\\"|[^"])*\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+          :dqString, method('startMacroCall') ],
+        [ nil, /(\\'|[^'])*\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+          :sqString, method('startMacroCall') ],
         # This pattern matches the end of a macro call. It injects the prefix
         # and the expanded macro into the scanner again. The mode is restored
         # to the previous mode.
@@ -117,6 +119,9 @@ class TaskJuggler
         # patterns switch the scanner back to tjp mode.
         [ 'STRING', /\s*->8-/, :szrString1, method('endStringSZR') ],
         [ 'STRING', /\s*->8-/, :szrString, method('endStringSZR') ],
+        # This rule handles macros inside of sizzors strings.
+        [ nil, /.*\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+          [ :szrString, :szrString1 ], method('startMacroCall') ],
         # Any line not containing the start or end.
         [ 'nil', /.*\n/, :szrString1, method('firstStringSZR') ],
         [ 'nil', /.*\n/, :szrString, method('midStringSZR') ],
