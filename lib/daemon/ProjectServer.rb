@@ -355,7 +355,8 @@ class TaskJuggler
     end
 
     # Send a ping to the ReportServer process to check that it is still
-    # functioning properly.
+    # functioning properly. If not, it has probably terminated and we can
+    # remove it from the list of active ReportServers.
     def ping
       return true unless @uri
 
@@ -364,7 +365,9 @@ class TaskJuggler
         @reportServer = DRbObject.new(nil, @uri) unless @reportServer
         @reportServer.ping(@authKey)
       rescue
-        @log.info("ReportServer (#{@uri}) has terminated")
+        # ReportServer processes terminate on request of their clients. Not
+        # responding to a ping is a normal event.
+        @log.debug("ReportServer (#{@uri}) has terminated")
         return false
       end
       true

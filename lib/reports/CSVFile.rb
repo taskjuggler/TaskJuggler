@@ -206,9 +206,9 @@ class TaskJuggler
         field.to_s
       else
         # Duplicate quote characters.
-        field.gsub!(/@quote/, "#{@quote * 2}")
+        f = field.gsub(/@quote/, "#{@quote * 2}")
         # Enclose the field in quote characters
-        @quote + field.to_s + @quote
+        @quote + f.to_s + @quote
       end
     end
 
