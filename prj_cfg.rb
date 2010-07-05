@@ -35,7 +35,7 @@ MANUAL_DIR      = 'manual'
 
 # FILES
 README          = FileList['README']
-CHANGES         = ''#'CHANGES'
+CHANGELOG       = 'CHANGELOG'
 LICENSE         = 'COPYING'
 DESCRIPTION     = <<'EOT'
 TaskJuggler is a project management software that goes far beyond the commonly
