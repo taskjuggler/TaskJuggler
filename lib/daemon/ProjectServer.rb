@@ -167,6 +167,7 @@ class TaskJuggler
         unless report.get('formats').empty?
           list << [ report.fullId, report.name ]
         end
+      end
       restartTimer
       list
     end
