@@ -164,10 +164,9 @@ class TaskJuggler
       return [] unless @tj && (project = @tj.project)
       list = []
       project.reports.each do |report|
-        if report.get('formats').include?(:html)
+        unless report.get('formats').empty?
           list << [ report.fullId, report.name ]
         end
-      end
       restartTimer
       list
     end
