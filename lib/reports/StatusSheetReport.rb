@@ -160,9 +160,6 @@ class TaskJuggler
               alertLevel = @project['alertLevels'][entry.alertLevel][0]
               @file << "    # status #{alertLevel} \"#{entry.headline}\" {\n"
               @file << "    #   # Date: #{entry.date}\n"
-              if entry.moderator
-                @file << "    #   # Moderator #{entry.author.fullId}\n"
-              end
               if (tsRecord = entry.timeSheetRecord)
                 @file << "    #   # "
                 @file << "Work: #{tsRecord.actualWorkPercent.to_i}% "
