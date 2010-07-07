@@ -21,7 +21,8 @@ class TaskJuggler
   class JournalEntry
 
     attr_reader :date, :headline, :property, :sourceFileInfo
-    attr_accessor :author, :summary, :details, :alertLevel, :timeSheetRecord
+    attr_accessor :author, :moderator, :summary, :details, :alertLevel,
+                  :timeSheetRecord
 
     # Create a new JournalEntry object.
     def initialize(journal, date, headline, property, sourceFileInfo = nil)
@@ -38,6 +39,8 @@ class TaskJuggler
       @sourceFileInfo = sourceFileInfo
       # A reference to a Resource.
       @author = nil
+      # A reference to the Resource that has moderated the entry.
+      @moderator = nil
       # An introductory or summarizing RichText paragraph.
       @summary = nil
       # A RichText of arbitrary length.
@@ -101,6 +104,11 @@ class TaskJuggler
       @entries.each do |entry|
         yield entry
       end
+    end
+
+    # Like Array:delete_if
+    def delete_if
+      @entries.delete_if { |e| yield e }
     end
 
     # Like Array::empty?
@@ -181,6 +189,15 @@ class TaskJuggler
       end
       @propertyToEntries[entry.property] << entry
     end
+
+    # Remove all entries that match the _date_ and _moderator_.
+    def removeEntriesByDateModerator(date, moderator)
+      @entries.delete_if { |e| e.date == date && e.moderator == moderator}
+      @propertyToEntries.each do |p, list|
+        list.delete_if { |e| e.date == date && e.moderator == moderator }
+      end
+    end
+
 
     # Return a list of all JournalEntry objects for the given _resource_ that
     # are dated between _startDate_ and _endDate_, are for Task _task_ and
