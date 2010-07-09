@@ -19,7 +19,7 @@ RAKE_FILES      = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, SETUP_FILE, "#{RAK
 BIN_FILES       = FileList["#{BIN_DIR}/**/*"]
 LIB_FILES       = FileList["#{LIB_DIR}/**/*.rb"]
 TEST_FILES      = FileList["#{TEST_DIR}/**/test_*.rb"]
-RDOC_FILES      = FileList[README,LICENSE]#,CHANGES]
+RDOC_FILES      = FileList[README,LICENSE,CHANGELOG]
 
 # DIST FILES
 DIST_FILES       = FileList[]
@@ -36,7 +36,6 @@ DIST_FILES.exclude('**/tmp_*', '**/*.tmp')
 # 
 CLEAN.include( MANUAL_DIR + '/html/*' )
 CLEAN.include( 'README' ) if File.exist? 'README.rb'
-CLEAN.include( 'CHANGES' ) if File.exist? 'CHANGES.rb'
 
 # LOADPATH
 REQUIRE_PATHS   = [LIB_DIR]

@@ -193,6 +193,35 @@ EOT
       xml.to_s
     end
 
+    def to_csv
+      table = []
+      # Header line with project names
+      table << (row = [])
+      # First column is the resource name and ID.
+      row << ""
+      @projects.each_key do |projectId|
+        row << @projects[projectId].name
+      end
+
+      # Header line with project IDs
+      table << (row = [])
+      row << "Resource"
+      @projects.each_key do |projectId|
+        row << projectId
+      end
+
+      @resourcesTotalEffort.each_key do |resourceId|
+        # Add one line per resource.
+        table << (row = [])
+        row << "#{@resources[resourceId].name} (#{resourceId})"
+        @projects.each_key do |projectId|
+          row << sum(projectId, resourceId)
+        end
+      end
+
+      table
+    end
+
   private
 
     def sum(projectId, resourceId)

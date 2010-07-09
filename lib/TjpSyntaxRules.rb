@@ -4033,7 +4033,7 @@ EOT
                                        @val[2], @property,
                                        @sourceFileInfo[0])
       @journalEntry.alertLevel = @val[1]
-      @journalEntry.author = @sheetAuthor
+      @journalEntry.author = @journalEntry.moderator = @sheetAuthor
 
     })
   end
@@ -4085,6 +4085,11 @@ EOT
       @sheetAuthor = @val[1]
       @sheetStart = @val[2].start
       @sheetEnd = @val[2].end
+      # Remove all previous Journal entries from the same moderator for the
+      # same end date. This status sheet will replace the data from the
+      # previous one.
+      @project['journal'].removeEntriesByDateModerator(@sheetEnd,
+                                                       @sheetAuthor)
     })
     arg(1, 'reporter', <<'EOT'
 The ID of a defined resource. This identifies the status reporter. Unless the
