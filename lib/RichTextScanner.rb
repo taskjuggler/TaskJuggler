@@ -16,9 +16,17 @@ require 'TextScanner'
 class TaskJuggler
 
   # The RichTextScanner is used by the RichTextParser to chop the input text
-  # into digestable tokens. The parser and the scanner only communicate over
-  # RichTextScanner#nextToken and RichTextScanner#returnToken. The scanner can
-  # break the text into words and special tokens.
+  # into digestable tokens. It specializes the TextScanner class for RichText
+  # syntax. The scanner can operate in various modes. The current mode is
+  # context dependent. The following modes are supported:
+  #
+  # :bop :     at the begining of a paragraph.
+  # :bol :     at the begining of a line.
+  # :inline :  in the middle of a line
+  # :nowiki :  ignoring all MediaWiki special tokens
+  # :ref :     inside of a REF [[ .. ]]
+  # :href :    inside of an HREF [ .. ]
+  # :func :    inside of a block <[ .. ]> or inline <- .. -> function
   class RichTextScanner < TextScanner
 
     def initialize(masterFile, messageHandler)
@@ -26,6 +34,7 @@ class TaskJuggler
         [ 'LINEBREAK', /\s*\n/, :bol, method('linebreak') ],
         [ nil, /\s*\n/, :bop, method('linebreak') ],
         [ 'SPACE', /[ \t\n]+/, :inline, method('space') ],
+        # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
         [ nil, /<\/nowiki>/, :nowiki, method('nowikiEnd') ],
         [ 'WORD', /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
@@ -59,22 +68,10 @@ class TaskJuggler
         [ 'STRING', /'(\\'|[^'])*'/, :func, method('chop2') ],
         [ nil, /[ \t\n]+/, :func ],
         [ 'LITERAL', /./, :func ],
-        [ 'TITLE4', /={5}/, [ :bop, :bol ], method('inlineMode') ],
-        [ 'TITLE3', /====/, [ :bop, :bol ], method('inlineMode') ],
-        [ 'TITLE2', /===/, [ :bop, :bol ], method('inlineMode') ],
-        [ 'TITLE1', /==/, [ :bop, :bol ], method('inlineMode') ],
-        [ 'TITLE4END', /={5}/, :inline ],
-        [ 'TITLE3END', /====/, :inline ],
-        [ 'TITLE2END', /===/, :inline ],
-        [ 'TITLE1END', /==/, :inline ],
-        [ 'BULLET4', /\*{4} /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'BULLET3', /\*{3} /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'BULLET2', /\*\* /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'BULLET1', /\* /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'NUMBER4', /#### /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'NUMBER3', /### /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'NUMBER2', /## /, [ :bop, :bol ], method('inlineMode') ],
-        [ 'NUMBER1', /# /, [ :bop, :bol ], method('inlineMode') ],
+        [ 'TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
+        [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
+        [ 'BULLET*', /\*{1,4} /, [ :bop, :bol ], method('bullet') ],
+        [ 'NUMBER*', /\#{1,4} /, [ :bop, :bol ], method('number') ],
         [ nil, /\s+/, :bol, method('inlineMode') ],
         [ 'WORD', /[^ \n\t][^ \n\t\[<']*/, [ :bop, :bol, :inline ],
           method('inlineMode') ]
@@ -104,6 +101,25 @@ class TaskJuggler
     def inlineMode(type, match)
       self.mode = :inline
       [ type, match ]
+    end
+
+    def titleStart(type, match)
+      self.mode = :inline
+      [ "TITLE#{match.length - 1}", match ]
+    end
+
+    def titleEnd(type, match)
+      [ "TITLE#{match.length - 1}END", match ]
+    end
+
+    def bullet(type, match)
+      self.mode = :inline
+      [ "BULLET#{match.length - 1}", match ]
+    end
+
+    def number(type, match)
+      self.mode = :inline
+      [ "NUMBER#{match.length - 1}", match ]
     end
 
     def nowikiStart(type, match)
