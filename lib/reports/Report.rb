@@ -47,61 +47,52 @@ class TaskJuggler
     # report defined by all the class attributes and report elements is
     # generated according the the requested output format(s).
     def generate
-      begin
-        generateIntermediateFormat
+      generateIntermediateFormat
 
-        # Then generate the actual output format.
-        get('formats').each do |format|
-          case format
-          when :html
-            generateHTML
-            copyAuxiliaryFiles
-          when :csv
-            generateCSV
-          when :niku
-            generateNiku
-          when :tjp
-            generateTJP
-          else
-            raise 'Unknown report output format #{format}.'
-          end
+      # Then generate the actual output format.
+      get('formats').each do |format|
+        case format
+        when :html
+          generateHTML
+          copyAuxiliaryFiles
+        when :csv
+          generateCSV
+        when :niku
+          generateNiku
+        when :tjp
+          generateTJP
+        else
+          raise 'Unknown report output format #{format}.'
         end
-      rescue TjException
-        error('reporting_failed', $!.message)
       end
-      0
     end
 
     # Generate an output format agnostic version that can later be turned into
     # the respective output formats.
     def generateIntermediateFormat
-      begin
-        @content = nil
-        case @typeSpec
-        when :export
-          @content = TjpExportRE.new(self)
-        when :niku
-          @content = NikuReport.new(self)
-        when :resourcereport
-          @content = ResourceListRE.new(self)
-        when :textreport
-          @content = TextReport.new(self)
-        when :taskreport
-          @content = TaskListRE.new(self)
-        when :statusSheet
-          @content = StatusSheetReport.new(self)
-        when :timeSheet
-          @content = TimeSheetReport.new(self)
-        else
-          raise "Unknown report type"
-        end
-
-        # Most output format can be generated from a common intermediate
-        # representation of the elements. We generate that IR first.
-        @content.generateIntermediateFormat if @content
-      rescue TjException
-        error('report_IR_generattion_failed', $!.message)
+      @content = nil
+      case @typeSpec
+      when :export
+        @content = TjpExportRE.new(self)
+      when :niku
+        @content = NikuReport.new(self)
+      when :resourcereport
+        @content = ResourceListRE.new(self)
+      when :textreport
+        @content = TextReport.new(self)
+      when :taskreport
+        @content = TaskListRE.new(self)
+      when :statusSheet
+        @content = StatusSheetReport.new(self)
+      when :timeSheet
+        @content = TimeSheetReport.new(self)
+      else
+        raise "Unknown report type"
       end
+
+      # Most output format can be generated from a common intermediate
+      # representation of the elements. We generate that IR first.
+      @content.generateIntermediateFormat if @content
     end
 
     # Render the content of the report as HTML (without the framing).
@@ -314,18 +305,24 @@ EOT
     end
 
     def dataDirError(dirName)
-      raise TjException.new, <<"EOT"
+      error('data_dir_error', <<"EOT"
 Cannot find the #{dirName} directory. This is usually the result of an
 improper TaskJuggler installation. If you know the directory, you can use the
 TASKJUGGLER_DATA_PATH environment variable to specify the location.  The
 variable should be set to the path without the /data at the end. Multiple
 directories must be separated by colons.
 EOT
+           )
     end
 
     def error(id, message)
-        @project.messageHandler.send(Message.new(id, 'error', message, nil, nil,
-                                                 @sourceFileInfo))
+      if message && !message.empty?
+        @project.messageHandler.error(id, message, @sourceFileInfo)
+      else
+        # We have no message, so the error has already been reported to the
+        # MessageHandler. Just trigger another exception to signal the error.
+        raise TjException
+      end
     end
 
   end

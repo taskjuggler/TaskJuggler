@@ -231,11 +231,11 @@ class TaskJuggler
     private
 
     def error(id, text)
-      @timeSheet.message('error', id, text, @sourceFileInfo)
+      @timeSheet.error(id, text, @sourceFileInfo)
     end
 
     def warning(id, text)
-      @timeSheet.message('warning', id, text, @sourceFileInfo)
+      @timeSheet.warning(id, text, @sourceFileInfo)
     end
 
   end
@@ -332,18 +332,6 @@ class TaskJuggler
         @resource.getFreeSlots(@scenarioIdx, startIdx, endIdx)
     end
 
-    # Report an error or warning to the TjMessageHandler. In case of an error
-    # an exception is raised.
-    def message(type, id, text, sourceFileInfo)
-      unless text.empty?
-        message = Message.new(id, type, text, @resource, nil, sourceFileInfo)
-        resource.project.messageHandler.send(message)
-      end
-
-      # An empty strings signals an already reported error
-      raise TjException.new, '' if type == 'error'
-    end
-
     # Converts allocation percentage into time slots.
     def percentToSlots(value)
       @percentageUsed = true
@@ -366,15 +354,17 @@ class TaskJuggler
        @resource.project['scheduleGranularity']).to_i
     end
 
+    def error(id, text, sourceFileInfo = nil)
+      @resource.project.messageHandler.error(id, text, sourceFileInfo, nil,
+                                             @resource)
+    end
+
+    def warning(id, text, sourceFileInfo = nil)
+      @resource.project.messageHandler.warning(id, text, sourceFileInfo, nil,
+                                               @resource)
+    end
+
     private
-
-    def error(id, text)
-      message('error', id, text, @sourceFileInfo)
-    end
-
-    def warning(id, text)
-      message('warning', id, text, @sourceFileInfo)
-    end
 
     def workWithUnit(slots)
       if @percentageUsed

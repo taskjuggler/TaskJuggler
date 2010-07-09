@@ -25,7 +25,7 @@ task a "Task A" {
 	}	
 }
 
-# MARK: error 7 loop_detected
+# MARK: warning 7 loop_detected
 # MARK: info 7 loop_at_end
 # MARK: info 11 loop_at_start
 # MARK: info 11 loop_at_end

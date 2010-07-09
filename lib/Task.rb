@@ -84,15 +84,14 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      begin
-        rti = RichText.new(rText, RTFHandlers.create(@project)).
-          generateIntermediateFormat
-      rescue RichTextException => msg
-        $stderr.puts "Error while processing Rich Text\n" +
-                     "Line #{msg.lineNo}: #{msg.text}\n" +
-                     "#{msg.line}"
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
+                                 @project.messageHandler).
+                                 generateIntermediateFormat)
+        @project.messageHandler.warning(
+          'task_journal_text', 'Syntax error in journal text')
         return nil
       end
+
       # No section numbers, please!
       rti.sectionNumbers = false
       # We use a special class to allow CSS formating.

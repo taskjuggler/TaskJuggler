@@ -17,9 +17,9 @@ module MessageChecker
   def checkMessages(tj, file)
     refMessages = collectMessages(file)
     tj.messageHandler.messages.each do |message|
-      assert(ref = refMessages.pop, "Unexpected #{message.level} #{message.id}: #{message}")
-      assert_equal(ref[0], message.level,
-          "Error in #{file}: Got #{message.level} instead of #{ref[0]}")
+      assert(ref = refMessages.pop, "Unexpected #{message.type.to_s} #{message.id}: #{message}")
+      assert_equal(ref[0], message.type.to_s,
+          "Error in #{file}: Got #{message.type.to_s} instead of #{ref[0]}")
       assert_equal(ref[2], message.id,
           "Error in #{file}: Got #{message.id} instead of #{ref[2]}")
       if message.sourceFileInfo
@@ -34,7 +34,7 @@ module MessageChecker
 
   # All files that generate messages have comments in them that specify the
   # expected messages. The comments have the following form:
-  # MARK: <level> <lineNo> <message Id>
+  # MARK: <type> <lineNo> <message Id>
   # We collect all these reference messages to compare them with the
   # generated messages after the test has been run.
   def collectMessages(file)

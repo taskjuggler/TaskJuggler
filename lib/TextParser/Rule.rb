@@ -156,6 +156,11 @@ class TaskJuggler::TextParser
            "#{@repeatable ? "[repeatable]" : ""}"
       @patterns.length.times do |i|
         puts "  Pattern: \"#{@patterns[i]}\""
+        unless @transitions[i]
+          puts "No transitions for this pattern!"
+          next
+        end
+
         @transitions[i].each do |key, rule|
           if key[0] == ?_
             token = "\"" + key.slice(1, key.length - 1) + "\""

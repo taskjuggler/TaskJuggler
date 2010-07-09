@@ -33,9 +33,10 @@ class TaskJuggler
     # Create the parser object. _messageHandler_ is a TjMessageHandler that is
     # used for error reporting.
     def initialize(messageHandler)
-      super()
+      super
 
-      @messageHandler = messageHandler
+      @tjMessageHandler = messageHandler
+
       # Define the token types that the ProjectFileScanner may return for
       # variable elements.
       @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
@@ -49,17 +50,13 @@ class TaskJuggler
     # Call this function with the master file to start processing a TJP file or
     # a set of TJP files.
     def open(file, master, fileNameIsBuffer = false)
-      begin
-        @scanner = ProjectFileScanner.new(file, @messageHandler)
-        # We need the ProjectFileScanner object for error reporting.
-        if master && !fileNameIsBuffer && file != '.' && file[-4, 4] != '.tjp'
-          error('illegal_extension', "Project file name must end with " +
-                '\'.tjp\' extension')
-        end
-        @scanner.open(fileNameIsBuffer)
-      rescue StandardError
-        error('file_open', $!.message)
+      @scanner = ProjectFileScanner.new(file, @messageHandler)
+      # We need the ProjectFileScanner object for error reporting.
+      if master && !fileNameIsBuffer && file != '.' && file[-4, 4] != '.tjp'
+        error('illegal_extension', "Project file name must end with " +
+              '\'.tjp\' extension')
       end
+      @scanner.open(fileNameIsBuffer)
 
       @property = nil
       @scenarioIdx = 0
@@ -69,8 +66,7 @@ class TaskJuggler
     # Call this function to cleanup the parser structures after the file
     # processing has been completed.
     def close
-      res = @scanner.close
-      res
+      @scanner.close
     end
 
     # This function will deliver the next token from the scanner. A token is a
@@ -129,8 +125,8 @@ class TaskJuggler
       if @property.container?
         error('container_attribute',
               "The attribute #{attribute} may not be used for this property " +
-              'after sub properties have been added.', @property,
-              @sourceFileInfo[0])
+              'after sub properties have been added.', @sourceFileInfo[0],
+              @property)
       end
     end
 
@@ -154,15 +150,15 @@ class TaskJuggler
     def checkBooking(task, resource)
       unless task.leaf?
         error('booking_no_leaf', "#{task.fullId} is not a leaf task",
-              task, @sourceFileInfo[0])
+              @sourceFileInfo[0], task)
       end
       if task['milestone', @scenarioIdx]
         error('booking_milestone', "You cannot add bookings to a milestone",
-              task, @sourceFileInfo[0])
+              @sourceFileInfo[0], task)
       end
       unless resource.leaf?
         error('booking_group', "You cannot book a group resource",
-              task, @sourceFileInfo[0])
+              @sourceFileInfo[0], task)
       end
     end
 
@@ -218,19 +214,20 @@ class TaskJuggler
     # by _tokenSet_.
     def newRichText(text, tokenSet = nil)
       sfi = sourceFileInfo
-      begin
-        rText = RichText.new(text, RTFHandlers.create(@project, sfi))
-        rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet)
-        rti.sectionNumbers = false
-      rescue RichTextException => msg
-        sfi = SourceFileInfo.new(sfi.fileName, sfi.lineNo + msg.lineNo - 1, 0)
-        message = Message.new(msg.id, 'error', msg.text + "\n" + msg.line,
-                              @property, nil, sfi)
-        @messageHandler.send(message)
-
-        # An empty strings signals an already reported error
-        raise TjException.new, ''
+      rText = RichText.new(text, RTFHandlers.create(@project, sfi))
+      unless (rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet))
+        rText.messageHandler.messages.each do |msg|
+          # Map the SourceFileInfo of the RichText back to the original
+          # location in the input file.
+          sfi = SourceFileInfo.new(sfi.fileName,
+                                   sfi.lineNo + msg.sourceFileInfo.lineNo - 1,
+                                   0)
+          # Then replay the error message.
+          @messageHandler.addMessage(msg.type, msg.id, msg.message, sfi,
+                                     msg.line)
+        end
       end
+      rti.sectionNumbers = false
       rti
     end
 

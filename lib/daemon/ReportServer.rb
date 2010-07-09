@@ -12,7 +12,6 @@
 
 require 'daemon/ProcessIntercom'
 require 'TjException'
-require 'Message'
 require 'TjTime'
 
 class TaskJuggler

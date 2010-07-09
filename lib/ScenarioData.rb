@@ -12,7 +12,7 @@
 
 
 require 'TjException'
-require 'Message'
+require 'MessageHandler'
 
 class TaskJuggler
 
@@ -31,35 +31,26 @@ class TaskJuggler
       @attributes[attributeName].value
     end
 
-    def error(id, text, abort = true, sourceFileInfo = nil)
-      message = Message.new(id, 'error', text, @property,
-                            @project.scenario(@scenarioIdx),
-                            sourceFileInfo.nil? ?
-                            @property.sourceFileInfo : sourceFileInfo)
-      @project.sendMessage(message)
-      raise TjException.new, "Scheduling error" if abort
+    def error(id, text, sourceFileInfo = nil, property = nil)
+      @project.messageHandler.error(
+        id, text, sourceFileInfo || @property.sourceFileInfo, nil,
+        property || @property,
+        @project.scenario(@scenarioIdx))
     end
 
-    def warning(id, text)
-      message = Message.new(id, 'warning', text, @property,
-                            @project.scenario(@scenarioIdx),
-                            @property.sourceFileInfo)
-      @project.sendMessage(message)
+    def warning(id, text, sourceFileInfo = nil, property = nil)
+      @project.messageHandler.warning(
+        id, text, sourceFileInfo || @property.sourceFileInfo, nil,
+        property || @property,
+        @project.scenario(@scenarioIdx))
     end
 
-    def info(id, text, property = nil)
-      property = @property if property.nil?
-      message = Message.new(id, 'info', text, property,
-                            @project.scenario(@scenarioIdx),
-                            property.sourceFileInfo)
-      @project.sendMessage(message)
+    def info(id, text, sourceFileInfo = nil, property = nil)
+      @project.messageHandler.info(
+        id, text, sourceFileInfo || @property.sourceFileInfo, nil,
+        property || @property,
+        @project.scenario(@scenarioIdx))
     end
-
-    # Not sure why this method was put there. If needed, it should in
-    # PropertyTreeNode!
-    #def query_id(query)
-    #  query.sortable = query.string = @property.fullId
-    #end
 
   end
 

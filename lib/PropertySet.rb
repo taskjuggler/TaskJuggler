@@ -200,7 +200,7 @@ class TaskJuggler
     def addProperty(property)
       # The PropertySet defines the set of attribute that each PropertyTreeNode
       # in this set has. Create these attributes with their default values.
-      @attributeDefinitions.each do |id, attributeType|
+      @attributeDefinitions.each_value do |attributeType|
         property.declareAttribute(attributeType)
       end
 

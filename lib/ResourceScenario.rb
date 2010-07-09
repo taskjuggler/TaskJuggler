@@ -193,7 +193,7 @@ class TaskJuggler
                 "Resource #{@property.fullId} has multiple conflicting " +
                 "bookings for #{@scoreboard.idxToDate(sbIdx)}. The " +
                 "conflicting tasks are #{@scoreboard[sbIdx].fullId} and " +
-                "#{booking.task.fullId}.", true, booking.sourceFileInfo)
+                "#{booking.task.fullId}.", booking.sourceFileInfo)
         end
         val = @scoreboard[sbIdx]
         if ((val & 2) != 0 && booking.overtime < 1)
@@ -202,7 +202,7 @@ class TaskJuggler
           if booking.sloppy < 1
             error('booking_no_duty',
                   "Resource #{@property.fullId} has no duty at " +
-                  "#{@scoreboard.idxToDate(sbIdx)}.", true,
+                  "#{@scoreboard.idxToDate(sbIdx)}.",
                   booking.sourceFileInfo)
           end
           return false
@@ -213,7 +213,7 @@ class TaskJuggler
           if booking.sloppy < 2
             error('booking_on_vacation',
                   "Resource #{@property.fullId} is on vacation at " +
-                  "#{@scoreboard.idxToDate(sbIdx)}.", true,
+                  "#{@scoreboard.idxToDate(sbIdx)}.",
                   booking.sourceFileInfo)
           end
           return false

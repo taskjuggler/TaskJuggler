@@ -23,7 +23,7 @@ task t3 "Task3" {
 	}
 }
 
-# MARK: error 6 loop_detected
+# MARK: warning 6 loop_detected
 # MARK: info 6 loop_at_end
 # MARK: info 3 loop_at_end
 # MARK: info 12 loop_at_start

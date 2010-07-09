@@ -12,7 +12,7 @@ task t1 "Task1" {
 	}
 }
 
-# MARK: error 4 loop_detected
+# MARK: warning 4 loop_detected
 # MARK: info 4 loop_at_end
 # MARK: info 9 loop_at_start
 # MARK: info 9 loop_at_end

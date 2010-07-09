@@ -359,8 +359,7 @@ class TaskJuggler
         @sequenceNo
       else
         unless @attributes.has_key?(attributeId)
-          raise TjException.new,
-                "Unknown attribute '#{attributeId}' requested for " +
+          raise "Unknown attribute '#{attributeId}' requested for " +
                 "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
         end
         @attributes[attributeId].get
@@ -407,7 +406,7 @@ class TaskJuggler
     # In case the attribute does not exist, an exception is raised.
     def set(attributeId, value)
       unless @attributes.has_key?(attributeId)
-        raise TjException.new, "Unknown attribute #{attributeId}"
+        raise "Unknown attribute #{attributeId}"
       end
       @attributes[attributeId].set(value)
     end
@@ -421,7 +420,7 @@ class TaskJuggler
       elsif @attributes.has_key?(attributeId)
         @attributes[attributeId].set(value)
       else
-        raise TjException.new, "Unknown attribute #{attributeId}"
+        raise "Unknown attribute #{attributeId}"
       end
       @scenarioAttributes[scenario][attributeId].set(value)
     end
@@ -586,13 +585,11 @@ class TaskJuggler
       end
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      begin
-        rti = RichText.new(rText, RTFHandlers.create(@project)).
-          generateIntermediateFormat
-      rescue RichTextException => msg
-        $stderr.puts "Error while processing Rich Text\n" +
-                     "Line #{msg.lineNo}: #{msg.text}\n" +
-                     "#{msg.line}"
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
+                                 @project.messageHandler).
+                                 generateIntermediateFormat)
+        @project.messageHandler.warning('ptn_journal',
+                                        "Syntax error in journal message")
         return nil
       end
       # No section numbers, please!
