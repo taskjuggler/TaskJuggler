@@ -39,7 +39,7 @@ class TaskJuggler
         # REF
         [ 'REF', /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
         [ 'REFEND', /\]\]/, :ref, method('refEnd') ],
-        [ 'WORD', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
+        [ 'WORD', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref, method('refWord') ],
         [ 'QUERY', /<-\w+->/, :ref, method('query') ],
         [ 'LITERAL', /\|/, :ref ],
         # HREF
@@ -55,7 +55,7 @@ class TaskJuggler
         [ 'BLOCKFUNCSTART', /<\[/, [ :bop, :bol ], method('functionStart') ],
         [ 'BLOCKFUNCEND', /\]>/, :func, method('functionEnd') ],
         [ 'ID', /[a-zA-Z_]\w*/, :func ],
-        [ 'STRING', /"(\\"|[^"])*"/, :func, method('chop2') ],
+        [ 'STRING', /"(\\"|[^"])*?"/, :func, method('chop2') ],
         [ 'STRING', /'(\\'|[^'])*'/, :func, method('chop2') ],
         [ nil, /[ \t\n]+/, :func ],
         [ 'LITERAL', /./, :func ],
@@ -80,6 +80,8 @@ class TaskJuggler
           method('inlineMode') ]
       ]
       super(masterFile, messageHandler, tokenPatterns, :bop)
+      # Buffer to collect :ref WORD tokens that span multiple lines.
+      @word = ''
     end
 
     private
@@ -160,6 +162,17 @@ class TaskJuggler
     def refEnd(type, match)
       self.mode = :inline
       [ type, match ]
+    end
+
+    def refWord(type, match)
+      @word += match
+      if match[-1] == ?\n
+        return [ nil, '' ]
+      else
+        w = @word
+        @word = ''
+        return [ type, w ]
+      end
     end
 
   end
