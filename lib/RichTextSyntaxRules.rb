@@ -30,7 +30,7 @@ class TaskJuggler
 
     # This is the entry node.
     def rule_richtext
-      pattern(%w( !sections !blankLines . ), lambda {
+      pattern(%w( !sections . ), lambda {
         el = RichTextElement.new(@richTextI, :richtext, @val[0])
       })
     end
@@ -46,16 +46,17 @@ class TaskJuggler
       pattern(%w( $HLINE !blankLines ), lambda {
         RichTextElement.new(@richTextI, :hline, @val[0])
       })
-      pattern(%w( !paragraph ), lambda {
+      pattern(%w( !paragraph !blankLines ), lambda {
         @val[0]
       })
-      pattern(%w( $PRE ), lambda {
-        RichTextElement.new(@richTextI, :pre, @val[0])
+      pattern(%w( !pre !blankLines ), lambda {
+        RichTextElement.new(@richTextI, :pre, @val[0].join)
       })
-      pattern(%w( !bulletList1 ), lambda {
+      pattern(%w( !bulletList1 !blankLines ), lambda {
+
         RichTextElement.new(@richTextI, :bulletlist1, @val[0])
       })
-      pattern(%w( !numberList1 ), lambda {
+      pattern(%w( !numberList1 !blankLines ), lambda {
         @numberListCounter = [ 0, 0, 0, 0 ]
         RichTextElement.new(@richTextI, :numberlist1, @val[0])
       })
@@ -79,9 +80,15 @@ class TaskJuggler
       })
     end
 
+    def rule_pre
+      repeatable
+      pattern(%w( $PRE ), lambda {
+        @val[0]
+      })
+    end
+
     def rule_title1
       pattern(%w( $TITLE1 !space !text $TITLE1END ), lambda {
-        @val[2][-1].appendSpace = false
         el = RichTextElement.new(@richTextI, :title1, @val[2])
         @sectionCounter[0] += 1
         @sectionCounter[1] = @sectionCounter[2] = 0
@@ -92,7 +99,6 @@ class TaskJuggler
 
     def rule_title2
       pattern(%w( $TITLE2 !space !text $TITLE2END ), lambda {
-        @val[2][-1].appendSpace = false
         el = RichTextElement.new(@richTextI, :title2, @val[2])
         @sectionCounter[1] += 1
         @sectionCounter[2] = 0
@@ -103,7 +109,6 @@ class TaskJuggler
 
     def rule_title3
       pattern(%w( $TITLE3 !space !text $TITLE3END ), lambda {
-        @val[2][-1].appendSpace = false
         el = RichTextElement.new(@richTextI, :title3, @val[2])
         @sectionCounter[2] += 1
         @sectionCounter[3] = 0
@@ -114,7 +119,6 @@ class TaskJuggler
 
     def rule_title4
       pattern(%w( $TITLE4 !space !text $TITLE4END ), lambda {
-        @val[2][-1].appendSpace = false
         el = RichTextElement.new(@richTextI, :title4, @val[2])
         @sectionCounter[3] += 1
         el.data = @sectionCounter.dup
@@ -125,7 +129,7 @@ class TaskJuggler
     def rule_bulletList1
       optional
       repeatable
-      pattern(%w( $BULLET1 !text $LINEBREAK), lambda {
+      pattern(%w( $BULLET1 !text ), lambda {
         RichTextElement.new(@richTextI, :bulletitem1, @val[1])
       })
       pattern(%w( !bulletList2 ), lambda {
@@ -135,7 +139,7 @@ class TaskJuggler
 
     def rule_bulletList2
       repeatable
-      pattern(%w( $BULLET2 !text $LINEBREAK), lambda {
+      pattern(%w( $BULLET2 !text ), lambda {
         RichTextElement.new(@richTextI, :bulletitem2, @val[1])
       })
       pattern(%w( !bulletList3 ), lambda {
@@ -145,7 +149,7 @@ class TaskJuggler
 
     def rule_bulletList3
       repeatable
-      pattern(%w( $BULLET3 !text $LINEBREAK), lambda {
+      pattern(%w( $BULLET3 !text ), lambda {
         RichTextElement.new(@richTextI, :bulletitem3, @val[1])
       })
       pattern(%w( !bulletList4 ), lambda {
@@ -155,15 +159,14 @@ class TaskJuggler
 
     def rule_bulletList4
       repeatable
-      pattern(%w( $BULLET4 !text $LINEBREAK), lambda {
+      pattern(%w( $BULLET4 !text ), lambda {
         RichTextElement.new(@richTextI, :bulletitem4, @val[1])
       })
     end
 
     def rule_numberList1
-      optional
       repeatable
-      pattern(%w( $NUMBER1 !text $LINEBREAK), lambda {
+      pattern(%w( $NUMBER1 !text ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem1, @val[1])
         @numberListCounter[0] += 1
         el.data = @numberListCounter.dup
@@ -177,7 +180,7 @@ class TaskJuggler
 
     def rule_numberList2
       repeatable
-      pattern(%w( $NUMBER2 !text $LINEBREAK), lambda {
+      pattern(%w( $NUMBER2 !text ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem2, @val[1])
         @numberListCounter[1] += 1
         el.data = @numberListCounter.dup
@@ -191,7 +194,7 @@ class TaskJuggler
 
     def rule_numberList3
       repeatable
-      pattern(%w( $NUMBER3 !text $LINEBREAK), lambda {
+      pattern(%w( $NUMBER3 !text ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem3, @val[1])
         @numberListCounter[2] += 1
         el.data = @numberListCounter.dup
@@ -205,7 +208,7 @@ class TaskJuggler
 
     def rule_numberList4
       repeatable
-      pattern(%w( $NUMBER4 !text $LINEBREAK), lambda {
+      pattern(%w( $NUMBER4 !text ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem4, @val[1])
         @numberListCounter[3] += 1
         el.data = @numberListCounter.dup
@@ -214,12 +217,19 @@ class TaskJuggler
     end
 
     def rule_paragraph
-      pattern(%w( !text $LINEBREAK ), lambda {
+      pattern(%w( !text ), lambda {
         RichTextElement.new(@richTextI, :paragraph, @val[0])
       })
     end
 
     def rule_text
+      pattern(%w( !textWithSpace ), lambda {
+        @val[0].last.appendSpace = false
+        @val[0]
+      })
+    end
+
+    def rule_textWithSpace
       repeatable
       pattern(%w( !plainTextWithLinks ), lambda {
         @val[0]
@@ -276,8 +286,8 @@ class TaskJuggler
           @val[2].each do |token|
             if token[0, 4] == 'alt='
               img.altText = token[4..-1]
-            elsif %w( top middle bottom baseline sub super text-top text-bottom).
-                  include?(token)
+            elsif %w( top middle bottom baseline sub super text-top
+                      text-bottom ).include?(token)
               img.verticalAlign = token
             else
               error('rt_bad_file_option',

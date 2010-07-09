@@ -45,16 +45,27 @@ class TaskJuggler
     files.each do |file|
       begin
         @parser.open(file, master)
-      rescue TjException
+      rescue TjException => msg
+        if msg.message && !msg.message.empty?
+          @messageHandler.critical('parse', msg.message)
+        end
         Log.exit('parser')
         return false
       end
       if master
-        @project = @parser.parse('project')
+        # The first file is considered the master file.
+        if (@project = @parser.parse('project')) == false
+          Log.exit('parser')
+          return false
+        end
         master = false
       else
+        # All other files.
         @parser.setGlobalMacros
-        @parser.parse('properties')
+        if @parser.parse('properties') == false
+          Log.exit('parser')
+          return false
+        end
       end
       @parser.close
     end
@@ -70,9 +81,18 @@ class TaskJuggler
   # Parse a file and add the content to the existing project. _fileName_ is
   # the name of the file. _rule_ is the TextParser::Rule to start with.
   def parseFile(fileName, rule)
-    @parser.open(fileName, false)
+    begin
+      @parser.open(fileName, false)
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('parse_file', msg.message)
+      end
+      return nil
+    end
+
     @parser.setGlobalMacros
-    return nil if (res = @parser.parse(rule)).nil?
+    return nil if (res = @parser.parse(rule)) == false
+
     @parser.close
     res
   end
@@ -83,7 +103,16 @@ class TaskJuggler
     Log.enter('scheduler', 'Scheduling project ...')
     #puts @project.to_s
     @project.warnTsDeltas = @warnTsDeltas
-    res = @project.schedule
+
+    begin
+      res = @project.schedule
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('scheduling_error', msg.message)
+      end
+      return false
+    end
+
     Log.exit('scheduler')
     res
   end
@@ -95,9 +124,18 @@ class TaskJuggler
     outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
     @project.outputDir = outputDir
     Log.enter('reports', 'Generating reports ...')
-    res = @project.generateReports(@maxCpuCores)
+
+    begin
+      @project.generateReports(@maxCpuCores)
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('generate_reports', msg.message)
+      end
+      return false
+    end
+
     Log.exit('reports')
-    res
+    true
   end
 
   # Generate the report with the ID _reportId_. If _regExpMode_ is true,
@@ -109,7 +147,10 @@ class TaskJuggler
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
       @project.generateReport(reportId, regExpMode, dynamicAttributes)
-    rescue TjException
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('generate_report', msg.message)
+      end
       Log.exit('generateReport')
       return false
     end
@@ -117,14 +158,16 @@ class TaskJuggler
     true
   end
 
-  # Generate the report with the ID _reportId_. If _regExpMode_ is true,
-  # _reportId_ is interpreted as a Regular Expression and all reports with
-  # matching IDs are listed.
+  # List the details of the report with _reportId_ or if _regExpMode_ the
+  # reports that match the regular expression in _reportId_.
   def listReports(reportId, regExpMode)
     begin
       Log.enter('listReports', 'Generating report list for #{reportId} ...')
       @project.listReports(reportId, regExpMode)
-    rescue TjException
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('list_reports', msg.message)
+      end
       Log.exit('listReports')
       return false
     end
@@ -159,7 +202,10 @@ class TaskJuggler
       rti.parIndent = 2
       rti.preIndent = 4
       puts rti.to_s
-    rescue TjException
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('check_time_sheet', msg.message)
+      end
       Log.exit('checkTimeSheet')
       return false
     end
@@ -191,7 +237,10 @@ class TaskJuggler
       rti.parIndent = 2
       rti.preIndent = 4
       puts rti.to_s
-    rescue TjException
+    rescue TjException => msg
+      if msg.message && !msg.message.empty?
+        @messageHandler.critical('check_status_sheet', msg.message)
+      end
       Log.exit('checkStatusSheet')
       return false
     end

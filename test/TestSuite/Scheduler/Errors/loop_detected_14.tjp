@@ -18,7 +18,7 @@ task m2 "Milestone2" {
 	milestone
 }
 
-# MARK: error 9 loop_detected
+# MARK: warning 9 loop_detected
 # MARK: info 9 loop_at_end
 # MARK: info 16 loop_at_start
 # MARK: info 16 loop_at_end

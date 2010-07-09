@@ -224,7 +224,7 @@ class TaskJuggler
       when :code
       when :text
       else
-        raise TjException.new, "Unknown RichTextElement category #{@category}"
+        raise "Unknown RichTextElement category #{@category}"
       end
 
       pre + children_to_s + post
@@ -348,7 +348,7 @@ class TaskJuggler
         pre = '['
         post = ']'
       else
-        raise TjException.new, "Unknown RichTextElement category #{@category}"
+        raise "Unknown RichTextElement category #{@category}"
       end
 
       out = ''
@@ -455,7 +455,7 @@ class TaskJuggler
         noChilds = true
         XMLText.new(@children[0])
       else
-        raise TjException.new, "Unknown RichTextElement category #{@category}"
+        raise "Unknown RichTextElement category #{@category}"
       end
 
       # Some elements never have leaves.

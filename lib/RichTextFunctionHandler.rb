@@ -33,8 +33,7 @@ class TaskJuggler
     end
 
     def error(id, text)
-      message = Message.new(id, 'error', text, nil, nil, @sourceFileInfo)
-      @project.sendMessage(message)
+      @project.messageHandler.error(id, text, @sourceFileInfo)
     end
 
   end

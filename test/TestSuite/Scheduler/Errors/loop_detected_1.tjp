@@ -10,7 +10,7 @@ task t2 "Task2" {
 	depends !t1
 }
 
-# MARK: error 3 loop_detected
+# MARK: warning 3 loop_detected
 # MARK: info 3 loop_at_end
 # MARK: info 8 loop_at_start
 # MARK: info 8 loop_at_end

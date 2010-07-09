@@ -39,13 +39,9 @@ class TaskJuggler
       File.open(fileName) do |file|
         file.each_line { |line| text += line }
       end
-      begin
-        rText = RichText.new(text, @document.functionHandlers)
-        @richText = rText.generateIntermediateFormat(sectionCounter)
-      rescue RichTextException => msg
-        $stderr.puts "Error in RichText of file '#{fileName}'\n" +
-                     "Line #{msg.lineNo}: #{msg.text}\n" +
-                     "#{msg.line}"
+      rText = RichText.new(text, @document.functionHandlers,
+                           MessageHandler.new(true))
+      unless (@richText = rText.generateIntermediateFormat(sectionCounter))
         exit
       end
 

@@ -497,8 +497,9 @@ class TaskJuggler
     def checkForLoops(path, atEnd, fromOutside)
       # Check if we have been here before on this path.
       if path.include?([ @property, atEnd ])
-        error('loop_detected', "Loop detected at #{atEnd ? 'end' : 'start'} " +
-                               "of task #{@property.fullId}", false)
+        warning('loop_detected',
+                "Loop detected at #{atEnd ? 'end' : 'start'} " +
+                "of task #{@property.fullId}", false)
         skip = true
         path.each do |t, e|
           if t == @property && e == atEnd
@@ -507,7 +508,8 @@ class TaskJuggler
           end
           next if skip
           info("loop_at_#{e ? 'end' : 'start'}",
-               "Loop ctnd. at #{e ? 'end' : 'start'} of task #{t.fullId}", t)
+               "Loop ctnd. at #{e ? 'end' : 'start'} of task #{t.fullId}",
+               t.sourceFileInfo)
         end
         error('loop_end', "Aborting")
       end
@@ -1172,10 +1174,10 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->] #{taskEnd}"
+          str += "<nowiki>[->]</nowiki> #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->[ #{taskStart}"
+          str += "<nowiki>[->[</nowiki> #{taskStart}"
         end
         str += "\n"
       end
@@ -1184,16 +1186,19 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->] #{taskEnd}"
+          str += "<nowiki>]->]</nowiki> #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->[ #{taskStart}"
+          str += "<nowiki>]->[</nowiki> #{taskStart}"
         end
         str += "\n"
       end
 
-      rText = RichText.new(str)
-      query.rti = rText.generateIntermediateFormat
+      rText = RichText.new(str, [], @property.project.messageHandler)
+      unless (query.rti = rText.generateIntermediateFormat)
+        @property.project.messageHandler.warning(
+          'task_sc_followers', 'Syntax error in followers')
+      end
     end
 
     def query_precursors(query)
@@ -1204,10 +1209,10 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->] #{taskEnd}"
+          str += "<nowiki>]->]</nowiki> #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->[ #{taskStart}"
+          str += "<nowiki>[->[</nowiki> #{taskStart}"
         end
         str += "\n"
       end
@@ -1216,10 +1221,10 @@ class TaskJuggler
         str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
           taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "[->] #{taskEnd}"
+          str += "<nowiki>[->]</nowiki> #{taskEnd}"
         else
           taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "]->[ #{taskStart}"
+          str += "<nowiki>]->[</nowiki> #{taskStart}"
         end
         str += "\n"
       end
@@ -1649,7 +1654,7 @@ class TaskJuggler
       a('booking').each do |booking|
         unless booking.resource.leaf?
           error('booking_resource_not_leaf',
-                "Booked resources may not be group resources", true,
+                "Booked resources may not be group resources",
                 booking.sourceFileInfo)
         end
         unless a('forward') || scheduled

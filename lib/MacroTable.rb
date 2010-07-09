@@ -12,7 +12,6 @@
 
 require 'SourceFileInfo'
 require 'MessageHandler'
-require 'Message'
 require 'TjException'
 
 class TaskJuggler
@@ -73,9 +72,7 @@ class TaskJuggler
 
     # This function sends an error message to the message handler.
     def error(id, text, sourceFileInfo)
-      message = Message.new(id, 'error', text, nil, nil, sourceFileInfo)
-      @messageHandler.send(message)
-      raise TjException.new, 'Macro expasion error'
+      @messageHandler.error(id, text, sourceFileInfo)
     end
 
   end

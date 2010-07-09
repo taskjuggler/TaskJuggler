@@ -54,8 +54,7 @@ class TaskJuggler
 
     # Just for debugging
     def to_s # :nodoc:
-      puts "Headline: #{@headline}"
-      puts "Property: #{@property.class}"
+      "Headline: #{@headline}\nProperty: #{@property.class}"
     end
 
   end

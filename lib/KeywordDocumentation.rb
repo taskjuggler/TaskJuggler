@@ -41,6 +41,7 @@ class TaskJuggler
     # _pattern_.  _optAttrPatterns_ is an Array with references to
     # TextParser::Patterns that are optional attributes to this keyword.
     def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
+      @messageHandler = MessageHandler.new(true)
       @rule = rule
       @pattern = pattern
       @keyword = pattern.keyword
@@ -498,15 +499,12 @@ class TaskJuggler
     # catches all RichTextScanner processing problems and converts the exception
     # data into an error message.
     def newRichText(text)
-      begin
-        rText = RichText.new(text)
-        rti = rText.generateIntermediateFormat
-        @references += rti.internalReferences
-      rescue RichTextException => msg
-        $stderr.puts "Error in RichText of rule #{@keyword}\n" +
-                     "Line #{msg.lineNo}: #{msg.text}\n" +
-                     "#{msg.line}"
+      rText = RichText.new(text, [], @messageHandler)
+      unless (rti = rText.generateIntermediateFormat)
+        @messageHandler.error('rich_text',
+                              "Error in RichText of rule #{@keyword}")
       end
+      @references += rti.internalReferences
       rti
     end
 
@@ -515,7 +513,8 @@ class TaskJuggler
     # table cell element. _list_ is the KeywordDocumentation list. _width_ is
     # the percentage width of the cell.
     def listHTMLAttributes(list, width)
-      td = XMLElement.new('td', 'class' => 'descr', 'style' => "width:#{width}%")
+      td = XMLElement.new('td', 'class' => 'descr',
+                          'style' => "width:#{width}%")
       first = true
       list.each do |attr|
         if first

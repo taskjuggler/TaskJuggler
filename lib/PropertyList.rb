@@ -94,33 +94,6 @@ class TaskJuggler
       sort!
     end
 
-    # Append a new sorting level to the existing levels.
-    def addSortingCriteria(criteria, up, scIdx)
-      unless @propertySet.knownAttribute?(criteria) ||
-             @propertySet.hasQuery?(criteria, scIdx)
-        raise TjException.new, "Unknown attribute #{criteria} used for " +
-                               'sorting criterium'
-      end
-      if scIdx == -1
-        if @propertySet.scenarioSpecific?(criteria)
-          raise TjException.new, "Attribute #{criteria} is scenario specific." +
-                "You must specify a scenario id."
-        end
-      else
-        if @propertySet.project.scenario(scIdx).nil?
-          raise TjException.new, "Unknown scenario index #{scIdx} used."
-        end
-        if !@propertySet.scenarioSpecific?(criteria)
-          raise TjException.new, "Attribute #{criteria} is not scenario " +
-                                 "specific"
-        end
-      end
-      @sortingCriteria.push(criteria)
-      @sortingUp.push(up)
-      @scenarioIdx.push(scIdx)
-      @sortingLevels += 1
-    end
-
     # If the first sorting level is 'tree' the breakdown structure of the
     # list is preserved. This is a somewhat special mode and this function
     # returns true if the mode is set.
@@ -190,6 +163,31 @@ class TaskJuggler
     end
 
     private
+
+    # Append a new sorting level to the existing levels.
+    def addSortingCriteria(criteria, up, scIdx)
+      unless @propertySet.knownAttribute?(criteria) ||
+             @propertySet.hasQuery?(criteria, scIdx)
+        raise "Unknown attribute #{criteria} used for sorting criterium"
+      end
+      if scIdx == -1
+        if @propertySet.scenarioSpecific?(criteria)
+          raise "Attribute #{criteria} is scenario specific." +
+                "You must specify a scenario id."
+        end
+      else
+        if @propertySet.project.scenario(scIdx).nil?
+          raise "Unknown scenario index #{scIdx} used."
+        end
+        if !@propertySet.scenarioSpecific?(criteria)
+          raise "Attribute #{criteria} is not scenario specific"
+        end
+      end
+      @sortingCriteria.push(criteria)
+      @sortingUp.push(up)
+      @scenarioIdx.push(scIdx)
+      @sortingLevels += 1
+    end
 
     # Update the 'tree' indicies that are needed for the 'tree' sorting mode.
     def indexTree

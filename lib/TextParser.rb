@@ -13,6 +13,7 @@
 require 'TextParser/Pattern'
 require 'TextParser/Rule'
 require 'TextParser/StackElement'
+require 'MessageHandler'
 require 'TjException'
 require 'Log'
 
@@ -64,10 +65,13 @@ class TaskJuggler
 
     end
 
-    attr_reader :rules
+    attr_reader :rules, :messageHandler
 
     # Create a new TextParser object.
-    def initialize
+    def initialize(messageHandler)
+      # The message handler will collect all error messages.
+      @messageHandler = messageHandler
+      # This Hash will store the ruleset that the parser is operating on.
       @rules = { }
       # Array to hold the token types that the scanner can return.
       @variables = []
@@ -155,16 +159,19 @@ class TaskJuggler
 
     # To parse the input this function needs to be called with the name of the
     # rule to start with. It returns the result of the processing function of
-    # the top-level parser rule that was specified by _ruleName_.
+    # the top-level parser rule that was specified by _ruleName_. In case of
+    # an error, the result is false.
     def parse(ruleName)
       @stack = []
       @@expectedTokens = []
       updateParserTables
       begin
         result = parseRuleR(@rules[ruleName])
-      rescue TjException
-        # error('parse_error', $!.message)
-        return nil
+      rescue TjException => msg
+        if msg.message && !msg.message.empty?
+          @messageHandler.critical('parse', msg.message)
+        end
+        return false
       end
 
       result
@@ -174,7 +181,7 @@ class TaskJuggler
     # currently processed TextParser::Rule. Or return nil if we don't have a
     # current position.
     def sourceFileInfo
-      return nil if @stack.empty?
+      return nil if @stack.nil? || @stack.empty?
       @stack.last.sourceFileInfo[0]
     end
 
@@ -187,18 +194,26 @@ class TaskJuggler
       matches
     end
 
-    def error(id, text, property = nil, sfi = nil)
+    def error(id, text, sfi = nil, data = nil)
+      sfi ||= sourceFileInfo
       if @scanner
-        @scanner.error(id, text, property, sfi)
+        # The scanner has some more context information, so we pass the error
+        # on to the TextScanner.
+        @scanner.error(id, text, sfi, data)
       else
-        message = Message.new(id, 'error', text, property, sfi)
-        @messageHandler.send(message)
-        raise TjException.new, ''
+        @messageHandler.error(id, text, sfi, data)
       end
     end
 
-    def warning(id, text, property = nil, sfi = nil)
-      @scanner.warning(id, text, property, sfi)
+    def warning(id, text, sfi = nil, data = nil)
+      sfi ||= sourceFileInfo
+      if @scanner
+        # The scanner has some more context information, so we pass the
+        # warning on to the TextScanner.
+        @scanner.warning(id, text, sfi, data)
+      else
+        @messageHandler.warning(id, text, sfi, data)
+      end
     end
 
   private
@@ -249,6 +264,7 @@ class TaskJuggler
         transitions.each do |key, value|
           rule.transitions.each do |trans|
             if trans.has_key?(key)
+              rule.dump
               raise "Fatal Error: Rule #{rule.name} has ambiguous " +
                     "transitions for target #{key}"
             end
@@ -271,8 +287,7 @@ class TaskJuggler
           if type == ?$
             if @variables.index(token).nil?
               error('unsupported_token',
-                    "The token #{token} is not supported here.", nil,
-                    token[2])
+                    "The token #{token} is not supported here.", token[2])
             end
           elsif type == ?!
             if @rules[token].nil?
@@ -291,6 +306,7 @@ class TaskJuggler
     # parseRuleNR.
     def parseRuleR(rule)
       #Log.enter('parseRuleR', "Parsing with rule #{rule.name}")
+      #puts "Parsing with rule #{rule.name}"
       result = rule.repeatable ? TextParserResultArray.new : nil
       # Rules can be marked 'repeatable'. This flag will be set to true after
       # the first iteration has been completed.
@@ -321,6 +337,7 @@ class TaskJuggler
             end
             @stack.last.store(parseRuleR(@rules[elToken]), sfi)
             #Log << "Resuming rule #{rule.name}"
+            #puts "Resuming rule #{rule.name}"
           else
             # In case the element is a keyword or variable we have to get a new
             # token if we don't have one anymore.
@@ -357,6 +374,7 @@ class TaskJuggler
       end
 
       #Log.exit('parseRuleR', "Finished rule #{rule.name}")
+      #puts "Finished rule #{rule.name}"
       return result
     end
 
@@ -507,16 +525,12 @@ class TaskJuggler
     end
 
     def getNextToken
-      begin
-        token = nextToken
-        #Log << "Token: [#{token[0]}][#{token[1]}]"
-      rescue TjException
-        error('parse_rule', $!.message)
-      end
+      token = nextToken
+      #Log << "Token: [#{token[0]}][#{token[1]}]"
       if @badVariables.include?(token[0])
         error('unsupported_token',
               "The token #{token[1]} is not supported in this context.",
-              nil, token[2])
+              token[2])
       end
       token
     end
@@ -561,7 +575,7 @@ class TaskJuggler
                  "Unexpected end of file in #{@scanner.fileName}. ") +
                 (@@expectedTokens.length > 1 ?
                  "Expecting one of #{@@expectedTokens.join(', ')}" :
-                 "Expecting #{@@expectedTokens[0]}"))
+                 "Expecting #{@@expectedTokens[0]}"), token[2])
         end
         returnToken(token)
         return nil
@@ -581,15 +595,15 @@ class TaskJuggler
           unless @@expectedTokens.empty?
             text = "#{@@expectedTokens.join(', ')} or " + text
           end
-          error('spec_keywork_expctd', text)
+          error('spec_keywork_expctd', text, token[2])
         end
         @stack.last.store(elToken, token[2])
       elsif elType == ?.
         if token[0..1] != [ '.', '<END>' ]
           error('end_expected',
-                "Found garbage at expected end of file: #{token[1]}\n" +
-                "If you see this in the middle of your file, you probably " +
-                "have closed your context too early.")
+                "Found garbage at expected end of text: #{token[1]}\n" +
+                "If you see this in the middle of your text, you probably " +
+                "have closed your context too early.", token[2])
         end
       else
         # The token must match the expected variable type.
@@ -599,7 +613,7 @@ class TaskJuggler
           unless @@expectedTokens.empty?
             text = "#{@@expectedTokens.join(', ')} or " + text
           end
-          error('spec_token_expctd', text)
+          error('spec_token_expctd', text, token[2])
         end
         # If the element is a variable store the value of the token.
         @stack.last.store(token[1], token[2])

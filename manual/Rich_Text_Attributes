@@ -84,8 +84,8 @@ create the URL.
 
 Images can be added with a similar syntax.
 
- [[image.jpg]]
- [[image.jpg|alt=An image]]
+ [[File:image.jpg]]
+ [[File:image.jpg|alt=An image]]
 
 This first version will be replaced with the file ''''image.jpg''''
 when the output format supports this. Otherwise a blank space will be

@@ -18,7 +18,6 @@ require 'TjTime'
 require 'TjException'
 require 'SourceFileInfo'
 require 'MacroTable'
-require 'MacroParser'
 require 'Log'
 
 class TaskJuggler
@@ -184,7 +183,7 @@ class TaskJuggler
     # Create a new instance of TextScanner. _masterFile_ must be a String that
     # either contains the name of the file to start with or the text itself.
     # _messageHandler_ is a MessageHandler that is used for error messages.
-    def initialize(masterFile, messageHandler)
+    def initialize(masterFile, messageHandler, tokenPatterns, defaultMode)
       @masterFile = masterFile
       @messageHandler = messageHandler
       # This table contains all macros that may be expanded when found in the
@@ -213,6 +212,15 @@ class TaskJuggler
       @scannerMode = nil
       # Points to the currently active pattern set as defined by the mode.
       @activePatterns = nil
+
+      tokenPatterns.each do |pat|
+        type = pat[0]
+        regExp = pat[1]
+        mode = pat[2] || :tjp
+        postProc = pat[3]
+        addPattern(type, regExp, mode, postProc)
+      end
+      self.mode = defaultMode
     end
 
     # Add a new pattern to the scanner. _type_ is either nil for tokens that
@@ -257,7 +265,7 @@ class TaskJuggler
         begin
           @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil ] ]
         rescue StandardError
-          raise TjException.new, "Cannot open file #{@masterFile}"
+          error('open_file', "Cannot open file #{@masterFile}")
         end
       end
       @masterPath = @cf.dirname + '/'
@@ -291,7 +299,7 @@ class TaskJuggler
       @fileStack.each do |entry|
         if includeFileName == entry[0].fileName
           error('include_recursion',
-                "Recursive inclusion of #{includeFileName} detected", nil, sfi)
+                "Recursive inclusion of #{includeFileName} detected", sfi)
         end
       end
 
@@ -305,8 +313,7 @@ class TaskJuggler
         @fileStack << [ (@cf = FileStreamHandle.new(includeFileName)), nil, ]
         Log << "Parsing file #{includeFileName}"
       rescue StandardError
-        error('bad_include', "Cannot open include file #{includeFileName}",
-              nil, sfi)
+        error('bad_include', "Cannot open include file #{includeFileName}", sfi)
       end
     end
 
@@ -390,10 +397,11 @@ class TaskJuggler
 
               break if type.nil? # Ignore certain tokens with nil type.
 
+              #puts "type: #{type}  match: [#{match}]"
               return [ type, match, @startOfToken ]
             end
           end
-        rescue
+        rescue StringScanner::Error
           error('scan_encoding_error', $!.to_s)
         end
 
@@ -446,38 +454,43 @@ class TaskJuggler
     end
 
     # Call this function to report any errors related to the parsed input.
-    def error(id, text, property = nil, sfi = nil)
-      message('error', id, text, property, sfi)
+    def error(id, text, sfi = nil, data = nil)
+      message(:error, id, text, sfi, data)
     end
 
-    def warning(id, text, property = nil, sfi = nil)
-      message('warning', id, text, property, sfi)
+    def warning(id, text, sfi = nil, data = nil)
+      message(:warning, id, text, sfi, @cf ? @cf.line : nil, data)
     end
 
-    def message(type, id, text, property, sfi)
+    private
+
+    def message(type, id, text, sfi, data)
       unless text.empty?
-        message = Message.new(id, type, text + "\n" + line.to_s,
-                              property, nil, sfi || sourceFileInfo)
-        @messageHandler.send(message)
+        line = @cf ? @cf.line : nil
+        sfi ||= sourceFileInfo
 
         if @cf && !@cf.macroStack.empty?
-          message = Message.new('macro_stack', 'info', 'Macro call history:')
-          @messageHandler.send(message)
+          @messageHandler.info('macro_stack', 'Macro call history:', nil)
 
           @cf.macroStack.reverse_each do |entry|
             macro = entry.macro
             args = entry.args[1..-1]
             args.collect! { |a| '"' + a + '"' }
-            message = Message.new('macro_stack', 'info',
-                                  "  ${#{macro.name} #{args.join(' ')}}",
-                                  nil, nil, macro.sourceFileInfo)
-            @messageHandler.send(message)
+            @messageHandler.info('macro_stack',
+                                 "  ${#{macro.name} #{args.join(' ')}}",
+                                 macro.sourceFileInfo)
           end
         end
-      end
 
-      # An empty strings signals an already reported error
-      raise TjException.new, '' if type == 'error'
+        case type
+        when :error
+          @messageHandler.error(id, text, sfi, line, data)
+        when :warning
+          @messageHandler.warning(id, text, sfi, line, data)
+        else
+          raise "Unknown message type #{type}"
+        end
+      end
     end
 
   end

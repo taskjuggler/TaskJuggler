@@ -12,6 +12,7 @@
 
 require 'RichTextElement'
 require 'RichTextParser'
+require 'MessageHandler'
 
 class TaskJuggler
 
@@ -70,17 +71,18 @@ class TaskJuggler
   #
   class RichText
 
-    attr_reader :inputText
+    attr_reader :inputText, :messageHandler
 
     # Create a rich text object by passing a String with markup elements to it.
     # _text_ must be plain text with MediaWiki compatible markup elements. In
     # case an error occurs, an exception of type TjException will be raised.
     # _functionHandlers_ is a Hash that maps RichTextFunctionHandler objects
     # by their function name.
-    def initialize(text, functionHandlers = [])
+    def initialize(text, functionHandlers = [], messageHandler = nil)
       # Keep a copy of the original text.
       @inputText = text
       @functionHandlers = functionHandlers
+      @messageHandler = messageHandler || MessageHandler.new
     end
 
     # Convert the @inputText into an abstract syntax tree that can then be
@@ -93,10 +95,12 @@ class TaskJuggler
         rti.registerFunctionHandler(h)
       end
       # Parse the input text into an abstract syntax tree.
-      parser = RichTextParser.new(rti, sectionCounter, tokenSet)
+      parser = RichTextParser.new(@messageHandler, rti, sectionCounter,
+                                  tokenSet)
       parser.open(@inputText)
       # Parse the input text and convert it to the intermediate representation.
-      tree = parser.parse('richtext')
+      return nil if (tree = parser.parse('richtext')) == false
+
       # In case the result is empty, use an empty RichTextElement as result
       tree = RichTextElement.new(rti, :richtext, nil) unless tree
       tree.cleanUp

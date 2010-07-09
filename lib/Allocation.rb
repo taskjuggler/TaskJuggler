@@ -33,9 +33,12 @@ class TaskJuggler
       # The selection mode determines how the candidate is selected from the
       # list of candidates.
       # 0 : 'order'        : select by order of list
-      # 1 : 'minallocated' : select candidate with lowest allocation probability
-      # 2 : 'minloaded'    : select candidate with lowest allocated overall load
-      # 3 : 'maxloaded'    : select candidate with highest allocated overall load
+      # 1 : 'minallocated' : select candidate with lowest allocation
+      #                      probability
+      # 2 : 'minloaded'    : select candidate with lowest allocated overall
+      #                      load
+      # 3 : 'maxloaded'    : select candidate with highest allocated overall
+      #                      load
       # 4 : 'random'       : select a random candidate
       @selectionMode = selectionMode
       @persistent = persistent

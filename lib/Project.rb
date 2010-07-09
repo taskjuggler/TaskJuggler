@@ -11,7 +11,7 @@
 #
 
 require 'TjException'
-require 'Message'
+require 'MessageHandler'
 require 'TjTime'
 require 'Booking'
 require 'PropertySet'
@@ -412,12 +412,6 @@ class TaskJuggler
       self
     end
 
-    # Pass a message (error or warning) to the message handler. _message_ is a
-    # String that contains the message.
-    def sendMessage(message)
-      @messageHandler.send(message)
-    end
-
     # Query the value of a Project attribute. _name_ is the ID of the attribute.
     def [](name)
       if !@attributes.has_key?(name)
@@ -574,36 +568,30 @@ class TaskJuggler
       end
 
       if @tasks.empty?
-        message = Message.new('no_tasks', 'error', "No tasks defined")
-        sendMessage(message)
-        return false
+        @messageHandler.error('no_tasks', "No tasks defined")
       end
 
-      begin
-        @scenarios.each do |sc|
-          # Skip disabled scenarios
-          next unless sc.get('enabled')
+      @scenarios.each do |sc|
+        # Skip disabled scenarios
+        next unless sc.get('enabled')
 
-          scIdx = scenarioIdx(sc)
+        scIdx = scenarioIdx(sc)
 
-          # All user provided values are set now. The next step is to
-          # propagate inherited values. These values must be marked as
-          # inherited by setting the mode to 1. As we always call
-          # PropertyTreeNode#inherit this is just a safeguard.
-          AttributeBase.setMode(1)
-          prepareScenario(scIdx)
+        # All user provided values are set now. The next step is to
+        # propagate inherited values. These values must be marked as
+        # inherited by setting the mode to 1. As we always call
+        # PropertyTreeNode#inherit this is just a safeguard.
+        AttributeBase.setMode(1)
+        prepareScenario(scIdx)
 
-          # Now change to mode 2 so all values that are modified are marked
-          # as computed.
-          AttributeBase.setMode(2)
-          # Schedule the scenario.
-          scheduleScenario(scIdx)
+        # Now change to mode 2 so all values that are modified are marked
+        # as computed.
+        AttributeBase.setMode(2)
+        # Schedule the scenario.
+        scheduleScenario(scIdx)
 
-          # Complete the data sets, and check the result.
-          finishScenario(scIdx)
-        end
-      rescue TjException
-        return false
+        # Complete the data sets, and check the result.
+        finishScenario(scIdx)
       end
 
       @timeSheets.warnOnDelta if @warnTsDeltas
@@ -613,47 +601,40 @@ class TaskJuggler
     # Call this function to generate the reports based on the scheduling result.
     # This function may only be called after Project#schedule has been called.
     def generateReports(maxCpuCores)
-      begin
-        @reports.index
-        if maxCpuCores == 1
-          @reports.each do |report|
-            next if report.get('formats').empty?
-            Log.startProgressMeter("Report #{report.name}")
-            @reportContexts.push(ReportContext.new(self, report))
-            report.generate
-            @reportContexts.pop
-            Log.stopProgressMeter
-          end
-        else
-          bp = BatchProcessor.new(maxCpuCores)
-          @reports.each do |report|
-            next if report.get('formats').empty?
-            bp.queue(report) {
-              @reportContexts.push(ReportContext.new(self, report))
-              res = report.generate
-              @reportContexts.pop
-              res
-            }
-          end
-          bp.wait do |report|
-            Log.startProgressMeter("Report #{report.tag.name}")
-            $stdout.print(report.stdout)
-            $stderr.print(report.stderr)
-            if report.retVal.signaled?
-              raise TjException.new, "Signal raised"
-            end
-            unless report.retVal.success?
-              raise TjException.new, "Process aborted"
-            end
-            Log.stopProgressMeter
-          end
+      @reports.index
+      if maxCpuCores == 1
+        @reports.each do |report|
+          next if report.get('formats').empty?
+          Log.startProgressMeter("Report #{report.name}")
+          @reportContexts.push(ReportContext.new(self, report))
+          report.generate
+          @reportContexts.pop
+          Log.stopProgressMeter
         end
-      rescue TjException
-        $stderr.puts "Report Generation Error: #{$!}"
-        return false
+      else
+        bp = BatchProcessor.new(maxCpuCores)
+        @reports.each do |report|
+          next if report.get('formats').empty?
+          bp.queue(report) {
+            @reportContexts.push(ReportContext.new(self, report))
+            res = report.generate
+            @reportContexts.pop
+            res
+          }
+        end
+        bp.wait do |report|
+          Log.startProgressMeter("Report #{report.tag.name}")
+          $stdout.print(report.stdout)
+          $stderr.print(report.stderr)
+          if report.retVal.signaled?
+            @messageHandler.error('rg_signal', "Signal raised")
+          end
+          unless report.retVal.success?
+            @messageHandler.error('rg_abort', "Process aborted")
+          end
+          Log.stopProgressMeter
+        end
       end
-
-      true
     end
 
     def generateReport(reportId, regExpMode, dynamicAttributes = nil)
@@ -848,25 +829,26 @@ class TaskJuggler
     # Print the attribute values. It's used for debugging only.
     def to_s
       raise "STOP!"
+      str = ''
       @attributes.each do |attribute, value|
         if value
-          puts "#{attribute}: " +
-               "#{value.is_a?(PropertyTreeNode) ? value.fullId : value}"
+          str += "#{attribute}: " +
+                 "#{value.is_a?(PropertyTreeNode) ? value.fullId : value}"
         end
       end
+      str
     end
 
     # This function sends an error message to the message handler.
     def error(id, text)
-      message = Message.new(id, 'error', text)
-      @messageHandler.send(message)
-      raise TjException
+      @messageHandler.error(id, text)
     end
 
   protected
 
     def prepareScenario(scIdx)
-      Log.startProgressMeter("Preparing scenario #{scenario(scIdx).get('name')}")
+      Log.startProgressMeter("Preparing scenario " +
+                             "#{scenario(scIdx).get('name')}")
       resources = PropertyList.new(@resources)
       tasks = PropertyList.new(@tasks)
 
@@ -1012,19 +994,17 @@ class TaskJuggler
       # Check for unscheduled tasks and report the first 10 of them as
       # warnings.
       unless unscheduledTasks.empty?
-        message = Message.new('unscheduled_tasks', 'warning',
-                              "#{unscheduledTasks.length} tasks could not be " +
-                              "scheduled")
-        sendMessage(message)
+        @messageHandler.warning(
+          'unscheduled_tasks',
+          "#{unscheduledTasks.length} tasks could not be scheduled")
         i = 0
         unscheduledTasks.each do |t|
-          message = Message.new(
-            'unscheduled_task', 'warning',
+          @messageHandler.warning(
+            'unscheduled_task',
             "Task #{t.fullId}: " +
             "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
-            "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", t,
+            "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", nil, nil, t,
             scenario(scIdx))
-          sendMessage(message)
 
           i += 1
           break if i >= 10

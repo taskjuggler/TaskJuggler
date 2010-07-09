@@ -19,8 +19,6 @@ class TaskJuggler
   class ProjectFileScanner < TextScanner
 
     def initialize(masterFile, messageHandler)
-      super
-
       tokenPatterns = [
         # Any white spaces
         [ nil, /\s+/, :tjp, method('newPos') ],
@@ -147,14 +145,7 @@ class TaskJuggler
         [ 'LITERAL', /./ ]
       ]
 
-      tokenPatterns.each do |pat|
-        type = pat[0]
-        regExp = pat[1]
-        mode = pat[2] || :tjp
-        postProc = pat[3]
-        addPattern(type, regExp, mode, postProc)
-      end
-      self.mode = :tjp
+      super(masterFile, messageHandler, tokenPatterns, :tjp)
     end
 
     private
