@@ -274,8 +274,9 @@ class TaskJuggler
         @val[0]
       })
       pattern(%w( $REF !refToken !moreRefToken $REFEND !space ), lambda {
-        if @val[1].index(':')
-          protocol, locator = @val[1].split(':')
+        v1 = @val[1].join
+        if v1.index(':')
+          protocol, locator = v1.split(':')
         else
           protocol = nil
         end
@@ -292,15 +293,15 @@ class TaskJuggler
             else
               error('rt_bad_file_option',
                     "Unknown option '#{token}' for file reference " +
-                    "#{@val[1]}.")
+                    "#{v1}.")
             end
           end
         else
           el = RichTextElement.new(@richTextI, :ref,
                                    RichTextElement.new(@richTextI,
                                                        :text, @val[2].empty? ?
-                                                       @val[1] : @val[2]))
-          el.data = @val[1]
+                                                       v1 : @val[2]))
+          el.data = v1
           el.appendSpace = !@val[4].empty?
         end
         el
@@ -319,11 +320,12 @@ class TaskJuggler
       repeatable
       optional
       pattern(%w( _| !refToken ), lambda {
-        @val[1]
+        @val[1].join
       })
     end
 
     def rule_refToken
+      repeatable
       pattern(%w( $WORD ), lambda {
         @val[0]
       })

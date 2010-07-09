@@ -31,54 +31,64 @@ class TaskJuggler
 
     def initialize(masterFile, messageHandler)
       tokenPatterns = [
+        # :bol mode rules
         [ 'LINEBREAK', /\s*\n/, :bol, method('linebreak') ],
+        [ nil, /\s+/, :bol, method('inlineMode') ],
+
+        # :bop mode rules
+        [ 'PRE', / [^\n]+\n?/, :bop, method('pre') ],
         [ nil, /\s*\n/, :bop, method('linebreak') ],
+
+        # :inline mode rules
         [ 'SPACE', /[ \t\n]+/, :inline, method('space') ],
+
+        # :bop and :bol mode rules
+        [ 'INLINEFUNCSTART', /<-/, [ :bop, :bol, :inline ],
+          method('functionStart') ],
+        [ 'BLOCKFUNCSTART', /<\[/, [ :bop, :bol ], method('functionStart') ],
+        [ 'TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
+        [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
+        [ 'BULLET*', /\*{1,4} /, [ :bop, :bol ], method('bullet') ],
+        [ 'NUMBER*', /\#{1,4} /, [ :bop, :bol ], method('number') ],
+        [ 'HLINE', /----/, [ :bop, :bol ], method('inlineMode') ],
+
+        # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
+        [ 'QUOTES', /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
+        [ 'REF', /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
+        [ 'HREF', /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
+        [ 'WORD', /.[^ \n\t\[<']*/, [ :bop, :bol, :inline ],
+          method('inlineMode') ],
+
+        # :nowiki mode rules
         [ nil, /<\/nowiki>/, :nowiki, method('nowikiEnd') ],
         [ 'WORD', /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
         [ 'SPACE', /[ \t]+/, :nowiki ],
         [ 'LINEBREAK', /\s*\n/, :nowiki ],
-        [ 'BOLDITALIC', /'{5}/, [ :bop, :bol, :inline ], method('inlineMode') ],
-        [ 'CODE', /''''/, [ :bop, :bol, :inline ], method('inlineMode') ],
-        [ 'BOLD', /'''/, [ :bop, :bol, :inline ], method('inlineMode') ],
-        [ 'ITALIC', /''/, [ :bop, :bol, :inline ], method('inlineMode') ],
-        [ 'PRE', / [^\n]+\n?/, :bop, method('pre') ],
-        # REF
-        [ 'REF', /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
+
+        # :ref mode rules
         [ 'REFEND', /\]\]/, :ref, method('refEnd') ],
-        [ 'WORD', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref, method('refWord') ],
+        [ 'WORD', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
         [ 'QUERY', /<-\w+->/, :ref, method('query') ],
-        [ 'LITERAL', /\|/, :ref ],
-        # HREF
-        [ 'HREF', /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
+        [ 'LITERAL', /./, :ref ],
+
+        # :href mode rules
         [ 'HREFEND', /\]/, :href, method('hrefEnd') ],
         [ 'WORD', /(<(?!-)|[^ \t\]<])+/, :href ],
         [ 'QUERY', /<-\w+->/, :href, method('query') ],
         [ 'SPACE', /[ \t]+/, :href ],
-        [ 'HLINE', /----/, [ :bop, :bol ], method('inlineMode') ],
-        [ 'INLINEFUNCSTART', /<-/, [ :bop, :bol, :inline ],
-          method('functionStart') ],
+
+        # :func mode rules
         [ 'INLINEFUNCEND', /->/ , :func, method('functionEnd') ],
-        [ 'BLOCKFUNCSTART', /<\[/, [ :bop, :bol ], method('functionStart') ],
         [ 'BLOCKFUNCEND', /\]>/, :func, method('functionEnd') ],
         [ 'ID', /[a-zA-Z_]\w*/, :func ],
         [ 'STRING', /"(\\"|[^"])*?"/, :func, method('chop2') ],
         [ 'STRING', /'(\\'|[^'])*'/, :func, method('chop2') ],
         [ nil, /[ \t\n]+/, :func ],
-        [ 'LITERAL', /./, :func ],
-        [ 'TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
-        [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
-        [ 'BULLET*', /\*{1,4} /, [ :bop, :bol ], method('bullet') ],
-        [ 'NUMBER*', /\#{1,4} /, [ :bop, :bol ], method('number') ],
-        [ nil, /\s+/, :bol, method('inlineMode') ],
-        [ 'WORD', /[^ \n\t][^ \n\t\[<']*/, [ :bop, :bol, :inline ],
-          method('inlineMode') ]
+        [ 'LITERAL', /./, :func ]
       ]
       super(masterFile, messageHandler, tokenPatterns, :bop)
-      # Buffer to collect :ref WORD tokens that span multiple lines.
-      @word = ''
     end
 
     private
@@ -120,6 +130,12 @@ class TaskJuggler
     def number(type, match)
       self.mode = :inline
       [ "NUMBER#{match.length - 1}", match ]
+    end
+
+    def quotes(type, match)
+      self.mode = :inline
+      types = [ nil, nil, 'ITALIC', 'BOLD' , 'CODE', 'BOLDITALIC' ]
+      [ types[match.length], match ]
     end
 
     def nowikiStart(type, match)
@@ -178,17 +194,6 @@ class TaskJuggler
     def refEnd(type, match)
       self.mode = :inline
       [ type, match ]
-    end
-
-    def refWord(type, match)
-      @word += match
-      if match[-1] == ?\n
-        return [ nil, '' ]
-      else
-        w = @word
-        @word = ''
-        return [ type, w ]
-      end
     end
 
   end
