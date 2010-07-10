@@ -284,7 +284,8 @@ class TaskJuggler
 
     # Continue processing with a new file specified by _includeFileName_. When
     # this file is finished, we will continue in the old file after the
-    # location where we started with the new file.
+    # location where we started with the new file. The method returns the full
+    # qualified name of the included file.
     def include(includeFileName, sfi)
       if includeFileName[0] != '/'
         pathOfCallingFile = @fileStack.last[0].dirname
@@ -315,6 +316,9 @@ class TaskJuggler
       rescue StandardError
         error('bad_include', "Cannot open include file #{includeFileName}", sfi)
       end
+
+      # Return the name of the included file.
+      includeFileName
     end
 
     # Return SourceFileInfo for the current processing prosition.

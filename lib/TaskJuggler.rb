@@ -67,6 +67,7 @@ class TaskJuggler
           return false
         end
       end
+      @project.inputFiles << file
       @parser.close
     end
 
@@ -83,6 +84,7 @@ class TaskJuggler
   def parseFile(fileName, rule)
     begin
       @parser.open(fileName, false)
+      @project.inputFiles << fileName
     rescue TjException => msg
       if msg.message && !msg.message.empty?
         @messageHandler.critical('parse_file', msg.message)

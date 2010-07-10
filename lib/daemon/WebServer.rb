@@ -45,7 +45,15 @@ class TaskJuggler
       end
 
       # Start the web server in a new thread so we don't block this thread.
-      @thread = Thread.new { @server.start }
+      @thread = Thread.new do
+        begin
+          @server.start
+        rescue
+          $stderr.print $!.to_s
+          $stderr.print $!.backtrace.join("\n")
+          @log.fatal("Web server error: #{$!}")
+        end
+      end
     end
 
     # Stop the web server.

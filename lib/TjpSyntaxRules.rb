@@ -1304,7 +1304,7 @@ EOT
 
   def rule_includeFile
     pattern(%w( !includeFileName ), lambda {
-      @scanner.include(@val[0], @sourceFileInfo[0])
+      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
 
@@ -1328,7 +1328,7 @@ EOT
   def rule_includeProperties
     pattern(%w( !includeFileName !includeAttributes ), lambda {
       pushFileStack
-      @scanner.include(@val[0], @sourceFileInfo[0])
+      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
 

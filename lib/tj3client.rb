@@ -62,9 +62,14 @@ class TaskJuggler
         { :label => 'add',
           :args  => [ 'tjp file', '*tji file'],
           :descr => 'Add a new project or update and existing one' },
+        { :label => 'update',
+          :args => [],
+          :descr => 'Reload all projects that have modified files and '+
+                    'are not being reloaded already' },
         { :label => 'remove',
           :args  => [ '+project ID' ],
-          :descr => 'Remove the project with the specified ID from the daemon' },
+          :descr => 'Remove the project with the specified ID from the ' +
+                    'daemon' },
         { :label => 'report',
           :args  => [ 'project ID', '+report ID', '!=', '*tji file'],
           :descr => 'Generate the report with the provided ID for ' +
@@ -242,6 +247,9 @@ EOT
           end
         end
         info('Project removed')
+      when 'update'
+        callDaemon(:update, [])
+        info('Reload requested')
       when 'report'
         # The first value of args is the project ID. The following values
         # could be either report IDs or TJI file # names ('.' or '*.tji').

@@ -37,7 +37,7 @@ class TaskJuggler
 
     attr_reader :authKey, :uri
 
-    def initialize(projectData = nil)
+    def initialize(projectData = nil, logConsole = false)
       @projectData = projectData
       # Since we are still in the ProjectBroker process, the current DRb
       # server is still the ProjectBroker DRb server.
@@ -79,34 +79,45 @@ class TaskJuggler
         @log.fatal('ProjectServer fork failed')
       elsif @pid.nil?
         # This is the child
-        $SAFE = 1
-        DRb.install_acl(ACL.new(%w[ deny all
-                                    allow 127.0.0.1 ]))
-        DRb.start_service
-        iFace = ProjectServerIface.new(self)
+        if logConsole
+          # If the Broker wasn't daemonized, log stdout and stderr to PID
+          # specific files.
+          $stderr.reopen("tj3d.ps.#{$$}.stderr", 'w')
+          $stdout.reopen("tj3d.ps.#{$$}.stdout", 'w')
+        end
         begin
-          @uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
-          @log.debug("Project server is listening on #{@uri}")
+          $SAFE = 1
+          DRb.install_acl(ACL.new(%w[ deny all allow 127.0.0.1 ]))
+          DRb.start_service
+          iFace = ProjectServerIface.new(self)
+          begin
+            @uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
+            @log.debug("Project server is listening on #{@uri}")
+          rescue
+            @log.fatal("ProjectServer can't start DRb: #{$!}")
+          end
+
+          # Send the URI of the newly started DRb server to the parent process.
+          rd.close
+          wr.write @uri
+          wr.close
+
+          # Start a Thread that waits for the @terminate flag to be set and does
+          # other background tasks.
+          startTerminator
+          # Start another Thread that will be used to fork-off ReportServer
+          # processes.
+          startHousekeeping
+
+          # Cleanup the DRb threads
+          DRb.thread.join
+          @log.debug('Project server terminated')
+          exit 0
         rescue
+          $stderr.print $!.to_s
+          $stderr.print $!.backtrace.join("\n")
           @log.fatal("ProjectServer can't start DRb: #{$!}")
         end
-
-        # Send the URI of the newly started DRb server to the parent process.
-        rd.close
-        wr.write @uri
-        wr.close
-
-        # Start a Thread that waits for the @terminate flag to be set and does
-        # other background tasks.
-        startTerminator
-        # Start another Thread that will be used to fork-off ReportServer
-        # processes.
-        startHousekeeping
-
-        # Cleanup the DRb threads
-        DRb.thread.join
-        @log.debug('Project server terminated')
-        exit 0
       else
         # This is the parent
         Process.detach(@pid)
@@ -122,16 +133,20 @@ class TaskJuggler
     # directory. The second one is the master project file (.tjp file).
     # Additionally a list of optional .tji files can be provided.
     def loadProject(args)
+      dirAndFiles = args.dup.untaint
       # The first argument is the working directory
       Dir.chdir(args.shift.untaint)
 
-      updateState(:loading, File.basename(args[0]))
+      # Save a time stamp of when the project file loading started.
+      @modifiedCheck = TjTime.now
+
+      updateState(:loading, dirAndFiles, false)
       @tj = TaskJuggler.new(true)
 
       # Parse all project files
       unless @tj.parse(args, true)
         @log.error("Parsing of #{args.join(' ')} failed")
-        updateState(:failed, File.basename(args[0]))
+        updateState(:failed, nil, false)
         @terminate = true
         return false
       end
@@ -139,14 +154,14 @@ class TaskJuggler
       # Then schedule the project
       unless @tj.schedule
         @log.error("Scheduling of project #{@tj.projectId} failed")
-        updateState(:failed, @tj.projectId)
+        updateState(:failed, @tj.projectId, false)
         Log.exit('scheduler')
         @terminate = true
         return false
       end
 
       # Great, everything went fine. We've got a project to work with.
-      updateState(:ready, @tj.projectId)
+      updateState(:ready, @tj.projectId, false)
       @log.info("Project #{@tj.projectId} loaded")
       restartTimer
       true
@@ -198,7 +213,8 @@ class TaskJuggler
         sleep 0.1 if reportServer.nil?
       end
 
-      @log.debug("Got report server with URI #{reportServer.uri} for tag #{tag}")
+      @log.debug("Got report server with URI #{reportServer.uri} for " +
+                 "tag #{tag}")
       restartTimer
       [ reportServer.uri, reportServer.authKey ]
     end
@@ -225,67 +241,90 @@ class TaskJuggler
 
     private
 
-    # Update the _state_ and _id_ of the project locally and remotely.
-    def updateState(state, id)
+    # Update the _state_, _id_ and _modified_ state of the project locally and
+    # remotely.
+    def updateState(state, filesOrId, modified)
       begin
         @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
-        @daemon.updateState(@authKey, id, state)
+        @daemon.updateState(@authKey, filesOrId, state, modified)
       rescue
         @log.fatal("Can't update state with daemon: #{$!}")
       end
       @stateLock.synchronize do
         @state = state
         @stateUpdated = TjTime.now
+        @modified = modified
+        @modifiedCheck = TjTime.now
       end
     end
 
     def startHousekeeping
       Thread.new do
-        loop do
-          # Was the project data provided during object creation?
-          # Then we load the data here.
-          if @projectData
-            loadProject(@projectData)
-            @projectData = nil
-          end
-
-          # Check for pending requests for new ReportServers.
-          unless @reportServerRequests.empty?
-            tag = @reportServerRequests.pop
-            @log.debug("Popped #{tag}")
-            # Create an new entry for the @reportServers list.
-            rsr = ReportServerRecord.new(tag)
-            @log.debug("RSR created")
-            # Create a new ReportServer object that runs as a separate
-            # process. The constructor will tell us the URI and authentication
-            # key of the new ReportServer.
-            rs = ReportServer.new(@tj)
-            rsr.uri = rs.uri
-            rsr.authKey = rs.authKey
-            @log.debug("Adding ReportServer with URI #{rsr.uri} to list")
-            # Add the new ReportServer to our list.
-            @reportServers.synchronize do
-              @reportServers << rsr
+        begin
+          loop do
+            # Was the project data provided during object creation?
+            # Then we load the data here.
+            if @projectData
+              loadProject(@projectData)
+              @projectData = nil
             end
-          end
 
-          # Some state changing operations are not atomic. Since the client
-          # can die during the transaction, the server might hang in some
-          # states. Here we define timeout for each state. If the timeout is
-          # not 0 and exceeded, we immediately terminate the process.
-          timeouts = { :new => 10, :loading => 15 * 60, :failed => 60,
-                       :ready => 0 }
-          if timeouts[@state] > 0 &&
-             TjTime.now - @stateUpdated > timeouts[@state]
-            @log.fatal("Reached timeout for state #{@state}. Terminating.")
-          end
+            # Check every 60 seconds if the input files have been modified.
+            # Don't check if we already know it has been modified.
+            if @stateLock.synchronize { @tj && !@modified &&
+                                        @modifiedCheck + 60 < TjTime.now }
+              # Reset the timer
+              @stateLock.synchronize { @modifiedCheck = TjTime.now }
 
-          # If we have not received a ping from the ProjectBroker for 2
-          # minutes, we assume it has died and terminate as well.
-          if TjTime.now - @lastPing > 180
-            @log.fatal('Heartbeat from daemon lost. Terminating.')
+              if @tj.project.inputFiles.modified?
+                @log.info("Project #{@tj.projectId} has been modified")
+                updateState(:ready, @tj.projectId, true)
+              end
+            end
+
+            # Check for pending requests for new ReportServers.
+            unless @reportServerRequests.empty?
+              tag = @reportServerRequests.pop
+              @log.debug("Popped #{tag}")
+              # Create an new entry for the @reportServers list.
+              rsr = ReportServerRecord.new(tag)
+              @log.debug("RSR created")
+              # Create a new ReportServer object that runs as a separate
+              # process. The constructor will tell us the URI and authentication
+              # key of the new ReportServer.
+              rs = ReportServer.new(@tj)
+              rsr.uri = rs.uri
+              rsr.authKey = rs.authKey
+              @log.debug("Adding ReportServer with URI #{rsr.uri} to list")
+              # Add the new ReportServer to our list.
+              @reportServers.synchronize do
+                @reportServers << rsr
+              end
+            end
+
+            # Some state changing operations are not atomic. Since the client
+            # can die during the transaction, the server might hang in some
+            # states. Here we define timeout for each state. If the timeout is
+            # not 0 and exceeded, we immediately terminate the process.
+            timeouts = { :new => 10, :loading => 15 * 60, :failed => 60,
+                         :ready => 0 }
+            if timeouts[@state] > 0 &&
+               TjTime.now - @stateUpdated > timeouts[@state]
+              @log.fatal("Reached timeout for state #{@state}. Terminating.")
+            end
+
+            # If we have not received a ping from the ProjectBroker for 2
+            # minutes, we assume it has died and terminate as well.
+            if TjTime.now - @lastPing > 180
+              @log.fatal('Heartbeat from daemon lost. Terminating.')
+            end
+            sleep 1
           end
-          sleep 1
+        rescue
+          # Make sure we get a backtrace for this thread.
+          $stderr.print $!.to_s
+          $stderr.print $!.backtrace.join("\n")
+          @log.fatal("ProjectServer housekeeping error: #{$!}")
         end
       end
     end

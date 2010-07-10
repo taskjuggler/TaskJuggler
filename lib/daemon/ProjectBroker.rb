@@ -166,10 +166,10 @@ EOT
       if @projects.empty?
         "No projects registered\n"
       else
-        format = "  %3s | %-25s | %-14s | %-20s\n"
-        out = sprintf(format, 'No.', 'Project ID', 'Status', 'Loaded since')
-        out += "  " + '-' * 4 + '+' + '-' * 27 + '+' + '-' * 16 + '+' +
-               '-' * 20 + "\n"
+        format = "  %3s | %-25s | %-14s | %s | %-20s\n"
+        out = sprintf(format, 'No.', 'Project ID', 'Status', 'M',
+                              'Loaded since')
+        out += "  #{'-' * 4}+#{'-' * 27}+#{'-' * 16}+#{'-' * 3}+#{'-' * 20}\n"
         @projects.synchronize do
           i = 0
           @projects.each do |project|
@@ -252,6 +252,19 @@ EOT
       [ project.uri, project.authKey ]
     end
 
+    # Reload all projects that have modified files and are not already being
+    # reloaded.
+    def update
+      @projects.synchronize do
+        @projects.each do |project|
+          if project.modified && !project.reloading
+            project.reloading = true
+            @projectsToLoad.push(project.files)
+          end
+        end
+      end
+    end
+
     # Return a list of IDs of projects that are in state :ready.
     def getProjectList
       list = []
@@ -269,8 +282,19 @@ EOT
 
     # This is a callback from the ProjectServer process. It's used to update
     # the current state of the ProjectServer in the ProjectRecord list.
-    def updateState(authKey, id, state)
+    def updateState(authKey, filesOrId, state, modified)
       result = false
+      if filesOrId.is_a?(Array)
+        files = filesOrId
+        # Use the name of the master files for now.
+        id = files[1]
+      elsif filesOrId.is_a?(String)
+        id = filesOrId
+        files = nil
+      else
+        id = files = nil
+      end
+
       @projects.synchronize do
         @projects.each do |project|
           # Don't accept updates for already obsolete entries.
@@ -279,7 +303,9 @@ EOT
           @log.debug("Updating state for #{id} to #{state}")
           # Only update the record that has the matching authKey
           if project.authKey == authKey
-            project.id = id
+            project.id = id if id
+            # An Array of [ workingDir, tjpFile, ... other tji files ]
+            project.files = files if files
 
             # If the state is being changed from something to :ready, this is
             # now the current project for the project ID.
@@ -299,6 +325,7 @@ EOT
             project.uri = nil if state == :failed
 
             project.state = state
+            project.modified = modified
             result = true
             break
           end
@@ -312,56 +339,62 @@ EOT
 
     def startHousekeeping
       Thread.new do
-        cntr = 0
-        loop do
-          if @terminate
-            # Give the caller a chance to properly terminate the connection.
-            sleep 0.5
-            @log.debug('Shutting down DRb server')
-            DRb.stop_service
-            break
-          elsif !@projectsToLoad.empty?
-            loadProject(@projectsToLoad.pop)
-          else
-            # Send termination command to all obsolute ProjectServer objects.
-            # To minimize the locking of @projects we collect the obsolete
-            # items first.
-            termList = []
-            @projects.synchronize do
-              @projects.each do |p|
-                if p.state == :obsolete
-                  termList << p
-                elsif p.state == :failed
-                  # Start removal of entries that didn't parse.
-                  p.state = :obsolete
-                end
-              end
-            end
-            # And then send them a termination command.
-            termList.each { |p| p.terminateServer }
-
-            # Check every 30 seconds that the ProjectServer processes are
-            # still alive. If not, remove them from the list.
-            if (cntr += 1) > 30
+        begin
+          cntr = 0
+          loop do
+            if @terminate
+              # Give the caller a chance to properly terminate the connection.
+              sleep 0.5
+              @log.debug('Shutting down DRb server')
+              DRb.stop_service
+              break
+            elsif !@projectsToLoad.empty?
+              loadProject(@projectsToLoad.pop)
+            else
+              # Send termination command to all obsolute ProjectServer
+              # objects.  To minimize the locking of @projects we collect the
+              # obsolete items first.
+              termList = []
               @projects.synchronize do
                 @projects.each do |p|
-                  unless p.ping
-                    termList << p unless termList.include?(p)
+                  if p.state == :obsolete
+                    termList << p
+                  elsif p.state == :failed
+                    # Start removal of entries that didn't parse.
+                    p.state = :obsolete
                   end
                 end
               end
-              cntr = 0
-            end
+              # And then send them a termination command.
+              termList.each { |p| p.terminateServer }
 
-            # The housekeeping thread rarely needs to so something. Make sure
-            # it's sleeping most of the time.
-            sleep 1
+              # Check every 30 seconds that the ProjectServer processes are
+              # still alive. If not, remove them from the list.
+              if (cntr += 1) > 30
+                @projects.synchronize do
+                  @projects.each do |p|
+                    unless p.ping
+                      termList << p unless termList.include?(p)
+                    end
+                  end
+                end
+                cntr = 0
+              end
 
-            # Remove the obsolete records from the @projects list.
-            @projects.synchronize do
-              @projects.delete_if { |p| termList.include?(p) }
+              # The housekeeping thread rarely needs to so something. Make
+              # sure it's sleeping most of the time.
+              sleep 1
+
+              # Remove the obsolete records from the @projects list.
+              @projects.synchronize do
+                @projects.delete_if { |p| termList.include?(p) }
+              end
             end
           end
+        rescue
+          $stderr.print $!.to_s
+          $stderr.print $!.backtrace.join("\n")
+          @log.fatal("ProjectBroker housekeeping error: #{$!}")
         end
       end
     end
@@ -378,7 +411,7 @@ EOT
         @log.debug("Loading project for tag #{tag}")
       end
       pr = ProjectRecord.new(tag)
-      ps = ProjectServer.new(project)
+      ps = ProjectServer.new(project, !@daemonize)
       # The ProjectServer can be reached via this DRb URI
       pr.uri = ps.uri
       # Method calls must be authenticated with this key
@@ -425,13 +458,15 @@ EOT
         @broker.removeProject(args)
       when :getProject
         @broker.getProject(args)
+      when :update
+        @broker.update
       else
         LogFile.instance.fatal('Unknown command #{cmd} called')
       end
     end
 
-    def updateState(authKey, id, status)
-      @broker.updateState(authKey, id, status)
+    def updateState(authKey, id, status, modified)
+      @broker.updateState(authKey, id, status, modified)
     end
 
   end
@@ -440,13 +475,16 @@ EOT
   # one entry for each project in the @projects list.
   class ProjectRecord < Monitor
 
-    attr_accessor :authKey, :uri, :id, :state, :readySince
+    attr_accessor :authKey, :uri, :files, :id, :state, :readySince, :modified,
+                  :reloading
     attr_reader :tag
 
     def initialize(tag)
       # Before we know the project ID we use this tag to uniquely identify the
       # project.
       @tag = tag
+      # Array of [ workingDir, tjp file, ... tji files ]
+      @files = nil
       # The authentication key for the ProjectServer process.
       @authKey = nil
       # The DRb URI where the ProjectServer process is listening.
@@ -458,6 +496,10 @@ EOT
       @state = :new
       # A time stamp when the project became ready for service.
       @readySince = nil
+      # True if any of the input files have been modified after the load.
+      @modified = false
+      # True if the reload has already been triggered.
+      @reloading = false
 
       @log = LogFile.instance
       @projectServer = nil
@@ -466,7 +508,7 @@ EOT
     def ping
       return true unless @uri
 
-      @log.debug("Sending ping to ProcessServer #{@uri}")
+      @log.debug("Sending ping to ProjectServer #{@uri}")
       begin
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.ping(@authKey)
@@ -482,7 +524,7 @@ EOT
       return unless @uri
 
       begin
-        @log.debug("Sending termination request to ProcessServer #{@uri}")
+        @log.debug("Sending termination request to ProjectServer #{@uri}")
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.terminate(@authKey)
       rescue
@@ -493,7 +535,7 @@ EOT
 
     # This is used to generate the status table.
     def to_s(format, index)
-      sprintf(format, index, @id, @state,
+      sprintf(format, index, @id, @state, @modified ? '*' : ' ',
               @readySince ? @readySince.to_s('%Y-%m-%d %H:%M:%S') : '')
     end
 

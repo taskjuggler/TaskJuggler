@@ -12,6 +12,7 @@
 
 require 'TjException'
 require 'MessageHandler'
+require 'FileList'
 require 'TjTime'
 require 'Booking'
 require 'PropertySet'
@@ -49,7 +50,7 @@ class TaskJuggler
   class Project
 
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
-                :timeSheets, :reports, :messageHandler
+                :timeSheets, :reports, :messageHandler, :inputFiles
     attr_accessor :reportContexts, :outputDir, :warnTsDeltas
 
     # Create a project with the specified +id+, +name+ and +version+.
@@ -393,6 +394,9 @@ class TaskJuggler
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 
       Scenario.new(self, 'plan', 'Plan Scenario', nil)
+
+      # A list of files that contained the project data.
+      @inputFiles = FileList.new
 
       @timeSheets = TimeSheets.new
 
