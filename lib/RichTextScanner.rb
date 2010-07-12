@@ -75,9 +75,9 @@ class TaskJuggler
 
         # :href mode rules
         [ 'HREFEND', /\]/, :href, method('hrefEnd') ],
-        [ 'WORD', /(<(?!-)|[^ \t\]<])+/, :href ],
+        [ 'WORD', /(<(?!-)|[^ \t\n\]<])+/, :href ],
         [ 'QUERY', /<-\w+->/, :href, method('query') ],
-        [ 'SPACE', /[ \t]+/, :href ],
+        [ 'SPACE', /[ \t\n]+/, :href ],
 
         # :func mode rules
         [ 'INLINEFUNCEND', /->/ , :func, method('functionEnd') ],

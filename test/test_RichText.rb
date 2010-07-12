@@ -421,6 +421,36 @@ EOT
     match(ref, out)
   end
 
+  def test_hrefWithWrappedLines
+    inp = <<'EOT'
+A [http://www.taskjuggler.org
+multi line] reference.
+EOT
+
+    # Check tagged output.
+    out = newRichText(inp).to_tagged + "\n"
+    ref = <<'EOT'
+<div>[A] <a href="http://www.taskjuggler.org" target="_blank">[multi] [line]</a> [reference.]</div>
+EOT
+    match(ref, out)
+
+    # Check ASCII output.
+    rt = newRichText(inp)
+    out = rt.to_s + "\n"
+    ref = <<'EOT'
+A multi line reference.
+EOT
+    match(ref, out)
+
+    # Check HTML output.
+    out = newRichText(inp).to_html.to_s + "\n"
+    ref = <<'EOT'
+<div>A <a href="http://www.taskjuggler.org" target="_blank">multi line</a> reference.</div>
+EOT
+    match(ref, out)
+  end
+
+
   def test_headline
     inp = <<'EOT'
 = This is not a headline
