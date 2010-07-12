@@ -1,0 +1,11 @@
+project "Test" 2010-07-12 +1m
+
+task t1 "T1" {
+  duration 1w
+}
+# MARK: error 7 task_pred_before_gl
+task t2 "T2" {
+  depends !t1 { gaplength 3d }
+  duration 6d
+  end 2010-07-26
+}

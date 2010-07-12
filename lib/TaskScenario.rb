@@ -434,11 +434,32 @@ class TaskJuggler
         task = dependency.task
         limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         next if limit.nil?
-        if limit > a('start')
+        if a('start') < limit
           error('task_pred_before',
                 "Task #{@property.fullId} must start after " +
                 "#{dependency.onEnd ? 'end' : 'start'} of task " +
                 "#{task.fullId}.")
+        end
+        if dependency.gapDuration > 0
+          if limit + dependency.gapDuration > a('start')
+            error('task_pred_before_gd',
+                  "Task #{@property.fullId} must start " +
+                  "#{dependency.gapDuration / (60 * 60 * 24)} days after " +
+                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
+                  "because the task is scheduled ALAP (finish-to-start).")
+          end
+        end
+        if dependency.gapLength > 0
+          if calcLength(limit, a('start')) < dependency.gapLength
+            error('task_pred_before_gl',
+                  "Task #{@property.fullId} must start " +
+                  "#{@project.slotsToDays(dependency.gapLength)} " +
+                  "working days after " +
+                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
+                  "because the task is scheduled ALAP (finish-to-start).")
+          end
         end
       end
 
@@ -451,6 +472,27 @@ class TaskJuggler
           error('task_succ_after',
                 "Task #{@property.fullId} must end before " +
                 "#{dependency.onEnd ? 'end' : 'start'} of task #{task.fullId}.")
+        end
+        if dependency.gapDuration > 0
+          if limit - dependency.gapDuration < a('end')
+            error('task_succ_after_gd',
+                  "Task #{@property.fullId} must end " +
+                  "#{dependency.gapDuration / (60 * 60 * 24)} days before " +
+                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
+                  "because the task is scheduled ASAP (start-to-finish).")
+          end
+        end
+        if dependency.gapLength > 0
+          if calcLength(a('end'), limit) < dependency.gapLength
+            error('task_succ_after_gl',
+                  "Task #{@property.fullId} must end " +
+                  "#{@project.slotsToDays(dependency.gapLength)} " +
+                  "working days before " +
+                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
+                  "because the task is scheduled ASAP (start-to-finish).")
+          end
         end
       end
 
@@ -1645,6 +1687,16 @@ class TaskJuggler
       true
     end
 
+    # Calculate the number of general working time slots between the TjTime
+    # objects _d1_ and _d2_.
+    def calcLength(d1, d2)
+      slots = 0
+      while d1 < d2
+        slots += 1 if @project.isWorkingTime(d1)
+        d1 += @project['scheduleGranularity']
+      end
+      slots
+    end
 
     # Register the user provided bookings with the Resource scoreboards. A
     # booking describes the assignment of a Resource to a certain Task for a
