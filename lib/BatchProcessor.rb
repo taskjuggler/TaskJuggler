@@ -230,9 +230,10 @@ class TaskJuggler
           pid, retVal = Process.wait2
           job = nil
           @lock.synchronize do
-            # Get the JobInfo object that corresponds to the process ID.
-            job = @runningJobs[pid]
-            raise "Unknown pid #{pid}" if job.nil?
+            # Get the JobInfo object that corresponds to the process ID. The
+            # blocks passed to queue() or wait() may fork child processes as
+            # well. If we get their PID, we can just ignore them.
+            next if (job = @runningJobs[pid]).nil?
             # Remove the job from the @runningJobs Hash.
             @runningJobs.delete(pid)
             # Save the return value.

@@ -14,15 +14,22 @@ require 'LogFile'
 
 class TaskJuggler
 
+  # This class provides the basic functionality to turn the current process
+  # into a background process (daemon). To use it, derive you main class from
+  # this class and call the start() method.
   class Daemon
 
     attr_accessor :daemonize
 
     def initialize
+      # You can set this flag to false to prevent the program from
+      # disconnecting from the current terminal. This is useful for debugging
+      # purposes.
       @daemonize = true
       @log = LogFile.instance
     end
 
+    # Call this method to turn the process into a background process.
     def start
       return unless @daemonize
 
@@ -61,6 +68,8 @@ class TaskJuggler
       @log.info("The process is running as daemon now with PID #{@pid}")
     end
 
+    # This method may provide some cleanup functionality in the future. You
+    # better call it before you exit.
     def stop
     end
 
