@@ -3,7 +3,7 @@
 function cleanup
 {
   tj3client --silent terminate 2> /dev/null
-  killall -9 tj3d 2> /dev/null
+  #killall -9 tj3d 2> /dev/null
   /bin/rm -rf timesheets.log \
               TimeSheets TimeSheetTemplates \
 	      sender.log receiver.log summary.log tj3d.log

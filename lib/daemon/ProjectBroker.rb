@@ -36,7 +36,8 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
-    attr_accessor :port, :enableWebServer, :webServerPort, :projectFiles
+    attr_accessor :port, :uriFile, :enableWebServer, :webServerPort,
+                  :projectFiles
     attr_reader :authKey
 
     def initialize
@@ -46,6 +47,8 @@ class TaskJuggler
       @authKey = nil
       # The default TCP/IP port. ASCII code decimals for 'T' and 'J'.
       @port = 8474
+      # The name of the URI file.
+      @uriFile = nil
       # A list of loaded projects as Array of ProjectRecord objects.
       @projects = []
       # We operate with multiple threads so we need a Monitor to synchronize
@@ -112,6 +115,16 @@ EOT
         @log.fatal("Cannot listen on port #{@port}: #{$!}")
       end
 
+      if @port == 0
+        # If the port is set to 0 (any port) we save the ProjectBroker URI in
+        # the file .tj3d.uri. tj3client will look for it.
+        begin
+          File.open(@uriFile, 'w') { |f| f.write @uri }
+        rescue
+          @log.fatal("Cannot write URI file #{@uriFile}: #{$!}")
+        end
+      end
+
       # If project files were specified on the command line, we add them here.
       i = 0
       @projectFiles.each do |project|
@@ -124,6 +137,16 @@ EOT
 
       # Cleanup the DRb threads
       DRb.thread.join
+
+      # If we have created a URI file, we need to delete it again.
+      if @port == 0
+        begin
+          File.delete(@uriFile)
+        rescue
+          @log.fatal("Cannot delete URI file .tj3d.uri: #{$!}")
+        end
+      end
+
       @log.info('TaskJuggler daemon terminated')
     end
 

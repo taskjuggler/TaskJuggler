@@ -2,6 +2,7 @@ _global:
   smtpServer: foobar.com
   scmCommand: '/bin/true'
   authKey: topsecret
+  port: 0
   _log:
     logLevel: 4
     outputLevel: 2

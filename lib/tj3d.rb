@@ -27,9 +27,10 @@ class TaskJuggler
       @mandatoryArgs = '[<tjp file> [<tji file> ...] ...]'
 
       @log = LogFile.instance
-      @log.logFile = Dir.getwd + "/#{AppConfig.appName}.log"
+      @log.logFile = File.join(Dir.getwd, "/#{AppConfig.appName}.log")
       @log.appName = AppConfig.appName
       @daemonize = true
+      @uriFile = File.join(Dir.getwd, '.tj3d.uri')
       @port = nil
       @webServer = false
       @webServerPort = nil
@@ -51,6 +52,11 @@ EOT
                  format('Use the specified TCP/IP port to serve tj3client ' +
                         'requests (Default: 8474).')) do |arg|
           @port = arg
+        end
+        @opts.on('--urifile', String,
+                 format('If the port is 0, use this file to store the URI ' +
+                        'of the server.')) do |arg|
+          @uriFile = arg
         end
         @opts.on('-w', '--webserver',
                  format('Start a web server that serves the reports of ' +
@@ -76,6 +82,7 @@ EOT
       # Set some config variables if corresponding data was provided via the
       # command line.
       broker.port = @port if @port
+      broker.uriFile = @uriFile.untaint
       broker.enableWebServer = @webServer
       broker.webServerPort = @webServerPort if @webServerPort
       broker.projectFiles = sortInputFiles(files) unless files.empty?
