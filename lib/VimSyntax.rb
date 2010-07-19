@@ -94,23 +94,31 @@ EOT
       @optionBlocks.each do |kw|
         single = kw.names.length == 1
         kw.names.each do |name|
-          break if name == 'supplement'
           normalizedName = "#{normalize(kw.keyword)}" +
                            "#{single ? '' : "_#{name}"}"
+          tag = name == 'supplement' ?
+                        kw.keyword.gsub(/\./, ' ') : name
           @file.write "syn region tjpblk_#{normalizedName}" +
-                      " start=/^\\s*#{name}\\s.*{/ end=/^\\s*}/ transparent"
-          @file.write " fold" if @properties.include?(kw)
+                      " start=/^\\s*#{tag}\\s.*{/ end=/^\\s*}/ transparent"
+          # We allow properties and special attributes to be folded.
+          foldable = %w( task.timesheet project )
+          @file.write " fold" if @properties.include?(kw) ||
+                                 foldable.include?(kw.keyword)
           # The header is part of the region. So we must make sure that common
           # parameters and the property/attribute name are contained as well.
           @file.write " contains=@tjpcommon,tjp_#{normalizedName}"
           kw.optionalAttributes.each do |oa|
-            @file.write ",tjp_#{normalize(oa.keyword)}"
+            tag = normalize(oa.keyword)
+            @file.write ",tjp_#{tag}"
             if !oa.optionalAttributes.empty?
               # Option blocks may be contained as block or non-block.
-              @file.write ",tjpblk_#{normalize(oa.keyword)}"
+              @file.write ",tjpblk_#{tag}"
             end
           end
-          if !kw.isProperty? && name != 'project'
+          if name == 'supplement'
+            @file.write(',tjp_supplement')
+          end
+          if !kw.globalScope?
             # Every region but a property and 'project' is contained.
             @file.write " contained"
           end
@@ -132,9 +140,9 @@ EOT
     end
 
     def keywords
-      @file.puts "syn keyword tjp_supplement supplement"
-      @file.puts "syn keyword tjp_macro macro contained"
-      @file.puts "syn keyword tjp_project project contained"
+      %w( macro project supplement ).each do |kw|
+        @file.puts "syn keyword tjp_#{kw} #{kw} contained"
+      end
       @file.puts
 
       # Property keywords
@@ -156,11 +164,12 @@ EOT
         next if %w( resourcereport taskreport textreport ).include?(kw.keyword)
         single = kw.names.length == 1
         kw.names.each do |name|
-          break if [ '%', '(', '~', 'include', 'macro', 'project' ].
-                   include?(name)
+          break if [ '%', '(', '~', 'include', 'macro', 'project',
+                     'supplement' ].include?(name)
           @file.puts "syn keyword tjp_#{normalize(kw.keyword)}" +
                      "#{single ? '' : "_#{name}"} #{name}" +
-                     "#{kw.globalScope? ? '' : ' contained'}"
+                     "#{kw.globalScope? && !@optionBlocks.include?(kw) ?
+                        '' : ' contained'}"
           @file.puts "hi def link tjp_#{normalize(kw.keyword)}" +
                      "#{single ? '' : "_#{name}"} Type"
         end
@@ -176,8 +185,9 @@ syn match tjpcomment "//.*$"
 syn match tjpinclude /include.*$/
 syn match tjpnumber /\s[-+]\?\d\+\(\.\d\+\)\?\([hdwmy]\|min\)\?/
 syn match tjpdate /\s\d\{4}-\d\{1,2}-\d\{1,2}\(-\d\{1,2}:\d\{1,2}\(:\d\{1,2}\)\?\(-[-+]\?\d\{4}\)\?\)\?/
+syn match tjptime /\s\d\{1,2}:\d\d\(:\d\d\)\?/
 
-syn cluster tjpcommon contains=tjpcomment,tjpdate,tjpstring,tjpnumber
+syn cluster tjpcommon contains=tjpcomment,tjpdate,tjptime,tjpstring,tjpnumber
 EOT
     end
 
@@ -194,6 +204,7 @@ hi def link tjpcomment Comment
 hi def link tjpmlcomment Comment
 hi def link tjpinclude Include
 hi def link tjpdate Constant
+hi def link tjptime Constant
 hi def link tjpnumber Number
 
 let b:current_syntax = "tjp"

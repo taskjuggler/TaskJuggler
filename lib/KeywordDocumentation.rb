@@ -75,6 +75,11 @@ class TaskJuggler
     # Returns true of the KeywordDocumentation is documenting a TJP property
     # (task, resources, etc.). A TJP property can be nested.
     def isProperty?
+      # I haven't found a good way to automatically detect all the various
+      # report types as properties. The non-nestable ones need to be added
+      # manually here.
+      return true if %w( export nikureport timesheetreport statussheetreport).
+                     include?(keyword)
       @optionalAttributes.include?(self)
     end
 

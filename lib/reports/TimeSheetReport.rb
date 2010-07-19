@@ -131,7 +131,7 @@ EOT
   #   status green "Your headline here!" {
   #     summary -8<-
   #     A summary text
-  #     -8<-
+  #     ->8-
   #     details -8<-
   #     Some more details
   #     ->8-
