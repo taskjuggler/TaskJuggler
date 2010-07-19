@@ -149,7 +149,9 @@ class TaskJuggler
     end
 
     def functionStart(type, match)
-      @funcLastMode = @scannerMode
+      # When restoring :bol or :bop mode, we need to switch to :inline mode.
+      @funcLastMode = (@scannerMode == :bop || @scannerMode == :bol) ?
+                      :inline : @scannerMode
       self.mode = :func
       [ type, match ]
     end
@@ -175,7 +177,9 @@ class TaskJuggler
     end
 
     def hrefStart(type, match)
-      @hrefLastMode = @scannerMode
+      # When restoring :bol or :bop mode, we need to switch to :inline mode.
+      @hrefLastMode = (@scannerMode == :bop || @scannerMode == :bol) ?
+                      :inline : @scannerMode
       self.mode = :href
       [ type, match ]
     end

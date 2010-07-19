@@ -32,7 +32,8 @@ Live (or bootable) CD/DVD or use a VmWare Player image of a Linux
 distribution.
 
 Make sure you have followed the steps described in the
-[Installation#Installation_Steps_for_Developers] chapter.
+[Installation.html#Installation_Steps_for_Developers Installation
+Steps for Developers] chapter.
 
 If you have never used Git before, you need to configure it first. You
 need to set your name and email address. This information will be

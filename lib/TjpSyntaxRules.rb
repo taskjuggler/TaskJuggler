@@ -4875,8 +4875,8 @@ EOT
       checkContainer('shift')
     })
     doc('shift.task', <<'EOT'
-This keyword has been deprecated. Please use [shifts.task shifts
-(task)] instead.
+This keyword has been deprecated. Please use [[shifts.task|shifts
+(task)]] instead.
 EOT
        )
 
