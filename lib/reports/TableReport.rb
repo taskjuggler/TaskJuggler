@@ -38,6 +38,7 @@ class TaskJuggler
       'effortdone'       => [ 'Effort Done',       true,   :right, true ],
       'effortleft'       => [ 'Effort Left',       true,   :right, true ],
       'freetime'         => [ 'Free Time',         true,   :right, true ],
+      'freework'         => [ 'Free Work',         true,   :right, true ],
       'followers'        => [ 'Followers',         false,  :left,  true ],
       'id'               => [ 'Id',                false,  :left,  false ],
       'journal'          => [ 'Journal',           false,  :left,  false ],
