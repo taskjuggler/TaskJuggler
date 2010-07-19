@@ -5412,9 +5412,6 @@ EOT
               'You cannot specify a task that has sub tasks here.',
               @sourceFileInfo[1], @property)
       end
-      scenarioIdx = @timeSheet.scenarioIdx
-      taskStart = @property['start', scenarioIdx] || @project['start']
-      taskEnd = @property['end', scenarioIdx] || @project['end']
 
       @timeSheetRecord = TimeSheetRecord.new(@timeSheet, @property)
       @timeSheetRecord.sourceFileInfo = @sourceFileInfo[0]

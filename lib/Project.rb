@@ -652,7 +652,6 @@ class TaskJuggler
         Log.startProgressMeter("Report #{report.name}")
         @reportContexts.push(context = ReportContext.new(self, report))
 
-        name = nil
         # If we have dynamic attributes we need to backup the old attributes
         # first, then parse the dynamicAttributes String replacing the
         # original values.

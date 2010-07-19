@@ -89,7 +89,6 @@ class String
     def reverse
       a = []
       each_utf8_char { |c| a << c }
-      s = ''
       a.reverse.join
     end
 

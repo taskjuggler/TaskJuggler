@@ -216,7 +216,6 @@ class TaskJuggler
       when :href
       when :blockfunc
       when :inlinefunc
-        noChilds = true
         checkHandler
         pre = @richText.functionHandler(@data[0]).to_s(@data[1])
       when :italic

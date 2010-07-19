@@ -249,7 +249,6 @@ class TaskJuggler
             res.each do |pat_i|
               pat_i.each { |tok, r| transitions[tok] = r }
             end
-            optional = true if refRule.optional
           elsif '_$.'.include?(token[0])
             transitions[token] = rule
             allTokensOptional = false

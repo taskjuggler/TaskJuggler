@@ -58,10 +58,10 @@ class TaskJuggler
     end
 
     def addBlockedZones(router)
-      height = (@lineHeight / 2) - @@size
       # Horizontal block
       router.addZone(@start - @@size, @y + (@lineHeight / 2) - @@size - 2,
-                     @end - @start + 1 + 2 * @@size, 2 * @@size + 5, true, false)
+                     @end - @start + 1 + 2 * @@size, 2 * @@size + 5, true,
+                     false)
       # Block for arrowhead.
       router.addZone(@start - @@size - 9, @y + (@lineHeight / 2) - 7, 10, 15,
                      true, true)

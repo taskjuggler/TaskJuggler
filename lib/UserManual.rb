@@ -37,8 +37,8 @@ class TaskJuggler
       # Directory where to find the manual RichText sources. Must be relative
       # to lib directory.
       srcDir = AppConfig.dataDirs('manual')[0]
-      # Directory where to put the generated HTML files. Must be relative to lib
-      # directory.
+      # Directory where to put the generated HTML files. Must be relative to
+      # lib directory.
       destDir = directory + (directory[-1] == '/' ? '' : '/')
       # A list of all source files. The order is important.
       %w(
@@ -58,7 +58,7 @@ class TaskJuggler
         snip = addSnip(srcDir + file)
         snip.cssClass = 'manual'
       end
-      # Generate the table of contense
+      # Generate the table of contents
       tableOfContents
       # Generate the HTML files.
       generateHTML(destDir)

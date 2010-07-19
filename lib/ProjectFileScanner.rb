@@ -257,7 +257,7 @@ class TaskJuggler
     def firstStringSZR(type, match)
       self.mode = :szrString
       # Split the leading indentation and the rest of the string.
-      foo, @indent, @string = */(\s*)(.*\n)/.match(match)
+      @indent, @string = */(\s*)(.*\n)/.match(match)[1, 2]
       [ nil, '' ]
     end
 
@@ -324,7 +324,7 @@ class TaskJuggler
       # Remove '${' and '}'
       argsStr = @macroCall[2..-2]
       # Extract the macro name.
-      if (nameEnd = argsStr.index(' ')).nil?
+      if argsStr.index(' ').nil?
         expandMacro(prefix, [ argsStr ])
       else
         macroName = argsStr[0, argsStr.index(' ')]

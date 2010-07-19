@@ -214,8 +214,7 @@ class TaskJuggler
       scenarioIdx = @timeSheet.scenarioIdx
       startIdx = project.dateToIdx(project['now'], true)
       endIdx = project.dateToIdx(@task['end', scenarioIdx])
-      remainingWork = @task.getEffectiveWork(scenarioIdx, startIdx, endIdx,
-                                             resource)
+      @task.getEffectiveWork(scenarioIdx, startIdx, endIdx, resource)
     end
 
     # The reported expected end of the task.

@@ -142,24 +142,28 @@ class TaskJuggler::TextParser
 
     # Find recursively the first terminal token of this pattern. If an index is
     # specified start the search at this n-th pattern token instead of the
-    # first. The return value is either nil or a [ token, pattern ] tuple.
-    def terminalToken(rules, index = 0)
+    # first. The return value is an Array of [ token, pattern ] tuple.
+    def terminalTokens(rules, index = 0)
       # Terminal token start with an underscore or dollar character.
-      if @tokens[index][0] == ?_ || @tokens[index][0] == ?$
-        return [ @tokens[index].slice(1, @tokens[index].length - 1), self ]
+      if @tokens[index][0] == ?_
+        return [ [ @tokens[index][1..-1], self ] ]
+      elsif @tokens[index][0] == ?$
+        return []
       elsif @tokens[index][0] == ?!
-        # Token starting with a bang reference another rule. We have to continue
-        # the search at this rule. First, we get rid of the bang to get the rule
-        # name.
-        token = @tokens[index].slice(1, @tokens[index].length - 1)
+        # Token starting with a bang reference another rule. We have to
+        # continue the search at this rule. First, we get rid of the bang to
+        # get the rule name.
+        token = @tokens[index][1..-1]
         # Then find the rule
         rule = rules[token]
-        # The rule may only have a single pattern. If not, then this pattern has
-        # no terminal token.
-        return nil if rule.patterns.length != 1
-        return rule.patterns[0].terminalToken(rules)
+        # The rule may only have a single pattern. If not, then this pattern
+        # has no terminal token.
+        tts = []
+        rule.patterns.each { |p| tts += p.terminalTokens(rules, 0) }
+        return tts
+      else
+        raise "Unexpected token #{tokens[index]}"
       end
-      nil
     end
 
     # Returns a string that expresses the elements of the pattern in an EBNF

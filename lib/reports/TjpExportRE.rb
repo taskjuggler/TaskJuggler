@@ -263,7 +263,6 @@ class TaskJuggler
         @file << "supplement resource #{resource.fullId} {\n"
         @project.resources.eachAttributeDefinition do |attrDef|
           id = attrDef.id
-          attr = resource.getAttr(id)
           next if (!@supportedResourceAttrs.include?(id) &&
                    ! attrDef.userDefined) ||
                    !a('resourceAttributes').include?(id)
@@ -290,7 +289,6 @@ class TaskJuggler
         @file << "supplement task #{task.fullId} {\n"
         @project.tasks.eachAttributeDefinition do |attrDef|
           id = attrDef.id
-          attr = task.getAttr(id)
           next if (!@supportedTaskAttrs.include?(id) && !attrDef.userDefined) ||
                   !a('taskAttributes').include?(id)
 

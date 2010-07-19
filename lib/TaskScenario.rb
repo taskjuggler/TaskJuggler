@@ -1616,7 +1616,6 @@ class TaskJuggler
         return unless found
       end
 
-      iv = Interval.new(date, date + slotDuration)
       a('allocate').each do |allocation|
         next unless allocation.onShift?(date)
 

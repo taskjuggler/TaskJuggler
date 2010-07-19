@@ -120,8 +120,8 @@ class TaskJuggler
       if tooltip && !tooltip.empty? && !@selfcontained
         if @showTooltipHint
           row << (td = XMLElement.new('td'))
-          td << (tIcon = XMLElement.new('img', 'src' => 'icons/details.png',
-                                        'class' => 'tj_table_cell_tooltip'))
+          td << XMLElement.new('img', 'src' => 'icons/details.png',
+                               'class' => 'tj_table_cell_tooltip')
           addHtmlTooltip(tooltip, td, cell)
         else
           addHtmlTooltip(tooltip, cell)
@@ -288,7 +288,7 @@ class TaskJuggler
       # Assuming an average character width of 8 pixels
       if @width && (text.length > (@width / 8))
         text = text[0, @width / 8]
-        modified = shortened = true
+        modified = true
       end
       # Add three dots to show that there is more info available.
       text += "..." if modified

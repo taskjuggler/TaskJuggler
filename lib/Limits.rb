@@ -236,7 +236,6 @@ class TaskJuggler
       else
         raise "Limit period undefined"
       end
-      endDate = @project['end']
 
       @limits << Limit.new(name, interval, period, value, upper, resource)
     end

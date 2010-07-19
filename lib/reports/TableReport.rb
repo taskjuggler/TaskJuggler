@@ -822,7 +822,6 @@ class TaskJuggler
     # date to the next cell.
     def genCalChartResourceCell(origQuery, line, columnDef, t,
                                 sameTimeNextFunc)
-      resource = line.property
       # Find out if we have an enclosing task scope.
       if line.scopeLine && line.scopeLine.property.is_a?(Task)
         task = line.scopeLine.property

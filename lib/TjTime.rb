@@ -260,8 +260,7 @@ class TaskJuggler
     # Return a new time that is 1 month later than time but at the same time of
     # day.
     def sameTimeNextMonth
-      sec, min, hour, day, month, year, wday, yday, isdst, tz =
-        @time.localtime.to_a
+      sec, min, hour, day, month, year = @time.localtime.to_a
       monMax = month == 2 && leapYear?(year) ? 29 : MON_MAX[month]
       month += 1
       if month > 12

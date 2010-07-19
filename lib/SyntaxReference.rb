@@ -24,10 +24,14 @@ class TaskJuggler
   # output as well as HTML files are supported.
   class SyntaxReference
 
-    # The constructor is the most important function of this class. It creates a
-    # parser object and then traverses all rules and extracts the documented
-    # patterns. In a second pass the extracted KeywordDocumentation objects are
-    # then cross referenced to capture their relationships.
+    attr_reader :keywords
+
+    # The constructor is the most important function of this class. It creates
+    # a parser object and then traverses all rules and extracts the documented
+    # patterns. In a second pass the extracted KeywordDocumentation objects
+    # are then cross referenced to capture their relationships. _manual_ is an
+    # optional reference to the  UserManual object that uses this
+    # SyntaxReference.
     def initialize(manual = nil)
       @manual = manual
       @messageHandler = MessageHandler.new(true)
@@ -69,7 +73,7 @@ class TaskJuggler
       end
     end
 
-    # Return a sorted Array with all keywords.
+    # Return a sorted Array with all keywords (as String objects).
     def all
       sorted = @keywords.keys.sort
       # Register the neighbours with each keyword so we can use this info in

@@ -30,7 +30,7 @@ class TaskJuggler
   # specific or not.
   class KeywordDocumentation
 
-    attr_reader :keyword, :pattern, :references
+    attr_reader :keyword, :names, :pattern, :references, :optionalAttributes
     attr_accessor :contexts, :scenarioSpecific, :inheritedFromProject,
                   :inheritedFromParent, :predecessor, :successor
 
@@ -44,13 +44,18 @@ class TaskJuggler
       @messageHandler = MessageHandler.new(true)
       @rule = rule
       @pattern = pattern
+      # The unique identifier. Usually the attribute or property name. To
+      # disambiguate a .<scope> can be added.
       @keyword = pattern.keyword
+      # Similar to @keyword, but without the scope. Since there could be
+      # several, this is an Array of String objects.
+      @names = []
       @syntax = syntax
       @args = args
+      @manual = manual
       # Hash that maps patterns of optional attributes to a boolean value. It
       # is true if the pattern is a scenario specific attribute.
       @optAttrPatterns = optAttrPatterns
-      @manual = manual
       # The above hash is later converted into a list that points to the
       # keyword documentation of the optional attribute.
       @optionalAttributes = []
@@ -67,9 +72,34 @@ class TaskJuggler
       @references = []
     end
 
+    # Returns true of the KeywordDocumentation is documenting a TJP property
+    # (task, resources, etc.). A TJP property can be nested.
+    def isProperty?
+      @optionalAttributes.include?(self)
+    end
+
+    # Returns true of the keyword can be used outside of any other keyword
+    # context.
+    def globalScope?
+      return true if @contexts.empty?
+      @contexts.each do |context|
+        return true if context.keyword == 'properties'
+      end
+      false
+    end
+
     # Post process the class member to set cross references to other
     # KeywordDocumentation items.
     def crossReference(keywords, rules)
+      # Get the attribute or property name of the Keyword. This is not unique
+      # like @keyword since it's got no scope.
+      @pattern.terminalTokens(rules).each do |tok|
+        # Ignore patterns that don't have a real name.
+        break if tok[0] == '{'
+
+        @names << tok[0]
+      end
+
       # Some arguments are references to other patterns. The current keyword
       # is added as context to such patterns.
       @args.each do |arg|

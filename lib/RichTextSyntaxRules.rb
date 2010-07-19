@@ -31,7 +31,7 @@ class TaskJuggler
     # This is the entry node.
     def rule_richtext
       pattern(%w( !sections . ), lambda {
-        el = RichTextElement.new(@richTextI, :richtext, @val[0])
+        RichTextElement.new(@richTextI, :richtext, @val[0])
       })
     end
 

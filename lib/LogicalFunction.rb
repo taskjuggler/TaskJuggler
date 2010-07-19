@@ -69,7 +69,6 @@ class TaskJuggler
 
     # Evaluate the function by calling it with the arguments.
     def eval(expr)
-      args = []
       # Call the function and return the result.
       send(name, expr, @arguments)
     end
@@ -92,10 +91,9 @@ class TaskJuggler
     end
 
     def hasalert(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       query = expr.query
       project = property.project
-      date = project.reportContexts.last.report.get('end')
       !project['journal'].currentEntries(query.end, property,
                                          args[0], query.start).empty?
     end
@@ -117,7 +115,7 @@ class TaskJuggler
     end
 
     def isdependencyof(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       # The result can only be true when called for a Task property.
       return false unless property.is_a?(Task)
       project = property.project
@@ -132,7 +130,7 @@ class TaskJuggler
     end
 
     def isdutyof(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       # The result can only be true when called for a Task property.
       return false unless (task = property).is_a?(Task)
       project = task.project
@@ -145,7 +143,7 @@ class TaskJuggler
     end
 
     def isfeatureof(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       # The result can only be true when called for a Task property.
       return false unless property.is_a?(Task)
       project = property.project
@@ -158,19 +156,20 @@ class TaskJuggler
     end
 
     def isleaf(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       return false unless property
       property.leaf?
     end
 
     def isongoing(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       # The result can only be true when called for a Task property.
       return false unless (task = property).is_a?(Task)
       project = task.project
       # 1st arg must be a scenario index.
       if (scenarioIdx = project.scenarioIdx(args[0])).nil?
-        expr.error("Unknown scenario '#{args[0]}' used for function isongoing()")
+        expr.error("Unknown scenario '#{args[0]}' used for function " +
+                   "isongoing()")
       end
 
       query = expr.query
@@ -185,17 +184,17 @@ class TaskJuggler
     end
 
     def isresource(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       property.is_a?(Resource)
     end
 
     def istask(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       property.is_a?(Task)
     end
 
     def treelevel(expr, args)
-      property, scopeProperty = properties(expr)
+      property = properties(expr)[0]
       property.level + 1
     end
 

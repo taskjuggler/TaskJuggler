@@ -51,7 +51,7 @@ class TaskJuggler
       if @sourceFileInfo.nil?
         "#{@operation.to_s(query)}"
       else
-        str = "#{@sourceFileInfo} #{@operation.to_s(query)}"
+        "#{@sourceFileInfo} #{@operation.to_s(query)}"
       end
     end
 

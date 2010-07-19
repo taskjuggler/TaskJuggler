@@ -12,6 +12,10 @@
 
 class TaskJuggler
 
+  # This class is a specialized version of Array. It stores a list of
+  # keywords as String objects. The entry '*' is special. It means all
+  # keywords of a particular set are included. '*' must be the first entry if
+  # it is present.
   class KeywordArray < Array
 
     alias a_include? include?
