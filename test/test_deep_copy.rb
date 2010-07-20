@@ -75,8 +75,8 @@ class Test_deep_copy < Test::Unit::TestCase
     b = { 'a' => 0, 'b' => '123', 'c' => a }
     a << b
 
-    c = a.deep_clone
-    d = b.deep_clone
+    a.deep_clone
+    b.deep_clone
   end
 
 end

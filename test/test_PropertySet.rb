@@ -45,8 +45,8 @@ class TestPropertySet < Test::Unit::TestCase
     i = 0
     nodes.each do |id, parent|
       # For the node id we use the expected wbs result.
-      t = Task.new(p, id, "Node #{id}", parent ? p.task(parent) : nil)
-      r = Resource.new(p, id, "Node #{id}", parent ? p.resource(parent) : nil)
+      Task.new(p, id, "Node #{id}", parent ? p.task(parent) : nil)
+      Resource.new(p, id, "Node #{id}", parent ? p.resource(parent) : nil)
       i += 1
     end
     p.tasks.index
