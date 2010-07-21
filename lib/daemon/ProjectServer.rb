@@ -271,7 +271,7 @@ class TaskJuggler
 
             # Check every 60 seconds if the input files have been modified.
             # Don't check if we already know it has been modified.
-            if @stateLock.synchronize { @tj && !@modified &&
+            if @stateLock.synchronize { @tj && @tj.project && !@modified &&
                                         @modifiedCheck + 60 < TjTime.now }
               # Reset the timer
               @stateLock.synchronize { @modifiedCheck = TjTime.now }
@@ -344,31 +344,31 @@ class TaskJuggler
     def loadProject(authKey, args)
       return false unless @server.checkKey(authKey, 'loadProject')
 
-      @server.loadProject(args)
+      trap { @server.loadProject(args) }
     end
 
     def getProjectName(authKey)
       return false unless @server.checkKey(authKey, 'getReportServer')
 
-      @server.getProjectName
+      trap { @server.getProjectName }
     end
 
     def getReportList(authKey)
       return false unless @server.checkKey(authKey, 'getReportServer')
 
-      @server.getReportList
+      trap { @server.getReportList }
     end
 
     def getReportServer(authKey)
       return false unless @server.checkKey(authKey, 'getReportServer')
 
-      @server.getReportServer
+      trap { @server.getReportServer }
     end
 
     def ping(authKey)
       return false unless @server.checkKey(authKey, 'ping')
 
-      @server.ping
+      trap { @server.ping }
       true
     end
 

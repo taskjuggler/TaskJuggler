@@ -158,38 +158,38 @@ class TaskJuggler
     def ping(authKey)
       return false unless @server.checkKey(authKey, 'addFile')
 
-      @server.ping
+      trap { @server.ping }
     end
 
     def addFile(authKey, file)
       return false unless @server.checkKey(authKey, 'addFile')
 
-      @server.addFile(file)
+      trap { @server.addFile(file) }
     end
 
     def generateReport(authKey, reportId, regExpMode, dynamicAttributes)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      @server.generateReport(reportId, regExpMode, dynamicAttributes)
+      trap { @server.generateReport(reportId, regExpMode, dynamicAttributes) }
     end
 
 
     def listReports(authKey, reportId, regExpMode)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      @server.listReports(reportId, regExpMode)
+      trap { @server.listReports(reportId, regExpMode) }
     end
 
     def checkTimeSheet(authKey, sheet)
       return false unless @server.checkKey(authKey, 'checkTimeSheet')
 
-      @server.checkTimeSheet(sheet)
+      trap { @server.checkTimeSheet(sheet) }
     end
 
     def checkStatusSheet(authKey, sheet)
       return false unless @server.checkKey(authKey, 'checkStatusSheet')
 
-      @server.checkStatusSheet(sheet)
+      trap { @server.checkStatusSheet(sheet) }
     end
 
   end
