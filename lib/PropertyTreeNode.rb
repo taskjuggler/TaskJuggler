@@ -570,7 +570,7 @@ class TaskJuggler
       # we compose the result as RichText markup first.
       rText = ''
       entries.each do |entry|
-        rText += "=== <nowiki>" + entry.headline + "</nowiki> ===\n"
+        rText += "==== <nowiki>" + entry.headline + "</nowiki> ====\n"
         rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
         if entry.author
           rText += "''by <nowiki>#{entry.author.name}</nowiki>''"

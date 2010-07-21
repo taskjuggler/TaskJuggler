@@ -15,6 +15,7 @@ require 'mail'
 require 'open4'
 require 'yaml'
 require 'SheetHandlerBase'
+require 'RichText'
 
 class TaskJuggler
 
@@ -171,6 +172,8 @@ EOT
           # Send the report to the tj3client process via stdin.
           stdin.write(sheet)
           stdin.close
+          # Without errors, the incoming report is pretty printed and returned
+          # in RichText format.
           @report = stdout.read
           @warnings = stderr.read
         end
@@ -218,27 +221,38 @@ EOT
       end
 
       text = <<"EOT"
-Report from #{getResourceName} for the period ending #{@date}:
+== Report from #{getResourceName} for the period ending #{@date} ==
 
 EOT
 
       # Add warnings if we had any.
       unless @warnings.empty?
         text += <<"EOT"
+----
 Your report does contain some issues that you may want to fix or address with
 your manager or project manager:
 
-#{@warnings}
+<nowiki>#{@warnings}</nowiki>
 
+----
 EOT
       end
 
       # Append the pretty printed version of the submitted status sheet.
       text += @report
 
+      rti = RichText.new(text).generateIntermediateFormat
+      rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
+      rti.parIndent = 2
+      rti.preIndent = 4
+      rti.sectionNumbers = false
+
       # Send out the email.
-      sendEmail(@submitter, sprintf(@emailSubject, getResourceName, @date), text,
-                nil, nil, @messageId)
+      sendEmail(@submitter, sprintf(@emailSubject, getResourceName, @date),
+                rti, nil, nil, @messageId)
       true
     end
 
@@ -313,7 +327,8 @@ EOT
       rescue
       end
 
-      sendEmail(@submitter, "Your #{@sheetType} sheet submission failed!", message)
+      sendEmail(@submitter, "Your #{@sheetType} sheet submission failed!",
+                message)
 
       exit 1
     end

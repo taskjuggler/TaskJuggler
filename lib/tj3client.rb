@@ -82,7 +82,7 @@ class TaskJuggler
                     'that match the provided report ID' },
         { :label => 'check-ts',
           :args  => [ 'project ID', 'time sheet' ],
-          :descr => 'Check the provided time sheet for correctness' +
+          :descr => 'Check the provided time sheet for correctness ' +
                     'against the project with the given ID'},
         { :label => 'check-ss',
           :args  => [ 'project ID', 'status sheet' ],

@@ -196,14 +196,7 @@ class TaskJuggler
                      'end' => ts.interval.end,
                      'timeFormat' => '%Y-%m-%d' }
       query = Query.new(queryAttrs)
-      rti = ts.resource.query_journal(query)
-      rti.lineWidth = 72
-      rti.indent = 2
-      rti.titleIndent = 0
-      rti.listIndent = 2
-      rti.parIndent = 2
-      rti.preIndent = 4
-      puts rti.to_s
+      puts ts.resource.query_journal(query).richText.inputText
     rescue TjException => msg
       if msg.message && !msg.message.empty?
         @messageHandler.critical('check_time_sheet', msg.message)
@@ -231,14 +224,7 @@ class TaskJuggler
                      'end' => ss[2],
                      'timeFormat' => '%Y-%m-%d' }
       query = Query.new(queryAttrs)
-      rti = ss[0].query_dashboard(query)
-      rti.lineWidth = 72
-      rti.indent = 2
-      rti.titleIndent = 0
-      rti.listIndent = 2
-      rti.parIndent = 2
-      rti.preIndent = 4
-      puts rti.to_s
+      puts ss[0].query_dashboard(query).richText.inputText
     rescue TjException => msg
       if msg.message && !msg.message.empty?
         @messageHandler.critical('check_status_sheet', msg.message)

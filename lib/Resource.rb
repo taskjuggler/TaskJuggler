@@ -69,8 +69,8 @@ class TaskJuggler
           tsRecord = entry.timeSheetRecord
 
           if entry.property.is_a?(Task)
-            rText += "== #{alertName} <nowiki>#{entry.property.name}</nowiki> "+
-              "(ID: #{entry.property.fullId}) ==\n\n"
+            rText += "=== #{alertName} <nowiki>#{entry.property.name}" +
+                     "</nowiki> (ID: #{entry.property.fullId}) ===\n\n"
             if tsRecord
               rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
               if tsRecord.actualWorkPercent != tsRecord.planWorkPercent
@@ -159,8 +159,8 @@ class TaskJuggler
         rText = ''
 
         taskList.each do |task|
-          rText += "== <nowiki>[#{task.query_alert(query)}] Task: " +
-            "#{task.name}</nowiki> (#{task.fullId}) ==\n\n"
+          rText += "=== <nowiki>[#{task.query_alert(query)}] Task: " +
+            "#{task.name}</nowiki> (#{task.fullId}) ===\n\n"
           rText += task.query_journalmessages(query).richText.inputText + "\n\n"
         end
       end

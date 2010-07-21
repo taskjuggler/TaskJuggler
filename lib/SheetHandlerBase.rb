@@ -13,6 +13,7 @@
 require 'mail'
 
 require 'UTF8String'
+require 'RichText'
 
 class TaskJuggler
 
@@ -167,7 +168,13 @@ class TaskJuggler
           text_part do
             content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
             content_transfer_encoding 'quoted-printable'
-            body message.to_quoted_printable
+            body message.to_s.to_quoted_printable
+          end
+          if message.is_a?(RichTextIntermediate)
+            html_part do
+              content_type 'text/html; charset=UTF-8'
+              body message.to_html
+            end
           end
         end
         mail.to = to

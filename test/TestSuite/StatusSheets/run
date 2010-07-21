@@ -3,6 +3,8 @@
 function cleanup
 {
   tj3client --silent terminate 2> /dev/null
+  # Wait for daemon to terminate
+  sleep 2
   #killall -9 tj3d 2> /dev/null
   /bin/rm -rf statussheets.log \
               StatusSheets StatusSheetTemplates \
@@ -38,9 +40,9 @@ tj3ss_receiver --dryrun < boss_mail >> receiver.log || error "rec1"
 tj3ss_receiver --dryrun < dev2_mail >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
 check "Status report from " receiver.log 1
-check "Report from " receiver.log 2
-check "Yellow" receiver.log 1
-check "Green" receiver.log 2
+check "Report from " receiver.log 3
+check "Yellow" receiver.log 2
+check "Green" receiver.log 4
 
 check ERROR statussheets.log 0
 check WARN statussheets.log 1
