@@ -71,7 +71,7 @@ class TaskJuggler
         str += "#{@type.to_s.capitalize}: "
       end
       str += @message
-      str += @line if @line
+      str += "\n" + @line if @line
       str
     end
 

@@ -1,0 +1,57 @@
+project "Macros" 2010-07-21 +1m {
+}
+
+macro m1 ["t1"]
+macro n1 [note "This
+is a
+note"]
+task t1 ${m1} {
+  ${n1}
+}
+
+macro m2 ["t]
+macro m3 [2"]
+macro n2 [note]
+task t2 ${m2}${m3} {
+  ${n2} -8<-
+    This
+    is a
+    note
+    ->8-
+}
+
+macro m4 [t]
+macro m5 [3]
+macro n3 [is a]
+task t3 "${m4}${m5}" {
+  note "This
+${n3}
+note"
+}
+
+macro m6 [4]
+macro n4 [is a]
+task t4 "t${m6}" {
+  note -8<-
+    This
+    ${n4}
+    note
+    ->8-
+}
+
+macro m7 [t]
+macro n5 [This
+  is a
+  note
+  ->8-]
+task t5 "${m7}5" {
+  note -8<-
+  ${n5}
+}
+
+taskreport "Macros-1" {
+  formats csv
+  columns id, name, note
+}
+
+

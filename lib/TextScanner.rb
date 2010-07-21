@@ -449,6 +449,10 @@ class TaskJuggler
     def expandMacro(prefix, args)
       # Get the expanded macro from the @macroTable.
       macro, text = @macroTable.resolve(args, sourceFileInfo)
+      unless macro && text
+        error('undefined_macro', "Undefined macro '#{args[0]}' called")
+      end
+
       # If the expanded macro is empty, we can ignore it.
       return if text == ''
 

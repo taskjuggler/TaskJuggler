@@ -53,14 +53,14 @@ class TaskJuggler
         # with neither start nor end. Macro calls inside of strings need a
         # special start pattern that is active in the string modes. Both
         # patterns switch the scanner to macroCall mode.
-        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*|'(\\'|[^'])*)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :tjp, method('startMacroCall') ],
         # This pattern is similar to the previous one, but is active inside of
         # multi-line strings. The corresponding rule for sizzors strings
         # can be found below.
-        [ nil, /(\\"|[^"])*\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /(\\"|[^"])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :dqString, method('startMacroCall') ],
-        [ nil, /(\\'|[^'])*\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /(\\'|[^'])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :sqString, method('startMacroCall') ],
         # This pattern matches the end of a macro call. It injects the prefix
         # and the expanded macro into the scanner again. The mode is restored

@@ -61,6 +61,8 @@ class TaskJuggler
     # unchanged. No error is generated.
     def resolve(args, sourceFileInfo)
       name = args[0]
+      return nil unless @macros[name]
+
       resolved = @macros[name].value.dup
       i = 0
       args.each do |arg|
