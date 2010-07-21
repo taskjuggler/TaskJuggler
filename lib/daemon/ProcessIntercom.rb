@@ -16,22 +16,36 @@ class TaskJuggler
 
   module ProcessIntercomIface
 
+    # This function catches all unhandled exceptions in the passed block.
+    def trap
+      log = LogFile.instance
+
+      begin
+        yield
+      rescue
+        $stderr.print $!.to_s
+        $stderr.print $!.backtrace.join("\n")
+        log.debug($!.backtrace.join("\n"))
+        log.fatal("Unexpected exception: #{$!}")
+      end
+    end
+
     def terminate(authKey)
       return false unless @server.checkKey(authKey, 'terminate')
 
-      @server.terminate
+      trap { @server.terminate }
     end
 
     def connect(authKey, stdout, stderr, stdin, silent)
       return false unless @server.checkKey(authKey, 'connect')
 
-      @server.connect(stdout, stderr, stdin, silent)
+      trap { @server.connect(stdout, stderr, stdin, silent) }
     end
 
     def disconnect(authKey)
       return false unless @server.checkKey(authKey, 'disconnect')
 
-      @server.disconnect
+      trap { @server.disconnect }
     end
 
   end

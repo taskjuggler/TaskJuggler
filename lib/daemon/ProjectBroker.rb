@@ -467,29 +467,45 @@ EOT
       version == 1 ? 1 : -1
     end
 
+    # This function catches all unhandled exceptions in the passed block.
+    def trap
+      log = LogFile.instance
+
+      begin
+        yield
+      rescue
+        $stderr.print $!.to_s
+        $stderr.print $!.backtrace.join("\n")
+        log.debug($!.backtrace.join("\n"))
+        log.fatal("Unexpected exception: #{$!}")
+      end
+    end
+
     def command(authKey, cmd, args)
       return false unless @broker.checkKey(authKey, cmd)
 
-      case cmd
-      when :status
-        @broker.status
-      when :stop
-        @broker.stop
-      when :addProject
-        @broker.addProject
-      when :removeProject
-        @broker.removeProject(args)
-      when :getProject
-        @broker.getProject(args)
-      when :update
-        @broker.update
-      else
-        LogFile.instance.fatal('Unknown command #{cmd} called')
+      trap do
+        case cmd
+        when :status
+          @broker.status
+        when :stop
+          @broker.stop
+        when :addProject
+          @broker.addProject
+        when :removeProject
+          @broker.removeProject(args)
+        when :getProject
+          @broker.getProject(args)
+        when :update
+          @broker.update
+        else
+          LogFile.instance.fatal('Unknown command #{cmd} called')
+        end
       end
     end
 
     def updateState(authKey, id, status, modified)
-      @broker.updateState(authKey, id, status, modified)
+      trap { @broker.updateState(authKey, id, status, modified) }
     end
 
   end
