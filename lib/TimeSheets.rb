@@ -354,8 +354,8 @@ class TaskJuggler
     end
 
     def error(id, text, sourceFileInfo = nil)
-      @resource.project.messageHandler.error(id, text, sourceFileInfo, nil,
-                                             @resource)
+      @resource.project.messageHandler.error(
+        id, text, sourceFileInfo || @sourceFileInfo, nil, @resource)
     end
 
     def warning(id, text, sourceFileInfo = nil)
