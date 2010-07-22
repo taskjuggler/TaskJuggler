@@ -37,7 +37,7 @@ class TaskJuggler
                   :attributeId, :scenarioIdx,
                   :timeFormat, :numberFormat, :currencyFormat, :costAccount,
                   :revenueAccount,
-                  :loadUnit,
+                  :loadUnit, :selfContained,
                   :ok, :errorMessage
     attr_reader :end, :endIdx, :start, :startIdx
     attr_writer :sortable, :numerical, :string, :rti
@@ -48,7 +48,8 @@ class TaskJuggler
       ps = %w( project propertyType propertyId property scopePropertyId
                scopeProperty attributeId scenario scenarioIdx
                loadUnit numberFormat currencyFormat timeFormat
-               costAccount revenueAccount)
+               costAccount revenueAccount selfContained)
+      @selfContained = false
       ps.each do |p|
         instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
       end

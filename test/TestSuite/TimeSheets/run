@@ -3,6 +3,7 @@
 function cleanup
 {
   tj3client --silent terminate 2> /dev/null
+  sleep 2
   #killall -9 tj3d 2> /dev/null
   /bin/rm -rf timesheets.log \
               TimeSheets TimeSheetTemplates \
@@ -38,7 +39,7 @@ tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || error "rec1"
 tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
 check "Report from " receiver.log 2
-check "Green" receiver.log 9
+check "Green" receiver.log 6
 
 # Update the project with the server to include the submitted time
 # sheets. This is only to test the time sheet data surpression.

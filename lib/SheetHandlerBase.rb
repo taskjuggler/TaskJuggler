@@ -11,9 +11,9 @@
 #
 
 require 'mail'
-
 require 'UTF8String'
 require 'RichText'
+require 'HTMLDocument'
 
 class TaskJuggler
 
@@ -163,6 +163,7 @@ class TaskJuggler
       end
 
       begin
+        self_ = self
         mail = Mail.new do
           subject subject
           text_part do
@@ -173,7 +174,8 @@ class TaskJuggler
           if message.is_a?(RichTextIntermediate)
             html_part do
               content_type 'text/html; charset=UTF-8'
-              body message.to_html
+              content_transfer_encoding 'quoted-printable'
+              body self_.htmlMailBody(message).to_quoted_printable
             end
           end
         end
@@ -215,6 +217,36 @@ class TaskJuggler
         end
         log('INFO', "Sent email '#{subject}' to #{to}")
       end
+    end
+
+    def htmlMailBody(message)
+      html = HTMLDocument.new
+      head = html.generateHead("TaskJuggler Report - #{@name}",
+                               'description' => 'TaskJuggler Report',
+                               'keywords' => 'taskjuggler, project, management')
+
+      auxSrcDir = AppConfig.dataDirs('data/css')[0]
+      cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')
+      # Raise an error if we haven't found the data directory
+      if auxSrcDir.nil? || !File.exists?(cssFileName)
+        dataDirError(cssFileName)
+      end
+      cssFile = IO.read(cssFileName)
+      if cssFile.empty?
+        raise TjException.new, <<"EOT"
+Cannot read '#{cssFileName}'. Make sure the file is not empty and you have
+read access permission.
+EOT
+      end
+      head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
+                             'content' => 'text/css; charset=utf-8')
+      head << (style = XMLElement.new('style', 'type' => 'text/css'))
+      style << XMLBlob.new("\n" + cssFile)
+
+      html << (body = XMLElement.new('body'))
+      body << message.to_html
+
+      html.to_s
     end
 
   end

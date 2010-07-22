@@ -49,8 +49,12 @@ class TaskJuggler
 
         if entry.property.is_a?(Task)
           levelRecord = @project['alertLevels'][entry.alertLevel]
-          alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
-                      "alt=[#{levelRecord[1]}]|text-bottom]]"
+          if query.selfContained
+            alertName = "<nowiki>[#{levelRecord[1]}]</nowiki>"
+          else
+            alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
+                        "alt=[#{levelRecord[1]}]|text-bottom]]"
+          end
           rText += "== #{alertName} <nowiki>#{entry.headline}</nowiki> ==\n" +
                    "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
           if entry.author

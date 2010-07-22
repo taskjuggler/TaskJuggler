@@ -194,7 +194,8 @@ class TaskJuggler
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'start' => ts.interval.start,
                      'end' => ts.interval.end,
-                     'timeFormat' => '%Y-%m-%d' }
+                     'timeFormat' => '%Y-%m-%d',
+                     'selfContained' => true }
       query = Query.new(queryAttrs)
       puts ts.resource.query_journal(query).richText.inputText
     rescue TjException => msg
@@ -222,7 +223,8 @@ class TaskJuggler
                      'timeFormat' => '%Y-%m-%d',
                      'start' => ss[1],
                      'end' => ss[2],
-                     'timeFormat' => '%Y-%m-%d' }
+                     'timeFormat' => '%Y-%m-%d',
+                     'selfContained' => true }
       query = Query.new(queryAttrs)
       puts ss[0].query_dashboard(query).richText.inputText
     rescue TjException => msg

@@ -43,7 +43,7 @@ class TaskJuggler
       # The subject of the confirmation email
       @emailSubject = nil
 
-      # Regular expressions to identify a status sheet.
+      # Regular expressions to identify a sheet.
       @sheetHeader = nil
       # Regular expression to extract the sheet signature (date).
       @signatureFilter = nil
@@ -238,7 +238,7 @@ your manager or project manager:
 EOT
       end
 
-      # Append the pretty printed version of the submitted status sheet.
+      # Append the pretty printed version of the submitted sheet.
       text += @report
 
       rti = RichText.new(text).generateIntermediateFormat

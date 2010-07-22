@@ -17,16 +17,20 @@ h3 { font-size:16px; }
 }
 i.tj_journal { font-size:9px; }
 h1.tj_journal {
+  font-size:16px;
+  margin-left:0px;
+}
+h2.tj_journal {
   font-size:14px;
   margin-left:10px;
 }
-h2.tj_journal { 
+h3.tj_journal { 
   margin-top:5px;
   font-size:13px; 
   margin-bottom:1px;
   margin-left:20px;
 }
-h3.tj_journal { 
+h4.tj_journal { 
   font-size:12px;
   margin-left:30px;
 }
