@@ -133,7 +133,8 @@ class TaskJuggler
     def timerExpired?
       res = nil
       @timeLock.synchronize do
-        res = (Time.new > @timerStart + 2 * 60 * 60)
+        # We should see client interaction every 2 minutes.
+        res = (Time.new > @timerStart + 2 * 60)
       end
       res
     end
