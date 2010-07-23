@@ -46,6 +46,7 @@ class TaskJuggler
       @daemon = nil
       initIntercom
 
+      @logConsole = logConsole
       @pid = nil
       @uri = nil
 
@@ -79,7 +80,7 @@ class TaskJuggler
         @log.fatal('ProjectServer fork failed')
       elsif @pid.nil?
         # This is the child
-        if logConsole
+        if @logConsole
           # If the Broker wasn't daemonized, log stdout and stderr to PID
           # specific files.
           $stderr.reopen("tj3d.ps.#{$$}.stderr", 'w')
@@ -292,7 +293,7 @@ class TaskJuggler
               # Create a new ReportServer object that runs as a separate
               # process. The constructor will tell us the URI and authentication
               # key of the new ReportServer.
-              rs = ReportServer.new(@tj)
+              rs = ReportServer.new(@tj, @logConsole)
               rsr.uri = rs.uri
               rsr.authKey = rs.authKey
               @log.debug("Adding ReportServer with URI #{rsr.uri} to list")

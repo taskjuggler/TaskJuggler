@@ -22,7 +22,7 @@ class TaskJuggler
 
     attr_reader :uri, :authKey
 
-    def initialize(tj)
+    def initialize(tj, logConsole = false)
       initIntercom
 
       @pid = nil
@@ -44,33 +44,45 @@ class TaskJuggler
       if (@pid = fork) == -1
         @log.fatal('ReportServer fork failed')
       elsif @pid.nil?
-        # This is the child
-        $SAFE = 1
-        DRb.install_acl(ACL.new(%w[ deny all
-                                    allow 127.0.0.1 ]))
-        DRb.start_service
-        iFace = ReportServerIface.new(self)
-        begin
-          uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
-          @log.debug("Report server is listening on #{uri}")
-        rescue
-          @log.fatal("ReportServer can't start DRb: #{$!}")
+        if logConsole
+          # If the Broker wasn't daemonized, log stdout and stderr to PID
+          # specific files.
+          $stderr.reopen("tj3d.rs.#{$$}.stderr", 'w')
+          $stdout.reopen("tj3d.rs.#{$$}.stdout", 'w')
         end
+        begin
+          # This is the child
+          $SAFE = 1
+          DRb.install_acl(ACL.new(%w[ deny all
+                                      allow 127.0.0.1 ]))
+          DRb.start_service
+          iFace = ReportServerIface.new(self)
+          begin
+            uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
+            @log.debug("Report server is listening on #{uri}")
+          rescue
+            @log.fatal("ReportServer can't start DRb: #{$!}")
+          end
 
-        # Send the URI of the newly started DRb server to the parent process.
-        rd.close
-        wr.write uri
-        wr.close
+          # Send the URI of the newly started DRb server to the parent process.
+          rd.close
+          wr.write uri
+          wr.close
 
-        # Start a Thread that waits for the @terminate flag to be set and does
-        # other background tasks.
-        startTerminator
-        startWatchDog
+          # Start a Thread that waits for the @terminate flag to be set and does
+          # other background tasks.
+          startTerminator
+          startWatchDog
 
-        # Cleanup the DRb threads
-        DRb.thread.join
-        @log.debug('Report server terminated')
-        exit 0
+          # Cleanup the DRb threads
+          DRb.thread.join
+          @log.debug('Report server terminated')
+          exit 0
+        rescue
+          $stderr.print $!.to_s
+          $stderr.print $!.backtrace.join("\n")
+          @log.fatal("ReportServer caught unexpected exception: #{$!}")
+        end
       else
         Process.detach(@pid)
         # This is the parent
