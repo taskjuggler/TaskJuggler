@@ -1315,6 +1315,7 @@ EOT
                                     "extension: '#{@val[0]}'",
               @sourceFileInfo[0])
       end
+      pushFileStack
       @val[0]
     })
     arg(0, 'filename', <<'EOT'
@@ -1327,7 +1328,7 @@ EOT
 
   def rule_includeProperties
     pattern(%w( !includeFileName !includeAttributes ), lambda {
-      pushFileStack
+      popFileStack
       @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
@@ -2449,7 +2450,9 @@ EOT
   end
 
   def rule_projectBodyInclude
-    pattern(%w( _include !includeFile !projectBodyAttributes . ))
+    pattern(%w( _include !includeFile !projectBodyAttributes . ), lambda {
+      popFileStack
+    })
     lastSyntaxToken(1)
     doc('include.project', <<'EOT'
 Includes the specified file name as if its contents would be written
@@ -2468,6 +2471,7 @@ EOT
 
   def rule_prologInclude
     pattern(%w( _include !includeFile !projectProlog . ), lambda {
+      popFileStack
     })
     lastSyntaxToken(1)
     doc('include.macro', <<'EOT'
@@ -2614,7 +2618,6 @@ EOT
 
   def rule_propertiesInclude
     pattern(%w( _include !includeProperties !properties ), lambda {
-      popFileStack
     })
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written
