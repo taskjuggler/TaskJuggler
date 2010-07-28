@@ -277,10 +277,10 @@ EOT
 
     def copyDirectory(dirName)
       # The directory needs to be in the same directory as the HTML report.
-      auxDstDir = File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
-                               @name) + '/'
+      auxDstDir = (File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
+                                @name) + '/').untaint
       # Find the data directory that came with the TaskJuggler installation.
-      auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
+      auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0].untaint
       # Raise an error if we haven't found the data directory
       dataDirError(dirName) if auxSrcDir.nil? || !File.exists?(auxSrcDir)
       # Don't copy directory if all files are up-to-date.
