@@ -526,7 +526,7 @@ taskreport overview "" {
 
   footer -8<-
     === Staffing ===
-    
+
     All project phases are properly staffed. See [[ResourceGraph]] for
     detailed resource allocations.
     

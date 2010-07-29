@@ -90,7 +90,9 @@ Images can be added with a similar syntax.
 This first version will be replaced with the file ''''image.jpg''''
 when the output format supports this. Otherwise a blank space will be
 inserted. The second version inserts the text ''''An image'''' if the
-output format does not support images.
+output format does not support images. The following image types are
+supported and detected by their file name extensions: ''''.jpg'''',
+''''.gif'''', ''''.png'''' and ''''.svg''''. 
 
 In some situations, it is desirable to not interpret certain markup
 sequences and reproduce the text verbatim. Such text must be enclosed

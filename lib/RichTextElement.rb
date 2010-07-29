@@ -424,12 +424,7 @@ class TaskJuggler
       when :numberitem4
         XMLElement.new('li')
       when :img
-        el = XMLElement.new('img', 'src' => @data.fileName)
-        el['alt'] = @data.altText if @data.altText
-        if @data.verticalAlign
-          el['style'] = "vertical-align:#{@data.verticalAlign}; "
-        end
-        el
+        htmlObject
       when :ref
         XMLElement.new('a', 'href' => "#{@data}.html")
       when :href
@@ -525,6 +520,27 @@ class TaskJuggler
         end
         s += ' '
         el << XMLText.new(s)
+      end
+      el
+    end
+
+    def htmlObject
+      fileTypes = { 'png' => { 'type' => 'image/png' },
+                    'gif' => { 'type' => 'image/gif' },
+                    'jpg' => { 'type' => 'image/jpg' },
+                    'svg' => { 'type' => 'image/svg+xml', 'class' => 'img' }}
+      # Error checking must have been done in the parser!
+      # File types must be in sync with
+      # RichTextSyntaxRules::rule_plainTextWithLinks
+      return nil unless (index = @data.fileName.rindex('.'))
+      extension = @data.fileName[index + 1..-1].downcase
+      return nil unless (attributes = fileTypes[extension])
+      attributes['data'] = @data.fileName
+
+      el = XMLElement.new('object', attributes)
+      el['alt'] = @data.altText if @data.altText
+      if @data.verticalAlign
+        el['style'] = "vertical-align:#{@data.verticalAlign}; "
       end
       el
     end

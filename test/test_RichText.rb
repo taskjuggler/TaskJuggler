@@ -387,7 +387,7 @@ EOT
     # Check HTML output.
     out = newRichText(inp).to_html.to_s + "\n"
     ref = <<'EOT'
-<div>This is an <img src="image.jpg"></img>. For more info see <img alt="this image" src="icon.png"></img>.</div>
+<div>This is an <object data="image.jpg" type="image/jpg"></object>. For more info see <object alt="this image" data="icon.png" type="image/png"></object>.</div>
 EOT
     match(ref, out)
   end

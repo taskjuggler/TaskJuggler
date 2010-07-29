@@ -283,6 +283,13 @@ class TaskJuggler
         el = nil
         if protocol == 'File'
           el = RichTextElement.new(@richTextI, :img)
+          unless (index = locator.rindex('.'))
+            error('rt_file_no_ext', "File name without extension: #{locator}")
+          end
+          extension = locator[index + 1..-1].downcase
+          unless %w( jpg gif png svg ).include?(extension)
+            error('rt_file_bad_ext', "Unsupported file type: #{extension}")
+          end
           el.data = img = RichTextImage.new(locator)
           @val[2].each do |token|
             if token[0, 4] == 'alt='
