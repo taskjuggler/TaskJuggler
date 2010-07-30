@@ -94,6 +94,14 @@ output format does not support images. The following image types are
 supported and detected by their file name extensions: ''''.jpg'''',
 ''''.gif'''', ''''.png'''' and ''''.svg''''. 
 
+The vertical positioning of the embedded file can be controlled with
+additional attributes.
+
+ [[File:image.svg|text-bottom]]
+
+The following attributes are supported: ''''top, middle, bottom,
+baseline, sub, super, text-top, text-bottom''''.
+
 In some situations, it is desirable to not interpret certain markup
 sequences and reproduce the text verbatim. Such text must be enclosed
 in nowiki tags.
