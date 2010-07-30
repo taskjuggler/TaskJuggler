@@ -65,6 +65,7 @@ class TaskJuggler
           raise 'Unknown report output format #{format}.'
         end
       end
+      true
     end
 
     # Generate an output format agnostic version that can later be turned into
