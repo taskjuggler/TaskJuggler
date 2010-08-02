@@ -1305,7 +1305,7 @@ class TaskJuggler
 
     def query_targets(query)
       targetList = PropertyList.new(@project.tasks, false)
-      targets(targetList, a('end'), true)
+      targets(targetList, true)
       targetList.delete(@property)
       targetList.setSorting([['start', true, @scenarioIdx],
                              ['seqno', true, -1 ]])
@@ -1990,25 +1990,25 @@ class TaskJuggler
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
-    def targets(list, minStart, includeChildren)
+    def targets(list, includeChildren)
       # Ignore tasks that we have already included in the list.
       return if list.include?(@property)
 
       # A target must be a leaf function that has no direct or indirect
-      # (through parent) following tasks.  Targets must start after the end of
-      # the tested tasks.
-      if @property.leaf? && !hasSuccessors && a('start') >= minStart
+      # (through parent) following tasks. Only milestones are recognized as
+      # targets.
+      if @property.leaf? && !hasSuccessors && a('milestone')
         list << @property
         return
       end
 
       a('endsuccs').each do |t, onEnd|
-        t.targets(@scenarioIdx, list, minStart, false)
+        t.targets(@scenarioIdx, list, false)
       end
 
       # Check for indirect followers.
       if @property.parent
-        @property.parent.targets(@scenarioIdx, list, minStart, false)
+        @property.parent.targets(@scenarioIdx, list, false)
       end
 
       # Also include targets of child tasks. The recursive iteration of child
@@ -2016,7 +2016,7 @@ class TaskJuggler
       # iterated.
       if includeChildren
         @property.children.each do |child|
-          child.targets(@scenarioIdx, list, minStart, true)
+          child.targets(@scenarioIdx, list, true)
         end
       end
     end

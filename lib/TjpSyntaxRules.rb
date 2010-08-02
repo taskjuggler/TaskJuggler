@@ -2973,10 +2973,9 @@ EOT
 
     singlePattern('_targets')
     descr(<<'EOT'
-A list of tasks that depend in the current task. For container tasks it will
-also include the targets of the child tasks as long as the start date of the
-target is at or after the end date of the container task. Usually the task
-name, the task ID and the start date will be listed.
+A list of milestones that depend on the current task. For container tasks it
+will also include the targets of the child tasks.  Usually the task name, the
+task ID and the start date will be listed.
 EOT
          )
 
