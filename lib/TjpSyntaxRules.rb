@@ -2972,7 +2972,13 @@ EOT
          )
 
     singlePattern('_targets')
-    descr('A list of tasks that depend in the current task.')
+    descr(<<'EOT'
+A list of tasks that depend in the current task. For container tasks it will
+also include the targets of the child tasks as long as the start date of the
+target is at or after the end date of the container task. Usually the task
+name, the task ID and the start date will be listed.
+EOT
+         )
 
     singlePattern('_wbs')
     descr('The hierarchical or work breakdown structure index')
