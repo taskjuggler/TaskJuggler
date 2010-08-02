@@ -41,7 +41,7 @@ class TaskJuggler
       # A list of email addresses to send the summary to
       @digestRecipients = []
 
-      @resourceIntro = "  Weekly Report from %s\n\n"
+      @resourceIntro = "== Weekly Report from <nowiki>%s</nowiki> ==\n"
       @resourceSheetSubject = "Weekly report %s"
       @summarySubject = "Weekly staff reports %s"
       @reminderSubject = "Your time sheet for the period ending %s is overdue!"
@@ -84,12 +84,13 @@ EOT
               # Resource has submitted a time sheet
               sheet = getResourceJournal(sheetFile)
               summary += sprintf(@resourceIntro, resourceName)
-              summary += sheet + "\n#{'-' * 74}\n\n"
+              summary += sheet + "\n----\n"
               info("Adding report from #{resourceName} to summary")
 
               @sheetRecipients.each do |to|
-                sendEmail(to, sprintf(@resourceSheetSubject, @date), sheet,
-                          nil, "#{resourceName} <#{resourceEmail}>")
+                sendRichTextEmail(to, sprintf(@resourceSheetSubject, @date),
+                                  sheet, nil,
+                                  "#{resourceName} <#{resourceEmail}>")
               end
             end
           else
@@ -104,9 +105,9 @@ EOT
         # Prepend the defaulter list to the summary.
         text = sprintf(@defaulterHeader, defaulterList.length)
         defaulterList.each do |resource|
-          text += " * #{resource[1]}\n"
+          text += "* <nowiki>#{resource[1]}</nowiki>\n"
         end
-        text += "\n#{'-' * 74}\n\n"
+        text += "\n----\n"
         summary = text + summary
 
         # Create a file with the IDs of the resources who's reports are
@@ -123,7 +124,7 @@ EOT
 
       # Send out the summary text to the list of digest recipients.
       @digestRecipients.each do |to|
-        sendEmail(to, sprintf(@summarySubject, @date), summary)
+        sendRichTextEmail(to, sprintf(@summarySubject, @date), summary)
       end
 
       # If there is a reminder text defined, resend the template to those
@@ -165,6 +166,7 @@ EOT
       rescue
         fatal("Cannot summarize sheet: #{$!}")
       end
+
       report
     end
 

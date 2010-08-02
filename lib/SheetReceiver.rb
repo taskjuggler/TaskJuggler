@@ -241,18 +241,9 @@ EOT
       # Append the pretty printed version of the submitted sheet.
       text += @report
 
-      rti = RichText.new(text).generateIntermediateFormat
-      rti.lineWidth = 72
-      rti.indent = 2
-      rti.titleIndent = 0
-      rti.listIndent = 2
-      rti.parIndent = 2
-      rti.preIndent = 4
-      rti.sectionNumbers = false
-
       # Send out the email.
-      sendEmail(@submitter, sprintf(@emailSubject, getResourceName, @date),
-                rti, nil, nil, @messageId)
+      sendRichTextEmail(@submitter, sprintf(@emailSubject, getResourceName,
+                                            @date), text, nil, nil, @messageId)
       true
     end
 

@@ -153,6 +153,24 @@ class TaskJuggler
       end
     end
 
+    # Like SheetHandlerBase::sendEmail but interpretes the _message_ as
+    # RichText markup. The generated mail will have a text/plain and a
+    # text/html part.
+    def sendRichTextEmail(to, subject, message, attachment = nil, from = nil,
+                          inReplyTo = nil)
+      rti = RichText.new(message).generateIntermediateFormat
+      rti.lineWidth = 72
+      rti.indent = 2
+      rti.titleIndent = 0
+      rti.listIndent = 2
+      rti.parIndent = 2
+      rti.preIndent = 4
+      rti.sectionNumbers = false
+
+      # Send out the email.
+      sendEmail(to, subject, rti, attachment, from, inReplyTo)
+    end
+
     def sendEmail(to, subject, message, attachment = nil, from = nil,
                   inReplyTo = nil)
       Mail.defaults do
