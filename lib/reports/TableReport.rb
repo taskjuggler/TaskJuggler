@@ -42,6 +42,7 @@ class TaskJuggler
       'followers'        => [ 'Followers',         false,  :left,  true ],
       'id'               => [ 'Id',                false,  :left,  false ],
       'journal'          => [ 'Journal',           false,  :left,  false ],
+      'journal_sub'      => [ 'Journal',           false,  :left,  false ],
       'journalmessages'  => [ 'Journal Messages',  false,  :left,  false ],
       'journalsummaries' => [ 'Journal Summaries', false,  :left,  false ],
       'line'             => [ 'Line No.',          false,  :right, false ],

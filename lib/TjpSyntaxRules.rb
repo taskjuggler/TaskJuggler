@@ -2868,6 +2868,13 @@ The journal entries for the task or resource for the reported interval.
 EOT
          )
 
+    singlePattern('_journal_sub')
+    descr(<<'EOT'
+The journal entries for the task or resource and all its subtasks or resources
+for the reported interval.
+EOT
+         )
+
     singlePattern('_journalmessages')
     descr(<<'EOT'
 The headlines, the summary and the details of the message from the journal

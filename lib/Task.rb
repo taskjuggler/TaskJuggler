@@ -32,18 +32,26 @@ class TaskJuggler
     end
 
     def query_journal(query)
-      journalText(query, true)
+      journalText(query, true, false)
+    end
+
+    def query_journal_sub(query)
+      journalText(query, true, true)
     end
 
     private
 
     # Create a blog-style list of all alert messages that match the Query.
-    def journalText(query, longVersion)
+    def journalText(query, longVersion, recursive)
       # The components of the message are either UTF-8 text or RichText. For
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
       rText = ''
-      list = @project['journal'].entriesByTask(self, query.start, query.end)
+      if recursive
+        list = @project['journal'].entriesByTaskR(self, query.start, query.end)
+      else
+        list = @project['journal'].entriesByTask(self, query.start, query.end)
+      end
       list.reverse.each do |entry|
         tsRecord = entry.timeSheetRecord
 
