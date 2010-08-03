@@ -132,6 +132,9 @@ class TaskJuggler
     # Wait for all jobs to complete. The code block will get the JobInfo
     # objects for each job to pick up the results.
     def wait
+      # Don't wait if there are no jobs.
+      return if @jobsIn == 0
+
       # When we have received as many jobs in the @toDropQueue than we have
       # started then we're done.
       while !@lock.synchronize { @jobsIn == @jobsOut }

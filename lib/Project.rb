@@ -616,6 +616,8 @@ class TaskJuggler
           Log.stopProgressMeter
         end
       else
+        # Kickoff the generation of all reports by pushing the jobs into the
+        # BatchProcessor queue.
         bp = BatchProcessor.new(maxCpuCores)
         @reports.each do |report|
           next if report.get('formats').empty?
@@ -626,6 +628,7 @@ class TaskJuggler
             res
           }
         end
+        # Now wait for all the jobs to finish.
         bp.wait do |report|
           Log.startProgressMeter("Report #{report.tag.name}")
           $stdout.print(report.stdout)
