@@ -175,7 +175,9 @@ class TaskJuggler
           warning('ts_res_end_delta',
                   "#{resource.name} requests " +
                   "#{@expectedEnd < @task['end', scenarioIdx] ?
-                    'earlier' : 'later'} end for task #{@task.fullId}")
+                    'earlier' : 'later'} end (#{@expectedEnd}) for task " +
+                  "#{@task.fullId}. Planned end is " +
+                  "#{@task['end', scenarioIdx]}.")
         end
       end
     end

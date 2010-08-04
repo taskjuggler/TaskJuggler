@@ -254,6 +254,7 @@ EOT
           workPercent = (workDays / (weeksToReport * weeklyWorkingDays)) *
                         100.0
 
+          remaining = endDate = nil
           if task['effort', scenarioIdx] > 0
             # The task is an effort based task.
             # Get the remaining effort for this task.
@@ -262,11 +263,9 @@ EOT
             query.loadUnit = :days
             query.process
             remaining = query.to_s
-            endDate = nil
           else
             # The task is a duration task.
             # Get the planned task end date.
-            remaining = nil
             endDate = task['end', scenarioIdx]
           end
 
