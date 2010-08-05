@@ -102,6 +102,11 @@ class TaskJuggler
       end
     end
 
+    # Like Array::delete_if
+    def delete_if
+      @entries.delete_if { |e| yield(e) }
+    end
+
     # Like Array::empty?
     def empty?
       @entries.empty?
@@ -112,27 +117,35 @@ class TaskJuggler
       @entries.include?(entry)
     end
 
+    # Like Array::first but list is first sorted.
+    def first
+      sort!
+      @entries.first
+    end
+
     # Returns the last elements (by date) if date is nil or the last elements
     # right before the given _date_. If there are multiple entries with
     # exactly the same date, all are returned. Otherwise the result Array will
     # only contain one element. In case no matching entry is found, the Array
     # will be empty.
     def last(date = nil)
-      result = []
+      result = JournalEntryList.new
       sort!
-      # If we have no date, return the latest entry.
-      return [ @entries.last ] unless date
 
       @entries.reverse_each do |e|
         if result.empty?
+          # We haven't found any yet. So add the first one we find before the
+          # cut-off date.
           result << e if e.date <= date
         elsif result.first.date == e.date
+          # Now we only accept other entries with the exact same date.
           result << e
         else
+          # We've found all entries we are looking for.
           break
         end
       end
-      result
+      result.sort!
     end
 
     # Sort the list of entries. First by ascending by date, than by alertLevel
@@ -141,7 +154,7 @@ class TaskJuggler
       if block_given?
         @entries.sort! { |a, b| yield(a, b) }
       else
-        return if @sorted
+        return self if @sorted
 
         @entries.sort! { |a, b| a.date != b.date ?
                                 a.date <=> b.date :
@@ -151,6 +164,7 @@ class TaskJuggler
                                  b.property.sequenceNo) }
       end
       @sorted = true
+      self
     end
 
   end
@@ -202,16 +216,16 @@ class TaskJuggler
     end
 
     # Return a list of all JournalEntry objects for the given _task_ that
-    # are dated between _startDate_ and _endDate_, are from Author _resource_
-    # and have at least the alert level _alertLevel. If an optional parameter
-    # is nil, it always matches the entry.
+    # are dated between _startDate_ and _endDate_ (end date not included), are
+    # from Author _resource_ and have at least the alert level _alertLevel. If
+    # an optional parameter is nil, it always matches the entry.
     def entriesByTask(task, startDate = nil, endDate = nil,
                       resource = nil, alertLevel = nil)
       list = []
       @entries.each do |entry|
         if entry.property == task &&
-           (startDate.nil? || entry.date > startDate) &&
-           (endDate.nil? || entry.date <= endDate) &&
+           (startDate.nil? || entry.date >= startDate) &&
+           (endDate.nil? || entry.date < endDate) &&
            (resource.nil? || entry.author == resource) &&
            (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
            !entry.headline.empty?
@@ -287,26 +301,28 @@ class TaskJuggler
     # This function returns a list of entries that have all the exact same
     # date and are the last entries before the deadline _date_. Only messages
     # with at least the required alert level _minLevel_ are returned. Messages
-    # with alert level _minLevel_ must not be newer than _minDate_.
+    # with alert level _minLevel_ must be newer than _minDate_.
     def currentEntries(date, property, minLevel, minDate)
       pEntries = @propertyToEntries[property] ?
-                 @propertyToEntries[property].last(date) : []
+                 @propertyToEntries[property].last(date) : JournalEntryList.new
       # Remove entries below the minium alert level or before the timeout
       # date.
-      pEntries.delete_if { |e| e.alertLevel < minLevel  || e.headline.empty? ||
-                               (e.alertLevel == minLevel && e.date <= minDate) }
+      pEntries.delete_if do |e|
+        e.headline.empty? || e.alertLevel < minLevel ||
+        (e.alertLevel == minLevel && minDate && e.date < minDate)
+      end
 
-      return [] if pEntries.empty?
+      return pEntries if pEntries.empty?
 
       # Check parents for a more important or more up-to-date message.
       p = property.parent
       while p do
         ppEntries = @propertyToEntries[p] ?
-                    @propertyToEntries[p].last(date) : []
+                    @propertyToEntries[p].last(date) : JournalEntryList.new
 
         # A parent has a more up-to-date message.
         if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
-          return []
+          return JournalEntryList.new
         end
 
         p = p.parent
@@ -323,31 +339,41 @@ class TaskJuggler
     def currentEntriesR(date, property, minLevel = 0, minDate = nil)
       # See if this property has any current JournalEntry objects.
       pEntries = @propertyToEntries[property] ?
-                 @propertyToEntries[property].last(date) : []
+                 @propertyToEntries[property].last(date) : JournalEntryList.new
+      # Remove entries below the minium alert level or before the timeout
+      # date.
+      pEntries.delete_if do |e|
+        e.headline.empty? || e.alertLevel < minLevel ||
+        (e.alertLevel == minLevel && minDate && e.date < minDate)
+      end
+
+      # Determine the highest alert level of the pEntries.
+      maxPAlertLevel = 0
+      pEntries.each do |e|
+        maxPAlertLevel = e.alertLevel if e.alertLevel > maxPAlertLevel
+      end
 
       entries = JournalEntryList.new
       latestDate = nil
+      maxAlertLevel = 0
       # Now gather all current entries of the child properties and find the
       # date that is closest to and right before the given _date_.
       property.children.each do |p|
-        currentEntriesR(date, p).each do |e|
+        currentEntriesR(date, p, minLevel, minDate).each do |e|
+          # Find the date of the most recent entry.
           latestDate = e.date if latestDate.nil? || e.date > latestDate
-          next if e.headline.empty? || e.alertLevel < minLevel ||
-                  (e.alertLevel == minLevel && minDate && e.date < minDate)
+          # Find the highest alert level.
+          maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
           entries << e
         end
       end
-      # If no child property has a more current JournalEntry than this
-      # property and this property has JournalEntry objects, than those are
-      # taken.
-      if !pEntries.empty? && (latestDate.nil? ||
+      # If no child property has a more current JournalEntry or one with a
+      # higher alert level than this property and this property has
+      # JournalEntry objects, than those are taken.
+      if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
+                              latestDate.nil? ||
                               pEntries.first.date >= latestDate)
-        entries = JournalEntryList.new
-        pEntries.each do |e|
-          next if e.headline.empty? || e.alertLevel < minLevel ||
-                  (e.alertLevel == minLevel && minDate && e.date < minDate)
-          entries << e
-        end
+        return pEntries
       end
       # Otherwise return the list provided by the childen.
       entries
