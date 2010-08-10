@@ -405,7 +405,7 @@ class TaskJuggler
               return [ type, match, @startOfToken ]
             end
           end
-        rescue StringScanner::Error
+        rescue ArgumentError
           error('scan_encoding_error', $!.to_s)
         end
 
