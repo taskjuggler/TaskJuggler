@@ -76,14 +76,34 @@ class TaskJuggler
 
       createDirectories
 
+      # Read the RFC 822 compliant mail from STDIN.
+      rawMail = $stdin.read
+
+      # To get line-accurate error reports for encoding errors, we scan the
+      # email for obvious ecoding errors and try to get a sender fallback
+      # address. This will not find encoding problems inside encoded mime
+      # parts.
+      fromLine = nil
       begin
-        rawMail = $stdin.read
+        rawMail.each_line do |line|
+          unless fromLine
+            matches = line.encode('UTF-8', :invalid => :replace,
+                                            :replace => '?').match('^From: .*')
+            fromLine = matches[0] if matches
+          end
+          begin
+            # Try the encoding. If it fails, we'll get an exception.
+            line.encode!('UTF-8')
+          rescue
+            raise "Encoding error in line: #{line.encode('UTF-8', :invalid)}"
+          end
+        end
+
         mail = Mail.new(rawMail)
       rescue
         # Try to extract the mail sender the dirty way so we can at least send
         # a response to the submitter.
-        fromLine = rawMail.match('^From: .*')[0]
-        @submitter = fromLine[6..-1] if fromLine.is_a?(String)
+        @submitter = fromLine[6..-1] if fromLine && fromLine.is_a?(String)
         error("Incoming mail could not be processed: #{$!}")
       end
 
