@@ -73,7 +73,8 @@ class TaskJuggler
         end
       end
 
-      standardFilterOps(list, hideExpr, rollupExpr, openNodes, resource, taskRoot)
+      standardFilterOps(list, hideExpr, rollupExpr, openNodes, resource,
+                        taskRoot)
     end
 
     # Take the complete resource list and remove all resources that are matching
@@ -104,7 +105,8 @@ class TaskJuggler
         end
       end
 
-      standardFilterOps(list, hideExpr, rollupExpr, openNodes, task, resourceRoot)
+      standardFilterOps(list, hideExpr, rollupExpr, openNodes, task,
+                        resourceRoot)
     end
 
     private

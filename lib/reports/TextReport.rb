@@ -87,6 +87,9 @@ class TaskJuggler
     end
 
     def to_csv
+      @report.warning('text_report_no_csv',
+                      "textreport '#{@report.fullId}' cannot be converted " +
+                      "into CSV format")
       nil
     end
 

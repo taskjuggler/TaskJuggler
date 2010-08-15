@@ -108,6 +108,22 @@ class TaskJuggler
       @project.reportContexts.first.report.get('interactive')
     end
 
+    def error(id, message)
+      if message && !message.empty?
+        @project.messageHandler.error(id, message, @sourceFileInfo)
+      else
+        # We have no message, so the error has already been reported to the
+        # MessageHandler. Just trigger another exception to signal the error.
+        raise TjException
+      end
+    end
+
+    def warning(id, message)
+      if message && !message.empty?
+        @project.messageHandler.warning(id, message, @sourceFileInfo)
+      end
+    end
+
   private
     # Convenience function to access a report attribute
     def a(attribute)
@@ -196,7 +212,8 @@ EOT
       return nil unless @content
 
       # CSV format can only handle the first element.
-      csv = @content.to_csv
+      return nil unless (csv = @content.to_csv)
+
       # Expand nested tables into the outer table.
       columnIdx = 0
       while columnIdx < csv[0].length do
@@ -314,16 +331,6 @@ variable should be set to the path without the /data at the end. Multiple
 directories must be separated by colons.
 EOT
            )
-    end
-
-    def error(id, message)
-      if message && !message.empty?
-        @project.messageHandler.error(id, message, @sourceFileInfo)
-      else
-        # We have no message, so the error has already been reported to the
-        # MessageHandler. Just trigger another exception to signal the error.
-        raise TjException
-      end
     end
 
   end
