@@ -215,6 +215,12 @@ So either all mandatory resources can be allocated for the time slot, or no
 resource will be allocated.
 EOT
        )
+    pattern(%w( _shift !allocationShiftAssignment ))
+    doc('shift.allocate', <<'EOT'
+Limits the allocations of resources during the specified interval to the
+specified shift.
+EOT
+       )
   end
 
   def rule_allocationBody

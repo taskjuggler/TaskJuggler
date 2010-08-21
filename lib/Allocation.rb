@@ -59,8 +59,8 @@ class TaskJuggler
       @candidates << candidate
     end
 
-    # Returns true if we either have no shifts defined or the defined shifts are
-    # active at _date_.
+    # Returns true if we either have no shifts defined or the defined shifts
+    # are active at _date_.
     def onShift?(date)
       return @shifts.onShift?(date) if @shifts
 
