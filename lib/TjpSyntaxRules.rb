@@ -216,9 +216,15 @@ resource will be allocated.
 EOT
        )
     pattern(%w( _shift !allocationShiftAssignment ))
-    doc('shift.allocate', <<'EOT'
+    doc('shifts.allocate', <<'EOT'
 Limits the allocations of resources during the specified interval to the
-specified shift.
+specified shift. Multiple shifts can be defined, but shift intervals may not
+overlap. Allocation shifts are an additional restriction to the
+[[shifts.task|task shifts]] and [[shifts.resource|resource shifts]] or
+[[workinghours.resource|resource working hours]]. Allocations will only be
+made for time slots that are specified as duty time in all relevant shifts.
+The restriction to the shift is only active during the specified time
+interval. Outside of this interval, no restrictions apply.
 EOT
        )
   end
@@ -4907,10 +4913,11 @@ EOT
     doc('shifts.task', <<'EOT'
 Limits the working time for this task during the during the specified interval
 to the working hours of the given shift. Multiple shifts can be defined, but
-shift intervals may not overlap. This is an additional working time limit to
-the working hours of the allocated resources. It does not replace the resource
-working hour restrictions. For a resource to be assigned to a time slot, both
-the task shifts as well as the resource working hours must declare the time slot as duty slot.
+shift intervals may not overlap. This is an additional working time
+restriction ontop of the working hours of the allocated resources. It does not
+replace the resource working hour restrictions. For a resource to be assigned
+to a time slot, both the respective task shift as well as the resource working
+hours must declare the time slot as duty slot.
 EOT
         )
 
