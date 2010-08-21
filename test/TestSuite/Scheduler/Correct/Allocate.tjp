@@ -5,11 +5,21 @@ macro Fixend [
   maxend ${1}
 ]
 
+shift mowefr "Mo, We, Fr shift" {
+  workinghours mon, wed, fri 9:00 - 12:00, 13:00 - 18:00
+  workinghours tue, thu, sat off
+}
+shift tuthsa "Tu, Th, Sa shift" {
+  workinghours tue, thu, sat 9:00 - 12:00, 13:00 - 18:00
+  workinghours mon, wed, fri off
+}
+
 resource tue_off "Tuesday off" {
   workinghours mon, wed - fri 10:00 - 18:00
   workinghours tue, sat, sun off
 }
 resource all_days "All days"
+resource all_days2 "All days2"
 
 resource only_wed "Only Wednesday" {
   workinghours sun - sat off
@@ -53,6 +63,8 @@ task mandatory "Mandatory Tests" {
 
 resource r1 "Resource 1"
 resource r2 "Resource 2"
+resource r3 "Resource 3"
+resource r4 "Resource 4"
 
 task inheritedAllocs "Inherited Allocations" {
   allocate r1
@@ -77,6 +89,13 @@ task inheritedAllocs "Inherited Allocations" {
     depends !t2
     ${Fixend "2007-09-10-18:00"}
   }
+}
+
+task allocShift "Allocation Shift" {
+  effort 10d
+  allocate r3 { shift mowefr 2007-09-01 +1w }
+  allocate r4 { shift tuthsa 2007-09-01 +1w }
+  ${Fixend "2007-09-11-14:00"}
 }
 
 taskreport allocate "Allocate" {

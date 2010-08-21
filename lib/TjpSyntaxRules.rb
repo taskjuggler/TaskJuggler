@@ -262,9 +262,9 @@ EOT
   def rule_allocationShiftAssignment
     pattern(%w( !shiftId !intervalsOptional ), lambda {
       # Make sure we have a ShiftAssignment for the allocation.
-      if @allocate.shift.nil?
-        @allocate.shift = ShiftAssignments.new
-        @allocate.shift.project = @project
+      if @allocate.shifts.nil?
+        @allocate.shifts = ShiftAssignments.new
+        @allocate.shifts.project = @project
       end
 
       if @val[1].nil?
@@ -273,7 +273,7 @@ EOT
         intervals = @val[1]
       end
       intervals.each do |interval|
-        if !@allocate.shift.
+        if !@allocate.shifts.
           addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
                                             interval))
           error('shift_assignment_overlap',
