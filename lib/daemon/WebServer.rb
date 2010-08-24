@@ -32,6 +32,7 @@ class TaskJuggler
 
     # Create a web server object that runs in a separate thread.
     def initialize(broker, port)
+      @log = LogFile.instance
       @broker = broker
 
       config = { :Port => port }
@@ -40,7 +41,16 @@ class TaskJuggler
 
       # Serve some directories via the FileHandler servlet.
       %w( css icons scripts ).each do |dir|
-        fullDir = AppConfig.dataDirs("data/#{dir}")[0]
+        unless (fullDir = AppConfig.dataDirs("data/#{dir}")[0])
+          @log.fatal(<<"EOT"
+Cannot find the #{dir} directory. This is usually the result of an
+improper TaskJuggler installation. If you know the directory, you can use the
+TASKJUGGLER_DATA_PATH environment variable to specify the location. The
+variable should be set to the path without the /data at the end. Multiple
+directories must be separated by colons.
+EOT
+                    )
+        end
         @server.mount("/#{dir}", WEBrick::HTTPServlet::FileHandler, fullDir)
       end
 
@@ -87,6 +97,8 @@ class TaskJuggler
           generateWelcomePage(projectId)
         else
           attributes = req.query['attributes'] || ''
+          attributes = URLParameter.decode(attributes) unless attributes.empty?
+          puts "attributes:#{attributes}"
           generateReport(projectId, reportId, attributes)
         end
       rescue
