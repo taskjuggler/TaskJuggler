@@ -3131,7 +3131,7 @@ EOT
     pattern(%w( _opennodes !nodeIdList ), lambda {
       @property.set('openNodes', @val[1])
     })
-    doc('opennods', 'For internal use only!')
+    doc('opennodes', 'For internal use only!')
 
     pattern(%w( !report ))
 

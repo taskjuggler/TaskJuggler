@@ -157,6 +157,30 @@ Paramters:
 
 * ''''id'''' : ID of a defined [[report]]
 
+* ''''attributes'''': A set of attributes that override the original
+attributes of the referenced report. All [[report|report attributes]]
+are supported. Since the value of attributes already must be enclosed
+by single or double quotes, all single or double quotes contained in
+the string must be escaped with backslashes. This feature enables
+reports with content that is customized based on where they have been
+referenced from. It requires the reports to be dynamically generated
+and is only available when used with the ''''tj3d'''' web server.
+The ''''tj3'''' application will ignore the attributes setting.
+
+ taskreport "All" {
+   formats html
+   columns name { 
+     celltext 1 -8<-
+       <-query attribute="name"-> <-reportlink id="taskRep"
+                    attributes="hidetask plan.id != \"<-id->\""->
+       ->8-
+   }, start, end
+ }
+ 
+ taskreport taskRep "Task" {
+   formats html
+ } 
+
 The report link generator inserts a link to the referenced report.
 ----
 '''Inline Generator''' ''''query''''
