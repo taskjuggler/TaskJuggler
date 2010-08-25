@@ -31,9 +31,9 @@ class TaskJuggler
       query = @report.project.reportContexts.last.query
       %w( header left center right footer
           prolog headline caption epilog ).each do |name|
-        next unless text = a(name)
+        next unless (text = a(name))
 
-        text.functionHandler('query').setQuery(query)
+        text.setQuery(query)
       end
     end
 

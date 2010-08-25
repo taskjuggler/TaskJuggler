@@ -338,9 +338,8 @@ class TaskJuggler
       tooltip = tooltip.getPattern(query)
       return unless tooltip && !tooltip.empty?
 
-      if tooltip.respond_to?('functionHandler') &&
-         tooltip.functionHandler('query')
-        tooltip.functionHandler('query').setQuery(query)
+      if tooltip.respond_to?('functionHandler')
+        tooltip.setQuery(query)
       end
       if query
         query.attributeId = 'name'

@@ -98,7 +98,6 @@ EOT
         else
           attributes = req.query['attributes'] || ''
           attributes = URLParameter.decode(attributes) unless attributes.empty?
-          puts "attributes:#{attributes}"
           generateReport(projectId, reportId, attributes)
         end
       rescue

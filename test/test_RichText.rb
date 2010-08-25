@@ -24,11 +24,7 @@ require 'MessageHandler'
       @blockFunction = true
     end
 
-    def to_tagged(args)
-      '<blockfunc:dummy/>'
-    end
-
-    # Return a XMLElement tree that represents the navigator in HTML code.
+    # Return a XMLElement tree that represents the blockfunc in HTML code.
     def to_html(args)
       TaskJuggler::XMLElement.new('blockfunc:dummy', args, true)
     end
@@ -779,17 +775,17 @@ EOT
   end
 
   def test_blockFunction
-    inp = <<EOT
+    inp = <<'EOT'
 <[dummy id="foo" arg1="bar"]>
 === Header ===
-<[dummy]>
+<[dummy arg1="A \"good\" day"]>
 some text
 <[dummy]>
 EOT
-    tagged = <<EOT
+    tagged = <<'EOT'
 <div><blockfunc:dummy arg1="bar" id="foo"/><h2>0.1 [Header]</h2>
 
-<blockfunc:dummy/><p>[some] [text]</p>
+<blockfunc:dummy arg1="A \"good\" day"/><p>[some] [text]</p>
 
 <blockfunc:dummy/></div>
 EOT
@@ -798,11 +794,11 @@ EOT
 
 some text
 EOT
-    html = <<EOT
+    html = <<'EOT'
 <div>
- <blockfunc:dummy arg1=\"bar\" id=\"foo\"/>
+ <blockfunc:dummy arg1="bar" id="foo"/>
  <h2 id="Header">0.1 Header</h2>
- <blockfunc:dummy/>
+ <blockfunc:dummy arg1="A \"good\" day"/>
  <p>some text</p>
  <blockfunc:dummy/>
 </div>
@@ -980,8 +976,8 @@ EOT
           break
         end
       end
-      refDiff = ref[diffI,20] + '...' if diffI && ref.length > len
-      outDiff = out[diffI,20] + '...' if diffI && out.length > len
+      refDiff = ref[diffI,20] + '...' if diffI && ref.length > diffI
+      outDiff = out[diffI,20] + '...' if diffI && out.length > diffI
     end
 
     assert_equal(ref, out, "=== Maching part: #{'=' * 40}\n" +

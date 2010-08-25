@@ -22,7 +22,8 @@ class TaskJuggler
   class RTFNavigator < RichTextFunctionHandler
 
     def initialize(project, sourceFileInfo = nil)
-      super(project, 'navigator', sourceFileInfo)
+      @project = project
+      super(project.messageHandler, 'navigator', sourceFileInfo)
       @blockFunction = true
     end
 

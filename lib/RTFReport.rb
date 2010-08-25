@@ -20,7 +20,8 @@ class TaskJuggler
   class RTFReport < RichTextFunctionHandler
 
     def initialize(project, sourceFileInfo = nil)
-      super(project, 'report', sourceFileInfo)
+      @project = project
+      super(project.messageHandler, 'report', sourceFileInfo)
       @blockFunction = true
     end
 

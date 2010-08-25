@@ -344,9 +344,9 @@ class TaskJuggler
         RichTextElement.new(@richTextI, :text, @val[0])
       })
       pattern(%w( $QUERY ), lambda {
-        # The ${attribute} syntax is a shortcut for an embedded query inline
-        # function. It can only be used within a ReportTableCell context that
-        # provides a property and a scope property.
+        # The <-attributeID-> syntax is a shortcut for an embedded query
+        # inline function. It can only be used within a ReportTableCell
+        # context that provides a property and a scope property.
         el = RichTextElement.new(@richTextI, :inlinefunc)
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.

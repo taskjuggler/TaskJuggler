@@ -322,7 +322,7 @@ class TaskJuggler
         pre = "<blockfunc:#{@data[0]}"
         if @data[1]
           @data[1].keys.sort.each do |key|
-            pre += " #{key}=\"#{@data[1][key]}\""
+            pre += " #{key}=\"#{@data[1][key].gsub(/"/, '\"')}\""
           end
         end
         post = "/>"

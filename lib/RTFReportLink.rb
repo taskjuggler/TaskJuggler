@@ -10,19 +10,22 @@
 # published by the Free Software Foundation.
 #
 
-require 'RichTextFunctionHandler'
+require 'RTFWithQuerySupport'
 require 'XMLElement'
 require 'URLParameter'
+require 'SimpleQueryExpander'
 
 class TaskJuggler
 
   # This class is a specialized RichTextFunctionHandler that generates a link
   # to another report. It's not available on all output formats.
-  class RTFReportLink < RichTextFunctionHandler
+  class RTFReportLink < RTFWithQuerySupport
 
     def initialize(project, sourceFileInfo = nil)
-      super(project, 'reportlink', sourceFileInfo)
+      @project = project
+      super(project.messageHandler, 'reportlink', sourceFileInfo)
       @blockFunction = false
+      @query = nil
     end
 
     # Not supported for this function
@@ -49,7 +52,10 @@ class TaskJuggler
               "report=#{report.fullId}"
 
         if args['attributes']
-          url += ";attributes=" + URLParameter.encode(args['attributes'])
+          qEx = SimpleQueryExpander.new(args['attributes'], @query,
+                                        @project.messageHandler,
+                                        @sourceFileInfo)
+          url += ";attributes=" + URLParameter.encode(qEx.expand)
         end
       else
         # The report name just gets a '.html' extension.

@@ -148,9 +148,8 @@ class TaskJuggler
         elsif @data && @data.is_a?(String)
           @data
         elsif @text
-          if @text.respond_to?('functionHandler') &&
-             @text.functionHandler('query')
-            @text.functionHandler('query').setQuery(@query)
+          if @text.respond_to?('functionHandler')
+            @text.setQuery(@query)
           end
           str = @text.to_s
           # Remove any trailing line breaks. These don't really make much
@@ -247,9 +246,8 @@ class TaskJuggler
       textAsString =
         if @text.is_a?(RichTextIntermediate)
           # @text is a RichText.
-          if @text.respond_to?('functionHandler') &&
-             @text.functionHandler('query')
-            @text.functionHandler('query').setQuery(@query)
+          if @text.respond_to?('functionHandler')
+            @text.setQuery(@query)
           end
           @text.to_s
         else
@@ -299,9 +297,8 @@ class TaskJuggler
       return unless tooltip && !tooltip.empty? && !@selfcontained
 
       hook = trigger if hook.nil?
-      if tooltip.respond_to?('functionHandler') &&
-         tooltip.functionHandler('query')
-        tooltip.functionHandler('query').setQuery(@query)
+      if tooltip.respond_to?('functionHandler')
+        tooltip.setQuery(@query)
       end
       if @query
         @query.attributeId = 'name'

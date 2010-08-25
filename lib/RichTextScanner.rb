@@ -83,8 +83,8 @@ class TaskJuggler
         [ 'INLINEFUNCEND', /->/ , :func, method('functionEnd') ],
         [ 'BLOCKFUNCEND', /\]>/, :func, method('functionEnd') ],
         [ 'ID', /[a-zA-Z_]\w*/, :func ],
-        [ 'STRING', /"(\\"|[^"])*?"/, :func, method('chop2') ],
-        [ 'STRING', /'(\\'|[^'])*'/, :func, method('chop2') ],
+        [ 'STRING', /"(\\"|[^"])*"/, :func, method('dqString') ],
+        [ 'STRING', /'(\\'|[^'])*'/, :func, method('sqString') ],
         [ nil, /[ \t\n]+/, :func ],
         [ 'LITERAL', /./, :func ]
       ]
@@ -166,9 +166,16 @@ class TaskJuggler
       [ type, match[1..-1] ]
     end
 
-    def chop2(type, match)
-      # Remove first and last character.
-      [ type, match[1..-2] ]
+    def dqString(type, match)
+      # Remove first and last character and remove backslashes from quoted
+      # double quotes.
+      [ type, match[1..-2].gsub(/\\"/, '"') ]
+    end
+
+    def sqString(type, match)
+      # Remove first and last character and remove backslashes from quoted
+      # single quotes.
+      [ type, match[1..-2].gsub(/\\'/, "'") ]
     end
 
     def query(type, match)

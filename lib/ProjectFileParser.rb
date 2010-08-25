@@ -100,9 +100,9 @@ class TaskJuggler
     end
 
     def parseReportAttributes(report, attributes)
+      open(attributes, false, true)
       @property = report
       @project = report.project
-      open(attributes, false, true)
       parse('reportAttributes')
     end
 

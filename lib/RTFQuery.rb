@@ -10,7 +10,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'RichTextFunctionHandler'
+require 'RTFWithQuerySupport'
 require 'XMLElement'
 require 'Query'
 
@@ -18,19 +18,12 @@ class TaskJuggler
 
   # This class is a specialized RichTextFunctionHandler that can be used to
   # query the value of a project or property attribute.
-  class RTFQuery < RichTextFunctionHandler
+  class RTFQuery < RTFWithQuerySupport
 
     def initialize(project, sourceFileInfo = nil)
-      super(project, 'query', sourceFileInfo)
+      @project = project
+      super(project.messageHandler, 'query', sourceFileInfo)
       @blockMode = false
-      @query = nil
-    end
-
-    # This function must be called to register the Query object that will be
-    # used to resolve the queries. It will create a copy of the object since
-    # it will modify it.
-    def setQuery(query)
-      @query = query.dup
     end
 
     # Return the result of the query as String.
