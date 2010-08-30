@@ -970,7 +970,7 @@ EOT
       len = ref.length < out.length ? ref.length : out.length
       len.times do |i|
         if ref[i] == out[i]
-          common += ref[i]
+          common << ref[i]
         else
           diffI = i
           break

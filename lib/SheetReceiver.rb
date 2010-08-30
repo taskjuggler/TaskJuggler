@@ -146,15 +146,6 @@ EOT
 
     # Isolate the actual syntax from _sheet_ and process it.
     def processSheet(sheet)
-      # Make sure the sheet is really valid UTF-8
-      #begin
-      #  sheet.encode!('UTF-8')
-      #rescue
-      #  error("The sheet contains badly encoded characters. #{$!}")
-      #end
-      # Encoding checks are now done by the StringScanner class.
-      # Store the detected sheet so we can include it with error reports if
-      # needed.
       @sheet = fixLineBreaks(sheet)
       @sheet = cutOut(@sheet) unless @sheetWasAttached
       # A valid sheet must have the poper header line.

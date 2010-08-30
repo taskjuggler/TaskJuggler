@@ -202,14 +202,14 @@ class TaskJuggler
     # Convert the intermediate format into a plain text String object.
     def to_s
       str = @tree.to_s
-      str.chomp! while str[-1] == "\n"
+      str.chomp! while str[-1] == ?\n
       str
     end
 
     # Convert the intermediate format into a XMLElement objects tree.
     def to_html
       html = @tree.to_html
-      html.chomp! while html[-1] == "\n"
+      html.chomp! while html[-1] == ?\n
       html
     end
 
