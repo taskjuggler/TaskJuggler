@@ -272,7 +272,7 @@ class TaskJuggler
 
             # Check every 60 seconds if the input files have been modified.
             # Don't check if we already know it has been modified.
-            if @stateLock.synchronize { @tj && @tj.project && !@modified &&
+            if @stateLock.synchronize { @state == :ready && !@modified &&
                                         @modifiedCheck + 60 < TjTime.now }
               # Reset the timer
               @stateLock.synchronize { @modifiedCheck = TjTime.now }
