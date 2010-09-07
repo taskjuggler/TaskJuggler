@@ -1,0 +1,183 @@
+== The TaskJuggler Software ==
+
+After the installation of a software package the first questions that
+most users have is ''"How do I run it?"''. Many users expect to find
+an icon on their desktop or an entry in the start menu hierarchy.
+Don't bother looking for them, you won't find any for TaskJuggler. As
+we have mentioned before, TaskJuggler is a command line program. All
+the components are started from a shell by typing in the command name.
+
+This chapter describes the most important TaskJuggler commands and
+how to use them. If you haven't used command line programs before,
+don't worry - you will quickly get used to it.
+
+=== ''''tj3'''' ===
+
+''''tj3'''' is the main program that you will probably use the
+most. It reads in your project files and schedules them. In case
+there are no errors, it will also generate all the reports that you
+have defined in your project files. It requires at least one
+parameter, the name of your main project file. In case your main
+project file is called ''''tutorial.tjp'''' you can process it by typing
+
+ tj3 tutorial.tjp
+
+You will see an output similar to the one below.
+
+  > tj3 tutorial.tjp
+  TaskJuggler III v0.0.6 - A Project Management Software
+  
+  Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs(a)kde.org>
+  
+  This program is free software; you can redistribute it and/or modify it under
+  the terms of version 2 of the GNU General Public License as published by the
+  Free Software Foundation.
+  
+  Reading file tutorial.tjp                                    [      Done      ]
+  Preparing scenario Plan                                      [      Done      ]
+  Scheduling scenario Plan                                     [      Done      ]
+  Checking scenario Plan                                       [      Done      ]
+  Preparing scenario Delayed                                   [      Done      ]
+  Scheduling scenario Delayed                                  [      Done      ]
+  Checking scenario Delayed                                    [      Done      ]
+  Report Overview                                              [      Done      ]
+  Report Status                                                [      Done      ]
+  Report Development                                           [      Done      ]
+  Report Deliveries                                            [      Done      ]
+  Report ContactList                                           [      Done      ]
+  Report ResourceGraph                                         [      Done      ]
+
+''''tj3'''' support a number of runtime options that control the
+behavior. Please use the ''''--help'''' option to get more details.
+
+ tj3 --help
+
+=== ''''tj3man'''' ===
+
+''''tj3man'''' provides you with a quick access to the syntax
+reference. If you run it without further parameters it will print a
+list of all syntax keywords. In some cases, keywords can be used in
+different contexts with different meanings. These keywords are listed
+multiple times with the context identifier appended separated by a
+dot. E. g. the ''''shift'''' keyword can be used in the global
+context, in the [[resource]], [[task]] and [[timesheet]] context. It
+will be listed as
+
+ shift
+ shift.resource
+ shift.task
+ shift.timesheet
+
+To get more information about a specific keyword you need to provide
+it as parameter to ''''tj3man''''.
+
+ tj3man shift.task
+
+=== ''''tj3d'''' ===
+
+''''tj3d'''' is the TaskJuggler daemon. It is a program that runs
+in the background, disconnected from your shell to provide certain
+services. It can generate reports on demand and sever them as web
+pages to a web browser. It's also used to process incoming time
+sheets.
+
+Depending on the size of your project the scheduling time can take
+several minutes or more. Since all operations need to be done on the
+data of a scheduled project, it makes sense to have this data readily
+available. This is the job of the TaskJuggler server or daemon in
+Linux lingo. The program is called ''''tj3d''''. When started, it
+automatically disconnects from the terminal and runs in the
+background. All interactions with the server are done via the TCP/IP
+protocol. For security reasons, only connections from the same
+machine (localhost) are accepted. To get access all clients must
+provide an authentication key. A TaskJuggler server can serve any
+number of projects. Once a project has been loaded successfully,
+clients can retrieve the data in form of reports. Projects are
+identified by their project ID. If a newly added project has the same
+ID such as an already loaded project, the new project will replace
+the old project once it was scheduled successfully. Before you start
+the server, you need to provide a configuration file with some basic
+settings.
+
+All taskjuggler components can use the same TaskJuggler configuration
+file. The format is a simple plain text format that follows the
+[http://www.yaml.org/ YAML specification]. The file should be called
+''''.taskjuglerrc'''' or ''''taskjuggler.rc''''. The settings are
+structured by sections. Section names always start with an underscore.
+
+ _global:
+   authKey: topsecret
+   _log:
+     logLevel: 3
+     outputLevel: 3
+
+This file sets the authentication key for all TaskJuggler components.
+You must replace ''topsecret'' with your own random character
+sequence.
+
+For the purpose of this documentation we assume you have a local user
+called ''taskjuggler'' and your project data in
+''''/home/taskjuggler/project/prj''''. Your TaskJuggler configuration
+should then be put into
+''''/home/taskjuggler/project/prj/.taskjugglerrc''''.
+
+The log section controls the content of the log file. Since the
+daemon does not have a terminal attached to it, all messages are
+stored in a file called ''''tj3d.log''''. For debugging purposes, you
+can use the ''''-d'''' option to prevent the daemon from
+disconnecting from the terminal. In this case the ''''outputLevel''''
+configuration option controls the amount of details to be printed out.
+
+* 0: No output
+* 1: Only fatal errors
+* 2: Fatal and normal errors
+* 3: Like 2, but additionally with information messages
+* 4: Like 3, but additionally with debug messages
+
+The configuration file will be searched in the current directory,
+the current user's home directory or ''''/etc''''. You can also
+explicitly tell the server where to find the configuration file with
+the ''''-c'''' option. See
+
+ tj3d --help
+
+for details.
+
+=== ''''tj3client'''' ===
+
+To control the TaskJuggler server, you need to use the TaskJuggler
+client. You can use the client to add or remove projects from the
+server, inquire the status of loaded projects. It can also be used to
+show the available reports for each project and to generate report or
+check time or status sheets.
+
+The client must provide the correct authentication key to the server.
+You need to ensure that it can find the proper configuration file
+with the authentication key.
+
+ tj3client --help
+
+will provide a full lust of supported commands. To load a project
+simply type
+
+ tj3client add yourproject.tjp
+
+In case there were no errors
+
+ tj3client status
+
+should now list your project.
+
+ tj3client list-reports <project_id>
+
+shows a list of available reports for the project with the provided
+ID. To generate a report, you can type
+
+ tj3client report <project_id> <report_id>
+
+A server that is running can be terminated with the following command.
+
+ tj3client terminate
+
+
+
