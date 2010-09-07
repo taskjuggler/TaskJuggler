@@ -185,16 +185,19 @@ class TaskJuggler
 
     def isresource(expr, args)
       property = properties(expr)[0]
+      return false unless property
       property.is_a?(Resource)
     end
 
     def istask(expr, args)
       property = properties(expr)[0]
+      return false unless property
       property.is_a?(Task)
     end
 
     def treelevel(expr, args)
       property = properties(expr)[0]
+      return 0 unless property
       property.level + 1
     end
 
