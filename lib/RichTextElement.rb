@@ -426,7 +426,15 @@ class TaskJuggler
       when :img
         htmlObject
       when :ref
-        XMLElement.new('a', 'href' => "#{@data}.html")
+        href = if @data.include?('#')
+                 # If the @data includes a reference to an anchor, we put the
+                 # anchor part after the .html extension.
+                 pre, post = @data.split('#')
+                 pre + '.html#' + post
+               else
+                 @data + '.html'
+               end
+        XMLElement.new('a', 'href' => href)
       when :href
         a = XMLElement.new('a', 'href' => @data.to_s)
         a['target'] = @richText.linkTarget if @richText.linkTarget

@@ -21,6 +21,8 @@ class TaskJuggler
   # be turned into an HTML tree.
   class TOCEntry
 
+    attr_reader :number, :title, :tag
+
     # Create a TOCEntry object.
     # _number_: The section number as String, e. g. '1.2.3' or 'A.3'.
     # _title_: The section title as String.

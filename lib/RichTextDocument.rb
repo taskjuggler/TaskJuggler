@@ -34,6 +34,7 @@ class TaskJuggler
       @sectionCounter = [ 0, 0, 0 ]
       @linkTarget = nil
       @toc = nil
+      @anchors = []
     end
 
     # Register a new RichTextFunctionHandler for this document.
@@ -53,17 +54,20 @@ class TaskJuggler
     # Call this method to generate a table of contents for all files that were
     # registered so far. The table of contents is stored internally and will be
     # used when the document is produced in a new format. This function also
-    # collects a list of all snip names to @snipNames and gathers a list of
+    # collects a list of all snip names to @anchors and gathers a list of
     # all references to other snippets in @references. As these two lists will
     # be used by RichTextDocument#checkInternalReferences this function must be
     # called first.
     def tableOfContents
       @toc = TableOfContents.new
       @references = {}
-      @snipNames = []
+      @anchors = []
       @snippets.each do |snip|
         snip.tableOfContents(@toc, snip.name)
-        @snipNames << snip.name
+        @anchors << snip.name
+        @toc.each do |tocEntry|
+          @anchors << snip.name + '#' + tocEntry.tag
+        end
         (refs = snip.internalReferences).empty? ||
           @references[snip.name] = refs
       end
@@ -73,7 +77,7 @@ class TaskJuggler
     def checkInternalReferences
       @references.each do |snip, refs|
         refs.each do |reference|
-          unless @snipNames.include?(reference)
+          unless @anchors.include?(reference)
             # TODO: Probably an Exception is cleaner here.
             puts "Warning: Rich text file #{snip} references unknown " +
                  "object #{reference}"

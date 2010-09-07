@@ -17,9 +17,7 @@ or should be done for TaskJuggler III.
 
 == Other items for 3.0 release ==
 
-* Document new time sheet and status sheet process.
-
-* Document TaskJuggler web server usage.
+* Make web server reports more dynamic with controller elements.
 
 * Add support for an optional account attribute to be
 used instead of the defined charge set.
@@ -32,7 +30,7 @@ used instead of the defined charge set.
 
 == New features (probably after first stable release)
 
-* Web server to serve dynamic report pages
+* Property adoption. Allow container tasks to adopt other tasks.
 
 * Hammock tasks
 

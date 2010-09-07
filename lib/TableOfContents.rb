@@ -30,6 +30,10 @@ class TaskJuggler
       @entries << entry
     end
 
+    def each
+      @entries.each { |e| yield e }
+    end
+
     # Return HTML elements that represent the content of the TableOfContents
     # object. The result is a tree of XMLElement objects.
     def to_html

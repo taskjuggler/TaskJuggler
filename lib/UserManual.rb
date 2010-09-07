@@ -51,6 +51,7 @@ class TaskJuggler
         Tutorial
         The_TaskJuggler_Syntax
         Rich_Text_Attributes
+        Software
         Day_To_Day_Juggling
         TaskJuggler_Internals
         fdl
@@ -210,7 +211,7 @@ class TaskJuggler
       super
       # Let's call the reference 'Appendix A'
       @reference.tableOfContents(@toc, 'A')
-      @snipNames += @reference.all
+      @anchors += @reference.all
     end
 
     # Generate the HTML pages for the syntax reference and a navigation page
