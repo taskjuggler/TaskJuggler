@@ -112,6 +112,7 @@ p.tj_journal {
   width:100%;
   border-spacing:0px;
   position: relative;
+  overflow:hidden;
 } 
 
 /* The symbol is the icon to the left of the text label in a table

@@ -108,7 +108,8 @@ class TaskJuggler
 
       # Insert a padding cell for the left side indentation.
       if @leftIndent
-        row << XMLElement.new('td', 'style' => "width:#{@leftIndent}px; ")
+        row << XMLElement.new('td', 'style' => "min-width:#{@leftIndent}px; " +
+                                               "width:#{@leftIndent}px; ")
       end
       row << cellIcon(cell)
 
@@ -130,7 +131,8 @@ class TaskJuggler
 
       # Insert a padding cell for the right side indentation.
       if @rightIndent
-        row << XMLElement.new('td', 'style' => "width:#{@rightIndent}px; ")
+        row << XMLElement.new('td', 'style' => "min-width:#{@rightIndent}px; " +
+                                               "width:#{@rightIndent}px; ")
       end
 
       cell
