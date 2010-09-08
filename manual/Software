@@ -143,6 +143,26 @@ the ''''-c'''' option. See
 
 for details.
 
+The daemon can also be turned into a web server that serves the HTML
+reports of one or more projects. To enable the web server, start the
+daemon with the ''''-w'''' option. By default, the web server is
+listening on port 8080. This can be changed in the ''''_global''''
+section of the config file.
+
+ _global:
+   authKey: topsecret
+   webServerPort: 8080
+
+To access the HTML reports point your web browser to
+''''http://localhost:8080/taskjuggler''''. This assumes that the
+server is running on your local machine. You will then see a list of
+all loaded projects. Click on the project name to get a list of all
+reports for this project.
+
+So far, the daemon has not received any kind of security review. We
+strongly advise you to only use the daemon in a trusted environment
+with only trusted users!
+
 === ''''tj3client'''' ===
 
 To control the TaskJuggler server, you need to use the TaskJuggler
