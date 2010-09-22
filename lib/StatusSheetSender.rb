@@ -56,13 +56,13 @@ EOT
       unless defaulters.empty?
         @introText += <<"EOT"
 =============================== W A R N I N G ==============================
+
 The following people have not submitted their report yet. The status reports
 for the work they have done is not included in this template! You can either
 manually add their status to the tasks or asked them to send their time sheet
 immediately and re-request this template.
 
 #{defaulters.join}
-=============================== W A R N I N G ==============================
 
 EOT
       end
@@ -95,8 +95,21 @@ EOT
       # Check if it's got a missing-reports file.
       return [] if !File.exists?(missingFile)
 
+      # The sheet could have been submitted after tj3ts_summary was run. We
+      # ignore the entry if a time sheet file now exists. There is a race
+      # condition here. The file may exist, but it may not yet be loaded for
+      # the current project that is used to generate the status report. There
+      # is a race condition here. The file may exist, but it may not yet be
+      # loaded for the current project that is used to generate the status
+      # report.
+      list = File.readlines(missingFile)
+      list.delete_if do |resource|
+        tsDate = tsDir[-10..-1]
+        File.exists?("#{tsDir}/#{resource.chomp}_#{tsDate}.tji")
+      end
+
       # Return the content of the file.
-      File.readlines(missingFile)
+      list
     end
 
   end
