@@ -35,6 +35,7 @@ class TaskJuggler
       @line = line
       @line.addCell(self) if line
 
+      # Specifies whether this is a header cell or not.
       @headerCell = headerCell
       # A copy of a Query object that is needed to access project data via the
       # query function.
@@ -49,6 +50,7 @@ class TaskJuggler
       @showTooltipHint = true
       # The original data of the cell content (optional, nil if not provided)
       @data = nil
+      # Determines the background color of the cell.
       @category = nil
       @hidden = false
       # How to horizontally align the cell
@@ -260,10 +262,11 @@ class TaskJuggler
 
       shortText, singleLine = shortVersion(textAsString)
 
-      if (@line && @line.table.equiLines && (!singleLine || @width )) ||
-          !@category
+      if (@line && @line.table.equiLines && (!singleLine || @width )) &&
+          !@headerCell
         # The cell is size-limited. We only put a shortened plain-text version
         # in the cell and provide the full content via a tooltip.
+        # Header cells are never shortened.
         tooltip = @text if shortText != textAsString
         td << XMLText.new(shortText)
       else
