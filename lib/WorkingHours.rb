@@ -259,13 +259,6 @@ class TaskJuggler
       true
     end
 
-    # Probably should be put into ShiftAssignment as well.
-    def dayOff?(date)
-      projectDate = toLocaltime(date)
-      dow = projectDate.wday
-      @days[dow].empty?
-    end
-
     # Returns the time interval settings for each day in a human readable form.
     def to_s
       dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )

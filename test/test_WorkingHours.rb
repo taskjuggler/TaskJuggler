@@ -50,6 +50,42 @@ class TestLimits < Test::Unit::TestCase
     end
   end
 
+  def test_timeOff
+    # Testing with default working hours.
+    wh = WorkingHours.new
+    # These intervals must have at least one working time slot in them.
+    workTimes = [
+      # 2010-09-20 was a Monday
+      [ '2010-09-20-9:00', '2010-09-20-12:00' ],
+      [ '2010-09-20-8:00', '2010-09-20-10:00' ],
+      [ '2010-09-20-11:00', '2010-09-20-13:00' ],
+      [ '2010-09-20-11:00', '2010-09-20-14:00' ],
+      [ '2010-09-20-17:00', '2010-09-20-18:00' ],
+      [ '2010-09-20-17:00', '2010-09-20-19:00' ],
+      [ '2010-09-20-17:00', '2010-09-21-9:00' ],
+      [ '2010-09-20-18:00', '2010-09-21-10:00' ]
+    ]
+    workTimes.each do |iv|
+      assert(!wh.timeOff?(Interval.new(TjTime.new(iv[0]),
+                                       TjTime.new(iv[1]))),
+             "Work time interval #{iv[0]} - #{iv[1]} failed")
+    end
+
+    # These intervals must have no working time slot in them.
+    offTimes = [
+      # 2010-09-17 was a Friday
+      [ '2010-09-17-18:00', '2010-09-20-9:00' ],
+      [ '2010-09-20-12:00', '2010-09-20-13:00' ],
+      [ '2010-09-20-18:00', '2010-09-21-9:00' ]
+    ]
+
+    offTimes.each do |iv|
+      assert(wh.timeOff?(Interval.new(TjTime.new(iv[0]),
+                                      TjTime.new(iv[1]))),
+             "Off time interval #{iv[0]} - #{iv[1]} failed")
+    end
+  end
+
 end
 
 end
