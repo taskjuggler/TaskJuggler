@@ -1,0 +1,1602 @@
+project "Benchmark" 2010-06-19 +3y
+
+shift parttime "Part Time" {
+  workinghours mon, wed, fri 8:00 - 12:00
+}
+
+resource a "A"
+resource b "B"
+resource c "C"
+resource d "D"
+resource e "E"
+resource f "F"
+resource g "G"
+resource h "H"
+
+task g1 "Group 1" {
+  task sg1 "Sub Group 1" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg2 "Sub Group 2" {
+    depends !sg1
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg3 "Sub Group 3" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg4 "Sub Group 4" {
+    depends !sg2
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg5 "Sub Group 5" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg6 "Sub Group 6" {
+    depends !sg4
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg7 "Sub Group 7" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg8 "Sub Group 8" {
+    depends !sg7
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg9 "Sub Group 9" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg10 "Sub Group 10" {
+    depends !sg6
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+}
+task g2 "Group 2" {
+  depends !g1
+  task sg1 "Sub Group 1" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg2 "Sub Group 2" {
+    depends !sg1
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg3 "Sub Group 3" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg4 "Sub Group 4" {
+    depends !sg2
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg5 "Sub Group 5" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg6 "Sub Group 6" {
+    depends !sg4
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg7 "Sub Group 7" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg8 "Sub Group 8" {
+    depends !sg7
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg9 "Sub Group 9" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg10 "Sub Group 10" {
+    depends !sg6
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+}
+task g3 "Group 3" {
+  task sg1 "Sub Group 1" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg2 "Sub Group 2" {
+    depends !sg1
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg3 "Sub Group 3" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg4 "Sub Group 4" {
+    depends !sg2
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg5 "Sub Group 5" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg6 "Sub Group 6" {
+    depends !sg4
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg7 "Sub Group 7" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg8 "Sub Group 8" {
+    depends !sg7
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg9 "Sub Group 9" {
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+  task sg10 "Sub Group 10" {
+    depends !sg6
+    task t1 "Task 1" {
+      effort 2d
+      allocate a
+    }
+    task t2 "Task 2" {
+      length 2d
+      priority 600
+      allocate b
+      depends !t1
+    }
+    task t3 "Task 3" {
+      duration 4d
+      allocate a { alternative b }
+      priority 200
+    }
+    task t4 "Task 4" {
+      depends !t1
+      length 5d
+      allocate c
+      priority 800
+      limits { dailymax 2h }
+    }
+    task t5 "Task 5" {
+      effort 10d
+      allocate d
+    }
+    task t6 "Task 6" {
+      depends !t5
+      effort 5d
+      allocate e { mandatory }
+      allocate f { alternative g }
+    }
+    task t7 "Task 7" {
+      duration 5d
+      depends !t1
+      allocate e
+      priority 900
+      shift parttime
+    }
+    task t8 "Task 8" {
+      depends !t4
+      milestone
+    }
+    task t9 "Task 9" {
+      depends !t6
+    }
+    task t10 "Task 10" {
+      effort 3d
+      allocate h { alternative a }
+    }
+  }
+}
+
+taskreport "allocatedSlots" {
+  formats csv
+  columns name, daily
+}
