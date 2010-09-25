@@ -97,7 +97,7 @@ class TaskJuggler
         'vacations' => [],
         'version' => version || "1.0",
         'weekStartsMonday' => true,
-        'workinghours' => WorkingHours.new,
+        'workinghours' => nil,
         'yearlyworkingdays' => 260.714
       }
 
@@ -430,6 +430,16 @@ class TaskJuggler
         raise "Unknown project attribute #{name}"
       end
       @attributes[name] = value
+
+      # If the start, end or schedule granularity have been changed, we have
+      # to reset the working hours.
+      if %w(start end scheduleGranularity).include?(name)
+        if @attributes['start'] && @attributes['end']
+          @attributes['workinghours'] =
+            WorkingHours.new(@attributes['scheduleGranularity'],
+                             @attributes['start'], @attributes['end'])
+        end
+      end
     end
 
     # Return the number of defined scenarios for the project.

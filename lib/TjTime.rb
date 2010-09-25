@@ -36,8 +36,7 @@ class TaskJuggler
       if t.is_a?(Time)
         @time = t
       elsif t.is_a?(String)
-        d = DateTime.parse(t)
-        @time = Time.mktime(d.year, d.mon, d.day, d.hour, d.min, d.sec)
+        @time = TjTime.parse(t).time
       else
         @time = Time.at(t)
       end
@@ -60,6 +59,111 @@ class TaskJuggler
       TjTime.new(Time.local(*args).gmtime)
     end
 
+    def TjTime.parse(t)
+      year, month, day, time, zone = t.split('-', 5)
+
+      # Check the year
+      if year
+        year = year.to_i
+        if year < 1970 || year > 2035
+          raise TjException.new, "Year #{year} out of range (1970 - 2035)"
+        end
+      else
+        raise TjException.new, "Year not specified"
+      end
+
+      # Check the month
+      if month
+        month = month.to_i
+        if month < 1 || month > 12
+          raise TjException.new, "Month #{month} out of range (1 - 12)"
+        end
+      else
+        raise TjException.new, "Month not specified"
+      end
+
+      # Check the day
+      if day
+        day = day.to_i
+        maxDay = [ 0, 31, Date.gregorian_leap?(year) ? 29 : 28, 31, 30, 31,
+                   30, 31, 31, 30, 31, 30, 31 ]
+        if month < 1 || month > maxDay[month]
+          raise TjException.new, "Day #{day} out of range (1 - #{maxDay[month]})"
+        end
+      else
+        raise TjException.new, "Day not specified"
+      end
+
+      # The time is optional. Will be expanded to 00:00:00.
+      if time
+        hour, minute, second = time.split(':')
+
+        # Check hour
+        if hour
+          hour = hour.to_i
+          if hour < 0 || hour > 23
+            raise TjException.new, "Hour #{hour} out of range (0 - 23)"
+          end
+        else
+          raise TjException.new, "Hour not specified"
+        end
+
+        if minute
+          minute = minute.to_i
+          if minute < 0 || minute > 59
+            raise TjException.new, "Minute #{minute} out of range (0 - 59)"
+          end
+        else
+          raise TjException.new, "Minute not specified"
+        end
+
+        # Check sencond. This value is optional and defaults to 0.
+        if second
+          second = second.to_i
+          if second < 0 || second > 59
+            raise TjException.new, "Second #{second} out of range (0 - 59)"
+          end
+        else
+          second = 0
+        end
+      else
+        hour = minute = second = 0
+      end
+
+      # The zone is optional and defaults to the current time zone.
+      if zone
+        if zone[0] != ?- && zone[0] != ?+
+          raise TjException.new, "Time zone adjustment must be prefixed by " +
+                                 "+ or -, not #{zone[0]}"
+        end
+        if zone.length != 5
+          raise TjException.new, "Time zone adjustment must use (+/-)HHMM format"
+        end
+
+        date = Time.utc(year, month, day, hour, minute, second)
+        sign = zone[0] == ?- ? 1 : -1
+        tzHour = zone[1..2].to_i
+        if tzHour < 0 || tzHour > 12
+          raise TjException.new, "Time zone adjustment hour out of range " +
+                                 "(0 - 12) but is #{tzHour}"
+        end
+        tzMinute = zone[3..4].to_i
+        if tzMinute < 0 || tzMinute > 59
+          raise TjException.new, "Time zone adjustment minute out of range " +
+                                 "(0 - 59) but is #{tzMinute}"
+        end
+        date += sign * (tzHour * 3600 + tzMinute * 60)
+      else
+        date = Time.mktime(year, month, day, hour, minute, second)
+      end
+
+      #puts "--> #{t}"
+      #puts(">>> #{year}-#{month}-#{day}-#{hour}:#{minute}:#{second}" +
+      #     "#{zone ? "-#{tzHour}:#{tzMinute}" : ""}")
+      #puts "=== #{date}"
+      TjTime.new(date)
+    end
+
     # Check if +zone+ is a valid time zone.
     def TjTime.checkTimeZone(zone)
       return true if zone == 'UTC'
@@ -80,7 +184,11 @@ class TaskJuggler
       region = zone[0..zone.index('/') - 1]
       res = (newZone != zone && newZone != region && newZone != 'UTC')
       # Restore TZ if it was set earlier.
-      ENV['TZ'] = tz if tz
+      if tz
+        ENV['TZ'] = tz
+      else
+        ENV.delete('TZ')
+      end
       res
     end
 

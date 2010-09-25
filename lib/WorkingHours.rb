@@ -11,107 +11,9 @@
 #
 
 require 'Interval'
+require 'Scoreboard'
 
 class TaskJuggler
-
-  # This cache class is used to speedup accesses to the frequently used
-  # WorkingHours::onShift? function. It saves the result the first time the
-  # function is called for a particular date and working hour set and returns
-  # it on subsequent calls again. Each partucular set of working hours needs
-  # its separate cache. The OnShiftCache object is shared amongst all
-  # WorkingHours objects so that WorkingHours objects with identical working
-  # hours can share the cache.
-  class OnShiftCache
-
-    # Create the OnShiftCache object. There should be only one for the
-    # application.
-    def initialize
-      @caches = []
-      @workingHoursTable = []
-      # The cache is an array with entries for each date. To minimize the
-      # necessary storage space, we need to guess the smallest used date
-      # (which gets index 0 then) and the smallest distance between dates.
-      @minDate = nil
-      # We assume a timing resolution of 1 hour (the TaskJuggler default)
-      # first.
-      @minDateDelta = 60 * 60
-    end
-
-    # Register the WorkingHours object with the caches. The function will
-    # return the actual cache used for this particular set of working hours.
-    # The WorkingHours object may not change its working hours after this
-    # call. The returned cache reference is used as a handle for subsequent
-    # OnShiftCache::set and OnShiftCache::get calls.
-    def register(wh)
-      # Search the list of already registered caches for an identical set of
-      # WorkingHours. In case one is found, return the reference to this
-      # cache.
-      @workingHoursTable.length.times do |i|
-        if @workingHoursTable[i] == wh
-          return @caches[i]
-        end
-      end
-      # If this is a new set of WorkingHours we create a new cache for it.
-      @workingHoursTable << WorkingHours.new(wh)
-      @caches << []
-      @caches.last
-    end
-
-    # Set the +value+ for a given +cache+ and +date+.
-    def set(cache, date, value)
-      cache[dateToIndex(date)] = value
-    end
-
-    # Get the value for a given +cache+ and +date+.
-    def get(cache, date)
-      cache[dateToIndex(date)]
-    end
-
-    private
-
-    # When the @minDate or @minDateDelta values need to be changed, we have to
-    # clear all the caches again.
-    def resetCaches
-      @caches.each { |c| c.clear }
-    end
-
-    # Convert a TjTime +date+ to an index in the cache Array. To optimize the
-    # size of the cache, we have to guess the smallest used date and the
-    # regular distance between the date values. If we have to correct these
-    # guessed values, we have to clear the caches.
-    def dateToIndex(date)
-      if @minDate.nil? || date < @minDate
-        @minDate = date
-        resetCaches
-      end
-      startDate = date - @minDate
-      div, mod = startDate.divmod(@minDateDelta)
-      if mod != 0
-        resetCaches
-        # We have to guess the timingresolution of the project here. Possible
-        # values are 5, 10, 15, 20, 30 or 60 minutes.
-        case @minDateDelta / 60
-        when 60
-          @minDateDelta = 30
-        when 30
-          @minDateDelta = 20
-        when 20
-          @minDateDelta = 15
-        when 15
-          @minDateDelta = 10
-        when 10
-          @minDateDelta = 5
-        else
-          raise "Illegal timing resolution!"
-        end
-        @minDateDelta *= 60
-        div = startDate / @minDateDelta
-      end
-
-      div
-    end
-
-  end
 
   # Class to store the working hours for each day of the week. The working hours
   # are stored as Arrays of Fixnum intervals for each day of the week. A day off
@@ -119,32 +21,19 @@ class TaskJuggler
   # each working period are stored as seconds after midnight.
   class WorkingHours
 
-    attr_reader :days
-    attr_accessor :timezone
-
-    # All WorkingHours objects share the same cache to speedup the onShift?
-    # method.
-    @@onShiftCache = OnShiftCache.new
+    attr_reader :days, :startDate, :endDate, :slotDuration, :timezone
 
     # Create a new WorkingHours object. The method accepts a reference to an
     # existing WorkingHours object in +wh+. When it's present, the new object
     # will be a deep copy of the given object.
-    def initialize(wh = nil)
+    def initialize(arg1 = nil, startDate = nil, endDate = nil)
       # One entry for every day of the week. Sunday === 0.
       @days = Array.new(7, [])
-      @cache = nil
+      @scoreboard = nil
 
-      if wh.nil?
-        # Create a new object with default working hours.
-        @timezone = nil
-        # Set the default working hours. Monday to Friday 9am - 12pm, 1pm - 6pm.
-        # Saturday and Sunday are days off.
-        1.upto(5) do |day|
-          @days[day] = [ [ 9 * 60 * 60, 12 * 60 * 60 ],
-                         [ 13 * 60 * 60, 18 * 60 * 60 ] ]
-        end
-      else
-        # Copy the values from the given object.
+      if arg1.is_a?(WorkingHours)
+        # Create a copy of the passed WorkingHours object.
+        wh = arg1
         @timezone = wh.timezone
         7.times do |day|
           hours = []
@@ -153,13 +42,36 @@ class TaskJuggler
           end
           setWorkingHours(day, hours)
         end
+        @startDate = wh.startDate
+        @endDate = wh.endDate
+        @slotDuration = wh.slotDuration
+      else
+        slotDuration = arg1
+        if arg1.nil? || startDate.nil? || endDate.nil?
+          raise "You must supply values for slotDuration, start and end dates"
+        end
+        @startDate = startDate
+        @endDate = endDate
+        @slotDuration = slotDuration
+
+        # Create a new object with default working hours.
+        @timezone = nil
+        # Set the default working hours. Monday to Friday 9am - 12pm, 1pm - 6pm.
+        # Saturday and Sunday are days off.
+        1.upto(5) do |day|
+          @days[day] = [ [ 9 * 60 * 60, 12 * 60 * 60 ],
+                         [ 13 * 60 * 60, 18 * 60 * 60 ] ]
+        end
       end
     end
 
     # Return true of the given WorkingHours object +wh+ is identical to this
     # object.
     def ==(wh)
-      return false if wh.nil? || @timezone != wh.timezone
+      return false if wh.nil? || @timezone != wh.timezone ||
+             @startDate != wh.startDate ||
+             @endDate != wh.endDate ||
+             @slotDuration != wh.slotDuration
 
       7.times do |d|
         return false if @days[d].length != wh.days[d].length
@@ -178,10 +90,8 @@ class TaskJuggler
     # specifies the time of day as minutes after midnight. The first value is
     # the start time of the interval, the second the end time.
     def setWorkingHours(dayOfWeek, intervals)
-      if @cache
-        raise 'You cannot change the working hours after onShift? has been ' +
-              'called.'
-      end
+      # Changing the working hours requires the score board to be regenerated.
+      @scoreboard = nil
 
       # Legal values range from 0 Sunday to 6 Saturday.
       if dayOfWeek < 0 || dayOfWeek > 6
@@ -199,6 +109,13 @@ class TaskJuggler
       @days[dayOfWeek] = intervals
     end
 
+    # Set the time zone _zone_ for the working hours. This will reset the
+    # @scoreboard.
+    def timezone=(zone)
+      @scoreboard = nil
+      @timezone = zone
+    end
+
     # Return the working hour intervals for a given day of the week.
     # +dayOfWeek+ must 0 for Sunday, 1 for Monday and so on. The result is an
     # Array that contains Arrays of 2 Fixnums.
@@ -208,53 +125,20 @@ class TaskJuggler
 
     # Return true if _date_ is within the defined working hours.
     def onShift?(date)
-      @cache = @@onShiftCache.register(self) unless @cache
+      initScoreboard unless @scoreboard
 
-      # If we have the result cached already, return it.
-      unless (os = @@onShiftCache.get(@cache, date)).nil?
-        return os
-      end
-
-      # The date is in UTC. The weekday needs to be calculated according to the
-      # timezone of the project.
-      projectDate = toLocaltime(date)
-      dow = projectDate.wday
-
-      # The working hours need to be put into the proper time zone.
-      localDate = toLocaltime(date, @timezone)
-      secondsOfDay = localDate.secondsOfDay
-
-      @days[dow].each do |iv|
-        # Check the working hours of that day if they overlap with +date+.
-        if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
-          # Store the result in the cache.
-          @@onShiftCache.set(@cache, date, true)
-          return true
-        end
-      end
-
-      # Store the result in the cache.
-      @@onShiftCache.set(@cache, date, false)
-      false
+      @scoreboard.get(date)
     end
 
-    # This function does not belong here! It should be handled via the
-    # ShiftAssignment.
+    # Return true only if all slots in the _interval_ are offhour slots.
     def timeOff?(interval)
-      t = interval.start.midnight
-      while t < interval.end
-        dow = t.wday
-        unless @days[dow].empty?
-          dayStart = t < interval.start ? interval.start.secondsOfDay :
-                                          t.secondsOfDay
-          dayEnd = t.sameTimeNextDay > interval.end ? interval.end.secondsOfDay :
-                   60 * 60 * 24;
-          @days[dow].each do |iv|
-            return false if (dayStart <= iv[0] && iv[0] < dayEnd) ||
-                            (iv[0] <= dayStart && dayStart < iv[1])
-          end
-        end
-        t = t.sameTimeNextDay
+      initScoreboard unless @scoreboard
+
+      startIdx = @scoreboard.dateToIdx(interval.start, true)
+      endIdx = @scoreboard.dateToIdx(interval.end, true)
+
+      startIdx.upto(endIdx - 1) do |i|
+        return false if @scoreboard[i]
       end
       true
     end
@@ -288,26 +172,52 @@ class TaskJuggler
 
   private
 
-    # Convert a UTC date into the corresponding date in the local time zone.
-    # This is either the current system setting or the time zone specified by
-    # _tz_.
-    def toLocaltime(date, tz = nil)
+    def initScoreboard
+      # The scoreboard is an Array of True/False values. It spans a certain
+      # time period with one entry per time slot.
+      @scoreboard = Scoreboard.new(@startDate, @endDate, @slotDuration, false)
+
       oldTimezone = nil
       # Set environment variable TZ to appropriate time zone
       if @timezone
-        oldTimezone = ENV['tz']
-        ENV['tz'] = @timezone
+        oldTimezone = ENV['TZ']
+        ENV['TZ'] = @timezone
       end
 
-      localDate = date.dup
-      localDate.localtime
+      date = @startDate
+      i = 0
+      @scoreboard.collect! do |slot|
+        localDate = date.dup
+        localDate.localtime
+
+        # The date is in UTC. The weekday needs to be calculated according to
+        # the local timezone.
+        weekday = localDate.wday
+        secondsOfDay = localDate.secondsOfDay
+
+        result = false
+        @days[weekday].each do |iv|
+          # Check the working hours of that day if they overlap with +date+.
+          if iv[0] <= secondsOfDay && secondsOfDay < iv[1]
+            # The time slot is a working slot.
+            result = true
+            break
+          end
+        end
+        # Calculate date of next scoreboard slot
+        date += @slotDuration
+
+        result
+      end
 
       # Restore environment
-      if oldTimezone
-        ENV['tz'] = oldTimezone
+      if @timezone
+        if oldTimezone
+          ENV['TZ'] = oldTimezone
+        else
+          ENV.delete('TZ')
+        end
       end
-
-      localDate
     end
 
   end

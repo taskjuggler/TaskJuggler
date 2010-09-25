@@ -1,38 +1,40 @@
-project test "Booking Performance Test" "1.0" 2008-01-01 +1m
+project test "Booking Performance Test" "1.0" 2008-01-01 +1m {
+  timezone 'UTC'
+}
 
 macro r_and_t [
   resource r${1} "Resource ${1}"
   task t${1} "Task ${1}" {
     period ${projectstart} - ${projectend}
-    booking r${1} 2008-01-01 - 2008-01-02 { sloppy 2 }    
-    booking r${1} 2008-01-02 - 2008-01-03 { sloppy 2 }    
-    booking r${1} 2008-01-03 - 2008-01-04 { sloppy 2 }    
-    booking r${1} 2008-01-04 - 2008-01-05 { sloppy 2 }    
-    booking r${1} 2008-01-05 - 2008-01-06 { sloppy 2 }    
-    booking r${1} 2008-01-06 - 2008-01-07 { sloppy 2 }    
-    booking r${1} 2008-01-07 - 2008-01-08 { sloppy 2 }    
-    booking r${1} 2008-01-08 - 2008-01-09 { sloppy 2 }    
-    booking r${1} 2008-01-09 - 2008-01-10 { sloppy 2 }    
-    booking r${1} 2008-01-10 - 2008-01-11 { sloppy 2 }    
-    booking r${1} 2008-01-11 - 2008-01-12 { sloppy 2 }    
-    booking r${1} 2008-01-12 - 2008-01-13 { sloppy 2 }    
-    booking r${1} 2008-01-13 - 2008-01-14 { sloppy 2 }    
-    booking r${1} 2008-01-14 - 2008-01-15 { sloppy 2 }    
-    booking r${1} 2008-01-15 - 2008-01-16 { sloppy 2 }    
-    booking r${1} 2008-01-16 - 2008-01-17 { sloppy 2 }    
-    booking r${1} 2008-01-17 - 2008-01-18 { sloppy 2 }    
-    booking r${1} 2008-01-18 - 2008-01-19 { sloppy 2 }    
-    booking r${1} 2008-01-19 - 2008-01-20 { sloppy 2 }    
-    booking r${1} 2008-01-20 - 2008-01-21 { sloppy 2 }    
-    booking r${1} 2008-01-21 - 2008-01-22 { sloppy 2 }    
-    booking r${1} 2008-01-22 - 2008-01-23 { sloppy 2 }    
-    booking r${1} 2008-01-23 - 2008-01-24 { sloppy 2 }    
-    booking r${1} 2008-01-24 - 2008-01-25 { sloppy 2 }    
-    booking r${1} 2008-01-25 - 2008-01-26 { sloppy 2 }    
-    booking r${1} 2008-01-26 - 2008-01-27 { sloppy 2 }    
-    booking r${1} 2008-01-27 - 2008-01-28 { sloppy 2 }    
-    booking r${1} 2008-01-28 - 2008-01-29 { sloppy 2 }    
-    booking r${1} 2008-01-29 - 2008-01-30 { sloppy 2 }    
+    booking r${1} 2008-01-01-00:00:00-+0000 - 2008-01-02 { sloppy 2 }    
+    booking r${1} 2008-01-02-00:00:00-+0000 - 2008-01-03 { sloppy 2 }    
+    booking r${1} 2008-01-03-00:00:00-+0000 - 2008-01-04 { sloppy 2 }    
+    booking r${1} 2008-01-04-00:00:00-+0000 - 2008-01-05 { sloppy 2 }    
+    booking r${1} 2008-01-05-00:00:00-+0000 - 2008-01-06 { sloppy 2 }    
+    booking r${1} 2008-01-06-00:00:00-+0000 - 2008-01-07 { sloppy 2 }    
+    booking r${1} 2008-01-07-00:00:00-+0000 - 2008-01-08 { sloppy 2 }    
+    booking r${1} 2008-01-08-00:00:00-+0000 - 2008-01-09 { sloppy 2 }    
+    booking r${1} 2008-01-09-00:00:00-+0000 - 2008-01-10 { sloppy 2 }    
+    booking r${1} 2008-01-10-00:00:00-+0000 - 2008-01-11 { sloppy 2 }    
+    booking r${1} 2008-01-11-00:00:00-+0000 - 2008-01-12 { sloppy 2 }    
+    booking r${1} 2008-01-12-00:00:00-+0000 - 2008-01-13 { sloppy 2 }    
+    booking r${1} 2008-01-13-00:00:00-+0000 - 2008-01-14 { sloppy 2 }    
+    booking r${1} 2008-01-14-00:00:00-+0000 - 2008-01-15 { sloppy 2 }    
+    booking r${1} 2008-01-15-00:00:00-+0000 - 2008-01-16 { sloppy 2 }    
+    booking r${1} 2008-01-16-00:00:00-+0000 - 2008-01-17 { sloppy 2 }    
+    booking r${1} 2008-01-17-00:00:00-+0000 - 2008-01-18 { sloppy 2 }    
+    booking r${1} 2008-01-18-00:00:00-+0000 - 2008-01-19 { sloppy 2 }    
+    booking r${1} 2008-01-19-00:00:00-+0000 - 2008-01-20 { sloppy 2 }    
+    booking r${1} 2008-01-20-00:00:00-+0000 - 2008-01-21 { sloppy 2 }    
+    booking r${1} 2008-01-21-00:00:00-+0000 - 2008-01-22 { sloppy 2 }    
+    booking r${1} 2008-01-22-00:00:00-+0000 - 2008-01-23 { sloppy 2 }    
+    booking r${1} 2008-01-23-00:00:00-+0000 - 2008-01-24 { sloppy 2 }    
+    booking r${1} 2008-01-24-00:00:00-+0000 - 2008-01-25 { sloppy 2 }    
+    booking r${1} 2008-01-25-00:00:00-+0000 - 2008-01-26 { sloppy 2 }    
+    booking r${1} 2008-01-26-00:00:00-+0000 - 2008-01-27 { sloppy 2 }    
+    booking r${1} 2008-01-27-00:00:00-+0000 - 2008-01-28 { sloppy 2 }    
+    booking r${1} 2008-01-28-00:00:00-+0000 - 2008-01-29 { sloppy 2 }    
+    booking r${1} 2008-01-29-00:00:00-+0000 - 2008-01-30 { sloppy 2 }    
   }
 ]
 
@@ -64,3 +66,11 @@ macro r_and_t_100 [
 
 ${r_and_t_100 "0"}
 ${r_and_t_100 "1"}
+${r_and_t_100 "2"}
+${r_and_t_100 "3"}
+${r_and_t_100 "4"}
+${r_and_t_100 "5"}
+${r_and_t_100 "6"}
+${r_and_t_100 "7"}
+${r_and_t_100 "8"}
+${r_and_t_100 "9"}

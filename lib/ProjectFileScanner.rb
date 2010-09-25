@@ -159,15 +159,28 @@ class TaskJuggler
     end
 
     def to_time(type, match)
-      h, m, s = match.split(':')
+      h, m = match.split(':')
       h = h.to_i
+      if h < 0 || h > 24
+        error('time_bad_hour', "Hour #{h} out of range (0 - 24)")
+      end
       m = m.to_i
-      s = 0 if s.nil?
-      [ type, h * 3600 + m * 60 + s ]
+      if m < 0 || h > 59
+        error('time_bad_minute', "Minute #{m} out of range (0 - 59)")
+      end
+      if h == 24 && m != 0
+        error('time_bad_time', "Time #{match} cannot be larger then 24:00")
+      end
+
+      [ type, (h * 60 + m) * 60 ]
     end
 
     def to_date(type, match)
-      [ type, TjTime.new(match) ]
+      begin
+        [ type, TjTime.new(match) ]
+      rescue TjException => msg
+        error('time_error', msg)
+      end
     end
 
     def newPos(type, match)

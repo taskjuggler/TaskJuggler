@@ -54,7 +54,7 @@ EOT
       ['LITERAL', '-', 6],
       ['LITERAL', '$', 6],
       ['MACRO', 'A Macro', 6],
-      ['TIME', ((15 * 60) + 23) * 60, 7],
+      ['TIME', time(15, 23), 7],
       ['STRING', 'A string', 7],
       ['STRING', "It's a string", 8],
       ['STRING', "A\nmult\"i line\nstring", 9],
@@ -87,6 +87,44 @@ EOT
     ]
 
     check(text, ref, macros)
+  end
+
+  def test_time
+    text = <<'EOT'
+0:00
+00:00
+1:00
+11:59
+12:01
+24:00
+EOT
+    ref = [
+      ['TIME', time(0, 0), 1],
+      ['TIME', time(0, 0), 2],
+      ['TIME', time(1, 0), 3],
+      ['TIME', time(11, 59), 4],
+      ['TIME', time(12, 1), 5],
+      ['TIME', time(24, 0), 6],
+      ['.', '<END>', 7]
+    ]
+
+    check(text, ref)
+  end
+
+  def test_date
+    text = <<'EOT'
+1970-01-01
+2035-12-31-23:59:59
+2010-08-11-23:10
+EOT
+    ref = [
+      ['DATE', TjTime.new('1970-01-01'), 1],
+      ['DATE', TjTime.new('2035-12-31-23:59:59'), 2],
+      ['DATE', TjTime.new('2010-08-11-23:10'), 3],
+      ['.', '<END>', 4]
+    ]
+
+    check(text, ref)
   end
 
   def test_macroDef
@@ -131,6 +169,10 @@ EOT
   end
 
   private
+
+  def time(h, m)
+    (h * 60 + m) * 60
+  end
 
   def check(text, ref, macros = [])
     s = TaskJuggler::ProjectFileScanner.new(text, MessageHandler.new(true))
