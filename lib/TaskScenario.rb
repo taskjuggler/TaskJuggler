@@ -1701,6 +1701,7 @@ class TaskJuggler
     # specified Interval.
     def bookBookings
       scheduled = a('scheduled')
+      slotDuration = @project['scheduleGranularity']
       a('booking').each do |booking|
         unless booking.resource.leaf?
           error('booking_resource_not_leaf',
@@ -1711,7 +1712,6 @@ class TaskJuggler
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
-        slotDuration = @project['scheduleGranularity']
         booking.intervals.each do |interval|
           startIdx = @project.dateToIdx(interval.start)
           date = interval.start
@@ -1727,8 +1727,7 @@ class TaskJuggler
               # set to the begining of the first booked slot. The lastSlot
               # will be set to the last booked slot
               @lastSlot = date if @lastSlot.nil? || date > @lastSlot
-              @tentativeEnd = tEnd if @tentativeEnd.nil? ||
-                @tentativeEnd < tEnd
+              @tentativeEnd = tEnd if @tentativeEnd.nil? || @tentativeEnd < tEnd
               if !scheduled && (a('start').nil? || date < a('start'))
                 @property['start', @scenarioIdx] = date
               end
@@ -1737,7 +1736,7 @@ class TaskJuggler
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            if a('length') > 0 && @project.isWorkingTime(date, tEnd)
+            if a('length') > 0 && @project.isWorkingTime(date)
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1

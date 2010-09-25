@@ -433,11 +433,18 @@ class TaskJuggler
 
       # If the start, end or schedule granularity have been changed, we have
       # to reset the working hours.
-      if %w(start end scheduleGranularity).include?(name)
+      if %w(start end scheduleGranularity timezone timingresolution).
+        include?(name)
         if @attributes['start'] && @attributes['end']
           @attributes['workinghours'] =
             WorkingHours.new(@attributes['scheduleGranularity'],
                              @attributes['start'], @attributes['end'])
+          # WorkingHours is using a copy-on-write scheme to prevent multiple
+          # copies of the same Scoreboard. All other WorkingHours objects are
+          # created as copies of this object. By calling
+          # WorkingHours::onShift? we make sure this instance has got a
+          # Scoreboard than gets reused by the other instances.
+          @attributes['workinghours'].onShift?(@attributes['start'])
         end
       end
     end

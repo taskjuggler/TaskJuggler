@@ -23,8 +23,8 @@ class TestQuery < Test::Unit::TestCase
   def setup
     @mh = MessageHandler.new
     @p = TaskJuggler::Project.new('id', 'name', 'ver', @mh)
-    @p['start'] = TjTime.new(1202491644)
-    @p['end'] = TjTime.new(1202439409)
+    @p['start'] = TjTime.new('2010-09-25')
+    @p['end'] = TjTime.new('2010-09-25')
   end
 
   def teardown

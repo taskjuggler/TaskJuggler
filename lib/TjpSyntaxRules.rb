@@ -2341,8 +2341,11 @@ impact on memory usage and scheduling performance. You should set this value
 to the minimum required resolution. Make sure that all values that you specify
 are aligned with the resolution.
 
-The timing resolution should be set prior to any value that represents a time
-value like now or workinghours.
+Changing the timing resolution will reset the [[workinghours.project|working
+hours]] to the default times. It's recommended that this is the very first
+option in the project header section.
+
+Do not use this option after you've set the time zone!
 EOT
         )
 
@@ -5240,12 +5243,15 @@ possible values.
 The project start and end time are not affected by this setting. You
 have to explicitly state the time zone for those dates or the system defaults
 are assumed. Using the TZ environment variable is the recommended way to
-specify the time zone for your project. If you use this attribute within the
-project, it should be the very first thing you set. It must be set before you
-set the [[timingresolution]] or any attribute with a time or date.
+specify the time zone for your project.
 
 In case the specified time zone is not hour-aligned with UTC, the
-[[timingresolution]] will automatically be decreased.
+[[timingresolution]] will automatically be decreased accordingly. Do not
+change the timingresolution after you've set the time zone!
+
+Changing the time zone will reset the [[workinghours.project|working hours]]
+to the default times. It's recommended that you declare your working hours
+after the time zone.
 EOT
         )
     arg(1, 'zone', <<'EOT'
