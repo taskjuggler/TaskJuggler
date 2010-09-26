@@ -52,14 +52,17 @@ class TaskJuggler
     # Converts a date to the corresponding scoreboard index. You can optionally
     # sanitize the _date_ by forcing it into the project time span.
     def dateToIdx(date, forceIntoProject = false)
+      idx = ((date - @startDate) / @resolution).to_i
+
       if forceIntoProject
-        return 0 if date < @startDate
-        return @size - 1 if date >= @endDate
-      elsif date < @startDate || date > @endDate
+        return 0 if idx < 0
+        return @size - 1 if idx >= @size
+      elsif (idx < 0 || idx >= @size)
         raise "Date #{date} is out of project time range " +
               "(#{@startDate} - #{@endDate})"
       end
-      ((date - @startDate) / @resolution).to_i
+
+      idx
     end
 
     # Iterate over all scoreboard entries.

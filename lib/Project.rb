@@ -78,7 +78,7 @@ class TaskJuggler
         'flags' => [],
         'journal' => Journal.new,
         'limits' => nil,
-        'loadUnit' => :shortauto,
+        'loadUnit' => :days,
         'name' => name,
         'navigators' => {},
         'now' => TjTime.now.align(3600),
