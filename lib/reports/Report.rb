@@ -141,7 +141,7 @@ class TaskJuggler
         cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')
         # Raise an error if we haven't found the data directory
         if auxSrcDir.nil? || !File.exists?(cssFileName)
-          dataDirError(cssFileName)
+          dataDirError(cssFileName, AppConfig.dataSearchDirs('data/css'))
         end
         cssFile = IO.read(cssFileName)
         if cssFile.empty?
@@ -300,7 +300,9 @@ EOT
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0].untaint
       # Raise an error if we haven't found the data directory
-      dataDirError(dirName) if auxSrcDir.nil? || !File.exists?(auxSrcDir)
+      if auxSrcDir.nil? || !File.exists?(auxSrcDir)
+        dataDirError(dirName, AppConfig.dataSearchDirs("data/#{dirName}"))
+      end
       # Don't copy directory if all files are up-to-date.
       return if directoryUpToDate?(auxSrcDir, auxDstDir + dirName)
 
@@ -322,13 +324,16 @@ EOT
       true
     end
 
-    def dataDirError(dirName)
+    def dataDirError(dirName, dirs)
       error('data_dir_error', <<"EOT"
 Cannot find the #{dirName} directory. This is usually the result of an
 improper TaskJuggler installation. If you know the directory, you can use the
 TASKJUGGLER_DATA_PATH environment variable to specify the location.  The
 variable should be set to the path without the /data at the end. Multiple
-directories must be separated by colons.
+directories must be separated by colons. The following directories have been
+tried:
+
+#{dirs.join("\n")}
 EOT
            )
     end

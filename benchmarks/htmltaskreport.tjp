@@ -38,9 +38,34 @@ macro tasktree [
 
 ${tasktree "0"}
 ${tasktree "1"}
+${tasktree "2"}
+${tasktree "3"}
+${tasktree "4"}
+${tasktree "5"}
+${tasktree "6"}
+${tasktree "7"}
+${tasktree "8"}
+${tasktree "9"}
+${tasktree "10"}
 
-taskreport taskreport "htmltaskreport" {
+taskreport "htmltaskreport-1" {
   formats html
   columns no, name, start, end, chart
+}
+
+taskreport "htmltaskreport-2" {
+  formats html
+  columns no, name, start, end, daily
+}
+
+taskreport "htmltaskreport-3" {
+  formats html
+  columns no, name, start, end, weekly
+}
+
+taskreport "htmltaskreport-4" {
+  formats html
+  columns no, name, start, end, daily
+  sorttasks id.up
 }
 

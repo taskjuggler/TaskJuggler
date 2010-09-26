@@ -10,15 +10,22 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'benchmark'
 require 'TaskJuggler'
+require 'Tj3Config'
+
+AppConfig.appName = 'taskjuggler3'
+ENV['TASKJUGGLER_DATA_PATH'] = '../'
 
 Benchmark.bm(25) do |x|
   Dir.glob('*.tjp').each do |f|
     x.report(f) do
       tj = TaskJuggler.new(true)
+      tj.maxCpuCores = 4
       tj.parse([ f ])
       tj.schedule
+      tj.generateReports
     end
   end
   Dir.glob('*.html').each { |f| File.delete(f) }
+  Dir.glob('*.csv').each { |f| File.delete(f) }
 end
 

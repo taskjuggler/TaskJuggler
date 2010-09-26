@@ -106,6 +106,15 @@ class AppConfig
   end
 
   def AppConfig.dataDirs(baseDir = 'data')
+    dirs = dataSearchDirs(baseDir)
+    # Remove non-existing directories from the list again
+    dirs.delete_if do |dir|
+      !File.exists?(dir.untaint)
+    end
+    dirs
+  end
+
+  def AppConfig.dataSearchDirs(baseDir = 'data')
     rubyLibDir = RbConfig::CONFIG['rubylibdir']
     rubyBaseDir, versionDir = rubyLibDir.scan(/(.*\/)(.*)/)[0]
 
@@ -123,10 +132,7 @@ class AppConfig
     # This one is for Debian based distros
     dirs << rubyLibDir + '/gems/' \
         + @@packageName + '-' + @@version + "/#{baseDir}/"
-    # Remove non-existing directories from the list again
-    dirs.delete_if do |dir|
-      !File.exists?(dir.untaint)
-    end
+
     dirs
   end
 
