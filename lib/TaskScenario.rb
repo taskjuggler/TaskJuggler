@@ -11,6 +11,7 @@
 #
 
 require 'ScenarioData'
+require 'DataCache'
 
 class TaskJuggler
 
@@ -24,6 +25,7 @@ class TaskJuggler
 
       # A list of all allocated leaf resources.
       @candidates = []
+      @dCache = DataCache.instance
     end
 
     # Call this function to reset all scheduling related data prior to
@@ -1353,6 +1355,10 @@ class TaskJuggler
     def getEffectiveWork(startIdx, endIdx, resource = nil)
       return 0.0 if a('milestone')
 
+      workLoad = @dCache.load(self, :TaskScenarioEffectiveWork,
+                              @scenarioIdx, startIdx, endIdx, resource)
+      return workLoad if workLoad
+
       workLoad = 0.0
       if @property.container?
         @property.children.each do |task|
@@ -1370,7 +1376,8 @@ class TaskJuggler
           end
         end
       end
-      workLoad
+      @dCache.store(workLoad, self, :TaskScenarioEffectiveWork,
+                    @scenarioIdx, startIdx, endIdx, resource)
     end
 
     # Return a list of intervals that lay within _iv_ and are at least

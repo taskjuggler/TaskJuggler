@@ -494,6 +494,9 @@ class TaskJuggler
     # Count the booked slots between the start and end index. If _task_ is not
     # nil count only those slots that are assigned to this particular task.
     def getAllocatedSlots(startIdx, endIdx, task)
+      # If there is no scoreboard, we don't have any allocations.
+      return 0 unless @scoreboard
+
       # To speedup the counting we start with the first booked slot and end
       # with the last booked slot.
       startIdx = @firstBookedSlot if @firstBookedSlot &&
@@ -501,11 +504,9 @@ class TaskJuggler
       endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
                                       endIdx > @lastBookedSlot + 1
 
-      initScoreboard if @scoreboard.nil?
       bookedSlots = 0
-      startIdx.upto(endIdx - 1) do |idx|
-        if (task.nil? && @scoreboard[idx].is_a?(Task)) ||
-           (task && @scoreboard[idx] == task)
+      @scoreboard.each(startIdx, endIdx) do |slot|
+        if (task.nil? && slot.is_a?(Task)) || (task && slot == task)
           bookedSlots += 1
         end
       end

@@ -66,9 +66,15 @@ class TaskJuggler
     end
 
     # Iterate over all scoreboard entries.
-    def each
-      @sb.each do |entry|
-        yield entry
+    def each(startIdx = 0, endIdx = @size)
+      if startIdx != 0 || endIdx != @size
+        startIdx.upto(endIdx - 1) do |i|
+          yield @sb[i]
+        end
+      else
+        @sb.each do |entry|
+          yield entry
+        end
       end
     end
 
