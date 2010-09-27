@@ -108,8 +108,9 @@ class TaskJuggler
 
     def generateReport(id, regExpMode, dynamicAttributes)
       @log.info("Generating report #{id}")
+      startTime = Time.now
       if (ok = @tj.generateReport(id, regExpMode, dynamicAttributes))
-        @log.debug("Report #{id} generated")
+        @log.info("Report #{id} generated in #{Time.now - startTime} seconds")
       else
         @log.error("Report generation of #{id} failed")
       end
