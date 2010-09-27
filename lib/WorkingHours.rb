@@ -21,7 +21,6 @@ class TaskJuggler
   # each working period are stored as seconds after midnight.
   class WorkingHours
 
-<<<<<<< Updated upstream
     attr_reader :days, :startDate, :endDate, :slotDuration, :timezone,
                 :scoreboard
 
@@ -29,13 +28,6 @@ class TaskJuggler
     # existing WorkingHours object in +wh+. When it's present, the new object
     # will be a deep copy of the given object. The Scoreboard object is _not_
     # deep copied. It will be copied on write.
-=======
-    attr_reader :days, :startDate, :endDate, :slotDuration, :timezone
-
-    # Create a new WorkingHours object. The method accepts a reference to an
-    # existing WorkingHours object in +wh+. When it's present, the new object
-    # will be a deep copy of the given object.
->>>>>>> Stashed changes
     def initialize(arg1 = nil, startDate = nil, endDate = nil)
       # One entry for every day of the week. Sunday === 0.
       @days = Array.new(7, [])
@@ -55,10 +47,7 @@ class TaskJuggler
         @startDate = wh.startDate
         @endDate = wh.endDate
         @slotDuration = wh.slotDuration
-<<<<<<< Updated upstream
         @scoreboard = wh.scoreboard
-=======
->>>>>>> Stashed changes
       else
         slotDuration = arg1
         if arg1.nil? || startDate.nil? || endDate.nil?
