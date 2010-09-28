@@ -70,8 +70,6 @@ class TaskJuggler
       if date.is_a?(TjTime)
         @start = date
         @startIdx = @project.dateToIdx(date, true)
-      #elsif date.is_a?(Fixnum)
-      #  self.startIdx=(date)
       else
         raise "Unsupported type #{date.class}"
       end
@@ -81,8 +79,6 @@ class TaskJuggler
       if idx.is_a?(Fixnum)
         @startIdx = idx
         @start = @project.idxToDate(idx)
-      #elsif idx.is_a?(TjTime)
-      #  self.start=(idx)
       else
         raise "Unsupported type #{idx.class}"
       end
@@ -92,8 +88,6 @@ class TaskJuggler
       if date.is_a?(TjTime)
         @end = date
         @endIdx = @project.dateToIdx(date, true)
-      #elsif date.is_a?(Fixnum)
-      #  self.endIdx=(date)
       else
         raise "Unsupported type #{date.class}"
       end
@@ -103,8 +97,6 @@ class TaskJuggler
       if idx.is_a?(Fixnum)
         @endIdx = idx
         @end = @project.idxToDate(idx)
-      #elsif idx.is_a?(TjTime)
-      #  self.end=(idx)
       else
         raise "Unsupported type #{idx.class}"
       end

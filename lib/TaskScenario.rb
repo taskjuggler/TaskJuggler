@@ -326,9 +326,19 @@ class TaskJuggler
     # be called to do some more housekeeping. It computes some derived data
     # based on the just scheduled values.
     def finishScheduling
-      # The completion degree calculation is done recursively. So we only call
-      # it for top-level tasks.
-      calcCompletion unless @property.parent
+      # Recursively descend into all child tasks.
+      @property.children.each do |task|
+        task.finishScheduling(@scenarioIdx)
+      end
+
+      if (parent = @property.parent)
+        # Add the assigned resources to the parent task list.
+        a('assignedresources').each do |resource|
+          unless parent['assignedresources', @scenarioIdx].include?(resource)
+            parent['assignedresources', @scenarioIdx] << resource
+          end
+        end
+      end
 
       # This list is no longer needed, so let's save some memory. Set it to
       # nil so we can detect accidental use.
@@ -1147,6 +1157,12 @@ class TaskJuggler
     end
 
     def query_complete(query)
+      # If we haven't calculated the value yet, calculate it first.
+      unless (complete = a('complete'))
+        calcCompletion
+        complete = a('complete')
+      end
+
       query.sortable = query.numerical = complete = a('complete').to_i
       query.string = "#{complete}%"
     end
@@ -1357,7 +1373,8 @@ class TaskJuggler
     # interval specified by _startIdx_ and _endIdx_. The effective work is the
     # actual work multiplied by the efficiency of the resource.
     def getEffectiveWork(startIdx, endIdx, resource = nil)
-      return 0.0 if a('milestone')
+      return 0.0 if a('milestone') || startIdx >= endIdx ||
+                    (resource && !a('assignedresources').include?(resource))
 
       key = [ self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource ].hash
       workLoad = @dCache.load(key)

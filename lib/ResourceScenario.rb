@@ -39,6 +39,7 @@ class TaskJuggler
 
       @firstBookedSlot = nil
       @lastBookedSlot = nil
+      @dCache = DataCache.instance
     end
 
     # This method must be called at the beginning of each scheduling run. It
@@ -106,6 +107,25 @@ class TaskJuggler
       end
     end
 
+    # This method does some housekeeping work after the scheduling is
+    # completed. It's meant to be called for top-level resources and then
+    # recursively descends into all child resources.
+    def finishScheduling
+      # Recursively descend into all child resources.
+      @property.children.each do |resource|
+        resource.finishScheduling(@scenarioIdx)
+      end
+
+      if (parent = @property.parent)
+        # Add the assigned task to the parent todos list.
+        a('todos').each do |task|
+          unless parent['todos', @scenarioIdx].include?(task)
+            parent['todos', @scenarioIdx] << task
+          end
+        end
+      end
+    end
+
     def postScheduleCheck
       if a('fail') || a('warn')
         queryAttrs = { 'project' => @project,
@@ -158,6 +178,9 @@ class TaskJuggler
     def book(sbIdx, task, force = false)
       return false if !force && !available?(sbIdx)
 
+      unless a('todos').include?(task)
+        @property['todos', @scenarioIdx] << task
+      end
       #puts "Booking resource #{@property.fullId} at " +
       #     "#{@scoreboard.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
       @scoreboard[sbIdx] = task
@@ -291,6 +314,16 @@ class TaskJuggler
     # Returns the work of the resource (and its children) weighted by their
     # efficiency.
     def getEffectiveWork(startIdx, endIdx, task = nil)
+      # There can't be any effective work if the start is after the end or the
+      # todo list doesn't contain the specified task.
+      return 0.0 if startIdx >= endIdx || (task && !a('todos').include?(task))
+
+      # The unique key we use to address the result in the cache.
+      key = [ self, :ResourceScenarioEffectiveWork, startIdx, endIdx,
+              task ].hash
+      work = @dCache.load(key)
+      return work if work
+
       # Convert the interval dates to indexes if needed.
       startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
       endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
@@ -307,7 +340,7 @@ class TaskJuggler
                  getAllocatedSlots(startIdx, endIdx, task) *
                  @project['scheduleGranularity']) * a('efficiency')
       end
-      work
+      @dCache.store(work, key)
     end
 
     # Returns the allocated accumulated time of this resource and its children.
@@ -419,6 +452,8 @@ class TaskJuggler
     # the period specified with the Interval _iv_. If task is not nil
     # only allocations to this tasks are respected.
     def allocated?(iv, task = nil)
+      return false if @property.leaf? && task && !a('todos').include?(task)
+
       initScoreboard if @scoreboard.nil?
 
       startIdx = @scoreboard.dateToIdx(iv.start, true)

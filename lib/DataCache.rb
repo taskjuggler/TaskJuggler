@@ -30,7 +30,11 @@ class TaskJuggler
 
     # Return the value and increase the access counter by 1.
     def value
-      @hits += 1
+      if @hits <= 0
+        @hits = 1
+      else
+        @hits += 1
+      end
       @value
     end
 
@@ -77,13 +81,12 @@ class TaskJuggler
     # store nil values!
     def store(value, key)
       @stores += 1
-      # If the cache has reached the specified high water mark, we throw out
-      # old values.
+
       if @entries.size > @highWaterMark
         while @entries.size > @lowWaterMark
           # How many entries do we need to delete to get to the low watermark?
           toDelete = @entries.size - @lowWaterMark
-          @entries.delete_if do |key, e|
+          @entries.delete_if do |foo, e|
             # Hit counts age with every cleanup.
             (e.hits -= 1) < 0 && (toDelete -= 1) >= 0
           end

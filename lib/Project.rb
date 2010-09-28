@@ -200,6 +200,8 @@ class TaskJuggler
               true, false,    true,  nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
               true,  false,   true,  nil ],
+        [ 'todos', 'Todos', TaskListAttribute,
+              false, false,   true,  [] ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'vacations',  'Vacations',   IntervalListAttribute,
@@ -938,19 +940,22 @@ class TaskJuggler
 
     def finishScenario(scIdx)
       Log.startProgressMeter("Checking scenario #{scenario(scIdx).get('name')}")
-      total = @tasks.items
-      i = 0
       @tasks.each do |task|
-        task.finishScheduling(scIdx)
-        i += 1
-        Log.progress((i.to_f / total) * 0.5)
+        # Recursively traverse the top-level tasks to finish all tasks.
+        task.finishScheduling(scIdx) unless task.parent
+      end
+
+      @resources.each do |resource|
+        # Recursively traverse the top-level resources to finish them all.
+        resource.finishScheduling(scIdx) unless resource.parent
       end
 
       i = 0
+      total = @tasks.items
       @tasks.each do |task|
         task.postScheduleCheck(scIdx) if task.parent.nil?
         i += 1
-        Log.progress(0.5 + (i.to_f / total) * 0.5)
+        Log.progress(i.to_f / total)
       end
 
       # This should be really fast so we don't log progess.
