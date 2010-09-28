@@ -1328,6 +1328,10 @@ class TaskJuggler
     def getAllocatedTime(startIdx, endIdx, resource = nil)
       return 0.0 if a('milestone')
 
+      key = [ self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource ].hash
+      allocatedTime = @dCache.load(key)
+      return allocatedTime if allocatedTime
+
       allocatedTime = 0.0
       if @property.container?
         @property.children.each do |task|
@@ -1346,7 +1350,7 @@ class TaskJuggler
           end
         end
       end
-      allocatedTime
+      dCache.store(allocatedTime, key)
     end
 
     # Compute the effective work a _resource_ or all resources do during the
@@ -1355,8 +1359,8 @@ class TaskJuggler
     def getEffectiveWork(startIdx, endIdx, resource = nil)
       return 0.0 if a('milestone')
 
-      workLoad = @dCache.load(self, :TaskScenarioEffectiveWork,
-                              @scenarioIdx, startIdx, endIdx, resource)
+      key = [ self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource ].hash
+      workLoad = @dCache.load(key)
       return workLoad if workLoad
 
       workLoad = 0.0
@@ -1376,8 +1380,7 @@ class TaskJuggler
           end
         end
       end
-      @dCache.store(workLoad, self, :TaskScenarioEffectiveWork,
-                    @scenarioIdx, startIdx, endIdx, resource)
+      @dCache.store(workLoad, key)
     end
 
     # Return a list of intervals that lay within _iv_ and are at least

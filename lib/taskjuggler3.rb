@@ -151,7 +151,6 @@ def main
   exit 0 if @noReports
 
   exit 1 if !tj.generateReports(@outputDir) || tj.errors > 0
-
 end
 
 main()
