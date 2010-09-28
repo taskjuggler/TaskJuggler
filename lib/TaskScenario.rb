@@ -1350,7 +1350,7 @@ class TaskJuggler
           end
         end
       end
-      dCache.store(allocatedTime, key)
+      @dCache.store(allocatedTime, key)
     end
 
     # Compute the effective work a _resource_ or all resources do during the
