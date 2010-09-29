@@ -1296,8 +1296,11 @@ class TaskJuggler
     # the report time frame.
     def query_resources(query)
       list = ''
+      return list unless @property.leaf?
+
       a('assignedresources').each do |resource|
-        if getAllocatedTime(query.startIdx, query.endIdx, resource) > 0.0
+        if resource.allocated?(@scenarioIdx,
+                               Interval.new(query.start, query.end), @property)
           list += ', ' unless list.empty?
           list += "#{resource.name} (#{resource.fullId})"
         end
@@ -1342,7 +1345,8 @@ class TaskJuggler
     # Compute the total time _resource_ or all resources are allocated during
     # interval specified by _startIdx_ and _endIdx_.
     def getAllocatedTime(startIdx, endIdx, resource = nil)
-      return 0.0 if a('milestone')
+      return 0.0 if a('milestone') || startIdx >= endIdx ||
+                    (resource && !a('assignedresources').include?(resource))
 
       key = [ self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource ].hash
       allocatedTime = @dCache.load(key)
