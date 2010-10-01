@@ -1466,12 +1466,14 @@ class TaskJuggler
     # Returns true of the _resource_ is assigned to this task or any of its
     # children.
     def hasResourceAllocated?(interval, resource)
+      return false unless a('assignedresources').include?(resource)
+
       if @property.leaf?
         return resource.allocated?(@scenarioIdx, interval, @property)
       else
         @property.children.each do |t|
-          return true if t.hasResourceAllocated?(@scenarioIdx, interval,
-                                                 resource)
+          return true if t.scn(@scenarioIdx).hasResourceAllocated?(interval,
+                                                                   resource)
         end
       end
       false

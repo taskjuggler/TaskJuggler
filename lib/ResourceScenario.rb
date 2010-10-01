@@ -117,10 +117,10 @@ class TaskJuggler
       end
 
       if (parent = @property.parent)
-        # Add the assigned task to the parent todos list.
-        a('todos').each do |task|
-          unless parent['todos', @scenarioIdx].include?(task)
-            parent['todos', @scenarioIdx] << task
+        # Add the assigned task to the parent duties list.
+        a('duties').each do |task|
+          unless parent['duties', @scenarioIdx].include?(task)
+            parent['duties', @scenarioIdx] << task
           end
         end
       end
@@ -178,9 +178,11 @@ class TaskJuggler
     def book(sbIdx, task, force = false)
       return false if !force && !available?(sbIdx)
 
-      unless a('todos').include?(task)
-        @property['todos', @scenarioIdx] << task
+      # Make sure the task is in the list of duties.
+      unless a('duties').include?(task)
+        @property['duties', @scenarioIdx] << task
       end
+
       #puts "Booking resource #{@property.fullId} at " +
       #     "#{@scoreboard.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
       @scoreboard[sbIdx] = task
@@ -192,11 +194,6 @@ class TaskJuggler
         t = t.parent
       end
       a('limits').inc(@scoreboard.idxToDate(sbIdx)) if a('limits')
-
-      # Make sure the task is in the list of duties.
-      unless a('duties').include?(task)
-        @property['duties', @scenarioIdx] << task
-      end
 
       if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
         @firstBookedSlot = sbIdx
@@ -316,7 +313,7 @@ class TaskJuggler
     def getEffectiveWork(startIdx, endIdx, task = nil)
       # There can't be any effective work if the start is after the end or the
       # todo list doesn't contain the specified task.
-      return 0.0 if startIdx >= endIdx || (task && !a('todos').include?(task))
+      return 0.0 if startIdx >= endIdx || (task && !a('duties').include?(task))
 
       # The unique key we use to address the result in the cache.
       key = [ self, :ResourceScenarioEffectiveWork, startIdx, endIdx,
@@ -452,7 +449,7 @@ class TaskJuggler
     # the period specified with the Interval _iv_. If task is not nil
     # only allocations to this tasks are respected.
     def allocated?(iv, task = nil)
-      return false if @property.leaf? && task && !a('todos').include?(task)
+      return false if task && !a('duties').include?(task)
 
       initScoreboard if @scoreboard.nil?
 
@@ -463,7 +460,7 @@ class TaskJuggler
                                      startIdx < @firstBookedSlot
       endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
                                       endIdx < @lastBookedSlot + 1
-      return false if startIdx > endIdx
+      return false if startIdx >= endIdx
 
       return allocatedSub(startIdx, endIdx, task)
     end

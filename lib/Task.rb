@@ -27,6 +27,10 @@ class TaskJuggler
       end
     end
 
+    def scn(idx)
+      @data[idx]
+    end
+
     def readyForScheduling?(scenarioIdx)
       @data[scenarioIdx].readyForScheduling?
     end

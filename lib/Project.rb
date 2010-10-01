@@ -200,8 +200,6 @@ class TaskJuggler
               true, false,    true,  nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
               true,  false,   true,  nil ],
-        [ 'todos', 'Todos', TaskListAttribute,
-              false, false,   true,  [] ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'vacations',  'Vacations',   IntervalListAttribute,

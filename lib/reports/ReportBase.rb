@@ -95,8 +95,7 @@ class TaskJuggler
         list.delete_if do |resource|
           delete = true
           a('scenarios').each do |scenarioIdx|
-            if task.hasResourceAllocated?(scenarioIdx, iv, resource)
-            #if resource.allocated?(scenarioIdx, iv, task)
+            if task.scn(scenarioIdx).hasResourceAllocated?(iv, resource)
               delete = false
               break;
             end

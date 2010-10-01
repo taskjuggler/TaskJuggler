@@ -119,6 +119,7 @@ class TaskJuggler
     res
   end
 
+  #require 'ruby-prof'
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
@@ -128,7 +129,12 @@ class TaskJuggler
     Log.enter('reports', 'Generating reports ...')
 
     begin
+      #RubyProf.start
       @project.generateReports(@maxCpuCores)
+      #printer = RubyProf::CallTreePrinter.new(RubyProf.stop)
+      #File.open("profile.clt", "w") do |file|
+      #  printer.print(file)
+      #end
     rescue TjException => msg
       if msg.message && !msg.message.empty?
         @messageHandler.critical('generate_reports', msg.message)
