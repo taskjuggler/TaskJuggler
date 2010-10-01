@@ -1483,8 +1483,8 @@ class TaskJuggler
         return resource.allocated?(@scenarioIdx, interval, @property)
       else
         @property.children.each do |t|
-          return true if t.scn(@scenarioIdx).hasResourceAllocated?(interval,
-                                                                   resource)
+          return true if t.hasResourceAllocated?(@scenarioIdx, interval,
+                                                 resource)
         end
       end
       false

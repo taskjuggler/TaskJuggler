@@ -120,6 +120,7 @@ class TaskJuggler
   end
 
   #require 'ruby-prof'
+
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
@@ -131,7 +132,12 @@ class TaskJuggler
     begin
       #RubyProf.start
       @project.generateReports(@maxCpuCores)
-      #printer = RubyProf::CallTreePrinter.new(RubyProf.stop)
+      #profile = RubyProf.stop
+      #printer = RubyProf::GraphHtmlPrinter.new(profile)
+      #File.open("profile.html", "w") do |file|
+      #  printer.print(file)
+      #end
+      #printer = RubyProf::CallTreePrinter.new(profile)
       #File.open("profile.clt", "w") do |file|
       #  printer.print(file)
       #end

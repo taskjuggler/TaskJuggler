@@ -37,8 +37,15 @@ class TaskJuggler
       # subset.
       @scoreboard = nil
 
+      # The index of the earliest booked time slot.
       @firstBookedSlot = nil
+      # Same but for each assigned resource.
+      @firstBookedSlots = {}
+      # The index of the last booked time Slot.
       @lastBookedSlot = nil
+      # Same but for each assigned resource.
+      @lastBookedSlots = {}
+
       @dCache = DataCache.instance
     end
 
@@ -46,7 +53,7 @@ class TaskJuggler
     # initializes variables used during the scheduling process.
     def prepareScheduling
       @property['effort', @scenarioIdx] = 0
-      initScoreboard
+      initScoreboard if @property.leaf?
 
       setDirectReports
     end
@@ -195,11 +202,23 @@ class TaskJuggler
       end
       a('limits').inc(@scoreboard.idxToDate(sbIdx)) if a('limits')
 
+      # Scoreboard iterations are fairly expensive but they are very frequent
+      # operations in later processing. To limit the interations to the
+      # relevant intervals, we store the interval for all bookings and for
+      # each individual task.
       if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
         @firstBookedSlot = sbIdx
       end
       if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
         @lastBookedSlot = sbIdx
+      end
+      if task
+        if @firstBookedSlots[task].nil? || @firstBookedSlots[task] > sbIdx
+          @firstBookedSlots[task] = sbIdx
+        end
+        if @lastBookedSlots[task].nil? || @lastBookedSlots[task] < sbIdx
+          @lastBookedSlots[task] = sbIdx
+        end
       end
       true
     end
@@ -451,15 +470,10 @@ class TaskJuggler
     def allocated?(iv, task = nil)
       return false if task && !a('duties').include?(task)
 
-      initScoreboard if @scoreboard.nil?
+      startIdx = @project.dateToIdx(iv.start, true)
+      endIdx = @project.dateToIdx(iv.end, true)
 
-      startIdx = @scoreboard.dateToIdx(iv.start, true)
-      endIdx = @scoreboard.dateToIdx(iv.end, true)
-
-      startIdx = @firstBookedSlot if @firstBookedSlot &&
-                                     startIdx < @firstBookedSlot
-      endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
-                                      endIdx < @lastBookedSlot + 1
+      startIdx, endIdx = fitIndicies(startIdx, endIdx, task)
       return false if startIdx >= endIdx
 
       return allocatedSub(startIdx, endIdx, task)
@@ -529,12 +543,8 @@ class TaskJuggler
       # If there is no scoreboard, we don't have any allocations.
       return 0 unless @scoreboard
 
-      # To speedup the counting we start with the first booked slot and end
-      # with the last booked slot.
-      startIdx = @firstBookedSlot if @firstBookedSlot &&
-                                     startIdx < @firstBookedSlot
-      endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
-                                      endIdx > @lastBookedSlot + 1
+      startIdx, endIdx = fitIndicies(startIdx, endIdx, task)
+      return 0 if startIdx >= endIdx
 
       bookedSlots = 0
       @scoreboard.each(startIdx, endIdx) do |slot|
@@ -548,7 +558,9 @@ class TaskJuggler
 
     # Count the free slots between the start and end index.
     def getFreeSlots(startIdx, endIdx)
-      initScoreboard if @scoreboard.nil?
+      return 0 if startIdx >= endIdx
+
+      initScoreboard unless @scoreboard
 
       freeSlots = 0
       startIdx.upto(endIdx - 1) do |idx|
@@ -561,7 +573,9 @@ class TaskJuggler
     # Count the regular work time slots between the start and end index that
     # have been blocked by a vacation.
     def getVacationSlots(startIdx, endIdx)
-      initScoreboard if @scoreboard.nil?
+      return 0 if startIdx >= endIdx
+
+      initScoreboard unless @scoreboard
 
       vacationSlots = 0
       startIdx.upto(endIdx - 1) do |idx|
@@ -636,6 +650,24 @@ class TaskJuggler
       end
     end
 
+    # Limit the _startIdx_ and _endIdx_ to the actually assigned interval.
+    # If _task_ is provided, fit it for the bookings of this particular task.
+    def fitIndicies(startIdx, endIdx, task = nil)
+      if task
+        startIdx = @firstBookedSlots[task] if @firstBookedSlots[task] &&
+                                              startIdx < @firstBookedSlots[task]
+        endIdx = @lastBookedSlots[task] + 1 if @lastBookedSlots[task] &&
+                                               endIdx >
+                                               @lastBookedSlots[task] + 1
+      else
+        startIdx = @firstBookedSlot if @firstBookedSlot &&
+                                       startIdx < @firstBookedSlot
+        endIdx = @lastBookedSlot + 1 if @lastBookedSlot &&
+                                        endIdx > @lastBookedSlot + 1
+      end
+      [ startIdx, endIdx ]
+    end
+
     def setReports_i(reports)
       if reports.include?(@property)
         # A manager must never show up in the list of his/her own reports.
@@ -671,7 +703,10 @@ class TaskJuggler
                                                task)
         end
       else
-        return false unless a('duties').include?(task)
+        return false unless @scoreboard && a('duties').include?(task)
+
+        startIdx, endIdx = fitIndicies(startIdx, endIdx, task)
+        return false if startIdx >= endIdx
 
         startIdx.upto(endIdx - 1) do |idx|
           return true if @scoreboard[idx] == task
