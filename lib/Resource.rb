@@ -56,7 +56,7 @@ class TaskJuggler
       # Sort all entries in buckets by their alert level.
       numberOfLevels = project['alertLevels'].length
       listByLevel = []
-      0.upto(numberOfLevels - 1) { |i| listByLevel[i] = [] }
+      numberOfLevels.times { |i| listByLevel[i] = [] }
       list.each do |entry|
         listByLevel[entry.alertLevel] << entry
       end

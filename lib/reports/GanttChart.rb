@@ -240,16 +240,30 @@ class TaskJuggler
         @height = line.y + line.height if line.y + line.height > @height
       end
 
+      # To layout the dependency lines, we use a GanttRouter. We only provide
+      # the start and end coordinates of each line and it will do the layout
+      # and routing.
       @router = GanttRouter.new(@width, @height)
 
+      # We don't want horizontal lines to cross the task bars. So we block
+      # these chart zones. Milestones should not be crossed in any direction.
       @lines.each do |line|
         line.addBlockedZones(@router)
       end
 
+      # Also protect the current date line from other vertical lines.
       @router.addZone(@header.nowLineX - 1, 0, 3, @height - 1, false, true)
 
+      # Generate the dependency arrows for all visible tasks.
       @tasks.each do |task, lines|
-        generateDepArrows(task, lines)
+        generateDepLines(task, lines)
+      end
+
+      # Make sure we have exactly one arrow head for each line end point even
+      # if the point is used by multiple lines.
+      @depArrows.each do |line|
+        endPoint = line.last
+        @arrowHeads << endPoint unless @arrowHeads.include?(endPoint)
       end
     end
 
@@ -257,18 +271,18 @@ class TaskJuggler
     # for a specific _task_. _lines_ is a list of GanttLines that the tasks are
     # displayed on. Reports with multiple scenarios have multiple lines per
     # task.
-    def generateDepArrows(task, lines)
+    def generateDepLines(task, lines)
       # Since we need the line and the index we use an index iterator.
       lines.length.times do |lineIndex|
         line = lines[lineIndex]
         scenarioIdx = line.query.scenarioIdx
 
         # Generate the dependencies on the start of the task.
-        collectAndSortArrows('startsuccs', task, scenarioIdx, lineIndex,
+        generateTaskDepLines('startsuccs', task, scenarioIdx, lineIndex,
                              *line.getTask.startDepLineStart)
 
         # Generate the dependencies on the end of the task.
-        collectAndSortArrows('endsuccs', task, scenarioIdx, lineIndex,
+        generateTaskDepLines('endsuccs', task, scenarioIdx, lineIndex,
                              *line.getTask.endDepLineStart)
       end
     end
@@ -278,11 +292,9 @@ class TaskJuggler
     # and _startY_ are the graphic coordinates for the begin of the arrow
     # line. _task_ references the Task in question and _scenarioIdx_ the
     # scenario. _lineIndex_ specifies the line number in the chart.
-    def collectAndSortArrows(kind, task, scenarioIdx, lineIndex, startX, startY)
-      # We need to sort the arrows. This is an Array that holds 6 values for
-      # each entry: The x and y coordinates for start and end points, the
-      # sinus value of the angle between a vertical and the line specified by
-      # the points and the length of the line.
+    def generateTaskDepLines(kind, task, scenarioIdx, lineIndex, startX, startY)
+      # This is an Array that holds 4 values for
+      # each entry: The x and y coordinates for start and end points.
       touples = []
       task[kind, scenarioIdx].each do |t, onEnd|
         # Skip inherited dependencies and tasks that are not included in the
@@ -294,37 +306,9 @@ class TaskJuggler
         end
         endX, endY = @tasks[t][lineIndex].getTask.send(
           onEnd ? :endDepLineEnd : :startDepLineEnd)
-        # To make sure that we minimize the crossings of arrows that
-        # originate from the same position, we sort the arrows by the
-        # smallest angle between the vertical line through the task end
-        # and the line between the start and end of the arrow.
-        oppLeg = endX - startX
-        adjLeg = (startY - endY).abs
-        hypothenuse = Math.sqrt(adjLeg ** 2 + oppLeg ** 2)
-        # We can now calculate the sinus values of the angle between the
-        # vertical and a line through the coordinates.
-        touples << [ startX, startY, endX, endY,
-                     (oppLeg / hypothenuse), hypothenuse ]
+        touples << [ startX, startY, endX, endY ]
       end
-      # We sort the arrows from small to a large angle. In case the angle is
-      # identical, we use the length of the line as second criteria.
-      touples.sort! { |t1, t2| t1[4] == t2[4] ? t1[5] <=> t2[5] :
-                                                t1[4] <=> t2[4] }
-      touples.each do |t|
-        routeArrow(*t[0, 4])
-      end
-    end
-
-    # Route the dependency lines from the start to the end point.
-    def routeArrow(startX, startY, endX, endY)
-      @depArrows << @router.route([startX, startY], [endX, endY])
-
-      # It's enough to have only a single arrow drawn at the end point even if
-      # it's the destination of multiple lines.
-      @arrowHeads.each do |x, y|
-        return if x == endX && y == endY
-      end
-      @arrowHeads << [ endX, endY ]
+      @depArrows += @router.routeLines(touples) unless touples.empty?()
     end
 
   end

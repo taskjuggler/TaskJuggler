@@ -37,7 +37,7 @@ class TaskJuggler
         end
       elsif args.length == 5
         # The argument is a list of values.
-        0.upto(4) do |i|
+        args.length.times do |i|
           instance_variable_set(iVars[i], args[i])
         end
       else

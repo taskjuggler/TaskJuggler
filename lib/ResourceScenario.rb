@@ -99,7 +99,6 @@ class TaskJuggler
       end
     end
 
-
     def preScheduleCheck
       a('managers').each do |manager|
         unless manager.leaf?

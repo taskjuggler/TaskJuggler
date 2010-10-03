@@ -198,7 +198,7 @@ class TaskJuggler
     # _url2_.
     def normalizeURL(url1, url2)
       cut = 0
-      0.upto(url1.length - 1) do |i|
+      url1.length.times do |i|
         return url1[cut, url1.length - cut] if url1[i] != url2[i]
         cut = i + 1 if url1[i] == ?/
       end

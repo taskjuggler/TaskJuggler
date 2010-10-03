@@ -1,0 +1,57 @@
+project test "HTML Task Report Performance Test" "1.0" 2007-08-25 +3m
+
+macro leaftask [
+  task leaf${1} "Leaftask ${1}" {
+    duration 1d
+    depends ${2}
+  }
+]
+
+macro subtasks [
+  task s${1} "Subtasks ${1}" {
+    ${leaftask "0" "start"}
+    ${leaftask "1" "!leaf0"}
+    ${leaftask "2" "!leaf1, !leaf0"}
+    ${leaftask "3" "!leaf0, !leaf1, !leaf2"}
+    ${leaftask "4" "!leaf3"}
+    ${leaftask "5" "start" }
+    ${leaftask "6" "!leaf5"}
+    ${leaftask "7" "!leaf5, !leaf6"}
+    ${leaftask "8" "!leaf5, !leaf6, !leaf7"}
+    ${leaftask "9" "!leaf8"}
+  }
+]
+
+macro tasktree [
+  task t${1} "Task ${1}" {
+    ${subtasks "0"}
+    ${subtasks "1"}
+    ${subtasks "2"}
+    ${subtasks "3"}
+    ${subtasks "4"}
+    ${subtasks "5"}
+    ${subtasks "6"}
+    ${subtasks "7"}
+    ${subtasks "8"}
+    ${subtasks "9"}
+  }
+]
+
+task start "Start"
+${tasktree "0"}
+${tasktree "1"}
+${tasktree "2"}
+${tasktree "3"}
+${tasktree "4"}
+${tasktree "5"}
+${tasktree "6"}
+${tasktree "7"}
+${tasktree "8"}
+${tasktree "9"}
+${tasktree "10"}
+
+taskreport "gantt" {
+  formats html
+  columns no, name, start, end, chart
+}
+
