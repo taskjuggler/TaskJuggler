@@ -462,7 +462,8 @@ class TaskJuggler
                   "#{dependency.gapDuration / (60 * 60 * 24)} days after " +
                   "#{dependency.onEnd ? 'end' : 'start'} of task " +
                   "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ALAP (finish-to-start).")
+                  "because the task is scheduled ALAP (finish-to-start) or " +
+                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
           end
         end
         if dependency.gapLength > 0
@@ -473,7 +474,8 @@ class TaskJuggler
                   "working days after " +
                   "#{dependency.onEnd ? 'end' : 'start'} of task " +
                   "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ALAP (finish-to-start).")
+                  "because the task is scheduled ALAP (finish-to-start) or " +
+                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
           end
         end
       end
@@ -495,7 +497,8 @@ class TaskJuggler
                   "#{dependency.gapDuration / (60 * 60 * 24)} days before " +
                   "#{dependency.onEnd ? 'end' : 'start'} of task " +
                   "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ASAP (start-to-finish).")
+                  "because the task is scheduled ASAP (start-to-finish) or " +
+                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
           end
         end
         if dependency.gapLength > 0
@@ -506,7 +509,8 @@ class TaskJuggler
                   "working days before " +
                   "#{dependency.onEnd ? 'end' : 'start'} of task " +
                   "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ASAP (start-to-finish).")
+                  "because the task is scheduled ASAP (start-to-finish) or " +
+                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
           end
         end
       end
