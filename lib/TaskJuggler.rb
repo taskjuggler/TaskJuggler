@@ -125,6 +125,7 @@ class TaskJuggler
   # this method can be called. It returns true if no error occured, false
   # otherwise.
   def generateReports(outputDir = './')
+    @project.checkReports
     outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
     @project.outputDir = outputDir
     Log.enter('reports', 'Generating reports ...')

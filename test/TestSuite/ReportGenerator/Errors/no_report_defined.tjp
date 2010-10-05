@@ -1,0 +1,7 @@
+project "test" 2010-05-23 +1w
+
+task "foo"
+
+# MARK: warning 0 no_report_defined
+# MARK: warning 0 all_formats_empty
+

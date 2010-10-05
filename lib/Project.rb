@@ -619,6 +619,24 @@ class TaskJuggler
       true
     end
 
+    # Make sure that we have a least one report defined that has an output
+    # format.
+    def checkReports
+      if @reports.empty?
+        @messageHandler.warning('no_report_defined',
+                                "This project has no reports defined. " +
+                                "No output data will be generated.")
+      end
+
+      @reports.each do |report|
+        return unless report.get('formats').empty?
+      end
+
+      @messageHandler.warning('all_formats_empty',
+                              "None of the reports has a 'formats' attribute. " +
+                              "No output data will be generated.")
+    end
+
     # Call this function to generate the reports based on the scheduling result.
     # This function may only be called after Project#schedule has been called.
     def generateReports(maxCpuCores)
@@ -669,6 +687,12 @@ class TaskJuggler
           error('unknown_report_id',
                 "Request to generate unknown report #{id}")
         end
+        if report.get('formats').empty?
+          @messageHandler.error('formats_empty',
+           "The report #{report.fullId} has no 'formats' attribute. " +
+           "No output data will be generated.")
+        end
+
         Log.startProgressMeter("Report #{report.name}")
         @reportContexts.push(context = ReportContext.new(self, report))
 
