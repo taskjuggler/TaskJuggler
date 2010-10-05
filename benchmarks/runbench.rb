@@ -19,10 +19,9 @@ Benchmark.bm(25) do |x|
   Dir.glob('*.tjp').each do |f|
     x.report(f) do
       tj = TaskJuggler.new(true)
-      tj.maxCpuCores = 4
       tj.parse([ f ])
       tj.schedule
-      tj.generateReports
+      tj.generateReports unless tj.project.reports.empty?
     end
   end
   Dir.glob('*.html').each { |f| File.delete(f) }

@@ -236,7 +236,8 @@ class TaskJuggler
         allTokensOptional = true
         transitions = { }
         pat.each do |type, name|
-          if type == :reference
+          case type
+          when :reference
             unless @rules.has_key?(name)
               raise "Fatal Error: Unknown reference to '#{name}' in pattern " +
                     "#{pat[0][0]}:#{pat[0][1]} of rule #{rule.name}"
@@ -250,10 +251,11 @@ class TaskJuggler
             res.each do |pat_i|
               pat_i.each { |tok, r| transitions[tok] = r }
             end
-          elsif type == :literal || type == :variable
+          when :literal, :variable
             transitions[[ type, name ]] = rule
             allTokensOptional = false
-          elsif type == :eof
+          when :eof
+            # Nothing to do here.
           else
             raise 'Fatal Error: Illegal token type specifier used for token' +
                   ": #{type}:#{name}"
@@ -534,23 +536,24 @@ class TaskJuggler
       # whenever an identifier is returned we have to see if we have a
       # matching keyword first. If none is found, then look for normal
       # identifiers.
-      if token[0] == :ID
-        if (patIdx = rule.matchingPatternIndex([ :literal, token[1] ])).nil?
-          patIdx = rule.matchingPatternIndex([ :variable, :ID ])
+      case token[0]
+      when :ID
+        if (pattern = rule.matchingPattern([ :literal, token[1] ])).nil?
+          pattern = rule.matchingPattern([ :variable, :ID ])
         end
-      elsif token[0] == :LITERAL
-        patIdx = rule.matchingPatternIndex([ :literal, token[1] ])
-      elsif token[0] == false
-        patIdx = rule.matchingPatternIndex([ :eof, '<END>' ])
+      when :LITERAL
+        pattern = rule.matchingPattern([ :literal, token[1] ])
+      when false
+        pattern = rule.matchingPattern([ :eof, '<END>' ])
       else
-        patIdx = rule.matchingPatternIndex([ :variable, token[0] ])
+        pattern = rule.matchingPattern([ :variable, token[0] ])
       end
 
       # If no matching pattern is found for the token we have to check if the
       # rule is optional or we are in repeat mode. If this is the case, return
       # the token back to the scanner. Otherwise, we have found a token we
       # cannot handle at this point.
-      if patIdx.nil?
+      unless pattern
         # Append the list of expected tokens to the @@expectedToken array.
         # This may be used in a later rule to provide more details when an
         # error occured.
@@ -575,7 +578,7 @@ class TaskJuggler
         return nil
       end
 
-      rule.pattern(patIdx)
+      pattern
     end
 
     # Handle the elements that don't trigger a recursion.

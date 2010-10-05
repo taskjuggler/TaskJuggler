@@ -14,6 +14,8 @@ require 'drb'
 require 'Project'
 require 'MessageHandler'
 require 'Log'
+# Only needed during profiling.
+#require 'ruby-prof'
 
 # The TaskJuggler class models the object that provides access to the
 # fundamental features of the TaskJuggler software. It can read project
@@ -41,6 +43,7 @@ class TaskJuggler
     master = true
     @project = nil
 
+    #RubyProf.start
     @parser = ProjectFileParser.new(@messageHandler)
     files.each do |file|
       begin
@@ -71,6 +74,15 @@ class TaskJuggler
       @parser.close
     end
 
+    #profile = RubyProf.stop
+    #printer = RubyProf::GraphHtmlPrinter.new(profile)
+    #File.open("profile.html", "w") do |file|
+    #  printer.print(file)
+    #end
+    #printer = RubyProf::CallTreePrinter.new(profile)
+    #File.open("profile.clt", "w") do |file|
+    #  printer.print(file)
+    #end
     # For the report server mode we may need to keep the parser. Otherwise,
     # destroy it.
     @parser = nil unless keepParser
@@ -118,8 +130,6 @@ class TaskJuggler
     Log.exit('scheduler')
     res
   end
-
-  #require 'ruby-prof'
 
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false

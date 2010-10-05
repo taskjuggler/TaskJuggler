@@ -34,6 +34,9 @@ class TaskJuggler::TextParser
       @repeatable = false
       @optional = false
       @transitions = []
+      # We frequently need to find a certain transition by the token hash.
+      # This hash is used to cache these translations.
+      @patternHash = {}
       # In case a rule is optional or any of the patterns is fully optional,
       # this variable is set to true.
       @transitiveOptional = nil
@@ -119,10 +122,19 @@ class TaskJuggler::TextParser
 
     # Return the pattern of this rule that matches the given +token+. If no
     # pattern matches, return nil.
-    def matchingPatternIndex(token)
+    def matchingPattern(token)
+      tokenHash = token.hash
+      # If we have looked the value up already, it's in the cache.
+      if (p = @patternHash[tokenHash])
+        return p
+      end
+
+      # Otherwise, we have to compute and cache it.
       i = 0
       @transitions.each do |t|
-        return i if t.has_key?(token)
+        if t.has_key?(token)
+          return @patternHash[tokenHash] = @patterns[i]
+        end
         i += 1
       end
 
