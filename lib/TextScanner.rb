@@ -369,7 +369,7 @@ class TaskJuggler
           # We are done with the top-level file now.
           @cf = @tokenBuffer = nil
           @finishLastFile = true
-          return [ '.', '<END>', @startOfToken ]
+          return [ :eof, '<END>', @startOfToken ]
         else
           # Continue parsing the file that included the current file.
           @cf, tokenBuffer = @fileStack.last
@@ -391,7 +391,7 @@ class TaskJuggler
                 # We've found the end of an input file. Return a special token
                 # that describes the end of a file.
                 @finishLastFile = true
-                return [ '.', '<END>', @startOfToken ]
+                return [ :eof, '<END>', @startOfToken ]
               end
 
               raise "#{re} matches empty string" if match.empty?
@@ -401,7 +401,6 @@ class TaskJuggler
 
               break if type.nil? # Ignore certain tokens with nil type.
 
-              #puts "type: #{type}  match: [#{match}]"
               return [ type, match, @startOfToken ]
             end
           end

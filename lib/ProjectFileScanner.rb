@@ -71,25 +71,25 @@ class TaskJuggler
         [ nil, /.*\n/, :macroCall, method('midMacroCall') ],
 
         # An ID with a colon suffix: foo:
-        [ 'ID_WITH_COLON', /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
+        [ :ID_WITH_COLON, /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
 
         # An absolute ID: a.b.c
-        [ 'ABSOLUTE_ID', /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
+        [ :ABSOLUTE_ID, /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
 
         # A normal ID: bar
-        [ 'ID', /[a-zA-Z_]\w*/ ],
+        [ :ID, /[a-zA-Z_]\w*/ ],
 
         # A date
-        [ 'DATE', /\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?/, :tjp, method('to_date') ],
+        [ :DATE, /\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?/, :tjp, method('to_date') ],
 
         # A time of day
-        [ 'TIME', /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
+        [ :TIME, /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
 
         # A floating point number (e. g. 3.143)
-        [ 'FLOAT', /\d*\.\d+/, :tjp, method('to_f') ],
+        [ :FLOAT, /\d*\.\d+/, :tjp, method('to_f') ],
 
         # An integer number
-        [ 'INTEGER', /\d+/, :tjp, method('to_i') ],
+        [ :INTEGER, /\d+/, :tjp, method('to_i') ],
 
         # Multi line string enclosed with double quotes. The string may
         # contain double quotes prefixed by a backslash. The first rule
@@ -98,14 +98,14 @@ class TaskJuggler
         # Any line not containing the start or end.
         [ 'nil', /^(\\"|[^"])*\n/, :dqString, method('midStringDQ') ],
         # The end of the string.
-        [ 'STRING', /(\\"|[^"])*"/, :dqString, method('endStringDQ') ],
+        [ :STRING, /(\\"|[^"])*"/, :dqString, method('endStringDQ') ],
 
         # Multi line string enclosed with single quotes.
         [ 'nil', /'(\\'|[^'])*/, :tjp, method('startStringSQ') ],
         # Any line not containing the start or end.
         [ 'nil', /^(\\'|[^'])*\n/, :sqString, method('midStringSQ') ],
         # The end of the string.
-        [ 'STRING', /(\\'|[^'])*'/, :sqString, method('endStringSQ') ],
+        [ :STRING, /(\\'|[^'])*'/, :sqString, method('endStringSQ') ],
 
         # Scizzors marked string -8<- ... ->8-: The opening mark must be the
         # last thing in the line. The indentation of the first line after the
@@ -115,8 +115,8 @@ class TaskJuggler
         # Since the first line can be the last line (empty string case), we
         # need to detect the end in szrString1 and szrString mode. The
         # patterns switch the scanner back to tjp mode.
-        [ 'STRING', /\s*->8-/, :szrString1, method('endStringSZR') ],
-        [ 'STRING', /\s*->8-/, :szrString, method('endStringSZR') ],
+        [ :STRING, /\s*->8-/, :szrString1, method('endStringSZR') ],
+        [ :STRING, /\s*->8-/, :szrString, method('endStringSZR') ],
         # This rule handles macros inside of sizzors strings.
         [ nil, /.*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           [ :szrString, :szrString1 ], method('startMacroCall') ],
@@ -125,24 +125,24 @@ class TaskJuggler
         [ 'nil', /.*\n/, :szrString, method('midStringSZR') ],
 
         # Single line macro definition
-        [ 'MACRO', /\[.*\]\n/, :tjp, method('chop2nl') ],
+        [ :MACRO, /\[.*\]\n/, :tjp, method('chop2nl') ],
 
         # Multi line macro definition: The pattern switches the scanner into
         # macroDef mode.
         [ nil, /\[.*\n/, :tjp, method('startMacroDef') ],
         # The end of the macro is marked by a ']' that is immediately followed
         # by a line break. It switches the scanner back to tjp mode.
-        [ 'MACRO', /.*\]\n/, :macroDef, method('endMacroDef') ],
+        [ :MACRO, /.*\]\n/, :macroDef, method('endMacroDef') ],
         # Any line not containing the start or end.
         [ nil, /.*\n/, :macroDef, method('midMacroDef') ],
 
         # Some multi-char literals.
-        [ 'LITERAL', /<=?/ ],
-        [ 'LITERAL', />=?/ ],
-        [ 'LITERAL', /!=?/ ],
+        [ :LITERAL, /<=?/ ],
+        [ :LITERAL, />=?/ ],
+        [ :LITERAL, /!=?/ ],
 
         # Everything else is returned as a single-char literal.
-        [ 'LITERAL', /./ ]
+        [ :LITERAL, /./ ]
       ]
 
       super(masterFile, messageHandler, tokenPatterns, :tjp)
@@ -229,7 +229,7 @@ class TaskJuggler
       self.mode = :tjp
       # Remove the trailing " and remove the backslashes from escaped ".
       @string += match[0..-2].gsub(/\\"/, '"')
-      [ 'STRING', @string ]
+      [ :STRING, @string ]
     end
 
     def startStringSQ(type, match)
@@ -249,7 +249,7 @@ class TaskJuggler
       self.mode = :tjp
       # Remove the trailing ' and remove the backslashes from escaped '.
       @string += match[0..-2].gsub(/\\'/, "'")
-      [ 'STRING', @string ]
+      [ :STRING, @string ]
     end
 
     def startStringSZR(type, match)
@@ -287,7 +287,7 @@ class TaskJuggler
 
     def endStringSZR(type, match)
       self.mode = :tjp
-      [ 'STRING', @string ]
+      [ :STRING, @string ]
     end
 
     def startMacroDef(type, match)
@@ -306,7 +306,7 @@ class TaskJuggler
       self.mode = :tjp
       # Remove "]\n"
       @macroDef += match[0..-3]
-      [ 'MACRO', @macroDef ]
+      [ :MACRO, @macroDef ]
     end
 
     def startMacroCall(type, match)

@@ -742,9 +742,11 @@ EOT
       return if @val[1].empty?
 
       rtTokenSetMore =
-        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC PRE HREF HREFEND
-            REF REFEND HLINE TITLE2 TITLE3 TITLE4 TITLE2END TITLE3END TITLE4END
-            BULLET1 BULLET2 BULLET3 BULLET4 NUMBER1 NUMBER2 NUMBER3 NUMBER4 )
+        [ :LINEBREAK, :SPACE, :WORD, :BOLD, :ITALIC, :CODE, :BOLDITALIC,
+          :PRE, :HREF, :HREFEND, :REF, :REFEND, :HLINE, :TITLE2, :TITLE3,
+          :TITLE4, :TITLE2END, :TITLE3END, :TITLE4END,
+          :BULLET1, :BULLET2, :BULLET3, :BULLET4, :NUMBER1, :NUMBER2, :NUMBER3,
+          :NUMBER4 ]
       if @val[1] == "Some more details\n"
         error('ts_default_details',
               "'Some more details' is not a valid value",
@@ -1012,12 +1014,12 @@ EOT
     pattern(%w( !extendPropertyId ), lambda {
       case @val[0]
       when 'task'
-        @ruleToExtend = @rules['taskAttributes']
-        @ruleToExtendWithScenario = @rules['taskScenarioAttributes']
+        @ruleToExtend = @rules[:taskAttributes]
+        @ruleToExtendWithScenario = @rules[:taskScenarioAttributes]
         @propertySet = @project.tasks
       when 'resource'
-        @ruleToExtend = @rules['resourceAttributes']
-        @ruleToExtendWithScenario = @rules['resourceScenarioAttributes']
+        @ruleToExtend = @rules[:resourceAttributes]
+        @ruleToExtendWithScenario = @rules[:resourceScenarioAttributes]
         @propertySet = @project.resources
       end
     })
@@ -4195,7 +4197,8 @@ EOT
                 @sourceFileInfo[1])
       end
       rtTokenSetIntro =
-        %w( LINEBREAK SPACE WORD BOLD ITALIC CODE BOLDITALIC HREF HREFEND )
+        [ :LINEBREAK, :SPACE, :WORD, :BOLD, :ITALIC, :CODE, :BOLDITALIC,
+          :HREF, :HREFEND ]
       @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
     })
     doc('summary', <<'EOT'

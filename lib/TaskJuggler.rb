@@ -54,7 +54,7 @@ class TaskJuggler
       end
       if master
         # The first file is considered the master file.
-        if (@project = @parser.parse('project')) == false
+        if (@project = @parser.parse(:project)) == false
           Log.exit('parser')
           return false
         end
@@ -62,7 +62,7 @@ class TaskJuggler
       else
         # All other files.
         @parser.setGlobalMacros
-        if @parser.parse('properties') == false
+        if @parser.parse(:properties) == false
           Log.exit('parser')
           return false
         end
@@ -199,7 +199,7 @@ class TaskJuggler
       # Make sure we don't use data from old time sheets or Journal entries.
       @project.timeSheets.clear
       @project['journal'] = Journal.new
-      return false unless (ts = parseFile(fileName, 'timeSheetFile'))
+      return false unless (ts = parseFile(fileName, :timeSheetFile))
       return false unless @project.checkTimeSheets
       queryAttrs = { 'project' => @project,
                      'property' => ts.resource,
@@ -228,7 +228,7 @@ class TaskJuggler
   def checkStatusSheet(fileName)
     begin
       Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
-      return false unless (ss = parseFile(fileName, 'statusSheetFile'))
+      return false unless (ss = parseFile(fileName, :statusSheetFile))
       queryAttrs = { 'project' => @project,
                      'property' => ss[0],
                      'scopeProperty' => nil,

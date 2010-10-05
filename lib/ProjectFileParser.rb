@@ -39,8 +39,8 @@ class TaskJuggler
 
       # Define the token types that the ProjectFileScanner may return for
       # variable elements.
-      @variables = %w( INTEGER FLOAT DATE TIME STRING LITERAL ID ID_WITH_COLON
-                       ABSOLUTE_ID MACRO )
+      @variables = [ :INTEGER, :FLOAT, :DATE, :TIME, :STRING, :LITERAL,
+                     :ID, :ID_WITH_COLON, :ABSOLUTE_ID, :MACRO ]
 
       initRules
 
@@ -196,7 +196,7 @@ class TaskJuggler
       # Add the new user-defined attribute as reportable attribute to the parser
       # rule.
       oldCurrentRule = @cr
-      @cr = @rules['reportableAttributes']
+      @cr = @rules[:reportableAttributes]
       singlePattern('_' + @val[1])
       descr(@val[2])
       @cr = oldCurrentRule
@@ -357,7 +357,8 @@ class TaskJuggler
     # token.
     def descr(text)
       if @cr.patterns[-1].length != 1 ||
-         (@cr.patterns[-1][0][0] != ?_ && @cr.patterns[-1][0][0] != ?$)
+         (@cr.patterns[-1][0][0] != :literal &&
+          @cr.patterns[-1][0][0] != :variable)
         raise 'descr() may only be used for patterns with terminal tokens.'
       end
       arg(0, nil, text)

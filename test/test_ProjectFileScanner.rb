@@ -44,21 +44,21 @@ comment */
 EOT
 
     ref = [
-      ['ID', 'Hello', 1],
-      ['ID', 'world', 1],
-      ['INTEGER', 1, 1],
-      ['FLOAT', 2.0, 2],
-      ['DATE', TjTime.new('2008-12-14'), 3],
-      ['ID_WITH_COLON', 'foo', 5],
-      ['ABSOLUTE_ID', 'a.b.c', 6],
-      ['LITERAL', '-', 6],
-      ['LITERAL', '$', 6],
-      ['MACRO', 'A Macro', 6],
-      ['TIME', time(15, 23), 7],
-      ['STRING', 'A string', 7],
-      ['STRING', "It's a string", 8],
-      ['STRING', "A\nmult\"i line\nstring", 9],
-      ['.', '<END>', 14 ]
+      [:ID, 'Hello', 1],
+      [:ID, 'world', 1],
+      [:INTEGER, 1, 1],
+      [:FLOAT, 2.0, 2],
+      [:DATE, TjTime.new('2008-12-14'), 3],
+      [:ID_WITH_COLON, 'foo', 5],
+      [:ABSOLUTE_ID, 'a.b.c', 6],
+      [:LITERAL, '-', 6],
+      [:LITERAL, '$', 6],
+      [:MACRO, 'A Macro', 6],
+      [:TIME, time(15, 23), 7],
+      [:STRING, 'A string', 7],
+      [:STRING, "It's a string", 8],
+      [:STRING, "A\nmult\"i line\nstring", 9],
+      [:eof, '<END>', 14 ]
     ]
 
     check(text, ref)
@@ -76,14 +76,14 @@ EOT
     ]
 
     ref = [
-      ['ID', 'This', 1],
-      ['ID', 'great', 1],
-      ['ID', 'software', 1],
-      ['ID', 'macro', 2],
-      ['ID', 'with', 2],
-      ['ID', 'arg1', 2],
-      ['ID', 'argument', 2],
-      ['.', '<END>', 3]
+      [:ID, 'This', 1],
+      [:ID, 'great', 1],
+      [:ID, 'software', 1],
+      [:ID, 'macro', 2],
+      [:ID, 'with', 2],
+      [:ID, 'arg1', 2],
+      [:ID, 'argument', 2],
+      [:eof, '<END>', 3]
     ]
 
     check(text, ref, macros)
@@ -99,13 +99,13 @@ EOT
 24:00
 EOT
     ref = [
-      ['TIME', time(0, 0), 1],
-      ['TIME', time(0, 0), 2],
-      ['TIME', time(1, 0), 3],
-      ['TIME', time(11, 59), 4],
-      ['TIME', time(12, 1), 5],
-      ['TIME', time(24, 0), 6],
-      ['.', '<END>', 7]
+      [:TIME, time(0, 0), 1],
+      [:TIME, time(0, 0), 2],
+      [:TIME, time(1, 0), 3],
+      [:TIME, time(11, 59), 4],
+      [:TIME, time(12, 1), 5],
+      [:TIME, time(24, 0), 6],
+      [:eof, '<END>', 7]
     ]
 
     check(text, ref)
@@ -118,10 +118,10 @@ EOT
 2010-08-11-23:10
 EOT
     ref = [
-      ['DATE', TjTime.new('1970-01-01'), 1],
-      ['DATE', TjTime.new('2035-12-31-23:59:59'), 2],
-      ['DATE', TjTime.new('2010-08-11-23:10'), 3],
-      ['.', '<END>', 4]
+      [:DATE, TjTime.new('1970-01-01'), 1],
+      [:DATE, TjTime.new('2035-12-31-23:59:59'), 2],
+      [:DATE, TjTime.new('2010-08-11-23:10'), 3],
+      [:eof, '<END>', 4]
     ]
 
     check(text, ref)
@@ -144,13 +144,13 @@ EOT
 EOT
 
     ref = [
-      [ 'MACRO', ' foo ', 1 ],
-      [ 'MACRO', "\n      bar ", 2 ],
-      [ 'MACRO', " foo\n    ", 4 ],
-      [ 'MACRO', "\n    bar\n    ", 6 ],
-      [ 'MACRO', '', 9 ],
-      [ 'MACRO', "\n    ", 10 ],
-      [ '.', '<END>', 13 ]
+      [ :MACRO, ' foo ', 1 ],
+      [ :MACRO, "\n      bar ", 2 ],
+      [ :MACRO, " foo\n    ", 4 ],
+      [ :MACRO, "\n    bar\n    ", 6 ],
+      [ :MACRO, '', 9 ],
+      [ :MACRO, "\n    ", 10 ],
+      [ :eof, '<END>', 13 ]
     ]
 
     check(text, ref)
@@ -162,7 +162,7 @@ EOT
       [ 'foo', 'hello' ]
     ]
     ref = [
-      [ 'ID', 'hello', 1 ]
+      [ :ID, 'hello', 1 ]
     ]
 
     check(text, ref, macros)

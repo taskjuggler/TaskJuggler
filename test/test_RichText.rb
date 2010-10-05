@@ -47,10 +47,10 @@ class TestRichText < Test::Unit::TestCase
 
     assert_outputs(inp, tagged, str, html)
 
-    assert_equal(true, newRichText(inp).empty?)
-    assert_equal(true, newRichText("\n").empty?)
-    assert_equal(true, newRichText("\n \n").empty?)
-    assert_equal(false, newRichText("foo").empty?)
+    assert_equal(true, newRichText(inp).empty?, 'Empty string')
+    assert_equal(true, newRichText("\n").empty?, '\n')
+    assert_equal(true, newRichText("\n \n").empty?, '\n \n')
+    assert_equal(false, newRichText("foo").empty?, 'foo')
   end
 
   def test_one_word

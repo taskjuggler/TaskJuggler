@@ -203,10 +203,9 @@ class TaskJuggler
 
       # If a token of the pattern is a reference, we recursively
       # follow the reference to the next pattern.
-      pattern.each do |token|
-        if token[0] == ?!
-          token = token.slice(1, token.length - 1)
-          rule = @parser.rules[token]
+      pattern.each do |type, name|
+        if type == :reference
+          rule = @parser.rules[name]
           # Rules with multiple patterns won't lead to attributes.
           next if rule.patterns.length > 1
 

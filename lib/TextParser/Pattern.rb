@@ -57,15 +57,31 @@ class TaskJuggler::TextParser
       @exampleFile = nil
       @exampleTag = nil
 
+      @tokens = []
       tokens.each do |token|
         unless '!$_.'.include?(token[0])
           raise "Fatal Error: All pattern tokens must start with a type " +
                 "identifier [!$_.]: #{tokens.join(', ')}"
         end
+        # For the syntax specification using a prefix character is more
+        # convenient. But for further processing, we need to split the string
+        # into two symbols. The prefix determines the token type, the rest is
+        # the token name. There are 4 types of tokens:
+        # :reference : a reference to another rule
+        # :variable : a terminal symbol
+        # :literal : a user defined string
+        # :eof : marks the end of an input stream
+        type = [ :reference, :variable, :literal, :eof ]['!$_.'.index(token[0])]
+        # For literals we use a String to store the token content. For others,
+        # a symbol is better suited.
+        name = type == :literal || type == :eof ?
+               token[1..-1] : token[1..-1].intern
+        # We favor an Array to store the 2 elements over a Hash for
+        # performance reasons.
+        @tokens << [ type, name ]
         # Initialize pattern argument descriptions as empty.
         @args << nil
       end
-      @tokens = tokens
       @function = function
       # In some cases we don't want to show all tokens in the syntax
       # documentation. This value specifies the index of the last shown token.
@@ -106,7 +122,7 @@ class TaskJuggler::TextParser
 
     # Iterator for tokens.
     def each
-      @tokens.each { |tok| yield tok }
+      @tokens.each { |type, name| yield(type, name) }
     end
 
     # Returns true of the pattern is empty.
@@ -122,12 +138,11 @@ class TaskJuggler::TextParser
     # Return true if all tokens of the pattern are optional. If a token
     # references a rule, this rule is followed for the check.
     def optional?(rules)
-      @tokens.each do |token|
-        if token[0] == ?_ || token[0] == ?$
+      @tokens.each do |type, name|
+        if type == :literal || type == :variable
           return false
-        elsif token[0] == ?!
-          token = token[1..-1]
-          if !rules[token].optional?(rules)
+        elsif type == :reference
+          if !rules[name].optional?(rules)
             return false
           end
         end
@@ -137,32 +152,29 @@ class TaskJuggler::TextParser
 
     # Returns true if the i-th token is a terminal symbol.
     def terminalSymbol?(i)
-      @tokens[i][0] == ?$ || @tokens[i][0] == ?_
+      @tokens[i][0] == :variable || @tokens[i][0] == :literal
     end
 
     # Find recursively the first terminal token of this pattern. If an index is
     # specified start the search at this n-th pattern token instead of the
     # first. The return value is an Array of [ token, pattern ] tuple.
     def terminalTokens(rules, index = 0)
+      type, name = @tokens[index]
       # Terminal token start with an underscore or dollar character.
-      if @tokens[index][0] == ?_
-        return [ [ @tokens[index][1..-1], self ] ]
-      elsif @tokens[index][0] == ?$
+      if type == :literal
+        return [ [ name, self ] ]
+      elsif type == :variable
         return []
-      elsif @tokens[index][0] == ?!
-        # Token starting with a bang reference another rule. We have to
-        # continue the search at this rule. First, we get rid of the bang to
-        # get the rule name.
-        token = @tokens[index][1..-1]
-        # Then find the rule
-        rule = rules[token]
+      elsif type == :reference
+        # We have to continue the search at this rule.
+        rule = rules[name]
         # The rule may only have a single pattern. If not, then this pattern
         # has no terminal token.
         tts = []
         rule.patterns.each { |p| tts += p.terminalTokens(rules, 0) }
         return tts
       else
-        raise "Unexpected token #{tokens[index]}"
+        raise "Unexpected token #{type} #{name}"
       end
     end
 
@@ -187,19 +199,16 @@ class TaskJuggler::TextParser
       first = true
       # Analyze the tokens of the pattern skipping the first 'skip' tokens.
       skip.upto(@lastSyntaxToken) do |i|
-        token = @tokens[i]
+        type, name = @tokens[i]
         # If the first token is a _{ the pattern describes optional attributes.
         # They are represented by a standard idiom.
         if first
           first = false
-          return '{ <attributes> }' if token == '_{'
+          return '{ <attributes> }' if name == '{'
         else
           # Separate the syntax elemens by a whitespace.
           str << ' '
         end
-
-        typeId = token[0]
-        token = token.slice(1, token.length - 1)
 
         if @args[i]
           # The argument is documented in the syntax definition. We copy the
@@ -209,8 +218,8 @@ class TaskJuggler::TextParser
           # A documented argument without a name is a terminal token. We use the
           # terminal symbol as name.
           if @args[i].name.nil?
-            str << "#{token}"
-            argDoc.name = token
+            str << "#{name}"
+            argDoc.name = name
           else
             str << "<#{@args[i].name}>"
           end
@@ -218,27 +227,27 @@ class TaskJuggler::TextParser
 
           # Documented arguments don't have the type set yet. Use the token
           # value for that.
-          if typeId == ?$
-            argDoc.typeSpec = "<#{token}>"
+          if type == :variable
+            argDoc.typeSpec = "<#{name}>"
           end
         else
           # Undocumented tokens are recursively expanded.
-          case typeId
-          when ?_
+          case type
+          when :literal
             # Literals are shown as such.
-            str << token
-          when ?$
+            str << name.to_s
+          when :variable
             # Variables are enclosed by angle brackets.
-            str << '<' + token + '>'
-          when ?!
-            if rules[token].patterns.length == 1 &&
-               !rules[token].patterns[0].doc.nil?
-              addArgDoc(argDocs, TokenDoc.new(rules[token].patterns[0].keyword,
-                                              rules[token].patterns[0]))
-              str << '<' + rules[token].patterns[0].keyword + '>'
+            str << "<#{name}>"
+          when :reference
+            if rules[name].patterns.length == 1 &&
+               !rules[name].patterns[0].doc.nil?
+              addArgDoc(argDocs, TokenDoc.new(rules[name].patterns[0].keyword,
+                                              rules[name].patterns[0]))
+              str << '<' + rules[name].patterns[0].keyword + '>'
             else
               # References are followed recursively.
-              str << rules[token].to_syntax(stack, argDocs, rules, 0)
+              str << rules[name].to_syntax(stack, argDocs, rules, 0)
             end
           end
         end

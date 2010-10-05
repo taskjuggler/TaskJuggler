@@ -99,7 +99,7 @@ class TaskJuggler
                                   tokenSet)
       parser.open(@inputText)
       # Parse the input text and convert it to the intermediate representation.
-      return nil if (tree = parser.parse('richtext')) == false
+      return nil if (tree = parser.parse(:richtext)) == false
 
       # In case the result is empty, use an empty RichTextElement as result
       tree = RichTextElement.new(rti, :richtext, nil) unless tree

@@ -32,61 +32,61 @@ class TaskJuggler
     def initialize(masterFile, messageHandler)
       tokenPatterns = [
         # :bol mode rules
-        [ 'LINEBREAK', /\s*\n/, :bol, method('linebreak') ],
+        [ :LINEBREAK, /\s*\n/, :bol, method('linebreak') ],
         [ nil, /\s+/, :bol, method('inlineMode') ],
 
         # :bop mode rules
-        [ 'PRE', / [^\n]+\n?/, :bop, method('pre') ],
+        [ :PRE, / [^\n]+\n?/, :bop, method('pre') ],
         [ nil, /\s*\n/, :bop, method('linebreak') ],
 
         # :inline mode rules
-        [ 'SPACE', /[ \t\n]+/, :inline, method('space') ],
+        [ :SPACE, /[ \t\n]+/, :inline, method('space') ],
 
         # :bop and :bol mode rules
-        [ 'INLINEFUNCSTART', /<-/, [ :bop, :bol, :inline ],
+        [ :INLINEFUNCSTART, /<-/, [ :bop, :bol, :inline ],
           method('functionStart') ],
-        [ 'BLOCKFUNCSTART', /<\[/, [ :bop, :bol ], method('functionStart') ],
-        [ 'TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
+        [ :BLOCKFUNCSTART, /<\[/, [ :bop, :bol ], method('functionStart') ],
+        [ ':TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
         [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
         [ 'BULLET*', /\*{1,4} /, [ :bop, :bol ], method('bullet') ],
         [ 'NUMBER*', /\#{1,4} /, [ :bop, :bol ], method('number') ],
-        [ 'HLINE', /----/, [ :bop, :bol ], method('inlineMode') ],
+        [ :HLINE, /----/, [ :bop, :bol ], method('inlineMode') ],
 
         # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
-        [ 'QUOTES', /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
-        [ 'REF', /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
-        [ 'HREF', /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
-        [ 'WORD', /.[^ \n\t\[<']*/, [ :bop, :bol, :inline ],
+        [ :QUOTES, /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
+        [ :REF, /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
+        [ :HREF, /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
+        [ :WORD, /.[^ \n\t\[<']*/, [ :bop, :bol, :inline ],
           method('inlineMode') ],
 
         # :nowiki mode rules
         [ nil, /<\/nowiki>/, :nowiki, method('nowikiEnd') ],
-        [ 'WORD', /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
-        [ 'SPACE', /[ \t]+/, :nowiki ],
-        [ 'LINEBREAK', /\s*\n/, :nowiki ],
+        [ :WORD, /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
+        [ :SPACE, /[ \t]+/, :nowiki ],
+        [ :LINEBREAK, /\s*\n/, :nowiki ],
 
         # :ref mode rules
-        [ 'REFEND', /\]\]/, :ref, method('refEnd') ],
-        [ 'WORD', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
-        [ 'QUERY', /<-\w+->/, :ref, method('query') ],
-        [ 'LITERAL', /./, :ref ],
+        [ :REFEND, /\]\]/, :ref, method('refEnd') ],
+        [ :WORD, /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
+        [ :QUERY, /<-\w+->/, :ref, method('query') ],
+        [ :LITERAL, /./, :ref ],
 
         # :href mode rules
-        [ 'HREFEND', /\]/, :href, method('hrefEnd') ],
-        [ 'WORD', /(<(?!-)|[^ \t\n\]<])+/, :href ],
-        [ 'QUERY', /<-\w+->/, :href, method('query') ],
-        [ 'SPACE', /[ \t\n]+/, :href ],
+        [ :HREFEND, /\]/, :href, method('hrefEnd') ],
+        [ :WORD, /(<(?!-)|[^ \t\n\]<])+/, :href ],
+        [ :QUERY, /<-\w+->/, :href, method('query') ],
+        [ :SPACE, /[ \t\n]+/, :href ],
 
         # :func mode rules
-        [ 'INLINEFUNCEND', /->/ , :func, method('functionEnd') ],
-        [ 'BLOCKFUNCEND', /\]>/, :func, method('functionEnd') ],
-        [ 'ID', /[a-zA-Z_]\w*/, :func ],
-        [ 'STRING', /"(\\"|[^"])*"/, :func, method('dqString') ],
-        [ 'STRING', /'(\\'|[^'])*'/, :func, method('sqString') ],
+        [ :INLINEFUNCEND, /->/ , :func, method('functionEnd') ],
+        [ :BLOCKFUNCEND, /\]>/, :func, method('functionEnd') ],
+        [ :ID, /[a-zA-Z_]\w*/, :func ],
+        [ :STRING, /"(\\"|[^"])*"/, :func, method('dqString') ],
+        [ :STRING, /'(\\'|[^'])*'/, :func, method('sqString') ],
         [ nil, /[ \t\n]+/, :func ],
-        [ 'LITERAL', /./, :func ]
+        [ :LITERAL, /./, :func ]
       ]
       super(masterFile, messageHandler, tokenPatterns, :bop)
     end
@@ -100,7 +100,7 @@ class TaskJuggler
         # And return an empty string.
         match = ''
       end
-      [type, match ]
+      [ type, match ]
     end
 
     def linebreak(type, match)
@@ -115,26 +115,26 @@ class TaskJuggler
 
     def titleStart(type, match)
       self.mode = :inline
-      [ "TITLE#{match.length - 1}", match ]
+      [ "TITLE#{match.length - 1}".intern, match ]
     end
 
     def titleEnd(type, match)
-      [ "TITLE#{match.length - 1}END", match ]
+      [ "TITLE#{match.length - 1}END".intern, match ]
     end
 
     def bullet(type, match)
       self.mode = :inline
-      [ "BULLET#{match.length - 1}", match ]
+      [ "BULLET#{match.length - 1}".intern, match ]
     end
 
     def number(type, match)
       self.mode = :inline
-      [ "NUMBER#{match.length - 1}", match ]
+      [ "NUMBER#{match.length - 1}".intern, match ]
     end
 
     def quotes(type, match)
       self.mode = :inline
-      types = [ nil, nil, 'ITALIC', 'BOLD' , 'CODE', 'BOLDITALIC' ]
+      types = [ nil, nil, :ITALIC, :BOLD , :CODE, :BOLDITALIC ]
       [ types[match.length], match ]
     end
 
