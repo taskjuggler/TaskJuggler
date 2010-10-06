@@ -78,7 +78,7 @@ class TaskJuggler
       # An list of token types that are not allowed in the current context.
       # For performance reasons we use a hash with the token as key. The value
       # is irrelevant.
-      @badVariables = {}
+      @blockedVariables = {}
       # The currently processed rule.
       @cr = nil
     end
@@ -88,10 +88,13 @@ class TaskJuggler
     def limitTokenSet(tokenSet)
       return unless tokenSet
 
-      badVariables = @variables.dup
-      badVariables.delete_if { |v| tokenSet.include?(v) }
-      @badVariables = {}
-      badVariables.each { |v| @badVariables[v] = true }
+      # Create a copy of all supported variables.
+      blockedVariables = @variables.dup
+      # Then delete all that are in the limited set.
+      blockedVariables.delete_if { |v| tokenSet.include?(v) }
+      # And convert the list into a Hash for faster lookups.
+      @blockedVariables = {}
+      blockedVariables.each { |v| @blockedVariables[v] = true }
     end
 
     # Call all methods that start with 'rule_' to initialize the rules.
@@ -468,7 +471,7 @@ class TaskJuggler
     def getNextToken
       token = nextToken
       #Log << "Token: [#{token[0]}][#{token[1]}]"
-      if @badVariables[token[0]]
+      if @blockedVariables[token[0]]
         error('unsupported_token',
               "The token #{token[1]} is not supported in this context.",
               token[2])
@@ -477,20 +480,20 @@ class TaskJuggler
     end
 
     def findPattern(rule, token, repeatMode)
-      case token[0]
-      when :ID
-        # The scanner cannot differentiate between keywords and identifiers.
-        # So whenever an identifier is returned we have to see if we have a
-        # matching keyword first. If none is found, then look for normal
-        # identifiers.
-        if (pattern = rule.matchingPattern([ :literal, token[1] ])).nil?
-          pattern = rule.matchingPattern([ :variable, :ID ])
+      pattern =
+        case token[0]
+        when :ID
+          # The scanner cannot differentiate between keywords and identifiers.
+          # So whenever an identifier is returned we have to see if we have a
+          # matching keyword first. If none is found, then look for normal
+          # identifiers.
+          rule.matchingPattern([ :literal, token[1] ]) ||
+          rule.matchingPattern([ :variable, :ID ])
+        when :LITERAL
+          rule.matchingPattern([ :literal, token[1] ])
+        else
+          rule.matchingPattern([ :variable, token[0] ])
         end
-      when :LITERAL
-        pattern = rule.matchingPattern([ :literal, token[1] ])
-      else
-        pattern = rule.matchingPattern([ :variable, token[0] ])
-      end
 
       # If no matching pattern is found for the token we have to check if the
       # rule is optional or we are in repeat mode. If this is the case, return
