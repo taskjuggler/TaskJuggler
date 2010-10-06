@@ -76,7 +76,9 @@ class TaskJuggler
       # Array to hold the token types that the scanner can return.
       @variables = []
       # An list of token types that are not allowed in the current context.
-      @badVariables = []
+      # For performance reasons we use a hash with the token as key. The value
+      # is irrelevant.
+      @badVariables = {}
       # The currently processed rule.
       @cr = nil
     end
@@ -86,8 +88,10 @@ class TaskJuggler
     def limitTokenSet(tokenSet)
       return unless tokenSet
 
-      @badVariables = @variables.dup
-      @badVariables.delete_if { |v| tokenSet.include?(v) }
+      badVariables = @variables.dup
+      badVariables.delete_if { |v| tokenSet.include?(v) }
+      @badVariables = {}
+      badVariables.each { |v| @badVariables[v] = true }
     end
 
     # Call all methods that start with 'rule_' to initialize the rules.
@@ -152,7 +156,7 @@ class TaskJuggler
     # This function needs to be called whenever new rules or patterns have been
     # added and before the next call to TextParser#parse.
     def updateParserTables
-      @rules.each_value { |rule| rule.transitions = {} }
+      @rules.each_value { |rule| rule.flushCache }
       @rules.each_value do |rule|
         rule.analyzeTransitions(@rules)
         checkRule(rule)
@@ -264,19 +268,18 @@ class TaskJuggler
         # pattern.
         @stack << TextParser::StackElement.new(pattern.function)
 
-        pattern.each do |elType, elName|
-          # Separate the type and token text for pattern element.
-          if elType == :reference
+        pattern.each do |patType, patName|
+          if patType == :reference
             # The element is a reference to another rule. Return the token if
             # we still have one and continue with the referenced rule.
-            unless token.nil?
+            if token
               sfi = token[2]
               returnToken(token)
               token = nil
             else
               sfi = nil
             end
-            @stack.last.store(parseRuleR(@rules[elName]), sfi)
+            @stack.last.store(parseRuleR(@rules[patName]), sfi)
             #Log << "Resuming rule #{rule.name}"
             #puts "Resuming rule #{rule.name}"
           else
@@ -284,7 +287,7 @@ class TaskJuggler
             # token if we don't have one anymore.
             token = getNextToken unless token
 
-            processNormalElements(elType, elName, token)
+            processNormalElements(patType, patName, token)
 
             # The token has been consumed. Reset the variable.
             token = nil
@@ -379,8 +382,8 @@ class TaskJuggler
 
           elementCount = pattern.length
           while elementIdx < elementCount
-            elType, elName = pattern[elementIdx]
-            if elType == :reference
+            patType, patName = pattern[elementIdx]
+            if patType == :reference
               unless resume
                 # The element is a reference to another rule. Return the token
                 # if we still have one and continue with the referenced rule.
@@ -396,7 +399,7 @@ class TaskJuggler
                 # recursion stack.
                 recursionStack.push([ rule, pattern, elementIdx, result,
                                       repeatMode, sfi ])
-                recursionStack.push(@rules[elName])
+                recursionStack.push(@rules[patName])
                 # Now terminate all but the outer loops without doing anything
                 # else.
                 recur = true
@@ -412,7 +415,7 @@ class TaskJuggler
               # new token if we don't have one anymore.
               token = getNextToken unless token
 
-              processNormalElements(elType, elName, token)
+              processNormalElements(patType, patName, token)
 
               # The token has been consumed. Reset the variable.
               token = nil
@@ -465,7 +468,7 @@ class TaskJuggler
     def getNextToken
       token = nextToken
       #Log << "Token: [#{token[0]}][#{token[1]}]"
-      if @badVariables.include?(token[0])
+      if @badVariables[token[0]]
         error('unsupported_token',
               "The token #{token[1]} is not supported in this context.",
               token[2])
@@ -474,19 +477,17 @@ class TaskJuggler
     end
 
     def findPattern(rule, token, repeatMode)
-      # The scanner cannot differentiate between keywords and identifiers.  So
-      # whenever an identifier is returned we have to see if we have a
-      # matching keyword first. If none is found, then look for normal
-      # identifiers.
       case token[0]
       when :ID
+        # The scanner cannot differentiate between keywords and identifiers.
+        # So whenever an identifier is returned we have to see if we have a
+        # matching keyword first. If none is found, then look for normal
+        # identifiers.
         if (pattern = rule.matchingPattern([ :literal, token[1] ])).nil?
           pattern = rule.matchingPattern([ :variable, :ID ])
         end
       when :LITERAL
         pattern = rule.matchingPattern([ :literal, token[1] ])
-      when false
-        pattern = rule.matchingPattern([ :eof, '<END>' ])
       else
         pattern = rule.matchingPattern([ :variable, token[0] ])
       end
@@ -499,22 +500,18 @@ class TaskJuggler
         # Append the list of expected tokens to the @@expectedToken array.
         # This may be used in a later rule to provide more details when an
         # error occured.
-        rule.transitions.each do |transition|
-          keys = transition.keys
-          keys.collect! { |key| "'#{key[1]}'" }
-          @@expectedTokens += keys
-          @@expectedTokens.sort!
-        end
+        @@expectedTokens << rule.transitionKeywords
 
         unless rule.optional?(@rules) || repeatMode
+          keywords = @@expectedTokens.flatten.sort
           error('unexpctd_token',
                 (token[0] != false ?
                  "Unexpected token '#{token[1]}' of type " +
                  "'#{token[0]}'. " :
                  "Unexpected end of file in #{@scanner.fileName}. ") +
-                (@@expectedTokens.length > 1 ?
-                 "Expecting one of #{@@expectedTokens.join(', ')}" :
-                 "Expecting #{@@expectedTokens[0]}"), token[2])
+                (keywords.length > 1 ?
+                 "Expecting one of #{keywords.join(', ')}" :
+                 "Expecting #{keywords[0]}"), token[2])
         end
         returnToken(token)
         return nil
@@ -524,20 +521,20 @@ class TaskJuggler
     end
 
     # Handle the elements that don't trigger a recursion.
-    def processNormalElements(elType, elToken, token)
-      if elType == :literal
+    def processNormalElements(patType, patName, token)
+      if patType == :literal
         # If the element requires a keyword the token must match this
         # keyword.
-        if elToken != token[1]
-          text = "'#{elToken}' expected but found " +
+        if patName != token[1]
+          text = "'#{patName}' expected but found " +
                  "'#{token[1]}' (#{token[0]})."
           unless @@expectedTokens.empty?
-            text = "#{@@expectedTokens.join(', ')} or " + text
+            text = "#{@@expectedTokens.flatten.sort.join(', ')} or " + text
           end
           error('spec_keywork_expctd', text, token[2])
         end
-        @stack.last.store(elToken, token[2])
-      elsif elType == :eof
+        @stack.last.store(patName, token[2])
+      elsif patType == :eof
         if token[0..1] != [ :eof, '<END>' ]
           error('end_expected',
                 "Found garbage at expected end of text: #{token[1]}\n" +
@@ -546,8 +543,8 @@ class TaskJuggler
         end
       else
         # The token must match the expected variable type.
-        if token[0] != elToken
-          text = "'#{elToken}' expected but found " +
+        if token[0] != patName
+          text = "'#{patName}' expected but found " +
                  "'#{token[1]}' (#{token[0]})."
           unless @@expectedTokens.empty?
             text = "#{@@expectedTokens.join(', ')} or " + text

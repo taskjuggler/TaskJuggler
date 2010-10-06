@@ -83,6 +83,7 @@ class TaskJuggler
     #File.open("profile.clt", "w") do |file|
     #  printer.print(file)
     #end
+
     # For the report server mode we may need to keep the parser. Otherwise,
     # destroy it.
     @parser = nil unless keepParser

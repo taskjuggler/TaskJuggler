@@ -24,8 +24,8 @@ class TaskJuggler::TextParser
   # the parsed file.
   class Rule
 
-    attr_reader :name, :patterns, :optional, :repeatable, :keyword, :doc
-    attr_accessor :transitions
+    attr_reader :name, :patterns, :transitions, :transitionKeywords,
+                :optional, :repeatable, :keyword, :doc
 
     # Create a new syntax rule called +name+.
     def initialize(name)
@@ -33,7 +33,17 @@ class TaskJuggler::TextParser
       @patterns = []
       @repeatable = false
       @optional = false
+      @keyword = nil
+
+      flushCache
+    end
+
+    def flushCache
+      # An Array of Hash objects that map [ token type, token name ] keys to
+      # the next Rule to process.
       @transitions = []
+      # A list of String keywords that match the transitions for this rule.
+      @transitionKeywords = []
       # We frequently need to find a certain transition by the token hash.
       # This hash is used to cache these translations.
       @patternHash = {}
@@ -41,7 +51,6 @@ class TaskJuggler::TextParser
       # flag is set or all of the patterns reference optional rules again.
       # This variable caches the transitively determined optional value.
       @transitiveOptional = nil
-      @keyword = nil
     end
 
     # Add a new +pattern+ to the Rule. It should be of type
@@ -131,6 +140,16 @@ class TaskJuggler::TextParser
         end
         @transitions << patTransitions
       end
+
+      # For error reporting we need to keep a list of all keywords that
+      # trigger a transition for this rule.
+      @transitionKeywords = []
+      @transitions.each do |transition|
+        keys = transition.keys
+        keys.collect! { |key| "'#{key[1]}'" }
+        @transitionKeywords << keys
+      end
+
       @transitions.dup
     end
 
@@ -185,8 +204,8 @@ class TaskJuggler::TextParser
     def matchingPattern(token)
       tokenHash = token.hash
       # If we have looked the value up already, it's in the cache.
-      if (p = @patternHash[tokenHash])
-        return p
+      if pattern = @patternHash[tokenHash]
+        return pattern
       end
 
       # Otherwise, we have to compute and cache it.
