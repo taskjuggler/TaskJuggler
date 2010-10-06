@@ -37,8 +37,9 @@ class TaskJuggler::TextParser
       # We frequently need to find a certain transition by the token hash.
       # This hash is used to cache these translations.
       @patternHash = {}
-      # In case a rule is optional or any of the patterns is fully optional,
-      # this variable is set to true.
+      # A rule is considered to describe optional tokens in case the @optional
+      # flag is set or all of the patterns reference optional rules again.
+      # This variable caches the transitively determined optional value.
       @transitiveOptional = nil
       @keyword = nil
     end
@@ -72,6 +73,65 @@ class TaskJuggler::TextParser
       @patterns.each do |pat|
         return @transitiveOptional = false unless pat.optional?(rules)
       end
+    end
+
+    # analyzeTransitions recursively determines all possible target tokens
+    # that the _rule_ matches. A target token can either be a fixed token
+    # (prefixed with _), a variable token (prefixed with $) or an end token
+    # (just a .). The list of found target tokens is stored in the _transitions_
+    # list of the rule. For each rule pattern we store the transitions for this
+    # pattern in a token -> rule hash.
+    def analyzeTransitions(rules)
+      # If we have processed this rule before we can just return a copy
+      # of the transitions of this rule. This avoids endless recursions.
+      return @transitions.dup unless @transitions.empty?
+
+      @transitions = []
+      @patterns.each do |pat|
+        allTokensOptional = true
+        patTransitions = { }
+        pat.each do |type, name|
+          case type
+          when :reference
+            unless rules.has_key?(name)
+              raise "Fatal Error: Unknown reference to '#{name}' in pattern " +
+                    "#{pat[0][0]}:#{pat[0][1]} of rule #{@name}"
+            end
+            refRule = rules[name]
+            # If the referenced rule describes optional content, we need to look
+            # at the next token as well.
+            res = refRule.analyzeTransitions(rules)
+            allTokensOptional = false unless refRule.optional?(rules)
+            # Combine the hashes for each pattern into a single hash
+            res.each do |pat_i|
+              pat_i.each { |tok, r| patTransitions[tok] = r }
+            end
+          when :literal, :variable, :eof
+            patTransitions[[ type, name ]] = self
+            allTokensOptional = false
+          else
+            raise 'Fatal Error: Illegal token type specifier used for token' +
+                  ": #{type}:#{name} in rule #{@name}"
+          end
+          # If we have found required token, all following token of this
+          # pattern cannot add any further transitions for this rule.
+          break unless allTokensOptional
+        end
+
+        # Make sure that we only have one possible transition for each
+        # target.
+        patTransitions.each do |key, value|
+          @transitions.each do |trans|
+            if trans.has_key?(key)
+              rule.dump
+              raise "Fatal Error: Rule #{@name} has ambiguous " +
+                    "transitions for target #{key}"
+            end
+          end
+        end
+        @transitions << patTransitions
+      end
+      @transitions.dup
     end
 
     # Mark the syntax element described by this Rule as a repeatable element

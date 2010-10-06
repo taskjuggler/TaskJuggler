@@ -154,7 +154,7 @@ class TaskJuggler
     def updateParserTables
       @rules.each_value { |rule| rule.transitions = {} }
       @rules.each_value do |rule|
-        getTransitions(rule)
+        rule.analyzeTransitions(@rules)
         checkRule(rule)
       end
     end
@@ -219,64 +219,6 @@ class TaskJuggler
     end
 
   private
-
-    # getTransitions recursively determines all possible target tokens
-    # that the _rule_ matches. A target token can either be a fixed token
-    # (prefixed with _), a variable token (prefixed with $) or an end token
-    # (just a .). The list of found target tokens is stored in the _transitions_
-    # list of the rule. For each rule pattern we store the transitions for this
-    # pattern in a token -> rule hash.
-    def getTransitions(rule)
-      # If we have processed this rule before we can just return a copy
-      # of the transitions of this rule. This avoids endless recursions.
-      return rule.transitions.dup unless rule.transitions.empty?
-
-      rule.transitions = []
-      rule.patterns.each do |pat|
-        allTokensOptional = true
-        transitions = { }
-        pat.each do |type, name|
-          case type
-          when :reference
-            unless @rules.has_key?(name)
-              raise "Fatal Error: Unknown reference to '#{name}' in pattern " +
-                    "#{pat[0][0]}:#{pat[0][1]} of rule #{rule.name}"
-            end
-            refRule = @rules[name]
-            # If the referenced rule describes optional content, we need to look
-            # at the next token as well.
-            res = getTransitions(@rules[name])
-            allTokensOptional = false unless refRule.optional?(@rules)
-            # Combine the hashes for each pattern into a single hash
-            res.each do |pat_i|
-              pat_i.each { |tok, r| transitions[tok] = r }
-            end
-          when :literal, :variable
-            transitions[[ type, name ]] = rule
-            allTokensOptional = false
-          when :eof
-            # Nothing to do here.
-          else
-            raise 'Fatal Error: Illegal token type specifier used for token' +
-                  ": #{type}:#{name}"
-          end
-          break unless allTokensOptional
-        end
-        # Make sure that we only have one possible transition for each
-        # target.
-        transitions.each do |key, value|
-          rule.transitions.each do |trans|
-            if trans.has_key?(key)
-              rule.dump
-              raise "Fatal Error: Rule #{rule.name} has ambiguous " +
-                    "transitions for target #{key}"
-            end
-          end
-        end
-        rule.transitions << transitions
-      end
-      rule.transitions.dup
-    end
 
     def checkRule(rule)
       if rule.patterns.empty?
