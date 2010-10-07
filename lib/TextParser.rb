@@ -194,15 +194,6 @@ class TaskJuggler
       @stack.last.sourceFileInfo[0]
     end
 
-    def matchingRules(keyword)
-      matches = []
-      @rules.each do |name, rule|
-        patIdx = rule.matchingPatternIndex('_' + keyword)
-        matches << [ rule, patIdx ] if patIdx
-      end
-      matches
-    end
-
     def error(id, text, sfi = nil, data = nil)
       sfi ||= sourceFileInfo
       if @scanner
@@ -294,6 +285,8 @@ class TaskJuggler
 
             # The token has been consumed. Reset the variable.
             token = nil
+            # We don't need to report any errors for this rule, so we can
+            # clear the list of expected tokens.
             @@expectedTokens = []
           end
         end
@@ -301,10 +294,11 @@ class TaskJuggler
         # Once the complete pattern has been processed we call the processing
         # function for this pattern to operate on the value array. Then pop the
         # entry for this rule from the stack.
-        @val = @stack.last.val
-        @sourceFileInfo = @stack.last.sourceFileInfo
+        stackEntry = @stack.last
+        @val = stackEntry.val
+        @sourceFileInfo = stackEntry.sourceFileInfo
         res = nil
-        res = @stack.last.function.call unless @stack.last.function.nil?
+        res = stackEntry.function.call unless stackEntry.function.nil?
         @stack.pop
 
         # If the rule is not repeatable we can store the result and break the

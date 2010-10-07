@@ -204,7 +204,7 @@ class TaskJuggler::TextParser
     def matchingPattern(token)
       tokenHash = token.hash
       # If we have looked up the value already, it's in the cache.
-      if pattern = @patternHash[tokenHash]
+      if (pattern = @patternHash[tokenHash])
         return pattern
       end
 
