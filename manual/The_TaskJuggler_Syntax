@@ -110,8 +110,8 @@ provided in the project header.
 * ''''now'''' The current date. If the user does not provide a date
 with the [[now]] keyword, the moment of the processing of the file
 will be inserted. Keep in mind that this will change every time you
-process your project. 
-* ''''today'''' Similar to ''''now'''' but formatted according to
-the [[timeformat]] when the [[now]] attribute was used. The current
-setting of [[timeformat]] has no impact on the expansion of the macro.
+process your project.  The current setting of [[timeformat]] has no
+impact on the expansion of the macro.
+* ''''today'''' Identical to ''''now'''' but formatted according to
+the [[timeformat]] setting of the current context.
 
