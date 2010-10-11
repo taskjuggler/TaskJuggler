@@ -81,6 +81,8 @@ class TaskJuggler
       @blockedVariables = {}
       # The currently processed rule.
       @cr = nil
+
+      @states = {}
     end
 
     # Limit the allowed tokens of the scanner to the subset passed by the
@@ -160,10 +162,17 @@ class TaskJuggler
     # added and before the next call to TextParser#parse.
     def updateParserTables
       @rules.each_value { |rule| rule.flushCache }
+      @states = {}
       @rules.each_value do |rule|
+        #rule.generateStates.each do |s|
+        #  @states[ [ s.rule, s.pattern, s.index ] ] = s
+        #end
         rule.analyzeTransitions(@rules)
         checkRule(rule)
       end
+      #@states.each_value do |state|
+      #  state.addTransitions(@states, @rules)
+      #end
     end
 
     # To parse the input this function needs to be called with the name of the

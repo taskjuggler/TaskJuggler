@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'TextParser/State'
+
 class TaskJuggler::TextParser
 
   # The TextParserRule holds the basic elment of the syntax description. Each
@@ -82,6 +84,30 @@ class TaskJuggler::TextParser
       @patterns.each do |pat|
         return @transitiveOptional = false unless pat.optional?(rules)
       end
+    end
+
+    def generateStates
+      states = []
+      @patterns.each do |pattern|
+        states += pattern.generateStates(self)
+      end
+      states
+    end
+
+    # Return a Hash of all state transitions caused by the 1st token of each
+    # pattern of this rule.
+    def stateTransitions(states, rules, callChain)
+      transitions = {}
+      @patterns.each do |pattern|
+        pattern.transitions(states, rules, callChain, self, 0).each do |t, s|
+          puts " + [#{t[0]}, #{t[1]}]"
+          if t != [ nil, nil ] && transitions.include?(t)
+            raise "Ambiguous transition for token #{t}"
+          end
+          transitions[t] = s
+        end
+      end
+      transitions
     end
 
     # analyzeTransitions recursively determines all possible target tokens

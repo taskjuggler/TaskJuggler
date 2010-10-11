@@ -11,6 +11,7 @@
 #
 
 require 'TextParser/TokenDoc'
+require 'TextParser/State'
 
 class TaskJuggler::TextParser
 
@@ -86,6 +87,95 @@ class TaskJuggler::TextParser
       # In some cases we don't want to show all tokens in the syntax
       # documentation. This value specifies the index of the last shown token.
       @lastSyntaxToken = @tokens.length - 1
+
+      @transitions = []
+    end
+
+    def generateStates(rule)
+      states = []
+      @tokens.length.times { |i| states << State.new(rule, self, i) }
+      states
+    end
+
+    def transitions(states, rules, callChain, rule, idx)
+      # State transitions may be recursive. If the callChain (a stack of State
+      # objects) already contains the current state, we don't have to do
+      # anything and return an empty transition Hash.
+      currentState = states[[ rule, self, idx ]]
+      return {} if callChain.include?(currentState)
+      callChain.push(currentState)
+      puts "*** New State: #{rule.name}, #{idx}"
+
+      @transitions[idx] if @transitions[idx]
+
+      @transitions[idx] = {}
+      moreTokens = false
+      index = idx
+      begin
+        puts "Rule: #{rule.name} index: #{index}"
+        # Tokens may be optional. In this case, the next token of the pattern
+        # defines another transition target. We use this flag to signal such a
+        # sitatation and to not break the loop.
+        moreTokens = false
+
+        if index == 0
+          # Do nothing.
+        elsif index < @tokens.length - 1
+          puts "Next token in pattern"
+          # We have another token in this pattern.
+          index += 1
+        else
+          if rule.repeatable
+            # Jump back to first token of pattern.
+            puts "Repeat with token 0"
+            index = 0
+          else
+            # Finish rule and jump back to rule caller.
+            # Need to add transitions in another pass.
+            puts "+++ Rule #{rule.name} finished"
+            callChain.pop
+            @transitions[idx][[ nil, nil ]] = true
+            return @transitions[idx]
+          end
+        end
+        # The token descriptor tells us where the transition(s) need to go to.
+        tokenType, tokenName = token = @tokens[index]
+        puts "Token: [#{tokenType}, #{tokenName}]"
+
+        case tokenType
+        when :reference
+          # The descriptor references another rule.
+          unless (refRule = rules[tokenName])
+            raise "Unknown rule #{tokenName} referenced in rule #{refRule.name}"
+          end
+          puts " -> #{refRule.name}"
+          # Merge transitions of this rule with the one we already have.
+          refRule.stateTransitions(states, rules, callChain).each do |t, s|
+            if t != [ nil, nil ] && @transitions[idx].include?(t)
+              puts " + [#{t[0]}, #{t[1]}]"
+              @transitions[idx].each { |k, v| puts "[#{k}, #{v}]" }
+              raise "Ambiguous transition for token #{index} of " +
+                    "pattern #{to_s} found"
+            end
+            @transitions[idx][t] = s
+          end
+          puts "<- #{refRule.name}"
+          moreTokens = refRule.optional?(rules)
+        when :eof
+          puts " + [#{token[0]}, #{token[1]}] (nil)"
+          @transitions[idx][token] = nil
+        else
+         unless (nextState = states[ [ rule, self, index ] ])
+           raise "Next state not found"
+         end
+         puts " + [#{token[0]}, #{token[1]}]"
+         @transitions[idx][token] = nextState
+        end
+      end while moreTokens && index > 0
+
+      puts "+++ State: #{rule.name}, #{idx}"
+      callChain.pop
+      @transitions[idx]
     end
 
     # Set the keyword and documentation text for the pattern.
@@ -258,7 +348,23 @@ class TaskJuggler::TextParser
     end
 
     def to_s
-      @tokens.join(' ')
+      str = ""
+      @tokens.each do |type, name|
+        case type
+        when :reference
+          str += "!#{name} "
+        when :variable
+          str += "$#{name } "
+        when :literal
+          str += "#{name} "
+        when :eof
+          str += "<EOF> "
+        else
+          raise "Unknown type #{type}"
+        end
+      end
+
+      str
     end
 
   private
