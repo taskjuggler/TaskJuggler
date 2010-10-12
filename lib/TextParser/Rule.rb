@@ -96,18 +96,11 @@ class TaskJuggler::TextParser
 
     # Return a Hash of all state transitions caused by the 1st token of each
     # pattern of this rule.
-    def stateTransitions(states, rules, callChain)
-      transitions = {}
+    def addTransitionsToState(states, rules, stateStack, sourceState)
       @patterns.each do |pattern|
-        pattern.transitions(states, rules, callChain, self, 0).each do |t, s|
-          puts " + [#{t[0]}, #{t[1]}]"
-          if t != [ nil, nil ] && transitions.include?(t)
-            raise "Ambiguous transition for token #{t}"
-          end
-          transitions[t] = s
-        end
+        pattern.addTransitionsToState(states, rules, stateStack.dup, sourceState,
+                                      self, 0)
       end
-      transitions
     end
 
     # analyzeTransitions recursively determines all possible target tokens

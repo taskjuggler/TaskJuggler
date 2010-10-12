@@ -83,6 +83,9 @@ class TaskJuggler
       @cr = nil
 
       @states = {}
+      # The stack of the FSM. When the FSM is active, this is an Array of
+      # State objects.
+      @fsmStack = nil
     end
 
     # Limit the allowed tokens of the scanner to the subset passed by the
@@ -161,11 +164,12 @@ class TaskJuggler
     # This function needs to be called whenever new rules or patterns have been
     # added and before the next call to TextParser#parse.
     def updateParserTables
+      saveFsmStack
       @rules.each_value { |rule| rule.flushCache }
       @states = {}
       @rules.each_value do |rule|
         #rule.generateStates.each do |s|
-        #  @states[ [ s.rule, s.pattern, s.index ] ] = s
+        #  @states[[ s.rule, s.pattern, s.index ]] = s
         #end
         rule.analyzeTransitions(@rules)
         checkRule(rule)
@@ -173,6 +177,7 @@ class TaskJuggler
       #@states.each_value do |state|
       #  state.addTransitions(@states, @rules)
       #end
+      restoreFsmStack
     end
 
     # To parse the input this function needs to be called with the name of the
@@ -184,7 +189,9 @@ class TaskJuggler
       @@expectedTokens = []
       updateParserTables
       begin
+        #result = parseFSM(@rules[ruleName])
         result = parseRuleR(@rules[ruleName])
+        #result = parseRuleR(@rules[ruleName])
       rescue TjException => msg
         if msg.message && !msg.message.empty?
           @messageHandler.critical('parse', msg.message)
@@ -248,6 +255,84 @@ class TaskJuggler
         end
       end
     end
+
+    def parseFSM(rule)
+      unless (state = State.new(rule))
+        error("no_start_state", "No start state for rule #{rule.name} found")
+      end
+      state.addTransitions(@states, @rules)
+
+      @fsmStack = []
+      res = nil
+      loop do
+        transition = state.transition(token = getNextToken)
+
+        if transition == :eof
+          # We've reached the end of the input stream if transition is :eof
+          # instead of a State object.
+          break
+        elsif transition.nil?
+          # We've reached the end of a rule. There is no pre-compiled
+          # transition available. The next state is determined by the
+          # @fsmStack.
+          unless (nextState = @fsmStack.pop)
+            error('unexpctd_token', "Unexpected token '#{token[1]}' found. " +
+                  "Expecting one of #{state.expectedTokens.join(', ')}")
+          end
+
+          stackEntry = @stack.last
+          @val = stackEntry.val
+          @sourceFileInfo = stackEntry.sourceFileInfo
+          res = stackEntry.function.nil? ? nil : stackEntry.function.call
+          @stack.pop
+
+          returnToken(token)
+        else
+          # We've completed the state. The transition tells us what state we
+          # have to process next.
+          nextState = transition.state
+          # Transitions that enter rules generate states that we need to
+          # resume at when a rule has been completely processed. We push this
+          # list of states on the @fsmStack.
+          @fsmStack += transition.stateStack
+
+          transition.stateStack.each do |s|
+            @stack << TextParser::StackElement.new(s.pattern.function)
+          end
+
+        end
+
+        state = nextState
+        res
+      end
+
+      @fsmStack = nil
+    end
+
+    # Convert the FSM stack from State objects into [ rule, pattern, index ]
+    # equivalents.
+    def saveFsmStack
+      return unless @fsmStack
+
+      stack = []
+      @fsmStack.each { |s| stack << [ s.rule, s.pattern, s.index ] }
+      @fsmStack = stack
+    end
+
+    # Convert the FSM stack from [ rule, pattern, index ] into the respective
+    # State objects again.
+    def restoreFsmStack
+      return unless @fsmStack
+
+      stack = []
+      @fsmStack.each do |s|
+        state = @states[*s]
+        raise "Stack restore failed. Cannot find state"
+        stack << state
+      end
+      @fsmStack = stack
+    end
+
 
     # This function processes the input starting with the syntax description of
     # _rule_. It recursively calls this function whenever the syntax description

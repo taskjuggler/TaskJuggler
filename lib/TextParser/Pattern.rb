@@ -97,50 +97,25 @@ class TaskJuggler::TextParser
       states
     end
 
-    def transitions(states, rules, callChain, rule, idx)
-      # State transitions may be recursive. If the callChain (a stack of State
-      # objects) already contains the current state, we don't have to do
-      # anything and return an empty transition Hash.
-      currentState = states[[ rule, self, idx ]]
-      return {} if callChain.include?(currentState)
-      callChain.push(currentState)
-      puts "*** New State: #{rule.name}, #{idx}"
+    def addTransitionsToState(states, rules, stateStack, sourceState,
+                              destRule, destIndex)
+      #puts ">>> SourceRule: #{sourceState.rule.name} #{sourceState.rule.patterns.index(self)} index: #{sourceState.index}"
+      #puts ">>> DestRule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
 
-      @transitions[idx] if @transitions[idx]
-
-      @transitions[idx] = {}
-      moreTokens = false
-      index = idx
-      begin
-        puts "Rule: #{rule.name} index: #{index}"
-        # Tokens may be optional. In this case, the next token of the pattern
-        # defines another transition target. We use this flag to signal such a
-        # sitatation and to not break the loop.
-        moreTokens = false
-
-        if index == 0
-          # Do nothing.
-        elsif index < @tokens.length - 1
-          puts "Next token in pattern"
-          # We have another token in this pattern.
-          index += 1
-        else
-          if rule.repeatable
-            # Jump back to first token of pattern.
-            puts "Repeat with token 0"
-            index = 0
-          else
-            # Finish rule and jump back to rule caller.
-            # Need to add transitions in another pass.
-            puts "+++ Rule #{rule.name} finished"
-            callChain.pop
-            @transitions[idx][[ nil, nil ]] = true
-            return @transitions[idx]
-          end
+      # Ignore requests for transitions after last token or loop back to rule
+      # start.
+      if destIndex >= @tokens.length
+        if destRule.repeatable
+          #puts "Looping back 1"
+          destRule.addTransitionsToState(states, rules, [], sourceState)
         end
+        return
+      end
+
+      loop do
         # The token descriptor tells us where the transition(s) need to go to.
-        tokenType, tokenName = token = @tokens[index]
-        puts "Token: [#{tokenType}, #{tokenName}]"
+        tokenType, tokenName = token = @tokens[destIndex]
+        #puts "Token: [#{tokenType}, #{tokenName}]"
 
         case tokenType
         when :reference
@@ -148,34 +123,47 @@ class TaskJuggler::TextParser
           unless (refRule = rules[tokenName])
             raise "Unknown rule #{tokenName} referenced in rule #{refRule.name}"
           end
-          puts " -> #{refRule.name}"
+          #puts " -> #{refRule.name}"
           # Merge transitions of this rule with the one we already have.
-          refRule.stateTransitions(states, rules, callChain).each do |t, s|
-            if t != [ nil, nil ] && @transitions[idx].include?(t)
-              puts " + [#{t[0]}, #{t[1]}]"
-              @transitions[idx].each { |k, v| puts "[#{k}, #{v}]" }
-              raise "Ambiguous transition for token #{index} of " +
-                    "pattern #{to_s} found"
-            end
-            @transitions[idx][t] = s
+          skippedState = states[[ destRule, self, destIndex ]]
+          # Avoid endless recursions
+          unless stateStack.include?(skippedState)
+            stateStack.push(skippedState)
+            refRule.addTransitionsToState(states, rules, stateStack, sourceState)
+            stateStack.pop
           end
-          puts "<- #{refRule.name}"
-          moreTokens = refRule.optional?(rules)
-        when :eof
-          puts " + [#{token[0]}, #{token[1]}] (nil)"
-          @transitions[idx][token] = nil
-        else
-         unless (nextState = states[ [ rule, self, index ] ])
-           raise "Next state not found"
-         end
-         puts " + [#{token[0]}, #{token[1]}]"
-         @transitions[idx][token] = nextState
-        end
-      end while moreTokens && index > 0
 
-      puts "+++ State: #{rule.name}, #{idx}"
-      callChain.pop
-      @transitions[idx]
+          # If the referenced rule is not optional, we have no further
+          # transitions for this pattern at this destIndex.
+          break unless refRule.optional?(rules)
+
+          if destIndex < @tokens.length - 1
+            destIndex += 1
+          elsif destRule.repeatable
+            # We are at the last token of a pattern of a repeatable rule. Add
+            # transitions to the first state of each pattern of this rule.
+            destRule.addTransitionsToState(states, rules, [], sourceState)
+            break
+          else
+            break
+          end
+        when :eof
+          #puts " + [#{token[0]}, #{token[1]}] (nil)"
+          sourceState.transitions[:eof] = :eof
+          break
+        else
+          unless (destState = states[[ destRule, self, destIndex ]])
+            raise "Destination state not found"
+          end
+          sourceState.addTransition(@tokens[destIndex], destState, stateStack)
+          # Fixed tokens are never optional. There are no more transitions for
+          # this pattern at this index.
+          break
+        end
+        #puts "Looping back 2"
+      end
+
+      #puts "<<< Rule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
     end
 
     # Set the keyword and documentation text for the pattern.
