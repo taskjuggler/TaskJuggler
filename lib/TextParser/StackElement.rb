@@ -18,14 +18,14 @@ class TaskJuggler::TextParser
   # also store the function that must be called to store the collected values.
   class StackElement
 
-    attr_reader :val, :rule, :function, :sourceFileInfo
+    attr_reader :val, :state, :function, :sourceFileInfo
 
     # Create a new stack element. _rule_ is the TextParserRule that triggered
     # the creation of this element. _function_ is the function that will be
     # called at the end to store the collected data. _sourceFileInfo_ is a
     # SourceFileInfo reference that describes the TextScanner position when the
     # rule was entered.
-    def initialize(function)
+    def initialize(function, state = nil)
       # This Array stores the collected values.
       @val = []
       # Array to store the source file references for the collected values.
@@ -34,6 +34,17 @@ class TaskJuggler::TextParser
       @position = 0
       # The method that will process the collected values.
       @function = function
+      @state = state
+    end
+
+    def insert(index, val, sourceFileInfo = nil, multiValue)
+      if multiValue
+        @val[index] = [] unless @val[index]
+        @val[index] << val
+      else
+        @val[index] = val
+      end
+      @sourceFileInfo[index] = sourceFileInfo
     end
 
     # Store a collected value and move the position to the next pattern.
@@ -41,6 +52,14 @@ class TaskJuggler::TextParser
       @val[@position] = val
       @sourceFileInfo[@position] = sourceFileInfo
       @position += 1
+    end
+
+    def each
+      @val.each { |x| yield x }
+    end
+
+    def length
+      @val.length
     end
 
   end

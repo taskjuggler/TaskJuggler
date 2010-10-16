@@ -102,17 +102,18 @@ class TaskJuggler::TextParser
       #puts ">>> SourceRule: #{sourceState.rule.name} #{sourceState.rule.patterns.index(self)} index: #{sourceState.index}"
       #puts ">>> DestRule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
 
-      # Ignore requests for transitions after last token or loop back to rule
-      # start.
-      if destIndex >= @tokens.length
-        if destRule.repeatable
-          #puts "Looping back 1"
-          destRule.addTransitionsToState(states, rules, [], sourceState)
-        end
-        return
-      end
-
       loop do
+        if destIndex >= @tokens.length
+          if sourceState.rule == destRule
+            sourceState.triggerAction = true
+            if destRule.repeatable
+              #puts "Looping back 1"
+              destRule.addTransitionsToState(states, rules, [], sourceState)
+            end
+          end
+          return
+        end
+
         # The token descriptor tells us where the transition(s) need to go to.
         tokenType, tokenName = token = @tokens[destIndex]
         #puts "Token: [#{tokenType}, #{tokenName}]"
@@ -137,16 +138,6 @@ class TaskJuggler::TextParser
           # transitions for this pattern at this destIndex.
           break unless refRule.optional?(rules)
 
-          if destIndex < @tokens.length - 1
-            destIndex += 1
-          elsif destRule.repeatable
-            # We are at the last token of a pattern of a repeatable rule. Add
-            # transitions to the first state of each pattern of this rule.
-            destRule.addTransitionsToState(states, rules, [], sourceState)
-            break
-          else
-            break
-          end
         when :eof
           #puts " + [#{token[0]}, #{token[1]}] (nil)"
           sourceState.transitions[:eof] = :eof
@@ -160,6 +151,9 @@ class TaskJuggler::TextParser
           # this pattern at this index.
           break
         end
+
+        destIndex += 1
+
         #puts "Looping back 2"
       end
 

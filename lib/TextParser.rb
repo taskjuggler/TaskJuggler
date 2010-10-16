@@ -191,7 +191,7 @@ class TaskJuggler
       begin
         #result = parseFSM(@rules[ruleName])
         result = parseRuleR(@rules[ruleName])
-        #result = parseRuleR(@rules[ruleName])
+        #result = parseRuleNR(@rules[ruleName])
       rescue TjException => msg
         if msg.message && !msg.message.empty?
           @messageHandler.critical('parse', msg.message)
@@ -257,16 +257,17 @@ class TaskJuggler
     end
 
     def parseFSM(rule)
-      unless (state = State.new(rule))
+      unless (state = @states[[ rule, nil, nil ]])
         error("no_start_state", "No start state for rule #{rule.name} found")
       end
-      state.addTransitions(@states, @rules)
+      @stack = [ TextParser::StackElement.new(nil, nil) ]
 
       @fsmStack = []
-      res = nil
       loop do
-        transition = state.transition(token = getNextToken)
+        puts state
 
+        transition = state.transition(token = getNextToken)
+        puts "Token: #{token}"
         if transition == :eof
           # We've reached the end of the input stream if transition is :eof
           # instead of a State object.
@@ -279,60 +280,73 @@ class TaskJuggler
             error('unexpctd_token', "Unexpected token '#{token[1]}' found. " +
                   "Expecting one of #{state.expectedTokens.join(', ')}")
           end
-
-          stackEntry = @stack.last
-          @val = stackEntry.val
-          @sourceFileInfo = stackEntry.sourceFileInfo
-          res = stackEntry.function.nil? ? nil : stackEntry.function.call
-          @stack.pop
-
+          puts "Next state: #{nextState.to_s(true)}"
+          puts "Returning token"
           returnToken(token)
+
+          if state.triggerAction
+            dumpStack
+            stackEntry = @stack.pop
+            puts "***** Pop"
+            @val = stackEntry.val
+            @sourceFileInfo = stackEntry.sourceFileInfo
+            result = stackEntry.function.nil? ? nil : stackEntry.function.call
+            puts "Storing #{result}"
+            @stack.last.insert(nextState.index, result,
+                               @sourceFileInfo, nextState.rule.repeatable)
+            dumpStack
+          end
         else
-          # We've completed the state. The transition tells us what state we
-          # have to process next.
+          # The transition tells us what state we have to process next.
           nextState = transition.state
-          # Transitions that enter rules generate states that we need to
+          puts "Next state: #{nextState.to_s(true)}"
+
+          # Transitions that enter rules generate states which we need to
           # resume at when a rule has been completely processed. We push this
           # list of states on the @fsmStack.
           @fsmStack += transition.stateStack
 
+          # And, we also need a new entry on the result stack for each new
+          # rule.
           transition.stateStack.each do |s|
-            @stack << TextParser::StackElement.new(s.pattern.function)
+            if s.index == 0
+              puts "Pushing #{s.rule.name}"
+              @stack << TextParser::StackElement.new(s.pattern.function, s)
+            end
+          end
+          if nextState.index == 0
+            @stack << TextParser::StackElement.new(nextState.pattern.function,
+                                                   nextState)
           end
 
+          # Store the token value in the result Array.
+          puts "Storing token value #{token[1]}"
+          @stack.last.insert(nextState.index, token[1], token[2], false)
+          dumpStack
         end
 
         state = nextState
-        res
       end
 
       @fsmStack = nil
+      @stack[0].val
     end
 
-    # Convert the FSM stack from State objects into [ rule, pattern, index ]
-    # equivalents.
-    def saveFsmStack
-      return unless @fsmStack
-
-      stack = []
-      @fsmStack.each { |s| stack << [ s.rule, s.pattern, s.index ] }
-      @fsmStack = stack
-    end
-
-    # Convert the FSM stack from [ rule, pattern, index ] into the respective
-    # State objects again.
-    def restoreFsmStack
-      return unless @fsmStack
-
-      stack = []
-      @fsmStack.each do |s|
-        state = @states[*s]
-        raise "Stack restore failed. Cannot find state"
-        stack << state
+    def dumpStack
+      puts "Stack level #{@stack.length} with #{@stack.last.length} entries"
+      @stack.each do |sl|
+        print "#{@stack.index(sl)}: "
+        sl.each do |v|
+          if v.is_a?(Array)
+            print "[#{v.join('|')}]|"
+          else
+            print "#{v}|"
+          end
+        end
+        print " -> #{sl.state.to_s(true)}" if sl.function
+        puts ""
       end
-      @fsmStack = stack
     end
-
 
     # This function processes the input starting with the syntax description of
     # _rule_. It recursively calls this function whenever the syntax description
@@ -554,6 +568,30 @@ class TaskJuggler
       end while !recursionStack.empty?
 
       return result
+    end
+
+    # Convert the FSM stack from State objects into [ rule, pattern, index ]
+    # equivalents.
+    def saveFsmStack
+      return unless @fsmStack
+
+      stack = []
+      @fsmStack.each { |s| stack << [ s.rule, s.pattern, s.index ] }
+      @fsmStack = stack
+    end
+
+    # Convert the FSM stack from [ rule, pattern, index ] into the respective
+    # State objects again.
+    def restoreFsmStack
+      return unless @fsmStack
+
+      stack = []
+      @fsmStack.each do |s|
+        state = @states[*s]
+        raise "Stack restore failed. Cannot find state"
+        stack << state
+      end
+      @fsmStack = stack
     end
 
     def getNextToken

@@ -87,7 +87,11 @@ class TaskJuggler::TextParser
     end
 
     def generateStates
-      states = []
+      # First, add an entry State for this rule. Entry states are never
+      # reached by normal state transitions. They are only used as (re-)start
+      # states.
+      states = [ State.new(self) ]
+
       @patterns.each do |pattern|
         states += pattern.generateStates(self)
       end

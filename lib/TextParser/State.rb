@@ -40,8 +40,16 @@ class TaskJuggler::TextParser
     end
 
     def to_s
-      "#{@state.rule.name}, " +
-      "#{@state.rule.patterns.index(@state.pattern)}, #{@state.index}"
+      str = "#{@state.rule.name}, " +
+            "#{@state.rule.patterns.index(@state.pattern)}, #{@state.index} "
+      unless @stateStack.empty?
+        str += "("
+        @stateStack.each do |s|
+          str += "#{s.rule.name} "
+        end
+        str += ")"
+      end
+      str
     end
 
   end
@@ -49,6 +57,7 @@ class TaskJuggler::TextParser
   class State
 
     attr_reader :rule, :pattern, :index, :transitions
+    attr_accessor :triggerAction
 
     def initialize(rule, pattern = nil, index = nil)
       @rule = rule
@@ -56,6 +65,7 @@ class TaskJuggler::TextParser
       @index = index
 
       @transitions = {}
+      @triggerAction = false
     end
 
     def addTransitions(states, rules)
@@ -97,21 +107,32 @@ class TaskJuggler::TextParser
       tokens
     end
 
-    def to_s
-      if @pattern
-        str = "=== State: #{rule.name} " +
-              "#{rule.patterns.index(@pattern)} #{@index} #{'=' * 40}\n" +
-              "Pattern: #{@pattern}\n"
+    def to_s(short = false)
+      if short
+        if @pattern
+          str = "#{rule.name} " +
+                "#{rule.patterns.index(@pattern)} #{@index}" +
+                "#{@triggerAction ? ' T' : ''}"
+        else
+          str = "#{rule.name} (Starting Node)"
+        end
       else
-        str = "=== State: #{rule.name} (Starting Node) #{'=' * 30}\n"
-      end
+        if @pattern
+          str = "=== State: #{rule.name} " +
+                "#{rule.patterns.index(@pattern)} #{@index}" +
+                "#{@triggerAction ? ' T' : ''} #{'=' * 40}\n"
+                "Pattern: #{@pattern}\n"
+        else
+          str = "=== State: #{rule.name} (Starting Node) #{'=' * 30}\n"
+        end
 
-      @transitions.each do |type, target|
-        targetStr = target ? target.to_s : "<EOF>"
-        str += "  #{type.is_a?(String) ? "'#{type}'" : ":#{type}"}" +
-               " => #{targetStr}\n"
-      end
-      str += "#{'=' * 76}\n"
+        @transitions.each do |type, target|
+          targetStr = target ? target.to_s : "<EOF>"
+          str += "  #{type.is_a?(String) ? "'#{type}'" : ":#{type}"}" +
+                 " => #{targetStr}\n"
+        end
+        str += "#{'=' * 76}\n"
+        end
       str
     end
 
