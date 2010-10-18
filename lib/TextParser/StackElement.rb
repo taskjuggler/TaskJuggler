@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'SourceFileInfo'
+
 class TaskJuggler::TextParser
 
   # This class models the elements of the stack that the TextParser uses to keep
@@ -18,7 +20,8 @@ class TaskJuggler::TextParser
   # also store the function that must be called to store the collected values.
   class StackElement
 
-    attr_reader :val, :state, :function, :sourceFileInfo
+    attr_reader :val, :function, :sourceFileInfo, :firstSourceFileInfo
+    attr_accessor :state
 
     # Create a new stack element. _rule_ is the TextParserRule that triggered
     # the creation of this element. _function_ is the function that will be
@@ -30,6 +33,8 @@ class TaskJuggler::TextParser
       @val = []
       # Array to store the source file references for the collected values.
       @sourceFileInfo = []
+      # A shortcut to the first non-nil sourceFileInfo.
+      @firstSourceFileInfo = nil
       # Counter used for StackElement::store()
       @position = 0
       # The method that will process the collected values.
@@ -37,14 +42,30 @@ class TaskJuggler::TextParser
       @state = state
     end
 
+    # Insert the value _val_ at the position _index_. It also stores the
+    # _sourceFileInfo_ for this element. In case _multiValue_ is true, the
+    # old value is not overwritten, but values are stored in an
+    # TextParserResultArray object.
     def insert(index, val, sourceFileInfo, multiValue)
       if multiValue
-        @val[index] = [] unless @val[index]
+        if @val[index]
+          # We already have a value for this token position.
+          unless @val[index].is_a?(TextParserResultArray)
+            # This should never happen.
+            raise "#{@val[index].class} must be an Array"
+          end
+        else
+          @val[index] = TextParserResultArray.new
+        end
+        # Just append the value and apply the special Array merging.
         @val[index] << val
       else
         @val[index] = val
       end
       @sourceFileInfo[index] = sourceFileInfo
+      # Store the first SFI for faster access.
+      @firstSourceFileInfo = sourceFileInfo unless @firstSourceFileInfo
+      val
     end
 
     # Store a collected value and move the position to the next pattern.
