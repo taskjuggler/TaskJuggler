@@ -37,7 +37,7 @@ class TaskJuggler::TextParser
       @state = state
     end
 
-    def insert(index, val, sourceFileInfo = nil, multiValue)
+    def insert(index, val, sourceFileInfo, multiValue)
       if multiValue
         @val[index] = [] unless @val[index]
         @val[index] << val
