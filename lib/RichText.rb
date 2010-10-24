@@ -73,6 +73,10 @@ class TaskJuggler
 
     attr_reader :inputText, :messageHandler
 
+    # The Parser uses complex to setup data structures that are identical for
+    # all RichText instances. So, we'll share them across the instances.
+    @@parser = nil
+
     # Create a rich text object by passing a String with markup elements to it.
     # _text_ must be plain text with MediaWiki compatible markup elements. In
     # case an error occurs, an exception of type TjException will be raised.
@@ -94,12 +98,20 @@ class TaskJuggler
       @functionHandlers.each do |h|
         rti.registerFunctionHandler(h)
       end
-      # Parse the input text into an abstract syntax tree.
-      parser = RichTextParser.new(@messageHandler, rti, sectionCounter,
-                                  tokenSet)
-      parser.open(@inputText)
+
+      # We'll setup the RichTextParser once and share it across all instances.
+      if @@parser
+        # We already have a RichTextParser that we can reuse.
+        @@parser.reuse(@messageHandler, rti, sectionCounter, tokenSet)
+      else
+        # There is no RichTextParser yet, create one.
+        @@parser = RichTextParser.new(@messageHandler, rti, sectionCounter,
+                                      tokenSet)
+      end
+
+      @@parser.open(@inputText)
       # Parse the input text and convert it to the intermediate representation.
-      return nil if (tree = parser.parse(:richtext)) == false
+      return nil if (tree = @@parser.parse(:richtext)) == false
 
       # In case the result is empty, use an empty RichTextElement as result
       tree = RichTextElement.new(rti, :richtext, nil) unless tree

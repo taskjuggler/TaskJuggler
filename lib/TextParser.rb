@@ -19,11 +19,11 @@ require 'Log'
 
 class TaskJuggler
 
-  # The TextParser implements a regular LALR(1) parser. It uses a dynamically
-  # compiled state machine. Dynamically means, that the syntax can be extended
-  # during the parse process. This allows support for languages that can
-  # extend themself. The TaskJuggler syntax is such an beast. Traditional yacc
-  # generated parsers would fail with such a syntax.
+  # The TextParser implements a somewhat modified LL(1) parser. It uses a
+  # dynamically compiled state machine. Dynamically means, that the syntax can
+  # be extended during the parse process. This allows support for languages
+  # that can extend their syntax during the parse process. The TaskJuggler
+  # syntax is such an beast.
   #
   # This class is just a base class. A complete parser would derive from this
   # class and implement the rule set and the functions _nextToken()_ and
@@ -188,7 +188,6 @@ class TaskJuggler
     def parse(ruleName)
       @stack = []
       @@expectedTokens = []
-      updateParserTables
       begin
         result = parseFSM(@rules[ruleName])
       rescue TjException => msg
@@ -270,53 +269,65 @@ class TaskJuggler
           transition = state.transition(token = getNextToken)
         end
 
-        if transition.nil?
-          # We've reached the end of a rule. There is no pre-compiled
-          # transition available. The current token is of no use to us during
-          # this state. We just return it to the scanner. The next state is
-          # determined by the first matching state from the @stack.
-          returnToken(token) if token
-          break if finishPattern(token)
-          state = @stack.last.state
-          next
-        end
+        if transition
+          # Shift: This for normal state transitions. This may be from one
+          # token of a pattern to the next token of the same pattern, to the
+          # start of a new pattern or a loop-back to the start of a pattern of
+          # the same rule. The transition tells us what state we have to
+          # process next.
+          state = transition.state
 
-        # This for normal state transitions. This may be from one token of a
-        # pattern to the next token of the same pattern, to the start of a
-        # new pattern or a loop-back to the start of a pattern of the same
-        # rule. The transition tells us what state we have to process next.
-        state = transition.state
+          # If we have looped-back we need to finish the pattern first. Final
+          # tokens of repeatable rules do have transitions!
+          finishPattern(token) if transition.loopBack
 
-        # We have looped-back and need finish the pattern first. Final token
-        # of repeatable rules do have transitions!
-        finishPattern(token) if transition.loopBack
-
-        # Transitions that enter rules generate states which we need to
-        # resume at when a rule has been completely processed. We push this
-        # list of states on the @stack.
-        stackElement = @stack.last
-        transition.stateStack.each do |s|
-          if stackElement.state && s.pattern == stackElement.state.pattern
-            stackElement.state = s
-          else
-            @stack.push(TextParser::StackElement.new(nil, s))
+          # Transitions that enter rules generate states which we need to
+          # resume at when a rule has been completely processed. We push this
+          # list of states on the @stack.
+          stackElement = @stack.last
+          first = true
+          transition.stateStack.each do |s|
+            if first && s.pattern == stackElement.state.pattern
+              # The first state in the list may just be another state of the
+              # current pattern. In this case, we already have the
+              # StackElement on the @stack. We only need to update the State
+              # for the current StackElement.
+              stackElement.state = s
+            else
+              # For other patterns, we just push a new StackElement onto the
+              # @stack.
+              @stack.push(TextParser::StackElement.new(nil, s))
+            end
+            first = false
           end
-        end
 
-        if state.index == 0
-          # If we have just started with a new pattern (or loop-ed back) we
-          # need to push a new StackEntry onto the @stack. The StackEntry
-          # stores the result of the pattern and keeps the State that we need
-          # to return turn in case we jump to other patterns from this
-          # pattern.
-          function = state.index == state.pattern.tokens.length - 1 ?
-                     state.pattern.function : nil
-          @stack.push(TextParser::StackElement.new(state.pattern.function,
-                                                   state))
-        end
+          if state.index == 0
+            # If we have just started with a new pattern (or loop-ed back) we
+            # need to push a new StackEntry onto the @stack. The StackEntry
+            # stores the result of the pattern and keeps the State that we
+            # need to return to in case we jump to other patterns from this
+            # pattern.
+            function = state.index == state.pattern.tokens.length - 1 ?
+                       state.pattern.function : nil
+            @stack.push(TextParser::StackElement.new(state.pattern.function,
+                                                     state))
+          end
 
-        # Store the token value in the result Array.
-        @stack.last.insert(state.index, token[1], token[2], false)
+          # Store the token value in the result Array.
+          @stack.last.insert(state.index, token[1], token[2], false)
+        else
+          # Reduce: We've reached the end of a rule. There is no pre-compiled
+          # transition available. The current token, if we have one, is of no
+          # use to us during this state. We just return it to the scanner. The
+          # next state is determined by the first matching state from the
+          # @stack.
+          returnToken(token) if token
+          if finishPattern(token)
+            # Accept: We're done with parsing.
+            break
+          end
+          state = @stack.last.state
+        end
       end
 
       @stack[0].val[0]
@@ -347,12 +358,15 @@ class TaskJuggler
       # store the result of the pattern in an Array.
       ruleIsRepeatable = stackEntry.state.rule.repeatable
 
-      # Make the token values and their SourceFileInfo available.
-      @val = stackEntry.val
-      @sourceFileInfo = stackEntry.sourceFileInfo
       state = stackEntry.state
-      # Now call the pattern action to compute the value of the pattern.
-      result = state.pattern.function.nil? ? nil : state.pattern.function.call
+      result = nil
+      if state.pattern.function
+        # Make the token values and their SourceFileInfo available.
+        @val = stackEntry.val
+        @sourceFileInfo = stackEntry.sourceFileInfo
+        # Now call the pattern action to compute the value of the pattern.
+        result = state.pattern.function.call
+      end
 
       # We use the SourceFileInfo of the first token of the pattern to store
       # it with the result of the pattern.

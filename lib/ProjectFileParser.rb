@@ -43,6 +43,7 @@ class TaskJuggler
                      :ID, :ID_WITH_COLON, :ABSOLUTE_ID, :MACRO ]
 
       initRules
+      updateParserTables
 
       @project = nil
     end

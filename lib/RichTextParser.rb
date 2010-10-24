@@ -46,10 +46,21 @@ class TaskJuggler
       limitTokenSet(tokenSet)
       # Load the rule set into the parser.
       initRules
+      updateParserTables
       # The sections and numbered list can each nest 3 levels deep. We use these
       # counter Arrays to generate proper 1.2.3 type labels.
       @sectionCounter = sectionCounter
       @numberListCounter = [ 0, 0, 0, 0 ]
+    end
+
+    def reuse(messageHandler, rti, sectionCounter = [ 0, 0, 0, 0],
+              tokenSet = nil)
+      @blockedVariables = {}
+      @stack = nil
+      @richTextI = rti
+      @messageHandler = messageHandler
+      @sectionCounter = sectionCounter
+      limitTokenSet(tokenSet)
     end
 
     # Construct the parser and get ready to read.
