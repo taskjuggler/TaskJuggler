@@ -65,7 +65,7 @@ class TaskJuggler
       else
         # All other files.
         @parser.setGlobalMacros
-        if @parser.parse(:properties) == false
+        if @parser.parse(:propertiesFile) == false
           Log.exit('parser')
           return false
         end

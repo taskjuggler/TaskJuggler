@@ -18,14 +18,14 @@ class TaskJuggler::TextParser
   # list of Rule objects that are being activated by the transition.
   class StateTransition
 
-    attr_reader :tokenType, :state, :stateStack
+    attr_reader :tokenType, :state, :stateStack, :loopBack
 
-    def initialize(descriptor, state, stateStack)
+    def initialize(descriptor, state, stateStack, loopBack)
       if !descriptor.respond_to?(:length) || descriptor.length != 2
         raise "Bad parameter descriptor: #{descriptor} " +
               "of type #{descriptor.class}"
       end
-      @tokenType = descriptor[1]
+      @tokenType = descriptor[0] == :eof ? :eof : descriptor[1]
 
       if !state.is_a?(State)
         raise "Bad parameter state: #{state} of type #{state.class}"
@@ -37,6 +37,7 @@ class TaskJuggler::TextParser
               "of type #{stateStack.class}"
       end
       @stateStack = stateStack.dup
+      @loopBack = loopBack
     end
 
     def to_s
@@ -49,6 +50,7 @@ class TaskJuggler::TextParser
         end
         str += ")"
       end
+      str += '(loop)' if @loopBack
       str
     end
 
@@ -57,39 +59,38 @@ class TaskJuggler::TextParser
   class State
 
     attr_reader :rule, :pattern, :index, :transitions
-    attr_accessor :triggerAction
 
-    def initialize(rule, pattern = nil, index = nil)
+    def initialize(rule, pattern = nil, index = 0)
       @rule = rule
       @pattern = pattern
       @index = index
 
       @transitions = {}
-      @triggerAction = false
     end
 
     def addTransitions(states, rules)
       if @pattern
         # This is an normal state node.
         @pattern.addTransitionsToState(states, rules, [], self,
-                                       @rule, @index + 1)
+                                       @rule, @index + 1, false)
       else
         # This is a start node.
-        @rule.addTransitionsToState(states, rules, [], self)
+        @rule.addTransitionsToState(states, rules, [], self, false)
       end
     end
 
-    def addTransition(token, nextState, stateStack)
-      tr = StateTransition.new(token, nextState, stateStack)
+    def addTransition(token, nextState, stateStack, loopBack)
+      tr = StateTransition.new(token, nextState, stateStack, loopBack)
       if @transitions.include?(tr.tokenType)
-        raise "Ambiguous transition for #{tr.tokenType} in \n#{self}"
+        raise "Ambiguous transition for #{tr.tokenType} in \n#{self}\n" +
+              "The following transition both match:\n" +
+              "  #{tr}\n  #{@transitions[tr.tokenType]}"
       end
       @transitions[tr.tokenType] = tr
     end
 
     def transition(token)
       #puts "Token: #{token} Expecting: #{expectedTokens.join(', ')}"
-      #puts "Exit rule" if @exit
       if token[0] == :ID
         @transitions[token[1]] || @transitions[:ID]
       elsif token[0] == :LITERAL
@@ -111,8 +112,7 @@ class TaskJuggler::TextParser
       if short
         if @pattern
           str = "#{rule.name} " +
-                "#{rule.patterns.index(@pattern)} #{@index}" +
-                "#{@triggerAction ? ' T' : ''}"
+                "#{rule.patterns.index(@pattern)} #{@index}"
         else
           str = "#{rule.name} (Starting Node)"
         end
@@ -120,8 +120,7 @@ class TaskJuggler::TextParser
         if @pattern
           str = "=== State: #{rule.name} " +
                 "#{rule.patterns.index(@pattern)} #{@index}" +
-                "#{@triggerAction ? ' T' : ''} #{'=' * 40}\n"
-                "Pattern: #{@pattern}\n"
+                " #{'=' * 40}\nPattern: #{@pattern}\n"
         else
           str = "=== State: #{rule.name} (Starting Node) #{'=' * 30}\n"
         end
@@ -132,7 +131,7 @@ class TaskJuggler::TextParser
                  " => #{targetStr}\n"
         end
         str += "#{'=' * 76}\n"
-        end
+      end
       str
     end
 

@@ -13,8 +13,8 @@ textreport r1 "R1" {
 textreport r2 "R2" {
   center "<[report id='r3']>"
 }
+# MARK: error 19 rtp_report_recursion
 textreport r3 "R3" {
   left "Hello, world!"
-# MARK: error 19 rtp_report_recursion
   center "<[report id='r1']>"
 }

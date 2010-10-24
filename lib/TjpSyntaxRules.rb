@@ -155,7 +155,7 @@ EOT
     repeatable
 
     pattern(%w( _alternative !resourceId !moreAlternatives ), lambda {
-      ([ @val[1] ] + @val[2]).each do |candidate|
+      ([ @val[1] ] + (@val[2] ? @val[2] : [])).each do |candidate|
         @allocate.addCandidate(candidate)
       end
     })
@@ -558,7 +558,8 @@ EOT
 
     pattern(%w( _celltext !logicalExpression $STRING ), lambda {
       @column.cellText.addPattern(
-        CellSettingPattern.new(newRichText(@val[2]), @val[1]))
+        CellSettingPattern.new(newRichText(@val[2], @sourceFileInfo[2]),
+                               @val[1]))
     })
     doc('celltext.column', <<'EOT'
 Specifies an alternative content that is used for the cells of the column.
@@ -660,7 +661,8 @@ EOT
 
     pattern(%w( _tooltip !logicalExpression $STRING ), lambda {
       @column.tooltip.addPattern(
-        CellSettingPattern.new(newRichText(@val[2]), @val[1]))
+        CellSettingPattern.new(newRichText(@val[2], @sourceFileInfo[2]),
+                               @val[1]))
     })
     doc('tooltip.column', <<'EOT'
 Specifies an alternative content for the tooltip. This will replace the
@@ -752,7 +754,8 @@ EOT
               "'Some more details' is not a valid value",
               @sourceFileInfo[1])
       end
-      @journalEntry.details = newRichText(@val[1], rtTokenSetMore)
+      @journalEntry.details = newRichText(@val[1], @sourceFileInfo[1],
+                                          rtTokenSetMore)
     })
     doc('details', <<'EOT'
 This is a continuation of the [[summary]] of the journal or status entry. It
@@ -1220,7 +1223,7 @@ EOT
 
   def rule_headline
     pattern(%w( _headline $STRING ), lambda {
-      @property.set('headline', newRichText(@val[1]))
+      @property.set('headline', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('headline', <<'EOT'
 Specifies the headline for a report.
@@ -1692,7 +1695,7 @@ EOT
   def rule_listOfDays
     pattern(%w( !weekDayInterval !moreListOfDays), lambda {
       weekDays = Array.new(7, false)
-      ([ @val[0] ] + @val[1]).each do |dayList|
+      ([ @val[0] ] + (@val[1] ? @val[1] : [])).each do |dayList|
         7.times { |i| weekDays[i] = true if dayList[i] }
       end
       weekDays
@@ -1704,7 +1707,7 @@ EOT
       [ ]
     })
     pattern(%w( !timeInterval !moreTimeIntervals ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -2100,7 +2103,6 @@ EOT
   end
 
   def rule_operatorAndOperand
-    optional
     pattern(%w( !operator !operand), lambda{
       [ @val[0], @val[1] ]
     })
@@ -2195,7 +2197,7 @@ EOT
 
   def rule_outputFormats
     pattern(%w( !outputFormat !moreOutputFormats ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -2414,7 +2416,7 @@ EOT
 
   def rule_projectIDs
     pattern(%w( $ID !moreProjectIDs ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -2504,8 +2506,7 @@ EOT
   end
 
   def rule_properties
-    pattern(%w( !propertiesBody . ))
-    lastSyntaxToken(1)
+    pattern(%w( !propertiesBody ))
   end
 
   def rule_propertiesBody
@@ -2633,8 +2634,12 @@ EOT
     example('TimeSheet1', '2')
   end
 
+  def rule_propertiesFile
+    pattern(%w( !propertiesBody . ))
+  end
+
   def rule_propertiesInclude
-    pattern(%w( _include !includeProperties !properties ), lambda {
+    pattern(%w( _include !includeProperties !properties . ), lambda {
     })
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written
@@ -2701,7 +2706,9 @@ EOT
   def rule_relativeId
     pattern(%w( _! !moreBangs !idOrAbsoluteId ), lambda {
       str = '!'
-      @val[1].each { |bang| str += bang }
+      if @val[1]
+        @val[1].each { |bang| str += bang }
+      end
       str += @val[2]
       str
     })
@@ -3024,7 +3031,7 @@ EOT
     })
 
     pattern(%w( _caption $STRING ), lambda {
-      @property.set('caption', newRichText(@val[1]))
+      @property.set('caption', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('caption', <<'EOT'
 The caption will be embedded in the footer of the table or data segment. The
@@ -3035,7 +3042,7 @@ EOT
     example('Caption', '1')
 
     pattern(%w( _center $STRING ), lambda {
-      @property.set('center', newRichText(@val[1]))
+      @property.set('center', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('center', <<'EOT'
 This attribute defines the center section of the [[textreport]]. The text will
@@ -3060,7 +3067,7 @@ EOT
     pattern(%w( !reportEnd ))
 
     pattern(%w( _epilog $STRING ), lambda {
-      @property.set('epilog', newRichText(@val[1]))
+      @property.set('epilog', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('epilog', <<'EOT'
 Define a text section that is printed right after the actual report data. The
@@ -3077,7 +3084,7 @@ EOT
        )
 
     pattern(%w( _footer $STRING ), lambda {
-      @property.set('footer', newRichText(@val[1]))
+      @property.set('footer', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('footer', <<'EOT'
 Define a text section that is put at the bottom of the report. The
@@ -3089,7 +3096,7 @@ EOT
     pattern(%w( !formats ))
 
     pattern(%w( _header $STRING ), lambda {
-      @property.set('header', newRichText(@val[1]))
+      @property.set('header', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('header', <<'EOT'
 Define a text section that is put at the top of the report. The
@@ -3104,7 +3111,7 @@ EOT
     pattern(%w( !hidetask ))
 
     pattern(%w( _left $STRING ), lambda {
-      @property.set('left', newRichText(@val[1]))
+      @property.set('left', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('left', <<'EOT'
 This attribute defines the left margin section of the [[textreport]]. The text
@@ -3124,7 +3131,7 @@ EOT
     pattern(%w( !reportPeriod ))
 
     pattern(%w( _prolog $STRING ), lambda {
-      @property.set('prolog', newRichText(@val[1]))
+      @property.set('prolog', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('prolog', <<'EOT'
 Define a text section that is printed right before the actual report data. The
@@ -3141,7 +3148,7 @@ EOT
     pattern(%w( !report ))
 
     pattern(%w( _right $STRING ), lambda {
-      @property.set('right', newRichText(@val[1]))
+      @property.set('right', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('right', <<'EOT'
 This attribute defines the right margin section of the [[textreport]]. The text
@@ -3509,7 +3516,7 @@ EOT
 
   def rule_resourceLeafList
     pattern(%w( !leafResourceId !moreLeafResources ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -4199,7 +4206,8 @@ EOT
       rtTokenSetIntro =
         [ :LINEBREAK, :SPACE, :WORD, :BOLD, :ITALIC, :CODE, :BOLDITALIC,
           :HREF, :HREFEND ]
-      @journalEntry.summary = newRichText(@val[1], rtTokenSetIntro)
+      @journalEntry.summary = newRichText(@val[1], @sourceFileInfo[1],
+                                          rtTokenSetIntro)
     })
     doc('summary', <<'EOT'
 This is the introductory part of the journal or status entry. It should
@@ -4283,7 +4291,7 @@ EOT
     pattern(%w( !journalEntry ))
 
     pattern(%w( _note $STRING ), lambda {
-      @property.set('note', newRichText(@val[1]))
+      @property.set('note', newRichText(@val[1], @sourceFileInfo[1]))
     })
     doc('note.task', <<'EOT'
 Attach a note to the task. This is usually a more detailed specification of
@@ -4432,7 +4440,7 @@ EOT
 
   def rule_taskDepList
     pattern(%w( !taskDep !moreDepTasks ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 
@@ -4445,7 +4453,7 @@ EOT
         id = (@property ? @property.fullId + '.' : '') + @val[1]
         if @project.task(id)
           error('task_exists', "Task #{id} has already been defined.",
-                @sourceFileInfo[1])
+                @sourceFileInfo[0])
         end
       end
       @property = Task.new(@project, @val[1], @val[2], @property)
@@ -4504,7 +4512,7 @@ EOT
 
   def rule_taskPredList
     pattern(%w( !taskPred !morePredTasks ), lambda {
-      [ @val[0] ] + @val[1]
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
   end
 

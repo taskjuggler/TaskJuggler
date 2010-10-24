@@ -53,7 +53,7 @@ class TestReportGenerator < Test::Unit::TestCase
     Dir.glob(path + 'TestSuite/ReportGenerator/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       tj = TaskJuggler.new(true)
-      assert(tj.parse([ f ]), "Parser failed for ${f}")
+      assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
       assert(tj.generateReports(@tmpDir), "Report generator failed for #{f}")
       assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")

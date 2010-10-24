@@ -35,32 +35,38 @@ class TaskJuggler
       })
     end
 
-    # The following syntax elements are all block elements that can span
-    # multiple lines.
     def rule_sections
       optional
       repeatable
-      pattern(%w( !headlines !blankLines ), lambda {
+      pattern(%w( !section !blankLines ), lambda {
         @val[0]
       })
-      pattern(%w( $HLINE !blankLines ), lambda {
+    end
+
+    # The following syntax elements are all block elements that can span
+    # multiple lines.
+    def rule_section
+      pattern(%w( !headlines ), lambda {
+        @val[0]
+      })
+      pattern(%w( $HLINE ), lambda {
         RichTextElement.new(@richTextI, :hline, @val[0])
       })
-      pattern(%w( !paragraph !blankLines ), lambda {
+      pattern(%w( !paragraph ), lambda {
         @val[0]
       })
-      pattern(%w( !pre !blankLines ), lambda {
+      pattern(%w( !pre ), lambda {
         RichTextElement.new(@richTextI, :pre, @val[0].join)
       })
-      pattern(%w( !bulletList1 !blankLines ), lambda {
+      pattern(%w( !bulletList1 ), lambda {
 
         RichTextElement.new(@richTextI, :bulletlist1, @val[0])
       })
-      pattern(%w( !numberList1 !blankLines ), lambda {
+      pattern(%w( !numberList1 ), lambda {
         @numberListCounter = [ 0, 0, 0, 0 ]
         RichTextElement.new(@richTextI, :numberlist1, @val[0])
       })
-      pattern(%w( !blockFunction !blankLines ), lambda {
+      pattern(%w( !blockFunction ), lambda {
         @val[0]
       })
     end
@@ -242,19 +248,19 @@ class TaskJuggler
         # Since the italic end marker will disappear we need to make sure
         # there was no space before it.
         @val[2].last.appendSpace = false if @val[2].last
-        el.appendSpace = !@val[4].empty?
+        el.appendSpace = !@val[4].nil?
         el
       })
       pattern(%w( $BOLD !space !plainTextWithLinks $BOLD !space ), lambda {
         el = RichTextElement.new(@richTextI, :bold, @val[2])
         @val[2].last.appendSpace = false if @val[2].last
-        el.appendSpace = !@val[4].empty?
+        el.appendSpace = !@val[4].nil?
         el
       })
       pattern(%w( $CODE !space !plainTextWithLinks $CODE !space ), lambda {
         el = RichTextElement.new(@richTextI, :code, @val[2])
         @val[2].last.appendSpace = false if @val[2].last
-        el.appendSpace = !@val[4].empty?
+        el.appendSpace = !@val[4].nil?
         el
       })
       pattern(%w( $BOLDITALIC !space !plainTextWithLinks $BOLDITALIC !space ),
@@ -263,13 +269,12 @@ class TaskJuggler
                             :bold, RichTextElement.new(@richTextI,
                                                        :italic, @val[2]))
         @val[2].last.appendSpace = false if @val[2].last
-        el.appendSpace = !@val[4].empty?
+        el.appendSpace = !@val[4].nil?
         el
       })
     end
 
     def rule_plainTextWithLinks
-      repeatable
       pattern(%w( !plainText ), lambda {
         @val[0]
       })
@@ -291,34 +296,34 @@ class TaskJuggler
             error('rt_file_bad_ext', "Unsupported file type: #{extension}")
           end
           el.data = img = RichTextImage.new(locator)
-          @val[2].each do |token|
-            if token[0, 4] == 'alt='
-              img.altText = token[4..-1]
-            elsif %w( top middle bottom baseline sub super text-top
-                      text-bottom ).include?(token)
-              img.verticalAlign = token
-            else
-              error('rt_bad_file_option',
-                    "Unknown option '#{token}' for file reference " +
-                    "#{v1}.")
+          if @val[2]
+            @val[2].each do |token|
+              if token[0, 4] == 'alt='
+                img.altText = token[4..-1]
+              elsif %w( top middle bottom baseline sub super text-top
+                        text-bottom ).include?(token)
+                img.verticalAlign = token
+              else
+                error('rt_bad_file_option',
+                      "Unknown option '#{token}' for file reference " +
+                      "#{v1}.")
+              end
             end
           end
         else
+          val = @val[2] || v1
           el = RichTextElement.new(@richTextI, :ref,
-                                   RichTextElement.new(@richTextI,
-                                                       :text, @val[2].empty? ?
-                                                       v1 : @val[2]))
+                                   RichTextElement.new(@richTextI, :text, val))
           el.data = v1
-          el.appendSpace = !@val[4].empty?
+          el.appendSpace = !@val[4].nil?
         end
         el
       })
       pattern(%w( $HREF !wordWithQueries !space !plainTextWithQueries
                   $HREFEND !space ), lambda {
-        el = RichTextElement.new(@richTextI, :href, @val[3].empty? ?
-                                 @val[1] : @val[3])
+        el = RichTextElement.new(@richTextI, :href, @val[3] || @val[1])
         el.data = RichTextElement.new(@richTextI, :richtext, @val[1])
-        el.appendSpace = !@val[5].empty?
+        el.appendSpace = !@val[5].nil?
         el
       })
     end
@@ -361,7 +366,7 @@ class TaskJuggler
       optional
       pattern(%w( $WORD !space ), lambda {
         el = RichTextElement.new(@richTextI, :text, @val[0])
-        el.appendSpace = !@val[1].empty?
+        el.appendSpace = !@val[1].nil?
         el
       })
     end
@@ -370,7 +375,7 @@ class TaskJuggler
       repeatable
       optional
       pattern(%w( !wordWithQueries !space ), lambda {
-        @val[0][-1].appendSpace = true if !@val[1].empty?
+        @val[0][-1].appendSpace = true if @val[1]
         @val[0]
       })
     end
@@ -394,7 +399,7 @@ class TaskJuggler
       pattern(%w( $BLOCKFUNCSTART $ID !functionArguments $BLOCKFUNCEND ),
               lambda {
         args = {}
-        @val[2].each { |arg| args[arg[0]] = arg[1] }
+        @val[2].each { |arg| args[arg[0]] = arg[1] } if @val[2]
         el = RichTextElement.new(@richTextI, :blockfunc)
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.
@@ -412,7 +417,7 @@ class TaskJuggler
                   !space ),
               lambda {
         args = {}
-        @val[2].each { |arg| args[arg[0]] = arg[1] }
+        @val[2].each { |arg| args[arg[0]] = arg[1] } if @val[2]
         el = RichTextElement.new(@richTextI, :inlinefunc)
         # Data is a 2 element Array with the function name and a Hash for the
         # arguments.
@@ -421,7 +426,7 @@ class TaskJuggler
                 "Unsupported inline function #{@val[1]}")
         end
         el.data = [@val[1], args ]
-        el.appendSpace = !@val[4].empty?
+        el.appendSpace = !@val[4].nil?
         el
       })
     end

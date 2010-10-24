@@ -364,21 +364,24 @@ class TaskJuggler
         # @fileStack.
         @finishLastFile = false
         #Log << "Completed file #{@cf.fileName}"
-        @cf.close
+        @cf.close if @cf
         @fileStack.pop
 
         if @fileStack.empty?
           # We are done with the top-level file now.
           @cf = @tokenBuffer = nil
           @finishLastFile = true
-          return [ :eof, '<END>', @startOfToken ]
+          return [ :endOfText, '<EOT>', @startOfToken ]
         else
           # Continue parsing the file that included the current file.
           @cf, tokenBuffer = @fileStack.last
           Log << "Parsing file #{@cf.fileName} ..."
           # If we have a left over token from previously processing this file,
           # return it now.
-          return tokenBuffer if tokenBuffer
+          if tokenBuffer
+            @finishLastFile = true if tokenBuffer[0] == :eof
+            return tokenBuffer
+          end
         end
       end
 
@@ -468,7 +471,7 @@ class TaskJuggler
     end
 
     def warning(id, text, sfi = nil, data = nil)
-      message(:warning, id, text, sfi, @cf ? @cf.line : nil, data)
+      message(:warning, id, text, sfi, data)
     end
 
     private

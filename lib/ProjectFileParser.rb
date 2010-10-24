@@ -209,11 +209,10 @@ class TaskJuggler
     # data into a MessageHandler message that points to the correct location.
     # This is necessary, because the RichText parser knows nothing about the
     # actual input file. So we have to map the error location in the RichText
-    # input stream back to the position in the project file.
-    # To limit the supported set of variable tokens, a subset can be provided
-    # by _tokenSet_.
-    def newRichText(text, tokenSet = nil)
-      sfi = sourceFileInfo
+    # input stream back to the position in the project file. _sfi_ is the
+    # SourceFileInfo of the input string. To limit the supported set of
+    # variable tokens, a subset can be provided by _tokenSet_.
+    def newRichText(text, sfi, tokenSet = nil)
       rText = RichText.new(text, RTFHandlers.create(@project, sfi))
       unless (rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet))
         rText.messageHandler.messages.each do |msg|

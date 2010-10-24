@@ -75,8 +75,8 @@ class TaskJuggler::TextParser
         type = [ :reference, :variable, :literal, :eof ]['!$_.'.index(token[0])]
         # For literals we use a String to store the token content. For others,
         # a symbol is better suited.
-        name = type == :literal || type == :eof ?
-               token[1..-1] : token[1..-1].intern
+        name = type == :literal ?
+               token[1..-1] : (type == :eof ? '<END>' : token[1..-1].intern)
         # We favor an Array to store the 2 elements over a Hash for
         # performance reasons.
         @tokens << [ type, name ]
@@ -98,17 +98,17 @@ class TaskJuggler::TextParser
     end
 
     def addTransitionsToState(states, rules, stateStack, sourceState,
-                              destRule, destIndex)
+                              destRule, destIndex, loopBack)
       #puts ">>> SourceRule: #{sourceState.rule.name} #{sourceState.rule.patterns.index(self)} index: #{sourceState.index}"
       #puts ">>> DestRule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
 
       loop do
         if destIndex >= @tokens.length
           if sourceState.rule == destRule
-            sourceState.triggerAction = true
             if destRule.repeatable
               #puts "Looping back 1"
-              destRule.addTransitionsToState(states, rules, [], sourceState)
+              destRule.addTransitionsToState(states, rules, [], sourceState,
+                                             true)
             end
           end
           return
@@ -130,23 +130,20 @@ class TaskJuggler::TextParser
           # Avoid endless recursions
           unless stateStack.include?(skippedState)
             stateStack.push(skippedState)
-            refRule.addTransitionsToState(states, rules, stateStack, sourceState)
+            refRule.addTransitionsToState(states, rules, stateStack,
+                                          sourceState, loopBack)
             stateStack.pop
           end
 
           # If the referenced rule is not optional, we have no further
           # transitions for this pattern at this destIndex.
           break unless refRule.optional?(rules)
-
-        when :eof
-          #puts " + [#{token[0]}, #{token[1]}] (nil)"
-          sourceState.transitions[:eof] = :eof
-          break
         else
           unless (destState = states[[ destRule, self, destIndex ]])
             raise "Destination state not found"
           end
-          sourceState.addTransition(@tokens[destIndex], destState, stateStack)
+          sourceState.addTransition(@tokens[destIndex], destState, stateStack,
+                                    loopBack)
           # Fixed tokens are never optional. There are no more transitions for
           # this pattern at this index.
           break
@@ -340,7 +337,7 @@ class TaskJuggler::TextParser
         when :literal
           str += "#{name} "
         when :eof
-          str += "<EOF> "
+          str += ". "
         else
           raise "Unknown type #{type}"
         end

@@ -2,7 +2,7 @@ project "Test" 2009-11-28 +2m
 
 task t "T" {
 	journalentry 2009-11-28 "Just testing" {
-# MARK: error 7 unsupported_token
+# MARK: error 8 unsupported_token
     summary -8<-
       This is all good.
       * This is bad.
