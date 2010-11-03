@@ -581,6 +581,7 @@ class TaskJuggler
       tcLine = ReportTableLine.new(columnDef.column.cell1.special,
                                    line.property, line.scopeLine)
 
+      PlaceHolderCell.new(line, tcLine)
       # Depending on the property type we use different generator functions.
       if property.is_a?(Task)
         genCalChartTaskCell(query, tcLine, columnDef, start, sameTimeNextFunc)

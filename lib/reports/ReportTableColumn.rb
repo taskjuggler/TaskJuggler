@@ -71,9 +71,9 @@ class TaskJuggler
     # Put the abstract representation into an Array. _csv_ is an Array of Arrays
     # of Strings. We have an Array with Strings for every cell. The outer Array
     # holds the Arrays representing the lines.
-    def to_csv(csv)
+    def to_csv(csv, startColumn)
       # For CSV reports we can only include the first header line.
-      @cell1.to_csv(csv)
+      @cell1.to_csv(csv, startColumn, 0)
     end
 
   end

@@ -251,8 +251,9 @@ class TaskJuggler
       @type.id + ' ' + @value.to_s + 'h'
     end
 
-    def to_s(query)
-      query ? query.scaleDuration(query.project.slotsToDays(@value)) : @value
+    def to_s(query = nil)
+      query ? query.scaleDuration(query.project.slotsToDays(@value)) :
+              @value.to_s
     end
 
   end
@@ -571,10 +572,9 @@ class TaskJuggler
 
     def to_tjp
       out = []
-      @value.each { |r| out << r[0].fullId }
+      @value.each { |t, onEnd| out << t.fullId }
       @type.id + " " + out.join(', ')
     end
-
   end
 
   class WorkingHoursAttribute < AttributeBase

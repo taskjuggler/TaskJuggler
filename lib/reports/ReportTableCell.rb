@@ -141,35 +141,43 @@ class TaskJuggler
     end
 
     # Add the text content of the cell to an Array of Arrays form of the table.
-    def to_csv(csv)
+    def to_csv(csv, columnIdx, lineIdx)
       # We only support left indentation in CSV files as the spaces for right
       # indentation will be disregarded by most applications.
       indent = @indent && @alignment == :left ? '  ' * @indent : ''
-      cell =
-        if @special
-          @special.to_csv
-          indent = nil
-        elsif @data && @data.is_a?(String)
-          @data
-        elsif @text
-          if @text.respond_to?('functionHandler')
-            @text.setQuery(@query)
+      columns = 1
+      if @special
+        # This is for nested tables. They will be inserted as whole columns
+        # in the existing table.
+        csv[lineIdx][columnIdx] = nil
+        columns = @special.to_csv(csv, columnIdx)
+      else
+        cell =
+          if @data && @data.is_a?(String)
+            @data
+          elsif @text
+            if @text.respond_to?('functionHandler')
+              @text.setQuery(@query)
+            end
+            str = @text.to_s
+            # Remove any trailing line breaks. These don't really make much
+            # sense in CSV files.
+            while str[-1] == ?\n
+              str.chomp!
+            end
+            str
           end
-          str = @text.to_s
-          # Remove any trailing line breaks. These don't really make much
-          # sense in CSV files.
-          while str[-1] == ?\n
-            str.chomp!
-          end
-          str
-        end
 
-      # Try to convert numbers and other types to their native Ruby type if
-      # they are supported by CSVFile.
-      native = CSVFile.strToNative(cell)
+        # Try to convert numbers and other types to their native Ruby type if
+        # they are supported by CSVFile.
+        native = CSVFile.strToNative(cell)
 
-      # Only for String objects, we add the indentation.
-      csv[-1] << (native.is_a?(String) ? indent + native : native)
+        # Only for String objects, we add the indentation.
+        csv[lineIdx][columnIdx] = (native.is_a?(String) ? indent + native :
+                                                          native)
+      end
+
+      return columns
     end
 
     private
@@ -321,6 +329,31 @@ class TaskJuggler
                                        'id' => "ID#{trigger.object_id}"))
       ltDiv << (tooltip.respond_to?('to_html') ? tooltip.to_html :
                                                  XMLText.new(tooltip))
+    end
+
+  end
+
+  # This class is used to model cells that are just placeholders for a line of
+  # an embedded ReportTable.
+  class PlaceHolderCell
+
+    # Create a new placeholder cell. _line_ is the line that this cell belongs
+    # to. _embeddedLine_ is the ReportTableLine that is embedded in this cell.
+    def initialize(line, embeddedLine)
+      @line = line
+      @line.addCell(self) if line
+      @embeddedLine = embeddedLine
+    end
+
+    # Add the current cell to the _csv_ CSV Arrays. _columnIdx_ is the start
+    # column in the _csv_. _lineIdx_ is the index of the current line. The
+    # return value is the number of added cells.
+    def to_csv(csv, columnIdx, lineIdx)
+      @embeddedLine.to_csv(csv, columnIdx, lineIdx)
+    end
+
+    def to_html
+      nil
     end
 
   end

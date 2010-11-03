@@ -214,35 +214,6 @@ EOT
       # CSV format can only handle the first element.
       return nil unless (csv = @content.to_csv)
 
-      # Expand nested tables into the outer table.
-      columnIdx = 0
-      while columnIdx < csv[0].length do
-        if csv[0][columnIdx].is_a?(Array)
-          # We've found a nested table.
-          nestedTable = csv[0][columnIdx]
-          # The nested table must have exactly as many lines as the outer table.
-          if csv.length != nestedTable.length
-            raise "Table size mismatch"
-          end
-          # Insert the nested table into the lines of the outer table.
-          csv.each do |line|
-            lineIdx = csv.index(line)
-            if lineIdx == 0
-              # The header cell can be reused.
-              line[columnIdx] = nestedTable[lineIdx]
-            else
-              # For normal lines we have no cells for the table. Just inject
-              # them.
-              line.insert(columnIdx, nestedTable[lineIdx])
-            end
-            # Make sure there are no more Arrays nested into the line.
-            line.flatten!
-          end
-        else
-          columnIdx += 1
-        end
-      end
-
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
       begin

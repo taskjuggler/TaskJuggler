@@ -55,7 +55,7 @@ class TaskJuggler
         file = File.open(fileName, 'r')
       end
 
-      @data = parse(file.read)
+      parse(file.read)
 
       file.close unless fileName == '.'
       @data

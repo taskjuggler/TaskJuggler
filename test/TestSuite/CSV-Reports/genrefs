@@ -2,5 +2,5 @@
 
 for f in *.tjp ; do
   basename=`echo $f | sed 's/.tjp//g'`
-  tj3 $f > $basename-Reference.csv
+  tj3 --silent $f > $basename-Reference.csv
 done

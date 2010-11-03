@@ -248,7 +248,7 @@ class TaskJuggler
     end
 
     # Switch the parser to another mode. The scanner will then only detect
-    # with pattens of that _newMode_.
+    # patterns of that _newMode_.
     def mode=(newMode)
       #puts "**** New mode: #{newMode}"
       @activePatterns = @patternsByMode[newMode]

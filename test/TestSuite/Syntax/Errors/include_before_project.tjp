@@ -1,0 +1,2 @@
+# MARK: error 2 include_before_project
+include "foo.tji"

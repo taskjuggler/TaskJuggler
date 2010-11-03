@@ -262,7 +262,7 @@ class TaskJuggler
 
       loop do
         if state.transitions.empty?
-          # The final states of each pattern has no pre-compiled transitions.
+          # The final states of each pattern have no pre-compiled transitions.
           # For such a state, we don't need to get a new token.
           transition = token = nil
         else

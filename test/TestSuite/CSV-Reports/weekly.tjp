@@ -1,0 +1,9 @@
+project "Weekly" "1.0" 2007-12-16 +3m
+include "project-1.tji"
+
+resourcereport '.' {
+  formats csv
+  columns name, weekly, duration, weekly, effort
+  period 2007-12-31 + 3w
+  hidetask 0
+}

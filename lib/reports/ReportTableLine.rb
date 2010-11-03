@@ -83,10 +83,12 @@ class TaskJuggler
 
     # Convert the intermediate format into an Array of values. One entry for
     # every column cell of this line.
-    def to_csv(csv)
+    def to_csv(csv, startColumn, lineIdx)
+      columnIdx = startColumn
       @cells.each do |cell|
-        cell.to_csv(csv)
+        columnIdx += cell.to_csv(csv, columnIdx, lineIdx)
       end
+      columnIdx - startColumn
     end
 
   end

@@ -52,11 +52,9 @@ class TestScheduler < Test::Unit::TestCase
   # Compare the output CSV (passed as String) with the content of the CSV
   # reference files _refFile_.
   def compareCSVs(outStr, refFile)
-    ref = []
-    TaskJuggler::CSVFile.new(ref).read(refFile)
+    ref = TaskJuggler::CSVFile.new.read(refFile)
 
-    out = []
-    TaskJuggler::CSVFile.new(out).parse(outStr)
+    out = TaskJuggler::CSVFile.new.parse(outStr)
     assert(ref.length == out.length,
            "Line number mismatch (#{out.length} instead of #{ref.length}) " +
            "in #{refFile}")

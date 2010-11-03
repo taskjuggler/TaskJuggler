@@ -1321,6 +1321,11 @@ EOT
 
   def rule_includeFile
     pattern(%w( !includeFileName ), lambda {
+      unless @project
+        error('include_before_project',
+              "You must declare the project header before you include other " +
+              "files.")
+      end
       @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
     })
   end
@@ -2401,8 +2406,7 @@ EOT
 
   def rule_projectHeader
     pattern(%w( _project !optionalID $STRING !optionalVersion !interval ), lambda {
-      @project = Project.new(@val[1], @val[2], @val[3],
-                                          @messageHandler)
+      @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
       @projectId = @val[1]

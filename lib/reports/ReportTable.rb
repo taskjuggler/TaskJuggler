@@ -131,16 +131,27 @@ class TaskJuggler
 
     # Convert the intermediate representation into an Array of Arrays. _csv_ is
     # the destination Array of Arrays. It may contain columns already.
-    def to_csv(csv = nil)
-      csv = [ [ ] ] unless csv
-      @columns.each { |col| col.to_csv(csv) }
-
-      @lines.each do |line|
-        # Insert a new Array for each line.
-        csv << []
-        line.to_csv(csv)
+    def to_csv(csv = [[ ]], startColumn = 0)
+      # Generate the header line.
+      columnIdx = startColumn
+      @columns.each do |col|
+        columnIdx += col.to_csv(csv, columnIdx)
       end
-      csv
+
+      if @embedded
+        columnIdx - startColumn
+      else
+        # Content of embedded tables is inserted when generating the
+        # respective Line.
+        lineIdx = 1
+        @lines.each do |line|
+          # Insert a new Array for each line.
+          csv[lineIdx] = []
+          line.to_csv(csv, startColumn, lineIdx)
+          lineIdx += 1
+        end
+        csv
+      end
     end
 
   private

@@ -198,9 +198,9 @@ class TaskJuggler
     end
 
     # This is a noop function.
-    def to_csv
+    def to_csv(csv, startColumn)
       # Can't put a Gantt chart into a CSV file.
-      ''
+      0
     end
 
     # Utility function that convers a date to the corresponding X-position in
