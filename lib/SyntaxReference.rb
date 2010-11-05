@@ -196,7 +196,7 @@ class TaskJuggler
       # Push pattern onto 'stack'.
       stack[pattern] = true
 
-      if pattern[0] == '_{' && pattern[2] == '_}'
+      if pattern[0][1] == '{' && pattern[2][1] == '}'
         # We have found an optional attribute pattern!
         return attributes(pattern[1], false)
       end
@@ -221,23 +221,23 @@ class TaskJuggler
     # rule. The patterns are returned as a hash. For each pattern the hashed
     # boolean value specifies whether the attribute is scenario specific or not.
     def attributes(token, scenarioSpecific)
-      raise "Token #{token} must reference a rule" if token[0] != ?!
-      token = token.slice(1, token.length - 1)
+      raise "Token #{token} must reference a rule" if token[0] != :reference
+      token = token[1]
       # Find the matching rule.
       rule = @parser.rules[token]
       attrs = {}
       # Now we look at the first token of each pattern.
       rule.patterns.each do |pattern|
-        if pattern[0][0] == ?_
+        if pattern[0][0] == :literal
           # If it's a terminal symbol, we found what we are looking for. We add
           # it to the attrs hash and mark it as non scenario specific.
           attrs[pattern] = scenarioSpecific
-        elsif pattern[0] == '!scenarioIdCol'
+        elsif pattern[0][0] == :reference && pattern[0][1] == :scenarioIdCol
           # A reference to the !scenarioId rule marks the next token of the
           # pattern as a reference to a rule with all scenario specific
           # attributes.
           attrs.merge!(attributes(pattern[1], true))
-        elsif pattern[0][0] == ?!
+        elsif pattern[0][0] == :reference
           # In case we have a reference to another rule, we just follow the
           # reference. If the pattern is documented we don't have to follow the
           # reference. We can use the pattern instead.
