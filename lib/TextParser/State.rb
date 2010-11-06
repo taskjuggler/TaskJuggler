@@ -15,11 +15,17 @@ class TaskJuggler::TextParser
   # A StateTransition maps a token type to the next state to be
   # processed. A token descriptor is either a Symbol that maps to a RegExp in
   # the TextScanner or an expected String.  The transition may also have a
-  # list of Rule objects that are being activated by the transition.
+  # list of State objects that are being activated by the transition.
   class StateTransition
 
     attr_reader :tokenType, :state, :stateStack, :loopBack
 
+    # Create a new StateTransition object. _descriptor_ is a [ token type,
+    # token value ] touple. _state_ is the State objects this transition
+    # originates at. _stateStack_ is the list of State objects that have been
+    # activated by this transition. _loopBack_ is a boolean flag that
+    # specifies whether the transition describes a loop back to the start of
+    # the Rule or not.
     def initialize(descriptor, state, stateStack, loopBack)
       if !descriptor.respond_to?(:length) || descriptor.length != 2
         raise "Bad parameter descriptor: #{descriptor} " +
@@ -40,6 +46,8 @@ class TaskJuggler::TextParser
       @loopBack = loopBack
     end
 
+    # Generate a human readable form of the TransitionState date. It's only
+    # used for debugging.
     def to_s
       str = "#{@state.rule.name}, " +
             "#{@state.rule.patterns.index(@state.pattern)}, #{@state.index} "
@@ -56,18 +64,37 @@ class TaskJuggler::TextParser
 
   end
 
+  # This State objects describes a state of the TextParser FSM. A State
+  # captures the position in the syntax description that the parser is
+  # currently at. A position is defined by the Rule, the Pattern and the index
+  # of the current token of that Pattern. An index of 0 means, we've just read
+  # the 1st token of the pattern. States which have no Pattern describe the
+  # start of rule. The parser has not yet identified the first token, so it
+  # doesn't know the Pattern yet.
+  #
+  # The actual data of a State is the list of possible StateTransitions to
+  # other states and a boolean flag that specifies if Reduce operations are
+  # valid for this State or not. The transitions are hashed by the token that
+  # would trigger this transition.
   class State
 
     attr_reader :rule, :pattern, :index, :transitions
+    attr_accessor :noReduce
 
     def initialize(rule, pattern = nil, index = 0)
       @rule = rule
       @pattern = pattern
       @index = index
+      # Starting states are always reduceable. Other states may or may not be
+      # reduceable. For now, we assume they are not.
+      @noReduce = !pattern.nil?
 
       @transitions = {}
     end
 
+    # Completed the StateTransition list. We can only call this function after
+    # all State objects for the syntax have been created. So we can't make
+    # this part of the constructor.
     def addTransitions(states, rules)
       if @pattern
         # This is an normal state node.
@@ -79,6 +106,7 @@ class TaskJuggler::TextParser
       end
     end
 
+    # This method adds the actual StateTransition to this State.
     def addTransition(token, nextState, stateStack, loopBack)
       tr = StateTransition.new(token, nextState, stateStack, loopBack)
       if @transitions.include?(tr.tokenType)
@@ -89,9 +117,11 @@ class TaskJuggler::TextParser
       @transitions[tr.tokenType] = tr
     end
 
+    # Find the transition that matches _token_.
     def transition(token)
-      #puts "Token: #{token} Expecting: #{expectedTokens.join(', ')}"
       if token[0] == :ID
+        # The scanner cannot differentiate between IDs and literals that look
+        # like IDs. So we look for literals first and then for IDs.
         @transitions[token[1]] || @transitions[:ID]
       elsif token[0] == :LITERAL
         @transitions[token[1]]
@@ -100,6 +130,8 @@ class TaskJuggler::TextParser
       end
     end
 
+    # Return a comma separated list of token strings that would trigger
+    # transitions for this State.
     def expectedTokens
       tokens = []
       @transitions.each_key do |t|
@@ -108,6 +140,8 @@ class TaskJuggler::TextParser
       tokens
     end
 
+    # Convert the State data into a human readable form. Used for debugging
+    # only.
     def to_s(short = false)
       if short
         if @pattern
@@ -120,6 +154,7 @@ class TaskJuggler::TextParser
         if @pattern
           str = "=== State: #{rule.name} " +
                 "#{rule.patterns.index(@pattern)} #{@index}" +
+                " #{@noReduce ? '' : '(R)'}" +
                 " #{'=' * 40}\nPattern: #{@pattern}\n"
         else
           str = "=== State: #{rule.name} (Starting Node) #{'=' * 30}\n"

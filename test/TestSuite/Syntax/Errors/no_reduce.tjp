@@ -1,0 +1,6 @@
+project test "Test" "1.0" 2010-11-06 +1m 
+
+task t "T" {
+# MARK: error 5 no_reduce
+	effort 1dd
+}

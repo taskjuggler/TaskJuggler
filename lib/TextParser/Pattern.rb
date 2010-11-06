@@ -20,18 +20,18 @@ class TaskJuggler::TextParser
   # are Strings where the first character determines the type of the token.
   # There are 4 known types.
   #
-  # Terminal token: The terminal token is prefixed by an underscore. Terminal
-  # tokens are terminal symbols of the syntax tree. They just represent
-  # themselves.
+  # Terminal token: In the syntax declaration the terminal token is prefixed
+  # by an underscore. Terminal tokens are terminal symbols of the syntax tree.
+  # They just represent themselves.
   #
   # Variable token: The variable token describes values of a certain class such
-  # as strings or numbers. The token is prefixed by a dollar sign and the text
-  # of the token specifies the variable type. See ProjectFileParser for a
-  # complete list of variable types.
+  # as strings or numbers. In the syntax declaration the token is prefixed by
+  # a dollar sign and the text of the token specifies the variable type. See
+  # ProjectFileParser for a complete list of variable types.
   #
   # Reference token: The reference token specifies a reference to another parser
-  # rule. The token is prefixed by a bang and the text matches the name of the
-  # rule. See TextParserRule for details.
+  # rule. In the syntax declaration the token is prefixed by a bang and the
+  # text matches the name of the rule. See TextParserRule for details.
   #
   # End token: The . token marks the expected end of the input stream.
   #
@@ -91,32 +91,48 @@ class TaskJuggler::TextParser
       @transitions = []
     end
 
+    # Generate the state machine states for the pattern. _rule_ is the Rule
+    # that the pattern belongs to. A list of generated State objects will be
+    # returned.
     def generateStates(rule)
       states = []
       @tokens.length.times { |i| states << State.new(rule, self, i) }
       states
     end
 
+    # Add the transitions to the State objects of this pattern. _states_ is a
+    # Hash with all State objects. _rules_ is a Hash with the Rule objects of
+    # the syntax. _stateStack_ is an Array of State objects that have been
+    # traversed before reaching this pattern. _sourceState_ is the State that
+    # the transition originates from. _destRule_, this pattern and _destIndex_
+    # describe the State the transition is leading to. _loopBack_ is boolean
+    # flag, set to true when the transition describes a loop back to the start
+    # of the Rule.
     def addTransitionsToState(states, rules, stateStack, sourceState,
                               destRule, destIndex, loopBack)
-      #puts ">>> SourceRule: #{sourceState.rule.name} #{sourceState.rule.patterns.index(self)} index: #{sourceState.index}"
-      #puts ">>> DestRule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
-
+      # If we hit a token in the pattern that is optional, we need to consider
+      # the next token of the pattern as well.
       loop do
         if destIndex >= @tokens.length
+          # Have we reached the end of the pattern? Such state always trigger
+          # a reduce operation.
+          sourceState.noReduce = false
           if sourceState.rule == destRule
             if destRule.repeatable
-              #puts "Looping back 1"
+              # The transition leads us back to the start of the Rule. This
+              # will generate transitions to the first token of all patterns
+              # of this Rule.
               destRule.addTransitionsToState(states, rules, [], sourceState,
                                              true)
             end
           end
+          # We've reached the end of the pattern. No more transitions to
+          # consider.
           return
         end
 
         # The token descriptor tells us where the transition(s) need to go to.
         tokenType, tokenName = token = @tokens[destIndex]
-        #puts "Token: [#{tokenType}, #{tokenName}]"
 
         case tokenType
         when :reference
@@ -124,14 +140,22 @@ class TaskJuggler::TextParser
           unless (refRule = rules[tokenName])
             raise "Unknown rule #{tokenName} referenced in rule #{refRule.name}"
           end
-          #puts " -> #{refRule.name}"
-          # Merge transitions of this rule with the one we already have.
+          # If we reference another rule from a pattern, we need to come back
+          # to the pattern once we are done with the referenced rule. To be
+          # able to come back, we collect a list of all the States that we
+          # have passed during a reference resolution. This list forms a stack
+          # that is popped during recude operations of the parser FSM.
           skippedState = states[[ destRule, self, destIndex ]]
-          # Avoid endless recursions
+          # Rules may reference themselves directly or indirectly. To avoid
+          # endless recursions of this algorithm, we stop once we have
+          # detected a recursion. We have already all necessary transitions
+          # collected. The recursion will be unrolled in the parser FSM.
           unless stateStack.include?(skippedState)
+            # Push the skipped state on the stateStack before recursing.
             stateStack.push(skippedState)
             refRule.addTransitionsToState(states, rules, stateStack,
                                           sourceState, loopBack)
+            # Once we're done, remove the State from the stateStack again.
             stateStack.pop
           end
 
@@ -142,6 +166,8 @@ class TaskJuggler::TextParser
           unless (destState = states[[ destRule, self, destIndex ]])
             raise "Destination state not found"
           end
+          # We've found a transition to a terminal token. Add the transition
+          # to the source State.
           sourceState.addTransition(@tokens[destIndex], destState, stateStack,
                                     loopBack)
           # Fixed tokens are never optional. There are no more transitions for
@@ -150,11 +176,7 @@ class TaskJuggler::TextParser
         end
 
         destIndex += 1
-
-        #puts "Looping back 2"
       end
-
-      #puts "<<< Rule: #{destRule.name} #{destRule.patterns.index(self)} index: #{destIndex}"
     end
 
     # Set the keyword and documentation text for the pattern.
@@ -254,6 +276,7 @@ class TaskJuggler::TextParser
       to_syntax_r({}, argDocs, rules, skip)
     end
 
+    # Generate a syntax description for this pattern.
     def to_syntax_r(stack, argDocs, rules, skip)
       # If we find ourself on the stack we hit a recursive pattern. This is used
       # in repetitions.
@@ -326,6 +349,8 @@ class TaskJuggler::TextParser
       str
     end
 
+    # Generate a text form of the pattern. This is similar to the syntax in
+    # the original syntax description.
     def to_s
       str = ""
       @tokens.each do |type, name|

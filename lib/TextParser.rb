@@ -37,6 +37,14 @@ class TaskJuggler
   # document a pattern, the functions TextParser#doc, TextParser#descr,
   # TextParser#also and TextParser#arg can be used.
   #
+  # In contrast to conventional LL grammars, we use a slightly improved syntax
+  # descriptions. Repeated patterns are not described by recursive call but we
+  # use a repeat flag for syntax rules that consists of repeatable patterns.
+  # This removes the need for recursion elimination when compiling the state
+  # machine and makes the syntax a lot more readable. However, it adds a bit
+  # more complexity to the state machine. Optional patterns are described by
+  # a rule flag, not by adding an empty pattern.
+  #
   # To start parsing the input the function TextParser#parse needs to be called
   # with the name of the start rule.
   class TextParser
@@ -321,6 +329,16 @@ class TaskJuggler
           # use to us during this state. We just return it to the scanner. The
           # next state is determined by the first matching state from the
           # @stack.
+          if state.noReduce
+            # Only states that finish a rule may trigger a reduce operation.
+            # Other states have the noReduce flag set. If a reduce for such a
+            # state is triggered, we found a token that is not supported by
+            # the syntax rules.
+            error("no_reduce",
+                  "Unexpected token '#{token[1]}' found. " +
+                  "Expecting one of " +
+                  "#{@stack.last.state.expectedTokens.join(', ')}")
+          end
           returnToken(token) if token
           if finishPattern(token)
             # Accept: We're done with parsing.

@@ -2069,15 +2069,11 @@ EOT
   end
 
   def rule_operation
-    pattern(%w( !operand !operatorAndOperand !operationChain ), lambda {
+    pattern(%w( !operand !operationChain ), lambda {
       operation = LogicalOperation.new(@val[0])
-      unless @val[1].nil?
-        operation.operator = @val[1][0]
-        operation.operand2 = @val[1][1]
-      end
-      if @val[2]
+      if @val[1]
         # Further operators/operands create an operation tree.
-        @val[2].each do |ops|
+        @val[1].each do |ops|
           operation = LogicalOperation.new(operation)
           operation.operator = ops[0]
           operation.operand2 = ops[1]
