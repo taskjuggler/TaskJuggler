@@ -559,7 +559,7 @@ class TaskJuggler
       # Check if we have been here before on this path.
       if path.include?([ @property, atEnd ])
         warning('loop_detected',
-                "Loop detected at #{atEnd ? 'end' : 'start'} " +
+                "Dependency loop detected at #{atEnd ? 'end' : 'start'} " +
                 "of task #{@property.fullId}", false)
         skip = true
         path.each do |t, e|
