@@ -3157,6 +3157,16 @@ span the [[header]] or [[footer]] sections.
 EOT
        )
 
+    pattern(%w( _rollupresource !logicalExpression ), lambda {
+      @property.set('rollupResource', @val[1])
+    })
+    doc('rollupresource', <<'EOT'
+Do not show sub-resources of resources that match the specified logical
+expression.
+EOT
+       )
+    example('RollupResource')
+
     pattern(%w( _rolluptask !logicalExpression ), lambda {
       @property.set('rollupTask', @val[1])
     })
@@ -3190,16 +3200,29 @@ EOT
 
     pattern(%w( !reportStart ))
 
+    pattern(%w( _resourceroot !resourceId), lambda {
+      @property.set('resourceRoot', @val[1])
+    })
+    doc('resourceroot', <<'EOT'
+Only resources below the specified root-level resources are exported. The
+exported resources will have the ID of the root-level resource stripped from
+their ID, so that the sub-resourcess of the root-level resource become
+top-level resources in the report file.
+EOT
+       )
+    example('ResourceRoot')
+
     pattern(%w( _taskroot !taskId), lambda {
       @property.set('taskRoot', @val[1])
     })
     doc('taskroot', <<'EOT'
 Only tasks below the specified root-level tasks are exported. The exported
-tasks will have the id of the root-level task stripped from their ID, so that
-the sub-tasks of the root-level task become top-level tasks in the exported
+tasks will have the ID of the root-level task stripped from their ID, so that
+the sub-tasks of the root-level task become top-level tasks in the report
 file.
 EOT
        )
+    example('TaskRoot')
 
     pattern(%w( !timeformat ), lambda {
       @property.set('timeFormat', @val[0])
@@ -3377,14 +3400,21 @@ EOT
        )
   end
 
-
-
   def rule_reportType
     singlePattern('_resourcereport')
     doc('resourcereport', <<'EOT'
 The report lists resources and their respective values in a table. The task
-that are the resources are allocated to can be listed as well. See [[report]]
-for further details.
+that are the resources are allocated to can be listed as well. To reduce the
+list of included resources, you can use the [[hideresource]],
+[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
+be controlled with [[sortresources]]. If the first sorting criteria is tree
+sorting, the parent resources will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent resources to be included in the report.
+
+The tasks that the resources are allocated to can be included as well. Use the
+[[hidetask]] attribute for this. See [[report]] for a complete list of
+attributes and the full syntax for this keyword.
 EOT
        )
     singlePattern('_taskreport')
@@ -3393,12 +3423,13 @@ The report lists tasks and their respective values in a table. To reduce the
 list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
 [[taskroot]] attributes. The order of the task can be controlled with
 [[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
-will unconditionally be included to form the tree. Tree sorting is the
-default. You need to change it if you do not want certain parent tasks to be
-included in the report.
+will always be included to form the tree. Tree sorting is the default. You
+need to change it if you do not want certain parent tasks to be included in
+the report.
 
-The resources that are allocated to each task can be listed as well. See
-[[report]] for further details.
+The resources that are allocated to each task can be listed as well. Use the
+[[hideresource]] attribute for this. See [[report]] for a complete list of
+attributes and the full syntax for this keyword.
 EOT
        )
     singlePattern('_textreport')

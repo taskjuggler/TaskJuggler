@@ -1,0 +1,21 @@
+project "Test" "1.0" 2010-11-10 +2m
+
+resource org "Org" {
+  resource team1 "Team1" {
+    resource r1 "R1"
+    resource r2 "R2"
+    resource r3 "R3"
+  }
+  resource r4 "R4"
+}
+resource r5 "R5"
+
+task "T"
+
+resourcereport "ResourceRoot" {
+  formats html
+  columns name, id
+  # Only list the Team1 as if it would be a top-level resource.
+  resourceroot team1
+}
+
