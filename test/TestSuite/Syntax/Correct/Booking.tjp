@@ -17,10 +17,18 @@ task test "Testing" {
 }
 
 supplement resource tux {
-  # This is the work that has been done up until now by tux.
-  booking test 2007-01-06 +8h { sloppy 2 }
-  booking test 2007-01-08 +4h,
-             2007-01-09 +4h { sloppy 2 }
-  # Book interval that extends into off-hours.
+  # Book a whole day (8 hours). The 1 hour lunch break is skipped.
+  booking test 2007-01-06-9:00 +9h { sloppy 1 }
+  # Book 2 days in the afternoon, 4 hours each.
+  booking test 2007-01-08-13:00 +4h,
+               2007-01-09-13:00 +4h
+  # This is a common mistake. With standard working hours, this will
+  # yield a zero time booking! The interval is midnight to 8am. So
+  # it's outside of the working hours and 'sloopy 2' surpresses the
+  # warning.
+  booking test 2007-01-11 +8h { sloppy 2 }
+  # Use 'overtime' to book off-hour slots. This booking will book the
+  # full 10 hours, ignoring the lunch break and adding an extra hour
+  # in the morning.
   booking test 2007-01-11-8:00 +10h { overtime 1 }
 }
