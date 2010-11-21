@@ -506,8 +506,6 @@ class TaskJuggler
               bookings[lastTask] = Booking.new(@property, lastTask, [])
             end
 
-            # Make sure the index is correct even for the last task block.
-            idx += 1 if idx == endIdx
             # Append the new interval to the Booking.
             bookings[lastTask].intervals <<
               Interval.new(@scoreboard.idxToDate(bookingStart),
