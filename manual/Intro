@@ -34,11 +34,11 @@ will become a companion you don't want to miss anymore.
 === About TaskJuggler III ===
 
 TaskJuggler III is the completely re-implemented version of the TaskJuggler
-2.x series. It is currently still in the development stage. It
-already is mostly stable and feature complete, but not yet recommended
-for any serious work. The code base is still in active development
-and the quality and reliability may change daily. You are welcome to try
-it and play with it, but expect it to fail.
+2.x series. We have not yet released a stable version. It already is
+mostly stable and each official release is installed by more than a
+1000 users.  The code base is still in active development and the
+quality and reliability may change daily. You are welcome to try it
+and play with it, but be sure to independently check all results.
 
 TaskJuggler is a commandline tool that you use from a
 [http://en.wikipedia.org/wiki/Shell_(computing) shell]. This does not
@@ -84,22 +84,24 @@ License].
 
 === Features and Highlights ===
 
-* Manages tasks, resources and costs in one package
+* Manages tasks, resources, costs and revenue in one package
 * Automatic resource leveling and tasks conflict resolution
 * Flexible working hours and vacation handling
 * Multiple timezone support
 * Support for shift working
 * Project tracking and status reporting
+* Server based time sheet system for status and actual collection
 * Unlimited number of scenarios (baselines) of same project for what-if
 analysis
 * CSV data export for exchange with popular office software
+* Support for profit/loss analysis
+* Built-in web server for dynamically generated reports
 * Project breakdown and management team support
 * Powerful and flexible filtering functions to provide the right
 amount of detail to the right audience
-* Tasks may have initial costs, finishing costs and run rates
-* Resources may have running costs
-* Support for profit/loss analysis
-* Powerful project description syntax with macro support
+* Project description syntax with macro support
+* Detailed reference manual
+* Support for project management teams and revision control
 
 === TaskJuggler on the Web ===
 
