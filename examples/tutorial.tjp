@@ -81,7 +81,6 @@ resource dev "Developers" {
     Phone "x490"
     vacation 2002-02-01 - 2002-02-05
   }
-
   flags team
 }
 resource misc "The Others" {
@@ -380,7 +379,7 @@ taskreport overview "" {
 
   footer -8<-
     === Staffing ===
-    
+
     All project phases are properly staffed. See [[ResourceGraph]] for
     detailed resource allocations.
     
