@@ -132,6 +132,15 @@ class TaskJuggler
 
     # Generate an HTML version of the report.
     def generateHTML
+      return nil unless @content
+
+      unless @content.respond_to?('to_html')
+        warning('html_not_supported',
+                "HTML format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
       html = HTMLDocument.new(:strict)
       head = html.generateHead("TaskJuggler Report - #{@name}",
                                'description' => 'TaskJuggler Report',
@@ -145,10 +154,9 @@ class TaskJuggler
         end
         cssFile = IO.read(cssFileName)
         if cssFile.empty?
-          raise TjException.new, <<"EOT"
-Cannot read '#{cssFileName}'. Make sure the file is not empty and you have
-read access permission.
-EOT
+          error('css_file_error',
+                "Cannot read '#{cssFileName}'. Make sure the file is not " +
+                "empty and you have read access permission.")
         end
         head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
                                'content' => 'text/css; charset=utf-8')
@@ -181,7 +189,7 @@ EOT
       # Make sure we have some margins around the report.
       body << (frame = XMLElement.new('div', 'class' => 'tj_page'))
 
-      frame << @content.to_html if @content
+      frame << @content.to_html
 
       # The footer with some administrative information.
       frame << (div = XMLElement.new('div', 'class' => 'copyright'))
@@ -209,9 +217,16 @@ EOT
 
     # Generate a CSV version of the report.
     def generateCSV
+      # The CSV format can only handle the first element of a report.
       return nil unless @content
 
-      # CSV format can only handle the first element.
+      unless @content.respond_to?('to_csv')
+        warning('csv_not_supported',
+                "CSV format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
       return nil unless (csv = @content.to_csv)
 
       # Use the CSVFile class to write the Array of Arrays to a colon
@@ -245,6 +260,13 @@ EOT
 
     # Generate Niku report
     def generateNiku
+      unless @content.respond_to?('to_niku')
+        warning('niku_not_supported',
+                "niku format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
       begin
         f = @name == '.' ? $stdout :
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
