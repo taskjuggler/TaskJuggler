@@ -95,7 +95,8 @@ class TaskJuggler
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'), @report.get('openNodes'))
+                                @report.get('rollupTask'),
+                                @report.get('openNodes'))
       taskList.sort!
 
       resourceList.each do |resource|

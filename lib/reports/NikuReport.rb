@@ -61,6 +61,10 @@ class TaskJuggler
       # A Hash to map ClarityRID to Resource
       @resources = {}
 
+      # Unallocated and vacation time during the report period for all
+      # resources hashed by ClarityId. Values are in days.
+      @resourcesFreeWork = {}
+
       # Resources total effort during the report period hashed by ClarityId
       @resourcesTotalEffort = {}
 
@@ -282,6 +286,19 @@ EOT
                                         @report.get('rollupResource'),
                                         @report.get('openNodes'))
 
+      # Prepare a template for the Query we will use to get all the data.
+      queryAttrs = { 'project' => @project,
+                     'scopeProperty' => nil,
+                     'scenarioIdx' => @scenarioIdx,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
+                     'currencyFormat' => a('currencyFormat'),
+                     'start' => a('start'), 'end' => a('end'),
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
+      query = Query.new(queryAttrs)
+
       resourceList.each do |resource|
         # We only care about leaf resources that have the custom attribute
         # 'ClarityRID' set.
@@ -289,30 +306,28 @@ EOT
                 (resourceId = resource.get('ClarityRID')).nil? ||
                 resourceId.empty?
 
-        # Prepare a template for the Query we will use to get all the data.
-        queryAttrs = { 'project' => @project,
-                       'property' => resource,
-                       'scopeProperty' => nil,
-                       'scenarioIdx' => @scenarioIdx,
-                       'loadUnit' => a('loadUnit'),
-                       'numberFormat' => a('numberFormat'),
-                       'timeFormat' => a('timeFormat'),
-                       'currencyFormat' => a('currencyFormat'),
-                       'start' => a('start'), 'end' => a('end'),
-                       'costAccount' => a('costAccount'),
-                       'revenueAccount' => a('revenueAccount') }
 
-        query = Query.new(queryAttrs)
+        query.property = resource
 
         # First get the allocated effort.
         query.attributeId = 'effort'
         query.process
+        # Effort in resource days
         total = query.to_num
 
         # Then add the still available effort.
         query.attributeId = 'freework'
         query.process
-        total += query.to_num
+        # Also in resource days.
+        freeWork = query.to_num
+
+        # And the vacation days.
+        query.attributeId = 'vacationdays'
+        query.process
+        # Number of vacation days.
+        vacationDays = query.to_num
+
+        total += (@resourcesFreeWork[resourceId] = freeWork + vacationDays)
 
         next if total <= 0.0
 
@@ -337,7 +352,8 @@ EOT
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'), @report.get('openNodes'))
+                                @report.get('rollupTask'),
+                                @report.get('openNodes'))
 
 
       taskList.each do |task|
@@ -390,33 +406,45 @@ EOT
           'No tasks with the custom attributes ClarityPID and ClarityPName ' +
           'were found!'
       end
+
+      # If the user did specify a project ID and name to collect the vacation
+      # time, we'll add this as a project as well.
+      if (id = @report.get('timeOffId')) && (name = @report.get('timeOffName'))
+        @projects[id] = project = NikuProject.new(id, name)
+        @resources.each do |resourceId, resource|
+          project.resources[resourceId] = r = NikuResource.new(resourceId)
+          r.sum = @resourcesFreeWork[resourceId]
+        end
+      end
     end
 
     # Compute the total effort each Resource is allocated to the Task objects
     # that have the same ClarityPID.
     def computeProjectAllocations
+      # Prepare a template for the Query we will use to get all the data.
+      queryAttrs = { 'project' => @project,
+                     'scenarioIdx' => @scenarioIdx,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
+                     'currencyFormat' => a('currencyFormat'),
+                     'start' => a('start'), 'end' => a('end'),
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
+      query = Query.new(queryAttrs)
+
       @projects.each_value do |project|
+        next if project.id == @report.get('timeOffId')
         project.tasks.each do |task|
           task['assignedresources', @scenarioIdx].each do |resource|
             # Only consider resources that are in the filtered resource list.
             next unless @resources[resource.get('ClarityRID')]
 
-            # Prepare a template for the Query we will use to get all the data.
-            queryAttrs = { 'project' => @project,
-                           'property' => task,
-                           'scopeProperty' => resource,
-                           'scenarioIdx' => @scenarioIdx,
-                           'loadUnit' => a('loadUnit'),
-                           'numberFormat' => a('numberFormat'),
-                           'timeFormat' => a('timeFormat'),
-                           'currencyFormat' => a('currencyFormat'),
-                           'start' => a('start'), 'end' => a('end'),
-                           'costAccount' => a('costAccount'),
-                           'revenueAccount' => a('revenueAccount') }
-
-            query = Query.new(queryAttrs)
+            query.property = task
+            query.scopeProperty = resource
             query.attributeId = 'effort'
             query.process
+
             work = query.to_num
 
             # If the resource was not actually working on this task during the

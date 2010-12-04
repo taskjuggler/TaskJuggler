@@ -24,6 +24,10 @@ ${Resource "r1"}
 ${Resource "r2"}
 ${Resource "r3"}
 
+supplement resource r2 {
+  vacation 2010-02-15 +1w
+}
+
 task "T1" {
   allocate r1
   effort 5w
@@ -53,6 +57,7 @@ nikureport "niku" {
   formats niku, html
   headline "This is a test report"
   period 2010-02-01-8:00 - %{2010-03-01 -6h}
+  timeoff "vacations" "Vacation time"
   # Depending on your Clarity configuration, you may need to add this
   # CustomInformation section in the report. It's raw XML code and
   # will be embedded into each <Project> section of the resulting

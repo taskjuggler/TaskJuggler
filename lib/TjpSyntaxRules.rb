@@ -1935,6 +1935,16 @@ EOT
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( !reportTitle ))
+    pattern(%w( _timeoff $STRING $STRING ), lambda {
+      @property.set('timeOffId', @val[1])
+      @property.set('timeOffName', @val[2])
+    })
+    doc('timeoff.nikureport', <<EOF
+Set the Clarity project ID and name that the vacation time will be reported to.
+EOF
+       )
+    arg(1, 'ID', 'The Clarity project ID')
+    arg(2, 'Name', 'The Clarity project name')
   end
 
   def rule_nikuReportBody
