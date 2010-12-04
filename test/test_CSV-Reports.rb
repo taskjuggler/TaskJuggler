@@ -72,32 +72,42 @@ class TestScheduler < Test::Unit::TestCase
     end
   end
 
+  def checkCSVReport(projectFile)
+    baseDir = File.dirname(projectFile)
+    baseName = File.basename(projectFile, '.tjp')
+    # The reference files must have the same base name as the project file but
+    # they need to be in the ./refs/ directory relative to the project file.
+    refFile = baseDir + "/refs/#{baseName}.csv"
+
+    tj = TaskJuggler.new(true)
+    assert(tj.parse([ projectFile ]), "Parser failed for #{projectFile}")
+    assert(tj.schedule, "Scheduler failed for #{projectFile}")
+    if File.file?(refFile)
+      # If there is a reference CSV file for this test case, compare the
+      # output against it.
+      out = captureStdout do
+        assert(tj.generateReports(baseDir),
+               "Report generation failed for #{projectFile}")
+      end
+      compareCSVs(out, refFile)
+    else
+      # If not, we generate the reference file.
+      puts "refFile: #{refFile}"
+      stdoutToFile(refFile) do
+        assert(tj.generateReports,
+               "Reference file generation failed for #{projectFile}")
+      end
+    end
+    assert(tj.messageHandler.messages.empty?,
+           "Unexpected error in #{projectFile}")
+  end
+
   def test_CSV_Reports
     path = File.dirname(__FILE__)
 
     testDir = path + '/TestSuite/CSV-Reports/'
     Dir.glob(testDir + '*.tjp').each do |f|
-      baseName = f[22 + path.length, f.length - (path.length + 26)]
-      refFile = testDir + "#{baseName}-Reference.csv"
-      tj = TaskJuggler.new(true)
-      assert(tj.parse([ f ]), "Parser failed for #{f}")
-      assert(tj.schedule, "Scheduler failed for #{f}")
-      if File.file?(refFile)
-        # If there is a reference CSV file for this test case, compare the
-        # output against it.
-        out = captureStdout do
-          assert(tj.generateReports(testDir),
-                 "Report generation failed for #{f}")
-        end
-        compareCSVs(out, refFile)
-      else
-        # If not, we generate the reference file.
-        stdoutToFile(refFile) do
-          assert(tj.generateReports,
-                 "Reference file generation failed for #{f}")
-        end
-      end
-      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+      checkCSVReport(f)
     end
   end
 

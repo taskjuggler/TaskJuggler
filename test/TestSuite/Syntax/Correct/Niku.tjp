@@ -54,7 +54,7 @@ task "T4" {
 }
 
 nikureport "niku" {
-  formats niku, html
+  formats niku, html, csv
   headline "This is a test report"
   period 2010-02-01-8:00 - %{2010-03-01 -6h}
   timeoff "vacations" "Vacation time"
