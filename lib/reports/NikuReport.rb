@@ -94,7 +94,7 @@ class TaskJuggler
       thead << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       # First line
       tr << htmlTabCell('Project', true, 'right')
-      @projects.each_key do |projectId|
+      @projects.keys.sort.each do |projectId|
         # Don't include projects without allocations.
         next if projectTotal(projectId) <= 0.0
         name = @projects[projectId].name
@@ -108,7 +108,7 @@ class TaskJuggler
       # Second line
       thead << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Resource', true, 'left')
-      @projects.each_key do |projectId|
+      @projects.keys.sort.each do |projectId|
         # Don't include projects without allocations.
         next if projectTotal(projectId) <= 0.0
         tr << htmlTabCell(projectId, true, 'center')
@@ -117,12 +117,12 @@ class TaskJuggler
 
       # The actual content. One line per resource.
       table << (tbody = XMLElement.new('tbody'))
-      @resourcesTotalEffort.each_key do |resourceId|
+      @resourcesTotalEffort.keys.sort.each do |resourceId|
         tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
         tr << htmlTabCell("#{@resources[resourceId].name} (#{resourceId})",
                           true, 'left')
 
-        @projects.each_key do |projectId|
+        @projects.keys.sort.each do |projectId|
           next if projectTotal(projectId) <= 0.0
           value = sum(projectId, resourceId)
           tr << htmlTabCell(value >= 0.01 ? format("%.2f", value) : '')
@@ -134,7 +134,7 @@ class TaskJuggler
       # Project totals
       tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Total', 'true', 'left')
-      @projects.each_key do |projectId|
+      @projects.keys.sort.each do |projectId|
         next if projectTotal(projectId) <= 0.0
         tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true,
                           'right')
@@ -165,7 +165,8 @@ EOT
       nikuDataBus << (projects = XMLElement.new('Projects'))
 
       timeFormat = '%Y-%m-%dT%H:%M:%S'
-      @projects.each_value do |prj|
+      @projects.keys.sort.each do |projectId|
+        prj = @projects[projectId]
         # Don't include projects with 0 allocations
         next if projectTotal(prj.id) <= 0.0
 
@@ -174,7 +175,8 @@ EOT
                                     'name' => prj.name,
                                     'projectID' => prj.id))
         project << (resources = XMLElement.new('Resources'))
-        prj.resources.each_value do |res|
+        prj.resources.keys.sort.each do |resourceId|
+          res = prj.resources[resourceId]
           resources << (resource =
                         XMLElement.new('Resource',
                                        'resourceID' => res.id,
