@@ -1,0 +1,70 @@
+project "Niku Test" 2010-02-01 +3m {
+  extend task {
+    text ClarityPID "Clarity PID"
+    text ClarityPName "Clarity Project Name"
+  }
+  extend resource {
+    text ClarityRID "Clarity Resource ID"
+  }
+}
+
+# The ClarityPID and ClarityPName must be always kept in sync. The
+# easiest way to achieve this, is by using such macros.
+macro PID_p1 [ ClarityPID "p1" ClarityPName "Project 1" ]
+macro PID_p2 [ ClarityPID "p2" ClarityPName "Project 2" ]
+macro PID_p3 [ ClarityPID "p3" ClarityPName "Project 3" ]
+
+macro Resource [
+  resource ${1} "${1}" {
+    ClarityRID "${1}"
+  }
+]
+
+${Resource "r1"}
+${Resource "r2"}
+supplement resource r2 {
+  vacation 2010-02-15 +1w
+}
+${Resource "r3"}
+
+task "T1" {
+  allocate r1
+  effort 5w
+  ${PID_p1}
+}
+
+task t2 "T2" {
+  allocate r2
+  effort 10d
+  ${PID_p1}
+}
+
+task "T3" {
+  depends !t2
+  allocate r2
+  effort 10d
+  ${PID_p2}
+}
+
+task "T4" {
+  allocate r3
+  effort 3w
+  ${PID_p2}
+}
+
+nikureport "." {
+  formats csv
+  headline "This is a test report"
+  period 2010-02-01-8:00 - %{2010-03-01 -6h}
+  timeoff "vacations" "Vacation time"
+  # Depending on your Clarity configuration, you may need to add this
+  # CustomInformation section in the report. It's raw XML code and
+  # will be embedded into each <Project> section of the resulting
+  # report. This is just an example and it must be customized to work!
+  title -8<-
+   <CustomInformation>
+    <ColumnValue name="foo_state">foo_active</ColumnValue>
+    <ColumnValue name="partition_code">foo_eng</ColumnValue>
+   </CustomInformation>
+  ->8-
+}
