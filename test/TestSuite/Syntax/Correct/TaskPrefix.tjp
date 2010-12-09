@@ -1,0 +1,24 @@
+project project "Include task prefix test" "1.0" 2010-12-01 +1m {
+  now 2010-12-01
+}
+
+resource tux "Tux"
+
+task parent_task "Parent task" {
+  start ${projectstart} 
+  allocate tux
+}
+
+include "TaskPrefix.tji" { taskprefix parent_task }
+
+task other_task "Other task" {
+  start ${projectstart} 
+  effort 1d
+  allocate tux
+}
+
+supplement resource tux {
+  booking parent_task.sub_task1 2010-12-01-9:00 +9h { sloppy 2 }
+  booking other_task 2010-12-02-9:00 +9h { sloppy 2 }
+}
+

@@ -431,6 +431,10 @@ class TaskJuggler
       @fileStackVariables.each do |var|
         instance_variable_set('@' + var, stackEntry[var])
       end
+      # Include files can only occur at global level or in the project header.
+      # In both cases, the @property was nil on including and must be reset to
+      # nil again after the include file.
+      @property = nil
     end
 
   end

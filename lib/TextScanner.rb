@@ -262,10 +262,10 @@ class TaskJuggler
     def open(fileNameIsBuffer = false)
       @fileNameIsBuffer = fileNameIsBuffer
       if fileNameIsBuffer
-        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil ] ]
+        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil, nil ] ]
       else
         begin
-          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil ] ]
+          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil, nil ] ]
         rescue StandardError
           error('open_file', "Cannot open file #{@masterFile}")
         end
@@ -288,7 +288,7 @@ class TaskJuggler
     # this file is finished, we will continue in the old file after the
     # location where we started with the new file. The method returns the full
     # qualified name of the included file.
-    def include(includeFileName, sfi)
+    def include(includeFileName, sfi, &block)
       if includeFileName[0] != '/'
         pathOfCallingFile = @fileStack.last[0].dirname
         path = pathOfCallingFile.empty? ? '' : pathOfCallingFile + '/'
@@ -313,7 +313,8 @@ class TaskJuggler
 
       # Open the new file and push the handle on the @fileStack.
       begin
-        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName)), nil, ]
+        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName)),
+                        nil, block ]
         Log << "Parsing file #{includeFileName}"
       rescue StandardError
         error('bad_include', "Cannot open include file #{includeFileName}", sfi)
@@ -364,6 +365,11 @@ class TaskJuggler
         # @fileStack.
         @finishLastFile = false
         #Log << "Completed file #{@cf.fileName}"
+
+        # If we have a block to be executed on EOF, we call it now.
+        onEof = @fileStack.last[2]
+        onEof.call if onEof
+
         @cf.close if @cf
         @fileStack.pop
 

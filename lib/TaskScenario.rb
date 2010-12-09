@@ -187,7 +187,8 @@ class TaskJuggler
       # If an effort has been specified resources must be allocated as well.
       if a('effort') > 0 && a('allocate').empty?
         error('effort_no_allocations',
-              "Task #{@property.fullId} has an effort but no allocations.")
+              "Task #{@property.fullId} has an effort but no resource " +
+              "allocations.")
       end
 
       durationSpecs = 0

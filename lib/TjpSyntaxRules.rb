@@ -1326,7 +1326,9 @@ EOT
               "You must declare the project header before you include other " +
               "files.")
       end
-      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
+      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0]) do
+        popFileStack
+      end
     })
   end
 
@@ -1350,8 +1352,9 @@ EOT
 
   def rule_includeProperties
     pattern(%w( !includeFileName !includeAttributes ), lambda {
-      popFileStack
-      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0])
+      @project.inputFiles << @scanner.include(@val[0], @sourceFileInfo[0]) do
+        popFileStack
+      end
     })
   end
 
@@ -2479,9 +2482,7 @@ EOT
   end
 
   def rule_projectBodyInclude
-    pattern(%w( _include !includeFile !projectBodyAttributes . ), lambda {
-      popFileStack
-    })
+    pattern(%w( _include !includeFile !projectBodyAttributes . ))
     lastSyntaxToken(1)
     doc('include.project', <<'EOT'
 Includes the specified file name as if its contents would be written
@@ -2499,9 +2500,7 @@ EOT
   end
 
   def rule_prologInclude
-    pattern(%w( _include !includeFile !projectProlog . ), lambda {
-      popFileStack
-    })
+    pattern(%w( _include !includeFile !projectProlog . ))
     lastSyntaxToken(1)
     doc('include.macro', <<'EOT'
 Includes the specified file name as if its contents would be written
