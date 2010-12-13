@@ -52,6 +52,8 @@ class TaskJuggler
       @data = nil
       # Determines the background color of the cell.
       @category = nil
+      # True of the cell is hidden (because other cells span multiple rows or
+      # columns)
       @hidden = false
       # How to horizontally align the cell
       @alignment = :center
@@ -64,13 +66,22 @@ class TaskJuggler
       @icon = nil
       # A custom tooltip for the cell icon
       @iconTooltip = nil
+      # Font size of the cell text in pixels
       @fontSize = nil
+      # The background color of the cell. Overwrite the @category color.
       @cellColor = nil
+      # The color of the cell text font.
       @fontColor = nil
+      # True of a bold font is to be used for the cell text.
       @bold = false
+      # The width of the column in pixels
       @width = nil
+      # The number of rows the cell spans
       @rows = 1
+      # The number of columns the cell spans
       @columns = 1
+      # True of the resulting report should not contain any information from
+      # other files.
       @selfcontained = false
       # Ignore everything and use this reference to generate the output.
       @special = nil
@@ -85,6 +96,7 @@ class TaskJuggler
       @alignment == c.alignment &&
       @padding == c.padding &&
       @indent == c.indent &&
+      @cellColor == c.cellColor &&
       @category == c.category
     end
 

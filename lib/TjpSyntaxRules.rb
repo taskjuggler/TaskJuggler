@@ -2625,7 +2625,7 @@ EOT
     })
     doc('vacation', <<'EOT'
 Specify a global vacation period for all subsequently defined resources. A
-vacation can also be used to block out the time before a resource joint or
+vacation can also be used to block out the time before a resource joined or
 after it left. For employees changing their work schedule from full-time to
 part-time, or vice versa, please refer to the 'Shift' property.
 EOT
@@ -3673,7 +3673,7 @@ EOT
     })
     doc('vacation.resource', <<'EOT'
 Specify a vacation period for the resource. It can also be used to block out
-the time before a resource joint or after it left. For employees changing
+the time before a resource joined or after it left. For employees changing
 their work schedule from full-time to part-time, or vice versa, please refer
 to the 'Shift' property.
 EOT
