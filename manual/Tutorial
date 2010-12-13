@@ -498,9 +498,9 @@ the top-level format will be used for all included reports as well.
 
 <[example file="tutorial" tag="overview_report1"]>
 
-Web browsers usually look for a file called ''''Overview.html'''' when
-they are pointed to a directory. For the main report, we choose the
-file name ''''Overview'''' and the format ''''html''''.
+For the main report, we choose the file name ''''Overview'''' and the
+format ''''html''''. So, the generated file will be called
+''''Overview.html''''.
 
 As we've mentioned before, the sections of a ''''textreport'''' are
 defined in Rich Text format. Here we use a so called block generator
@@ -536,6 +536,28 @@ and the [[balance]] attribute specifies which accounts are used for
 the P&L in this report.
 
 <[example file="tutorial" tag="overview2"]>
+
+The columns of the report can be customized. You can overwrite the
+default title or the cell content. See [[columns]] for a full list of
+available attributes. For the chart column, we'd like to have a
+tool tip that displays additional details when the mouse pointer is
+placed over a task bar. Since we use this tool tip in several
+reports, we have defined the ''''TaskTip'''' macro for it.
+
+<[example file="tutorial" tag="tasktip"]>
+
+The [[tooltip.column|tooltip]] attribute describes the content of the
+tool tip. The first parameter is a logical expression that determines
+when the tool tip is active. You can specify multiple tool tips. The
+first matching one is being displayed. The condition is evaluated for
+each report line. The ''''istask()'''' function only evaluates to true
+for task lines. See [[functions]] for a complete list of functions
+that can be used in [[logicalexpression|logical expressions]].
+
+The content of the tool tip is a template that uses
+[[Rich_Text_Attributes#Block_and_Inline_Generators|query
+generators]] to include task attributes such as the start and end
+date.
 
 We have chosen to include the start and end date of each task in the
 report. By default, TaskJuggler lists dates as day, month and year.

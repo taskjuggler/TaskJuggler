@@ -410,6 +410,7 @@ navigator navbar {
 }
 # *** EXAMPLE: navigator -
 
+# *** EXAMPLE: tasktip +
 macro TaskTip [
   tooltip istask() -8<-
     '''Start: ''' <-query attribute='start'->
@@ -428,6 +429,7 @@ macro TaskTip [
     <-query attribute='followers'->
     ->8-
 ]
+# *** EXAMPLE: tasktip -
 
 # *** EXAMPLE: overview_report1 +
 # *** EXAMPLE: overview_report2 +
