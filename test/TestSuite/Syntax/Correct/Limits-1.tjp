@@ -7,11 +7,13 @@ limits { weeklymax 4d }
 # *** EXAMPLE: 2 +
 # *** EXAMPLE: 3 +
 # *** EXAMPLE: 4 +
+# *** EXAMPLE: 6 +
 resource r1 "R1" { 
   # Limit the usage of this resource to a maximum of 2 hours per day,
   # 6 hours per week and 2.5 days per month.
   limits { dailymax 2h weeklymax 6h monthlymax 2.5d }
 }
+# *** EXAMPLE: 6 -
 
 resource r2 "R2"
 

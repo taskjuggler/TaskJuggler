@@ -3622,6 +3622,7 @@ EOT
 Set per-interval usage limits for the resource.
 EOT
        )
+    example('Limits-1', '6')
 
     pattern(%w( _managers !resourceList ), lambda {
       @property['managers', @scenarioIdx] =
@@ -4759,6 +4760,7 @@ EOT
 Set per-interval allocation limits for the task. This setting affects all allocations for this task.
 EOT
        )
+    example('Limits-1', '2')
 
     pattern(%w( _maxend !valDate ), lambda {
       @property['maxend', @scenarioIdx] = @val[1]
