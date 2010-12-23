@@ -404,6 +404,9 @@ class TaskJuggler
 
       @timeSheets = TimeSheets.new
 
+      # A scoreboard that reflects the global working hours and vacations.
+      @scoreboard = nil
+
       # The ReportContext provides additional settings to the report that can
       # complement or replace the report attributes. Reports can include other
       # reports. During report generation, only one context is active, but the
@@ -586,6 +589,8 @@ class TaskJuggler
     # filled with data. It schedules all scenario and stores the result in the
     # data structures again.
     def schedule
+      initScoreboard
+
       [ @shifts, @resources, @tasks ].each do |p|
         p.inheritAttributesFromScenario
         # Set all index counters to their proper values.
@@ -844,6 +849,12 @@ class TaskJuggler
       ((date - @attributes['start']) / @attributes['scheduleGranularity']).to_i
     end
 
+    def collectTimeOffIntervals(iv, minDuration)
+      @scoreboard.collectIntervals(iv, minDuration) do |val|
+        val.is_a?(Fixnum) && (val & 0x3E) != 0
+      end
+    end
+
     # TaskJuggler keeps all times in UTC. All time values must be multiples of
     # the used scheduling granularity. If the local time zone is not
     # hour-aligned to UTC, the maximum allowed schedule granularity is
@@ -1072,7 +1083,34 @@ class TaskJuggler
       true
     end
 
-    private
+  private
+
+    def initScoreboard
+      # Create scoreboard and mark all slots as unavailable
+      @scoreboard = Scoreboard.new(@attributes['start'], @attributes['end'],
+                                   @attributes['scheduleGranularity'], 2)
+
+      workinghours = @attributes['workinghours']
+
+      # Change all work time slots to nil (available) again.
+      date = @scoreboard.idxToDate(0)
+      delta = @attributes['scheduleGranularity']
+      scoreboardSize.times do |i|
+        @scoreboard[i] = nil if workinghours.onShift?(date)
+        date += delta
+      end
+
+      # Mark all global vacation slots as such
+      @attributes['vacations'].each do |vacation|
+        startIdx = @scoreboard.dateToIdx(vacation.start, true)
+        endIdx = @scoreboard.dateToIdx(vacation.end, true)
+        startIdx.upto(endIdx - 1) do |i|
+          # If the slot is nil or set to 4 then don't set the time-off bit.
+          sb = @scoreboard[i]
+          @scoreboard[i] = ((sb.nil? || sb == 4) ? 0 : 2) | (1 << 2)
+        end
+      end
+    end
 
     def matchingReports(reportId)
       list = []

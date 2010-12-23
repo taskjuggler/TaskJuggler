@@ -1365,28 +1365,27 @@ class TaskJuggler
                     (resource && !a('assignedresources').include?(resource))
 
       key = [ self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource ].hash
-      allocatedTime = @dCache.load(key)
-      return allocatedTime if allocatedTime
-
-      allocatedTime = 0.0
-      if @property.container?
-        @property.children.each do |task|
-          allocatedTime += task.getAllocatedTime(@scenarioIdx, startIdx, endIdx,
-                                                 resource)
-        end
-      else
-        if resource
-          allocatedTime += resource.getAllocatedTime(@scenarioIdx,
-                                                     startIdx, endIdx,
-                                                     @property)
+      @dCache.cached(key) do
+        allocatedTime = 0.0
+        if @property.container?
+          @property.children.each do |task|
+            allocatedTime += task.getAllocatedTime(@scenarioIdx,
+                                                   startIdx, endIdx, resource)
+          end
         else
-          a('assignedresources').each do |r|
-            allocatedTime += r.getAllocatedTime(@scenarioIdx, startIdx, endIdx,
-                                                @property)
+          if resource
+            allocatedTime += resource.getAllocatedTime(@scenarioIdx,
+                                                       startIdx, endIdx,
+                                                       @property)
+          else
+            a('assignedresources').each do |r|
+              allocatedTime += r.getAllocatedTime(@scenarioIdx, startIdx, endIdx,
+                                                  @property)
+            end
           end
         end
+        allocatedTime
       end
-      @dCache.store(allocatedTime, key)
     end
 
     # Compute the effective work a _resource_ or all resources do during the
@@ -1397,36 +1396,59 @@ class TaskJuggler
                     (resource && !a('assignedresources').include?(resource))
 
       key = [ self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource ].hash
-      workLoad = @dCache.load(key)
-      return workLoad if workLoad
-
-      workLoad = 0.0
-      if @property.container?
-        @property.children.each do |task|
-          workLoad += task.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
-                                            resource)
-        end
-      else
-        if resource
-          workLoad += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
-                                                @property)
+      @dCache.cached(key) do
+        workLoad = 0.0
+        if @property.container?
+          @property.children.each do |task|
+            workLoad += task.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
+                                              resource)
+          end
         else
-          a('assignedresources').each do |r|
-            workLoad += r.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
-                                           @property)
+          if resource
+            workLoad += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
+                                                  @property)
+          else
+            a('assignedresources').each do |r|
+              workLoad += r.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
+                                             @property)
+            end
           end
         end
+        workLoad
       end
-      @dCache.store(workLoad, key)
     end
 
     # Return a list of intervals that lay within _iv_ and are at least
     # minDuration long and contain no working time.
     def collectTimeOffIntervals(iv, minDuration)
-      if a('shifts')
-        a('shifts').collectTimeOffIntervals(iv, minDuration)
-      else
-        []
+      # This function is often called recursively for the same parameters. We
+      # store the results in the cache to avoid repeated computations of the
+      # same results.
+      key = [ self, :TaskScenarioCollectTimeOffIntervals, iv, minDuration ].hash
+      @dCache.cached(key) do
+        workLoad = @dCache.load(key)
+        il = IntervalList.new
+        il << Interval.new(@project['start'], @project['end'])
+        if @property.leaf?
+          unless (resources = a('assignedresources')).empty?
+            # The task has assigned resources, so we can use their common time
+            # off intervals.
+            resources.each do |resource|
+              il &= resource.collectTimeOffIntervals(@scenarioIdx, iv,
+                                                     minDuration)
+            end
+          else
+            # The task has no assigned resources. We simply use the global time
+            # off intervals.
+            il &= @project.collectTimeOffIntervals(iv, minDuration)
+          end
+        else
+          @property.children.each do |task|
+            il &= task.collectTimeOffIntervals(@scenarioIdx, iv, minDuration)
+          end
+        end
+
+        il
       end
     end
 

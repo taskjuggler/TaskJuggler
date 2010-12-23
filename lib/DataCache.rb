@@ -110,6 +110,19 @@ class TaskJuggler
       end
     end
 
+    # If we have a value for the _key_, return the value. Otherwise call the
+    # block to compute the value, store it and return it.
+    def cached(key)
+      if @entries.has_key?(key)
+        e = @entries[key]
+        @hits += 1
+        e.value
+      else
+        @misses += 1
+        store(yield, key)
+      end
+    end
+
     def to_s
       <<"EOT"
 Entries: #{@entries.size}   Stores: #{@stores}
