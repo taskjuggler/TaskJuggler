@@ -205,13 +205,11 @@ class TaskJuggler
         @chart.addTask(property, self)
         @content <<
           if property['milestone', @query.scenarioIdx]
-            GanttMilestone.new(property, @height, xStart, @y)
+            GanttMilestone.new(@height, xStart, @y)
           elsif property.container?
-            GanttContainer.new(property, @query.scenarioIdx, @height,
-                               xStart, xEnd, @y)
+            GanttContainer.new(@height, xStart, xEnd, @y)
           else
-            GanttTaskBar.new(property, @query.scenarioIdx, @height,
-                             xStart, xEnd, @y)
+            GanttTaskBar.new(@query, @height, xStart, xEnd, @y)
           end
 
         # Make sure the legend includes the Gantt symbols.
