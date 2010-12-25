@@ -37,6 +37,11 @@ class TaskJuggler
         @il.should == [ @i0_1 ]
       end
 
+      it 'Intervals should be added in ascending order' do
+        @il << @i1_2
+        lambda { @il << @i0_1 }.should raise_error
+      end
+
       it 'should merge adjecent intervals on add' do
         @il << @i0_1
         @il << @i1_2
@@ -47,6 +52,11 @@ class TaskJuggler
         @il << @i0_1
         @il << @i2_3
         @il.should == [ @i0_1, @i2_3 ]
+      end
+
+      it 'operator concatenation should work' do
+        @il << @i_01 << @i2_3 << @i4_5
+        @il.length.should == 3
       end
 
     end

@@ -80,15 +80,17 @@ class TaskJuggler
     # Append the Interval _iv_. If the start of _iv_ matches the end of the
     # list list item, _iv_ is merged with the last item.
     def <<(iv)
-      unless iv.is_a?(Interval)
-        raise "iv must be of type Interval but is a #{iv.class}"
+      if last
+        if last.end > iv.start
+          raise "Intervals may not overlap and must be added in " +
+                "ascending order."
+        elsif last.end == iv.start
+          self[-1] = Interval.new(last.start, iv.end)
+          return self
+        end
       end
 
-      if last && last.end == iv.start
-        self[-1] = Interval.new(last.start, iv.end)
-      else
-        append(iv)
-      end
+      append(iv)
     end
 
   end

@@ -19,6 +19,7 @@ RAKE_FILES      = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, SETUP_FILE, "#{RAK
 BIN_FILES       = FileList["#{BIN_DIR}/**/*"]
 LIB_FILES       = FileList["#{LIB_DIR}/**/*.rb"]
 TEST_FILES      = FileList["#{TEST_DIR}/**/test_*.rb"]
+SPEC_PATTERN    = 'spec/**/*_spec.rb'
 RDOC_FILES      = FileList[README,LICENSE,CHANGELOG]
 
 # DIST FILES
