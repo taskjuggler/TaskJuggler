@@ -36,9 +36,8 @@ class TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
 
-    attr_accessor :port, :uriFile, :enableWebServer, :webServerPort,
+    attr_accessor :authKey, :port, :uriFile, :enableWebServer, :webServerPort,
                   :projectFiles
-    attr_reader :authKey
 
     def initialize
       super
@@ -62,7 +61,7 @@ class TaskJuggler
       # requests that the housekeeping thread will then perform.
       @projectsToLoad = Queue.new
 
-      # Referece to WEBrick object.
+      # Reference to WEBrick object.
       @webServer = nil
 
       # Port used by the web server
@@ -115,7 +114,7 @@ EOT
         @log.fatal("Cannot listen on port #{@port}: #{$!}")
       end
 
-      if @port == 0
+      if @port == 0 && @uriFile
         # If the port is set to 0 (any port) we save the ProjectBroker URI in
         # the file .tj3d.uri. tj3client will look for it.
         begin
@@ -139,7 +138,7 @@ EOT
       DRb.thread.join
 
       # If we have created a URI file, we need to delete it again.
-      if @port == 0
+      if @port == 0 && @uriFile
         begin
           File.delete(@uriFile)
         rescue
