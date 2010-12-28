@@ -263,7 +263,7 @@ p.tj_journal {
 }
 .tabhead_offduty {
   white-space:nowrap;
-  background-color:#dde375;
+  background-color:#bdbdaa;
   color:#000000;
 }
 .tabfooter {
@@ -312,18 +312,19 @@ p.tj_journal {
   white-space:nowrap;
   padding:0px;
 }
+/* The *2 versions have a 20 points less HSV value of the *1 versions*/
 .busy1 { background-color:#ff3b3b; }
-.busy2 { background-color:#eb4545; }
+.busy2 { background-color:#eb3636; }
 .loaded1 { background-color:#ff9b9b; }
 .loaded2 { background-color:#eb8f8f; }
 .free1 { background-color:#a5ffb4; }
 .free2 { background-color:#98eba6; }
-.offduty1 { background-color:#f3f990; }
-.offduty2 { background-color:#dde375; }
+.offduty1 { background-color:#bdbdaa; }
+.offduty2 { background-color:#a9a999; }
 .calconttask1 { background-color:#abbeae; }
 .calconttask2 { background-color:#99aa9c; }
 .caltask1 { background-color:#2050e5; }
-.caltask2 { background-color:#2f57ea; }
+.caltask2 { background-color:#1c4ad1; }
 .todo1 { background-color:#beabab; }
 .todo2 { background-color:#aa9999; }
 
@@ -373,7 +374,7 @@ p.tj_journal {
   position:absolute;
 }
 .offduty {
-  background-color:#f3f990;
+  background-color:#bdbdaa;
   white-space:nowrap;
   position:absolute;
 }

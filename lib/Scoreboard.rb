@@ -10,6 +10,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'IntervalList'
+
 class TaskJuggler
 
   # Scoreboard objects are instrumental during the scheduling process. The
@@ -118,7 +120,8 @@ class TaskJuggler
       minDuration = 1 if minDuration <= 0
 
       # This is collects the resulting intervals.
-      intervals = []
+      intervals = IntervalList.new
+
       # The duration counter for the currently analyzed interval and the start
       # index.
       duration = start = 0
@@ -135,7 +138,7 @@ class TaskJuggler
           # interval.
           if duration > 0
             if duration >= minDuration
-              intervals << [ idxToDate(start), idxToDate(idx) ]
+              intervals << Interval.new(idxToDate(start), idxToDate(idx))
             end
             duration = start = 0
           end

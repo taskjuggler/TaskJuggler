@@ -205,17 +205,16 @@ class TaskJuggler
         @chart.addTask(property, self)
         @content <<
           if property['milestone', @query.scenarioIdx]
-            GanttMilestone.new(property, @height, xStart, @y)
+            GanttMilestone.new(@height, xStart, @y)
           elsif property.container?
-            GanttContainer.new(property, @query.scenarioIdx, @height,
-                               xStart, xEnd, @y)
+            GanttContainer.new(@height, xStart, xEnd, @y)
           else
-            GanttTaskBar.new(property, @query.scenarioIdx, @height,
-                             xStart, xEnd, @y)
+            GanttTaskBar.new(@query, @height, xStart, xEnd, @y)
           end
 
         # Make sure the legend includes the Gantt symbols.
         @chart.table.legend.showGanttItems = true if @chart.table
+        @chart.table.legend.addGanttItem('Off-duty period', 'offduty')
       end
 
     end
@@ -254,7 +253,7 @@ class TaskJuggler
           @chart.table.legend.addGanttItem('Resource assigned to task(s)',
                                            'busy')
           @chart.table.legend.addGanttItem('Resource available', 'free')
-          @chart.table.legend.addGanttItem('Resource off-duty', 'offduty')
+          @chart.table.legend.addGanttItem('Off-duty period', 'offduty')
         end
       else
         categories = [ 'busy', 'free' ]
@@ -262,7 +261,7 @@ class TaskJuggler
           @chart.table.legend.addGanttItem('Resource assigned to task(s)',
                                            'busy')
           @chart.table.legend.addGanttItem('Resource available', 'free')
-          @chart.table.legend.addGanttItem('Resource off-duty', 'offduty')
+          @chart.table.legend.addGanttItem('Off-duty period', 'offduty')
         end
       end
 
@@ -326,10 +325,12 @@ class TaskJuggler
                         @query.scenarioIdx, iv, minTimeOff)
       # Convert the start/end dates to X coordinates of the chart. When
       # finished, the zones in @timeOffZones are [ startX, endX ] touples.
+      zones = []
       @timeOffZones.each do |zone|
-        zone[0] = @chart.dateToX(zone[0])
-        zone[1] = @chart.dateToX(zone[1]) - zone[0]
+        zones << [ s = @chart.dateToX(zone.start),
+                   @chart.dateToX(zone.end) -  s ]
       end
+      @timeOffZones = zones
     end
 
     def addHtmlTooltip(tooltip, query, trigger, hook = nil)

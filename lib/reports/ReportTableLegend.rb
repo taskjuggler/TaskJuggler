@@ -54,12 +54,11 @@ class TaskJuggler
       if @showGanttItems
         legend << (row = XMLElement.new('tr', 'class' => 'tj_legend_row'))
 
-        row << ganttItemToHTML(GanttContainer.new(nil, 0, 15, 10, 35, 0),
+        row << ganttItemToHTML(GanttContainer.new(15, 10, 35, 0),
                                'Container Task', 40)
-        row << ganttItemToHTML(GanttTaskBar.new(nil, 0, 15, 5, 35, 0),
+        row << ganttItemToHTML(GanttTaskBar.new(nil, 15, 5, 35, 0),
                                'Normal Task', 40)
-        row << ganttItemToHTML(GanttMilestone.new(nil, 15, 10, 0),
-                               'Milestone', 20)
+        row << ganttItemToHTML(GanttMilestone.new(15, 10, 0), 'Milestone', 20)
         row << XMLElement.new('td', 'class' => 'tj_legend_spacer')
       end
 

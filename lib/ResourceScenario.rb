@@ -538,6 +538,10 @@ class TaskJuggler
     # and contain only off-duty and vacation slots. The result is an Array of
     # [ start, end ] TjTime values.
     def collectTimeOffIntervals(iv, minDuration)
+      # Time-off intervals are only useful for leaf resources. Group resources
+      # would just default to the global working hours.
+      return [] unless @property.leaf?
+
       initScoreboard if @scoreboard.nil?
 
       @scoreboard.collectIntervals(iv, minDuration) do |val|

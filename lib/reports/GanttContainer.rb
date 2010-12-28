@@ -26,9 +26,7 @@ class TaskJuggler
     # is a reference to the GanttLine. _xStart_ is the left edge of the task in
     # chart coordinates. _xEnd_ is the right edge. The container extends over
     # the edges due to the shape of the jags.
-    def initialize(task, scenarioIdx, lineHeight, xStart, xEnd, y)
-      @task = task
-      @scenarioIdx = scenarioIdx
+    def initialize(lineHeight, xStart, xEnd, y)
       @lineHeight = lineHeight
       @start = xStart
       @end = xEnd

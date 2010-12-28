@@ -26,8 +26,7 @@ class TaskJuggler
     # is a reference to the Task to be displayed. _lineHeight_ is the height of
     # the line this milestone is shown in. _x_ and _y_ are the coordinates of
     # the center of the milestone in the GanttChart.
-    def initialize(task, lineHeight, x, y)
-      @task = task
+    def initialize(lineHeight, x, y)
       @lineHeight = lineHeight
       @x = x
       @y = y
