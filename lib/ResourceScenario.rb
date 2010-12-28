@@ -479,7 +479,9 @@ class TaskJuggler
     end
 
     # Iterate over the scoreboard and turn its content into a set of Bookings.
-    def getBookings
+    #  _iv_ can be an Interval to limit the bookings within the provided
+    #  period.
+    def getBookings(iv = nil)
       return {} if @property.container? || @scoreboard.nil? ||
                    @firstBookedSlot.nil? || @lastBookedSlot.nil?
 
@@ -494,6 +496,15 @@ class TaskJuggler
 
       # In case the index markers are still uninitialized, we have no bookings.
       return {} if startIdx.nil? || endIdx.nil?
+
+      # If the user provided an Interval, we only return bookings within this
+      # Interval.
+      if iv
+        ivStartIdx = @project.dateToIdx(iv.start)
+        ivEndIdx = @project.dateToIdx(iv.end)
+        startIdx = ivStartIdx if ivStartIdx > startIdx
+        endIdx = ivEndIdx if ivEndIdx < endIdx
+      end
 
       startIdx.upto(endIdx) do |idx|
         task = @scoreboard[idx]
