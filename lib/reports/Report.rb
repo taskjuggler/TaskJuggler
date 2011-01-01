@@ -46,11 +46,14 @@ class TaskJuggler
     # The generate function is where the action happens in this class. The
     # report defined by all the class attributes and report elements is
     # generated according the the requested output format(s).
-    def generate
+    # _requestedFormats_ can be a list of formats that should be generated (e.
+    # g. :html, :csv, etc.).
+    def generate(requestedFormats = nil)
       generateIntermediateFormat
 
-      # Then generate the actual output format.
-      get('formats').each do |format|
+      # We either generate the requested formats or the list of formats that
+      # was specified in the report definition.
+      (requestedFormats || get('formats')).each do |format|
         case format
         when :html
           generateHTML

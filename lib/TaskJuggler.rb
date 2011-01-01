@@ -166,13 +166,14 @@ class TaskJuggler
 
   # Generate the report with the ID _reportId_. If _regExpMode_ is true,
   # _reportId_ is interpreted as a Regular Expression and all reports with
-  # matching IDs are generated. _dynamicAtributes_ is a String that may
-  # contain attributes to supplement the report definition. The String must be
-  # in TJP format and may be nil if no additional attributes are provided.
-  def generateReport(reportId, regExpMode, dynamicAttributes = nil)
+  # matching IDs are generated. _formats_ is a list of formats (e. g. :html,
+  # :csv, etc.). _dynamicAtributes_ is a String that may contain attributes to
+  # supplement the report definition. The String must be in TJP format and may
+  # be nil if no additional attributes are provided.
+  def generateReport(reportId, regExpMode, formats, dynamicAttributes = nil)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
-      @project.generateReport(reportId, regExpMode, dynamicAttributes)
+      @project.generateReport(reportId, regExpMode, formats, dynamicAttributes)
     rescue TjException => msg
       if msg.message && !msg.message.empty?
         @messageHandler.critical('generate_report', msg.message)

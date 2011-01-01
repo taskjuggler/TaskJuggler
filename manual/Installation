@@ -54,8 +54,8 @@ This will download and install the latest version from the
 ==== The manual way ====
 
 If the easy way doesn't work for you, you need to download and install
-the packages manually.  Get TaskJuggler III from the
-[http://www.taskjuggler.org/download.php Download Page].
+the packages manually.  Download TaskJuggler III gem file from the
+[http://rubygems.org/gems/taskjuggler RubyGems.org] site.
 
 A gem package is an operating system and architecture independent
 archive file for Ruby programs. You can install it on any system that

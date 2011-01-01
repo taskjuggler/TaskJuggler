@@ -688,7 +688,8 @@ class TaskJuggler
       end
     end
 
-    def generateReport(reportId, regExpMode, dynamicAttributes = nil)
+    def generateReport(reportId, regExpMode, formats = nil,
+                       dynamicAttributes = nil)
       reportList = regExpMode ? reportList = matchingReports(reportId) :
                                 [ reportId ]
       reportList.each do |id|
@@ -696,7 +697,7 @@ class TaskJuggler
           error('unknown_report_id',
                 "Request to generate unknown report #{id}")
         end
-        if report.get('formats').empty?
+        if formats.nil? && report.get('formats').empty?
           @messageHandler.error('formats_empty',
            "The report #{report.fullId} has no 'formats' attribute. " +
            "No output data will be generated.")
@@ -715,7 +716,7 @@ class TaskJuggler
           report.set('interactive', true)
         end
 
-        report.generate
+        report.generate(formats)
 
         if dynamicAttributes
           report.restoreAttributes(context.attributeBackup)

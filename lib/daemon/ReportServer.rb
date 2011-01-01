@@ -106,10 +106,10 @@ class TaskJuggler
       true
     end
 
-    def generateReport(id, regExpMode, dynamicAttributes)
+    def generateReport(id, regExpMode, formats, dynamicAttributes)
       @log.info("Generating report #{id}")
       startTime = Time.now
-      if (ok = @tj.generateReport(id, regExpMode, dynamicAttributes))
+      if (ok = @tj.generateReport(id, regExpMode, formats, dynamicAttributes))
         @log.info("Report #{id} generated in #{Time.now - startTime} seconds")
       else
         @log.error("Report generation of #{id} failed")
@@ -180,10 +180,11 @@ class TaskJuggler
       trap { @server.addFile(file) }
     end
 
-    def generateReport(authKey, reportId, regExpMode, dynamicAttributes)
+    def generateReport(authKey, reportId, regExpMode, formats, dynamicAttributes)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      trap { @server.generateReport(reportId, regExpMode, dynamicAttributes) }
+      trap { @server.generateReport(reportId, regExpMode, formats,
+                                    dynamicAttributes) }
     end
 
 

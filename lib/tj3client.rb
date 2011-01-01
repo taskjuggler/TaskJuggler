@@ -43,6 +43,8 @@ class TaskJuggler
       # Determines whether report IDs are fix IDs or regular expressions that
       # match a set of reports.
       @regExpMode = false
+      # List of requested output formats for reports.
+      @formats = nil
 
       @mandatoryArgs = '<command> [arg1 arg2 ...]'
 
@@ -131,9 +133,18 @@ EOT
           @uriFile = arg
         end
         @opts.on('-r', '--regexp',
-                format('The report IDs are not fixed but regular expressions ' +
-                       'that match a set of reports')) do |arg|
+                 format('The report IDs are not fixed but regular expressions ' +
+                        'that match a set of reports')) do |arg|
           @regExpMode = true
+        end
+        @opts.on('--format [FORMAT]', [ :csv, :html, :niku, :tjp ],
+                 format('Request the report to be generated in the specified' +
+                        'format. Use multiple options to request multiple ' +
+                        'formats. Supported formats are csv, html, niku and ' +
+                        'tjp. By default, the formats specified in the report ' +
+                        'definition are used.')) do |arg|
+          @formats = [] unless @formats
+          @formats << arg
         end
       end
     end
@@ -289,7 +300,7 @@ EOT
         unless failed
           reportIds.each do |reportId|
             unless @reportServer.generateReport(@rs_authKey, reportId,
-                                                @regExpMode, nil)
+                                                @regExpMode, @formats, nil)
               failed = true
               break
             end

@@ -198,7 +198,8 @@ EOT
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
-                                @report.get('rollupTask'), @report.get('openNodes'))
+                                @report.get('rollupTask'),
+                                @report.get('openNodes'))
 
       records = []
       resourceList.each do |resource|
