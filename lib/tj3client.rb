@@ -260,16 +260,9 @@ EOT
         callDaemon(:stop, [])
         info('Daemon terminated')
       when 'add'
-        # Ask the daemon to create a new ProjectServer process and return a
-        # DRbObject to access it.
-        connectToProjectServer
-        # Ask the server to load the files in _args_ into the ProjectServer.
-        begin
-          res = @projectServer.loadProject(@ps_authKey, [ Dir.getwd, *args ])
-        rescue
-          error("Loading of project failed: #{$!}")
-        end
-        disconnectProjectServer
+        res = callDaemon(:addProject, [ Dir.getwd, args,
+                                        $stdout, $stderr, $stdin, @silent ])
+        info("Project(s) #{args.join(', ')} added")
         return res ? 0 : 1
       when 'remove'
         args.each do |arg|
@@ -359,28 +352,6 @@ EOT
         raise "Unknown command #{command}"
       end
       0
-    end
-
-    def connectToProjectServer
-      @ps_uri, @ps_authKey = callDaemon(:addProject, [])
-      begin
-        @projectServer = DRbObject.new(nil, @ps_uri)
-      rescue
-        error("Can't get ProjectServer object: #{$!}")
-      end
-      begin
-        @projectServer.connect(@ps_authKey, $stdout, $stderr, $stdin, @silent)
-      rescue
-        error("Can't connect IO: #{$!}")
-      end
-    end
-
-    def disconnectProjectServer
-      begin
-        @projectServer.disconnect(@ps_authKey)
-      rescue
-        error("Can't disconnect IO: #{$!}")
-      end
     end
 
     def connectToReportServer(projectId)

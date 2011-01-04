@@ -20,6 +20,7 @@ class TaskJuggler
   class Daemon
 
     attr_accessor :daemonize
+    attr_reader :log
 
     def initialize
       # You can set this flag to false to prevent the program from

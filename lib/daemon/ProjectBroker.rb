@@ -37,7 +37,7 @@ class TaskJuggler
   class ProjectBroker < Daemon
 
     attr_accessor :authKey, :port, :uriFile, :enableWebServer, :webServerPort,
-                  :projectFiles
+                  :projectFiles, :logStdIO
 
     def initialize
       super
@@ -60,6 +60,10 @@ class TaskJuggler
       # This Queue is used to load new projects. The DRb thread pushes load
       # requests that the housekeeping thread will then perform.
       @projectsToLoad = Queue.new
+
+      # Set this flag to true to have standard IO logged into files. There
+      # will be seperate set of files for each process.
+      @logStdIO = !@daemonize
 
       # Reference to WEBrick object.
       @webServer = nil
@@ -93,13 +97,15 @@ EOT
       super()
       @log.debug("Starting project broker")
 
-      begin
-        # The web server must be started before we turn SAFE mode on.
-        @webServer = WebServer.new(self, @webServerPort) if @enableWebServer
-        @log.info("TaskJuggler web server is listening on port " +
-                  "#{@webServerPort}")
-      rescue
-        @log.fatal("Cannot start web server: #{$!}")
+      if @enableWebServer
+        begin
+          # The web server must be started before we turn SAFE mode on.
+          @webServer = WebServer.new(self, @webServerPort)
+          @log.info("TaskJuggler web server is listening on port " +
+                    "#{@webServerPort}")
+        rescue
+          @log.fatal("Cannot start web server: #{$!}")
+        end
       end
 
       # Setup a DRb server to handle the incomming requests from the clients.
@@ -204,7 +210,7 @@ EOT
 
     # Adding a new project or replacing an existing one. The command waits
     # until the project has been loaded or the load has failed.
-    def addProject
+    def addProject(cwd, args, stdOut, stdErr, stdIn, silent)
       # We need some tag to identify the ProjectRecord that this project was
       # associated to. Just use a large enough random number.
       tag = rand(9999999999999)
@@ -212,7 +218,7 @@ EOT
       @log.debug("Pushing #{tag} to load Queue")
       @projectsToLoad.push(tag)
 
-      # Now we have to wait until the loaded project shows up in the @projects
+      # Now we have to wait until the project shows up in the @projects
       # list. We use our tag to identify the right entry.
       pr = nil
       while pr.nil?
@@ -233,20 +239,60 @@ EOT
                  "#{pr.uri}")
       # Return the URI and the authentication key of the new ProjectServer.
       [ pr.uri, pr.authKey ]
+
+      # Open a DRb connection to the ProjectServer process
+      begin
+        projectServer = DRbObject.new(nil, pr.uri)
+      rescue
+        stdErr.puts "Can't get ProjectServer object: #{$!}"
+        return false
+      end
+      begin
+        # Hook up IO from requestor to the ProjectServer process.
+        projectServer.connect(pr.authKey, stdOut, stdErr, stdIn, silent)
+      rescue
+        stdErr.puts "Can't connect IO: #{$!}"
+        return false
+      end
+
+      # Ask the ProjectServer to load the files in _args_ into the
+      # ProjectServer.
+      begin
+        res = projectServer.loadProject(pr.authKey, [ cwd, *args ])
+      rescue
+        stdErr.puts "Loading of project failed: #{$!}"
+        return false
+      end
+
+      # Disconnect the IO from the ProjectServer and close the DRb connection.
+      begin
+        projectServer.disconnect(pr.authKey)
+      rescue
+        stdErr.puts "Can't disconnect IO: #{$!}"
+        return false
+      end
+
+      res
     end
 
     def removeProject(indexOrId)
-      # Find all projects with the IDs in indexOrId and mark them as :obsolete.
-      if /^[0-9]$/.match(indexOrId)
-        index = indexOrId.to_i - 1
-        if index >= 0 && index < @projects.length
-          @projects[index].state = :obsolete
-          return true
-        end
-      else
-        @projects.synchronize do
+      @projects.synchronize do
+        # Find all projects with the IDs in indexOrId and mark them as :obsolete.
+        if /^[0-9]$/.match(indexOrId)
+          index = indexOrId.to_i - 1
+          if index >= 0 && index < @projects.length
+            # If we have marked the project as obsolete, we return false to
+            # indicate the double remove.
+            return false if p.state == :obsolete
+            @projects[index].state = :obsolete
+            return true
+          end
+        else
           @projects.each do |p|
             if indexOrId == p.id
+              # If we have marked the project as obsolete, we return false to
+              # indicate the double remove.
+              return false if p.state == :obsolete
               p.state = :obsolete
               return true
             end
@@ -304,7 +350,9 @@ EOT
 
     # This is a callback from the ProjectServer process. It's used to update
     # the current state of the ProjectServer in the ProjectRecord list.
-    def updateState(authKey, filesOrId, state, modified)
+    # _projectKey_ is the authentication key for that project. It is used to
+    # idenfity the entry in the ProjectRecord list to be updated.
+    def updateState(projectKey, filesOrId, state, modified)
       result = false
       if filesOrId.is_a?(Array)
         files = filesOrId
@@ -323,8 +371,8 @@ EOT
           next if project.state == :obsolete
 
           @log.debug("Updating state for #{id} to #{state}")
-          # Only update the record that has the matching authKey
-          if project.authKey == authKey
+          # Only update the record that has the matching key
+          if project.authKey == projectKey
             project.id = id if id
             # An Array of [ workingDir, tjpFile, ... other tji files ]
             project.files = files if files
@@ -433,7 +481,7 @@ EOT
         @log.debug("Loading project for tag #{tag}")
       end
       pr = ProjectRecord.new(tag)
-      ps = ProjectServer.new(project, !@daemonize)
+      ps = ProjectServer.new(@authKey, project, @logStdIO)
       # The ProjectServer can be reached via this DRb URI
       pr.uri = ps.uri
       # Method calls must be authenticated with this key
@@ -490,7 +538,9 @@ EOT
         when :stop
           @broker.stop
         when :addProject
-          @broker.addProject
+          # To pass the DRbObject as separate arguments we need to convert it
+          # into a real Array again.
+          @broker.addProject(*Array.new(args))
         when :removeProject
           @broker.removeProject(args)
         when :getProject
@@ -503,8 +553,10 @@ EOT
       end
     end
 
-    def updateState(authKey, id, status, modified)
-      trap { @broker.updateState(authKey, id, status, modified) }
+    def updateState(authKey, projectKey, id, status, modified)
+      return false unless @broker.checkKey(authKey, 'updateState')
+
+      trap { @broker.updateState(projectKey, id, status, modified) }
     end
 
   end

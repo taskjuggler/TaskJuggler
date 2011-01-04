@@ -37,7 +37,8 @@ class TaskJuggler
 
     attr_reader :authKey, :uri
 
-    def initialize(projectData = nil, logConsole = false)
+    def initialize(daemonAuthKey, projectData = nil, logConsole = false)
+      @daemonAuthKey = daemonAuthKey
       @projectData = projectData
       # Since we are still in the ProjectBroker process, the current DRb
       # server is still the ProjectBroker DRb server.
@@ -247,7 +248,7 @@ class TaskJuggler
     def updateState(state, filesOrId, modified)
       begin
         @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
-        @daemon.updateState(@authKey, filesOrId, state, modified)
+        @daemon.updateState(@daemonAuthKey, @authKey, filesOrId, state, modified)
       rescue
         @log.fatal("Can't update state with daemon: #{$!}")
       end

@@ -87,6 +87,9 @@ EOT
       broker.webServerPort = @webServerPort if @webServerPort
       broker.projectFiles = sortInputFiles(files) unless files.empty?
       broker.daemonize = @daemonize
+      # Create log files for standard IO for each child process if the daemon
+      # is not disconnected from the terminal.
+      broker.logStdIO = !@daemonize
 
       broker.start
     end
