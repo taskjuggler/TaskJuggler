@@ -6,8 +6,7 @@ task t1 "T1" {
 }
 
 task t2 "T2" {
-	depends t1
 # MARK: error 8 task_depend_multi	
-	depends t1
+	depends t1, t1
 }
 

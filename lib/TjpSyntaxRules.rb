@@ -129,8 +129,12 @@ EOT
     pattern(%w( _allocate !allocations ), lambda {
       checkContainer('allocate')
       # Don't use << operator here so the 'provided' flag gets set properly.
-      @property['allocate', @scenarioIdx] =
-        @property['allocate', @scenarioIdx] + @val[1]
+      begin
+        @property['allocate', @scenarioIdx] =
+          @property['allocate', @scenarioIdx] + @val[1]
+      rescue AttributeOverwrite
+        # Adding multiple allocates for a task is a pretty common idiom.
+      end
     })
     doc('allocate', <<'EOT'
 Specify which resources should be allocated to the task. The
@@ -1035,7 +1039,11 @@ EOT
 
   def rule_fail
     pattern(%w( _fail !logicalExpression ), lambda {
-      @property['fail', @scenarioIdx] = @val[1]
+      begin
+        @property['fail', @scenarioIdx] =
+          @property['fail', @scenarioIdx] + [ @val[1] ]
+      rescue AttributeOverwrite
+      end
     })
     doc('fail', <<'EOT'
 The fail attribute adds a logical expression to the property. The condition
@@ -2683,11 +2691,7 @@ EOT
               "#{@val[1]} is not a list attribute. Only those can be purged.",
               @sourceFileInfo[1])
       end
-      if attributeDefinition.scenarioSpecific
-        @property[@val[1], @scenarioIdx] = attributeDefinition.default.dup
-      else
-        @property.set(@val[1], attributeDefinition.default.dup)
-      end
+      @property.getAttr(@val[1], @scenarioIdx).reset
     })
     doc('purge', <<'EOT'
 List attributes, like regular attributes, can inherit their values from the
@@ -3861,7 +3865,12 @@ EOT
         end
       end
       # Set same value again to set the 'provided' state for the attribute.
-      @property['shifts', @scenarioIdx] = sa
+      begin
+        @property['shifts', @scenarioIdx] = sa
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
     })
   end
 
@@ -4642,7 +4651,10 @@ EOT
       checkContainer('depends')
       @property['depends', @scenarioIdx] =
         @property['depends', @scenarioIdx] + @val[1]
-      @property['forward', @scenarioIdx] = true
+      begin
+        @property['forward', @scenarioIdx] = true
+      rescue AttributeOverwrite
+      end
     })
     doc('depends', <<'EOT'
 Specifies that the task cannot start before the specified tasks have been
@@ -4702,7 +4714,10 @@ EOT
 
     pattern(%w( _end !valDate ), lambda {
       @property['end', @scenarioIdx] = @val[1]
-      @property['forward', @scenarioIdx] = false
+      begin
+        @property['forward', @scenarioIdx] = false
+      rescue AttributeOverwrite
+      end
     })
     doc('end', <<'EOT'
 The end date of the task. When specified for the top-level (default) scenario
@@ -4842,7 +4857,10 @@ EOT
       checkContainer('precedes')
       @property['precedes', @scenarioIdx] =
         @property['precedes', @scenarioIdx] + @val[1]
-      @property['forward', @scenarioIdx] = false
+      begin
+        @property['forward', @scenarioIdx] = false
+      rescue AttributeOverwrite
+      end
     })
     doc('precedes', <<'EOT'
 Specifies that the tasks with the specified IDs cannot start before the task
@@ -4888,7 +4906,11 @@ EOT
         error('unknown_projectid', "Unknown project ID #{@val[1]}",
               @sourceFileInfo[1])
       end
-      @property['projectid', @scenarioIdx] = @val[1]
+      begin
+        @property['projectid', @scenarioIdx] = @val[1]
+      rescue AttributeOverwrite
+        # This attribute always overwrites the implicitely provided ID.
+      end
     })
     doc('projectid.task', <<'EOT'
 In larger projects it may be desireable to work with different project IDs for
@@ -4929,9 +4951,15 @@ EOT
 
     pattern(%w( _scheduling !schedulingDirection ), lambda {
       if @val[1] == 'alap'
-        @property['forward', @scenarioIdx] = false
+        begin
+          @property['forward', @scenarioIdx] = false
+        rescue AttributeOverwrite
+        end
       elsif @val[1] == 'asap'
-        @property['forward', @scenarioIdx] = true
+        begin
+          @property['forward', @scenarioIdx] = true
+        rescue AttributeOverwrite
+        end
       end
     })
     doc('scheduling', <<'EOT'
@@ -4991,7 +5019,10 @@ EOT
 
     pattern(%w( _start !valDate), lambda {
       @property['start', @scenarioIdx] = @val[1]
-      @property['forward', @scenarioIdx] = true
+      begin
+        @property['forward', @scenarioIdx] = true
+      rescue AttributeOverwrite
+      end
     })
     doc('start', <<'EOT'
 The start date of the task. When specified for the top-level (default)
@@ -5620,7 +5651,11 @@ EOT
 
   def rule_warn
     pattern(%w( _warn !logicalExpression ), lambda {
-      @property['warn', @scenarioIdx] = @val[1]
+      begin
+        @property['warn', @scenarioIdx] =
+          @property['warn', @scenarioIdx] + [ @val[1] ]
+      rescue AttributeOverwrite
+      end
     })
     doc('warn', <<'EOT'
 The warn attribute adds a logical expression to the property. The condition

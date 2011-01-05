@@ -19,8 +19,7 @@ task T1 "T1" {
 task M1 "M1" {
   milestone
   start 2009-01-10
-  depends T1
-  depends C0
+  depends T1, C0
   ${FixMS "2009-01-10"}
 }
 

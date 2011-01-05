@@ -380,7 +380,17 @@ class TaskJuggler
           # all derived scenarios.
           @project.scenario(scenario).all.each do |sc|
             scenarioIdx = @project.scenarioIdx(sc)
-            @scenarioAttributes[scenarioIdx][attributeId].set(value)
+            overwrite = @scenarioAttributes[scenarioIdx][attributeId].provided
+            if scenarioIdx == scenario
+              @scenarioAttributes[scenarioIdx][attributeId].set(value)
+            else
+              @scenarioAttributes[scenarioIdx][attributeId].inherit(value)
+            end
+            if overwrite
+              raise AttributeOverwrite,
+                "Overwriting a previously provided value for attribute " +
+                "#{attributeId}"
+            end
           end
         else
           @scenarioAttributes[scenario][attributeId].set(value)

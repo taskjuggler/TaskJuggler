@@ -208,6 +208,7 @@ class TaskJuggler
           @end = date if @end.nil? || date > @end
         end
       end
+
       # We want to add at least 5% on both ends.
       margin = 0
       minWidth = @end - @start + 1

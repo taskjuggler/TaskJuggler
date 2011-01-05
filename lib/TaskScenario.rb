@@ -522,7 +522,7 @@ class TaskJuggler
               "end date.")
       end
 
-      if a('fail') || a('warn')
+      if !a('fail').empty? || !a('warn').empty?
         queryAttrs = { 'project' => @project,
                        'scenarioIdx' => @scenarioIdx,
                        'property' => @property,
@@ -534,18 +534,22 @@ class TaskJuggler
                        'timeFormat' => @project['timeFormat'],
                        'currencyFormat' => @project['currencyFormat'] }
         query = Query.new(queryAttrs)
-        if a('fail') && a('fail').eval(query)
-          error('task_fail_check',
-                "User defined check failed for task #{@property.fullId} \n" +
-                "Condition: #{a('fail').to_s}\n" +
-                "Result:    #{a('fail').to_s(query)}")
+        a('fail').each do |expr|
+          if expr.eval(query)
+            error('task_fail_check',
+                  "User defined check failed for task #{@property.fullId} \n" +
+                  "Condition: #{expr.to_s}\n" +
+                  "Result:    #{expr.to_s(query)}")
+          end
         end
-        if a('warn') && a('warn').eval(query)
-          warning('task_warn_check',
-                  "User defined warning triggered for task " +
-                  "#{@property.fullId} \n" +
-                  "Condition: #{a('warn').to_s}\n" +
-                  "Result:    #{a('warn').to_s(query)}")
+        a('warn').each do |expr|
+          if expr.eval(query)
+            warning('task_warn_check',
+                    "User defined warning triggered for task " +
+                    "#{@property.fullId} \n" +
+                    "Condition: #{expr.to_s}\n" +
+                    "Result:    #{expr.to_s(query)}")
+          end
         end
       end
 

@@ -89,11 +89,9 @@ class TaskJuggler
 
   end
 
-  class BookingListAttribute < AttributeBase
+  class BookingListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def BookingListAttribute::tjpId
@@ -129,7 +127,7 @@ class TaskJuggler
 
   end
 
-  class ChargeListAttribute < AttributeBase
+  class ChargeListAttribute < ListAttributeBase
     def initialize(property, type)
       super
     end
@@ -146,12 +144,10 @@ class TaskJuggler
 
   # A ChargeSetListAttribute encapsulates a list of ChargeSet objects as
   # PropertyTreeNode attributes.
-  class ChargeSetListAttribute < AttributeBase
+  class ChargeSetListAttribute < ListAttributeBase
 
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def ChargeSetListAttribute::tjpId
@@ -172,12 +168,10 @@ class TaskJuggler
 
   end
 
-  class ColumnListAttribute < AttributeBase
+  class ColumnListAttribute < ListAttributeBase
 
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def ColumnListAttribute::tjpId
@@ -213,11 +207,9 @@ class TaskJuggler
     end
   end
 
-  class DependencyListAttribute < AttributeBase
+  class DependencyListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def DependencyListAttribute::tjpId
@@ -268,11 +260,9 @@ class TaskJuggler
     end
   end
 
-  class FlagListAttribute < AttributeBase
+  class FlagListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def FlagListAttribute::tjpId
@@ -304,7 +294,7 @@ class TaskJuggler
 
   end
 
-  class FormatListAttribute < AttributeBase
+  class FormatListAttribute < ListAttributeBase
 
     def initialize(property, type)
       super
@@ -316,11 +306,9 @@ class TaskJuggler
 
   end
 
-  class IntervalListAttribute < AttributeBase
+  class IntervalListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def IntervalListAttribute::tjpId
@@ -365,16 +353,26 @@ class TaskJuggler
     end
 
     def LogicalExpressionAttribute::tjpId
-      'logicalexpression'
+      'logicalexpressions'
     end
 
   end
 
-  class NodeListAttribute < AttributeBase
+  class LogicalExpressionListAttribute < ListAttributeBase
+
+    def initialize(property, type)
+      super
+    end
+
+    def LogicalExpressionListAttribute::tjpId
+      'logicalexpressions'
+    end
+
+  end
+
+  class NodeListAttribute < ListAttributeBase
     def initialize(propery, type)
       super
-
-      @value = nil
     end
   end
 
@@ -426,11 +424,9 @@ class TaskJuggler
 
   end
 
-  class ResourceListAttribute < AttributeBase
+  class ResourceListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def ResourceListAttribute::tjpId
@@ -481,7 +477,7 @@ class TaskJuggler
 
   end
 
-  class ScenarioListAttribute < AttributeBase
+  class ScenarioListAttribute < ListAttributeBase
     def initialize(property, type)
       super
     end
@@ -514,12 +510,10 @@ class TaskJuggler
 
   end
 
-  class SortListAttribute < AttributeBase
+  class SortListAttribute < ListAttributeBase
 
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def SortListAttribute::tjpId
@@ -553,11 +547,9 @@ class TaskJuggler
     end
   end
 
-  class TaskListAttribute < AttributeBase
+  class TaskListAttribute < ListAttributeBase
     def initialize(property, type)
       super
-
-      @value = Array.new
     end
 
     def TaskListAttribute::tjpId

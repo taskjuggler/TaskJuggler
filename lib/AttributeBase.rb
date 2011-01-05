@@ -34,8 +34,15 @@ class TaskJuggler
     def initialize(property, type)
       @type = type
       @property = property
-      # Flag that marks whether the value of this attribute was inherited from
-      # the parent PropertyTreeNode.
+
+      reset
+
+      # The mode is flag that controls how value assignments affect the flags.
+      @@mode = 0
+    end
+
+    # Reset the attribute value to the default value.
+    def reset
       @inherited = false
       # Flag that marks whether the value of this attribute was provided by the
       # user (in contrast to being calculated).
@@ -48,8 +55,6 @@ class TaskJuggler
       else
         @value = @type
       end
-      # The mode is flag that controls how value assignments affect the flags.
-      @@mode = 0
     end
 
     # Call this function to inherit _value_ from the parent property. It is
@@ -155,6 +160,9 @@ class TaskJuggler
       @value.join(', ')
     end
 
+  end
+
+  class AttributeOverwrite < ArgumentError
   end
 
 end

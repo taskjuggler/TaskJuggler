@@ -383,7 +383,11 @@ class TaskJuggler
         @val = stackEntry.val
         @sourceFileInfo = stackEntry.sourceFileInfo
         # Now call the pattern action to compute the value of the pattern.
-        result = state.pattern.function.call
+        begin
+          result = state.pattern.function.call
+        rescue AttributeOverwrite
+          @scanner.warning('attr_overwrite', $!.to_s)
+        end
       end
 
       # We use the SourceFileInfo of the first token of the pattern to store
