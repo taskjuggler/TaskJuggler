@@ -1,5 +1,41 @@
 == Day To Day Juggling ==
 
+=== Working with multiple scenarios ===
+
+To analyze the impact that a small variation can have on a project,
+TaskJuggler supports an unlimited amount of scenarios. Each
+additional scenario is a slight derivation of the it's parent. The
+task tree structure needs to be the same for all scenarios, but most
+attributes can vary from one scenario to another. Several report
+types support comparative listing of multiple [[scenarios]].
+
+By default, TaskJuggler knows about one scenario, called
+''''plan''''. The name of this scenario can be changed just like you
+can add more scenarios in the [[project]] section of your project
+files.
+
+<[example file="Scenario" tag="header"]>
+
+This header section defines 3 different scenarios. ''''plan'''' is
+the top-level scenario. It has two derived scenarios, ''''actual''''
+and ''''test''''. These two scenarios are identical to the
+''''plan'''' scenario except for those attributes that are changed
+for these scenarios. Normally, all scenarios are scheduled on each
+''''tj3'''' run. To temporarily disable the scheduling of a scenario,
+you can use the [[disabled]] attribute.
+
+<[example file="Scenario" tag="task"]>
+
+If you prefix an attribute with the scenario ID followed immediately
+by a colon, you can specify a value for a particular attribute. Keep
+in mind that setting an attribute also sets the same value for ''all
+derived scenarios'' of this scenario as well! If you would specify
+''''actual:start'''' first and then ''''plan:start'''', the latter
+would overwrite the first value again since actual is a derived
+scenario of plan.
+
+The syntax reference lists for each attribute whether it is scenario
+specific or not.
 
 === Tracking the Project ===
 

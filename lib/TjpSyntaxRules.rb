@@ -3844,10 +3844,8 @@ EOT
   def rule_shiftAssignment
     pattern(%w( !shiftId !intervalsOptional ), lambda {
       # Make sure we have a ShiftAssignment for the property.
-      if @property['shifts', @scenarioIdx].nil?
-        @property['shifts', @scenarioIdx] = ShiftAssignments.new
-        @property['shifts', @scenarioIdx].project = @project
-      end
+      sa = @property['shifts', @scenarioIdx] || ShiftAssignments.new
+      sa.project = @project
 
       if @val[1].nil?
         intervals = [ Interval.new(@project['start'], @project['end']) ]
@@ -3855,16 +3853,15 @@ EOT
         intervals = @val[1]
       end
       intervals.each do |interval|
-        if !@property['shifts', @scenarioIdx].
-          addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
-                                            interval))
+        if !sa.addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
+                                                 interval))
           error('shift_assignment_overlap',
                 'Shifts may not overlap each other.',
                 @sourceFileInfo[0], @property)
         end
       end
       # Set same value again to set the 'provided' state for the attribute.
-      @property['shifts', @scenarioIdx] = @property['shifts', @scenarioIdx]
+      @property['shifts', @scenarioIdx] = sa
     })
   end
 
@@ -4659,6 +4656,8 @@ EOT
     pattern(%w( _duration !calendarDuration ), lambda {
       checkContainer('duration')
       @property['duration', @scenarioIdx] = @val[1]
+      @property['effort', @scenarioIdx] = 0
+      @property['length', @scenarioIdx] = 0
     })
     doc('duration', <<'EOT'
 Specifies the time the task should last. This is calendar time, not working
@@ -4666,7 +4665,8 @@ time. 7d means one week. If resources are specified they are allocated when
 available. Availability of resources has no impact on the duration of the
 task. It will always be the specified duration.
 
-Tasks may not have subtasks if this attribute is used.
+Tasks may not have subtasks if this attribute is used. Setting this attribute
+will reset the [[effort]] and [[length]] attributes.
 EOT
        )
     example('Durations')
@@ -4679,6 +4679,8 @@ EOT
               @sourceFileInfo[1], @property)
       end
       @property['effort', @scenarioIdx] = @val[1]
+      @property['duration', @scenarioIdx] = 0
+      @property['length', @scenarioIdx] = 0
     })
     doc('effort', <<'EOT'
 Specifies the effort needed to complete the task. An effort of 4d can be done
@@ -4691,7 +4693,8 @@ and resources. This is only true if the task can be partitioned without adding
 any overhead. For more information about this read ''The Mythical Man-Month'' by
 Frederick P. Brooks, Jr.
 
-Tasks may not have subtasks if this attribute is used.
+Tasks may not have subtasks if this attribute is used. Setting this attribute
+will reset the [[duration]] and [[length]] attributes.
 EOT
        )
     example('Durations')
@@ -4736,6 +4739,8 @@ EOT
     pattern(%w( _length !workingDuration ), lambda {
       checkContainer('length')
       @property['length', @scenarioIdx] = @val[1]
+      @property['duration', @scenarioIdx] = 0
+      @property['effort', @scenarioIdx] = 0
     })
     doc('length', <<'EOT'
 Specifies the time the task occupies the resources. This is working time, not
@@ -4747,7 +4752,8 @@ has no impact on the duration of the task. A day where none of the specified
 resources is available is still considered a working day, if there is no
 global vacation or global working time defined.
 
-Tasks may not have subtasks if this attribute is used.
+Tasks may not have subtasks if this attribute is used. Setting this attribute
+will reset the [[duration]] and [[effort]] attributes.
 EOT
        )
     also(%w( duration effort ))

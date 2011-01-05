@@ -158,47 +158,6 @@ class TaskJuggler
       end
     end
 
-    # Inherit attribute values from the parent scenario. This is only being done
-    # for attributes that don't have a user-specified value already.
-    def inheritAttributesFromScenario
-      # Inherit scenario-specific values
-      @propertySet.eachAttributeDefinition do |attrDef|
-        next unless attrDef.scenarioSpecific
-
-        # We know that parent scenarios precede their children in the list. So
-        # it's safe to iterate over the list instead of recursively descend
-        # the tree.
-        @project.scenarioCount.times do |scenarioIdx|
-          scenario = @project.scenario(scenarioIdx)
-          next if scenario.parent.nil?
-          parentScenarioIdx = scenario.parent.sequenceNo - 1
-          # We copy only provided or inherited values from parent scenario when
-          # we don't have a provided value in this scenario. Inherited values
-          # will be overwritten
-          parPro = provided(attrDef.id, parentScenarioIdx)
-          parInh = inherited(attrDef.id, parentScenarioIdx)
-          chiPro = provided(attrDef.id, scenarioIdx)
-          chiInh = inherited(attrDef.id, scenarioIdx)
-          # Parent/Child inheritance matrix
-          # P: Provided   p: not provided
-          # I: Inherited  i: not inherited
-          # -: Illegal  N: Don't copy  Y: Copy
-          #
-          #          parent
-          #          PI  Pi  pI  pi
-          # child PI  -   -   -   -
-          #       Pi  -   N   N   N
-          #       pI  -   Y   N   N
-          #       pi  -   Y   Y   N
-          if ((parPro || parInh) && !(chiPro || chiInh)) ||
-              (parPro && !chiPro && chiInh)
-            @scenarioAttributes[scenarioIdx][attrDef.id] =
-              @scenarioAttributes[parentScenarioIdx][attrDef.id].deep_clone
-          end
-        end
-      end
-    end
-
     # Returns a list of this node and all transient sub nodes.
     def all
       res = [ self ]
@@ -416,13 +375,21 @@ class TaskJuggler
     # exception is raised.
     def []=(attributeId, scenario, value)
       if @scenarioAttributes[scenario].has_key?(attributeId)
-        @scenarioAttributes[scenario][attributeId].set(value)
+        if AttributeBase.mode == 0
+          # If we get values in 'provided' mode, we copy them immedidately to
+          # all derived scenarios.
+          @project.scenario(scenario).all.each do |sc|
+            scenarioIdx = @project.scenarioIdx(sc)
+            @scenarioAttributes[scenarioIdx][attributeId].set(value)
+          end
+        else
+          @scenarioAttributes[scenario][attributeId].set(value)
+        end
       elsif @attributes.has_key?(attributeId)
         @attributes[attributeId].set(value)
       else
         raise "Unknown attribute #{attributeId}"
       end
-      @scenarioAttributes[scenario][attributeId].set(value)
     end
 
     # Return the value of the attribute with ID _attributeId_. For

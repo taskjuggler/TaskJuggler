@@ -592,7 +592,6 @@ class TaskJuggler
       initScoreboard
 
       [ @shifts, @resources, @tasks ].each do |p|
-        p.inheritAttributesFromScenario
         # Set all index counters to their proper values.
         p.index
       end

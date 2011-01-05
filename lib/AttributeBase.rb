@@ -60,6 +60,11 @@ class TaskJuggler
       @value = value.deep_clone
     end
 
+    # Return the current attribute setting mode.
+    def AttributeBase.mode
+      @@mode
+    end
+
     # Change the @@mode. 0 means values are provided, 1 means values are
     # inherited, any other value means calculated.
     def AttributeBase.setMode(mode)

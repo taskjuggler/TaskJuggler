@@ -1,0 +1,77 @@
+project "Inherited Attributes" 2011-01-04 +1m {
+  scenario s1 "S1" {
+    scenario s2 "S2" {
+      scenario s3 "S3"
+    }
+  }
+}
+
+# Task/Scenario 1  2  3
+# T1            3! 2! 2
+# T2            3  2  2
+# T3            3  2  2
+task "T1" {
+  priority 3
+  s2:priority 2 
+  fail s1.priority != 3
+  fail s2.priority != 2
+  fail s3.priority != 2
+  task "T2" {
+    fail s1.priority != 3
+    fail s2.priority != 2
+    fail s3.priority != 2
+    task "T3" {
+      fail s1.priority != 3
+      fail s2.priority != 2
+      fail s3.priority != 2
+    }
+  }
+}
+
+# Task/Scenario 1  2  3
+# T1            3! 2! 2
+# T2            3  2  2
+# T3            3  1  1
+task "T1" {
+  priority 3
+  s2:priority 2 
+  fail s1.priority != 3
+  fail s2.priority != 2
+  fail s3.priority != 2
+  task "T2" {
+    fail s1.priority != 3
+    fail s2.priority != 2
+    fail s3.priority != 2
+    task "T3" {
+      s2:priority 1
+      fail s1.priority != 3
+      fail s2.priority != 1
+      fail s3.priority != 1
+    }
+  }
+}
+
+# Task/Scenario 1  2  3
+# T1            3! 2! 2
+# T2            3  2  1
+# T3            3  2  1
+task "T1" {
+  priority 3
+  s2:priority 2 
+    fail s1.priority != 3
+    fail s2.priority != 2
+    fail s3.priority != 2
+  task "T2" {
+    s3:priority 1
+    fail s1.priority != 3
+    fail s2.priority != 2
+    fail s3.priority != 1
+    task "T3" {
+      s2:priority 1
+      fail s1.priority != 3
+      fail s2.priority != 1
+      fail s3.priority != 1
+    }
+  }
+}
+

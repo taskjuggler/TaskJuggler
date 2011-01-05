@@ -63,11 +63,6 @@ class TaskJuggler
       }
     end
 
-    # Inherit all attributes of each property from the parent scenario.
-    def inheritAttributesFromScenario
-      @properties.each { |p| p.inheritAttributesFromScenario }
-    end
-
     # Use the function to declare the various attributes that properties of this
     # PropertySet can have. The attributes must be declared before the first
     # property is added to the set.

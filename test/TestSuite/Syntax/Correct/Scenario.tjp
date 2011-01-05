@@ -1,3 +1,4 @@
+# *** EXAMPLE: header +
 project prj "Example" "1.0" 2007-05-29 - 2007-07-01 {
   scenario plan "Planned Scenario" {
     scenario actual "Actual Scenario"
@@ -6,10 +7,12 @@ project prj "Example" "1.0" 2007-05-29 - 2007-07-01 {
     }
   }
 }
+# *** EXAMPLE: header -
 
+# *** EXAMPLE: task +
 task t "Task" {
   start 2007-05-29
   actual:start 2007-06-03
   test:start 2007-06-07
 }
-
+# *** EXAMPLE: task -
