@@ -942,12 +942,12 @@ class TaskJuggler
       # Check for dependency loops in the task graph.
       tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
-        task.checkForLoops(scIdx, [], false, true) if task.parent.nil?
+        task.checkForLoops(scIdx, [], false, true, true) if task.parent.nil?
       end
       Log.progress(0.85)
       tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
-        task.checkForLoops(scIdx, [], true, true) if task.parent.nil?
+        task.checkForLoops(scIdx, [], true, true, false) if task.parent.nil?
       end
       Log.progress(0.87)
 

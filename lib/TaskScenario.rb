@@ -321,6 +321,19 @@ class TaskJuggler
               'certain attributes like \'end\' or \'precedes\' automatically ' +
               'switch the task to ALAP mode.')
       end
+
+      a('startsuccs').each do |task, onEnd|
+        unless task['forward', @scenarioIdx]
+          task.error(@scenarioIdx, 'onstart_wrong_direction',
+                     'Tasks with on-start dependencies must be ASAP scheduled')
+        end
+      end
+      a('endpreds').each do |task, onEnd|
+        if task['forward', @scenarioIdx]
+          task.error(@scenarioIdx, 'onend_wrong_direction',
+                     'Tasks with on-end dependencies must be ALAP scheduled')
+        end
+      end
     end
 
     # When the actual scheduling process has been completed, this function must
@@ -560,7 +573,18 @@ class TaskJuggler
       @deadEndFlags = Array.new(4, false)
     end
 
-    def checkForLoops(path, atEnd, fromOutside)
+    # To ensure that we can properly schedule the project, we need to make
+    # sure that it does not contain any circular dependencies. This method
+    # recursively checks for such loops by remembering the _path_. Each entry
+    # is marks the start or end of a task. _atEnd_ specifies whether we are
+    # currently at the start or end of the task. _fromOutside_ specifies
+    # whether we are coming from a inside or outside that tasks. See
+    # specification below. _forward_ specifies whether we are checking the
+    # dependencies from start to end or in the opposite direction. If we are
+    # moving forward, we only move from start to end of ASAP tasks, not ALAP
+    # tasks and vice versa. For milestones, we ignore the scheduling
+    # direction.
+    def checkForLoops(path, atEnd, fromOutside, forward)
       # Check if we have been here before on this path.
       if path.include?([ @property, atEnd ])
         warning('loop_detected',
@@ -623,7 +647,7 @@ class TaskJuggler
             #            V
             #
             @property.children.each do |child|
-              child.checkForLoops(@scenarioIdx, path, false, true)
+              child.checkForLoops(@scenarioIdx, path, false, true, forward)
             end
           else
             #         |
@@ -632,7 +656,9 @@ class TaskJuggler
             #    -->| o---->
             #       +--------
             #
-            checkForLoops(path, true, false) # if a('forward')
+            if (forward && a('forward')) || a('milestone')
+              checkForLoops(path, true, false, true)
+            end
           end
         else
           if a('startpreds').empty?
@@ -646,7 +672,8 @@ class TaskJuggler
             #         |
             #
             if @property.parent
-              @property.parent.checkForLoops(@scenarioIdx, path, false, false)
+              @property.parent.checkForLoops(@scenarioIdx, path, false, false,
+                                             forward)
             end
           else
 
@@ -657,7 +684,7 @@ class TaskJuggler
             #          |
             #
             a('startpreds').each do |task, targetEnd|
-              task.checkForLoops(@scenarioIdx, path, targetEnd, true)
+              task.checkForLoops(@scenarioIdx, path, targetEnd, true, forward)
             end
           end
         end
@@ -674,7 +701,7 @@ class TaskJuggler
             #       v
             #
             @property.children.each do |child|
-              child.checkForLoops(@scenarioIdx, path, true, true)
+              child.checkForLoops(@scenarioIdx, path, true, true, forward)
             end
           else
             #          |
@@ -683,7 +710,9 @@ class TaskJuggler
             #     <----o |<--
             #    --------+
             #
-            checkForLoops(path, false, false) # unless a('forward')
+            if (!forward && !a('forward')) || a('milestone')
+              checkForLoops(path, false, false, false)
+            end
           end
         else
           if a('endsuccs').empty?
@@ -697,7 +726,8 @@ class TaskJuggler
             #          |
             #
             if @property.parent
-              @property.parent.checkForLoops(@scenarioIdx, path, true, false)
+              @property.parent.checkForLoops(@scenarioIdx, path, true, false,
+                                             forward)
             end
           else
             #    --------+
@@ -707,7 +737,7 @@ class TaskJuggler
             #          |
             #
             a('endsuccs').each do |task, targetEnd|
-              task.checkForLoops(@scenarioIdx, path, targetEnd, true)
+              task.checkForLoops(@scenarioIdx, path, targetEnd, true, forward)
             end
           end
         end
@@ -916,12 +946,20 @@ class TaskJuggler
         @property['scheduled', @scenarioIdx] = true
       end
 
-      # Propagate date to all dependent tasks.
-      a(thisEnd + 'preds').each do |task, onEnd|
-        propagateDateToDep(task, onEnd)
+      # Propagate date to all dependent tasks. Don't do this for start
+      # successors or end predecessors if this task is effort based. In this
+      # case, the date might still change to align with the first/last
+      # allocation. In these cases, bookResoruce() has to propagate the final
+      # date.
+      unless atEnd && a('effort') > 0
+        a(thisEnd + 'preds').each do |task, onEnd|
+          propagateDateToDep(task, onEnd)
+        end
       end
-      a(thisEnd + 'succs').each do |task, onEnd|
-        propagateDateToDep(task, onEnd)
+      unless !atEnd && a('effort') > 0
+        a(thisEnd + 'succs').each do |task, onEnd|
+          propagateDateToDep(task, onEnd)
+        end
       end
 
       # Propagate date to sub tasks which have only an implicit
@@ -944,52 +982,41 @@ class TaskJuggler
     def canInheritDate?(atEnd)
       # Inheriting a start or end date from the enclosing task or the project
       # is allowed for the following scenarios:
-      #   -  --> -   inherit start and end when no bookings but allocations
-      #              present
-      #   -  <-- -   dito
+      #   -  --> -   inhS*1  -  <-- -   inhE*1
+      #   -  --> |   inhS    |  <-- -   inhE
+      #   -  x-> -   inhS    -  <-x -   inhE
+      #   -  x-> |   inhS    |  <-x -   inhE
+      #   -  x-> -D  inhS    -D <-x -   inhE
+      #   -  x-> |D  inhS    |D <-x -   inhE
+      #   -  --> -D  inhS    -D <-- -   inhE
+      #   -  --> |D  inhS    |D <-- -   inhE
+      #   -  <-- |   inhS    |  --> -   inhE
       #
-      #   -  x-> -   inhS
-      #   -  x-> |   inhS
-      #   -  x-> -D  inhS
-      #   -  x-> |D  inhS
-      #   -  --> |   inhS
-      #   -  --> -D  inhS
-      #   -  --> |D  inhS
-      #   -  <-- |   inhS
-      #   |  --> -   inhE
-      #   |  <-x -   inhE
-      #   |D <-x -   inhE
-      #   -  <-x -   inhE
-      #   -D <-x -   inhE
-      #   |  <-- -   inhE
-      #   |D <-- -   inhE
-      #   -D <-- -   inhE
-      # Return false if we already have a date or if we have a dependency for
-      # this end.
-      thisEnd = atEnd ? 'end' : 'start'
-      hasThisDeps = !a(thisEnd + 'preds').empty? || !a(thisEnd + 'succs').empty?
-      hasThisSpec = a(thisEnd) || hasThisDeps
-      return false if hasThisSpec
+      #   *1 when no bookings but allocations are present
 
       # Containter task can inherit the date if they have no dependencies.
       return true if @property.container?
 
-      thatEnd = atEnd ? 'start' : 'end'
-      hasThatDeps = !a(thatEnd + 'preds').empty? || !a(thatEnd + 'succs').empty?
-      hasThatSpec = a(thatEnd) || hasThatDeps
+      thisEnd, thatEnd = atEnd ? [ 'end', 'start' ] : [ 'start', 'end' ]
+      # Return false if we already have a date for this end or if we have a
+      # strong dependency for this end.
+      return false if a(thisEnd) || hasStrongDeps(thisEnd)
+
+      hasThatSpec = a(thatEnd) || hasStrongDeps(thatEnd)
+      hasDurationSpec = hasDurationSpec?
 
       # Check for tasks that have no start and end spec, no duration spec but
       # allocates. They can inherit the start and end date.
-      return true if hasThatSpec && !hasDurationSpec? && !a('allocate').empty?
+      return true if hasThatSpec && !hasDurationSpec && !a('allocate').empty?
 
       if a('forward') ^ atEnd
         # the scheduling direction is pointing away from this end
-        return true if hasDurationSpec? || !a('booking').empty?
+        return true if hasDurationSpec || !a('booking').empty?
 
         return hasThatSpec
       else
         # the scheduling direction is pointing towards this end
-        return a(thatEnd) && !hasDurationSpec? &&
+        return a(thatEnd) && !hasDurationSpec &&
                a('booking').empty? #&& a('allocate').empty?
       end
     end
@@ -1574,8 +1601,8 @@ class TaskJuggler
       elsif a('effort') > 0
         bookResources(slot, slotDuration) if @doneEffort < a('effort')
         if @doneEffort >= a('effort')
-          # The specified effort has been reached. The has been fully scheduled
-          # now.
+          # The specified effort has been reached. The task has been fully
+          # scheduled now.
           if a('forward')
             propagateDate(@tentativeEnd, true)
           else
@@ -1721,11 +1748,17 @@ class TaskJuggler
 
         if r.book(@scenarioIdx, sbIdx, @property)
 
-          if a('assignedresources').empty?
+          if a('effort') > 0 && a('assignedresources').empty?
             if a('forward')
               @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
+              a('startsuccs').each do |task, onEnd|
+                task.propagateDate(@scenarioIdx, a('start'), false)
+              end
             else
               @property['end', @scenarioIdx] = @project.idxToDate(sbIdx + 1)
+              a('endpreds').each do |task, onEnd|
+                task.propagateDate(@scenarioIdx, a('end'), true)
+              end
             end
           end
 
@@ -1854,6 +1887,69 @@ class TaskJuggler
       false
     end
 
+    def hasStrongDeps(thisEnd)
+      # A dependency that could determine the date on this side of the
+      # dependency is a strong dependency. If the scheduling direction of the
+      # task on the other side leads away from the dependency point, then the
+      # dependency is weak. This date will influence the other date for weak
+      # dependencies.
+      #
+      # +---          SS -> SP> : Weak
+      # |-+           SS -> SP< : Illegal
+      # +-|-          SP -> SS> : Strong
+      #   | +---      SP -> SS< : Illegal
+      #   +-|
+      #     +---
+      #
+      #
+      # ---+          ES -> SP> : Weak
+      #    |-+        ES -> SP< : Strong
+      # ---+ |        SP -> ES> : Strong
+      #      | +---   SP -> ES< : Weak
+      #      +-|
+      #        +---
+      #
+      #
+      # ---+          ES -> EP> : Illegal
+      #    |-+        ES -> EP< : Strong
+      # ---+ |        EP -> ES> : Illegal
+      #     -|-+      EP -> ES< : Weak
+      #      +-|
+      #     ---+
+      #
+      # All other combinations are illegal and should be caught earlier. So,
+      # illegal values can be considered don't care values.
+      #
+      # f/t SP> SP< SS> SS< EP> EP< ES> ES<
+      # SP  x   x   S   x   x   x   S   W     Row 1
+      # SS  W   x   x   x   x   x   x   x     Row 2
+      # EP  x   x   x   x   x   x   x   W     Row 3
+      # ES  W   S   x   x   x   S   x   x     Row 4
+      if thisEnd == 'start'
+        # Row 1
+        a('startpreds').each do |task, onEnd|
+          if (onEnd && (task['forward', @scenarioIdx] ||
+                        task['end', @scenarioIdx])) ||
+             (!onEnd && (task['forward', @scenarioIdx] ||
+                         task['start']))
+            return true
+          end
+        end
+      else
+        # Row 4
+        a('endsuccs').each do |task, onEnd|
+          if (onEnd && (!task['forward', @scenarioIdx] ||
+                        task['end', @scenarioIdx])) ||
+             (!onEnd && (!task['forward', @scenarioIdx] ||
+                         task['start', @scenarioIdx]))
+            return true
+          end
+        end
+      end
+
+      false
+    end
+
     def markAsRunaway
       warning('runaway', "Task #{@property.fullId} does not fit into " +
                          "project time frame")
@@ -1971,19 +2067,19 @@ class TaskJuggler
       maxCriticalness = 0.0
       # Gather a list of all end-successors of this task and its parent task.
       tList = []
+      depStruct = Struct.new(:task, :onEnd)
       p = @property
       while (p)
         p['endsuccs', @scenarioIdx].each do |task, onEnd|
-          tList << [ task, onEnd ] unless tList.include?([ task, onEnd ])
+          dep = depStruct.new(task, onEnd)
+          tList << dep unless tList.include?(dep)
         end
         p = p.parent
       end
 
-      tList.each do |task, onEnd|
-        if (criticalness = task.calcPathCriticalness(@scenarioIdx, onEnd)) >
-          maxCriticalness
-          maxCriticalness = criticalness
-        end
+      tList.each do |dep|
+        criticalness = dep.task.calcPathCriticalness(@scenarioIdx, dep.onEnd)
+        maxCriticalness = criticalness if criticalness > maxCriticalness
       end
 
       maxCriticalness

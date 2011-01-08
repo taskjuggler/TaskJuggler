@@ -8,7 +8,7 @@ task "Task 1" {
     effort 1w
     allocate r1
   }  
-# MARK: error 12 onestart_wrong_direction
+# MARK: error 12 onstart_wrong_direction
   task "Task 3" {
     depends !t2 { onstart }
     effort 1w
