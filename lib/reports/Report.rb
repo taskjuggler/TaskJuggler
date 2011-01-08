@@ -54,6 +54,12 @@ class TaskJuggler
       # We either generate the requested formats or the list of formats that
       # was specified in the report definition.
       (requestedFormats || get('formats')).each do |format|
+        if @name.empty?
+          error('empty_report_file_name',
+                "Report #{@id} has output formats requested, but the " +
+                "file name is empty.")
+        end
+
         case format
         when :html
           generateHTML
