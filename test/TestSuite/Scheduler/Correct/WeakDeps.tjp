@@ -1,0 +1,30 @@
+project "Weak Deps Test" 2011-01-06 +2m
+
+resource r1 "R1"
+resource r2 "R2"
+
+task "Task 1" {
+  task st1 "SubTask 1" { 
+    effort 1d
+    allocate r1
+  }    
+  task st2 "SubTask 2" { 
+    effort 1d
+    allocate r2 
+    depends !st1 { onstart }
+  }
+} 
+
+task "Task 2" {
+  task st1 "SubTask 1" { 
+    effort 1d
+    scheduling alap
+    allocate r1
+  }    
+  task st2 "SubTask 2" { 
+    effort 1d
+    allocate r2 
+    precedes !st1 { onend }
+  }
+} 
+

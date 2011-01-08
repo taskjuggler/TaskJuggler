@@ -1,0 +1,18 @@
+project "Test" 2011-01-08 +1m
+
+resource r1 "R1"
+resource r2 "R2"
+
+task "Task 1" {
+  task t2 "Task 2" {
+    effort 1w
+    allocate r1
+  }  
+# MARK: error 12 onestart_wrong_direction
+  task "Task 3" {
+    depends !t2 { onstart }
+    effort 1w
+    allocate r2
+    scheduling alap
+  }
+}
