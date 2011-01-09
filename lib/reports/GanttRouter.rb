@@ -47,6 +47,8 @@ class TaskJuggler
       # Hash objects.
       routes = []
       fromToPoints.each do |touple|
+        # Ignore lines where start is after end.
+        next if touple[0] > touple[2]
         routes << {
           :startX => touple[0],
           :startY => touple[1],
