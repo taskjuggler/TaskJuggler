@@ -121,7 +121,7 @@ class TaskJuggler
 
       maxlen = 60
       text = text.ljust(maxlen)
-      text = text[0..maxlen] if text.length > maxlen
+      text = text[0..maxlen - 1] if text.length > maxlen
       @@progressMeter = text
       $stdout.print("#{@@progressMeter} ...\r")
     end
