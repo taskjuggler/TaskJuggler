@@ -28,6 +28,9 @@ class TaskJuggler
   class AttributeBase
     attr_reader :property, :type, :provided, :inherited, :value
 
+    # The mode is flag that controls how value assignments affect the flags.
+    @@mode = 0
+
     # Create a new AttributeBase object. _type_ specifies the specific type of
     # the object. _property_ is the PropertyTreeNode object this attribute
     # belongs to.
@@ -36,9 +39,6 @@ class TaskJuggler
       @property = property
 
       reset
-
-      # The mode is flag that controls how value assignments affect the flags.
-      @@mode = 0
     end
 
     # Reset the attribute value to the default value.

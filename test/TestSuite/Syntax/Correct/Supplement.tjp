@@ -2,23 +2,30 @@ project test "Test Project" "$Id" 2000-01-01 - 2000-01-04
 
 flags important
 
+# *** EXAMPLE: resource +
 resource joe "Joe"
+# *** EXAMPLE: resource -
 
+# *** EXAMPLE: task +
 task top "Top Task" {
-  start 2000-01-01
-
-  task sub "Sub Task" {
-  }
+  task sub "Sub Task"
   supplement task sub {
     length 1d
   }
 }
+# *** EXAMPLE: task -
 
+# *** EXAMPLE: resource +
 supplement resource joe {
   vacation 2000-02-10 - 2000-02-20
 }
+# *** EXAMPLE: resource -
 
+# *** EXAMPLE: task +
 supplement task top {
   flags important
+  supplement task sub {
+    allocate joe
+  }
 }
-
+# *** EXAMPLE: task -
