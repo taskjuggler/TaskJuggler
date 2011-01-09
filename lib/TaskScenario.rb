@@ -931,7 +931,10 @@ class TaskJuggler
 
       # For leaf tasks, propagate start may set the date. Container task dates
       # are only set in scheduleContainer().
-      @property[thisEnd, @scenarioIdx] = date if @property.leaf?
+      if @property.leaf?
+        @property[thisEnd, @scenarioIdx] = date
+        Log << "Task #{@property.fullId}: #{a('start')} -> #{a('end')}"
+      end
 
       if a('milestone')
         # Start and end date of a milestone are identical.
@@ -994,13 +997,14 @@ class TaskJuggler
       #
       #   *1 when no bookings but allocations are present
 
-      # Containter task can inherit the date if they have no dependencies.
-      return true if @property.container?
-
       thisEnd, thatEnd = atEnd ? [ 'end', 'start' ] : [ 'start', 'end' ]
       # Return false if we already have a date for this end or if we have a
       # strong dependency for this end.
       return false if a(thisEnd) || hasStrongDeps(thisEnd)
+
+      # Containter task can inherit the date if they have no dependencies at
+      # this end.
+      return true if @property.container?
 
       hasThatSpec = a(thatEnd) || hasStrongDeps(thatEnd)
       hasDurationSpec = hasDurationSpec?
