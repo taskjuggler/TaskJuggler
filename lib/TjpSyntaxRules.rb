@@ -2630,7 +2630,10 @@ EOT
     pattern(%w( !timeSheet ))
     pattern(%w( !timeSheetReport ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
-      @project['vacations'] = @project['vacations'] + @val[2]
+      begin
+        @project['vacations'] = @project['vacations'] + @val[2]
+      rescue AttributeOverwrite
+      end
     })
     doc('vacation', <<'EOT'
 Specify a global vacation period for all subsequently defined resources. A
@@ -3675,8 +3678,11 @@ EOT
         )
 
     pattern(%w( _vacation !vacationName !intervals ), lambda {
-      @property['vacations', @scenarioIdx] =
-        @property['vacations', @scenarioIdx ] + @val[2]
+      begin
+        @property['vacations', @scenarioIdx] =
+          @property['vacations', @scenarioIdx ] + @val[2]
+      rescue AttributeOverwrite
+      end
     })
     doc('vacation.resource', <<'EOT'
 Specify a vacation period for the resource. It can also be used to block out
