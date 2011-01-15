@@ -143,7 +143,7 @@ class TaskJuggler
 
     def setScenarioIdx(args)
       if args['scenario']
-        scenarioIdx = @project.scnearioIdx(args['scenario'])
+        scenarioIdx = @project.scenarioIdx(args['scenario'])
         unless scenarioIdx
           error('rtfq_bad_scenario', "Unknown scenario #{args['scenario']}")
         end
