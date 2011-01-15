@@ -59,6 +59,7 @@ class TaskJuggler
     # constructor will set default values for all project attributes.
     def initialize(id, name, version, messageHandler)
       @messageHandler = messageHandler
+      AttributeBase.setMode(0)
       @attributes = {
         # This nested Array defines the supported alert levels. The lowest
         # level comes first at index 0 and the level rises from there on.

@@ -108,16 +108,26 @@ class TaskJuggler
     # Return a list of intervals that describe a contiguous part of the
     # scoreboard that contains only the values that yield true for the passed
     # block.  The intervals must be within the interval described by _iv_ and
-    # must be at least _minDuration_ long. The return value is an Array of [
-    # start, end ] TjTime values.
+    # must be at least _minDuration_ long. The return value is an
+    # IntervalList.
     def collectIntervals(iv, minDuration)
-      # Determine the start and stop index for the scoreboard search.
-      startIdx = dateToIdx(iv.start, true)
-      endIdx = dateToIdx(iv.end, true)
+      # Determine the start and stop index for the scoreboard search. We save
+      # the original values for later use as well.
+      startIdx = sIdx = dateToIdx(iv.start, true)
+      endIdx = eIdx = dateToIdx(iv.end, true)
 
       # Convert the minDuration into number of slots.
       minDuration /= @resolution
       minDuration = 1 if minDuration <= 0
+
+      # Expand the interval with the minDuration to both sides. This will
+      # reduce the failure to detect intervals at the iv boundary. However,
+      # this will not prevent undetected intervals at the project time frame
+      # boundaries.
+      startIdx -= minDuration
+      startIdx = 0 if startIdx < 0
+      endIdx += minDuration
+      endIdx = @size - 1 if endIdx > @size - 1
 
       # This is collects the resulting intervals.
       intervals = IntervalList.new
@@ -138,6 +148,11 @@ class TaskJuggler
           # interval.
           if duration > 0
             if duration >= minDuration
+              # Make sure that all intervals are within the originally
+              # requested Interval.
+              start = sIdx if start < sIdx
+              idx = eIdx if idx > eIdx
+
               intervals << Interval.new(idxToDate(start), idxToDate(idx))
             end
             duration = start = 0
