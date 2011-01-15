@@ -104,7 +104,7 @@ class TaskJuggler
       open(attributes, false, true)
       @property = report
       @project = report.project
-      parse('reportAttributes')
+      parse(:reportAttributes)
     end
 
   private

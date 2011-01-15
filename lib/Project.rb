@@ -710,15 +710,17 @@ class TaskJuggler
         # first, then parse the dynamicAttributes String replacing the
         # original values.
         if dynamicAttributes
-          context.attributeBackup = report.backupAttributes
-          parser = ProjectFileParser.new(@messageHandler)
-          parser.parseReportAttributes(report, dynamicAttributes)
+          unless dynamicAttributes.empty?
+            context.attributeBackup = report.backupAttributes
+            parser = ProjectFileParser.new(@messageHandler)
+            parser.parseReportAttributes(report, dynamicAttributes)
+          end
           report.set('interactive', true)
         end
 
         report.generate(formats)
 
-        if dynamicAttributes
+        if dynamicAttributes && !dynamicAttributes.empty?
           report.restoreAttributes(context.attributeBackup)
         end
         @reportContexts.pop

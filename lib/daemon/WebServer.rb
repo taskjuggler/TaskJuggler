@@ -133,7 +133,8 @@ EOT
 
       # Ask the ReportServer to generate the reports with the provided ID.
       begin
-        @reportServer.generateReport(@rs_authKey, reportId, false, attributes)
+        @reportServer.generateReport(@rs_authKey, reportId, false, nil,
+                                     attributes)
       rescue
         stdOut.rewind
         stdErr.rewind

@@ -183,8 +183,9 @@ class TaskJuggler
     def generateReport(authKey, reportId, regExpMode, formats, dynamicAttributes)
       return false unless @server.checkKey(authKey, 'generateReport')
 
-      trap { @server.generateReport(reportId, regExpMode, formats,
-                                    dynamicAttributes) }
+      trap do
+        @server.generateReport(reportId, regExpMode, formats, dynamicAttributes)
+      end
     end
 
 

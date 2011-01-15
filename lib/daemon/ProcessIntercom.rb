@@ -11,6 +11,7 @@
 #
 
 require 'Log'
+require 'LogFile'
 
 class TaskJuggler
 
