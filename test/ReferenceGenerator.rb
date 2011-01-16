@@ -3,12 +3,14 @@
 #
 # = ReferenceGenerator.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010 by Chris Schlaeger <cs@kde.org>
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+#               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 #
+
 # This script can be used to (re-)generate all reference reports in the
 # TaskJuggler test suite. These reports will be put in the /refs directories
 # in the TestSuite sub-directories. Usually, reference reports are generated
