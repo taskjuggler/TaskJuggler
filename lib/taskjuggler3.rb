@@ -24,8 +24,8 @@ def processArguments(argv)
 
   opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                 "#{AppConfig.packageInfo}\n\n" +
-                "Copyright (c) #{AppConfig.copyright.join(', ')}" +
-                " by #{AppConfig.authors.join(', ')}\n\n" +
+                "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+                "              by #{AppConfig.authors.join(', ')}\n\n" +
                 "#{AppConfig.license}\n" +
                 "For more info about #{AppConfig.softwareName} see " +
                 "#{AppConfig.contact}\n\n" +
