@@ -400,17 +400,21 @@ macro AlertColor [
 ]
 
 taskreport status "" {
-  columns wbs, name, start, end, effort, alert { tooltip plan.journal
-  != '' "<-query attribute='journal'->" }, status
+  columns wbs { width 50 }, name { width 150 },
+          start { width 100 }, end { width 100 },
+          effort { width 100 },
+          alert { tooltip plan.journal
+                          != '' "<-query attribute='journal'->" width 150 },
+          status { width 150 }
   scenarios delayed 
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
-    columns name { title "Task" ${AlertColor} },
+    columns name { title "Task" ${AlertColor} width 200},
             resources { width 200 ${AlertColor} 
                         start ${projectstart} end ${projectend} },
-            alerttrend { title "Trend" ${AlertColor} },
-            journalmessages { width 260 ${AlertColor} }
+            alerttrend { title "Trend" ${AlertColor} width 50 },
+            journalmessages { width 350 ${AlertColor} }
     hidetask ~hasalert(0)
     sorttasks alert.down, delayed.end.up
     period %{${now} - 1w} +1w

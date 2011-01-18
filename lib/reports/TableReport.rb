@@ -312,6 +312,7 @@ class TaskJuggler
         column = ReportTableColumn.new(@table, columnDef, columnDef.title)
         column.cell1.rows = 2
         column.cell2.hidden = true
+        column.cell1.width = columnDef.width if columnDef.width
       end
     end
 

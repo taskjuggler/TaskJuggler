@@ -99,8 +99,8 @@ class TaskJuggler
       unless @silent
         puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
              "#{AppConfig.packageInfo}\n\n" +
-             "Copyright (c) #{AppConfig.copyright.join(', ')}" +
-             " by #{AppConfig.authors.join(', ')}\n\n" +
+             "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+             "              by #{AppConfig.authors.join(', ')}\n\n" +
              "#{AppConfig.license}\n"
       end
 

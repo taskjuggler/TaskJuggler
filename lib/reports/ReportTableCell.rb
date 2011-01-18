@@ -111,7 +111,10 @@ class TaskJuggler
       attribs['rowspan'] = "#{@rows}" if @rows > 1
       attribs['colspan'] = "#{@columns}" if @columns > 1
       attribs['class'] = @category ? @category : 'tabcell'
-      attribs['style'] = "background-color: #{@cellColor}; " if @cellColor
+      style = ''
+      style += "min-width: #{@width}px; max-width: #{@width}px; " if @width
+      style += "background-color: #{@cellColor}; " if @cellColor
+      attribs['style'] = style unless style.empty?
       cell = XMLElement.new('td', attribs)
 
       cell << (table = XMLElement.new('table',
@@ -123,8 +126,7 @@ class TaskJuggler
 
       # Insert a padding cell for the left side indentation.
       if @leftIndent
-        row << XMLElement.new('td', 'style' => "min-width:#{@leftIndent}px; " +
-                                               "width:#{@leftIndent}px; ")
+        row << XMLElement.new('td', 'style' => "width:#{@leftIndent}px; ")
       end
       row << cellIcon(cell)
 
@@ -146,8 +148,7 @@ class TaskJuggler
 
       # Insert a padding cell for the right side indentation.
       if @rightIndent
-        row << XMLElement.new('td', 'style' => "min-width:#{@rightIndent}px; " +
-                                               "width:#{@rightIndent}px; ")
+        row << XMLElement.new('td', 'style' => "width:#{@rightIndent}px; ")
       end
 
       cell
@@ -246,12 +247,6 @@ class TaskJuggler
                              'normal' : 'nowrap'}; "
       if fixedHeight && !fixedWidth
         style += "height:#{@line.height - 3}px; "
-      end
-      if fixedWidth && !fixedHeight
-        # @width does not really determine the column width. It only
-        # determines the with of the text label. Padding and icons can make
-        # the column significantly wider.
-        style += "max-width:#{@width}px; "
       end
       style += 'font-weight:bold; ' if @bold
       style += "font-size: #{@fontSize}px; " if fontSize
