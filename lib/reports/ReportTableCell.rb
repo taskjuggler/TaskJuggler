@@ -112,7 +112,6 @@ class TaskJuggler
       attribs['colspan'] = "#{@columns}" if @columns > 1
       attribs['class'] = @category ? @category : 'tabcell'
       style = ''
-      style += "min-width: #{@width}px; max-width: #{@width}px; " if @width
       style += "background-color: #{@cellColor}; " if @cellColor
       attribs['style'] = style unless style.empty?
       cell = XMLElement.new('td', attribs)
@@ -125,7 +124,7 @@ class TaskJuggler
       calculateIndentation
 
       # Insert a padding cell for the left side indentation.
-      if @leftIndent
+      if @leftIndent && @leftIndent > 0
         row << XMLElement.new('td', 'style' => "width:#{@leftIndent}px; ")
       end
       row << cellIcon(cell)
@@ -147,7 +146,7 @@ class TaskJuggler
       end
 
       # Insert a padding cell for the right side indentation.
-      if @rightIndent
+      if @rightIndent && @rightIndent > 0
         row << XMLElement.new('td', 'style' => "width:#{@rightIndent}px; ")
       end
 
@@ -242,9 +241,10 @@ class TaskJuggler
       # None:            -      x      -     -
       fixedHeight = @line && @line.table.equiLines
       fixedWidth = !@width.nil?
-      style = "overflow:hidden; " if fixedHeight || fixedWidth
-      style = "white-space:#{fixedWidth && !fixedHeight ?
-                             'normal' : 'nowrap'}; "
+      style = ''
+      style += "overflow:hidden; " if fixedHeight || fixedWidth
+      style += "white-space:#{fixedWidth && !fixedHeight ?
+                              'normal' : 'nowrap'}; "
       if fixedHeight && !fixedWidth
         style += "height:#{@line.height - 3}px; "
       end
@@ -256,8 +256,6 @@ class TaskJuggler
 
       return nil, nil if @text.nil? || @text.empty?
 
-      td = XMLElement.new('td', 'class' => 'tj_table_cell_label',
-                                'style' => style)
       tooltip = nil
 
       # @text can be a String or a RichText (with or without embedded
@@ -276,7 +274,20 @@ class TaskJuggler
 
       return nil, nil if textAsString.empty?
 
-      shortText, singleLine = shortVersion(textAsString)
+      if @width
+        # We have 4 pixels padding on each side of the cell.
+        labelWidth = @width - 8
+        labelWidth -= @leftIndent if @leftIndent
+        labelWidth -= @rightIndent if @rightIndent
+        if !@selfcontained
+          # The icons are 20 pixels width including padding.
+          labelWidth -= 20 if @icon
+          labelWidth -= 20 if tooltip || @tooltip
+        end
+      else
+        labelWidth = nil
+      end
+      shortText, singleLine = shortVersion(textAsString, labelWidth)
 
       if (@line && @line.table.equiLines && (!singleLine || @width )) &&
           !@headerCell
@@ -284,18 +295,26 @@ class TaskJuggler
         # in the cell and provide the full content via a tooltip.
         # Header cells are never shortened.
         tooltip = @text if shortText != textAsString
-        td << XMLText.new(shortText)
+        tl = XMLText.new(shortText)
       else
-        td << (@text.is_a?(RichTextIntermediate) ? @text.to_html :
-                                                   XMLText.new(@text))
+        tl = (@text.is_a?(RichTextIntermediate) ? @text.to_html :
+                                                  XMLText.new(@text))
       end
+
+      if labelWidth
+        style += "min-width: #{labelWidth}px; max-width: #{labelWidth}px; "
+      end
+
+      td = XMLElement.new('td', 'class' => 'tj_table_cell_label',
+                                'style' => style)
+      td << tl
 
       return td, tooltip
     end
 
     # Convert a RichText String into a small one-line plain text
     # version that fits the column.
-    def shortVersion(itext)
+    def shortVersion(itext, width)
       text = itext.to_s
       singleLine = true
       modified = false
@@ -304,10 +323,18 @@ class TaskJuggler
         singleLine = false
         modified = true
       end
-      # Assuming an average character width of 8 pixels
-      if @width && (text.length > (@width / 8))
-        text = text[0, @width / 8]
-        modified = true
+      if width
+        widthWithoutIcon = width - 20
+        # Assuming an average character width of 8 pixels
+        maxChars = widthWithoutIcon / 8
+        if text.length > maxChars
+          if maxChars > 0
+            text = text[0, maxChars]
+          else
+            text = ''
+          end
+          modified = true
+        end
       end
       # Add three dots to show that there is more info available.
       text += "..." if modified
