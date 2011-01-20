@@ -442,9 +442,23 @@ class TaskJuggler
 
     def to_rti(query = nil)
       out = []
-      @value.each { |r| out << r.name }
-      rText = RichText.new(out.join(', '))
-      rText.generateIntermediateFormat
+      if query
+        @value.each do |r|
+          case query.listMode
+          when 1
+            out << r.fullId
+          when 2, nil
+            out << r.name
+          when 3
+            out << "#{r.name} (#{r.fullId})"
+          end
+        end
+        query.assignList(out)
+      else
+        @value.each { |r| out << r.name }
+        rText = RichText.new(out.join(', '))
+        rText.generateIntermediateFormat
+      end
     end
 
     def to_tjp

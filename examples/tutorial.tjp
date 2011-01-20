@@ -412,6 +412,7 @@ taskreport status "" {
     headline "Project Dashboard (<-query attribute='now'->)"
     columns name { title "Task" ${AlertColor} width 200},
             resources { width 200 ${AlertColor} 
+                        listtype bullets listmode 2
                         start ${projectstart} end ${projectend} },
             alerttrend { title "Trend" ${AlertColor} width 50 },
             journalmessages { width 350 ${AlertColor} }

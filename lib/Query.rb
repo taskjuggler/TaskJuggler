@@ -33,25 +33,22 @@ class TaskJuggler
   # Query#errorMessage contains an error message.
   class Query
 
-    attr_accessor :project, :propertyType, :propertyId, :property,
-                  :scopePropertyType, :scopePropertyId, :scopeProperty,
-                  :attributeId, :scenarioIdx,
-                  :timeFormat, :numberFormat, :currencyFormat, :costAccount,
-                  :revenueAccount,
-                  :loadUnit, :selfContained,
-                  :ok, :errorMessage
+    @@ps = %w( project propertyType propertyId property scopePropertyId
+               scopeProperty attributeId scenario scenarioIdx
+               loadUnit listType listMode numberFormat currencyFormat timeFormat
+               costAccount revenueAccount selfContained)
+    @@ps.each do |p|
+      attr_accessor p.to_sym
+    end
+    attr_accessor :ok, :errorMessage
     attr_reader :end, :endIdx, :start, :startIdx
     attr_writer :sortable, :numerical, :string, :rti
 
     # Create a new Query object. The _parameters_ need to be sufficent to
     # uniquely identify an attribute.
     def initialize(parameters = { })
-      ps = %w( project propertyType propertyId property scopePropertyId
-               scopeProperty attributeId scenario scenarioIdx
-               loadUnit numberFormat currencyFormat timeFormat
-               costAccount revenueAccount selfContained)
       @selfContained = false
-      ps.each do |p|
+      @@ps.each do |p|
         instance_variable_set('@' + p, parameters[p] ? parameters[p] : nil)
       end
 
@@ -169,6 +166,26 @@ class TaskJuggler
         return @ok = false
       end
       @ok = true
+    end
+
+    # Converts the String items in _listItems_ into a RichTextIntermediate
+    # objects and assigns it as result of the query.
+    def assignList(listItems)
+      list = ''
+      listItems.each do |item|
+        case @listType
+        when nil, :comma
+          list += ', ' unless list.empty?
+          list += item
+        when :bullets
+          list += "* #{item}\n"
+        when :numbered
+          list += "# #{item}\n"
+        end
+      end
+      @sortable = @string = list
+      rText = RichText.new(list)
+      @rti = rText.generateIntermediateFormat
     end
 
     # Return the result of the Query as String. The result may be nil.

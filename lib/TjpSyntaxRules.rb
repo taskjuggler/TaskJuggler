@@ -625,6 +625,27 @@ each cell.
 EOT
        )
 
+    pattern(%w( _listmode $INTEGER ), lambda {
+      @column.listMode = @val[1]
+    })
+    also(%w( listtype))
+    doc('listmode.column', <<'EOT'
+Specifies how the list items look like. The result of this setting depends on
+the actual column. Please refer to the documentation for the specific column
+to learn more about the effect that this setting has.
+EOT
+       )
+
+    pattern(%w( _listtype !listType ), lambda {
+      @column.listType = @val[1]
+    })
+    also(%w( listmode))
+    doc('listtype.column', <<'EOT'
+Specifies what type of list should be used. This attribute only affects
+columns that contain a list of items.
+EOT
+       )
+
     pattern(%w( _period !interval ), lambda {
       @column.start = @val[1].start
       @column.end = @val[1].end
@@ -1726,6 +1747,17 @@ EOT
     pattern(%w( !timeInterval !moreTimeIntervals ), lambda {
       [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
+  end
+
+  def rule_listType
+    pattern([ '_bullets' ], lambda { :bullets })
+    descr('List items as bullet list')
+
+    pattern([ '_comma' ], lambda { :comma })
+    descr('List items as comma separated list')
+
+    pattern([ '_numbered' ], lambda { :numbered })
+    descr('List items as numbered list')
   end
 
   def rule_loadunit
@@ -2963,7 +2995,7 @@ EOT
           'it is a part of.')
 
     singlePattern('_precursors')
-    descr(<<EOT
+    descr(<<'EOT'
 A list of tasks the current task depends on. The list contains the names, the
 IDs, the date and the type of dependency. For the type the following symbols
 are used
@@ -2987,15 +3019,41 @@ EOT
     singlePattern('_reports')
     descr(<<'EOT'
 All resources that have this resource assigned as a direct or indirect manager.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name '''(This is the default)'''
+# Name (ID)
 EOT
          )
 
     singlePattern('_resources')
-    descr('A list of resources that are assigned to the task in the report ' +
-          'time frame.')
+    descr(<<'EOT'
+A list of resources that are assigned to the task in the report time frame.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name '''(This is the default)'''
+# Name (ID)
+EOT
+         )
 
     singlePattern('_responsible')
-    descr('The responsible people for this task')
+    descr(<<'EOT'
+The responsible people for this task.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name '''(This is the default)'''
+# Name (ID)
+EOT
+         )
 
     singlePattern('_revenue')
     descr(<<'EOT'
@@ -3023,8 +3081,17 @@ EOT
     singlePattern('_targets')
     descr(<<'EOT'
 A list of milestones that depend on the current task. For container tasks it
-will also include the targets of the child tasks.  Usually the task name, the
-task ID and the start date will be listed.
+will also include the targets of the child tasks.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name
+# Name (ID)
+# ID (Date)
+# Name (Date) '''(This is the default)'''
+# Name (ID) Date
 EOT
          )
 

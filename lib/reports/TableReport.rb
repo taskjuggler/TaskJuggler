@@ -601,6 +601,10 @@ class TaskJuggler
     # property that line is for. It returns true if the cell exists, false for a
     # hidden cell.
     def genStandardCell(query, line, columnDef)
+      query = query.dup
+      query.listType = columnDef.listType
+      query.listMode = columnDef.listMode
+
       # Find out, what type of PropertyTreeNode we are dealing with.
       property = line.property
       if property.is_a?(Task)
@@ -660,6 +664,10 @@ class TaskJuggler
     # TableColumnDefinition of the column. _property_ is the PropertyTreeNode
     # that is reported in this cell.
     def genCalculatedCell(query, line, columnDef, property)
+      query = query.dup
+      query.listType = columnDef.listType
+      query.listMode = columnDef.listMode
+
       # Create a new cell
       cell = newCell(query, line)
 
