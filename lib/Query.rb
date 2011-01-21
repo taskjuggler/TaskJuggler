@@ -33,8 +33,9 @@ class TaskJuggler
   # Query#errorMessage contains an error message.
   class Query
 
-    @@ps = %w( project propertyType propertyId property scopePropertyId
-               scopeProperty attributeId scenario scenarioIdx
+    @@ps = %w( project propertyType propertyId property
+               scopePropertyType scopePropertyId scopeProperty
+               attributeId scenario scenarioIdx
                loadUnit listType listMode numberFormat currencyFormat timeFormat
                costAccount revenueAccount selfContained)
     @@ps.each do |p|

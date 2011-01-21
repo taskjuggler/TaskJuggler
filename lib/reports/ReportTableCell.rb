@@ -325,8 +325,8 @@ class TaskJuggler
       end
       if width
         widthWithoutIcon = width - 20
-        # Assuming an average character width of 8 pixels
-        maxChars = widthWithoutIcon / 8
+        # Assuming an average character width of 7 pixels
+        maxChars = widthWithoutIcon / 7
         if text.length > maxChars
           if maxChars > 0
             text = text[0, maxChars]
