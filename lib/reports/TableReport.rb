@@ -800,6 +800,9 @@ class TaskJuggler
           raise "Unknown column content #{column.content}"
         end
 
+        cdText = columnDef.cellText.getPattern(query)
+        cell.text = cdText if cdText
+
         # Determine cell category (mostly the background color)
         if cellIv.overlaps?(taskIv)
           # The cell is either a container or leaf task
@@ -896,6 +899,9 @@ class TaskJuggler
         else
           raise "Unknown column content #{column.content}"
         end
+
+        cdText = columnDef.cellText.getPattern(query)
+        cell.text = cdText if cdText
 
         # Set the tooltip for the cell. We might delete it again.
         cell.tooltip = columnDef.tooltip.getPattern(query) || nil

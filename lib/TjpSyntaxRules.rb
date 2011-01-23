@@ -2117,6 +2117,9 @@ EOT
     pattern(%w( $INTEGER ), lambda {
       LogicalOperation.new(@val[0])
     })
+    pattern(%w( $FLOAT ), lambda {
+      LogicalOperation.new(@val[0])
+    })
     pattern(%w( $STRING ), lambda {
       LogicalOperation.new(@val[0])
     })
