@@ -451,6 +451,10 @@ class TaskJuggler
             out << r.name
           when 3
             out << "#{r.name} (#{r.fullId})"
+          when 4
+            out << "#{r.fullId}: #{r.name}"
+          else
+            out << "Bad listmode #{query.listmode}. Use 1 - 4."
           end
         end
         query.assignList(out)

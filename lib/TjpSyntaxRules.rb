@@ -628,18 +628,18 @@ EOT
     pattern(%w( _listmode $INTEGER ), lambda {
       @column.listMode = @val[1]
     })
-    also(%w( listtype))
+    also(%w( listtype.column ))
     doc('listmode.column', <<'EOT'
 Specifies how the list items look like. The result of this setting depends on
-the actual column. Please refer to the documentation for the specific column
-to learn more about the effect that this setting has.
+the actual column. Please refer to the [columnid|documentation for the
+specific column] to learn more about the effect that this setting has.
 EOT
        )
 
     pattern(%w( _listtype !listType ), lambda {
       @column.listType = @val[1]
     })
-    also(%w( listmode))
+    also(%w( listmode.column ))
     doc('listtype.column', <<'EOT'
 Specifies what type of list should be used. This attribute only affects
 columns that contain a list of items.
@@ -3029,6 +3029,7 @@ following modes are supported:
 # ID
 # Name '''(This is the default)'''
 # Name (ID)
+# ID: Name
 EOT
          )
 
@@ -3042,6 +3043,7 @@ following modes are supported:
 # ID
 # Name '''(This is the default)'''
 # Name (ID)
+# ID: Name
 EOT
          )
 
@@ -3092,9 +3094,11 @@ following modes are supported:
 # ID
 # Name
 # Name (ID)
+# ID: Name
 # ID (Date)
 # Name (Date) '''(This is the default)'''
 # Name (ID) Date
+# ID: Name Date
 EOT
          )
 

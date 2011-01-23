@@ -1350,6 +1350,12 @@ class TaskJuggler
             list << "#{resource.name}"
           when 3, nil
             list << "#{resource.name} (#{resource.fullId})"
+          when 4
+            list << "#{resource.fullId}: #{resource.name}"
+          else
+            error('bad_listmode_qr',
+                  "Unsupported list mode #{query.listMode} used for " +
+                  "resources column.")
           end
         end
       end
@@ -1399,11 +1405,18 @@ class TaskJuggler
         when 3
           list << "#{task.name} (#{task.fullId})"
         when 4
-          list << "#{task.fullId} (#{date})"
+          list << "#{task.fullId}: #{task.name}"
         when 5
+          list << "#{task.fullId} (#{date})"
+        when 6
           list << "#{task.name} (#{date})"
-        when 6, nil
+        when 7, nil
           list << "#{task.name} (#{task.fullId}) #{date}"
+        when 8
+          list << "#{task.fullId}: #{task.name} #{date}"
+        else
+          error('bad_listmode_qt',
+                "Bad listmode #{query.listMode}. Use 1 - 8.")
         end
       end
       query.assignList(list)
