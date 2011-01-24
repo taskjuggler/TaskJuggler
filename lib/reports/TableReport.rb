@@ -634,24 +634,7 @@ class TaskJuggler
         cell.text = (rti = query.to_rti) ? rti : query.to_s
       end
 
-      # Replace the font color setting if the user has requested a custom
-      # color.
-      fontColor = columnDef.fontColor.getPattern(query)
-      cell.fontColor = fontColor if fontColor
-
-      # Replace the cell background color if the user has requested a custom
-      # color.
-      cellColor = columnDef.cellColor.getPattern(query)
-      cell.cellColor = cellColor if cellColor
-
-      # Replace the default cell alignment if the user has requested a custom
-      # alignment.
-      hAlign = columnDef.hAlign.getPattern(query)
-      cell.alignment = hAlign if hAlign
-
-      # If the user has requested a custom tooltip, add it to the cell.
-      cell.tooltip = columnDef.tooltip.getPattern(query) || nil
-
+      setCustomCellAttributes(cell, columnDef, query)
       checkCellText(cell)
 
       true
@@ -724,25 +707,7 @@ class TaskJuggler
       cdText = columnDef.cellText.getPattern(query)
       cell.text = cdText if cdText
 
-      # Replace the cell background color if the user has requested a custom
-      # color.
-      cellColor = columnDef.cellColor.getPattern(query)
-      cell.cellColor = cellColor if cellColor
-
-      # Replace the font color setting if the user has requested a custom
-      # color.
-      fontColor = columnDef.fontColor.getPattern(query)
-      cell.fontColor = fontColor if fontColor
-
-      # Replace the default cell alignment if the user has requested a custom
-      # alignment.
-      hAlign = columnDef.hAlign.getPattern(query)
-      cell.alignment = hAlign if hAlign
-
-      # Register the custom tooltip if the user has requested one.
-      cdTooltip = columnDef.tooltip.getPattern(query)
-      cell.tooltip = cdTooltip if cdTooltip
-
+      setCustomCellAttributes(cell, columnDef, query)
       checkCellText(cell)
 
       true
@@ -978,6 +943,28 @@ class TaskJuggler
       # Set column width
       cell.width = columnDef.width if columnDef.width
     end
+
+    def setCustomCellAttributes(cell, columnDef, query)
+      # Replace the cell background color if the user has requested a custom
+      # color.
+      cellColor = columnDef.cellColor.getPattern(query)
+      cell.cellColor = cellColor if cellColor
+
+      # Replace the font color setting if the user has requested a custom
+      # color.
+      fontColor = columnDef.fontColor.getPattern(query)
+      cell.fontColor = fontColor if fontColor
+
+      # Replace the default cell alignment if the user has requested a custom
+      # alignment.
+      hAlign = columnDef.hAlign.getPattern(query)
+      cell.alignment = hAlign if hAlign
+
+      # Register the custom tooltip if the user has requested one.
+      cdTooltip = columnDef.tooltip.getPattern(query)
+      cell.tooltip = cdTooltip if cdTooltip
+    end
+
 
     def setScenarioSettings(cell, scenarioIdx, scenarioSpecific)
       # Check if we are dealing with multiple scenarios.
