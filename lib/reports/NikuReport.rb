@@ -168,9 +168,6 @@ EOT
       timeFormat = '%Y-%m-%dT%H:%M:%S'
       @projects.keys.sort.each do |projectId|
         prj = @projects[projectId]
-        # Don't include projects with 0 allocations
-        next if projectTotal(prj.id) <= 0.0
-
         projects << (project =
                      XMLElement.new('Project',
                                     'name' => prj.name,
