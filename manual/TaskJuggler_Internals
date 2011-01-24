@@ -24,11 +24,9 @@ During the scheduling process, tasks can have 3 different states.
 # ''''Not ready for scheduling'''': The task is missing a start or
 end date that depends on another task's date that hasn't been
 determined yet.
-
 # ''''Ready for scheduling'''': The task has at least a start or end
 date but one of them is still missing or resources have not yet been
 assigned for all time slots.
-
 # ''''Scheduling completed'''': The task has a start and end date and
 resources have been assigned for all time slots.
 

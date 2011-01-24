@@ -3027,7 +3027,7 @@ The list can be customized by the [listmode.column listmode] attribute. The
 following modes are supported:
 
 # ID
-# Name '''(This is the default)'''
+# Name ''(This is the default)''
 # Name (ID)
 # ID: Name
 EOT
@@ -3041,7 +3041,7 @@ The list can be customized by the [listmode.column listmode] attribute. The
 following modes are supported:
 
 # ID
-# Name '''(This is the default)'''
+# Name ''(This is the default)''
 # Name (ID)
 # ID: Name
 EOT
@@ -3055,7 +3055,7 @@ The list can be customized by the [listmode.column listmode] attribute. The
 following modes are supported:
 
 # ID
-# Name '''(This is the default)'''
+# Name ''(This is the default)''
 # Name (ID)
 EOT
          )
@@ -3096,7 +3096,7 @@ following modes are supported:
 # Name (ID)
 # ID: Name
 # ID (Date)
-# Name (Date) '''(This is the default)'''
+# Name (Date) ''(This is the default)''
 # Name (ID) Date
 # ID: Name Date
 EOT
