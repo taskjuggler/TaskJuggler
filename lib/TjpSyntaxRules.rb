@@ -2863,7 +2863,18 @@ EOT
     descr('A group of columns with one column for each day')
 
     singlePattern('_directreports')
-    descr('The resources that have this resource assigned as manager.')
+    descr(<<'EOT'
+The resources that have this resource assigned as manager.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name ''(This is the default)''
+# Name (ID)
+# ID: Name
+EOT
+         )
 
     singlePattern('_duration')
     descr('The duration of a task')
@@ -2896,12 +2907,28 @@ EOT
     descr(<<'EOT'
 A list of tasks that depend on the current task. The list contains the names,
 the IDs, the date and the type of dependency. For the type the following
-symbols are used
+symbols are used for <nowiki><dep></nowiki>.
 
 * '''<nowiki>]->[</nowiki>''': End-to-Start dependency
 * '''<nowiki>[->[</nowiki>''': Start-to-Start dependency
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID <nowiki><dep></nowiki> Date
+# Name <nowiki><dep></nowiki> Date
+# Name (ID) <nowiki><dep></nowiki> Date
+# ID: Name <nowiki><dep></nowiki> Date
+# ID <nowiki><dep></nowiki>
+# Name <nowiki><dep></nowiki>
+# Name (ID) <nowiki><dep></nowiki>
+# ID: Name <nowiki><dep></nowiki>
+# ID
+# Name
+# Name (ID)
+# ID: Name
 EOT
          )
 
@@ -2969,6 +2996,20 @@ EOT
     singlePattern('_line')
     descr('The line number in the report')
 
+    singlePattern('_managers')
+    descr(<<'EOT'
+A list of managers that the resource reports to.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name ''(This is the default)''
+# Name (ID)
+# ID: Name
+EOT
+        )
+
     singlePattern('_maxend')
     descr('The latest allowed end of a task')
 
@@ -3007,6 +3048,22 @@ are used
 * '''<nowiki>[->[</nowiki>''': Start-to-Start dependency
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID <nowiki><dep></nowiki> Date
+# Name <nowiki><dep></nowiki> Date
+# Name (ID) <nowiki><dep></nowiki> Date
+# ID: Name <nowiki><dep></nowiki> Date
+# ID <nowiki><dep></nowiki>
+# Name <nowiki><dep></nowiki>
+# Name (ID) <nowiki><dep></nowiki>
+# ID: Name <nowiki><dep></nowiki>
+# ID
+# Name
+# Name (ID)
+# ID: Name
 EOT
          )
 
@@ -3057,6 +3114,7 @@ following modes are supported:
 # ID
 # Name ''(This is the default)''
 # Name (ID)
+# ID: Name
 EOT
          )
 

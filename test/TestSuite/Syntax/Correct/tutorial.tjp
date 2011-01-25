@@ -104,6 +104,7 @@ resource boss "Paul Henry Bullock" {
   rate 480
 }
 resource dev "Developers" {
+  managers boss
   resource dev1 "Paul Smith" {
     email "paul@crappysoftware.com"
     Phone "x362"
@@ -121,6 +122,7 @@ resource dev "Developers" {
   flags team
 }
 resource misc "The Others" {
+  managers boss
   resource test "Peter Murphy" {
     email "murphy@crappysoftware.com"
     Phone "x666"
@@ -613,6 +615,7 @@ resourcereport contactList "" {
   columns name,
           email { celltext 1 "[mailto:<-email-> <-email->]" },
           Phone,
+          managers { title "Manager" },
           chart { scale day }
   hideresource ~isleaf()
   sortresources name.up

@@ -351,25 +351,28 @@ class TaskJuggler
         if @args.empty?
           tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
         else
-          tr << (td = XMLElement.new('td', 'class' => 'descr'))
-          td << (tab1 = XMLElement.new('table', 'width' => '100%'))
+          tr << (td = XMLElement.new('td'))
+          td << (tab1 = XMLElement.new('table', 'class' => 'attrtable',
+                                       'style' => 'width:100%;'))
           @args.each do |arg|
             tab1 << (tr1 = XMLElement.new('tr'))
             if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
-              tr1 << XMLNamedText.new("#{arg.name}", 'td', 'width' => '30%')
+              tr1 << XMLNamedText.new("#{arg.name}", 'td', 'class' => 'attrtag',
+                                                           'width' => '30%')
             else
               typeSpec = arg.typeSpec
               typeName = typeSpec[1..-2]
               typeSpec[0] = '['
               typeSpec[-1] = ']'
-              tr1 << (td = XMLElement.new('td', 'width' => '30%'))
+              tr1 << (td = XMLElement.new('td', 'class' => 'attrtag',
+                                                'width' => '30%'))
               td << XMLText.new("#{arg.name} [")
               td << XMLNamedText.new(
                 typeName, 'a', 'href' =>
                                "The_TaskJuggler_Syntax.html\##{typeName}")
               td << XMLText.new(']')
             end
-            tr1 << (td = XMLElement.new('td',
+            tr1 << (td = XMLElement.new('td', 'class' => 'attrdescr',
               'style' => 'margin-top:2px; margin-bottom:2px;'))
             td << newRichText(arg.text ||
                               "See [[#{arg.name}]] for details.").to_html

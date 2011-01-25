@@ -1268,70 +1268,61 @@ class TaskJuggler
     end
 
     def query_followers(query)
-      str = ''
+      list = []
 
       # First gather the task that depend on the start of this task.
       a('startsuccs').each do |task, onEnd|
-        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
-          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>[->]</nowiki> #{taskEnd}"
+          date = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          dep "[->]"
         else
-          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>[->[</nowiki> #{taskStart}"
+          date = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          dep "[->["
         end
-        str += "\n"
+        list << generateDepencyListItem(query.listMode, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
       a('endsuccs').each do |task, onEnd|
-        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
-          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>]->]</nowiki> #{taskEnd}"
+          date = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          dep = "]->]"
         else
-          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>]->[</nowiki> #{taskStart}"
+          date = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          dep "]->["
         end
-        str += "\n"
+        list << generateDepencyListItem(query.listMode, task, dep, date)
       end
 
-      rText = RichText.new(str, [], @property.project.messageHandler)
-      unless (query.rti = rText.generateIntermediateFormat)
-        @property.project.messageHandler.warning(
-          'task_sc_followers', 'Syntax error in followers')
-      end
+      query.assignList(list)
     end
 
     def query_precursors(query)
-      str = ''
+      list = []
 
       # First gather the task that depend on the start of this task.
       a('startpreds').each do |task, onEnd|
-        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
-          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>]->]</nowiki> #{taskEnd}"
+          date = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          dep = "]->]"
         else
-          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>[->[</nowiki> #{taskStart}"
+          date = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          dep = "[->["
         end
-        str += "\n"
+        list << generateDepencyListItem(query.listMode, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
       a('endpreds').each do |task, onEnd|
-        str += "* <nowiki>#{task.name}</nowiki> (#{task.fullId}) "
         if onEnd
-          taskEnd = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>[->]</nowiki> #{taskEnd}"
+          date = task['end', query.scenarioIdx].to_s(query.timeFormat)
+          dep "[->]"
         else
-          taskStart = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          str += "<nowiki>]->[</nowiki> #{taskStart}"
+          date = task['start', query.scenarioIdx].to_s(query.timeFormat)
+          dep += "]->["
         end
-        str += "\n"
+        list << generateDepencyListItem(query.listMode, task, dep, date)
       end
 
-      rText = RichText.new(str)
-      query.rti = rText.generateIntermediateFormat
+      query.assignList(list)
     end
 
     # A list of the resources that have been allocated to work on the task in
@@ -2281,6 +2272,42 @@ class TaskJuggler
       end
 
       amount
+    end
+
+    def generateDepencyListItem(mode, task, dep, date)
+      str =
+        case mode
+        when 1
+          "#{task.fullId} #{dep} #{date}"
+        when 2
+          "#{task.name} #{dep} #{date}"
+        when 3, nil
+          "#{task.name} (#{task.fullId}) #{dep} #{date}"
+        when 4
+          "#{task.fullId}: #{task.name} #{dep} #{date}"
+        when 5
+          "#{task.fullId} #{dep}"
+        when 6
+          "#{task.name} #{dep}"
+        when 7
+          "#{task.name} (#{task.fullId}) #{dep}"
+        when 8
+          "#{task.fullId}: #{task.name} #{dep}"
+        when 9
+          "#{task.fullId}"
+        when 10
+          "#{task.name}"
+        when 11
+          "#{task.name} (#{task.fullId})"
+        when 12
+          "#{task.fullId}: #{task.name}"
+        else
+          error('bad_listmode_deps',
+                "Unsupported list mode #{query.listMode} used for " +
+                "dependency column. Use 1 - 12.")
+        end
+
+      "* <nowiki>#{str}</nowiki>"
     end
 
   end

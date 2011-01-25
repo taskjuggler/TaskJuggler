@@ -35,6 +35,26 @@ code {
   padding-top:5px;
   padding-bottom:5px;
 }
+.attrtable {
+  background-color:#ABABAB;
+  margin:-3px;
+}
+.attrtag {
+  background-color:#F0F0F0;
+  font-family: Courier;
+  padding-left:6px;
+  padding-right:6px;
+  padding-top:3px;
+  padding-bottom:3px;
+}
+.attrdescr {
+  background-color:#F0F0F0;
+  padding-left:6px;
+  padding-right:6px;
+  padding-top:3px;
+  padding-bottom:3px;
+  width:100%;
+}
 .codeframe{
   border-width:2px;
   border-color:#ABABAB;
