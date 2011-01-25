@@ -408,6 +408,8 @@ class TaskJuggler
 
       # A scoreboard that reflects the global working hours and vacations.
       @scoreboard = nil
+      # A scoreboard that reflects the global working hours but no vacations.
+      @scoreboardNoVacations = nil
 
       # The ReportContext provides additional settings to the report that can
       # complement or replace the report attributes. Reports can include other
@@ -591,7 +593,7 @@ class TaskJuggler
     # filled with data. It schedules all scenario and stores the result in the
     # data structures again.
     def schedule
-      initScoreboard
+      initScoreboards
 
       [ @shifts, @resources, @tasks ].each do |p|
         # Set all index counters to their proper values.
@@ -859,6 +861,18 @@ class TaskJuggler
       end
     end
 
+    # Return the number of working days (ignoring global vacations) during the
+    # given _interval_.
+    def workingDays(interval)
+      startIdx = dateToIdx(interval.start, true)
+      endIdx = dateToIdx(interval.end, true)
+      slots = 0
+      startIdx.upto(endIdx) do |idx|
+        slots += 1 unless @scoreboardNoVacations[idx]
+      end
+      slotsToDays(slots)
+    end
+
     # TaskJuggler keeps all times in UTC. All time values must be multiples of
     # the used scheduling granularity. If the local time zone is not
     # hour-aligned to UTC, the maximum allowed schedule granularity is
@@ -1089,10 +1103,14 @@ class TaskJuggler
 
   private
 
-    def initScoreboard
+    def initScoreboards
       # Create scoreboard and mark all slots as unavailable
       @scoreboard = Scoreboard.new(@attributes['start'], @attributes['end'],
                                    @attributes['scheduleGranularity'], 2)
+      # And the same for another scoreboard.
+      @scoreboardNoVacations =
+        Scoreboard.new(@attributes['start'], @attributes['end'],
+                       @attributes['scheduleGranularity'], 2)
 
       workinghours = @attributes['workinghours']
 
@@ -1100,7 +1118,10 @@ class TaskJuggler
       date = @scoreboard.idxToDate(0)
       delta = @attributes['scheduleGranularity']
       scoreboardSize.times do |i|
-        @scoreboard[i] = nil if workinghours.onShift?(date)
+        if workinghours.onShift?(date)
+          @scoreboard[i] = nil
+          @scoreboardNoVacations[i] = nil
+        end
         date += delta
       end
 

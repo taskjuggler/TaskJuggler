@@ -300,6 +300,9 @@ EOT
                      'revenueAccount' => a('revenueAccount') }
       query = Query.new(queryAttrs)
 
+      # Calculate the number of working days in the report interval.
+      workingDays = @project.workingDays(Interval.new(a('start'), a('end')))
+
       resourceList.each do |resource|
         # We only care about leaf resources that have the custom attribute
         # 'ClarityRID' set.
@@ -316,22 +319,19 @@ EOT
         # Effort in resource days
         total = query.to_num
 
-        # Then add the still available effort.
-        query.attributeId = 'freework'
-        query.process
-        # Also in resource days.
-        freeWork = query.to_num
-
-        # And the vacation days.
-        query.attributeId = 'vacationdays'
-        query.process
-        # Number of vacation days.
-        vacationDays = query.to_num
-
-        total += (@resourcesFreeWork[resourceId] = freeWork + vacationDays)
-
+        # Ignore resources that have no work allocations.
         next if total <= 0.0
 
+        # A fully allocated resource should always have a total of 1.0 per
+        # working day. If the total is larger, we assume unpaid overtime. If
+        # it's less, the resource was either not fully allocated or had less
+        # working hours or was on vacation.
+        if total >= workingDays
+          @resourcesFreeWork[resourceId] = 0.0
+        else
+          @resourcesFreeWork[resourceId] = workingDays - total
+          total = workingDays
+        end
         @resources[resourceId] = resource
 
         # This is the maximum possible work of this resource in the report
@@ -434,8 +434,9 @@ EOT
                      'revenueAccount' => a('revenueAccount') }
       query = Query.new(queryAttrs)
 
+      timeOffId = @report.get('timeOffId')
       @projects.each_value do |project|
-        next if project.id == @report.get('timeOffId')
+        next if project.id == timeOffId
         project.tasks.each do |task|
           task['assignedresources', @scenarioIdx].each do |resource|
             # Only consider resources that are in the filtered resource list.
