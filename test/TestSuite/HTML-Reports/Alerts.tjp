@@ -68,6 +68,18 @@ task "Overwrite Yellow" {
   }
 }
 
+task "Overwrite Green" {
+  task "Overwrite Green" {
+    task "Red" {
+      journalentry 2009-11-20 "Red" { alert red }
+    }
+    task "Green" {
+      journalentry 2009-11-23 "Green" { alert green }
+    }
+    journalentry 2009-11-22 "Green" { alert green }
+  }
+}
+
 taskreport "Alerts" {
   formats html
   columns name, alert

@@ -55,7 +55,7 @@ class TaskJuggler
 
     # Just for debugging
     def to_s # :nodoc:
-      "Headline: #{@headline}\nProperty: #{@property.class}"
+      "Headline: #{@headline}\nProperty: #{@property.class}: #{@property.fullId}"
     end
 
   end
@@ -375,6 +375,11 @@ class TaskJuggler
                               latestDate.nil? ||
                               pEntries.first.date >= latestDate)
         return pEntries
+      end
+      # Remove all child entries that are older than the current parent
+      # entries (if we have parent entries).
+      unless pEntries.empty?
+        entries.delete_if { |e| e.date <= pEntries.first.date }
       end
       # Otherwise return the list provided by the childen.
       entries
