@@ -1288,7 +1288,7 @@ class TaskJuggler
           dep = "]->]"
         else
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          dep "]->["
+          dep = "]->["
         end
         list << generateDepencyListItem(query.listMode, task, dep, date)
       end
@@ -1303,7 +1303,7 @@ class TaskJuggler
       a('startpreds').each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          dep = "]->]"
+          dep = "]->["
         else
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
           dep = "[->["
@@ -1314,10 +1314,10 @@ class TaskJuggler
       a('endpreds').each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          dep "[->]"
+          dep = "]->]"
         else
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          dep += "]->["
+          dep = "[->]"
         end
         list << generateDepencyListItem(query.listMode, task, dep, date)
       end
