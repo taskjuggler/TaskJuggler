@@ -19,6 +19,9 @@ GEM_SPEC = Gem::Specification.new { |s|
     DEPENDENCIES.each do |package, version|
       s.add_dependency(package, version)
     end
+    DEVEL_DEPENDENCIES.each do |package, version|
+      s.add_development_dependency(package, version)
+    end
     s.date              = Time.now
     if HAVE_EXT
         s.extensions    = EXT_CONF_FILES

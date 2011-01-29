@@ -5,7 +5,7 @@ Rcov::RcovTask.new do |t|
     t.output_dir = RCOV_DIR
     t.verbose = true
 if RUBY_1_9
-    t.ruby_opts = [ "-r tasks/rexml_fix_19" ]
+    t.ruby_opts = [ "-I . -r tasks/rexml_fix_19" ]
 else
     t.ruby_opts = [ "-r tasks/rexml_fix" ]
 end
