@@ -66,6 +66,7 @@ the taskjuggler directory run the following commands.
 
  cd taskjuggler3
  rake test
+ rake spec
  rake manual
  rake gem
 
@@ -151,10 +152,14 @@ The following commands build the HTML files for the manual in the
 
 ==== Contributing to the Test Suite ====
 
-The test suite can be found in the ''''test'''' directory. It
-contains unit and system tests but is very rudimentary at the moment.
-Adding more system tests to the CSV-Report directory is probably the
-best place to start.
+The test suite can be found in the ''''test'''' and ''''spec''''
+directories. It contains unit and system tests but is very rudimentary
+at the moment.  Adding more system tests to the test/CSV-Report directory
+is probably the best place to start. Originally, TaskJuggler used
+classic Ruby unit tests, but a migration to
+[http://rspec.info/|RSpec-2] is in the works now. New tests should be
+written as RSpec tests unless they require infrastructure only
+available in the ''''test'''' directory.
 
 ==== Contributing to the Ruby code ====
 

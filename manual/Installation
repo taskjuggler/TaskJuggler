@@ -137,10 +137,17 @@ from source put the following code in ''''${HOME}/bin/tj3''''.
  
  $:.unshift "#{ENV['TASKJUGGLER_DATA_PATH']}/lib/"
  
- require "taskjuggler3"
+ require File.basename(__FILE__)
 
 Don't forget to mark it as executable.
 
  chmod 750 ${HOME}/bin/tj3
 
+Other programs like ''''tj3client'''', ''''tj3man'''' or ''''tj3d'''' can simply be
+added as symbolic links to tj3.
+
+  cd ${HOME}/bin
+  ln -s tj3 tj3man
+  ln -s tj3 tj3client
+  ln -s tj3 tj3d
 

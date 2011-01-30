@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = taskjuggler3.rb -- The TaskJuggler III Project Management Software
+# = tj3.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
 #               by Chris Schlaeger <chris@linux.com>
@@ -17,7 +17,7 @@ require 'Tj3Config'
 require 'TaskJuggler'
 
 # Name of the application suite
-AppConfig.appName = 'taskjuggler3'
+AppConfig.appName = 'tj3'
 
 def processArguments(argv)
   opts = OptionParser.new
