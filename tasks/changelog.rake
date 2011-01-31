@@ -2,8 +2,23 @@ require 'time'
 
 desc 'update changelog'
 task :CHANGELOG do
+
+  # 'git tag' is not sorted numerically. This function implements a numerical
+  # comparison for tag versions of the format 'release-X.X.X'. X can be a
+  # multi-digit number.
+  def compareTags(a, b)
+
+    def versionToComparable(v)
+      /\d+\.\d+\.\d+/.match(v)[0].split('.').map{ |l| sprintf("%03d", l.to_i)}.
+                                                           join('.')
+    end
+
+    versionToComparable(a) <=> versionToComparable(b)
+  end
+
   # Get list of release tags from Git repository
-  releases = `git tag`.split("\n").map { |r| r.chomp }
+  releases = `git tag`.split("\n").map { |r| r.chomp }.
+    sort{ |a, b| compareTags(a, b) }
 
   # Now we get the commit entries for each release
   sections = []
@@ -13,7 +28,7 @@ task :CHANGELOG do
     # contain the commit messages in RDoc format.
     text = ''
     # We only support release tags in the form X.X.X
-    version = /\d\.\d\.\d/.match(release)
+    version = /\d+\.\d+\.\d+/.match(release)
     # Construct a Git range.
     interval = prevRelease ? "#{prevRelease}..#{release}" : release
     prevRelease = release
