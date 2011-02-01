@@ -2724,7 +2724,7 @@ EOT
       if attributeDefinition.scenarioSpecific
         attr = @property[@val[1], 0]
       else
-        attr = @propert.get(@val[1])
+        attr = @property.get(@val[1])
       end
       unless attr.is_a?(Array)
         error('purge_no_list',
