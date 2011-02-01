@@ -1178,7 +1178,7 @@ class TaskJuggler
       # task A precedes B and they are specified this way:
       # task A: | --> D-
       # task B: -D <-- |
-      if a('start') && endDate > a('start')
+      if a('start') && (endDate.nil? || endDate > a('start'))
         error('weak_end_dep',
               "Task #{@property.fullId} has a too weak end dependencies " +
               "to be scheduled properly.")
