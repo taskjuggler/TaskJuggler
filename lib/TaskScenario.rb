@@ -73,6 +73,7 @@ class TaskJuggler
       if a('milestone') && a('scheduled')
         @property['end', @scenarioIdx] = a('start') if a('start') && !a('end')
         @property['start', @scenarioIdx] = a('end') if !a('start') && a('end')
+        Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
       end
 
       # Collect the limits of this task and all parent tasks into a single
@@ -136,7 +137,7 @@ class TaskJuggler
         if a('start')
           propagateDate(a('start'), false)
         elsif @property.parent.nil? &&
-          @property.canInheritDate?(@scenarioIdx, false)
+              @property.canInheritDate?(@scenarioIdx, false)
           propagateDate(@project['start'], false)
         end
       end
@@ -145,7 +146,7 @@ class TaskJuggler
         if a('end')
           propagateDate(a('end'), true)
         elsif @property.parent.nil? &&
-          @property.canInheritDate?(@scenarioIdx, true)
+              @property.canInheritDate?(@scenarioIdx, true)
           propagateDate(@project['end'], true)
         end
       end
@@ -918,9 +919,11 @@ class TaskJuggler
 
     # Set a new start or end date and propagate the value to all other
     # task ends that have a direct dependency to this end of the task.
-    def propagateDate(date, atEnd)
+    def propagateDate(date, atEnd, ignoreEffort = false)
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
+      #puts "Propagating #{thisEnd} date #{date} of #{@property.fullId} " +
+      #     "#{ignoreEffort ? "ignoring effort" : "" }"
 
       # These flags are just used to avoid duplicate calls of this function
       # during propagateInitialValues().
@@ -948,20 +951,30 @@ class TaskJuggler
             !(a('length') == 0 && a('duration') == 0 && a('effort') == 0 &&
               !a('allocate').empty?)
         @property['scheduled', @scenarioIdx] = true
+        Log << "Task #{@property.fullId} has been scheduled"
       end
 
       # Propagate date to all dependent tasks. Don't do this for start
       # successors or end predecessors if this task is effort based. In this
       # case, the date might still change to align with the first/last
-      # allocation. In these cases, bookResoruce() has to propagate the final
+      # allocation. In these cases, bookResource() has to propagate the final
       # date.
-      unless atEnd && a('effort') > 0
-        a(thisEnd + 'preds').each do |task, onEnd|
+      if atEnd
+        if ignoreEffort || a('effort') == 0
+          a('endpreds').each do |task, onEnd|
+            propagateDateToDep(task, onEnd)
+          end
+        end
+        a('endsuccs').each do |task, onEnd|
           propagateDateToDep(task, onEnd)
         end
-      end
-      unless !atEnd && a('effort') > 0
-        a(thisEnd + 'succs').each do |task, onEnd|
+      else
+        if ignoreEffort || a('effort') == 0
+          a('startsuccs').each do |task, onEnd|
+            propagateDateToDep(task, onEnd)
+          end
+        end
+        a('startpreds').each do |task, onEnd|
           propagateDateToDep(task, onEnd)
         end
       end
@@ -979,6 +992,7 @@ class TaskJuggler
       # containter task. If so, we can schedule it as well.
       @property.parent.scheduleContainer(@scenarioIdx) if !@property.parent.nil?
     end
+
 
     # This function determines if a task can inherit the start or end date
     # from a parent task or the project time frame. +atEnd+ specifies whether
@@ -1001,13 +1015,13 @@ class TaskJuggler
       thisEnd, thatEnd = atEnd ? [ 'end', 'start' ] : [ 'start', 'end' ]
       # Return false if we already have a date for this end or if we have a
       # strong dependency for this end.
-      return false if a(thisEnd) || hasStrongDeps(thisEnd)
+      return false if a(thisEnd) || hasStrongDeps(atEnd)
 
       # Containter task can inherit the date if they have no dependencies at
       # this end.
       return true if @property.container?
 
-      hasThatSpec = a(thatEnd) || hasStrongDeps(thatEnd)
+      hasThatSpec = a(thatEnd) || hasStrongDeps(!atEnd)
       hasDurationSpec = hasDurationSpec?
 
       # Check for tasks that have no start and end spec, no duration spec but
@@ -1060,7 +1074,7 @@ class TaskJuggler
         raise "Start (#{a('start')}) and end (#{a('end')}) must be set"
       end
       @property['scheduled', @scenarioIdx] = true
-      Log << "Container task #{@property.fullId}: #{a('start')} -> #{a('end')}"
+      Log << "Container task #{@property.fullId} completed: #{a('start')} -> #{a('end')}"
 
       # If we have modified the start or end date, we need to communicate this
       # new date to surrounding tasks.
@@ -1629,9 +1643,9 @@ class TaskJuggler
           # The specified effort has been reached. The task has been fully
           # scheduled now.
           if a('forward')
-            propagateDate(@tentativeEnd, true)
+            propagateDate(@tentativeEnd, true, true)
           else
-            propagateDate(@tentativeStart, false)
+            propagateDate(@tentativeStart, false, true)
           end
           return true
         end
@@ -1772,17 +1786,23 @@ class TaskJuggler
                  !limitsOk?(date, resource)
 
         if r.book(@scenarioIdx, sbIdx, @property)
-
+          # For effort based task we adjust the the start end (as defined by
+          # the scheduling direction) to align with the first booked time
+          # slot.
           if a('effort') > 0 && a('assignedresources').empty?
             if a('forward')
               @property['start', @scenarioIdx] = @project.idxToDate(sbIdx)
+              Log << "Task #{@property.fullId} first assignment: " +
+                     "#{a('start')} -> #{a('end')}"
               a('startsuccs').each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, a('start'), false)
+                task.propagateDate(@scenarioIdx, a('start'), false, true)
               end
             else
               @property['end', @scenarioIdx] = @project.idxToDate(sbIdx + 1)
+              Log << "Task #{@property.fullId} last assignment: " +
+                     "#{a('start')} -> #{a('end')}"
               a('endpreds').each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, a('end'), true)
+                task.propagateDate(@scenarioIdx, a('end'), true, true)
               end
             end
           end
@@ -1863,6 +1883,8 @@ class TaskJuggler
               @tentativeEnd = tEnd if @tentativeEnd.nil? || @tentativeEnd < tEnd
               if !scheduled && (a('start').nil? || date < a('start'))
                 @property['start', @scenarioIdx] = date
+                Log << "Task #{@property.fullId} first booking: " +
+                  "#{a('start')} -> #{a('end')}"
               end
 
               unless a('assignedresources').include?(booking.resource)
@@ -1912,61 +1934,76 @@ class TaskJuggler
       false
     end
 
-    def hasStrongDeps(thisEnd)
+    def hasStrongDeps(atEnd)
       # A dependency that could determine the date on this side of the
       # dependency is a strong dependency. If the scheduling direction of the
       # task on the other side leads away from the dependency point, then the
       # dependency is weak. This date will influence the other date for weak
-      # dependencies.
+      # dependencies. > means ASAP task, < means ALAP task.
       #
-      # +---          SS -> SP> : Weak
-      # |-+           SS -> SP< : Illegal
-      # +-|-          SP -> SS> : Strong
-      #   | +---      SP -> SS< : Illegal
+      #
+      # T2 depends on T1 start
+      #
+      # +---          SS -> S> : Weak
+      # |-+           SS -> S< : Weak
+      # +-|-          SP -> S> : Strong
+      #   | +---      SP -> S< : Strong
       #   +-|
       #     +---
       #
       #
-      # ---+          ES -> SP> : Weak
-      #    |-+        ES -> SP< : Strong
-      # ---+ |        SP -> ES> : Strong
-      #      | +---   SP -> ES< : Weak
+      # T2 depends on T1 end
+      # T1 precedes T2 start
+      #
+      # ---+          ES -> S> : Weak
+      #    |-+        ES -> S< : Strong
+      # ---+ |        SP -> E> : Strong
+      #      | +---   SP -> E< : Weak
       #      +-|
       #        +---
       #
       #
-      # ---+          ES -> EP> : Illegal
-      #    |-+        ES -> EP< : Strong
-      # ---+ |        EP -> ES> : Illegal
-      #     -|-+      EP -> ES< : Weak
-      #      +-|
-      #     ---+
+      # T1 precedes T2 end
+      #
+      #     ---+      ES -> E> : Strong
+      #      +-|      ES -> E< : Strong
+      #     -|-+      EP -> E> : Weak
+      # ---+ |        EP -> E< : Weak
+      #    |-+
+      # ---+
       #
       # All other combinations are illegal and should be caught earlier. So,
       # illegal values can be considered don't care values.
       #
-      # f/t SP> SP< SS> SS< EP> EP< ES> ES<
-      # SP  x   x   S   x   x   x   S   W     Row 1
-      # SS  W   x   x   x   x   x   x   x     Row 2
-      # EP  x   x   x   x   x   x   x   W     Row 3
-      # ES  W   S   x   x   x   S   x   x     Row 4
-      if thisEnd == 'start'
+      # f/t S>  S<  E>  E<
+      # SP  S   S   S   W     Row 1
+      # SS  W   W   x   x     Row 2
+      # EP  x   x   W   W     Row 3
+      # ES  W   S   S   S     Row 4
+      #
+      # If the other end of the dependency already has a date, it's a strong
+      # dependency no matter how it was set.
+      unless atEnd
         # Row 1
         a('startpreds').each do |task, onEnd|
           if (onEnd && (task['forward', @scenarioIdx] ||
-                        task['end', @scenarioIdx])) ||
-             (!onEnd && (task['forward', @scenarioIdx] ||
-                         task['start']))
+                        task['end', @scenarioIdx])) || !onEnd
             return true
           end
         end
+        # Row 2
+        a('startsuccs').each do |task, onEnd|
+          return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
+        end
       else
+        # Row 3
+        a('endpreds').each do |task, onEnd|
+          return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
+        end
         # Row 4
         a('endsuccs').each do |task, onEnd|
-          if (onEnd && (!task['forward', @scenarioIdx] ||
-                        task['end', @scenarioIdx])) ||
-             (!onEnd && (!task['forward', @scenarioIdx] ||
-                         task['start', @scenarioIdx]))
+          if (!onEnd && (!task['forward', @scenarioIdx] ||
+                         task['start', @scenarioIdx])) || onEnd
             return true
           end
         end

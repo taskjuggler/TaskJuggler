@@ -3,43 +3,43 @@ project test "Test" "1.0" 2007-04-02 - 2007-07-01
 include "checks.tji"
 
 task t1 "T1" {
-	end ${projectend}
-	duration 1w
-	${FixStart "2007-06-24"}
+  end ${projectend}
+  duration 1w
+  ${FixStart "2007-06-24"}
 }
 
 task t2 "T2" {
-	precedes t1
-	duration 1w
-	${FixTask "2007-06-17" "2007-06-24"}
+  precedes t1
+  duration 1w
+  ${FixTask "2007-06-17" "2007-06-24"}
 }
 
 task t3 "T3" {
-	precedes t2 { gapduration 1w }
-	duration 1w
-	${FixTask "2007-06-03" "2007-06-10"}
+  precedes t2 { gapduration 1w }
+  duration 1w
+  ${FixTask "2007-06-03" "2007-06-10"}
 }
 
 task t4 "T4" {
-	precedes t3 { onstart gaplength 1w }
-	duration 1w
-	${FixTask "2007-05-21-9:00" "2007-05-28-9:00"}
+  precedes t3 { onstart gaplength 1w }
+  duration 1w
+  ${FixTask "2007-05-21-9:00" "2007-05-28-9:00"}
 }
 
 task t5 "T5" {
-	precedes t4 { onend }
-	duration 1w
-	${FixTask "2007-05-21-9:00" "2007-05-28-9:00"}
+  precedes t4 { onend }
+  duration 1w
+  ${FixTask "2007-05-21-9:00" "2007-05-28-9:00"}
 }
 
 task t6 "T6" {
-	precedes t4 { onend gaplength 1w }
-	duration 1w
-	${FixTask "2007-05-14-9:00" "2007-05-21-9:00"}
+  precedes t4 { onend gaplength 1w }
+  duration 1w
+  ${FixTask "2007-05-14-9:00" "2007-05-21-9:00"}
 }
 
 taskreport preceds "Precedes" {
   formats html
-	columns name, start, end, daily
+  columns name, start, end, daily
 }
 

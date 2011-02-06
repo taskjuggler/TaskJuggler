@@ -1,0 +1,32 @@
+project pi "Priority Inversion" 2011-02-01 +1m
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "T1" {
+  start 2011-02-08
+  effort 1w
+  allocate r1
+  priority 400
+}
+
+task "T2" {
+  precedes t1 { onend }
+  effort 1w
+  allocate r2
+  priority 600
+
+}
+
+task "T3" {
+  start 2011-02-08
+  effort 1w
+  allocate r2
+  priority 500
+}
+
+taskreport "PriorityInversion" {
+  formats html
+  columns no, name, daily
+  hideresource 0
+}

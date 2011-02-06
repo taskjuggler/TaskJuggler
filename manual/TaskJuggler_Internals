@@ -81,5 +81,12 @@ with fairly short computation overhead. The scheduling process is not
 an optimization process. It does not evaluate alternatives and it
 does not search for local extremes in a solution space.
 
-
+A task can only be scheduled when it is ready for scheduling. This
+means that at least the start date for the scheduling process must be
+known. For ASAP (As Soon As Possible) tasks, the scheduler start date
+is the start date of the task. For ALAP (As Late As Possible) tasks
+the scheduler start date is the end date of the task. ASAP task will
+be scheduled from start to end, ALAP tasks from end to start. This is
+important to understand as resource assignments for each time slot
+will be determined in this order.
 

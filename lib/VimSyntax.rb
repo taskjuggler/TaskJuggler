@@ -210,6 +210,11 @@ hi def link tjpnumber Number
 
 let b:current_syntax = "tjp"
 
+augroup TaskJugglerSource
+  " Remove all trailing white spaces from line ends when saving files
+  " Note: This overwrites the s mark.
+  autocmd BufWritePre *.tj[ip] mark s | %s/\s\+$//e | normal `s
+augroup END
 EOT
     end
 

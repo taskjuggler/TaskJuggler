@@ -4,37 +4,37 @@ resource r1 "R1"
 resource r2 "R2"
 
 task t1 "Task 1" {
-  task st1 "SubTask 1" { 
+  task st1 "SubTask 1" {
     effort 1d
     allocate r1
-  }    
-  task st2 "SubTask 2" { 
+  }
+  task st2 "SubTask 2" {
     effort 1d
-    allocate r2 
+    allocate r2
     depends !st1 { onstart }
   }
-} 
+}
 
 task t2 "Task 2" {
-  task st1 "SubTask 1" { 
+  task st1 "SubTask 1" {
     effort 1d
     allocate r1
-  }    
-  task st2 "SubTask 2" { 
+  }
+  task st2 "SubTask 2" {
     depends !st1 { onstart }
   }
-} 
+}
 
 task t3 "Task 3" {
-  task st1 "SubTask 1" { 
+  task st1 "SubTask 1" {
     effort 1d
     scheduling alap
     allocate r1
-  }    
-  task st2 "SubTask 2" { 
+  }
+  task st2 "SubTask 2" {
     effort 1d
-    allocate r2 
+    allocate r2
     precedes !st1 { onend }
   }
-} 
+}
 
