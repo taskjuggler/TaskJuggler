@@ -856,7 +856,16 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :export, sourceFileInfo)
+      report = newReport(@val[1], @val[2], :export, sourceFileInfo)
+
+      report.set('scenarios', [ 0 ])
+      # Show all tasks, sorted by seqno-up.
+      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      # Show all resources, sorted by seqno-up.
+      report.set('hideResource',
+                  LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji

@@ -27,15 +27,6 @@ class TaskJuggler
                                 maxstart minend minstart note priority
                                 responsible )
       @supportedResourceAttrs = %w( vacation workinghours )
-      @report.set('scenarios', [ 0 ])
-
-      # Show all tasks, sorted by seqno-up.
-      @report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @report.set('hideResource',
-                  LogicalExpression.new(LogicalOperation.new(0)))
-      @report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     end
 
     def generateIntermediateFormat
@@ -349,6 +340,8 @@ class TaskJuggler
             # Now convert/add them to a tripple-stage hash by scenarioIdx, task
             # and then resource.
             bookings.each do |task, booking|
+              next unless @taskList.include?(task)
+
               if !@bookings[scenarioIdx].include?(task)
                 @bookings[scenarioIdx][task] = {}
               end
