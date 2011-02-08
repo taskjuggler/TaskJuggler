@@ -1,0 +1,17 @@
+project test "Test" "1.0" 2007-08-19 +2m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+  }
+}
+
+resource tux "Tux"
+
+task t "T" {
+  effort 1w
+  allocate tux
+}
+
+supplement task t {
+# MARK: error 16 taskbooking_scenario
+	booking tux 2007-08-25-10:00 +2h
+}

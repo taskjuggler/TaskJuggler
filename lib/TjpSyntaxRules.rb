@@ -3656,6 +3656,11 @@ EOT
 
   def rule_resourceBooking
     pattern(%w( !resourceBookingHeader !bookingBody ), lambda {
+      unless @project.scenario(@scenarioIdx).leaf?
+        error('resbooking_scenario',
+              "You cannot add bookings for a scenario that contains " +
+              "other scenarios.")
+      end
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
@@ -4538,6 +4543,11 @@ EOT
 
   def rule_taskBooking
     pattern(%w( !taskBookingHeader !bookingBody ), lambda {
+      unless @project.scenario(@scenarioIdx).leaf?
+        error('taskbooking_scenario',
+              "You cannot add bookings for a scenario that contains " +
+              "other scenarios.")
+      end
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
