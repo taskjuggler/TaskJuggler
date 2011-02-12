@@ -1837,7 +1837,8 @@ EOT
       if @scanner.macroDefined?(@val[1])
         warning('marco_redefinition', "Redefining macro #{@val[1]}")
       end
-      @scanner.addMacro(Macro.new(@val[1], @val[2], @sourceFileInfo[0]))
+      @scanner.addMacro(TextParser::Macro.new(@val[1], @val[2],
+                                              @sourceFileInfo[0]))
     })
     doc('macro', <<'EOT'
 Defines a text fragment that can later be inserted by using the specified ID.
@@ -2344,10 +2345,10 @@ EOT
 
     pattern(%w( _now !date ), lambda {
       @project['now'] = @val[1]
-      @scanner.addMacro(Macro.new('now', @val[1].to_s,
-                                  @sourceFileInfo[0]))
-      @scanner.addMacro(Macro.new('today', @val[1].to_s(@project['timeFormat']),
-                                  @sourceFileInfo[0]))
+      @scanner.addMacro(TextParser::Macro.new('now', @val[1].to_s,
+                                              @sourceFileInfo[0]))
+      @scanner.addMacro(TextParser::Macro.new(
+        'today', @val[1].to_s(@project['timeFormat']), @sourceFileInfo[0]))
     })
     doc('now', <<'EOT'
 Specify the date that TaskJuggler uses for calculation as current

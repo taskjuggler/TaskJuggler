@@ -11,11 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'SourceFileInfo'
-require 'MessageHandler'
-require 'TjException'
-
-class TaskJuggler
+class TaskJuggler::TextParser
 
   class Macro
 
@@ -35,8 +31,7 @@ class TaskJuggler
   # during the macro call.
   class MacroTable
 
-    def initialize(messageHandler)
-      @messageHandler = messageHandler
+    def initialize
       @macros = {}
     end
 
@@ -71,11 +66,6 @@ class TaskJuggler
         i += 1
       end
       [ @macros[name], resolved ]
-    end
-
-    # This function sends an error message to the message handler.
-    def error(id, text, sourceFileInfo)
-      @messageHandler.error(id, text, sourceFileInfo)
     end
 
   end

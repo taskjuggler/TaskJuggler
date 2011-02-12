@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = TextScanner.rb -- The TaskJuggler III Project Management Software
+# = Scanner.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
 #               by Chris Schlaeger <chris@linux.com>
@@ -15,21 +15,18 @@ require 'stringio'
 require 'strscan'
 
 require 'UTF8String'
-require 'TjTime'
-require 'TjException'
-require 'SourceFileInfo'
-require 'MacroTable'
-require 'Log'
+require 'TextParser/SourceFileInfo'
+require 'TextParser/MacroTable'
 
-class TaskJuggler
+class TaskJuggler::TextParser
 
-  # The TextScanner class is an abstract text scanner with support for nested
+  # The Scanner class is an abstract text scanner with support for nested
   # include files and text macros. The tokenizer will operate on rules that
   # must be provided by a derived class. The scanner is modal. Each mode
   # operates only with the subset of token patterns that are assigned to the
   # current mode. The current line is tracked accurately and can be used for
   # error reporting. The scanner can operate on Strings or Files.
-  class TextScanner
+  class Scanner
 
     class MacroStackEntry
 
@@ -46,7 +43,7 @@ class TaskJuggler
 
     # This class is used to handle the low-level input operations. It knows
     # whether it deals with a text buffer or a file and abstracts this to the
-    # TextScanner. For each nested file the scanner puts an StreamHandle on the
+    # Scanner. For each nested file the scanner puts an StreamHandle on the
     # stack while the file is scanned. With this stack the scanner can resume
     # the processing of the enclosing file once the included files has been
     # completely processed.
@@ -54,7 +51,8 @@ class TaskJuggler
 
       attr_reader :fileName, :macroStack
 
-      def initialize
+      def initialize(log)
+        @log = log
         @fileName = nil
         @stream = nil
         @line = nil
@@ -89,7 +87,7 @@ class TaskJuggler
         if @scanner.nil? || @scanner.eos?
           if (@line = @stream.gets)
             # Update activity meter about every 1024 lines.
-            Log.activity if (@stream.lineno & 0x3FF) == 0
+            @log.activity if (@stream.lineno & 0x3FF) == 0
             # Check for DOS or Mac end of line signatures.
             if @line[-1] == ?\r
               # Mac: Convert CR into LF
@@ -157,12 +155,12 @@ class TaskJuggler
 
       attr_reader :fileName
 
-      def initialize(fileName)
-        super()
+      def initialize(fileName, log)
+        super(log)
         @fileName = fileName.dup.untaint
         @stream = fileName == '.' ? $stdin : File.new(@fileName, 'r')
-        Log << "Parsing file #{@fileName} ..."
-        Log.startProgressMeter("Reading file #{fileName}")
+        @log << "Parsing file #{@fileName} ..."
+        @log.startProgressMeter("Reading file #{fileName}")
       end
 
       def close
@@ -175,23 +173,25 @@ class TaskJuggler
     # Specialized version of StreamHandle for operations on Strings.
     class BufferStreamHandle < StreamHandle
 
-      def initialize(buffer)
-        super()
+      def initialize(buffer, log)
+        super(log)
         @stream = StringIO.new(buffer)
-        Log << "Parsing buffer #{buffer[0, 20]} ..."
+        @log << "Parsing buffer #{buffer[0, 20]} ..."
       end
 
     end
 
-    # Create a new instance of TextScanner. _masterFile_ must be a String that
+    # Create a new instance of Scanner. _masterFile_ must be a String that
     # either contains the name of the file to start with or the text itself.
     # _messageHandler_ is a MessageHandler that is used for error messages.
-    def initialize(masterFile, messageHandler, tokenPatterns, defaultMode)
+    # _log_ is a Log to report progress and status.
+    def initialize(masterFile, messageHandler, log, tokenPatterns, defaultMode)
       @masterFile = masterFile
       @messageHandler = messageHandler
+      @log = log
       # This table contains all macros that may be expanded when found in the
       # text.
-      @macroTable = MacroTable.new(messageHandler)
+      @macroTable = MacroTable.new
       # The currently processed IO object.
       @cf = nil
       # This Array stores the currently processed nested files. It's an Array
@@ -263,10 +263,12 @@ class TaskJuggler
     def open(fileNameIsBuffer = false)
       @fileNameIsBuffer = fileNameIsBuffer
       if fileNameIsBuffer
-        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile), nil, nil ] ]
+        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile, @log),
+                         nil, nil ] ]
       else
         begin
-          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile), nil, nil ] ]
+          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile, @log),
+                           nil, nil ] ]
         rescue StandardError
           error('open_file', "Cannot open file #{@masterFile}")
         end
@@ -278,8 +280,8 @@ class TaskJuggler
     # Finish processing and reset all data structures.
     def close
       unless @fileNameIsBuffer
-        Log.startProgressMeter("Reading file #{@masterFile}")
-        Log.stopProgressMeter
+        @log.startProgressMeter("Reading file #{@masterFile}")
+        @log.stopProgressMeter
       end
       @fileStack = []
       @cf = @tokenBuffer = nil
@@ -314,9 +316,9 @@ class TaskJuggler
 
       # Open the new file and push the handle on the @fileStack.
       begin
-        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName)),
+        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName, @log)),
                         nil, block ]
-        Log << "Parsing file #{includeFileName}"
+        @log << "Parsing file #{includeFileName}"
       rescue StandardError
         error('bad_include', "Cannot open include file #{includeFileName}", sfi)
       end
@@ -365,7 +367,7 @@ class TaskJuggler
         # completion. Close it and remove the corresponding entry from the
         # @fileStack.
         @finishLastFile = false
-        #Log << "Completed file #{@cf.fileName}"
+        #@log << "Completed file #{@cf.fileName}"
 
         # If we have a block to be executed on EOF, we call it now.
         onEof = @fileStack.last[2]
@@ -382,7 +384,7 @@ class TaskJuggler
         else
           # Continue parsing the file that included the current file.
           @cf, tokenBuffer = @fileStack.last
-          Log << "Parsing file #{@cf.fileName} ..."
+          @log << "Parsing file #{@cf.fileName} ..."
           # If we have a left over token from previously processing this file,
           # return it now.
           if tokenBuffer
@@ -435,7 +437,7 @@ class TaskJuggler
     # Return a token to retrieve it with the next nextToken() call again. Only 1
     # token can be returned before the next nextToken() call.
     def returnToken(token)
-      #Log << "-> Returning Token: [#{token[0]}][#{token[1]}]"
+      #@log << "-> Returning Token: [#{token[0]}][#{token[1]}]"
       unless @tokenBuffer.nil?
         $stderr.puts @tokenBuffer
         raise "Fatal Error: Cannot return more than 1 token in a row"

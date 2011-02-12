@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'TextParser/SourceFileInfo'
+
 class TaskJuggler
 
   # The Message object can store several classes of messages that the
@@ -41,7 +43,7 @@ class TaskJuggler
       end
       @message = message
 
-      if sourceFileInfo && !sourceFileInfo.is_a?(SourceFileInfo)
+      if sourceFileInfo && !sourceFileInfo.is_a?(TextParser::SourceFileInfo)
         raise "SourceFileInfo object expected but got #{sourceFileInfo.class}"
       end
       @sourceFileInfo = sourceFileInfo

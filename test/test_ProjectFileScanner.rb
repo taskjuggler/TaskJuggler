@@ -180,7 +180,7 @@ EOT
     s.open(true)
 
     macros.each do |macro|
-      s.addMacro(TaskJuggler::Macro.new(macro[0], macro[1], nil))
+      s.addMacro(TaskJuggler::TextParser::Macro.new(macro[0], macro[1], nil))
     end
 
     ref.each do |type, val, line|

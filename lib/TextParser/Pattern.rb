@@ -43,6 +43,9 @@ class TaskJuggler::TextParser
     attr_reader :keyword, :doc, :seeAlso, :exampleFile, :exampleTag,
                 :tokens, :function
 
+    # Create a new Pattern object. _tokens_ must be an Array of String objects
+    # that describe the Pattern. _function_ can be a reference to a method
+    # that should be called when the Pattern was recognized by the parser.
     def initialize(tokens, function = nil)
       # A unique name for the pattern that is used in the documentation.
       @keyword = nil

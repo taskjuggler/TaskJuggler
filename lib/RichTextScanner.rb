@@ -12,7 +12,7 @@
 #
 
 require 'UTF8String'
-require 'TextScanner'
+require 'TextParser/Scanner'
 
 class TaskJuggler
 
@@ -28,9 +28,9 @@ class TaskJuggler
   # :ref :     inside of a REF [[ .. ]]
   # :href :    inside of an HREF [ .. ]
   # :func :    inside of a block <[ .. ]> or inline <- .. -> function
-  class RichTextScanner < TextScanner
+  class RichTextScanner < TextParser::Scanner
 
-    def initialize(masterFile, messageHandler)
+    def initialize(masterFile, messageHandler, log)
       tokenPatterns = [
         # :bol mode rules
         [ :LINEBREAK, /\s*\n/, :bol, method('linebreak') ],
@@ -89,7 +89,7 @@ class TaskJuggler
         [ nil, /[ \t\n]+/, :func ],
         [ :LITERAL, /./, :func ]
       ]
-      super(masterFile, messageHandler, tokenPatterns, :bop)
+      super(masterFile, messageHandler, log, tokenPatterns, :bop)
     end
 
     private

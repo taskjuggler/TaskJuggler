@@ -220,9 +220,8 @@ class TaskJuggler
         rText.messageHandler.messages.each do |msg|
           # Map the SourceFileInfo of the RichText back to the original
           # location in the input file.
-          sfi = SourceFileInfo.new(sfi.fileName,
-                                   sfi.lineNo + msg.sourceFileInfo.lineNo - 1,
-                                   0)
+          sfi = TextParser::SourceFileInfo.new(
+            sfi.fileName, sfi.lineNo + msg.sourceFileInfo.lineNo - 1, 0)
           # Then replay the error message.
           @messageHandler.addMessage(msg.type, msg.id, msg.message, sfi,
                                      msg.line)

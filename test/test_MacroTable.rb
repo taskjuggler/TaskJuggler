@@ -14,14 +14,14 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
-require 'MacroTable'
+require 'TextParser/MacroTable'
 
 class TaskJuggler
 
 class TestMacroTable < Test::Unit::TestCase
 
   def setup
-    @mt = TaskJuggler::MacroTable.new(MessageHandler.new)
+    @mt = TaskJuggler::TextParser::MacroTable.new
   end
 
   def teardown
@@ -29,14 +29,15 @@ class TestMacroTable < Test::Unit::TestCase
   end
 
   def test_addAndClear
-    @mt.add(TaskJuggler::Macro.new('macro1', 'This is macro 1', nil))
-    @mt.add(TaskJuggler::Macro.new('macro2', 'This is macro 2', nil))
+    @mt.add(TaskJuggler::TextParser::Macro.new('macro1', 'This is macro 1', nil))
+    @mt.add(TaskJuggler::TextParser::Macro.new('macro2', 'This is macro 2', nil))
     @mt.clear
   end
 
   def test_resolve
-    @mt.add(TaskJuggler::Macro.new('macro1', 'This is macro 1', nil))
-    @mt.add(TaskJuggler::Macro.new('macro2', 'This is macro 2 with ${1} and ${2}', nil))
+    @mt.add(TaskJuggler::TextParser::Macro.new('macro1', 'This is macro 1', nil))
+    @mt.add(TaskJuggler::TextParser::Macro.new(
+      'macro2', 'This is macro 2 with ${1} and ${2}', nil))
     assert_equal('This is macro 1', @mt.resolve(%w( macro1 ), nil)[1])
     assert_equal('This is macro 2 with arg1 and arg2',
                  @mt.resolve(%w( macro2 arg1 arg2), nil)[1])

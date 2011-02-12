@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-class TaskJuggler
+class TaskJuggler::TextParser
 
   # Simple class that holds the info about a source file reference.
   class SourceFileInfo

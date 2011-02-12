@@ -11,8 +11,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'SourceFileInfo'
-
 class TaskJuggler::TextParser
 
   # This class models the elements of the stack that the TextParser uses to keep

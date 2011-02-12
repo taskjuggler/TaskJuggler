@@ -14,6 +14,7 @@
 require 'TextParser'
 require 'RichTextScanner'
 require 'RichTextSyntaxRules'
+require 'Log'
 
 class TaskJuggler
 
@@ -68,7 +69,7 @@ class TaskJuggler
     def open(text)
       # Make sure that the last line is properly terminated with a newline.
       # Multiple newlines at the end are simply ignored.
-      @scanner = RichTextScanner.new(text + "\n\n", @messageHandler)
+      @scanner = RichTextScanner.new(text + "\n\n", @messageHandler, Log)
       @scanner.open(true)
     end
 

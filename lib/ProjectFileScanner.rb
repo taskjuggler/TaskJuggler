@@ -11,13 +11,13 @@
 # published by the Free Software Foundation.
 #
 
-require 'TextScanner'
+require 'TextParser/Scanner'
 
 class TaskJuggler
 
-  # This class specializes the TextScanner class to detect the tokens of the
-  # TJP syntax.
-  class ProjectFileScanner < TextScanner
+  # This class specializes the TextParser::Scanner class to detect the tokens
+  # of the TJP syntax.
+  class ProjectFileScanner < TextParser::Scanner
 
     def initialize(masterFile, messageHandler)
       tokenPatterns = [
@@ -146,7 +146,7 @@ class TaskJuggler
         [ :LITERAL, /./ ]
       ]
 
-      super(masterFile, messageHandler, tokenPatterns, :tjp)
+      super(masterFile, messageHandler, Log, tokenPatterns, :tjp)
     end
 
     private
