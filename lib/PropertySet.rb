@@ -78,7 +78,7 @@ class TaskJuggler
 
     # Iterate over all attribute definitions.
     def eachAttributeDefinition
-      @attributeDefinitions.each do |key, value|
+      @attributeDefinitions.sort.each do |key, value|
         yield(value)
       end
     end

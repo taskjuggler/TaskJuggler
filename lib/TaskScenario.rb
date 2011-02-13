@@ -1202,13 +1202,9 @@ class TaskJuggler
     end
 
     def addBooking(booking)
-      if a('booking').empty?
-        # For the first item use the assignment form so that the 'provided'
-        # attribute is set properly.
-        @property['booking', @scenarioIdx] = [ booking ]
-      else
-        @property['booking', @scenarioIdx] << booking
-      end
+      # This append operation will not trigger a copy to sub-scenarios.
+      # Bookings are only valid for the scenario they are defined in.
+      @property['booking', @scenarioIdx] << booking
     end
 
     def query_complete(query)

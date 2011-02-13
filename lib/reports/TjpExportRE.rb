@@ -76,8 +76,18 @@ class TaskJuggler
                                           a('resourceAttributes'))
       generateCustomAttributeDeclarations('task', @project.tasks,
                                           a('taskAttributes'))
+      generateScenarioDefinition(@project.scenario(0), 2)
       @file << "}\n\n"
     end
+
+    def generateScenarioDefinition(scenario, indent)
+      @file << "#{' ' * indent}scenario #{scenario.id} \"#{scenario.name}\" {\n"
+      scenario.children.each do |sc|
+        generateScenarioDefinition(sc, indent + 2)
+      end
+      @file << "#{' ' * indent}}\n"
+    end
+
 
     def generateCustomAttributeDeclarations(tag, propertySet, attributes)
       # First we search the attribute definitions for any user defined
@@ -232,17 +242,19 @@ class TaskJuggler
 
       taskDeps = task[tag, scenarioIdx]
       unless taskDeps.empty?
-        @file << ' ' * indent + tag + ' '
+        str = "#{tag} "
         first = true
         taskDeps.each do |dep|
+          next if inhertable?(task, tag, scenarioIdx, dep)
+
           if first
             first = false
           else
-            @file << ', '
+            str << ', '
           end
-          @file << dep.task.fullId
+          str << dep.task.fullId
         end
-        @file << "\n"
+        generateAttributeText(str, indent, scenarioIdx) unless first
       end
     end
 
@@ -318,8 +330,8 @@ class TaskJuggler
       @file << ' ' * indent
       tag = ''
       if !scenarioIdx.nil? && scenarioIdx != 0
-        tag = @project.scenario(scenarioIdx).id
-        @file << "#{tag}:"
+        tag = "#{@project.scenario(scenarioIdx).id}:"
+        @file << tag
       end
       @file << "#{indentBlock(text, indent + tag.length + 2)}\n"
     end
@@ -375,10 +387,25 @@ class TaskJuggler
         end
         out << text[i]
         if text[i] == ?\n
-          out += ' ' * (indent + firstSpace)
+          out += ' ' * (indent + firstSpace - 1)
         end
       end
       out
+    end
+
+    # Return true if the attribute value for _attrId_ can be inherited from
+    # the parent scenario.
+    def inhertable?(property, attrId, scenarioIdx, listItem = nil)
+      parentScenario = @project.scenario(scenarioIdx).parent
+      return false unless parentScenario
+
+      parentScenarioIdx = @project.scenarioIdx(parentScenario)
+      parentAttr = property[attrId, scenarioIdx]
+      if parentAttr.is_a?(Array) && listItem
+        return parentAttr.include?(listItem)
+      else
+        return @property[attrId, @scenarioIdx] == parentAttr
+      end
     end
 
   end

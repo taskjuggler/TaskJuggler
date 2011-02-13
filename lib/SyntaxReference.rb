@@ -11,10 +11,10 @@
 # published by the Free Software Foundation.
 #
 
-require 'MessageHandler'
 require 'KeywordDocumentation'
 require 'ProjectFileParser'
 require 'HTMLDocument'
+require 'MessageHandler'
 
 class TaskJuggler
 
