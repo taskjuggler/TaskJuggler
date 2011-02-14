@@ -59,12 +59,16 @@ class TaskJuggler
       # Inheriting start or end values is a bit tricky. This should really only
       # happen if the task is a leaf task and scheduled away from the specified
       # date. Since the default meachanism inherites all values, we have to
-      # delete the wrong ones again.
-      unless @property.provided('start', @scenarioIdx)
-        @property['start', @scenarioIdx] = nil
-      end
-      unless @property.provided('end', @scenarioIdx)
-        @property['end', @scenarioIdx] = nil
+      # delete the wrong ones again. We also don't touch the start and end
+      # date if it was inherited (from another scenario) and the task is
+      # marked as 'scheduled'.
+      unless a('scheduled')
+        unless @property.provided('start', @scenarioIdx)
+          @property['start', @scenarioIdx] = nil
+        end
+        unless @property.provided('end', @scenarioIdx)
+          @property['end', @scenarioIdx] = nil
+        end
       end
 
       # Milestones may only have start or end date even when the 'scheduled'
@@ -1049,8 +1053,12 @@ class TaskJuggler
       nEnd = nil
 
       @property.children.each do |task|
-        # Abort if a child has not yet been scheduled.
-        return unless task['scheduled', @scenarioIdx]
+        # Abort if a child has not yet been scheduled. Since we haven't done
+        # the consistency check yet, we can't rely on start and end being set
+        # if 'scheduled' is set.
+        return if (!task['scheduled', @scenarioIdx] ||
+                   task['start', @scenarioIdx].nil? ||
+                   task['end', @scenarioIdx].nil?)
 
         if nStart.nil? || task['start', @scenarioIdx] < nStart
           nStart = task['start', @scenarioIdx]

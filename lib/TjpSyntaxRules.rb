@@ -858,7 +858,8 @@ EOT
     pattern(%w( _export !optionalID $STRING ), lambda {
       report = newReport(@val[1], @val[2], :export, sourceFileInfo)
 
-      report.set('scenarios', [ 0 ])
+      # By default, we export all scenarios.
+      report.set('scenarios', Array.new(@project.scenarios.items) { |i| i })
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
@@ -918,7 +919,9 @@ EOT
       @property.set('scenarios', @val[1])
     })
     doc('scenarios.export', <<'EOT'
-List of scenarios that should be included in the report.
+List of scenarios that should be included in the report. By default, all
+scenarios will be included. This attribute can be used to limit the included
+scenarios to a defined list.
 EOT
        )
 
@@ -3351,7 +3354,11 @@ EOT
       @property.set('scenarios', @val[1])
     })
     doc('scenarios', <<'EOT'
-List of scenarios that should be included in the report.
+List of scenarios that should be included in the report. By default, only the
+top-level scenario will be included. You can use this attribute to include
+data from the defined set of scenarios. Not all reports support reporting data
+from multiple scenarios. They will only include data from the first one in the
+list.
 EOT
        )
 
