@@ -30,6 +30,14 @@ class TaskJuggler
       @gapLength = 0
     end
 
+    def ==(dep)
+      @taskId == dep.taskId &&
+      @task == dep.task &&
+      @onEnd == dep.onEnd &&
+      @gapDuration == dep.gapDuration &&
+      @gapLength == dep.gapLength
+    end
+
     def resolve(project)
       @task = project.task(@taskId)
     end

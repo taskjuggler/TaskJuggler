@@ -1,0 +1,29 @@
+project test "Booking Test"  2011-02-13 +1m {
+  scenario s1 "S1" {
+    scenario s2 "S2 "
+  }
+}
+
+resource r1 "R1"
+resource r2 "R2"
+
+task p1 "" {
+  task t1 "Task 1" {
+    start 2011-02-14
+    s2:start 2011-02-21
+    effort 1w
+    allocate r1
+  }
+  task t2 "task 2" {
+    effort 1w
+    allocate r2
+    depends !t1
+  }
+}
+
+export "." {
+  scenarios s1, s2
+  definitions *
+  taskattributes *
+  resourceattributes *
+}

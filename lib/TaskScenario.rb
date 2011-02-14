@@ -2080,7 +2080,7 @@ class TaskJuggler
       end
 
       @property[depType, @scenarioIdx].each do |dep|
-        if dep.task == depTask && dep != dependency
+        if dep.task == depTask && !dep.equal?(dependency)
           # Remove the broken dependency. It could cause trouble later on.
           @property[depType, @scenarioIdx].delete(dependency)
           error('task_depend_multi',

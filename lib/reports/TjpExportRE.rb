@@ -227,7 +227,8 @@ class TaskJuggler
                                    'asap' : 'alap'),
                                   indent + 2, scenarioIdx)
           end
-          if task['scheduled', scenarioIdx]
+          if task['scheduled', scenarioIdx] &&
+             !inheritable?(task, 'scheduled', scenarioIdx)
             generateAttributeText('scheduled', indent + 2, scenarioIdx)
           end
         end
@@ -245,7 +246,7 @@ class TaskJuggler
         str = "#{tag} "
         first = true
         taskDeps.each do |dep|
-          next if inhertable?(task, tag, scenarioIdx, dep)
+          next if inheritable?(task, tag, scenarioIdx, dep)
 
           if first
             first = false
@@ -268,11 +269,12 @@ class TaskJuggler
         @project.resources.eachAttributeDefinition do |attrDef|
           id = attrDef.id
           next if (!@supportedResourceAttrs.include?(id) &&
-                   ! attrDef.userDefined) ||
-                   !a('resourceAttributes').include?(id)
+                   !attrDef.userDefined) ||
+                  !a('resourceAttributes').include?(id)
 
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
+              next if inheritable?(resource, id, scenarioIdx)
               generateAttribute(resource, id, 2, scenarioIdx)
             end
           else
@@ -320,7 +322,8 @@ class TaskJuggler
     def generateAttribute(property, attrId, indent, scenarioIdx = nil)
       val = scenarioIdx.nil? ? property.getAttr(attrId) :
                                property[attrId, scenarioIdx]
-      return if val.nil? || (val.is_a?(Array) && val.empty?)
+      return if val.nil? || (val.is_a?(Array) && val.empty?) ||
+                (scenarioIdx && inheritable?(property, attrId, scenarioIdx))
 
       generateAttributeText(property.getAttr(attrId, scenarioIdx).to_tjp,
                             indent, scenarioIdx)
@@ -395,16 +398,16 @@ class TaskJuggler
 
     # Return true if the attribute value for _attrId_ can be inherited from
     # the parent scenario.
-    def inhertable?(property, attrId, scenarioIdx, listItem = nil)
+    def inheritable?(property, attrId, scenarioIdx, listItem = nil)
       parentScenario = @project.scenario(scenarioIdx).parent
       return false unless parentScenario
 
       parentScenarioIdx = @project.scenarioIdx(parentScenario)
-      parentAttr = property[attrId, scenarioIdx]
+      parentAttr = property[attrId, parentScenarioIdx]
       if parentAttr.is_a?(Array) && listItem
         return parentAttr.include?(listItem)
       else
-        return @property[attrId, @scenarioIdx] == parentAttr
+        return property[attrId, scenarioIdx] == parentAttr
       end
     end
 
