@@ -20,10 +20,3 @@ task p1 "" {
     depends !t1
   }
 }
-
-export "." {
-  scenarios s1, s2
-  definitions *
-  taskattributes *
-  resourceattributes *
-}

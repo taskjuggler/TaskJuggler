@@ -68,12 +68,21 @@ class TestExportReport < Test::Unit::TestCase
     end
   end
 
-  def checkExportReport(projectFile)
-    refFile = refFileName(projectFile)
+  def checkExportReport(projectFile, refFile)
+    reportDef = <<"EOF"
+
+export "." {
+  definitions *
+  taskattributes *
+  resourceattributes *
+}
+EOF
 
     tj = TaskJuggler.new(true)
-    assert(tj.parse([ projectFile ]), "Parser failed for #{projectFile}")
+    $stdin = StringIO.new(reportDef)
+    assert(tj.parse([ projectFile, '.' ]), "Parser failed for #{projectFile}")
     assert(tj.schedule, "Scheduler failed for #{projectFile}")
+
     if File.file?(refFile)
       # If there is a reference Export file for this test case, compare the
       # output against it.
@@ -85,7 +94,6 @@ class TestExportReport < Test::Unit::TestCase
 
     else
       # If not, we generate the reference file.
-      puts "refFile: #{refFile}"
       stdoutToFile(refFile) do
         assert(tj.generateReports,
                "Reference file generation failed for #{projectFile}")
@@ -101,47 +109,21 @@ class TestExportReport < Test::Unit::TestCase
     testDir = path + '/TestSuite/Export-Reports/'
     Dir.glob(testDir + '*.tjp').each do |f|
       # Take the project, schedule it, check it against the reference and
-      # export it.
-      checkExportReport(f)
-
-      # Take the exported project, schedule it and check it against the
-      # reference.
-      stage1File = stage1FileName(f)
-      generateStage1File(refFileName(f), stage1File)
-
-      checkExportReport(stage1File)
-
-      # Remove the stage 1 project again.
-      File.delete(stage1File)
+      # export it. Then check the export against the reference file.
+      refFile = refFileName(f)
+      checkExportReport(f, refFile)
+      checkExportReport(refFile, refFile)
     end
   end
 
   private
 
-  def generateStage1File(originalFile, stage1File)
-    out = File.new(originalFile, 'r').read
-    out += <<"EOF"
-
-export "." {
-  definitions *
-  taskattributes *
-  resourceattributes *
-}
-EOF
-    File.new(stage1File, 'w').write(out)
-  end
-
   def refFileName(originalFile)
     baseDir = File.dirname(originalFile)
-    suffix = originalFile[-11..-1] == '-stage1.tjp' ? '-stage1.tjp' : '.tjp'
-    baseName = File.basename(originalFile, suffix)
+    baseName = File.basename(originalFile, '.tjp')
     # The reference files must have the same base name as the project file but
     # they need to be in the ./refs/ directory relative to the project file.
     baseDir + "/refs/#{baseName}.tjp"
-  end
-
-  def stage1FileName(originalFile)
-    originalFile[0..-5] + '-stage1.tjp'
   end
 
 end
