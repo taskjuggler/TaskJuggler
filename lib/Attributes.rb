@@ -491,7 +491,7 @@ class TaskJuggler
     end
 
     def to_tjp
-      "#{@type.id} \"#{@value.to_s}\""
+      "#{@type.id} -8<-\n#{@value.richText.inputText}\n->8-"
     end
 
   end

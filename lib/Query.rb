@@ -208,6 +208,8 @@ class TaskJuggler
 
     # Return the result as RichTextIntermediate object. The result may be nil.
     def to_rti
+      return @attr.value if @attr.is_a?(RichTextAttribute)
+
       @attr ? @attr.to_rti(self) : @rti
     end
 

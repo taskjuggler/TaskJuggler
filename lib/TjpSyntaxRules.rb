@@ -997,6 +997,29 @@ EOT
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
                    'in report columns and the like.')
 
+    pattern(%w( _richtext !extendId $STRING !extendOptionsBody ), lambda {
+      # Extend the propertySet definition and parser rules
+      if extendPropertySetDefinition(RichTextAttribute, nil)
+        @ruleToExtendWithScenario.addPattern(TextParser::Pattern.new(
+          [ '_' + @val[1], '$STRING' ], lambda {
+            @property[@val[0], @scenarioIdx] =
+              newRichText(@val[1], @sourceFileInfo[1])
+          }))
+      else
+        @ruleToExtend.addPattern(TextParser::Pattern.new(
+          [ '_' + @val[1], '$STRING' ], lambda {
+            @property.set(@val[0], newRichText(@val[1], @sourceFileInfo[1]))
+          }))
+      end
+    })
+    doc('richtext.extend', <<'EOT'
+Extend the property with a new attribute of type [[Rich_Text_Attributes|Rich
+Text]].
+EOT
+       )
+    arg(2, 'name', 'The name of the new attribute. It is used as header ' +
+                   'in report columns and the like.')
+
     pattern(%w( _text !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(StringAttribute, nil)
