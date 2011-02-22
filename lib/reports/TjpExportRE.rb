@@ -26,7 +26,7 @@ class TaskJuggler
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority
                                 responsible )
-      @supportedResourceAttrs = %w( vacation workinghours )
+      @supportedResourceAttrs = %w( flags vacation workinghours )
     end
 
     def generateIntermediateFormat
@@ -246,7 +246,8 @@ class TaskJuggler
         str = "#{tag} "
         first = true
         taskDeps.each do |dep|
-          next if inheritable?(task, tag, scenarioIdx, dep)
+          next if inheritable?(task, tag, scenarioIdx, dep) ||
+                  (task.parent && task.parent[tag, scenarioIdx].include?(dep))
 
           if first
             first = false

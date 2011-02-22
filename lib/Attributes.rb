@@ -415,6 +415,10 @@ class TaskJuggler
       rText.generateIntermediateFormat
     end
 
+    def to_tjp
+      "#{@type.id} \"#{url}\"#{label ? " { label \"#{label}\" }" : ''}"
+    end
+
     def url
       @value ? @value[0] : nil
     end
@@ -491,7 +495,13 @@ class TaskJuggler
     end
 
     def to_tjp
-      "#{@type.id} -8<-\n#{@value.richText.inputText}\n->8-"
+      inputText = @value.richText.inputText
+      if inputText[-1] == ?\n
+        "#{@type.id} -8<-\n#{inputText}\n->8-"
+      else
+        escaped = inputText.gsub("\n", "\\n")
+        "#{@type.id} \"#{escaped}\""
+      end
     end
 
   end

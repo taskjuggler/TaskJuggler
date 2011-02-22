@@ -171,7 +171,8 @@ class TaskJuggler
   # :csv, etc.). _dynamicAtributes_ is a String that may contain attributes to
   # supplement the report definition. The String must be in TJP format and may
   # be nil if no additional attributes are provided.
-  def generateReport(reportId, regExpMode, formats, dynamicAttributes = nil)
+  def generateReport(reportId, regExpMode, formats = nil,
+                     dynamicAttributes = nil)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
       @project.generateReport(reportId, regExpMode, formats, dynamicAttributes)
