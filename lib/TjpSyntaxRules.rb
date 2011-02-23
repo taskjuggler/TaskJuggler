@@ -859,7 +859,9 @@ EOT
       report = newReport(@val[1], @val[2], :export, sourceFileInfo)
 
       # By default, we export all scenarios.
-      report.set('scenarios', Array.new(@project.scenarios.items) { |i| i })
+      scenarios = Array.new(@project.scenarios.items) { |i| i }
+      scenarios.delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      report.set('scenarios', scenarios)
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
