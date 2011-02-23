@@ -253,7 +253,6 @@ class TaskJuggler
       @property
     end
 
-
     # If the @limitResources list is not empty, we have to create a Limits
     # object for each Resource. Otherwise, one Limits object is enough.
     def setLimit(name, value, interval)
@@ -262,6 +261,24 @@ class TaskJuggler
       else
         @limitResources.each do |resource|
           @limits.setLimit(name, value, interval, resource)
+        end
+      end
+    end
+
+    # Set the _attribute_ to _value_ and reset all other duration attributes.
+    def setDurationAttribute(attribute, value = true)
+      checkContainer(attribute)
+      { 'milestone' => false, 'duration' => 0,
+        'length' => 0, 'effort' => 0 }.each do |attr, val|
+        if attribute == attr
+          @property[attr, @scenarioIdx] = value
+        else
+          if @property.getAttr(attr, @scenarioIdx).provided
+            error('multiple_durations',
+                  "This duration criteria is overwriting a previously " +
+                  "provided criteria (duration, effort, length or milestone).")
+          end
+          @property[attr, @scenarioIdx] = val
         end
       end
     end

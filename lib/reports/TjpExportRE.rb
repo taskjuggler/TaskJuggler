@@ -85,6 +85,7 @@ class TaskJuggler
       scenario.children.each do |sc|
         generateScenarioDefinition(sc, indent + 2)
       end
+      @file << "#{' ' * (indent + 2)}disabled\n" unless scenario.get('enabled')
       @file << "#{' ' * indent}}\n"
     end
 
@@ -219,7 +220,9 @@ class TaskJuggler
         a('scenarios').each do |scenarioIdx|
           generateAttribute(task, 'start', indent + 2, scenarioIdx)
           if task['milestone', scenarioIdx]
-            generateAttributeText('milestone', indent + 2, scenarioIdx)
+            if task['scheduled', scenarioIdx]
+              generateAttributeText('milestone', indent + 2, scenarioIdx)
+            end
           else
             generateAttribute(task, 'end', indent + 2, scenarioIdx)
             generateAttributeText('scheduling ' +
@@ -330,7 +333,7 @@ class TaskJuggler
                             indent, scenarioIdx)
     end
 
-    def generateAttributeText(text, indent, scenarioIdx)
+    def generateAttributeText(text, indent, scenarioIdx = nil)
       @file << ' ' * indent
       tag = ''
       if !scenarioIdx.nil? && scenarioIdx != 0

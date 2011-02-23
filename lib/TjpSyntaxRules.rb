@@ -4891,10 +4891,7 @@ EOT
         )
     example('Depends1')
     pattern(%w( _duration !calendarDuration ), lambda {
-      checkContainer('duration')
-      @property['duration', @scenarioIdx] = @val[1]
-      @property['effort', @scenarioIdx] = 0
-      @property['length', @scenarioIdx] = 0
+      setDurationAttribute('duration', @val[1])
     })
     doc('duration', <<'EOT'
 Specifies the time the task should last. This is calendar time, not working
@@ -4910,14 +4907,11 @@ EOT
     also(%w( effort length ))
 
     pattern(%w( _effort !workingDuration ), lambda {
-      checkContainer('effort')
       if @val[1] <= 0.0
         error('effort_zero', "Effort value must be larger than 0",
               @sourceFileInfo[1], @property)
       end
-      @property['effort', @scenarioIdx] = @val[1]
-      @property['duration', @scenarioIdx] = 0
-      @property['length', @scenarioIdx] = 0
+      setDurationAttribute('effort', @val[1])
     })
     doc('effort', <<'EOT'
 Specifies the effort needed to complete the task. An effort of 4d can be done
@@ -4977,10 +4971,7 @@ EOT
     pattern(%w( !fail ))
 
     pattern(%w( _length !workingDuration ), lambda {
-      checkContainer('length')
-      @property['length', @scenarioIdx] = @val[1]
-      @property['duration', @scenarioIdx] = 0
-      @property['effort', @scenarioIdx] = 0
+      setDurationAttribute('length', @val[1])
     })
     doc('length', <<'EOT'
 Specifies the time the task occupies the resources. This is working time, not
@@ -5030,8 +5021,7 @@ EOT
        )
 
     pattern(%w( _milestone ), lambda {
-      checkContainer('limits')
-      @property['milestone', @scenarioIdx] = true
+      setDurationAttribute('milestone')
     })
     doc('milestone', <<'EOT'
 Turns the task into a special task that has no duration. You may not specify a
