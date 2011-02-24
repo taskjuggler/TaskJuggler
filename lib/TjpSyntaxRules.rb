@@ -2424,7 +2424,7 @@ EOT
     })
 
     pattern(%w( !timezone ), lambda {
-      @project['timezone'] = @val[1]
+      ENV['TZ'] = @project['timezone'] = @val[1]
     })
 
     pattern(%w( _timingresolution $INTEGER _min ), lambda {
@@ -5544,7 +5544,7 @@ EOT
 
   def rule_timezone
     pattern(%w( _timezone !validTimeZone ), lambda{
-      ENV['TZ'] = @project['timezone'] = @val[1]
+      @val[1]
     })
     doc('timezone', <<'EOT'
 Sets the default time zone of the project. All times that have no time
