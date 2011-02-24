@@ -84,7 +84,8 @@ class TaskJuggler
     end
 
     def generateScenarioDefinition(scenario, indent)
-      @file << "#{' ' * indent}scenario #{scenario.id} \"#{scenario.name}\" {\n"
+      @file << "#{' ' * indent}scenario #{scenario.id} " +
+               "#{quotedString(scenario.name)} {\n"
       scenario.children.each do |sc|
         generateScenarioDefinition(sc, indent + 2)
       end
@@ -109,7 +110,8 @@ class TaskJuggler
         propertySet.eachAttributeDefinition do |ad|
           next unless ad.userDefined && attributes.include?(ad.id)
 
-          @file << "    #{ad.objClass.tjpId} #{ad.id} \"#{ad.name}\"\n"
+          @file << "    #{ad.objClass.tjpId} #{ad.id} " +
+                   "#{quotedString(ad.name)}\n"
         end
       @file << "  }\n"
     end
@@ -159,7 +161,8 @@ class TaskJuggler
     def generateResource(resource, indent)
       Log.activity if resource.sequenceNo % 100 == 0
 
-      @file << ' ' * indent + "resource #{resource.id} \"#{resource.name}\""
+      @file << ' ' * indent + "resource #{resource.id} " +
+               "#{quotedString(resource.name)}"
       @file << ' {' unless resource.children.empty?
       @file << "\n"
 
@@ -191,7 +194,8 @@ class TaskJuggler
     def generateTask(task, indent)
       Log.activity if task.sequenceNo % 100 == 0
 
-      @file << ' ' * indent + "task #{task.id} \"#{task.name}\" {\n"
+      @file << ' ' * indent + "task #{task.id} " +
+               "#{quotedString(task.name)} {\n"
 
       if a('taskAttributes').include?('depends')
         a('scenarios').each do |scenarioIdx|
@@ -401,6 +405,15 @@ class TaskJuggler
         end
       end
       out
+    end
+
+    def quotedString(str)
+      if str[-1] == ?\n
+        "-8<-\n#{str}\n->8-"
+      else
+        escaped = str.gsub("\"", '\"')
+        "\"#{escaped}\""
+      end
     end
 
     # Return true if the attribute value for _attrId_ can be inherited from

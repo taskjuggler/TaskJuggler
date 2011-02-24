@@ -499,7 +499,7 @@ class TaskJuggler
       if inputText[-1] == ?\n
         "#{@type.id} -8<-\n#{inputText}\n->8-"
       else
-        escaped = inputText.gsub("\n", "\\n")
+        escaped = inputText.gsub("\"", '\"')
         "#{@type.id} \"#{escaped}\""
       end
     end
