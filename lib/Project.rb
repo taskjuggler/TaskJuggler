@@ -454,10 +454,11 @@ class TaskJuggler
           # copies of the same Scoreboard. All other WorkingHours objects are
           # created as copies of this object. By calling
           # WorkingHours::onShift? we make sure this instance has got a
-          # Scoreboard than gets reused by the other instances.
+          # Scoreboard that gets reused by the other instances.
           @attributes['workinghours'].onShift?(@attributes['start'])
         end
       end
+      value
     end
 
     # Return the number of defined scenarios for the project.
