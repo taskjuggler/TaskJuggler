@@ -4958,13 +4958,14 @@ EOT
       end
     })
     doc('end', <<'EOT'
-The end date of the task. When specified for the top-level (default) scenario
-this attributes also implicitly sets the scheduling policy of the tasks to
-alap.
+The end attribute provides a guideline to the scheduler when the task should
+end. It will never end later, but it may end earlier when allocated
+resources are not available that long. When an end date is provided for a
+container task, it will be passed down to ALAP task that don't have a well
+defined end criteria.
 
-If no end date is given for a task and the end is not specified by a
-dependency on another task, or by a start date plus a duration, the end date
-will be inherited from the enclosing tasks or the project end date.
+Setting an end date will implicitely set the scheduling policy for this task
+to ALAP.
 EOT
        )
     example('Export', '1')
@@ -5259,13 +5260,14 @@ EOT
       end
     })
     doc('start', <<'EOT'
-The start date of the task. When specified for the top-level (default)
-scenario this attribute also implicitly sets the scheduling policy of the task
-to asap.
+The start attribute provides a guideline to the scheduler when the task should
+start. It will never start earlier, but it may start later when allocated
+resources are not available immediately. When a start date is provided for a
+container task, it will be passed down to ASAP task that don't have a well
+defined start criteria.
 
-If no start date is given for a task and the start is not specified by a
-dependency on another task, or by an end date plus a duration, the start date
-will be inherited from the enclosing tasks or the project start date.
+Setting a start date will implicitely set the scheduling policy for this task
+to ASAP.
 EOT
        )
     also(%w( end period.task maxstart minstart scheduling ))

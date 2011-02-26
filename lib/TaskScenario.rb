@@ -56,21 +56,6 @@ class TaskJuggler
       @startPropagated = false
       @endPropagated = false
 
-      # Inheriting start or end values is a bit tricky. This should really only
-      # happen if the task is a leaf task and scheduled away from the specified
-      # date. Since the default meachanism inherites all values, we have to
-      # delete the wrong ones again. We also don't touch the start and end
-      # date if it was inherited (from another scenario) and the task is
-      # marked as 'scheduled'.
-      unless a('scheduled')
-        unless @property.provided('start', @scenarioIdx)
-          @property['start', @scenarioIdx] = nil
-        end
-        unless @property.provided('end', @scenarioIdx)
-          @property['end', @scenarioIdx] = nil
-        end
-      end
-
       # Milestones may only have start or end date even when the 'scheduled'
       # attribute is set. For further processing, we need to add the missing
       # date.
