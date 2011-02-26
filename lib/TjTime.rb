@@ -556,10 +556,7 @@ class TaskJuggler
     end
 
     def order(date)
-      lt1 = localtime.time
-      lt2 = date.localtime.time
-
-      lt1 < lt2 ? [ lt1, lt2 ] : [ tl2, lt1 ]
+      self < date ? [ self, date ] : [ date, self ]
     end
 
     def countIntervals(date, stepFunc)
