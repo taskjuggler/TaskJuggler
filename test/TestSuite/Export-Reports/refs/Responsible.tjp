@@ -1,0 +1,49 @@
+project prj "Responsible Demo" "1.0" 2005-07-14-21:00-+0000 - 2005-07-31-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource tux "Tux"
+resource ubertux "Uber Tux"
+
+task someJob "Some Job" {
+  start 2005-07-15-06:00-+0000
+  end 2005-07-21-15:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task someJob {
+  booking tux 2005-07-15-06:00-+0000 + 3.0h,
+          2005-07-15-10:00-+0000 + 5.0h,
+          2005-07-18-06:00-+0000 + 3.0h,
+          2005-07-18-10:00-+0000 + 5.0h,
+          2005-07-19-06:00-+0000 + 3.0h,
+          2005-07-19-10:00-+0000 + 5.0h,
+          2005-07-20-06:00-+0000 + 3.0h,
+          2005-07-20-10:00-+0000 + 5.0h,
+          2005-07-21-06:00-+0000 + 3.0h,
+          2005-07-21-10:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid prj
+  responsible ubertux
+}
+supplement resource tux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource ubertux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

@@ -1,0 +1,56 @@
+project p "P" "1.0" 2007-11-08-22:00-+0000 - 2007-12-23-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids p
+
+
+task foo1 "foo1" {
+  task foo2 "foo2" {
+    start 2007-12-03-22:00-+0000
+    milestone
+    scheduled
+  }
+  task foo3 "foo3" {
+    depends foo1.foo2
+    start 2007-12-03-22:00-+0000
+    end 2007-12-04-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+task bar "bar" {
+  depends foo1.foo2
+  start 2007-12-03-22:00-+0000
+  end 2007-12-05-16:00-+0000
+  scheduling asap
+  scheduled
+}
+task bar1 "bar1" {
+  depends foo1, bar
+  start 2007-12-06-16:00-+0000
+  end 2007-12-08-16:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task foo1 {
+  priority 500
+  projectid p
+}
+supplement task foo1.foo2 {
+  priority 500
+  projectid p
+}
+supplement task foo1.foo3 {
+  priority 500
+  projectid p
+}
+supplement task bar {
+  priority 500
+  projectid p
+}
+supplement task bar1 {
+  priority 500
+  projectid p
+}

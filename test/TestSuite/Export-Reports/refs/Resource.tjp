@@ -1,0 +1,58 @@
+project resources "Resource Examples" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids resources
+
+resource tux1 "Tux1"
+resource team "A team" {
+  resource tux2 "Tux2"
+  resource tux3 "Tux3"
+}
+
+task t "An important date" {
+  start 2005-06-09-21:00-+0000
+  milestone
+  scheduled
+}
+supplement task t {
+  priority 500
+  projectid resources
+}
+supplement resource tux1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource team {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource tux2 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource tux3 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

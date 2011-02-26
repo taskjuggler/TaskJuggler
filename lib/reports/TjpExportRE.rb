@@ -25,7 +25,7 @@ class TaskJuggler
 
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority
-                                responsible )
+                                projectid responsible )
       @supportedResourceAttrs = %w( flags vacation workinghours )
     end
 

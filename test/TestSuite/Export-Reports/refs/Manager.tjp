@@ -1,0 +1,120 @@
+project prj "test" "1.0" 2010-04-02-21:00-+0000 - 2010-04-09-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource _Resource_1 "The Company" {
+  resource ceo "Big Boss"
+  resource _Resource_3 "R&D Team" {
+    resource vpe "VP Engineering"
+    resource _Resource_5 "The Hacker"
+    resource _Resource_6 "Doc Writer"
+  }
+  resource _Resource_7 "F&A Team" {
+    resource coo "Chief Operating Officer"
+    resource _Resource_9 "HR Lady"
+    resource _Resource_10 "Accountant"
+  }
+}
+
+task _Task_1 "T" {
+  start 2010-04-02-21:00-+0000
+  milestone
+  scheduled
+}
+supplement task _Task_1 {
+  priority 500
+  projectid prj
+}
+supplement resource _Resource_1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource ceo {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_3 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource vpe {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_5 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_6 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_7 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource coo {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_9 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_10 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

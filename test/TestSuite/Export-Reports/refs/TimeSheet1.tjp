@@ -1,0 +1,80 @@
+project prj "test" "1.0" 2009-11-29-22:00-+0000 - 2010-01-29-18:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "Task 1" {
+  start 2009-11-30-07:00-+0000
+  end 2009-12-04-16:00-+0000
+  scheduling asap
+  scheduled
+}
+task t2 "Task 2" {
+  task t3 "Task 3" {
+    start 2009-11-29-22:00-+0000
+    end 2009-12-09-22:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task t1 {
+  booking r1 2009-11-30-07:00-+0000 + 3.0h,
+          2009-11-30-11:00-+0000 + 5.0h,
+          2009-12-01-07:00-+0000 + 3.0h,
+          2009-12-01-11:00-+0000 + 5.0h,
+          2009-12-02-07:00-+0000 + 3.0h,
+          2009-12-02-11:00-+0000 + 5.0h,
+          2009-12-03-07:00-+0000 + 3.0h,
+          2009-12-03-11:00-+0000 + 5.0h,
+          2009-12-04-07:00-+0000 + 3.0h,
+          2009-12-04-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid prj
+}
+supplement task t2 {
+  priority 500
+  projectid prj
+}
+supplement task t2.t3 {
+  booking r2 2009-11-30-07:00-+0000 + 3.0h,
+          2009-11-30-11:00-+0000 + 5.0h,
+          2009-12-01-07:00-+0000 + 3.0h,
+          2009-12-01-11:00-+0000 + 5.0h,
+          2009-12-02-07:00-+0000 + 3.0h,
+          2009-12-02-11:00-+0000 + 5.0h,
+          2009-12-03-07:00-+0000 + 3.0h,
+          2009-12-03-11:00-+0000 + 5.0h,
+          2009-12-04-07:00-+0000 + 3.0h,
+          2009-12-04-11:00-+0000 + 5.0h,
+          2009-12-07-07:00-+0000 + 3.0h,
+          2009-12-07-11:00-+0000 + 5.0h,
+          2009-12-08-07:00-+0000 + 3.0h,
+          2009-12-08-11:00-+0000 + 5.0h,
+          2009-12-09-07:00-+0000 + 3.0h,
+          2009-12-09-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid prj
+}
+supplement resource r1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource r2 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

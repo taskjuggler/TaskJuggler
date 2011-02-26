@@ -1,0 +1,35 @@
+project prj1 "ProjectIDs example" "1.0" 2006-08-21-21:00-+0000 - 2006-09-21-07:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids mainID, prj1, prj2
+
+
+task t1 "Task 1" {
+  start 2006-08-21-21:00-+0000
+  milestone
+  scheduled
+}
+task t2 "Task 2" {
+  start 2006-08-21-21:00-+0000
+  milestone
+  scheduled
+}
+task t3 "Task 3" {
+  start 2006-08-21-21:00-+0000
+  milestone
+  scheduled
+}
+supplement task t1 {
+  priority 500
+  projectid mainID
+}
+supplement task t2 {
+  priority 500
+  projectid prj1
+}
+supplement task t3 {
+  priority 500
+  projectid prj2
+}

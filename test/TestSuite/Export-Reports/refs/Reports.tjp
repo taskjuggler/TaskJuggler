@@ -1,0 +1,129 @@
+project test "Test Project" "$Id" 1999-12-31-22:00-+0000 - 2000-02-29-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+flags flag3, flag2, flag1, flag4
+
+projectids test
+
+resource r1 "FooResource 1"
+resource r2 "FooResource 2"
+resource r3 "FooResource 3"
+resource r4 "FooResource 4"
+
+task t1 "FooTask1" {
+  task t1_1 "FooTask1_1" {
+    start 2000-01-03-07:00-+0000
+    end 2000-01-14-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+task t2 "FooTask2" {
+  start 1999-12-31-22:00-+0000
+  end 2000-01-01-22:00-+0000
+  scheduling asap
+  scheduled
+}
+task t3 "FooTask3" {
+  start 1999-12-31-22:00-+0000
+  milestone
+  scheduled
+}
+supplement task t1 {
+  flags flag3
+  priority 500
+  projectid test
+}
+supplement task t1.t1_1 {
+  booking r1 2000-01-03-07:00-+0000 + 3.0h,
+          2000-01-03-11:00-+0000 + 5.0h,
+          2000-01-04-07:00-+0000 + 3.0h,
+          2000-01-04-11:00-+0000 + 5.0h,
+          2000-01-05-07:00-+0000 + 3.0h,
+          2000-01-05-11:00-+0000 + 5.0h,
+          2000-01-06-07:00-+0000 + 3.0h,
+          2000-01-06-11:00-+0000 + 5.0h,
+          2000-01-07-07:00-+0000 + 3.0h,
+          2000-01-07-11:00-+0000 + 5.0h,
+          2000-01-10-07:00-+0000 + 3.0h,
+          2000-01-10-11:00-+0000 + 5.0h,
+          2000-01-11-07:00-+0000 + 3.0h,
+          2000-01-11-11:00-+0000 + 5.0h,
+          2000-01-12-07:00-+0000 + 3.0h,
+          2000-01-12-11:00-+0000 + 5.0h,
+          2000-01-13-07:00-+0000 + 3.0h,
+          2000-01-13-11:00-+0000 + 5.0h,
+          2000-01-14-07:00-+0000 + 3.0h,
+          2000-01-14-11:00-+0000 + 5.0h { overtime 2 }
+  booking r2 2000-01-03-07:00-+0000 + 3.0h,
+          2000-01-03-11:00-+0000 + 5.0h,
+          2000-01-04-07:00-+0000 + 3.0h,
+          2000-01-04-11:00-+0000 + 5.0h,
+          2000-01-05-07:00-+0000 + 3.0h,
+          2000-01-05-11:00-+0000 + 5.0h,
+          2000-01-06-07:00-+0000 + 3.0h,
+          2000-01-06-11:00-+0000 + 5.0h,
+          2000-01-07-07:00-+0000 + 3.0h,
+          2000-01-07-11:00-+0000 + 5.0h,
+          2000-01-10-07:00-+0000 + 3.0h,
+          2000-01-10-11:00-+0000 + 5.0h,
+          2000-01-11-07:00-+0000 + 3.0h,
+          2000-01-11-11:00-+0000 + 5.0h,
+          2000-01-12-07:00-+0000 + 3.0h,
+          2000-01-12-11:00-+0000 + 5.0h,
+          2000-01-13-07:00-+0000 + 3.0h,
+          2000-01-13-11:00-+0000 + 5.0h,
+          2000-01-14-07:00-+0000 + 3.0h,
+          2000-01-14-11:00-+0000 + 5.0h { overtime 2 }
+  flags flag2
+  priority 500
+  projectid test
+}
+supplement task t2 {
+  flags flag1
+  priority 500
+  projectid test
+}
+supplement task t3 {
+  flags flag4
+  priority 500
+  projectid test
+}
+supplement resource r1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource r2 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource r3 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource r4 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

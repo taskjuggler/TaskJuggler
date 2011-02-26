@@ -1,0 +1,39 @@
+project test "Test Project" "$Id" 1999-12-31-22:00-+0000 - 2000-01-03-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+flags important
+
+projectids test
+
+resource joe "Joe"
+
+task top "Top Task" {
+  task sub "Sub Task" {
+    start 1999-12-31-22:00-+0000
+    end 2000-01-03-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task top {
+  flags important
+  priority 500
+  projectid test
+}
+supplement task top.sub {
+  booking joe 2000-01-03-07:00-+0000 + 3.0h,
+          2000-01-03-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid test
+}
+supplement resource joe {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

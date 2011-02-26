@@ -1,0 +1,54 @@
+project prj "Scheduling Example" "1.0" 2005-07-22-22:00-+0000 - 2005-08-31-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+
+task items "Project breakdown" {
+  task t1 "Task 1" {
+    start 2005-07-24-22:00-+0000
+    end 2005-07-31-22:00-+0000
+    scheduling alap
+    scheduled
+  }
+  task t2 "Task 2" {
+    start 2005-07-24-22:00-+0000
+    end 2005-07-31-22:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task t3 "Task 3" {
+    start 2005-07-24-22:00-+0000
+    end 2005-07-31-22:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task t4 "Task 4" {
+    start 2005-07-24-22:00-+0000
+    end 2005-07-31-22:00-+0000
+    scheduling alap
+    scheduled
+  }
+}
+supplement task items {
+  priority 500
+  projectid prj
+}
+supplement task items.t1 {
+  priority 500
+  projectid prj
+}
+supplement task items.t2 {
+  priority 500
+  projectid prj
+}
+supplement task items.t3 {
+  priority 500
+  projectid prj
+}
+supplement task items.t4 {
+  priority 500
+  projectid prj
+}

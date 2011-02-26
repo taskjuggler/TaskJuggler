@@ -1,0 +1,40 @@
+project prj "Critical Path Example" "1.0" 2006-08-21-21:00-+0000 - 2006-09-21-07:00-+0000 {
+  scenario plan "Planned Scenario" {
+  }
+}
+
+projectids prj
+
+
+task t1 "Task 1" {
+  start 2006-08-21-21:00-+0000
+  end 2006-08-23-21:00-+0000
+  scheduling asap
+  scheduled
+}
+task t2 "Task 2" {
+  depends t1
+  start 2006-08-25-15:00-+0000
+  end 2006-08-28-15:00-+0000
+  scheduling asap
+  scheduled
+}
+task t3 "Task 3" {
+  depends t1
+  start 2006-08-24-15:00-+0000
+  end 2006-08-28-15:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task t1 {
+  priority 500
+  projectid prj
+}
+supplement task t2 {
+  priority 500
+  projectid prj
+}
+supplement task t3 {
+  priority 500
+  projectid prj
+}

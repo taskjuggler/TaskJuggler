@@ -1,0 +1,32 @@
+project test "String Tests" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids test
+
+resource tux "Tux \"The Penguing\" Tuxus"
+
+task items "Project Plan\\\\Breakdown" {
+  start 2005-06-06-06:00-+0000
+  end 2005-06-07-15:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task items {
+  booking tux 2005-06-06-06:00-+0000 + 3.0h,
+          2005-06-06-10:00-+0000 + 5.0h,
+          2005-06-07-06:00-+0000 + 3.0h,
+          2005-06-07-10:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid test
+}
+supplement resource tux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

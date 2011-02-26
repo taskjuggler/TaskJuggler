@@ -1,0 +1,27 @@
+project journal "Project with Journal" "1.0" 2009-05-03-21:00-+0000 - 2009-06-03-07:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids journal
+
+resource tux "Tux"
+
+task t1 "Task1" {
+  start 2009-05-04-21:00-+0000
+  milestone
+  scheduled
+}
+supplement task t1 {
+  priority 500
+  projectid journal
+}
+supplement resource tux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

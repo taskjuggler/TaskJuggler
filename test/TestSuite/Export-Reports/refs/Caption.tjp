@@ -1,0 +1,64 @@
+project simple "Simple Project" "1.0" 2006-12-31-22:00-+0000 - 2007-01-31-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids simple
+
+resource r1 "Resource 1"
+
+task plant "How to plant a tree" {
+  task plan "Choose the planting site" {
+    start 2007-01-01-07:00-+0000
+    end 2007-01-02-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task buy "Get a tree" {
+    depends plant.plan
+    start 2007-01-03-07:00-+0000
+    end 2007-01-03-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task action "Plant the tree" {
+    depends plant.buy
+    start 2007-01-04-07:00-+0000
+    end 2007-01-04-12:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task plant {
+  priority 500
+  projectid simple
+}
+supplement task plant.plan {
+  booking r1 2007-01-01-07:00-+0000 + 3.0h,
+          2007-01-01-11:00-+0000 + 5.0h,
+          2007-01-02-07:00-+0000 + 3.0h,
+          2007-01-02-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid simple
+}
+supplement task plant.buy {
+  booking r1 2007-01-03-07:00-+0000 + 3.0h,
+          2007-01-03-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid simple
+}
+supplement task plant.action {
+  booking r1 2007-01-04-07:00-+0000 + 3.0h,
+          2007-01-04-11:00-+0000 + 1.0h { overtime 2 }
+  priority 500
+  projectid simple
+}
+supplement resource r1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

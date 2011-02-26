@@ -182,21 +182,17 @@ class TaskJuggler
       @scoreboard = Scoreboard.new(@startDate, @endDate, @slotDuration, false)
 
       oldTimezone = nil
-      # Set environment variable TZ to appropriate time zone
+      # Active the appropriate time zone for the working hours.
       if @timezone
-        oldTimezone = ENV['TZ']
-        ENV['TZ'] = @timezone
+        oldTimezone = TjTime.setTimeZone(@timezone)
       end
 
       date = @startDate
       @scoreboard.collect! do |slot|
-        localDate = date.dup
-        localDate.localtime
-
         # The date is in UTC. The weekday needs to be calculated according to
         # the local timezone.
-        weekday = localDate.wday
-        secondsOfDay = localDate.secondsOfDay
+        weekday = date.wday
+        secondsOfDay = date.secondsOfDay
 
         result = false
         @days[weekday].each do |iv|
@@ -213,13 +209,9 @@ class TaskJuggler
         result
       end
 
-      # Restore environment
+      # Restore old time zone setting.
       if @timezone
-        if oldTimezone
-          ENV['TZ'] = oldTimezone
-        else
-          ENV.delete('TZ')
-        end
+        TjTime.setTimeZone(oldTimezone)
       end
     end
 

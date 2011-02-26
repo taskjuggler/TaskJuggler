@@ -946,6 +946,12 @@ EOT
                            'note' => 'Include notes',
                            'priority' => 'Include priorities',
                            'responsible' => 'Include responsible resource' })
+
+    pattern(%w( _timezone !validTimeZone ), lambda {
+      @property.set('timezone', @val[1])
+    })
+    doc('timezone.export',
+        "Set the time zone to be used for all dates in the report.")
   end
 
   def rule_exportBody
@@ -3430,6 +3436,17 @@ EOT
       @property.set('timeFormat', @val[0])
     })
 
+    pattern(%w( _timezone !validTimeZone ), lambda {
+      @property.set('timezone', @val[1])
+    })
+    doc('timezone.report', <<'EOT'
+Sets the time zone used for all dates in the report. This setting is ignored
+if the report is embedded into another report. Embedded in this context means
+the report is part of another generated report. It does not mean that the
+report definition is a sub report of another report definition.
+EOT
+       )
+
     pattern(%w( !reportTitle ))
   end
 
@@ -5544,7 +5561,8 @@ EOT
 
   def rule_timezone
     pattern(%w( _timezone !validTimeZone ), lambda{
-      @project['timezone'] = ENV['TZ'] = @val[1]
+      TjTime.setTimeZone(@val[1])
+      @project['timezone'] = @val[1]
     })
     doc('timezone', <<'EOT'
 Sets the default time zone of the project. All times that have no time

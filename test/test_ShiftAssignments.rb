@@ -19,6 +19,7 @@ require 'Project'
 class TestPropertySet < Test::Unit::TestCase
 
   def setup
+    TaskJuggler::ShiftAssignments.sbClear
     @p = TaskJuggler::Project.new('p', 'Project', '1.0',
                                   TaskJuggler::MessageHandler.new(true))
     @p['start'] = TaskJuggler::TjTime.new('2008-07-29')

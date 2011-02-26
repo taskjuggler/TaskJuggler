@@ -1,0 +1,17 @@
+project prj "Project" "1.0" 2006-12-31-22:00-+0000 - 2007-02-28-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+
+task t "Task" {
+  start 2006-12-31-22:00-+0000
+  milestone
+  scheduled
+}
+supplement task t {
+  priority 500
+  projectid prj
+}

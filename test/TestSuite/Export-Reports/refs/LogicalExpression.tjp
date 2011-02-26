@@ -1,0 +1,17 @@
+project prj "LogExp" "1.0" 2009-10-18-22:00-+0000 - 2009-12-18-18:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+
+task _Task_1 "T" {
+  start 2009-10-18-22:00-+0000
+  milestone
+  scheduled
+}
+supplement task _Task_1 {
+  priority 500
+  projectid prj
+}

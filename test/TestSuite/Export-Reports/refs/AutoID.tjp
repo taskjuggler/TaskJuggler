@@ -1,0 +1,44 @@
+project prj "Simple Project" "1.0" 2009-10-03-21:00-+0000 - 2009-11-03-07:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource _Resource_1 "Foo" {
+  resource _Resource_2 "Bar"
+}
+
+task _Task_1 "Foo" {
+  task _Task_2 "Bar" {
+    start 2009-10-03-21:00-+0000
+    milestone
+    scheduled
+  }
+}
+supplement task _Task_1 {
+  priority 500
+  projectid prj
+}
+supplement task _Task_1._Task_2 {
+  priority 500
+  projectid prj
+}
+supplement resource _Resource_1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource _Resource_2 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

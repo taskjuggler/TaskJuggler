@@ -1,0 +1,23 @@
+project ca "Custom Attributes" "1.0" 2007-05-27-22:00-+0000 - 2007-06-27-22:00-+0000 {
+  extend task{
+    reference MyLink "My Link"
+    text MyText "My Text"
+  }
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids ca
+
+
+task t "Task" {
+  start 2007-05-27-22:00-+0000
+  milestone
+  scheduled
+}
+supplement task t {
+  MyLink "http://www.taskjuggler.org" { label "TJ Web" }
+  MyText "TaskJuggler is great!"
+  priority 500
+  projectid ca
+}

@@ -1,0 +1,44 @@
+project celltext "celltext" "1.0" 2006-12-31-22:00-+0000 - 2007-02-28-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids celltext
+
+resource tux "Tux"
+
+task t "Task" {
+  task s "SubTask" {
+    start 2007-01-01-07:00-+0000
+    end 2007-01-05-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task t {
+  priority 500
+  projectid celltext
+}
+supplement task t.s {
+  booking tux 2007-01-01-07:00-+0000 + 3.0h,
+          2007-01-01-11:00-+0000 + 5.0h,
+          2007-01-02-07:00-+0000 + 3.0h,
+          2007-01-02-11:00-+0000 + 5.0h,
+          2007-01-03-07:00-+0000 + 3.0h,
+          2007-01-03-11:00-+0000 + 5.0h,
+          2007-01-04-07:00-+0000 + 3.0h,
+          2007-01-04-11:00-+0000 + 5.0h,
+          2007-01-05-07:00-+0000 + 3.0h,
+          2007-01-05-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid celltext
+}
+supplement resource tux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

@@ -1,0 +1,55 @@
+project prj "Logical Function Demo" "1.0" 2009-11-20-22:00-+0000 - 2009-12-04-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource _Resource_1 "Team" {
+  resource joe "Joe"
+}
+
+task _Task_1 "Parent" {
+  task _Task_2 "Sub" {
+    start 2009-11-23-07:00-+0000
+    end 2009-11-27-16:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task _Task_1 {
+  priority 500
+  projectid prj
+}
+supplement task _Task_1._Task_2 {
+  booking joe 2009-11-23-07:00-+0000 + 3.0h,
+          2009-11-23-11:00-+0000 + 5.0h,
+          2009-11-24-07:00-+0000 + 3.0h,
+          2009-11-24-11:00-+0000 + 5.0h,
+          2009-11-25-07:00-+0000 + 3.0h,
+          2009-11-25-11:00-+0000 + 5.0h,
+          2009-11-26-07:00-+0000 + 3.0h,
+          2009-11-26-11:00-+0000 + 5.0h,
+          2009-11-27-07:00-+0000 + 3.0h,
+          2009-11-27-11:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid prj
+}
+supplement resource _Resource_1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource joe {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

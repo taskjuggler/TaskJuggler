@@ -34,10 +34,10 @@ class TestTjTime < Test::Unit::TestCase
   def test_sameTimeNextDay
     @startTimes.each do |st|
       t1 = t2 = st
-      t1_a = old_t2_a = t1.localtime.to_a
+      t1_a = old_t2_a = t1.to_a
       begin
         t2 = t2.sameTimeNextDay
-        t2_a = t2.localtime.to_a
+        t2_a = t2.to_a
         assert_equal(t1_a[0, 3], t2_a[0, 3])
         assert(t2_a[3] == old_t2_a[3] + 1 ||
                t2_a[3] == 1, t2_a.join(', '))
@@ -52,10 +52,10 @@ class TestTjTime < Test::Unit::TestCase
   def test_sameTimeNextWeek
     @startTimes.each do |st|
       t1 = t2 = st
-      t1_a = old_t2_a = t1.localtime.to_a
+      t1_a = old_t2_a = t1.to_a
       begin
         t2 = t2.sameTimeNextWeek
-        t2_a = t2.localtime.to_a
+        t2_a = t2.to_a
         # Check that hour, minutes and seconds are the same.
         assert_equal(t1_a[0, 3], t2_a[0, 3])
         # Check that weekday is the same
@@ -74,10 +74,10 @@ class TestTjTime < Test::Unit::TestCase
   def test_sameTimeNextMonth
     @startTimes.each do |st|
       t1 = t2 = st
-      t1_a = old_t2_a = t1.localtime.to_a
+      t1_a = old_t2_a = t1.to_a
       begin
         t2 = t2.sameTimeNextMonth
-        t2_a = t2.localtime.to_a
+        t2_a = t2.to_a
         assert_equal(t1_a[0, 3], t2_a[0, 3])
         assert(t2_a[3] == t2_a[3] ||
                t2_a[3] > 28,
@@ -94,10 +94,10 @@ class TestTjTime < Test::Unit::TestCase
   def test_sameTimeNextQuarter
     @startTimes.each do |st|
       t1 = t2 = st
-      t1_a = old_t2_a = t1.localtime.to_a
+      t1_a = old_t2_a = t1.to_a
       begin
         t2 = t2.sameTimeNextQuarter
-        t2_a = t2.localtime.to_a
+        t2_a = t2.to_a
         assert_equal(t1_a[0, 3], t2_a[0, 3],
                "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
         assert((t2_a[4] == old_t2_a[4] + 3 &&

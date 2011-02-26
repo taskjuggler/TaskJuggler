@@ -4,7 +4,7 @@ include "project-1.tji"
 taskreport csv "." {
   formats csv
   columns start, wbs, id
-  timeformat "%Y-%m-%d-%H:%M:%S"
+  timeformat "%Y-%m-%d-%H:%M:%S-%z"
   sorttasks plan.start.down, id.up
 }
 

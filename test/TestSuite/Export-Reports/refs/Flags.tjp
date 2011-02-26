@@ -1,0 +1,50 @@
+project prj "Flags Example" "1.0" 2005-07-20-21:00-+0000 - 2005-08-25-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+flags important
+
+projectids prj
+
+
+task items "Project breakdown" {
+  task plan "Plan work" {
+    start 2005-07-21-21:00-+0000
+    end 2005-07-26-15:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task implementation "Implement work" {
+    depends items.plan
+    start 2005-07-26-15:00-+0000
+    end 2005-08-02-15:00-+0000
+    scheduling asap
+    scheduled
+  }
+  task acceptance "Customer acceptance" {
+    depends items.implementation
+    start 2005-08-02-15:00-+0000
+    end 2005-08-07-15:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task items {
+  priority 500
+  projectid prj
+}
+supplement task items.plan {
+  flags important
+  priority 500
+  projectid prj
+}
+supplement task items.implementation {
+  priority 500
+  projectid prj
+}
+supplement task items.acceptance {
+  flags important
+  priority 500
+  projectid prj
+}

@@ -1,0 +1,48 @@
+project project "Include task prefix test" "1.0" 2010-11-30-23:00-+0000 - 2010-12-31-09:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids project
+
+resource tux "Tux"
+
+task parent_task "Parent task" {
+  task sub_task1 "Sub task 1" {
+    start 2010-12-01-08:00-+0000
+    end 2010-12-01-17:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+task other_task "Other task" {
+  start 2010-11-30-23:00-+0000
+  end 2010-12-02-17:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task parent_task {
+  priority 500
+  projectid project
+}
+supplement task parent_task.sub_task1 {
+  booking tux 2010-12-01-08:00-+0000 + 3.0h,
+          2010-12-01-12:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid project
+}
+supplement task other_task {
+  booking tux 2010-12-02-08:00-+0000 + 3.0h,
+          2010-12-02-12:00-+0000 + 5.0h { overtime 2 }
+  priority 500
+  projectid project
+}
+supplement resource tux {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

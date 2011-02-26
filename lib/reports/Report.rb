@@ -50,6 +50,10 @@ class TaskJuggler
     # _requestedFormats_ can be a list of formats that should be generated (e.
     # g. :html, :csv, etc.).
     def generate(requestedFormats = nil)
+      if (timeZone = get('timezone'))
+        oldTimeZone = TjTime.setTimeZone(timeZone)
+      end
+
       generateIntermediateFormat
 
       # We either generate the requested formats or the list of formats that
@@ -75,7 +79,8 @@ class TaskJuggler
           raise 'Unknown report output format #{format}.'
         end
       end
-      true
+
+      TjTime.setTimeZone(oldTimeZone) if timeZone
     end
 
     # Generate an output format agnostic version that can later be turned into

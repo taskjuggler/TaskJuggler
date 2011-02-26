@@ -1,0 +1,38 @@
+project prj "Example" "1.0" 1999-12-31-23:00-+0000 - 2000-03-30-22:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+resource r1 "Resource1"
+resource r2 "Resource2"
+
+task t1 "Task1" {
+  start 1999-12-31-23:00-+0000
+  end 2000-02-04-17:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task t1 {
+  priority 500
+  projectid prj
+}
+supplement resource r1 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+supplement resource r2 {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed 9:00 - 12:00, 13:00 - 18:00
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}

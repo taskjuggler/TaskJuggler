@@ -1,0 +1,29 @@
+project minmax "Min Max Example" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids minmax
+
+
+task items "Project breakdown" {
+  task plan "Plan work" {
+    start 2005-06-06-21:00-+0000
+    end 2005-06-09-15:00-+0000
+    scheduling asap
+    scheduled
+  }
+}
+supplement task items {
+  priority 500
+  projectid minmax
+}
+supplement task items.plan {
+  maxend 2005-06-10-21:00-+0000
+  maxstart 2005-06-07-21:00-+0000
+  minend 2005-06-08-21:00-+0000
+  minstart 2005-06-05-21:00-+0000
+  note "Some more information about this task."
+  priority 500
+  projectid minmax
+}
