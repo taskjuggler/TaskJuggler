@@ -106,11 +106,10 @@ Then checkout the source code with the following command
 
  git clone http://www.taskjuggler.org/git-repos/taskjuggler3.git
 
-Make sure, you
-have removed all previously installed instances of TaskJuggler from
-your system before doing so. It is a common mistake to have an old
-version of the TaskJuggler installed and then use parts of the old and
-new version together.
+Make sure, you have removed all previously installed instances of
+TaskJuggler from your system before doing so. It is a common mistake
+to have an old version of the TaskJuggler installed and then use parts
+of the old and new version together.
 
 If your Ruby installation does not come with the
 [http://rake.rubyforge.org Rake] build tool, you need to install it
@@ -150,4 +149,40 @@ added as symbolic links to tj3.
   ln -s tj3 tj3man
   ln -s tj3 tj3client
   ln -s tj3 tj3d
+
+=== Quickly switching between various TaskJuggler III versions ===
+
+One of the benefits of using TaskJuggler from the Git repository is
+the ability to get the latest bug fixes. If a bug was reported, it is
+usually fixed fairly quickly, but it can take several weeks before
+the next official release happens. The following commands must all be
+executed from within the checked-out Git directory.
+
+ git pull
+
+gets you the latest changes. We usually try to keep the head branch
+stable. Using it should not be much more risky than using a regular
+release. Nevertheless, problems can occur and a fixed version might
+take a few days.
+
+ git checkout -f XXXXXXXX
+
+will switch your current working copy to the version with commit ID
+XXXXXXXX. Alternatively, you can also use tag names.
+
+ git checkout -f release-0.0.10
+
+This will switch to the released version 0.0.10.
+
+ git tag
+
+provides you with a list of all tags.
+
+TaskJuggler III is written in Ruby. There is no make or build process
+needed. Every code change is effective immediately. The tutorial, the
+manual and some other parts do require a build step.
+
+ rake release
+
+will do it all and even create installable gem files again.
 
