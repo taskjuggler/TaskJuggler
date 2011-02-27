@@ -1,0 +1,19 @@
+project "Multiple Scenarios" "1.0" 2011-02-27 +2m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+  }
+}
+
+include "checks.tji"
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "T1" {
+  allocate r1
+  allocate r2
+  effort 2w
+  ${FixTaskSc "2011-02-28-9:00" "2011-03-04-18:00" "s1"}
+  ${FixTaskSc "2011-02-28-9:00" "2011-03-04-18:00" "s2"}
+}
+

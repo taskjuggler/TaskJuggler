@@ -2,3 +2,8 @@ macro FixStart [ minstart ${1} maxstart ${1} ]
 macro FixEnd [ minend ${1} maxend ${1} ]
 macro FixMS [ ${FixStart "${1}"} ${FixEnd "${1}"}]
 macro FixTask [ ${FixStart "${1}"} ${FixEnd "${2}"}]
+
+macro FixStartSc [ ${2}:minstart ${1} ${2}:maxstart ${1} ]
+macro FixEndSc [ ${2}:minend ${1} ${2}:maxend ${1} ]
+macro FixMSSc [ ${FixStartSc "${1}" "${2}"} ${FixEndSc "${1}" "${2}"}]
+macro FixTaskSc [ ${FixStartSc "${1}" "${3}"} ${FixEndSc "${2}" "${3}"}]

@@ -379,19 +379,26 @@ class TaskJuggler
         if AttributeBase.mode == 0
           # If we get values in 'provided' mode, we copy them immedidately to
           # all derived scenarios.
+          overwrite = false
           @project.scenario(scenario).all.each do |sc|
             scenarioIdx = @project.scenarioIdx(sc)
-            overwrite = @scenarioAttributes[scenarioIdx][attributeId].provided
+
+            if @scenarioAttributes[scenarioIdx][attributeId].provided
+              overwrite = true
+            end
+
             if scenarioIdx == scenario
               @scenarioAttributes[scenarioIdx][attributeId].set(value)
             else
               @scenarioAttributes[scenarioIdx][attributeId].inherit(value)
             end
-            if overwrite
-              raise AttributeOverwrite,
-                "Overwriting a previously provided value for attribute " +
-                "#{attributeId}"
-            end
+          end
+          # We only raise the overwrite error after all scenarios have been
+          # set. For some attributes the overwrite is actually allowed.
+          if overwrite
+            raise AttributeOverwrite,
+              "Overwriting a previously provided value for attribute " +
+              "#{attributeId}"
           end
         else
           @scenarioAttributes[scenario][attributeId].set(value)
