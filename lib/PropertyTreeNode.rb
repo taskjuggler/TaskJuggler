@@ -456,6 +456,51 @@ class TaskJuggler
       end
     end
 
+    def checkFailsAndWarnings
+      if @attributes['fail'] || @attributes['warn']
+        propertyType = case self
+                       when Task
+                         'task'
+                       when Resource
+                         'resource'
+                       else
+                         'unknown'
+                       end
+        queryAttrs = { 'project' => @project,
+                       'property' => self,
+                       'scopeProperty' => nil,
+                       'start' => @project['start'],
+                       'end' => @project['end'],
+                       'loadUnit' => :days,
+                       'numberFormat' => @project['numberFormat'],
+                       'timeFormat' => @project['timeFormat'],
+                       'currencyFormat' => @project['currencyFormat'] }
+        query = Query.new(queryAttrs)
+        if @attributes['fail']
+          @attributes['fail'].get.each do |expr|
+            if expr.eval(query)
+              error("#{propertyType}_fail_check",
+                    "User defined check failed for #{propertyType} " +
+                    "#{fullId} \n" +
+                    "Condition: #{expr.to_s}\n" +
+              "Result:    #{expr.to_s(query)}")
+            end
+          end
+        end
+        if @attributes['warn']
+          @attributes['warn'].get.each do |expr|
+            if expr.eval(query)
+              warning("#{propertyType}_warn_check",
+                      "User defined warning triggered for #{propertyType} " +
+                      "#{fullId} \n" +
+                      "Condition: #{expr.to_s}\n" +
+              "Result:    #{expr.to_s(query)}")
+            end
+          end
+        end
+      end
+    end
+
     def query_alert(query)
       journal = @project['journal']
       query.sortable = query.numerical = alert =
@@ -545,6 +590,19 @@ class TaskJuggler
     def method_missing(func, scenarioIdx, *args)
       @data[scenarioIdx].method(func).call(*args)
     end
+
+    def error(id, text)
+      @project.messageHandler.error(id, text, sourceFileInfo, nil, self, nil)
+    end
+
+    def warning(id, text)
+      @project.messageHandler.warning(id, text, sourceFileInfo, nil, self, nil)
+    end
+
+    def info(id, text)
+      @project.messageHandler.info(id, text, sourceFileInfo, nil, self, nil)
+    end
+
 
   private
 

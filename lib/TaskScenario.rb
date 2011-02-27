@@ -315,14 +315,16 @@ class TaskJuggler
 
       a('startsuccs').each do |task, onEnd|
         unless task['forward', @scenarioIdx]
-          task.error(@scenarioIdx, 'onstart_wrong_direction',
-                     'Tasks with on-start dependencies must be ASAP scheduled')
+          task.data[@scenarioIdx].error(
+            'onstart_wrong_direction',
+            'Tasks with on-start dependencies must be ASAP scheduled')
         end
       end
       a('endpreds').each do |task, onEnd|
         if task['forward', @scenarioIdx]
-          task.error(@scenarioIdx, 'onend_wrong_direction',
-                     'Tasks with on-end dependencies must be ALAP scheduled')
+          task.data[@scenarioIdx].error(
+            'onend_wrong_direction',
+            'Tasks with on-end dependencies must be ALAP scheduled')
         end
       end
     end
@@ -524,37 +526,6 @@ class TaskJuggler
         error('milestone_times_equal',
               "Milestone #{@property.fullId} must have identical start and " +
               "end date.")
-      end
-
-      if !a('fail').empty? || !a('warn').empty?
-        queryAttrs = { 'project' => @project,
-                       'scenarioIdx' => @scenarioIdx,
-                       'property' => @property,
-                       'scopeProperty' => nil,
-                       'start' => @project['start'],
-                       'end' => @project['end'],
-                       'loadUnit' => :days,
-                       'numberFormat' => @project['numberFormat'],
-                       'timeFormat' => @project['timeFormat'],
-                       'currencyFormat' => @project['currencyFormat'] }
-        query = Query.new(queryAttrs)
-        a('fail').each do |expr|
-          if expr.eval(query)
-            error('task_fail_check',
-                  "User defined check failed for task #{@property.fullId} \n" +
-                  "Condition: #{expr.to_s}\n" +
-                  "Result:    #{expr.to_s(query)}")
-          end
-        end
-        a('warn').each do |expr|
-          if expr.eval(query)
-            warning('task_warn_check',
-                    "User defined warning triggered for task " +
-                    "#{@property.fullId} \n" +
-                    "Condition: #{expr.to_s}\n" +
-                    "Result:    #{expr.to_s(query)}")
-          end
-        end
       end
 
       @errors == 0

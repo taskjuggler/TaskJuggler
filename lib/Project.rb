@@ -179,9 +179,9 @@ class TaskJuggler
         [ 'effort', 'Total Effort',    FixnumAttribute,
               false, false,   true,  0 ],
         [ 'email',     'Email',        StringAttribute,
-              false,  false,   false, nil ],
+              false, false,   false, nil ],
         [ 'fail',      'Failure Conditions', LogicalExpressionListAttribute,
-              false, false,   true,  [] ],
+              false, false,   false,  [] ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'fte',       'FTE',          FloatAttribute,
@@ -207,7 +207,7 @@ class TaskJuggler
         [ 'vacations',  'Vacations',   IntervalListAttribute,
               true,  true,    true,  [] ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
-              false, false,   true,  [] ],
+              false, false,   false, [] ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
@@ -246,7 +246,7 @@ class TaskJuggler
         [ 'endsuccs',  'End Succs.',   TaskListAttribute,
               false, false,   true,  [] ],
         [ 'fail',      'Failure Conditions', LogicalExpressionListAttribute,
-              false, false,   true,  [] ],
+              false, false,   false, [] ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'forward',   'Scheduling',   BooleanAttribute,
@@ -294,7 +294,7 @@ class TaskJuggler
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
-              false, false,   true,  [] ],
+              false, false,   false, [] ],
         [ 'wbs',       'WBS',          StringAttribute,
               false, false,   false, "" ]
       ]
@@ -626,6 +626,14 @@ class TaskJuggler
 
         # Complete the data sets, and check the result.
         finishScenario(scIdx)
+      end
+
+      resources.each do |resource|
+        resource.checkFailsAndWarnings
+      end
+
+      tasks.each do |task|
+        task.checkFailsAndWarnings
       end
 
       @timeSheets.warnOnDelta if @warnTsDeltas
@@ -1012,11 +1020,6 @@ class TaskJuggler
         task.postScheduleCheck(scIdx) if task.parent.nil?
         i += 1
         Log.progress(i.to_f / total)
-      end
-
-      # This should be really fast so we don't log progess.
-      @resources.each do |resource|
-        resource.postScheduleCheck(scIdx)
       end
 
       Log.stopProgressMeter

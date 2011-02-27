@@ -133,40 +133,6 @@ class TaskJuggler
       end
     end
 
-    def postScheduleCheck
-      if !a('fail').empty? || !a('warn').empty?
-        queryAttrs = { 'project' => @project,
-                       'scenarioIdx' => @scenarioIdx,
-                       'property' => @property,
-                       'scopeProperty' => nil,
-                       'start' => @project['start'],
-                       'end' => @project['end'],
-                       'loadUnit' => :days,
-                       'numberFormat' => @project['numberFormat'],
-                       'timeFormat' => @project['timeFormat'],
-                       'currencyFormat' => @project['currencyFormat'] }
-        query = Query.new(queryAttrs)
-        a('fail').each do |expr|
-          if expr.eval(query)
-            error('resource_fail_check',
-                  "User defined check failed for resource " +
-                  "#{@property.fullId} \n" +
-                  "Condition: #{expr.to_s}\n" +
-                  "Result:    #{expr.to_s(query)}")
-          end
-        end
-        a('warn').each do |expr|
-          if expr.eval(query)
-            warning('resource_warn_check',
-                    "User defined warning triggered for resource " +
-                    "#{@property.fullId} \n" +
-                    "Condition: #{expr.to_s}\n" +
-                    "Result:    #{expr.to_s(query)}")
-          end
-        end
-      end
-    end
-
     # Returns true if the resource is available at the time specified by
     # _sbIdx_.
     def available?(sbIdx)
