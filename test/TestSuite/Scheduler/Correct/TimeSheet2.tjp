@@ -4,6 +4,9 @@ vacation 2010-02-24
 
 resource r1 "R1"
 resource r2 "R2"
+resource r3 "R3" {
+  efficiency 0.0
+}
 
 task t1 "Task 1" {
   effort 5d
@@ -60,6 +63,14 @@ timesheet r2 2010-02-21 +1w {
         * I want to have fun too!
       ->8-
     }
+  }
+}
+
+timesheet r3 2010-02-21 +1w {
+  task t1 {
+    work 0%
+    remaining 1.0d
+    status green "I see nothing but roses."
   }
 }
 

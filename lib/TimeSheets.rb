@@ -284,21 +284,28 @@ class TaskJuggler
         totalSlots += record.work
       end
 
-      targetSlots = totalNetWorkingSlots
-      # This is acceptable rounding error when checking the total reported
-      # work.
-      delta = 1
-      if totalSlots < (targetSlots - delta)
-        error('ts_work_too_low',
-              "The total work to be reported for this time sheet " +
-              "is #{workWithUnit(targetSlots)} but only " +
-              "#{workWithUnit(totalSlots)} were reported.")
-      end
-      if totalSlots > (targetSlots + delta)
-        error('ts_work_too_high',
-              "The total work to be reported for this time sheet " +
-              "is #{workWithUnit(targetSlots)} but " +
-              "#{workWithUnit(totalSlots)} were reported.")
+      if @resource['efficiency', @resource.project['trackingScenarioIdx']] > 0.0
+        targetSlots = totalNetWorkingSlots
+        # This is acceptable rounding error when checking the total reported
+        # work.
+        delta = 1
+        if totalSlots < (targetSlots - delta)
+          error('ts_work_too_low',
+                "The total work to be reported for this time sheet " +
+                "is #{workWithUnit(targetSlots)} but only " +
+                "#{workWithUnit(totalSlots)} were reported.")
+        end
+        if totalSlots > (targetSlots + delta)
+          error('ts_work_too_high',
+                "The total work to be reported for this time sheet " +
+                "is #{workWithUnit(targetSlots)} but " +
+                "#{workWithUnit(totalSlots)} were reported.")
+        end
+      else
+        if totalSlots > 0
+          error('ts_work_not_null',
+                "The reported work for non-working resources must be 0.")
+        end
       end
     end
 
