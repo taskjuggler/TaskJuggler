@@ -201,7 +201,7 @@ class TaskJuggler
         [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
               true, false,    true,  nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
-              true,  false,   true,  nil ],
+              true,  true,    true,  nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'vacations',  'Vacations',   IntervalListAttribute,
@@ -449,7 +449,8 @@ class TaskJuggler
         if @attributes['start'] && @attributes['end']
           @attributes['workinghours'] =
             WorkingHours.new(@attributes['scheduleGranularity'],
-                             @attributes['start'], @attributes['end'])
+                             @attributes['start'], @attributes['end'],
+                             @attributes['timezone'])
           # WorkingHours is using a copy-on-write scheme to prevent multiple
           # copies of the same Scoreboard. All other WorkingHours objects are
           # created as copies of this object. By calling

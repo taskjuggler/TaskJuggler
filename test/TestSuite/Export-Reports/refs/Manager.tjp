@@ -1,4 +1,4 @@
-project prj "test" "1.0" 2010-04-02-21:00-+0000 - 2010-04-09-21:00-+0000 {
+project prj "test" "1.0" 2010-04-03-00:00-+0000 - 2010-04-10-00:00-+0000 {
   scenario plan "Plan Scenario" {
   }
 }
@@ -20,7 +20,7 @@ resource _Resource_1 "The Company" {
 }
 
 task _Task_1 "T" {
-  start 2010-04-02-21:00-+0000
+  start 2010-04-03-00:00-+0000
   milestone
   scheduled
 }

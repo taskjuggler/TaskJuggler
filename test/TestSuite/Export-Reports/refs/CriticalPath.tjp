@@ -1,4 +1,4 @@
-project prj "Critical Path Example" "1.0" 2006-08-21-21:00-+0000 - 2006-09-21-07:00-+0000 {
+project prj "Critical Path Example" "1.0" 2006-08-21-22:00-+0000 - 2006-09-21-08:00-+0000 {
   scenario plan "Planned Scenario" {
   }
 }
@@ -7,22 +7,22 @@ projectids prj
 
 
 task t1 "Task 1" {
-  start 2006-08-21-21:00-+0000
-  end 2006-08-23-21:00-+0000
+  start 2006-08-21-22:00-+0000
+  end 2006-08-23-22:00-+0000
   scheduling asap
   scheduled
 }
 task t2 "Task 2" {
   depends t1
-  start 2006-08-25-15:00-+0000
-  end 2006-08-28-15:00-+0000
+  start 2006-08-25-16:00-+0000
+  end 2006-08-28-16:00-+0000
   scheduling asap
   scheduled
 }
 task t3 "Task 3" {
   depends t1
-  start 2006-08-24-15:00-+0000
-  end 2006-08-28-15:00-+0000
+  start 2006-08-24-16:00-+0000
+  end 2006-08-28-16:00-+0000
   scheduling asap
   scheduled
 }

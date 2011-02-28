@@ -1,4 +1,4 @@
-project journal "Project with Journal" "1.0" 2009-05-03-21:00-+0000 - 2009-06-03-07:00-+0000 {
+project journal "Project with Journal" "1.0" 2009-05-04-00:00-+0000 - 2009-06-03-10:00-+0000 {
   scenario plan "Plan Scenario" {
   }
 }
@@ -8,7 +8,7 @@ projectids journal
 resource tux "Tux"
 
 task t1 "Task1" {
-  start 2009-05-04-21:00-+0000
+  start 2009-05-05-00:00-+0000
   milestone
   scheduled
 }

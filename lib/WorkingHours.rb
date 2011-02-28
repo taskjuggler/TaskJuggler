@@ -29,7 +29,7 @@ class TaskJuggler
     # existing WorkingHours object in +wh+. When it's present, the new object
     # will be a deep copy of the given object. The Scoreboard object is _not_
     # deep copied. It will be copied on write.
-    def initialize(arg1 = nil, startDate = nil, endDate = nil)
+    def initialize(arg1 = nil, startDate = nil, endDate = nil, timeZone = nil)
       # One entry for every day of the week. Sunday === 0.
       @days = Array.new(7, [])
       @scoreboard = nil
@@ -59,7 +59,7 @@ class TaskJuggler
         @slotDuration = slotDuration
 
         # Create a new object with default working hours.
-        @timezone = nil
+        @timezone = timeZone
         # Set the default working hours. Monday to Friday 9am - 12pm, 1pm - 6pm.
         # Saturday and Sunday are days off.
         1.upto(5) do |day|
@@ -189,8 +189,8 @@ class TaskJuggler
 
       date = @startDate
       @scoreboard.collect! do |slot|
-        # The date is in UTC. The weekday needs to be calculated according to
-        # the local timezone.
+        # The weekday and seconds of the day needs to be calculated according
+        # to the local timezone.
         weekday = date.wday
         secondsOfDay = date.secondsOfDay
 

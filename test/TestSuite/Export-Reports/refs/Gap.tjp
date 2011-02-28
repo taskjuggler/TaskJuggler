@@ -1,4 +1,4 @@
-project prj "Example Project" "1.0" 2005-05-28-21:00-+0000 - 2005-06-30-21:00-+0000 {
+project prj "Example Project" "1.0" 2005-05-28-22:00-+0000 - 2005-06-30-22:00-+0000 {
   scenario plan "Plan Scenario" {
   }
 }
@@ -7,19 +7,19 @@ projectids prj
 
 
 task t1 "Task 1" {
-  start 2005-05-28-21:00-+0000
+  start 2005-05-28-22:00-+0000
   milestone
   scheduled
 }
 task t2 "Task 2" {
   depends t1
-  start 2005-06-02-21:00-+0000
+  start 2005-06-02-22:00-+0000
   milestone
   scheduled
 }
 task t3 "Task 3" {
   depends t1
-  start 2005-06-03-15:00-+0000
+  start 2005-06-03-16:00-+0000
   milestone
   scheduled
 }

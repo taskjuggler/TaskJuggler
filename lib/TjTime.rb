@@ -37,8 +37,8 @@ class TaskJuggler
     # The constructor is overloaded and accepts 3 kinds of arguments. If _t_ is
     # a Time object this is just copied to the @time variable. If it's a string,
     # it is parsed as a date. Or else it is interpreted as seconds after Epoch.
-    def initialize(t)
-      @timeZone = @@tz
+    def initialize(t, timeZone = nil)
+      @timeZone = timeZone || @@tz
 
       case t
       when Time
@@ -50,6 +50,7 @@ class TaskJuggler
         parse(t)
       else
         @time = Time.at(t)
+        @timeZone = 'UTC'
       end
     end
 
@@ -61,7 +62,7 @@ class TaskJuggler
     # Creates a time based on given values, interpreted as UTC. See Time.gm()
     # for details.
     def TjTime.gm(*args)
-      TjTime.new(Time.gm(*args))
+      TjTime.new(Time.gm(*args), 'UTC')
     end
 
     # Creates a time based on given values, interpreted as local time. The
@@ -134,14 +135,13 @@ class TaskJuggler
     # Returns the total number of seconds of the day. The time is assumed to be
     # in the time zone specified by _tz_.
     def secondsOfDay(tz = nil)
-      # TODO: Add timezone support
       lt = localtime
       (lt.to_i + lt.gmt_offset) % (60 * 60 * 24)
     end
 
     # Add _secs_ number of seconds to the time.
     def +(secs)
-      TjTime.new(@time + secs)
+      TjTime.new(@time + secs, @timeZone)
     end
 
     # Substract _arg_ number of seconds or return the number of seconds between
@@ -150,7 +150,7 @@ class TaskJuggler
       if arg.is_a?(TjTime)
         @time - arg.time
       else
-        TjTime.new(@time - arg)
+        TjTime.new(@time - arg, @timeZone)
       end
     end
 
@@ -195,7 +195,7 @@ class TaskJuggler
     def upto(endDate, step = 1)
       t = @time
       while t < endDate.time
-        yield(TjTime.new(t))
+        yield(TjTime.new(t, @timeZone))
         t += step
       end
     end
@@ -266,7 +266,7 @@ class TaskJuggler
 
     # Return a new time that is _hours_ later than time.
     def hoursLater(hours)
-      TjTime.new(@time + hours * 3600)
+      TjTime.new(@time + hours * 3600, @timeZone)
     end
 
     # Return a new time that is 1 hour later than time.
@@ -314,7 +314,7 @@ class TaskJuggler
         year += 1
       end
       day = monMax if day >= monMax
-      TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0))
+      TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0), @timeZone)
     end
 
     # Return a new time that is 1 quarter later than time but at the same time of
@@ -327,7 +327,7 @@ class TaskJuggler
       end
       t.slice!(6, 4)
       t.reverse!
-      TjTime.new(Time.local(*t))
+      TjTime.new(Time.local(*t), @timeZone)
     end
 
     # Return a new time that is 1 year later than time but at the same time of
@@ -337,7 +337,7 @@ class TaskJuggler
       t[5] += 1
       t.slice!(6, 4)
       t.reverse!
-      TjTime.new(Time.local(*t))
+      TjTime.new(Time.local(*t), @timeZone)
     end
 
     # Return the start of the next _dow_ day of week after _date_. _dow_ must

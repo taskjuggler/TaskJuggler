@@ -3,6 +3,7 @@ include "project-1.tji"
 
 taskreport csv "." {
   formats csv
+  timezone "Europe/Amsterdam"
   columns duration, id
   timeformat "%Y-%m-%d-%H:%M:%S"
   sorttasks plan.duration.down, id.up

@@ -3,6 +3,7 @@ include "project-1.tji"
 
 taskreport csv "." {
   formats csv
+  timezone 'Europe/Amsterdam'
   columns wbs, name, start, end, duration, effort, weekly
   timeformat "%Y-%m-%d-%H:%M:%S-%z"
   loadunit days

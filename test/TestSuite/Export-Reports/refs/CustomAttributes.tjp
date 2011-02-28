@@ -1,4 +1,4 @@
-project ca "Custom Attributes" "1.0" 2007-05-27-22:00-+0000 - 2007-06-27-22:00-+0000 {
+project ca "Custom Attributes" "1.0" 2007-05-28-00:00-+0000 - 2007-06-28-00:00-+0000 {
   extend task{
     reference MyLink "My Link"
     text MyText "My Text"
@@ -11,7 +11,7 @@ projectids ca
 
 
 task t "Task" {
-  start 2007-05-27-22:00-+0000
+  start 2007-05-28-00:00-+0000
   milestone
   scheduled
 }

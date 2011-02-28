@@ -1,4 +1,4 @@
-project prj "Example" "1.0" 2007-05-28-22:00-+0000 - 2007-06-30-22:00-+0000 {
+project prj "Example" "1.0" 2007-05-28-21:00-+0000 - 2007-06-30-21:00-+0000 {
   scenario plan "Planned Scenario" {
     scenario actual "Actual Scenario" {
     }
@@ -12,10 +12,10 @@ projectids prj
 
 
 task t "Task" {
-  start 2007-05-28-22:00-+0000
+  start 2007-05-28-21:00-+0000
   milestone
   scheduled
-  actual:start 2007-06-02-22:00-+0000
+  actual:start 2007-06-02-21:00-+0000
   actual:milestone
 }
 supplement task t {

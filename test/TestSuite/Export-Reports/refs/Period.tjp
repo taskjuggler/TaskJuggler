@@ -1,4 +1,4 @@
-project prj "Period Project" "1.0" 2006-09-23-21:00-+0000 - 2006-12-24-03:00-+0000 {
+project prj "Period Project" "1.0" 2006-09-23-22:00-+0000 - 2006-12-24-04:00-+0000 {
   scenario plan "Plan Scenario" {
   }
 }
@@ -8,8 +8,8 @@ projectids prj
 
 task items "Project breakdown" {
   task plan "Plan work" {
-    start 2006-09-30-21:00-+0000
-    end 2006-10-14-21:00-+0000
+    start 2006-09-30-22:00-+0000
+    end 2006-10-14-22:00-+0000
     scheduling asap
     scheduled
   }

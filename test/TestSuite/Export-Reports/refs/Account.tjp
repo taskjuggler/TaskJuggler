@@ -1,4 +1,4 @@
-project simple "Simple Project" "1.0" 2006-12-31-22:00-+0000 - 2007-01-29-22:00-+0000 {
+project simple "Simple Project" "1.0" 2007-01-01-00:00-+0000 - 2007-01-30-00:00-+0000 {
   scenario plan "Plan Scenario" {
   }
 }
@@ -10,29 +10,29 @@ resource konqui "Konqui"
 
 task items "Room decoration" {
   task plan "Plan work and buy material" {
-    start 2007-01-05-22:00-+0000
-    end 2007-01-09-16:00-+0000
+    start 2007-01-06-00:00-+0000
+    end 2007-01-09-18:00-+0000
     scheduling asap
     scheduled
   }
   task remove "Remove old inventory" {
     depends items.plan
-    start 2007-01-10-07:00-+0000
-    end 2007-01-10-12:00-+0000
+    start 2007-01-10-09:00-+0000
+    end 2007-01-10-14:00-+0000
     scheduling asap
     scheduled
   }
   task implement "Arrange new decoration" {
     depends items.remove
-    start 2007-01-10-12:00-+0000
-    end 2007-01-12-16:00-+0000
+    start 2007-01-10-14:00-+0000
+    end 2007-01-12-18:00-+0000
     scheduling asap
     scheduled
   }
   task acceptance "Presentation and customer acceptance" {
     depends items.implement
-    start 2007-01-12-16:00-+0000
-    end 2007-01-17-16:00-+0000
+    start 2007-01-12-18:00-+0000
+    end 2007-01-17-18:00-+0000
     scheduling asap
     scheduled
   }
@@ -46,24 +46,24 @@ supplement task items.plan {
   projectid simple
 }
 supplement task items.remove {
-  booking tux 2007-01-10-07:00-+0000 + 3.0h,
-          2007-01-10-11:00-+0000 + 1.0h { overtime 2 }
-  booking konqui 2007-01-10-07:00-+0000 + 3.0h,
-          2007-01-10-11:00-+0000 + 1.0h { overtime 2 }
+  booking tux 2007-01-10-09:00-+0000 + 3.0h,
+          2007-01-10-13:00-+0000 + 1.0h { overtime 2 }
+  booking konqui 2007-01-10-09:00-+0000 + 3.0h,
+          2007-01-10-13:00-+0000 + 1.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement task items.implement {
-  booking tux 2007-01-10-12:00-+0000 + 4.0h,
-          2007-01-11-07:00-+0000 + 3.0h,
-          2007-01-11-11:00-+0000 + 5.0h,
-          2007-01-12-07:00-+0000 + 3.0h,
-          2007-01-12-11:00-+0000 + 5.0h { overtime 2 }
-  booking konqui 2007-01-10-12:00-+0000 + 4.0h,
-          2007-01-11-07:00-+0000 + 3.0h,
-          2007-01-11-11:00-+0000 + 5.0h,
-          2007-01-12-07:00-+0000 + 3.0h,
-          2007-01-12-11:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2007-01-10-14:00-+0000 + 4.0h,
+          2007-01-11-09:00-+0000 + 3.0h,
+          2007-01-11-13:00-+0000 + 5.0h,
+          2007-01-12-09:00-+0000 + 3.0h,
+          2007-01-12-13:00-+0000 + 5.0h { overtime 2 }
+  booking konqui 2007-01-10-14:00-+0000 + 4.0h,
+          2007-01-11-09:00-+0000 + 3.0h,
+          2007-01-11-13:00-+0000 + 5.0h,
+          2007-01-12-09:00-+0000 + 3.0h,
+          2007-01-12-13:00-+0000 + 5.0h { overtime 2 }
   priority 500
   projectid simple
 }

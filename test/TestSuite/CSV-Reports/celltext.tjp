@@ -3,6 +3,7 @@ include "project-1.tji"
 
 taskreport csv "." {
   formats csv
+  timezone "Europe/Amsterdam"
   columns wbs, name { celltext 1 "<-query-> (<-query attribute='id'->)" }
 }
 
