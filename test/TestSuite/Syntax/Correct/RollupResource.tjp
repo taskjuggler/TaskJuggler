@@ -1,4 +1,6 @@
-project "Test" "1.0" 2010-11-10 +2m
+project "Test" "1.0" 2010-11-10 +2m {
+  timezone "America/Denver"
+}
 
 resource org "Org" {
   resource team1 "Team1" {

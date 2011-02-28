@@ -1,4 +1,6 @@
-project prj "Example" "1.0" 2000-01-01 - 2000-03-31
+project "Example" 2000-01-01 - 2000-03-31 {
+  timezone "America/Denver"
+}
 
 shift s1 "Shift1" {
   # Special working hours Monday to Wednesday. Use program defaults
@@ -41,7 +43,7 @@ shift s4 "Part-time schedule 2" {
 resource r2 "Resource2" {
   # r2 works three days a week from January to June
   shift s3 2005-01-01 - 2005-01-15
-  # r2 switches to two days a week 
+  # r2 switches to two days a week
   shift s4 2005-01-15 - 2006-01-01
 }
 

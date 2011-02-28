@@ -46,6 +46,22 @@ must be enclosed in single or double quotes. The argument types and
 meaning is explained for each keyword in the syntax reference section
 of this manual.
 
+TaskJuggler manages all events with an accuracy of up to 15 minutes.
+In many cases, you don't care about this level of accuracy.
+Nevertheless, it's good to have it when you need it. All dates can
+optionally be extended by a time. By default, TaskJuggler assumes
+that all times are UTC (world time) times. If you prefer a different
+time zone, you need to use the [[timezone]] attribute.
+
+<[example file="tutorial" tag="timezone"]>
+
+Be aware that the project start and end dates in the project header
+are specified before you specify the time zone. The project header
+dates are always assumed to be UTC unless you specify differently.
+See [[interval2]] for details.
+
+ project acso "Accounting Software"  2002-01-16-0:00-+0100
+
 The [[currency]] attribute specifies the unit of currency values.
 
 <[example file="tutorial" tag="currency"]>

@@ -1,4 +1,6 @@
-project prj "Project" "1.0" 2000-01-01 - 2000-03-01
+project "Project" 2000-01-01 - 2000-03-01 {
+  timezone "America/Denver"
+}
 
 resource tuxus "Tuxus"
 resource tuxia "Tuxia"

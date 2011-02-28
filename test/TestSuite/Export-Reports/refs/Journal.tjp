@@ -1,20 +1,21 @@
-project journal "Project with Journal" "1.0" 2009-05-04-00:00-+0000 - 2009-06-03-10:00-+0000 {
+project prj "Project with Journal" "1.0" 2009-05-04-06:00-+0000 - 2009-06-03-16:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids journal
+projectids prj
 
 resource tux "Tux"
 
 task t1 "Task1" {
-  start 2009-05-05-00:00-+0000
+  start 2009-05-05-06:00-+0000
   milestone
   scheduled
 }
 supplement task t1 {
   priority 500
-  projectid journal
+  projectid prj
 }
 supplement resource tux {
   workinghours sun off

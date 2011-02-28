@@ -1,16 +1,17 @@
 project prj "Example Project" "1.0" 2007-01-01 - 2007-03-09 {
   # The following attributes are all optional. They illustrate the
   # default values. These attributes are only needed if you want to
-  # specify different values than those listed below. 
+  # specify different values than those listed below.
+  timingresolution 60min
+  timezone "America/Denver"
   dailyworkinghours 8
   yearlyworkingdays 260.714
-  timingresolution 60min
   timeformat "%Y-%m-%d %H:%M"
   shorttimeformat "%H:%M"
   currencyformat "(" ")" "," "." 0
   weekstartsmonday
-    workinghours mon - fri 9:00 - 12:00, 13:00 - 18:00
-    workinghours sat, sun off
+  workinghours mon - fri 9:00 - 12:00, 13:00 - 18:00
+  workinghours sat, sun off
   scenario plan "Plan" {
   }
 }

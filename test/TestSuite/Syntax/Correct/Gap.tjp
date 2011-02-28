@@ -1,4 +1,6 @@
-project prj "Example Project" "1.0" 2005-05-29 - 2005-07-01
+project prj "Example Project" "1.0" 2005-05-29 - 2005-07-01 {
+  timezone "America/Denver"
+}
 
 task t1 "Task 1" {
   start 2005-05-29

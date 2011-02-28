@@ -1,45 +1,46 @@
-project p "P" "1.0" 2003-11-08-22:00-+0000 - 2003-12-23-22:00-+0000 {
+project prj "P" "1.0" 2003-11-09-07:00-+0000 - 2003-12-24-07:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids p
+projectids prj
 
 
 task foo1 "foo1" {
   task foo2 "foo2" {
-    start 2003-12-03-22:00-+0000
+    start 2003-12-04-07:00-+0000
     milestone
     scheduled
   }
   task foo3 "foo3" {
     precedes foo1.foo2
-    start 2003-12-03-07:00-+0000
-    end 2003-12-03-22:00-+0000
+    start 2003-12-03-16:00-+0000
+    end 2003-12-04-07:00-+0000
     scheduling alap
     scheduled
   }
 }
 task bar "bar" {
   precedes foo1.foo2
-  start 2003-12-02-07:00-+0000
-  end 2003-12-03-22:00-+0000
+  start 2003-12-02-16:00-+0000
+  end 2003-12-04-07:00-+0000
   scheduling alap
   scheduled
 }
 supplement task foo1 {
   priority 500
-  projectid p
+  projectid prj
 }
 supplement task foo1.foo2 {
   priority 500
-  projectid p
+  projectid prj
 }
 supplement task foo1.foo3 {
   priority 500
-  projectid p
+  projectid prj
 }
 supplement task bar {
   priority 500
-  projectid p
+  projectid prj
 }

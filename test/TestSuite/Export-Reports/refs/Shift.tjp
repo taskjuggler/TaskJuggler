@@ -1,4 +1,5 @@
-project prj "Example" "1.0" 1999-12-31-23:00-+0000 - 2000-03-30-22:00-+0000 {
+project prj "Example" "1.0" 2000-01-01-07:00-+0000 - 2000-03-31-07:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
@@ -9,8 +10,8 @@ resource r1 "Resource1"
 resource r2 "Resource2"
 
 task t1 "Task1" {
-  start 1999-12-31-23:00-+0000
-  end 2000-02-04-17:00-+0000
+  start 2000-01-01-07:00-+0000
+  end 2000-02-05-01:00-+0000
   scheduling asap
   scheduled
 }

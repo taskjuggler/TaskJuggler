@@ -1,5 +1,6 @@
 # *** EXAMPLE: header +
-project prj "Example" "1.0" 2007-05-29 - 2007-07-01 {
+project "Example" 2007-05-29 - 2007-07-01 {
+  timezone "America/Denver"
   scenario plan "Planned Scenario" {
     scenario actual "Actual Scenario"
     scenario test "Test Scenario" {

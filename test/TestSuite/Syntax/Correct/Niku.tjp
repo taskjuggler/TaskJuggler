@@ -1,4 +1,5 @@
 project "Niku Test" 2010-02-01 +3m {
+  timezone "America/Denver"
   extend task {
     text ClarityPID "Clarity PID"
     text ClarityPName "Clarity Project Name"

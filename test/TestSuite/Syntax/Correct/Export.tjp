@@ -1,7 +1,9 @@
 # *** EXAMPLE: 1 +
 # *** EXAMPLE: 2 +
-project export  "Project" "1.0" 2007-01-01 - 2008-01-01
- 
+project export  "Project" "1.0" 2007-01-01 - 2008-01-01 {
+  timezone "America/Denver"
+}
+
 resource tux "Tux"
 resource bob "Bob"
 
@@ -10,7 +12,7 @@ task t1 "Task 1" {
   start 2007-01-01
   effort 20d
   allocate tux
-  allocate bob 
+  allocate bob
   limits { dailymax 6h }
 }
 # *** EXAMPLE: 1 +
@@ -19,7 +21,7 @@ task t2 "Task 2" {
   start 2007-01-01
   end 2007-06-30
   allocate tux
-  allocate bob 
+  allocate bob
   limits { weeklymax 3d }
 }
 

@@ -1,5 +1,7 @@
 # *** EXAMPLE: 2 +
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  timezone "America/Denver"
+}
 
 # *** EXAMPLE: 1 +
 trackingscenario plan
@@ -66,7 +68,7 @@ timesheet r2 2009-11-30 +1w {
     work 5d
     end 2009-12-10
     status red "I need more time" {
-      summary "This takes longer than expected" 
+      summary "This takes longer than expected"
       details -8<-
         To finish on time, I need help. Get this r1 guy to help me out
         here.

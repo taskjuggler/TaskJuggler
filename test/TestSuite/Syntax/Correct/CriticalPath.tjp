@@ -1,4 +1,5 @@
-project prj "Critical Path Example" "1.0" 2006-08-22 +1m {
+project "Critical Path Example" 2006-08-22 +1m {
+  timezone "America/Denver"
   scenario plan "Planned Scenario" {
     # All pathes with less than 15% slack should be marked as
     # critical.

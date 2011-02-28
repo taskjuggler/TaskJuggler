@@ -27,7 +27,8 @@ class TaskJuggler
     MON_MAX = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
 
     # The current time zone name.
-    @@tz = nil
+    @@tz = 'UTC'
+    ENV['TZ'] = @@tz
 
     # call-seq:
     #   TjTime(time) -> Scenario
@@ -103,13 +104,6 @@ class TaskJuggler
     # underlying operating system.
     def TjTime.setTimeZone(zone)
       oldTimeZone = @@tz
-
-      # If zone is nil we just delete the current time zone setting.
-      if zone.nil?
-        ENV.delete('TZ')
-        @@tz = nil
-        return oldTimeZone
-      end
 
       unless TjTime.checkTimeZone(zone)
         raise "Illegal time zone #{zone}"

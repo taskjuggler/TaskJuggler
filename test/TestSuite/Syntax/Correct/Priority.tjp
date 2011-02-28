@@ -1,4 +1,6 @@
-project prj "Priority Demo" "1.0" 2005-07-15 - 2005-10-01
+project "Priority Demo" 2005-07-15 - 2005-10-01 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux"
 
@@ -18,7 +20,7 @@ task items "Project breakdown" {
     priority 500
     allocate tux
   }
-  
+
   task maintenance "Maintenance work" {
     # This is a fallback task. Whenever tux is not doing something
     # else he is allocated to this task.

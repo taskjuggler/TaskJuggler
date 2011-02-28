@@ -1,4 +1,6 @@
-project test "Test" "1.0" 2009-02-04 +4m
+project test "Test" "1.0" 2009-02-04 +4m {
+  timezone "Europe/Amsterdam"
+}
 
 include "checks.tji"
 
@@ -117,4 +119,4 @@ taskreport inherit "InheritStartEnd" {
   formats html
 	columns name, id, start, end, chart
 }
-  
+

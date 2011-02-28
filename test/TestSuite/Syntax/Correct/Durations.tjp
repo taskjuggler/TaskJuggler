@@ -1,4 +1,6 @@
-project duration "Duration Example" "1.0" 2007-06-06 - 2007-06-26
+project "Duration Example" 2007-06-06 - 2007-06-26 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux"
 

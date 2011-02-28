@@ -1,4 +1,6 @@
-project minmax "Min Max Example" "1.0" 2005-06-06 - 2005-06-26
+project "Min Max Example" 2005-06-06 - 2005-06-26 {
+  timezone "America/Denver"
+}
 
 task items "Project breakdown" {
   start 2005-06-07

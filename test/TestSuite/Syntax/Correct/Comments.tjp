@@ -1,7 +1,9 @@
 /* This is a multi-line comment
  * that spans multiple rows.
  */
-project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26
+project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26 {
+  timezone "America/Denver"
+}
 
 // A resource definition
 resource tux "Tux"

@@ -1,4 +1,6 @@
-project prj "My Project" "1.0" 2009-01-01 - 2009-01-31
+project prj "My Project" "1.0" 2009-01-01 - 2009-01-31 {
+  timezone 'Europe/Amsterdam'
+}
 
 include "checks.tji"
 

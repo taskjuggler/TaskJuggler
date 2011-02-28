@@ -1,4 +1,6 @@
-project prj "Project" "1.0" 2003-06-05 - 2003-07-05
+project "Project" 2003-06-05 - 2003-07-05 {
+  timezone "America/Denver"
+}
 
 resource r1 "Resource 1"
 resource r2 "Resource 2"

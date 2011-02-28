@@ -1,5 +1,6 @@
-project mainID "ProjectIDs example" "1.0" 2006-08-22 +1m
-
+project "ProjectIDs example" 2006-08-22 +1m {
+  timezone "America/Denver"
+}
 
 task t1 "Task 1" {
   start 2006-08-22

@@ -1,4 +1,5 @@
-project ca "Custom Attributes" "1.0" 2007-05-28 - 2007-06-28 {
+project "Custom Attributes" 2007-05-28 - 2007-06-28 {
+  timezone "America/Denver"
   extend task {
     reference MyLink "My Link"
     text MyText "My Text" { inherit }

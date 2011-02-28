@@ -1,11 +1,13 @@
-project test "Test" "1.0" 2007-08-19 +2m 
+project test "Test" "1.0" 2007-08-19 +2m {
+  timezone "Europe/Amsterdam"
+}
 
 task t "T" {
   start 2007-08-19
 }
 
 export "report.tji" {
-# MARK: error 9 operand_unkn_scen 
-	hidetask foo.t 
+# MARK: error 11 operand_unkn_scen
+	hidetask foo.t
 }
 

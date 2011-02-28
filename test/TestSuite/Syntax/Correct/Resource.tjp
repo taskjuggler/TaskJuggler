@@ -1,4 +1,6 @@
-project resources "Resource Examples" "1.0" 2005-06-06 - 2005-06-26
+project "Resource Examples" 2005-06-06 - 2005-06-26 {
+  timezone "America/Denver"
+}
 
 # A simple resource
 resource tux1 "Tux1"
@@ -7,7 +9,7 @@ resource tux1 "Tux1"
 resource team "A team" {
   # A 2 days of team vacation
   vacation 2005-06-07 - 2006-05-09
-  resource tux2 "Tux2" 
+  resource tux2 "Tux2"
   resource tux3 "Tux3" {
     # And one extra day
     vacation 2005-06-10

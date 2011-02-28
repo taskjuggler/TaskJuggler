@@ -1,4 +1,6 @@
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  timezone "America/Denver"
+}
 
 resource r1 "R1"
 resource r2 "R2"
@@ -32,7 +34,7 @@ statussheet r3 2009-12-04 {
     task t3 {
       status red "I need more time" {
         author r2
-        summary "This takes longer than expected" 
+        summary "This takes longer than expected"
         details -8<-
         To finish on time, I need help. Get this r1 guy to help me out
         here.

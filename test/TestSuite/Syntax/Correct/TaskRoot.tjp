@@ -1,4 +1,6 @@
-project "Taskroot Example" 2005-07-22 - 2005-08-26
+project "Taskroot Example" 2005-07-22 - 2005-08-26 {
+  timezone "America/Denver"
+}
 
 task items "Project breakdown" {
   start 2005-07-22

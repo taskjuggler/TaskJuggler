@@ -1,4 +1,6 @@
-project "LogExp" 2009-10-19 +2m
+project "LogExp" 2009-10-19 +2m {
+  timezone "America/Denver"
+}
 
 task "T"
 

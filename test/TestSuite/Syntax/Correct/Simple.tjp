@@ -1,4 +1,6 @@
-project simple "Simple Project" "1.0" 2005-06-06 - 2005-06-26
+project "Simple Project" 2005-06-06 - 2005-06-26 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux"
 

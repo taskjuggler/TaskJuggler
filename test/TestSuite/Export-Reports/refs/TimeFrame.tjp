@@ -1,43 +1,44 @@
-project simple "Simple Project" "$Id" 2000-01-01-12:00-+0000 - 2000-01-04-18:00-+0000 {
+project prj "Simple Project" "1.0" 2000-01-01-19:00-+0000 - 2000-01-05-01:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids simple
+projectids prj
 
 resource tux "Tux"
 
 task t1 "Task1" {
-  start 2000-01-01-12:00-+0000
-  end 2000-01-03-18:00-+0000
+  start 2000-01-01-19:00-+0000
+  end 2000-01-04-01:00-+0000
   scheduling asap
   scheduled
 }
 task t2 "Task2" {
-  start 2000-01-02-00:00-+0000
-  end 2000-01-03-00:00-+0000
+  start 2000-01-02-07:00-+0000
+  end 2000-01-03-07:00-+0000
   scheduling asap
   scheduled
 }
 task t3 "Task3" {
-  start 2000-01-03-09:00-+0000
-  end 2000-01-03-18:00-+0000
+  start 2000-01-03-16:00-+0000
+  end 2000-01-04-01:00-+0000
   scheduling asap
   scheduled
 }
 supplement task t1 {
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement task t2 {
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement task t3 {
-  booking tux 2000-01-03-09:00-+0000 + 3.0h,
-          2000-01-03-13:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2000-01-03-16:00-+0000 + 3.0h,
+          2000-01-03-20:00-+0000 + 5.0h { overtime 2 }
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement resource tux {
   workinghours sun off

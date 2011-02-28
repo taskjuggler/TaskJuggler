@@ -1,4 +1,6 @@
-project sample "Example Project" "1.0" 2008-01-18 +2m
+project "Example Project" 2008-01-18 +2m {
+  timezone "America/Denver"
+}
 
 macro allocateGroup [
   allocate tux1, tux2

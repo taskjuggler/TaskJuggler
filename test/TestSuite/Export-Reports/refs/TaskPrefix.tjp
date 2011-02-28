@@ -1,4 +1,5 @@
-project project "Include task prefix test" "1.0" 2010-11-30-23:00-+0000 - 2010-12-31-09:00-+0000 {
+project project "Include task prefix test" "1.0" 2010-12-01-00:00-+0000 - 2010-12-31-10:00-+0000 {
+  timezone "Europe/Amsterdam"
   scenario plan "Plan Scenario" {
   }
 }
@@ -16,7 +17,7 @@ task parent_task "Parent task" {
   }
 }
 task other_task "Other task" {
-  start 2010-11-30-23:00-+0000
+  start 2010-12-01-00:00-+0000
   end 2010-12-02-17:00-+0000
   scheduling asap
   scheduled

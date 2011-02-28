@@ -1,4 +1,6 @@
-project prj "Scheduling Example" "1.0" 2005-07-23 - 2005-09-01
+project "Scheduling Example" 2005-07-23 - 2005-09-01 {
+  timezone "America/Denver"
+}
 
 task items "Project breakdown" {
   task t1 "Task 1" {

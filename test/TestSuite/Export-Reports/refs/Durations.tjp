@@ -1,76 +1,77 @@
-project duration "Duration Example" "1.0" 2007-06-05-21:00-+0000 - 2007-06-25-21:00-+0000 {
+project prj "Duration Example" "1.0" 2007-06-06-06:00-+0000 - 2007-06-26-06:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids duration
+projectids prj
 
 resource tux "Tux"
 
 task t "Enclosing" {
   task durationTask "Duration Task" {
-    start 2007-06-05-21:00-+0000
-    end 2007-06-15-21:00-+0000
+    start 2007-06-06-06:00-+0000
+    end 2007-06-16-06:00-+0000
     scheduling asap
     scheduled
   }
   task intervalTask "Interval Task" {
-    start 2007-06-16-21:00-+0000
+    start 2007-06-17-06:00-+0000
     milestone
     scheduled
   }
   task lengthTask "Length Task" {
-    start 2007-06-05-21:00-+0000
-    end 2007-06-19-15:00-+0000
+    start 2007-06-06-06:00-+0000
+    end 2007-06-20-00:00-+0000
     scheduling asap
     scheduled
   }
   task effortTask "Effort Task" {
-    start 2007-06-06-06:00-+0000
-    end 2007-06-19-15:00-+0000
+    start 2007-06-06-15:00-+0000
+    end 2007-06-20-00:00-+0000
     scheduling asap
     scheduled
   }
 }
 supplement task t {
   priority 500
-  projectid duration
+  projectid prj
 }
 supplement task t.durationTask {
   priority 500
-  projectid duration
+  projectid prj
 }
 supplement task t.intervalTask {
   priority 500
-  projectid duration
+  projectid prj
 }
 supplement task t.lengthTask {
   priority 500
-  projectid duration
+  projectid prj
 }
 supplement task t.effortTask {
-  booking tux 2007-06-06-06:00-+0000 + 3.0h,
-          2007-06-06-10:00-+0000 + 5.0h,
-          2007-06-07-06:00-+0000 + 3.0h,
-          2007-06-07-10:00-+0000 + 5.0h,
-          2007-06-08-06:00-+0000 + 3.0h,
-          2007-06-08-10:00-+0000 + 5.0h,
-          2007-06-11-06:00-+0000 + 3.0h,
-          2007-06-11-10:00-+0000 + 5.0h,
-          2007-06-12-06:00-+0000 + 3.0h,
-          2007-06-12-10:00-+0000 + 5.0h,
-          2007-06-13-06:00-+0000 + 3.0h,
-          2007-06-13-10:00-+0000 + 5.0h,
-          2007-06-14-06:00-+0000 + 3.0h,
-          2007-06-14-10:00-+0000 + 5.0h,
-          2007-06-15-06:00-+0000 + 3.0h,
-          2007-06-15-10:00-+0000 + 5.0h,
-          2007-06-18-06:00-+0000 + 3.0h,
-          2007-06-18-10:00-+0000 + 5.0h,
-          2007-06-19-06:00-+0000 + 3.0h,
-          2007-06-19-10:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2007-06-06-15:00-+0000 + 3.0h,
+          2007-06-06-19:00-+0000 + 5.0h,
+          2007-06-07-15:00-+0000 + 3.0h,
+          2007-06-07-19:00-+0000 + 5.0h,
+          2007-06-08-15:00-+0000 + 3.0h,
+          2007-06-08-19:00-+0000 + 5.0h,
+          2007-06-11-15:00-+0000 + 3.0h,
+          2007-06-11-19:00-+0000 + 5.0h,
+          2007-06-12-15:00-+0000 + 3.0h,
+          2007-06-12-19:00-+0000 + 5.0h,
+          2007-06-13-15:00-+0000 + 3.0h,
+          2007-06-13-19:00-+0000 + 5.0h,
+          2007-06-14-15:00-+0000 + 3.0h,
+          2007-06-14-19:00-+0000 + 5.0h,
+          2007-06-15-15:00-+0000 + 3.0h,
+          2007-06-15-19:00-+0000 + 5.0h,
+          2007-06-18-15:00-+0000 + 3.0h,
+          2007-06-18-19:00-+0000 + 5.0h,
+          2007-06-19-15:00-+0000 + 3.0h,
+          2007-06-19-19:00-+0000 + 5.0h { overtime 2 }
   priority 500
-  projectid duration
+  projectid prj
 }
 supplement resource tux {
   workinghours sun off

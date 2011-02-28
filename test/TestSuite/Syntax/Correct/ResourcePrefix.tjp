@@ -1,4 +1,6 @@
-project resourceprefix "Resource Prefix Example" "1.0" 2009-09-13 +1m
+project "Resource Prefix Example" 2009-09-13 +1m {
+  timezone "America/Denver"
+}
 
 resource team "Team" {
   resource foo "Foo"
@@ -12,7 +14,7 @@ supplement resource bar {
   workinghours mon-fri 8:00-15:00
   workinghours sat, sun off
 }
-  
+
 task t "Task" {
   effort 10d
   allocate foo, bar

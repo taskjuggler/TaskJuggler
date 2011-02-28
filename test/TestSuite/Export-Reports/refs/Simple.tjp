@@ -1,59 +1,60 @@
-project simple "Simple Project" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+project prj "Simple Project" "1.0" 2005-06-06-06:00-+0000 - 2005-06-26-06:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids simple
+projectids prj
 
 resource tux "Tux"
 
 task items "Project breakdown" {
   task plan "Plan work" {
-    start 2005-06-05-21:00-+0000
-    end 2005-06-08-15:00-+0000
+    start 2005-06-06-06:00-+0000
+    end 2005-06-09-00:00-+0000
     scheduling asap
     scheduled
   }
   task implementation "Implement work" {
     depends items.plan
-    start 2005-06-09-06:00-+0000
-    end 2005-06-15-15:00-+0000
+    start 2005-06-09-15:00-+0000
+    end 2005-06-16-00:00-+0000
     scheduling asap
     scheduled
   }
   task acceptance "Customer acceptance" {
     depends items.implementation
-    start 2005-06-15-15:00-+0000
-    end 2005-06-20-15:00-+0000
+    start 2005-06-16-00:00-+0000
+    end 2005-06-21-00:00-+0000
     scheduling asap
     scheduled
   }
 }
 supplement task items {
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement task items.plan {
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement task items.implementation {
-  booking tux 2005-06-09-06:00-+0000 + 3.0h,
-          2005-06-09-10:00-+0000 + 5.0h,
-          2005-06-10-06:00-+0000 + 3.0h,
-          2005-06-10-10:00-+0000 + 5.0h,
-          2005-06-13-06:00-+0000 + 3.0h,
-          2005-06-13-10:00-+0000 + 5.0h,
-          2005-06-14-06:00-+0000 + 3.0h,
-          2005-06-14-10:00-+0000 + 5.0h,
-          2005-06-15-06:00-+0000 + 3.0h,
-          2005-06-15-10:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2005-06-09-15:00-+0000 + 3.0h,
+          2005-06-09-19:00-+0000 + 5.0h,
+          2005-06-10-15:00-+0000 + 3.0h,
+          2005-06-10-19:00-+0000 + 5.0h,
+          2005-06-13-15:00-+0000 + 3.0h,
+          2005-06-13-19:00-+0000 + 5.0h,
+          2005-06-14-15:00-+0000 + 3.0h,
+          2005-06-14-19:00-+0000 + 5.0h,
+          2005-06-15-15:00-+0000 + 3.0h,
+          2005-06-15-19:00-+0000 + 5.0h { overtime 2 }
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement task items.acceptance {
   priority 500
-  projectid simple
+  projectid prj
 }
 supplement resource tux {
   workinghours sun off

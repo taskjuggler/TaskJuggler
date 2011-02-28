@@ -2507,6 +2507,8 @@ EOT
 The project property is mandatory and should be the first property
 in a project file. It is used to capture basic attributes such as
 the project id, name and the expected time frame.
+
+Be aware that the dates for the project period default to UTC times. See [[interval2]] for details.
 EOT
        )
   end
@@ -5567,16 +5569,12 @@ EOT
       @project['timezone'] = @val[1]
     })
     doc('timezone', <<'EOT'
-Sets the default time zone of the project. All times that have no time
-zones specified will be assumed to be in this time zone. The value must be a
-string just like those used for the TZ environment variable. Most
-Linux systems have a command line utility called tzselect to lookup
-possible values.
+Sets the default time zone of the project. All dates and times that have no
+time zones specified will be assumed to be in this time zone. If no time zone
+is specified for the project, UTC is assumed.
 
-The project start and end time are not affected by this setting. You
-have to explicitly state the time zone for those dates or the system defaults
-are assumed. Using the TZ environment variable is the recommended way to
-specify the time zone for your project.
+The project start and end time are not affected by this setting. They are
+always considered to be UTC unless specified differently.
 
 In case the specified time zone is not hour-aligned with UTC, the
 [[timingresolution]] will automatically be decreased accordingly. Do not
@@ -5999,8 +5997,7 @@ EOT
           @property['workinghours', @scenarioIdx] = wh
         end
       end
-      wh.timezone = @property.nil? ? @project['timezone'] :
-                    @property['timezone', @scenarioIdx]
+      wh.timezone = @project['timezone']
       7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
     })
   end

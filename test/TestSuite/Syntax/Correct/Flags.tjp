@@ -1,4 +1,6 @@
-project prj "Flags Example" "1.0" 2005-07-21 - 2005-08-26
+project prj "Flags Example" "1.0" 2005-07-21 - 2005-08-26 {
+  timezone "America/Denver"
+}
 
 # Declare the flag to mark important tasks
 flags important

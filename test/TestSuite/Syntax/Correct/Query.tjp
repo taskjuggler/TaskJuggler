@@ -1,4 +1,5 @@
 project "Query Demo" 2009-11-22 +1m {
+  timezone "America/Denver"
   now 2009-12-06
 }
 

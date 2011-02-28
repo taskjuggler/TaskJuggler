@@ -1,18 +1,19 @@
 project project "Include task prefix test" "1.0" 2010-12-01 +1m {
+  timezone "Europe/Amsterdam"
   now 2010-12-01
 }
 
 resource tux "Tux"
 
 task parent_task "Parent task" {
-  start ${projectstart} 
+  start ${projectstart}
   allocate tux
 }
 
 include "TaskPrefix.tji" { taskprefix parent_task }
 
 task other_task "Other task" {
-  start ${projectstart} 
+  start ${projectstart}
   effort 1d
   allocate tux
 }

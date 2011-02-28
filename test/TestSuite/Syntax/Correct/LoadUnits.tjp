@@ -1,4 +1,5 @@
 project simple "Simple Project" "$Id" 2000-01-01 - 2001-02-01 {
+  timezone "America/Denver"
   yearlyworkingdays 252
 }
 

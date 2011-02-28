@@ -1,18 +1,19 @@
-project test "Test Project" "$Id" 1999-12-31-22:00-+0000 - 2000-01-03-22:00-+0000 {
+project prj "Test Project" "1.0" 2000-01-01-07:00-+0000 - 2000-01-04-07:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
 flags important
 
-projectids test
+projectids prj
 
 resource joe "Joe"
 
 task top "Top Task" {
   task sub "Sub Task" {
-    start 1999-12-31-22:00-+0000
-    end 2000-01-03-16:00-+0000
+    start 2000-01-01-07:00-+0000
+    end 2000-01-04-01:00-+0000
     scheduling asap
     scheduled
   }
@@ -20,13 +21,13 @@ task top "Top Task" {
 supplement task top {
   flags important
   priority 500
-  projectid test
+  projectid prj
 }
 supplement task top.sub {
-  booking joe 2000-01-03-07:00-+0000 + 3.0h,
-          2000-01-03-11:00-+0000 + 5.0h { overtime 2 }
+  booking joe 2000-01-03-16:00-+0000 + 3.0h,
+          2000-01-03-20:00-+0000 + 5.0h { overtime 2 }
   priority 500
-  projectid test
+  projectid prj
 }
 supplement resource joe {
   workinghours sun off

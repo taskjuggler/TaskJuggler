@@ -1,4 +1,6 @@
-project test "String Tests" "1.0" 2005-06-06 - 2005-06-26
+project "String Tests" 2005-06-06 - 2005-06-26 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux \"The Penguing\" Tuxus"
 

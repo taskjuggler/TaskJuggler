@@ -1,13 +1,15 @@
-project p "P" "1.0" 2003-11-09 - 2003-12-24
+project "P" 2003-11-09 - 2003-12-24 {
+  timezone "America/Denver"
+}
 
 task foo1 "foo1" {
   task foo2 "foo2" {
     start 2003-12-04
-    milestone 
+    milestone
   }
-  task foo3 "foo3" { 
+  task foo3 "foo3" {
     precedes !foo2
-    length 1d 
+    length 1d
   }
 }
 task bar "bar" {

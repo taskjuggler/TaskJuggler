@@ -1,4 +1,6 @@
-project simple "Simple Project" "1.0" 2007-01-01 - 2007-02-01
+project simple "Simple Project" "1.0" 2007-01-01 - 2007-02-01 {
+  timezone "America/Denver"
+}
 
 # *** EXAMPLE: 2 +
 copyright "Tux Inc."

@@ -1,4 +1,5 @@
-project prj "Taskroot Example" "1.0" 2005-07-21-21:00-+0000 - 2005-08-25-21:00-+0000 {
+project prj "Taskroot Example" "1.0" 2005-07-22-06:00-+0000 - 2005-08-26-06:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
@@ -8,38 +9,38 @@ projectids prj
 
 task items "Project breakdown" {
   task plan "Plan work" {
-    start 2005-07-21-21:00-+0000
-    end 2005-07-26-15:00-+0000
+    start 2005-07-22-06:00-+0000
+    end 2005-07-27-00:00-+0000
     scheduling asap
     scheduled
   }
   task implementation "Implement work" {
     task phase1 "Phase 1" {
       depends items.plan
-      start 2005-07-26-15:00-+0000
-      end 2005-08-02-15:00-+0000
+      start 2005-07-27-00:00-+0000
+      end 2005-08-03-00:00-+0000
       scheduling asap
       scheduled
     }
     task phase2 "Phase 2" {
       depends items.implementation.phase1
-      start 2005-08-02-15:00-+0000
-      end 2005-08-05-15:00-+0000
+      start 2005-08-03-00:00-+0000
+      end 2005-08-06-00:00-+0000
       scheduling asap
       scheduled
     }
     task phase3 "Phase 3" {
       depends items.implementation.phase2
-      start 2005-08-05-15:00-+0000
-      end 2005-08-11-15:00-+0000
+      start 2005-08-06-00:00-+0000
+      end 2005-08-12-00:00-+0000
       scheduling asap
       scheduled
     }
   }
   task acceptance "Customer acceptance" {
     depends items.implementation
-    start 2005-08-11-15:00-+0000
-    end 2005-08-16-15:00-+0000
+    start 2005-08-12-00:00-+0000
+    end 2005-08-17-00:00-+0000
     scheduling asap
     scheduled
   }

@@ -1,4 +1,5 @@
-project ca "Custom Attributes" "1.0" 2007-05-28-00:00-+0000 - 2007-06-28-00:00-+0000 {
+project prj "Custom Attributes" "1.0" 2007-05-27-22:00-+0000 - 2007-06-27-22:00-+0000 {
+  timezone "America/Denver"
   extend task{
     reference MyLink "My Link"
     text MyText "My Text"
@@ -7,11 +8,11 @@ project ca "Custom Attributes" "1.0" 2007-05-28-00:00-+0000 - 2007-06-28-00:00-+
   }
 }
 
-projectids ca
+projectids prj
 
 
 task t "Task" {
-  start 2007-05-28-00:00-+0000
+  start 2007-05-28-06:00-+0000
   milestone
   scheduled
 }
@@ -19,5 +20,5 @@ supplement task t {
   MyLink "http://www.taskjuggler.org" { label "TJ Web" }
   MyText "TaskJuggler is great!"
   priority 500
-  projectid ca
+  projectid prj
 }

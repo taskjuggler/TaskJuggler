@@ -1,13 +1,15 @@
-project test "Test Project" "$Id" 2000-01-01 - 2000-03-01
+project "Test Project" 2000-01-01 - 2000-03-01 {
+  timezone "America/Denver"
+}
 
 flags flag1, flag2, flag3, flag4
 
 rate 100.0
 
-resource r1 "FooResource 1" 
-resource r2 "FooResource 2" 
-resource r3 "FooResource 3" 
-resource r4 "FooResource 4" 
+resource r1 "FooResource 1"
+resource r2 "FooResource 2"
+resource r3 "FooResource 3"
+resource r4 "FooResource 4"
 
 account a1 "FooAccount 1" {
   account a3 "FooAccount 3"

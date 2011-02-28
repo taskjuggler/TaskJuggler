@@ -1,9 +1,10 @@
-project resources "Resource Examples" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+project prj "Resource Examples" "1.0" 2005-06-05-22:00-+0000 - 2005-06-25-22:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids resources
+projectids prj
 
 resource tux1 "Tux1"
 resource team "A team" {
@@ -12,13 +13,13 @@ resource team "A team" {
 }
 
 task t "An important date" {
-  start 2005-06-09-21:00-+0000
+  start 2005-06-10-06:00-+0000
   milestone
   scheduled
 }
 supplement task t {
   priority 500
-  projectid resources
+  projectid prj
 }
 supplement resource tux1 {
   workinghours sun off

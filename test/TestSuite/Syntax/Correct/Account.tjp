@@ -1,4 +1,5 @@
 project simple "Simple Project" "1.0" 2007-01-01 - 2007-01-30 {
+  timezone "America/Denver"
   currency "USD"
 }
 

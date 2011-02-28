@@ -1,4 +1,6 @@
-project "Simple Project" 2009-10-04 +1m
+project "Simple Project" 2009-10-04 +1m {
+  timezone "America/Denver"
+}
 
 account "Foo" {
   account "Bar"

@@ -1,4 +1,5 @@
 project prj "Project" "1.0" 2007-01-01 - 2007-03-01 {
+  timezone "Europe/Berlin"
   # German currency format: e. g.  -10.000,20 5.014,11
   numberformat "-" "" "." "," 2
 
@@ -7,6 +8,6 @@ project prj "Project" "1.0" 2007-01-01 - 2007-03-01 {
 }
 
 task t "Task" {
-  start 2007-01-01
+  start ${projectstart}
   milestone
 }

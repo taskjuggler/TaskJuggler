@@ -1,4 +1,5 @@
-project prj "Scheduling Example" "1.0" 2005-07-22-21:00-+0000 - 2005-08-31-21:00-+0000 {
+project prj "Scheduling Example" "1.0" 2005-07-23-06:00-+0000 - 2005-09-01-06:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
@@ -8,26 +9,26 @@ projectids prj
 
 task items "Project breakdown" {
   task t1 "Task 1" {
-    start 2005-07-24-21:00-+0000
-    end 2005-07-31-21:00-+0000
+    start 2005-07-25-06:00-+0000
+    end 2005-08-01-06:00-+0000
     scheduling alap
     scheduled
   }
   task t2 "Task 2" {
-    start 2005-07-24-21:00-+0000
-    end 2005-07-31-21:00-+0000
+    start 2005-07-25-06:00-+0000
+    end 2005-08-01-06:00-+0000
     scheduling asap
     scheduled
   }
   task t3 "Task 3" {
-    start 2005-07-24-21:00-+0000
-    end 2005-07-31-21:00-+0000
+    start 2005-07-25-06:00-+0000
+    end 2005-08-01-06:00-+0000
     scheduling asap
     scheduled
   }
   task t4 "Task 4" {
-    start 2005-07-24-21:00-+0000
-    end 2005-07-31-21:00-+0000
+    start 2005-07-25-06:00-+0000
+    end 2005-08-01-06:00-+0000
     scheduling alap
     scheduled
   }

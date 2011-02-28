@@ -1,4 +1,6 @@
-project simple "Simple Project" "$Id" 2000-01-01-12:00 - 2000-01-04-18:00
+project "Simple Project" 2000-01-01-12:00 - 2000-01-04-18:00 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux"
 

@@ -1,4 +1,6 @@
-project celltext  "celltext" "1.0" 2007-01-01 - 2007-03-01
+project celltext  "celltext" "1.0" 2007-01-01 - 2007-03-01 {
+  timezone "America/Denver"
+}
 
 # *** EXAMPLE: 1 +
 resource tux "Tux"

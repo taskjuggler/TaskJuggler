@@ -1,4 +1,5 @@
-project journal "Project with Journal" "1.0" 2009-05-04 +1m {
+project "Project with Journal" 2009-05-04 +1m {
+  timezone "America/Denver"
   journalentry 2009-05-05 "The project started."
   journalentry 2009-05-10 "We made some progress." {
     summary "All jobs have been assigned. The crew is working away."

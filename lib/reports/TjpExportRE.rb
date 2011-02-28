@@ -72,9 +72,7 @@ class TaskJuggler
       @file << "project #{@project['projectid']} \"#{@project['name']}\" " +
                "\"#{@project['version']}\" #{@project['start']} - " +
                "#{@project['end']} {\n"
-      if @project['timezone']
-        generateAttributeText("timezone \"#{@project['timezone']}\"", 2)
-      end
+      generateAttributeText("timezone \"#{@project['timezone']}\"", 2)
       generateCustomAttributeDeclarations('resource', @project.resources,
                                           a('resourceAttributes'))
       generateCustomAttributeDeclarations('task', @project.tasks,

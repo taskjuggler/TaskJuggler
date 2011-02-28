@@ -1,4 +1,6 @@
-project "Logical Function Demo" 2009-11-21 +2w
+project "Logical Function Demo" 2009-11-21 +2w {
+  timezone "America/Denver"
+}
 
 resource "Team" {
   resource joe "Joe"

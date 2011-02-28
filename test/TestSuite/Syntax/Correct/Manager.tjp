@@ -1,4 +1,6 @@
-project "test" 2010-04-03 +1w
+project "test" 2010-04-03 +1w {
+  timezone "America/Denver"
+}
 
 resource "The Company" {
   resource ceo "Big Boss"
@@ -21,7 +23,7 @@ resource "The Company" {
     resource "Accountant"
   }
 }
-      
+
 task "T"
 
 resourcereport "Managers" {

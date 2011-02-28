@@ -1,4 +1,5 @@
 project prj "Period Project" "1.0" 2006-09-24 +3m {
+  timezone "America/Denver"
 	now 2006-10-02
 }
 

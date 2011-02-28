@@ -1,4 +1,6 @@
-project prj "Responsible Demo" "1.0" 2005-07-15 - 2005-08-01
+project "Responsible Demo" 2005-07-15 - 2005-08-01 {
+  timezone "America/Denver"
+}
 
 resource tux "Tux"
 resource ubertux "Uber Tux"

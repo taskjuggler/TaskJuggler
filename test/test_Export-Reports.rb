@@ -110,7 +110,6 @@ class TestExportReport < Test::Unit::TestCase
       checkExportReport(f, repFile, refFile)
       checkExportReport(refFile, repFile, refFile)
     end
-    TaskJuggler::TjTime.setTimeZone(nil)
   end
 
   private

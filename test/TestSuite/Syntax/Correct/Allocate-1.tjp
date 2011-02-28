@@ -1,4 +1,6 @@
-project allocate "allocate" "1.0" 2003-06-05 - 2003-07-05
+project allocate "allocate" "1.0" 2003-06-05 - 2003-07-05 {
+  timezone "America/Denver"
+}
 
 # *** EXAMPLE: 1 +
 resource r1 "Resource 1"

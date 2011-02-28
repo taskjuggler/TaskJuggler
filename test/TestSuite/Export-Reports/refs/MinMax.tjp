@@ -1,29 +1,30 @@
-project minmax "Min Max Example" "1.0" 2005-06-05-21:00-+0000 - 2005-06-25-21:00-+0000 {
+project prj "Min Max Example" "1.0" 2005-06-06-06:00-+0000 - 2005-06-26-06:00-+0000 {
+  timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
 }
 
-projectids minmax
+projectids prj
 
 
 task items "Project breakdown" {
   task plan "Plan work" {
-    start 2005-06-06-21:00-+0000
-    end 2005-06-09-15:00-+0000
+    start 2005-06-07-06:00-+0000
+    end 2005-06-10-00:00-+0000
     scheduling asap
     scheduled
   }
 }
 supplement task items {
   priority 500
-  projectid minmax
+  projectid prj
 }
 supplement task items.plan {
-  maxend 2005-06-10-21:00-+0000
-  maxstart 2005-06-07-21:00-+0000
-  minend 2005-06-08-21:00-+0000
-  minstart 2005-06-05-21:00-+0000
+  maxend 2005-06-11-06:00-+0000
+  maxstart 2005-06-08-06:00-+0000
+  minend 2005-06-09-06:00-+0000
+  minstart 2005-06-06-06:00-+0000
   note "Some more information about this task."
   priority 500
-  projectid minmax
+  projectid prj
 }
