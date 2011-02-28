@@ -6,6 +6,9 @@
  * description of the various syntax elements.
  */
 project acso "Accounting Software"  2002-01-16 +4m {
+  # Set the default time zone for the project. If not specified, UTC
+  # is used.
+  timezone "Europe/Paris"
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
   # Use US format for numbers
@@ -92,10 +95,10 @@ resource misc "The Others" {
     limits { dailymax 6.4h }
     rate 310.0
   }
-  resource doc "Dim Sung" { 
+  resource doc "Dim Sung" {
     email "sung@crappysoftware.com"
     Phone "x482"
-    rate 300.0 
+    rate 300.0
     vacation 2002-03-11 - 2002-03-16
   }
 
@@ -159,7 +162,7 @@ task AcSo "Accounting Software" {
         details -8<-
           We have already contacted the vendor and are now waiting for
           their advise.
-        ->8-  
+        ->8-
       }
     }
 
@@ -242,7 +245,9 @@ task AcSo "Accounting Software" {
     task start "Project start" {
       # A task that has no duration is a milestone. It only needs a
       # start or end criterion. All other tasks depend on this task.
-      start 2002-01-16
+      # Here we use the built-in macro ${projectstart} to align the
+      # start of the task with the above specified project time frame.
+      start ${projectstart}
       # For some reason the actual start of the project got delayed.
       # We record this, so that we can compare the planned run to the
       # delayed run of the project.
@@ -294,15 +299,15 @@ macro TaskTip [
     '''End: ''' <-query attribute='end'->
     ----
     '''Resources:'''
-    
+
     <-query attribute='resources'->
     ----
     '''Precursors: '''
-    
+
     <-query attribute='precursors'->
     ----
     '''Followers: '''
-    
+
     <-query attribute='followers'->
     ->8-
 ]
@@ -330,7 +335,7 @@ textreport frame "" {
       <[report id="status.ongoing"]>
       ----
       <[report id="status.future"]>
-    ->8-   
+    ->8-
   }
 
   textreport development "Development" {
@@ -359,13 +364,13 @@ textreport frame "" {
 taskreport overview "" {
   header -8<-
     === Project Overview ===
-    
+
     The project is structured into 3 phases.
-    
+
     # Specification
     # <-reportlink id='frame.development'->
     # Testing
-    
+
     === Original Project Plan ===
   ->8-
   columns hierarchindex,
@@ -384,9 +389,9 @@ taskreport overview "" {
 
     All project phases are properly staffed. See [[ResourceGraph]] for
     detailed resource allocations.
-    
+
     === Current Status ===
-    
+
     The project started off with a delay of 4 days. This slightly affected
     the original schedule. See [[Deliveries]] for the impact on the
     delivery dates.
@@ -408,12 +413,12 @@ taskreport status "" {
           alert { tooltip plan.journal
                           != '' "<-query attribute='journal'->" width 150 },
           status { width 150 }
-  scenarios delayed 
+  scenarios delayed
 
   taskreport dashboard "" {
     headline "Project Dashboard (<-query attribute='now'->)"
     columns name { title "Task" ${AlertColor} width 200},
-            resources { width 200 ${AlertColor} 
+            resources { width 200 ${AlertColor}
                         listtype bullets listmode 2
                         start ${projectstart} end ${projectend} },
             alerttrend { title "Trend" ${AlertColor} width 50 },
@@ -451,7 +456,7 @@ taskreport development "" {
 taskreport deliveries "" {
   headline "Project Deliverables"
   columns hierarchindex, name, start, end, note { width 150 }, complete,
-          chart { ${TaskTip} } 
+          chart { ${TaskTip} }
   taskroot AcSo.deliveries
   hideresource 1
   scenarios plan, delayed
