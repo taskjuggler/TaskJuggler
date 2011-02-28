@@ -388,7 +388,7 @@ EOT
                   @log.debug("Marking entry with ID #{id} as obsolete")
                 end
               end
-              project.readySince = TjTime.now
+              project.readySince = TjTime.new
             end
 
             # Failed ProjectServers are terminated automatically. We can't

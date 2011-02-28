@@ -32,7 +32,7 @@ class TaskJuggler
       # A reference to the TaskJuggler object that holds the project data.
       @tj = tj
 
-      @lastPing = TjTime.now
+      @lastPing = TjTime.new
 
       # We've started a DRb server before. This will continue to live somewhat
       # in the child. All attempts to create a DRb connection from the child
@@ -94,7 +94,7 @@ class TaskJuggler
     end
 
     def ping
-      @lastPing = TjTime.now
+      @lastPing = TjTime.new
     end
 
     def addFile(file)
@@ -151,7 +151,7 @@ class TaskJuggler
     def startWatchDog
       Thread.new do
         loop do
-          if TjTime.now - @lastPing > 120
+          if TjTime.new - @lastPing > 120
             @log.fatal('Heartbeat from ProjectServer lost. Terminating.')
           end
           sleep 30

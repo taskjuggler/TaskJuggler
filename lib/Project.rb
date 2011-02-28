@@ -83,7 +83,7 @@ class TaskJuggler
         'loadUnit' => :days,
         'name' => name,
         'navigators' => {},
-        'now' => TjTime.now.align(3600),
+        'now' => TjTime.new.align(3600),
         'numberFormat' => RealFormat.new([ '-', '', '', '.', 1]),
         'priority' => 500,
         'projectid' => id || "prj",

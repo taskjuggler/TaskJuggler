@@ -102,7 +102,7 @@ class TaskJuggler
         "Copyright (c) #{AppConfig.copyright.join(', ')} " +
         "by #{AppConfig.authors.join(', ')}", 'b')
       div << XMLElement.new('br')
-      div << XMLText.new("Generated on #{TjTime.now.strftime('%Y-%m-%d')}")
+      div << XMLText.new("Generated on #{TjTime.new.strftime('%Y-%m-%d')}")
       div << XMLElement.new('br')
       div << XMLNamedText.new("This manual covers #{AppConfig.softwareName} " +
                               "version #{AppConfig.version}.", 'h3')

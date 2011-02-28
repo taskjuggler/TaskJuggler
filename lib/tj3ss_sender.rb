@@ -32,7 +32,7 @@ class TaskJuggler
 
       @hideResource = nil
       # The default report period end is next Wednesday 0:00.
-      @date = TjTime.now.nextDayOfWeek(3).to_s('%Y-%m-%d')
+      @date = TjTime.new.nextDayOfWeek(3).to_s('%Y-%m-%d')
       @resourceList = []
     end
 

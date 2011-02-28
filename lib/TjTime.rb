@@ -31,19 +31,26 @@ class TaskJuggler
     ENV['TZ'] = @@tz
 
     # call-seq:
-    #   TjTime(time) -> Scenario
-    #   TjTime(s) -> Scenario
-    #   TjTime(secs) -> Scenario
+    #   TjTime() -> TjTime (now)
+    #   TjTime(tjtime) -> TjTime
+    #   TjTime(time, timezone) -> TjTime
+    #   TjTime(str) -> TjTime
+    #   TjTime(secs) -> TjTime
     #
-    # The constructor is overloaded and accepts 3 kinds of arguments. If _t_ is
-    # a Time object this is just copied to the @time variable. If it's a string,
-    # it is parsed as a date. Or else it is interpreted as seconds after Epoch.
-    def initialize(t, timeZone = nil)
+    # The constructor is overloaded and accepts 4 kinds of arguments. If _t_
+    # is a Time object it's assumed to be in local time. If it's a string, it
+    # is parsed as a date. Or else it is interpreted as seconds after Epoch.
+    def initialize(t = nil, timeZone = nil)
       @timeZone = timeZone || @@tz
 
       case t
+      when nil
+        @time = Time.now
       when Time
         @time = t
+        if t != Time.at(t.to_i)
+          raise "Date #{t} must be in local time zone #{@@tz}"
+        end
       when TjTime
         @time = t.time
         @timeZone = t.timeZone
@@ -53,11 +60,6 @@ class TaskJuggler
         @time = Time.at(t)
         @timeZone = 'UTC'
       end
-    end
-
-    # Returns the current UTC time as Time object.
-    def TjTime.now
-      TjTime.new(Time.now)
     end
 
     # Creates a time based on given values, interpreted as UTC. See Time.gm()
@@ -123,7 +125,7 @@ class TaskJuggler
 
     # Align the date to a time grid. The grid distance is determined by _clock_.
     def align(clock)
-      TjTime.new((localtime.to_i / clock) * clock)
+      TjTime.new((localtime.to_i / clock) * clock, @timeZone)
     end
 
     # Returns the total number of seconds of the day. The time is assumed to be

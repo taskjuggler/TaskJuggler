@@ -48,7 +48,7 @@ class TaskJuggler
         if ymdFilter.match(arg)
           @date = Time.mktime(*(ymdFilter.match(arg)[1..3]))
         else
-          @date = TjTime.now.nextDayOfWeek(arg.to_i % 7)
+          @date = TjTime.new.nextDayOfWeek(arg.to_i % 7)
         end
         @date = @date.strftime('%Y-%m-%d')
       end

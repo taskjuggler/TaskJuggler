@@ -211,7 +211,7 @@ EOT
       div << XMLText.new(@project['copyright'] + " - ") if @project['copyright']
       div << XMLText.new("Project: #{@project['name']} " +
                         "Version: #{@project['version']} - " +
-                        "Created on #{TjTime.now.to_s("%Y-%m-%d %H:%M:%S")} " +
+                        "Created on #{TjTime.new.to_s("%Y-%m-%d %H:%M:%S")} " +
                         "with ")
       div << XMLNamedText.new("#{AppConfig.softwareName}", 'a',
                              'href' => "#{AppConfig.contact}")

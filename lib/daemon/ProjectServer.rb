@@ -57,7 +57,7 @@ class TaskJuggler
       # The current state of the project.
       @state = :new
       # A time stamp when the last @state update happened.
-      @stateUpdated = TjTime.now
+      @stateUpdated = TjTime.new
       # A lock to protect access to @state
       @stateLock = Monitor.new
 
@@ -68,7 +68,7 @@ class TaskJuggler
       @reportServers = []
       @reportServers.extend(MonitorMixin)
 
-      @lastPing = TjTime.now
+      @lastPing = TjTime.new
 
       # We've started a DRb server before. This will continue to live somewhat
       # in the child. All attempts to create a DRb connection from the child
@@ -141,7 +141,7 @@ class TaskJuggler
       Dir.chdir(args.shift.untaint)
 
       # Save a time stamp of when the project file loading started.
-      @modifiedCheck = TjTime.now
+      @modifiedCheck = TjTime.new
 
       updateState(:loading, dirAndFiles, false)
       @tj = TaskJuggler.new(true)
@@ -227,7 +227,7 @@ class TaskJuggler
     def ping
       # Store the time stamp. If we don't get the ping for some time, we
       # assume the ProjectBroker has died.
-      @lastPing = TjTime.now
+      @lastPing = TjTime.new
 
       # Now also check our ReportServers if they are still there. If not, we
       # can remove them from the @reportServers list.
@@ -255,9 +255,9 @@ class TaskJuggler
       end
       @stateLock.synchronize do
         @state = state
-        @stateUpdated = TjTime.now
+        @stateUpdated = TjTime.new
         @modified = modified
-        @modifiedCheck = TjTime.now
+        @modifiedCheck = TjTime.new
       end
     end
 
@@ -275,9 +275,9 @@ class TaskJuggler
             # Check every 60 seconds if the input files have been modified.
             # Don't check if we already know it has been modified.
             if @stateLock.synchronize { @state == :ready && !@modified &&
-                                        @modifiedCheck + 60 < TjTime.now }
+                                        @modifiedCheck + 60 < TjTime.new }
               # Reset the timer
-              @stateLock.synchronize { @modifiedCheck = TjTime.now }
+              @stateLock.synchronize { @modifiedCheck = TjTime.new }
 
               if @tj.project.inputFiles.modified?
                 @log.info("Project #{@tj.projectId} has been modified")
@@ -312,13 +312,13 @@ class TaskJuggler
             timeouts = { :new => 10, :loading => 15 * 60, :failed => 60,
                          :ready => 0 }
             if timeouts[@state] > 0 &&
-               TjTime.now - @stateUpdated > timeouts[@state]
+               TjTime.new - @stateUpdated > timeouts[@state]
               @log.fatal("Reached timeout for state #{@state}. Terminating.")
             end
 
             # If we have not received a ping from the ProjectBroker for 2
             # minutes, we assume it has died and terminate as well.
-            if TjTime.now - @lastPing > 180
+            if TjTime.new - @lastPing > 180
               @log.fatal('Heartbeat from daemon lost. Terminating.')
             end
             sleep 1
