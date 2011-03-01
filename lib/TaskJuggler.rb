@@ -34,6 +34,7 @@ class TaskJuggler
     @messageHandler = MessageHandler.new(console)
     @maxCpuCores = 1
     @warnTsDeltas = false
+    TjTime.setTimeZone('UTC')
   end
 
   # Read in the files passed as file names in _files_, parse them and

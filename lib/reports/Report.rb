@@ -50,9 +50,7 @@ class TaskJuggler
     # _requestedFormats_ can be a list of formats that should be generated (e.
     # g. :html, :csv, etc.).
     def generate(requestedFormats = nil)
-      if (timeZone = get('timezone'))
-        oldTimeZone = TjTime.setTimeZone(timeZone)
-      end
+      oldTimeZone = TjTime.setTimeZone(get('timezone'))
 
       generateIntermediateFormat
 
@@ -80,7 +78,7 @@ class TaskJuggler
         end
       end
 
-      TjTime.setTimeZone(oldTimeZone) if timeZone
+      TjTime.setTimeZone(oldTimeZone)
     end
 
     # Generate an output format agnostic version that can later be turned into

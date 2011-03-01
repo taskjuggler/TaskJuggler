@@ -1,4 +1,4 @@
-project prj "Niku Test" "1.0" 2010-02-01-07:00-+0000 - 2010-05-03-13:00-+0000 {
+project prj "Niku Test" "1.0" 2010-02-01-00:00-+0000 - 2010-05-03-06:00-+0000 {
   timezone "America/Denver"
   extend resource{
     text ClarityRID "Clarity Resource ID"

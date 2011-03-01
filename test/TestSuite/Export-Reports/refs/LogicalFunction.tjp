@@ -1,4 +1,4 @@
-project prj "Logical Function Demo" "1.0" 2009-11-21-07:00-+0000 - 2009-12-05-07:00-+0000 {
+project prj "Logical Function Demo" "1.0" 2009-11-21-00:00-+0000 - 2009-12-05-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
@@ -12,8 +12,8 @@ resource _Resource_1 "Team" {
 
 task _Task_1 "Parent" {
   task _Task_2 "Sub" {
-    start 2009-11-23-16:00-+0000
-    end 2009-11-28-01:00-+0000
+    start 2009-11-21-00:00-+0000
+    end 2009-11-28-00:00-+0000
     scheduling asap
     scheduled
   }
@@ -23,7 +23,8 @@ supplement task _Task_1 {
   projectid prj
 }
 supplement task _Task_1._Task_2 {
-  booking joe 2009-11-23-16:00-+0000 + 3.0h,
+  booking joe 2009-11-21-00:00-+0000 + 1.0h,
+          2009-11-23-16:00-+0000 + 3.0h,
           2009-11-23-20:00-+0000 + 5.0h,
           2009-11-24-16:00-+0000 + 3.0h,
           2009-11-24-20:00-+0000 + 5.0h,
@@ -32,7 +33,7 @@ supplement task _Task_1._Task_2 {
           2009-11-26-16:00-+0000 + 3.0h,
           2009-11-26-20:00-+0000 + 5.0h,
           2009-11-27-16:00-+0000 + 3.0h,
-          2009-11-27-20:00-+0000 + 5.0h { overtime 2 }
+          2009-11-27-20:00-+0000 + 4.0h { overtime 2 }
   priority 500
   projectid prj
 }

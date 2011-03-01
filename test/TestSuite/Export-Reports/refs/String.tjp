@@ -1,4 +1,4 @@
-project prj "String Tests" "1.0" 2005-06-06-06:00-+0000 - 2005-06-26-06:00-+0000 {
+project prj "String Tests" "1.0" 2005-06-06-00:00-+0000 - 2005-06-26-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }

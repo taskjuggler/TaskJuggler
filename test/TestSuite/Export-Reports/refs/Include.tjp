@@ -1,4 +1,4 @@
-project prj "Include Test" "1.0" 2010-02-26-07:00-+0000 - 2010-03-05-07:00-+0000 {
+project prj "Include Test" "1.0" 2010-02-26-00:00-+0000 - 2010-03-05-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
@@ -12,7 +12,7 @@ resource _Resource_3 "R"
 resource _Resource_4 "R2"
 
 task _Task_1 "Foo" {
-  start 2010-02-26-07:00-+0000
+  start 2010-02-26-00:00-+0000
   milestone
   scheduled
 }

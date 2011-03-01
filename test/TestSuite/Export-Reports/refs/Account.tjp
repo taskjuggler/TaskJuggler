@@ -1,4 +1,4 @@
-project simple "Simple Project" "1.0" 2007-01-01-07:00-+0000 - 2007-01-30-07:00-+0000 {
+project simple "Simple Project" "1.0" 2007-01-01-00:00-+0000 - 2007-01-30-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }

@@ -1,4 +1,4 @@
-project prj "LogExp" "1.0" 2009-10-19-06:00-+0000 - 2009-12-19-02:00-+0000 {
+project prj "LogExp" "1.0" 2009-10-19-00:00-+0000 - 2009-12-18-20:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }
@@ -8,7 +8,7 @@ projectids prj
 
 
 task _Task_1 "T" {
-  start 2009-10-19-06:00-+0000
+  start 2009-10-19-00:00-+0000
   milestone
   scheduled
 }

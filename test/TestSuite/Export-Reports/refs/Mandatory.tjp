@@ -1,4 +1,4 @@
-project prj "Project" "1.0" 1999-12-31-23:00-+0000 - 2000-02-29-23:00-+0000 {
+project prj "Project" "1.0" 2000-01-01-00:00-+0000 - 2000-03-01-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
   }

@@ -56,14 +56,14 @@ task t4 "Task 4" {
 # *** EXAMPLE: 2 +
 # *** EXAMPLE: 4 +
 task t5 "Task 5" {
-  start 2007-03-01
+  start ${projectstart}
   duration 60d
   # allocation is subject to resource limits
   allocate r1
 }
 # *** EXAMPLE: 4 -
 task t6 "Task 6" {
-  start 2007-03-01
+  start ${projectstart}
   duration 60d
   allocate r2
   limits { dailymax 4h weeklymax 3d monthlymax 2w }

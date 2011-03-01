@@ -7,7 +7,7 @@ project "Custom Attributes" 2007-05-28 - 2007-06-28 {
 }
 
 task t "Task" {
-  start 2007-05-28
+  start ${projectstart}
   milestone
   MyLink "http://www.taskjuggler.org" { label "TJ Web" }
   MyText "TaskJuggler is great!"

@@ -48,9 +48,6 @@ class TaskJuggler
         @time = Time.now
       when Time
         @time = t
-        if t != Time.at(t.to_i)
-          raise "Date #{t} must be in local time zone #{@@tz}"
-        end
       when TjTime
         @time = t.time
         @timeZone = t.timeZone
@@ -60,6 +57,14 @@ class TaskJuggler
         @time = Time.at(t)
         @timeZone = 'UTC'
       end
+
+      #savedTz = TjTime.setTimeZone(@timeZone)
+      #timeTokens = @time.to_a[0..5].reverse
+      #newTime = Time.local(*timeTokens)
+      #if newTime.to_a[0..5] != @time.to_a[0..5]
+      #  raise "TZ consistency error: @@tz: #{@@tz}  @time: #{@time}"
+      #end
+      #TjTime.setTimeZone(savedTz)
     end
 
     # Creates a time based on given values, interpreted as UTC. See Time.gm()

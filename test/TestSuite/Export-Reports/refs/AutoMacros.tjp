@@ -1,4 +1,4 @@
-project prj "Auto Macro Test" "1.0" 2006-09-22-06:00-+0000 - 2006-10-22-16:00-+0000 {
+project prj "Auto Macro Test" "1.0" 2006-09-22-00:00-+0000 - 2006-10-22-10:00-+0000 {
   timezone "UTC"
   scenario plan "Plan Scenario" {
   }
@@ -8,7 +8,7 @@ projectids prj
 
 
 task items "Project breakdown" {
-  start 2006-09-22-06:00-+0000
+  start 2006-09-22-00:00-+0000
   milestone
   scheduled
 }

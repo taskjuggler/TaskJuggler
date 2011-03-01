@@ -1,4 +1,4 @@
-project acso "Accounting Software" "1.0" 2002-01-16-07:00-+0000 - 2002-05-17-23:00-+0000 {
+project acso "Accounting Software" "1.0" 2002-01-16-00:00-+0000 - 2002-05-17-16:00-+0000 {
   timezone "Europe/Paris"
   extend resource{
     text Phone "Phone"
@@ -101,7 +101,7 @@ task AcSo "Accounting Software" {
   }
   task deliveries "Milestones" {
     task start "Project start" {
-      start 2002-01-16-07:00-+0000
+      start 2002-01-16-00:00-+0000
       milestone
       scheduled
       delayed:start 2002-01-19-23:00-+0000
