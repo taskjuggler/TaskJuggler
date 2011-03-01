@@ -19,7 +19,7 @@ require 'test/unit'
 require 'TaskJuggler'
 require 'reports/CSVFile'
 require 'MessageChecker'
-
+require 'AlgorithmDiff'
 
 class TestScheduler < Test::Unit::TestCase
 
@@ -53,22 +53,31 @@ class TestScheduler < Test::Unit::TestCase
   # Compare the output CSV (passed as String) with the content of the CSV
   # reference files _refFile_.
   def compareCSVs(outStr, refFile)
-    ref = TaskJuggler::CSVFile.new.read(refFile)
-    out = TaskJuggler::CSVFile.new.parse(outStr)
+    refStr = File.new(refFile, 'r').read
 
-    assert(ref.length == out.length,
-           "Line number mismatch (#{out.length} instead of #{ref.length}) " +
-           "in #{refFile}")
-    0.upto(ref.length - 1) do |line|
-      refLine = ref[line]
-      outLine = out[line]
-      assert(refLine.length == outLine.length,
-             "Line #{line} size mismatch (#{outLine.length} instead of " +
-             "#{refLine.length}) in #{refFile}")
-      0.upto(refLine.length - 1) do |cell|
-        assert(refLine[cell] == outLine[cell],
-               "Cell #{cell} of line #{line} mismatch: " +
-               "'#{outLine[cell]}' instead of '#{refLine[cell]}' in #{refFile}")
+    diff = refStr.extend(DiffableString).diff(outStr).to_s
+    if diff != ''
+      puts diff
+      File.new('failed.csv', 'w').write(outStr)
+
+      ref = TaskJuggler::CSVFile.new.read(refStr)
+      out = TaskJuggler::CSVFile.new.parse(outStr)
+
+      assert(ref.length == out.length,
+             "Line number mismatch (#{out.length} instead of #{ref.length}) " +
+             "in #{refFile}")
+      0.upto(ref.length - 1) do |line|
+        refLine = ref[line]
+        outLine = out[line]
+        assert(refLine.length == outLine.length,
+               "Line #{line} size mismatch (#{outLine.length} instead of " +
+               "#{refLine.length}) in #{refFile}")
+        0.upto(refLine.length - 1) do |cell|
+          assert(refLine[cell] == outLine[cell],
+                 "Cell #{cell} of line #{line} mismatch: " +
+                 "'#{outLine[cell]}' instead of '#{refLine[cell]}' " +
+                 "in #{refFile}")
+        end
       end
     end
   end
