@@ -47,20 +47,20 @@ supplement task items.plan {
   projectid simple
 }
 supplement task items.remove {
-  booking tux 2007-01-10-16:00-+0000 + 3.0h,
-          2007-01-10-20:00-+0000 + 1.0h { overtime 2 }
   booking konqui 2007-01-10-16:00-+0000 + 3.0h,
+          2007-01-10-20:00-+0000 + 1.0h { overtime 2 }
+  booking tux 2007-01-10-16:00-+0000 + 3.0h,
           2007-01-10-20:00-+0000 + 1.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement task items.implement {
-  booking tux 2007-01-10-21:00-+0000 + 4.0h,
+  booking konqui 2007-01-10-21:00-+0000 + 4.0h,
           2007-01-11-16:00-+0000 + 3.0h,
           2007-01-11-20:00-+0000 + 5.0h,
           2007-01-12-16:00-+0000 + 3.0h,
           2007-01-12-20:00-+0000 + 5.0h { overtime 2 }
-  booking konqui 2007-01-10-21:00-+0000 + 4.0h,
+  booking tux 2007-01-10-21:00-+0000 + 4.0h,
           2007-01-11-16:00-+0000 + 3.0h,
           2007-01-11-20:00-+0000 + 5.0h,
           2007-01-12-16:00-+0000 + 3.0h,

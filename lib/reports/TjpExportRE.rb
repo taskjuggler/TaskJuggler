@@ -379,7 +379,13 @@ class TaskJuggler
     def generateBooking(task, indent, scenarioIdx)
       return unless @bookings[scenarioIdx].include?(task)
 
-      @bookings[scenarioIdx][task].each_value do |booking|
+      # Convert Hash into an [ Resource, Booking ] Array sorted by Resource
+      # ID. This guarantees a reproducible order.
+      resourceBookings = @bookings[scenarioIdx][task].sort do |a, b|
+        a[0].fullId <=> b[0].fullId
+      end
+
+      resourceBookings.each do |resourceId, booking|
         generateAttributeText('booking ' + booking.to_tjp, indent, scenarioIdx)
       end
     end

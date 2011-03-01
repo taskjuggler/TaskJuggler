@@ -421,6 +421,11 @@ class TaskJuggler
       localtime.wday
     end
 
+    # Return the hours of the day (0..23)
+    def hour
+      localtime.hour
+    end
+
     # Return the day of the month (1..n).
     def day
       localtime.day
