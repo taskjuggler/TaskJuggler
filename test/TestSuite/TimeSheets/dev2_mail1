@@ -28,7 +28,7 @@ Content-ID: <4b892fc99c190_42e342cd5469937@xpc.mail>
  > # See http://www.taskjuggler.org/tj3/manual/timesheet.html for details.
  > #
  > # --------8<--------8<--------
- > timesheet dev2 2002-02-22-00:00-+0100 - 2002-03-01-00:00-+0100 {
+ > timesheet dev2 2002-02-22-00:00-+0000 - 2002-03-01-00:00-+0000 {
  >
  >   # Vacation time: 0.0%
  >

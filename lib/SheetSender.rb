@@ -89,7 +89,7 @@ class TaskJuggler
       reportDef = <<"EOF"
 resourcereport rl_21497214 '.' {
   formats csv
-  columns id, name, email, effort, freework
+  columns id, name, email, effort, freework, efficiency
   hideresource #{@hideResource}
   sortresources id.up
   loadunit days
@@ -104,13 +104,13 @@ EOF
       csv.delete_at(0)
 
       # Process the CSV report line by line
-      csv.each do |id, name, email, effort, free|
+      csv.each do |id, name, email, effort, free, efficiency|
         if email.nil? || email.empty?
           error("Resource '#{id}' must have a valid email address")
         end
 
         # Ignore resources that are on vacation for the whole period.
-        if effort == 0.0 && free == 0.0
+        if effort == 0.0 && free == 0.0 && efficiency != 0.0
           info("Resource '#{id}' was on vacation the whole period")
           next
         end

@@ -5,7 +5,7 @@ Message-ID: <4b8e21f53542c_17764375603597b@mime.mail>
 Subject: Your weekly report template for 2002-03-01
 
 # --------8<--------8<--------
-statussheet boss 2002-02-23-00:00-+0100 - 2002-03-02-00:00-+0100 {
+statussheet boss 2002-02-23-00:00-+0000 - 2002-03-02-00:00-+0000 {
 
   # Task: Accounting Software
   task AcSo.software.database {
