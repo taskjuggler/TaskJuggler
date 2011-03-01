@@ -3,7 +3,7 @@ project test "Test" "1.0" 2007-08-19 +2m {
 }
 
 task t "T" {
-  start 2007-08-19
+  start ${projectstart}
 }
 
 taskreport report "report.html" {

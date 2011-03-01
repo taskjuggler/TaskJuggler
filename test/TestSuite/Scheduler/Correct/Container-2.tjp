@@ -1,4 +1,4 @@
-project prj "My Project" "1.0" 2009-01-01 - 2009-01-31 {
+project prj "My Project" "1.0" 2009-01-01-0:00-+0100 - 2009-01-31-0:00-+0100 {
   timezone 'Europe/Amsterdam'
 }
 

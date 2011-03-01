@@ -1,10 +1,12 @@
-project "Weekly" "1.0" 2007-12-16 +3m
+project "Weekly" "1.0" 2007-12-16 +3m {
+  timezone 'UTC'
+}
 include "project-1.tji"
 
 resourcereport '.' {
   formats csv
   timezone "Europe/Amsterdam"
   columns name, weekly, duration, weekly, effort
-  period 2007-12-31 + 3w
+  period 2007-12-31-0:00-+0100 + 3w
   hidetask 0
 }

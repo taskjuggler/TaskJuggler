@@ -40,31 +40,23 @@ class TaskJuggler
     # The constructor is overloaded and accepts 4 kinds of arguments. If _t_
     # is a Time object it's assumed to be in local time. If it's a string, it
     # is parsed as a date. Or else it is interpreted as seconds after Epoch.
-    def initialize(t = nil, timeZone = nil)
-      @timeZone = timeZone || @@tz
+    def initialize(t = nil)
+      @timeZone = @@tz
 
       case t
       when nil
         @time = Time.now
       when Time
         @time = t
+        @timeZone = nil
       when TjTime
         @time = t.time
-        @timeZone = t.timeZone
+        @timeZone = nil
       when String
         parse(t)
       else
         @time = Time.at(t)
-        @timeZone = 'UTC'
       end
-
-      #savedTz = TjTime.setTimeZone(@timeZone)
-      #timeTokens = @time.to_a[0..5].reverse
-      #newTime = Time.local(*timeTokens)
-      #if newTime.to_a[0..5] != @time.to_a[0..5]
-      #  raise "TZ consistency error: @@tz: #{@@tz}  @time: #{@time}"
-      #end
-      #TjTime.setTimeZone(savedTz)
     end
 
     # Creates a time based on given values, interpreted as UTC. See Time.gm()
@@ -130,7 +122,7 @@ class TaskJuggler
 
     # Align the date to a time grid. The grid distance is determined by _clock_.
     def align(clock)
-      TjTime.new((localtime.to_i / clock) * clock, @timeZone)
+      TjTime.new((localtime.to_i / clock) * clock)
     end
 
     # Returns the total number of seconds of the day. The time is assumed to be
@@ -142,7 +134,7 @@ class TaskJuggler
 
     # Add _secs_ number of seconds to the time.
     def +(secs)
-      TjTime.new(@time + secs, @timeZone)
+      TjTime.new(@time.to_i + secs)
     end
 
     # Substract _arg_ number of seconds or return the number of seconds between
@@ -151,7 +143,7 @@ class TaskJuggler
       if arg.is_a?(TjTime)
         @time - arg.time
       else
-        TjTime.new(@time - arg, @timeZone)
+        TjTime.new(@time.to_i - arg)
       end
     end
 
@@ -196,7 +188,7 @@ class TaskJuggler
     def upto(endDate, step = 1)
       t = @time
       while t < endDate.time
-        yield(TjTime.new(t, @timeZone))
+        yield(TjTime.new(t))
         t += step
       end
     end
@@ -267,7 +259,7 @@ class TaskJuggler
 
     # Return a new time that is _hours_ later than time.
     def hoursLater(hours)
-      TjTime.new(@time + hours * 3600, @timeZone)
+      TjTime.new(@time + hours * 3600)
     end
 
     # Return a new time that is 1 hour later than time.
@@ -283,7 +275,7 @@ class TaskJuggler
       localT1 = lt1.to_a
       delta.each do |d|
         t = lt1 + (24 + d) * 60 * 60
-        localT2 = localtime(t).to_a
+        localT2 = t.to_a
         # If seconds, minutes and hour match, we've got the result.
         return TjTime.new(t) if localT1[0, 3] == localT2[0, 3]
       end
@@ -298,7 +290,7 @@ class TaskJuggler
       localT1 = lt1.to_a
       delta.each do |d|
         t = lt1 + (7 * 24 + d) * 60 * 60
-        localT2 = localtime(t).to_a
+        localT2 = t.to_a
         return TjTime.new(t) if localT1[0, 3] == localT2[0, 3]
       end
       raise "Algorithm is broken for #{@time}"
@@ -315,7 +307,7 @@ class TaskJuggler
         year += 1
       end
       day = monMax if day >= monMax
-      TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0), @timeZone)
+      TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0))
     end
 
     # Return a new time that is 1 quarter later than time but at the same time of
@@ -328,7 +320,7 @@ class TaskJuggler
       end
       t.slice!(6, 4)
       t.reverse!
-      TjTime.new(Time.local(*t), @timeZone)
+      TjTime.new(Time.local(*t))
     end
 
     # Return a new time that is 1 year later than time but at the same time of
@@ -338,7 +330,7 @@ class TaskJuggler
       t[5] += 1
       t.slice!(6, 4)
       t.reverse!
-      TjTime.new(Time.local(*t), @timeZone)
+      TjTime.new(Time.local(*t))
     end
 
     # Return the start of the next _dow_ day of week after _date_. _dow_ must
@@ -399,7 +391,12 @@ class TaskJuggler
         format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
       end
       # Always report values in local timezone
-      localtime.strftime(format)
+      s = localtime.strftime(format)
+      if format[-3..-1] == '-%z' && @@tz == 'UTC' && s[-5..-1] != '+0000'
+        $stderr.puts "localtime: #{localtime} TZ: #{ENV['TZ']}"
+        #raise "to_s error: #{s}"
+      end
+      s
     end
 
     # Return the seconds since Epoch.
@@ -581,16 +578,17 @@ class TaskJuggler
       end
     end
 
-    def localtime(t = nil)
-      t = @time unless t
-      return t if @@tz.nil? || @timeZone == @@tz
+    def localtime
+      return @time if @timeZone == @@tz
 
-      if t.utc?
-        t.dup.localtime
+      if @time.utc?
+        @time.dup.localtime
       elsif @@tz == 'UTC'
-        t.dup.gmtime
+        @time.dup.gmtime
       else
-        t.dup.gmtime.localtime
+        # To convert a Time object from one local time to another, we need to
+        # conver to UTC first and then to the new local time.
+        @time.dup.gmtime.localtime
       end
     end
 

@@ -1,4 +1,4 @@
-project test "Test" "1.0" 2009-02-04 +4m {
+project "Test" 2009-02-04 - 2009-06-01 {
   timezone "Europe/Amsterdam"
 }
 
@@ -85,7 +85,7 @@ task p1 "Parent Tasks" {
       effort 20d
       allocate r3
       scheduling alap
-      ${FixTask "2009-05-08-17:00" "${projectend}"}
+      ${FixTask "2009-05-04-09:00" "2009-05-29-18:00"}
     }
     task t4 "Task 4" {
       end 2009-05-01
