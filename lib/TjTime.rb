@@ -421,8 +421,21 @@ class TaskJuggler
       localtime.wday
     end
 
+    # Return the day of the month (1..n).
     def day
       localtime.day
+    end
+
+    # Return the month of the year (1..12)
+    def month
+      localtime.month
+    end
+
+    alias mon month
+
+    # Return the year.
+    def year
+      localtime.year
     end
 
     # Return the abbreviated month name.
@@ -582,8 +595,14 @@ class TaskJuggler
       return @time if @timeZone == @@tz
 
       if @time.utc?
-        @time.dup.localtime
+        if @@tz == 'UTC'
+          # @time is already in the right zone (UTC)
+          @time
+        else
+          @time.dup.localtime
+        end
       elsif @@tz == 'UTC'
+        # @time is not in UTC, so convert it to local time.
         @time.dup.gmtime
       else
         # To convert a Time object from one local time to another, we need to
