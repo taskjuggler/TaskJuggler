@@ -54,21 +54,11 @@ class TaskJuggler
         @timeZone = nil
       when String
         parse(t)
+      when Array
+        @time = Time.mktime(*t)
       else
         @time = Time.at(t)
       end
-    end
-
-    # Creates a time based on given values, interpreted as UTC. See Time.gm()
-    # for details.
-    def TjTime.gm(*args)
-      TjTime.new(Time.gm(*args), 'UTC')
-    end
-
-    # Creates a time based on given values, interpreted as local time. The
-    # result is stored as UTC time, though. See Time.local() for details.
-    def TjTime.local(*args)
-      TjTime.new(Time.local(*args))
     end
 
     # Check if +zone+ is a valid time zone.
@@ -118,7 +108,6 @@ class TaskJuggler
     def TjTime.timeZone
       @@tz
     end
-
 
     # Align the date to a time grid. The grid distance is determined by _clock_.
     def align(clock)
@@ -195,20 +184,16 @@ class TaskJuggler
 
     # Normalize time to the beginning of the current hour.
     def beginOfHour
-      t = localtime.to_a
-      t[0, 2] = Array.new(2, 0)
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      sec = min = 0
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Normalize time to the beginning of the current day.
     def midnight
-      t = localtime.to_a
-      t[0, 3] = Array.new(3, 0)
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      sec = min = hour = 0
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Normalize time to the beginning of the current week. _startMonday_
@@ -228,33 +213,27 @@ class TaskJuggler
 
     # Normalize time to the beginning of the current month.
     def beginOfMonth
-      t = localtime.to_a
-      t[0, 3] = Array.new(3, 0)
-      t[3] = 1
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      sec = min = hour = 0
+      day = 1
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Normalize time to the beginning of the current quarter.
     def beginOfQuarter
-      t = localtime.to_a
-      t[0, 3] = Array.new(3, 0)
-      t[3] = 1
-      t[4] = ((t[4] - 1) % 3) + 1
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      sec = min = hour = 0
+      day = 1
+      month = ((month - 1) % 3 ) + 1
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Normalize time to the beginning of the current year.
     def beginOfYear
-      t = localtime.to_a
-      t[0, 3] = Array.new(3, 0)
-      t[3, 2] = Array.new(2, 1)
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      sec = min = hour = 0
+      day = month = 1
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Return a new time that is _hours_ later than time.
@@ -270,30 +249,29 @@ class TaskJuggler
     # Return a new time that is 1 day later than time but at the same time of
     # day.
     def sameTimeNextDay
-      delta = [ 0, -1, 1 ]
-      lt1 = localtime
-      localT1 = lt1.to_a
-      delta.each do |d|
-        t = lt1 + (24 + d) * 60 * 60
-        localT2 = t.to_a
-        # If seconds, minutes and hour match, we've got the result.
-        return TjTime.new(t) if localT1[0, 3] == localT2[0, 3]
+      sec, min, hour, day, month, year = localtime.to_a
+      if (day += 1) > lastDayOfMonth(month, year)
+        day = 1
+        if (month += 1) > 12
+          month = 1
+          year += 1
+        end
       end
-      raise "Algorithm is broken for #{@time}"
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Return a new time that is 1 week later than time but at the same time of
     # day.
     def sameTimeNextWeek
-      delta = [ 0, -1, 1 ]
-      lt1 = localtime
-      localT1 = lt1.to_a
-      delta.each do |d|
-        t = lt1 + (7 * 24 + d) * 60 * 60
-        localT2 = t.to_a
-        return TjTime.new(t) if localT1[0, 3] == localT2[0, 3]
+      sec, min, hour, day, month, year = localtime.to_a
+      if (day += 7) > lastDayOfMonth(month, year)
+        day -= lastDayOfMonth(month, year)
+        if (month += 1) > 12
+          month = 1
+          year += 1
+        end
       end
-      raise "Algorithm is broken for #{@time}"
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Return a new time that is 1 month later than time but at the same time of
@@ -301,36 +279,31 @@ class TaskJuggler
     def sameTimeNextMonth
       sec, min, hour, day, month, year = localtime.to_a
       monMax = month == 2 && leapYear?(year) ? 29 : MON_MAX[month]
-      month += 1
-      if month > 12
+      if (month += 1) > 12
         month = 1
         year += 1
       end
-      day = monMax if day >= monMax
-      TjTime.new(Time.mktime(year, month, day, hour, min, sec, 0))
+      day = monMax if day >= lastDayOfMonth(month, year)
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Return a new time that is 1 quarter later than time but at the same time of
     # day.
     def sameTimeNextQuarter
-      t = localtime.to_a
-      if (t[4] += 3) > 12
-        t[4] -= 12
-        t[5] += 1
+      sec, min, hour, day, month, year = localtime.to_a
+      if (month += 3) > 12
+        month -= 12
+        year += 1
       end
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
     # Return a new time that is 1 year later than time but at the same time of
     # day.
     def sameTimeNextYear
-      t = localtime.to_a
-      t[5] += 1
-      t.slice!(6, 4)
-      t.reverse!
-      TjTime.new(Time.local(*t))
+      sec, min, hour, day, month, year = localtime.to_a
+      year += 1
+      TjTime.new([ year, month, day, hour, min, sec, 0])
     end
 
     # Return the start of the next _dow_ day of week after _date_. _dow_ must
@@ -391,21 +364,12 @@ class TaskJuggler
         format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
       end
       # Always report values in local timezone
-      s = localtime.strftime(format)
-      if format[-3..-1] == '-%z' && @@tz == 'UTC' && s[-5..-1] != '+0000'
-        $stderr.puts "localtime: #{localtime} TZ: #{ENV['TZ']}"
-        #raise "to_s error: #{s}"
-      end
-      s
+      localtime.strftime(format)
     end
 
     # Return the seconds since Epoch.
     def to_i
       localtime.to_i
-    end
-
-    def to_ary
-      to_s
     end
 
     def to_a
@@ -583,6 +547,10 @@ class TaskJuggler
         i += 1
       end
       i
+    end
+
+    def lastDayOfMonth(month, year)
+      month == 2 && leapYear?(year) ? 29 : MON_MAX[month]
     end
 
     def leapYear?(year)

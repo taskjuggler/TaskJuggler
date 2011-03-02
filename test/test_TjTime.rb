@@ -19,12 +19,12 @@ require 'TjTime'
 class TestTjTime < Test::Unit::TestCase
 
   def setup
-    @endTime = TaskJuggler::TjTime.local(2030)
+    @endTime = TaskJuggler::TjTime.new("2030-01-01")
     @startTimes = [
-      TaskJuggler::TjTime.local(1972, 3, 15, 19, 27),
-      TaskJuggler::TjTime.local(1972, 2, 12, 10),
-      TaskJuggler::TjTime.local(1984, 11, 1, 12),
-      TaskJuggler::TjTime.local(1992, 1, 1),
+      TaskJuggler::TjTime.new([ 1972, 3, 15, 19, 27 ]),
+      TaskJuggler::TjTime.new([ 1972, 2, 12, 10 ]),
+      TaskJuggler::TjTime.new([ 1984, 11, 1, 12 ]),
+      TaskJuggler::TjTime.new([ 1992, 1, 1 ]),
     ]
   end
 
