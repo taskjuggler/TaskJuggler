@@ -70,7 +70,7 @@ class TaskJuggler
 
     # Return the candidate list sorted according to the selectionMode.
     def candidates(scenarioIdx = -1)
-      if scenarioIdx < 0 || @selectionMode == 0 # oder
+      if scenarioIdx < 0 || @selectionMode == 0 # declaration order
         return @candidates
       end
       if @selectionMode == 4 # random
