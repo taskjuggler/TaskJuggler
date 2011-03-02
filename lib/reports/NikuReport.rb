@@ -319,9 +319,6 @@ EOT
         # Effort in resource days
         total = query.to_num
 
-        # Ignore resources that have no work allocations.
-        next if total <= 0.0
-
         # A fully allocated resource should always have a total of 1.0 per
         # working day. If the total is larger, we assume unpaid overtime. If
         # it's less, the resource was either not fully allocated or had less
