@@ -1211,8 +1211,8 @@ class TaskJuggler
     def query_effortdone(query)
       # For this query, we always override the query period.
       query.sortable = query.numerical = effort =
-        getEffectiveWork(@project.dateToIdx(@project['start']),
-                         @project.dateToIdx(@project['now']),
+        getEffectiveWork(@project.dateToIdx(@project['start'], true),
+                         @project.dateToIdx(@project['now'], true),
                          query.scopeProperty)
       query.string = query.scaleLoad(effort)
     end
@@ -1223,11 +1223,9 @@ class TaskJuggler
     # the effort allocated for this resource is taken into account.
     def query_effortleft(query)
       # For this query, we always override the query period.
-      query.start = @project['now']
-      query.end = @project['end']
       query.sortable = query.numerical = effort =
-        getEffectiveWork(@project.dateToIdx(@project['now']),
-                         @project.dateToIdx(@project['end']),
+        getEffectiveWork(@project.dateToIdx(@project['now'], true),
+                         @project.dateToIdx(@project['end'], true),
                          query.scopeProperty)
       query.string = query.scaleLoad(effort)
     end
