@@ -4,7 +4,7 @@ require 'rake/rdoctask'
 # RDOC
 GENERAL_RDOC_OPTS = {
     "--title"   => "#{PROJECT_NAME} API documentation",
-    "--main"    => 'README'
+    "--main"    => 'README.rdoc'
 }
 
 # RDOC TASK

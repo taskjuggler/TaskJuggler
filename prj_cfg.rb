@@ -34,7 +34,7 @@ RAKE_DIR        = 'tasks'
 MANUAL_DIR      = 'manual'
 
 # FILES
-README          = FileList['README']
+README          = FileList['README.rdoc']
 CHANGELOG       = 'CHANGELOG'
 LICENSE         = 'COPYING'
 DESCRIPTION     = <<'EOT'
