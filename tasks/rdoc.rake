@@ -13,5 +13,5 @@ Rake::RDocTask.new(:rdoc) do |t|
     t.title         = GENERAL_RDOC_OPTS['--title']
     t.main          = GENERAL_RDOC_OPTS['--main']
     t.rdoc_dir      = RDOC_DIR
-    t.options       += [ "--inline-source", "--line-numbers" ]
+    t.options       += [ ]
 end

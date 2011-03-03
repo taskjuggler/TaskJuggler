@@ -14,8 +14,6 @@ manual/html
 pkg
 Rakefile
 rcov
-rdoc
-README
 refman
 test/TestSuite/HTML-Reports/css
 test/TestSuite/HTML-Reports/*.html
