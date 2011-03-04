@@ -3022,6 +3022,26 @@ EOT
     singlePattern('_index')
     descr('The index of the item based on the nesting hierachy')
 
+    singlePattern('_inputs')
+    descr(<<'EOT'
+A list of milestones that are a prerequiste for the current task. For
+container tasks it will also include the inputs of the child tasks. Inputs may
+not have any predecessors.
+
+The list can be customized by the [listmode.column listmode] attribute. The
+following modes are supported:
+
+# ID
+# Name
+# Name (ID)
+# ID: Name
+# ID (Date)
+# Name (Date)
+# Name (ID) Date ''(This is the default)''
+# ID: Name Date
+EOT
+         )
+
     singlePattern('_journal')
     descr(<<'EOT'
 The journal entries for the task or resource for the reported interval.
@@ -3200,7 +3220,8 @@ EOT
     singlePattern('_targets')
     descr(<<'EOT'
 A list of milestones that depend on the current task. For container tasks it
-will also include the targets of the child tasks.
+will also include the targets of the child tasks. Targets may not have any
+follower tasks.
 
 The list can be customized by the [listmode.column listmode] attribute. The
 following modes are supported:
@@ -3210,8 +3231,8 @@ following modes are supported:
 # Name (ID)
 # ID: Name
 # ID (Date)
-# Name (Date) ''(This is the default)''
-# Name (ID) Date
+# Name (Date)
+# Name (ID) Date ''(This is the default)''
 # ID: Name Date
 EOT
          )

@@ -1349,6 +1349,17 @@ class TaskJuggler
       query.string = status
     end
 
+    def query_inputs(query)
+      inputList = PropertyList.new(@project.tasks, false)
+      inputs(inputList, true)
+      inputList.delete(@property)
+      inputList.setSorting([['start', true, @scenarioIdx],
+                            ['seqno', true, -1 ]])
+      inputList.sort!
+
+      query.assignList(generateTaskList(inputList, query.listMode))
+    end
+
     def query_targets(query)
       targetList = PropertyList.new(@project.tasks, false)
       targets(targetList, true)
@@ -1357,32 +1368,7 @@ class TaskJuggler
                              ['seqno', true, -1 ]])
       targetList.sort!
 
-      list = []
-      targetList.each do |task|
-        date = task['start', @scenarioIdx].to_s(@property.project['timeFormat'])
-        case query.listMode
-        when 1
-          list << "#{task.fullId}"
-        when 2
-          list << "#{task.name}"
-        when 3
-          list << "#{task.name} (#{task.fullId})"
-        when 4
-          list << "#{task.fullId}: #{task.name}"
-        when 5
-          list << "#{task.fullId} (#{date})"
-        when 6
-          list << "#{task.name} (#{date})"
-        when 7, nil
-          list << "#{task.name} (#{task.fullId}) #{date}"
-        when 8
-          list << "#{task.fullId}: #{task.name} #{date}"
-        else
-          error('bad_listmode_qt',
-                "Bad listmode #{query.listMode}. Use 1 - 8.")
-        end
-      end
-      query.assignList(list)
+      query.assignList(generateTaskList(targetList, query.listMode))
     end
 
 
@@ -1881,6 +1867,18 @@ class TaskJuggler
     end
 
     # Return true if this task or any of its parent tasks has at least one
+    # predecessor task.
+    def hasPredecessors
+      t = @property
+      while t
+        return true unless t['startpreds', @scenarioIdx].empty?
+        t = t.parent
+      end
+
+      false
+    end
+
+    # Return true if this task or any of its parent tasks has at least one
     # sucessor task.
     def hasSuccessors
       t = @property
@@ -2180,6 +2178,39 @@ class TaskJuggler
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
+    def inputs(list, includeChildren)
+      # Ignore tasks that we have already included in the list.
+      return if list.include?(@property)
+
+      # A target must be a leaf function that has no direct or indirect
+      # (through parent) following tasks. Only milestones are recognized as
+      # targets.
+      if @property.leaf? && !hasPredecessors && a('milestone')
+        list << @property
+        return
+      end
+
+      a('startpreds').each do |t, onEnd|
+        t.inputs(@scenarioIdx, list, false)
+      end
+
+      # Check for indirect predecessors.
+      if @property.parent
+        @property.parent.inputs(@scenarioIdx, list, false)
+      end
+
+      # Also include targets of child tasks. The recursive iteration of child
+      # tasks is limited to the tested task only. The predecessors are not
+      # iterated.
+      if includeChildren
+        @property.children.each do |child|
+          child.inputs(@scenarioIdx, list, true)
+        end
+      end
+    end
+
+    # Recursively compile a list of Task properties which depend on the
+    # current task.
     def targets(list, includeChildren)
       # Ignore tasks that we have already included in the list.
       return if list.include?(@property)
@@ -2303,6 +2334,35 @@ class TaskJuggler
         end
 
       "* <nowiki>#{str}</nowiki>"
+    end
+
+    def generateTaskList(taskList, mode)
+      list = []
+      taskList.each do |task|
+        date = task['start', @scenarioIdx].to_s(@property.project['timeFormat'])
+        case mode
+        when 1
+          list << "#{task.fullId}"
+        when 2
+          list << "#{task.name}"
+        when 3
+          list << "#{task.name} (#{task.fullId})"
+        when 4
+          list << "#{task.fullId}: #{task.name}"
+        when 5
+          list << "#{task.fullId} (#{date})"
+        when 6
+          list << "#{task.name} (#{date})"
+        when 7, nil
+          list << "#{task.name} (#{task.fullId}) #{date}"
+        when 8
+          list << "#{task.fullId}: #{task.name} #{date}"
+        else
+          error('bad_listmode_qt',
+                "Bad listmode #{mode}. Use 1 - 8.")
+        end
+      end
+      list
     end
 
   end

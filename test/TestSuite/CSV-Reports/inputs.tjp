@@ -1,0 +1,19 @@
+project "inputs" "1.0" 2007-12-16 +3m
+
+task t1 "T1"
+task t2 "T2" {
+  depends !t1
+}
+task t3 "T3"
+task t4 "T4" {
+  depends !t3
+}
+task t5 "T5" {
+  depends !t4
+}
+
+taskreport '.' {
+  formats csv
+  columns name, inputs 
+}
+

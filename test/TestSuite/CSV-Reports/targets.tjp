@@ -1,0 +1,20 @@
+project "targets" "1.0" 2007-12-16 +3m {
+  timezone 'UTC'
+}
+
+task t1 "T1"
+task t2 "T2" {
+  depends !t1
+}
+task t3 "T3" {
+  depends !t1
+}
+task t4 "T4" {
+  depends !t3
+}
+
+taskreport '.' {
+  formats csv
+  columns name, targets
+}
+
