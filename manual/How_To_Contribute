@@ -18,18 +18,11 @@ TaskJuggler software releases.
 ==== Preparing a contribution ====
 
 All TaskJuggler development is coordinated using the
-[http://git.or.cz/ Git revision control system]. All changes must be
-submitted using Git so that we can track the authorship of each
-submission. To contribute you need to have at least Git version 1.5.0
-installed. Git was developed as a tool for the Linux Kernel
-developers but is now very popular with many other Open Source
-projects as well. Git and the TaskJuggler development environment are
-primarily designed to be used on Linux or Unix-like systems. While it
-is possible to use it on other systems such as Microsoft Windows, we
-do not recommend this. If you can't switch to a Linux installation
-for your TaskJuggler contributions, you should consider using a Linux
-Live (or bootable) CD/DVD or use a VmWare Player image of a Linux
-distribution.
+[https://github.com/taskjuggler/TaskJuggler/issues github source code
+management platform]. All changes must be submitted using Git github
+so that we can track the authorship of each submission. There is
+[http://help.github.com/ excellent documentation] available on how to
+use github. 
 
 Make sure you have followed the steps described in the
 [Installation.html#Installation_Steps_for_Developers Installation
@@ -50,14 +43,7 @@ with full user names and valid email addresses.
 Next you need to find the files where you want to make your
 modifications. Sometimes files will be generated from other files. Do
 not change those generated files. Your changes will be overwritten the
-next time you call the make utility. To identify those files, some
-familiarity with make and other Linux tools are helpful. Whenever
-there is a file with the same base name and the extension .in in the
-same directory, then the file is generated from the .in-file. You need
-to modify the .in-file, not the one with just the base name. Another
-indicator is the fact that the file is not part of the repository.
-With few exceptions the repository does not contain any generated
-files.
+next time you call the make utility.
 
 ==== Creating a Patch ====
 
@@ -81,14 +67,15 @@ changes that have an impact on the generated files. Do not change
 indentation or line wrapping of paragraphs unless absolutely
 necessary. These kinds of changes increase the size of diff files and
 make it much harder to evaluate the patches. When making changes to
-the program code, please use exactly the same coding style. If your
-contribution is large enough to justify a copyright claim, please
-indicate what copyright you claim in the patch. For modifications to
-existing files, we will assume that your contribution falls under the
-same license as the modified file. All new files will need to contain
-a license declaration, preferably GPL version 2. In any case, the
-license must be [http://www.opensource.org/licenses an OSI accepted
-license] and be compatible with the rest of the project.
+the program code, please use exactly the same coding style as the
+rest of the code. If your contribution is large enough to justify a
+copyright claim, please indicate what copyright you claim in the
+patch. For modifications to existing files, we will assume that your
+contribution falls under the same license as the modified file. All
+new files will need to contain a license declaration, preferably GPL
+version 2. In any case, the license must be
+[http://www.opensource.org/licenses an OSI accepted license] and be
+compatible with the GPL version 2 used by the rest of the project.
 
 Review all changes carefully. In case you have created new source
 files, you need to register them with your repository.
@@ -100,29 +87,12 @@ repository.
 
  git commit -a
 
-Whenever you have made a certain change or added a certain feature,
-you should commit your changes to your local repository. This keeps
-patches small and makes reviewing them easier. The easier your patches
-can be reviewed, the more likely they will get in.
+And then push it into your forked github repository.
 
-The final step to submit your changes is to package them up and sign
-them. It is always a good idea to check for upstream changes again.
+ git push
 
- git pull
-
-This makes sure you are really committing your patches against the
-latest version of the source code. In case there were upstream
-changes, you need to merge them first. Usually Git does this
-automatically. Refer to the
-[http://www.kernel.org/pub/software/scm/git/docs/user-manual.html Git
-manual] for details on resolving conflicts during merges. Now you can
-create the patch or patch-set.
-
- git format-patch -s origin
-
-This will generate a number of files starting with 5-digit file names.
-You then need to attach these files to a posting in the
-[http://www.taskjuggler.org/forum.php TaskJuggler Developer Forum].
+The final step is to send us a [http://help.github.com/pull-requests/
+pull request] for your changes.
 
 ==== Contributing to the User Manual ====
 

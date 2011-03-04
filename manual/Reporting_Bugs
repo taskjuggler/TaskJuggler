@@ -10,12 +10,10 @@ find a bug, please follow this procedure:
 feature.
 
 * Check the [http://www.taskjuggler.org TaskJuggler web page] and the
-[http://www.taskjuggler.org/forum.php discussion groups]. In
-particular, you should check the
-[http://groups.google.com/group/taskjuggler-bugs/topics existing bug
-reports].
-
-* Possibly the bug was already found and a patch or workaround exists.
+[http://www.taskjuggler.org/forum.php discussion groups]. You should
+also search the [https://github.com/taskjuggler/TaskJuggler/issues
+issue tracker] if the problem has been reported before. If so, it's
+quite likely that there is already a workaround or fix available. 
 
 * Try to create a test project that is as small as possible but still
 reproduces the bug.
@@ -27,20 +25,8 @@ following command to store the messages into a file.
 
  tj3 yourproject.tjp 2> error_message
 
-* Send the test project and a detailed description of the problem to
-the TaskJuggler developers. If you are pretty confident, that you've
-found a new bug, please post it to the
-[http://groups.google.com/group/taskjuggler-bugs TaskJuggler Bug
-Group]. If you aren't sure or want to provide patches or feedback,
-please use the [http://groups.google.com/group/taskjuggler-dev
-TaskJuggler Developer Group].
-
-* When posting complete files, make sure you attach them. Don't paste
-them into the body of the email. Some email servers and clients have
-a habit of converting the body into HTML which will corrupt the file
-contents. Unfortunately, the Google Groups web interface does not
-support attachments. Please use a regular email program instead. The
-posting addresses can be found on the above mentioned pages.
+* Enter a detailed description of the problem into the issue tracker
+and don't forget to attach your test project.
 
 * Not attaching a test case will severely limit our abilities to help
 you. Please make sure you provide meaningful descriptions and a small
