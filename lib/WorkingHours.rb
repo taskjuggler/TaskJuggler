@@ -138,8 +138,8 @@ class TaskJuggler
     def timeOff?(interval)
       initScoreboard unless @scoreboard
 
-      startIdx = @scoreboard.dateToIdx(interval.start, true)
-      endIdx = @scoreboard.dateToIdx(interval.end, true)
+      startIdx = @scoreboard.dateToIdx(interval.start)
+      endIdx = @scoreboard.dateToIdx(interval.end)
 
       startIdx.upto(endIdx - 1) do |i|
         return false if @scoreboard[i]

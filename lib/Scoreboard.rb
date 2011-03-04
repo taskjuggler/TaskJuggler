@@ -54,7 +54,7 @@ class TaskJuggler
 
     # Converts a date to the corresponding scoreboard index. You can optionally
     # sanitize the _date_ by forcing it into the project time span.
-    def dateToIdx(date, forceIntoProject = false)
+    def dateToIdx(date, forceIntoProject = true)
       idx = ((date - @startDate) / @resolution).to_i
 
       if forceIntoProject
@@ -114,8 +114,8 @@ class TaskJuggler
     def collectIntervals(iv, minDuration)
       # Determine the start and stop index for the scoreboard search. We save
       # the original values for later use as well.
-      startIdx = sIdx = dateToIdx(iv.start, true)
-      endIdx = eIdx = dateToIdx(iv.end, true)
+      startIdx = sIdx = dateToIdx(iv.start)
+      endIdx = eIdx = dateToIdx(iv.end)
 
       # Convert the minDuration into number of slots.
       minDuration /= @resolution

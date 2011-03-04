@@ -848,7 +848,7 @@ class TaskJuggler
     # Convert a _date_ (TjTime) to the equivalent Scoreboard index. If
     # _forceIntoProject_ is true, the date will be pushed into the project time
     # frame.
-    def dateToIdx(date, forceIntoProject = false)
+    def dateToIdx(date, forceIntoProject = true)
       if (date < @attributes['start'] || date > @attributes['end'])
         # Date is out of range.
         if forceIntoProject
@@ -872,8 +872,8 @@ class TaskJuggler
     # Return the number of working days (ignoring global vacations) during the
     # given _interval_.
     def workingDays(interval)
-      startIdx = dateToIdx(interval.start, true)
-      endIdx = dateToIdx(interval.end, true)
+      startIdx = dateToIdx(interval.start)
+      endIdx = dateToIdx(interval.end)
       slots = 0
       startIdx.upto(endIdx) do |idx|
         slots += 1 unless @scoreboardNoVacations[idx]
@@ -1130,8 +1130,8 @@ class TaskJuggler
 
       # Mark all global vacation slots as such
       @attributes['vacations'].each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start, true)
-        endIdx = @scoreboard.dateToIdx(vacation.end, true)
+        startIdx = @scoreboard.dateToIdx(vacation.start)
+        endIdx = @scoreboard.dateToIdx(vacation.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil or set to 4 then don't set the time-off bit.
           sb = @scoreboard[i]

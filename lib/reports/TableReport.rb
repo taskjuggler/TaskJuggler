@@ -833,8 +833,8 @@ class TaskJuggler
         # Get work load for all tasks.
         query.scopeProperty = nil
         query.attributeId = 'effort'
-        query.startIdx = @project.dateToIdx(t, true)
-        query.endIdx = @project.dateToIdx(nextT, true) - 1
+        query.startIdx = @project.dateToIdx(t)
+        query.endIdx = @project.dateToIdx(nextT) - 1
         query.process
         workLoad = query.to_num
         scaledWorkLoad = query.to_s

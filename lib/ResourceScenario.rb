@@ -312,8 +312,8 @@ class TaskJuggler
       return work if work
 
       # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
       work = 0.0
       if @property.container?
@@ -333,8 +333,8 @@ class TaskJuggler
     # Returns the allocated accumulated time of this resource and its children.
     def getAllocatedTime(startIdx, endIdx, task = nil)
       # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
       time = 0
       if @property.container?
@@ -354,8 +354,8 @@ class TaskJuggler
     # children.
     def getEffectiveFreeTime(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
       freeTime = 0
       if @property.container?
@@ -374,8 +374,8 @@ class TaskJuggler
     # their efficiency.
     def getEffectiveFreeWork(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
       work = 0.0
       if @property.container?
@@ -393,8 +393,8 @@ class TaskJuggler
     # Return the number of working days that are blocked by vacations.
     def getVacationDays(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx, true) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx, true) if endIdx.is_a?(TjTime)
+      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
       vacationDays = 0.0
       if @property.container?
@@ -441,8 +441,8 @@ class TaskJuggler
     def allocated?(iv, task = nil)
       return false if task && !a('duties').include?(task)
 
-      startIdx = @project.dateToIdx(iv.start, true)
-      endIdx = @project.dateToIdx(iv.end, true)
+      startIdx = @project.dateToIdx(iv.start)
+      endIdx = @project.dateToIdx(iv.end)
 
       startIdx, endIdx = fitIndicies(startIdx, endIdx, task)
       return false if startIdx >= endIdx
@@ -592,8 +592,8 @@ class TaskJuggler
 
       # Mark all resource specific vacation slots as such
       a('vacations').each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start, true)
-        endIdx = @scoreboard.dateToIdx(vacation.end, true)
+        startIdx = @scoreboard.dateToIdx(vacation.start)
+        endIdx = @scoreboard.dateToIdx(vacation.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil, we don't set the time-off bit.
           @scoreboard[i] = (@scoreboard[i].nil? ? 0 : 2) | (1 << 2)
@@ -602,8 +602,8 @@ class TaskJuggler
 
       # Mark all global vacation slots as such
       @project['vacations'].each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start, true)
-        endIdx = @scoreboard.dateToIdx(vacation.end, true)
+        startIdx = @scoreboard.dateToIdx(vacation.start)
+        endIdx = @scoreboard.dateToIdx(vacation.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil or set to 4 then don't set the time-off bit.
           sb = @scoreboard[i]

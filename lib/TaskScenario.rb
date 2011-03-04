@@ -1211,8 +1211,8 @@ class TaskJuggler
     def query_effortdone(query)
       # For this query, we always override the query period.
       query.sortable = query.numerical = effort =
-        getEffectiveWork(@project.dateToIdx(@project['start'], true),
-                         @project.dateToIdx(@project['now'], true),
+        getEffectiveWork(@project.dateToIdx(@project['start'], false),
+                         @project.dateToIdx(@project['now']),
                          query.scopeProperty)
       query.string = query.scaleLoad(effort)
     end
@@ -1224,8 +1224,8 @@ class TaskJuggler
     def query_effortleft(query)
       # For this query, we always override the query period.
       query.sortable = query.numerical = effort =
-        getEffectiveWork(@project.dateToIdx(@project['now'], true),
-                         @project.dateToIdx(@project['end'], true),
+        getEffectiveWork(@project.dateToIdx(@project['now']),
+                         @project.dateToIdx(@project['end'], false),
                          query.scopeProperty)
       query.string = query.scaleLoad(effort)
     end
@@ -1677,7 +1677,7 @@ class TaskJuggler
       # sure that none of them is already exceeded.
       return unless limitsOk?(date)
 
-      sbIdx = @project.dateToIdx(date)
+      sbIdx = @project.dateToIdx(date, false)
 
       # We first have to make sure that if there are mandatory resources
       # that these are all available for the time slot.
@@ -1824,9 +1824,9 @@ class TaskJuggler
                 "Only forward scheduled tasks may have booking statements.")
         end
         booking.intervals.each do |interval|
-          startIdx = @project.dateToIdx(interval.start)
+          startIdx = @project.dateToIdx(interval.start, false)
           date = interval.start
-          endIdx = @project.dateToIdx(interval.end)
+          endIdx = @project.dateToIdx(interval.end, false)
           tEnd = nil
           startIdx.upto(endIdx - 1) do |idx|
             tEnd = date + slotDuration
@@ -2149,7 +2149,7 @@ class TaskJuggler
         elsif a('effort') > 0
           # Effort based leaf tasks. The completion degree is the percentage
           # of effort that has been done already.
-          done = getEffectiveWork(@project.dateToIdx(a('start')),
+          done = getEffectiveWork(@project.dateToIdx(a('start'), false),
                                   @project.dateToIdx(@project['now']))
           total = @project.convertToDailyLoad(
             a('effort') * @project['scheduleGranularity'])
