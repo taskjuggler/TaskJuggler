@@ -92,11 +92,11 @@ class TaskJuggler
     # Set a new active time zone. _zone_ must be a valid String known to the
     # underlying operating system.
     def TjTime.setTimeZone(zone)
-      oldTimeZone = @@tz
-
-      unless TjTime.checkTimeZone(zone)
+      unless zone && TjTime.checkTimeZone(zone)
         raise "Illegal time zone #{zone}"
       end
+
+      oldTimeZone = @@tz
 
       @@tz = zone
       ENV['TZ'] = zone
