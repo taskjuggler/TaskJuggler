@@ -11,10 +11,10 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/RTFNavigator'
-require 'taskjuggler/RTFQuery'
-require 'taskjuggler/RTFReport'
-require 'taskjuggler/RTFReportLink'
+require 'taskjuggler/RichText/RTFNavigator'
+require 'taskjuggler/RichText/RTFQuery'
+require 'taskjuggler/RichText/RTFReport'
+require 'taskjuggler/RichText/RTFReportLink'
 
 class TaskJuggler
 

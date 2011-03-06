@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/RichTextFunctionHandler'
+require 'taskjuggler/RichText/FunctionHandler'
 require 'taskjuggler/XMLElement'
 
 class TaskJuggler

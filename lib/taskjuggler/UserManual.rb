@@ -13,10 +13,10 @@
 
 require 'fileutils'
 require 'taskjuggler/Tj3Config'
-require 'taskjuggler/RichTextDocument'
+require 'taskjuggler/RichText/Document'
 require 'taskjuggler/SyntaxReference'
 require 'taskjuggler/TjTime'
-require 'taskjuggler/RichTextFunctionExample'
+require 'taskjuggler/RichText/FunctionExample'
 
 class TaskJuggler
 

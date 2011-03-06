@@ -12,7 +12,7 @@
 #
 
 require 'taskjuggler/XMLElement'
-require 'taskjuggler/TOCEntry'
+require 'taskjuggler/RichText/TOCEntry'
 
 class TaskJuggler
 

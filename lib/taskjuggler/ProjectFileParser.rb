@@ -15,7 +15,7 @@ require 'taskjuggler/TextParser'
 require 'taskjuggler/ProjectFileScanner'
 require 'taskjuggler/TjpSyntaxRules'
 require 'taskjuggler/RichText'
-require 'taskjuggler/RTFHandlers'
+require 'taskjuggler/RichText/RTFHandlers'
 
 class TaskJuggler
 

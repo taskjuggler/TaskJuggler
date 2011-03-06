@@ -16,7 +16,7 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 require 'test/unit'
 
 require 'taskjuggler/RichText'
-require 'taskjuggler/RichTextFunctionHandler'
+require 'taskjuggler/RichText/FunctionHandler'
 require 'taskjuggler/MessageHandler'
 
   class RTFDummy < TaskJuggler::RichTextFunctionHandler

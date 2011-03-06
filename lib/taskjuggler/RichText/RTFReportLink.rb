@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/RTFWithQuerySupport'
+require 'taskjuggler/RichText/RTFWithQuerySupport'
 require 'taskjuggler/XMLElement'
 require 'taskjuggler/URLParameter'
 require 'taskjuggler/SimpleQueryExpander'

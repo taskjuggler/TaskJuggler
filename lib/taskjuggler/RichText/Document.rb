@@ -11,9 +11,9 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/RichTextSnip'
-require 'taskjuggler/TableOfContents'
-require 'taskjuggler/RichTextFunctionHandler'
+require 'taskjuggler/RichText/Snip'
+require 'taskjuggler/RichText/TableOfContents'
+require 'taskjuggler/RichText/FunctionHandler'
 
 class TaskJuggler
 

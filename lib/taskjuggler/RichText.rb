@@ -11,8 +11,8 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/RichTextElement'
-require 'taskjuggler/RichTextParser'
+require 'taskjuggler/RichText/Element'
+require 'taskjuggler/RichText/Parser'
 require 'taskjuggler/MessageHandler'
 
 class TaskJuggler

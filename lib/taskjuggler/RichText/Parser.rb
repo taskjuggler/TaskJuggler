@@ -12,8 +12,8 @@
 #
 
 require 'taskjuggler/TextParser'
-require 'taskjuggler/RichTextScanner'
-require 'taskjuggler/RichTextSyntaxRules'
+require 'taskjuggler/RichText/Scanner'
+require 'taskjuggler/RichText/SyntaxRules'
 require 'taskjuggler/Log'
 
 class TaskJuggler
