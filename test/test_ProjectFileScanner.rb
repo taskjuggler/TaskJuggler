@@ -14,8 +14,9 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'test/unit'
-require 'ProjectFileScanner'
-require 'MessageHandler'
+
+require 'taskjuggler/ProjectFileScanner'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 

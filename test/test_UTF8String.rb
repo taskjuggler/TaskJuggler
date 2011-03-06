@@ -14,7 +14,8 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'test/unit'
-require 'UTF8String'
+
+require 'taskjuggler/UTF8String'
 
 class TestUTF8String < Test::Unit::TestCase
 

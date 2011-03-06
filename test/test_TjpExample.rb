@@ -14,7 +14,8 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'test/unit'
-require 'TjpExample'
+
+require 'taskjuggler/TjpExample'
 
 class TestScheduler < Test::Unit::TestCase
 

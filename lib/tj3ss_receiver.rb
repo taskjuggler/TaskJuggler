@@ -11,8 +11,8 @@
 # published by the Free Software Foundation.
 #
 
-require 'Tj3SheetAppBase'
-require 'StatusSheetReceiver'
+require 'taskjuggler/Tj3SheetAppBase'
+require 'taskjuggler/StatusSheetReceiver'
 
 # Name of the application
 AppConfig.appName = 'tj3ss_receiver'

@@ -14,7 +14,8 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
-require 'TextFormatter'
+
+require 'taskjuggler/TextFormatter'
 
 class TestTextFormatter < Test::Unit::TestCase
 

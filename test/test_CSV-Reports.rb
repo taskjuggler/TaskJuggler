@@ -16,10 +16,11 @@ $:.unshift File.dirname(__FILE__)
 
 require 'stringio'
 require 'test/unit'
-require 'TaskJuggler'
-require 'reports/CSVFile'
+
 require 'MessageChecker'
-require 'AlgorithmDiff'
+require 'taskjuggler/TaskJuggler'
+require 'taskjuggler/reports/CSVFile'
+require 'taskjuggler/AlgorithmDiff'
 
 class TestScheduler < Test::Unit::TestCase
 

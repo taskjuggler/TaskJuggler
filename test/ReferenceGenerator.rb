@@ -24,8 +24,9 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 $:.unshift File.dirname(__FILE__)
 
 require 'fileutils'
-require 'Tj3Config'
-require 'TaskJuggler'
+
+require 'taskjuggler/Tj3Config'
+require 'taskjuggler/TaskJuggler'
 
 class TaskJuggler
 

@@ -14,8 +14,8 @@
 # This script is used to send out the time sheet templates to the employees.
 # It should be run from a cron job once a week.
 
-require 'Tj3SheetAppBase'
-require 'TimeSheetSummary'
+require 'taskjuggler/Tj3SheetAppBase'
+require 'taskjuggler/TimeSheetSummary'
 
 # Name of the application
 AppConfig.appName = 'tj3ts_summary'

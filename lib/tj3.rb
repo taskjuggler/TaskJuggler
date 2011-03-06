@@ -13,8 +13,8 @@
 
 require 'rubygems'
 require 'optparse'
-require 'Tj3Config'
-require 'TaskJuggler'
+require 'taskjuggler/Tj3Config'
+require 'taskjuggler/TaskJuggler'
 
 # Name of the application suite
 AppConfig.appName = 'tj3'

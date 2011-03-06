@@ -14,7 +14,8 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
-require 'TextParser/MacroTable'
+
+require 'taskjuggler/TextParser/MacroTable'
 
 class TaskJuggler
 

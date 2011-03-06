@@ -15,7 +15,7 @@ RUBYFORGE_USER  = ENV['RUBYFORGE_USER']
 # VERSION
 begin
     $: << 'lib'
-    require 'lib/Tj3Config'
+    require 'lib/taskjuggler/Tj3Config'
     PROJECT_VERSION = AppConfig.version
 rescue LoadError
     puts '> unable to set project version, what a shame ... does version mean something to you ??'

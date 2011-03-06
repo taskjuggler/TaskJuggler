@@ -12,7 +12,8 @@
 #
 
 require 'rubygems'
-require 'IntervalList'
+
+require 'taskjuggler/IntervalList'
 
 class TaskJuggler
 

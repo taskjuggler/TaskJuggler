@@ -30,8 +30,6 @@ used instead of the defined charge set.
 
 == New features (probably after first stable release)
 
-* Property adoption. Allow container tasks to adopt other tasks.
-
 * Hammock tasks
 
 * Delta reports that show only the differences between 2 arbitrary

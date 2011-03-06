@@ -16,9 +16,10 @@ $:.unshift File.dirname(__FILE__)
 
 require 'test/unit'
 require 'fileutils'
-require 'Tj3Config'
-require 'TaskJuggler'
+
 require 'MessageChecker'
+require 'taskjuggler/Tj3Config'
+require 'taskjuggler/TaskJuggler'
 
 class TestReportGenerator < Test::Unit::TestCase
 

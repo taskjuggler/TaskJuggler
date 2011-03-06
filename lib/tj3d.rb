@@ -12,9 +12,9 @@
 #
 
 require 'drb'
-require 'Tj3AppBase'
-require 'LogFile'
-require 'daemon/ProjectBroker'
+require 'taskjuggler/Tj3AppBase'
+require 'taskjuggler/LogFile'
+require 'taskjuggler/daemon/ProjectBroker'
 
 # Name of the application
 AppConfig.appName = 'tj3d'

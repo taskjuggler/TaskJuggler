@@ -13,7 +13,7 @@
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
-require 'TjTime'
+require 'taskjuggler/TjTime'
 
 class TjpGen
 

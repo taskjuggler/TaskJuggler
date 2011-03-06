@@ -14,8 +14,9 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
-require 'TjTime'
-require 'WorkingHours'
+
+require 'taskjuggler/TjTime'
+require 'taskjuggler/WorkingHours'
 
 class TaskJuggler
 

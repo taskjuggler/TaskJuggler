@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'daemon/ProjectBroker'
+require 'taskjuggler/daemon/ProjectBroker'
 
 RSpec.configure do |c|
   c.filter_run_excluding :ruby => lambda {|version|

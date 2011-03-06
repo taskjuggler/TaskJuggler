@@ -13,8 +13,8 @@
 
 require 'drb'
 require 'drb/acl'
-require 'Tj3AppBase'
-require 'LogFile'
+require 'taskjuggler/Tj3AppBase'
+require 'taskjuggler/LogFile'
 
 # Name of the application
 AppConfig.appName = 'tj3client'

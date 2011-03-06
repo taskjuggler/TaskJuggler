@@ -15,8 +15,9 @@ $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 $:.unshift File.dirname(__FILE__)
 
 require 'test/unit'
-require 'TaskJuggler'
+
 require 'MessageChecker'
+require 'taskjuggler/TaskJuggler'
 
 class TestSyntax < Test::Unit::TestCase
 

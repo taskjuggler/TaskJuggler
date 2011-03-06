@@ -12,9 +12,9 @@
 #
 
 require 'optparse'
-require 'Tj3Config'
-require 'SyntaxReference'
-require 'UserManual'
+require 'taskjuggler/Tj3Config'
+require 'taskjuggler/SyntaxReference'
+require 'taskjuggler/UserManual'
 
 AppConfig.appName = 'tj3man'
 

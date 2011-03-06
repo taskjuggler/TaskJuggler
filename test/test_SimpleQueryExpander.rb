@@ -14,8 +14,9 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib') if __FILE__ == $0
 
 require 'test/unit'
-require 'SimpleQueryExpander'
-require 'MessageHandler'
+
+require 'taskjuggler/SimpleQueryExpander'
+require 'taskjuggler/MessageHandler'
 
 class TestSimpleQueryExpander < Test::Unit::TestCase
 
