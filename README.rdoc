@@ -50,7 +50,10 @@ Installation instructions can be found {here}[http://www.taskjuggler.org/tj3/man
 To learn more about how to use TaskJuggler III please see the {user
 manual}[http://www.taskjuggler.org/tj3/manual/index.html]. It also contains a
 {tutorial}[http://www.taskjuggler.org/tj3/manual/Tutorial.html#The_Tutorial_Your_first_Project]
-to get you started.
+to get you started. It will tell you how to generate HTML reports
+like {these}[http://www.taskjuggler.org/tj3/examples/Overview.html]
+from such a {project
+description}[http://www.taskjuggler.org/tj3/examples/tutorial.tjp].
 
 = Copyright and License
 
