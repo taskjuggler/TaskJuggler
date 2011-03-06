@@ -950,7 +950,9 @@ class TaskJuggler
 
       # The date propagation might have completed the date set of the enclosing
       # containter task. If so, we can schedule it as well.
-      @property.parent.scheduleContainer(@scenarioIdx) if !@property.parent.nil?
+      @property.parents.each do |parent|
+        parent.scheduleContainer(@scenarioIdx) if parent
+      end
     end
 
 
@@ -1008,7 +1010,7 @@ class TaskJuggler
       nStart = nil
       nEnd = nil
 
-      @property.children.each do |task|
+      @property.kids.each do |task|
         # Abort if a child has not yet been scheduled. Since we haven't done
         # the consistency check yet, we can't rely on start and end being set
         # if 'scheduled' is set.
@@ -1382,7 +1384,7 @@ class TaskJuggler
       @dCache.cached(key) do
         allocatedTime = 0.0
         if @property.container?
-          @property.children.each do |task|
+          @property.kids.each do |task|
             allocatedTime += task.getAllocatedTime(@scenarioIdx,
                                                    startIdx, endIdx, resource)
           end
@@ -1413,7 +1415,7 @@ class TaskJuggler
       @dCache.cached(key) do
         workLoad = 0.0
         if @property.container?
-          @property.children.each do |task|
+          @property.kids.each do |task|
             workLoad += task.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
                                               resource)
           end
@@ -1457,7 +1459,7 @@ class TaskJuggler
             il &= @project.collectTimeOffIntervals(iv, minDuration)
           end
         else
-          @property.children.each do |task|
+          @property.kids.each do |task|
             il &= task.collectTimeOffIntervals(@scenarioIdx, iv, minDuration)
           end
         end
@@ -1523,7 +1525,7 @@ class TaskJuggler
       if @property.leaf?
         return resource.allocated?(@scenarioIdx, interval, @property)
       else
-        @property.children.each do |t|
+        @property.kids.each do |t|
           return true if t.hasResourceAllocated?(@scenarioIdx, interval,
                                                  resource)
         end
@@ -1606,7 +1608,9 @@ class TaskJuggler
           # For start-end-tasks without allocation, we don't have to do
           # anything but to set the 'scheduled' flag.
           @property['scheduled', @scenarioIdx] = true
-          @property.parent.scheduleContainer(@scenarioIdx) if @property.parent
+          @property.parents.each do |parent|
+            parent.scheduleContainer(@scenarioIdx) if parent
+          end
           return true
         end
 
@@ -1617,7 +1621,9 @@ class TaskJuggler
         if (a('forward') && slot + slotDuration >= a('end')) ||
            (!a('forward') && slot <= a('start'))
           @property['scheduled', @scenarioIdx] = true
-          @property.parent.scheduleContainer(@scenarioIdx) if @property.parent
+          @property.parents.each do |parent|
+            parent.scheduleContainer(@scenarioIdx) if parent
+          end
           return true
         end
       end
@@ -2133,7 +2139,7 @@ class TaskJuggler
           # For container task the completion degree is the average of the
           # sub tasks.
           completion = 0.0
-          @property.children.each do |child|
+          @property.kids.each do |child|
             return nil unless (comp = child.calcCompletion(@scenarioIdx))
             completion += comp
           end
@@ -2203,7 +2209,7 @@ class TaskJuggler
       # tasks is limited to the tested task only. The predecessors are not
       # iterated.
       if includeChildren
-        @property.children.each do |child|
+        @property.kids.each do |child|
           child.inputs(@scenarioIdx, list, true)
         end
       end
@@ -2236,7 +2242,7 @@ class TaskJuggler
       # tasks is limited to the tested task only. The followers are not
       # iterated.
       if includeChildren
-        @property.children.each do |child|
+        @property.kids.each do |child|
           child.targets(@scenarioIdx, list, true)
         end
       end
@@ -2250,7 +2256,7 @@ class TaskJuggler
     def turnover(startIdx, endIdx, account, resource = nil)
       amount = 0.0
       if @property.container?
-        @property.children.each do |child|
+        @property.kids.each do |child|
           amount += child.turnover(@scenarioIdx, startIdx, endIdx, account,
                                    resource)
         end

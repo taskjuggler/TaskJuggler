@@ -1,0 +1,10 @@
+project "Adopted Tasks" 2011-03-05 +1m
+
+task t1 "T1" {
+  task t2 "T2"
+# MARK: error 6 adopt_common_root
+  task t3 "T3" {
+    adopt t1.t2
+  }
+}
+

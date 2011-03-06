@@ -18,6 +18,16 @@ class TaskJuggler
 # necessary but make the file more readable and receptable to syntax folding.
 module TjpSyntaxRules
 
+  def rule_absoluteTaskId
+    pattern(%w( !taskIdUnverifd ), lambda {
+      id = (@taskprefix.empty? ? '' : @taskprefix + '.') + @val[0]
+      if (task = @project.task(id)).nil?
+        error('unknown_abs_task', "Unknown task #{id}", @sourceFileInfo[0])
+      end
+      task
+    })
+  end
+
   def rule_account
     pattern(%w( !accountHeader !accountBody ), lambda {
        @property = @property.parent
@@ -1358,7 +1368,7 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _accountprefix !taskId ), lambda {
+    pattern(%w( _accountprefix !accountId ), lambda {
       @accountprefix = @val[1].fullId
     })
     doc('accountprefix', <<'EOT'
@@ -1369,7 +1379,7 @@ EOT
     )
     arg(1, 'account ID', 'The absolute ID of an already defined account')
 
-    pattern(%w( _reportprefix !taskId ), lambda {
+    pattern(%w( _reportprefix !reportId ), lambda {
       @reportprefix = @val[1].fullId
     })
     doc('reportprefix', <<'EOT'
@@ -4584,6 +4594,25 @@ EOT
     repeatable
     optional
 
+    pattern(%w( _adopt !taskList ), lambda {
+      @val[1].each do |task|
+        @property.adopt(task)
+      end
+    })
+    doc('adopt.task', <<'EOT'
+Add a previously defined task to the sub-tasks of this task. This can be used
+to create virtual sub projects that contain of task trees that were defined as
+sub tasks of other tasks. Adopted tasks don't inherit anything from their step
+parents. However, the adopting task is scheduled to fit all adopted childs as
+well.
+
+The adopting task and the adopted task must not share a common top-level task.
+Adopted tasks may not have overlaping sub trees.
+
+'''This feature is experimental right now. Don't use it!'''.
+EOT
+       )
+
     pattern(%w( !journalEntry ))
 
     pattern(%w( _note $STRING ), lambda {
@@ -4781,6 +4810,10 @@ EOT
   def rule_taskIdUnverifd
     singlePattern('$ABSOLUTE_ID')
     singlePattern('$ID')
+  end
+
+  def rule_taskList
+    listRule('moreTasks', '!absoluteTaskId')
   end
 
   def rule_taskPeriod

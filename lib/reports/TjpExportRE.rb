@@ -302,8 +302,19 @@ class TaskJuggler
         Log.activity if task.sequenceNo % 100 == 0
 
         @file << "supplement task #{task.fullId} {\n"
+        # Declare adopted tasks.
+        adoptees = ""
+        task.adoptees.each do |adoptee|
+          next unless @taskList.include?(adoptee)
+
+          adoptees += ', ' unless adoptees.empty?
+          adoptees += adoptee.fullId
+        end
+        generateAttributeText("adopt #{adoptees}", 2) unless adoptees.empty?
+
         @project.tasks.eachAttributeDefinition do |attrDef|
           id = attrDef.id
+
           next if (!@supportedTaskAttrs.include?(id) && !attrDef.userDefined) ||
                   !a('taskAttributes').include?(id)
 

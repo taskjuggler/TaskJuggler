@@ -317,7 +317,7 @@ class TaskJuggler
 
       work = 0.0
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           work += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx, task)
         end
       else
@@ -338,7 +338,7 @@ class TaskJuggler
 
       time = 0
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           time += resource.getAllocatedTime(@scenarioIdx, startIdx, endIdx, task)
         end
       else
@@ -359,7 +359,7 @@ class TaskJuggler
 
       freeTime = 0
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           freeTime += resource.getEffectiveFreeTime(@scenarioIdx, startIdx,
                                                     endIdx)
         end
@@ -379,7 +379,7 @@ class TaskJuggler
 
       work = 0.0
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           work += resource.getEffectiveFreeWork(@scenarioIdx, startIdx, endIdx)
         end
       else
@@ -398,7 +398,7 @@ class TaskJuggler
 
       vacationDays = 0.0
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           vacationDays += resource.getVacationDays(@scenarioIdx,
                                                    startIdx, endIdx)
         end
@@ -415,7 +415,7 @@ class TaskJuggler
     def turnover(startIdx, endIdx, account, task = nil)
       amount = 0.0
       if @property.container?
-        @property.children.each do |child|
+        @property.kids.each do |child|
           amount += child.turnover(@scenarioIdx, startIdx, endIdx, account, task)
         end
       else
@@ -682,7 +682,7 @@ class TaskJuggler
     # only allocations to this tasks are respected.
     def allocatedSub(startIdx, endIdx, task)
       if @property.container?
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           return true if resource.allocatedSub(@scenarioIdx, startIdx, endIdx,
                                                task)
         end
@@ -703,7 +703,7 @@ class TaskJuggler
     def rate
       if @property.container?
         dailyRate = 0.0
-        @property.children.each do |resource|
+        @property.kids.each do |resource|
           dailyRate += resource.rate(@scenarioIdx)
         end
         dailyRate

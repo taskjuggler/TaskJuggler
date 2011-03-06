@@ -1,0 +1,38 @@
+project prj "Adopted Tasks" "1.0" 2011-03-05-00:00-+0000 - 2011-04-04-10:00-+0000 {
+  timezone "UTC"
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+
+task t1 "T1" {
+  start 2011-03-05-00:00-+0000
+  milestone
+  scheduled
+}
+task t2 "T2" {
+  start 2011-03-05-00:00-+0000
+  milestone
+  scheduled
+}
+task t3 "T3" {
+  start 2011-03-05-00:00-+0000
+  end 2011-03-05-00:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task t1 {
+  priority 500
+  projectid prj
+}
+supplement task t2 {
+  priority 500
+  projectid prj
+}
+supplement task t3 {
+  adopt t1, t2
+  priority 500
+  projectid prj
+}

@@ -28,7 +28,7 @@ class TaskJuggler
   class PropertyTreeNode
 
     attr_reader :propertySet, :id, :parent, :project, :sequenceNo,
-                :children
+                :children, :adoptees
     attr_accessor :name, :sourceFileInfo
     attr_reader :data
 
@@ -72,12 +72,18 @@ class TaskJuggler
 
       @parent = parent
       @sequenceNo = @propertySet.items + 1
-      @children = Array.new
+      # This is a list of the real sub nodes of this PropertyTreeNode.
+      @children = []
+      # This is a list of the adopted sub nodes of this PropertyTreeNode.
+      @adoptees = []
       # In case we have a parent object, we register this object as child of
       # the parent.
       if (@parent)
         @parent.addChild(self)
       end
+      # This is a list of the PropertyTreeNode objects that have adopted this
+      # node.
+      @stepParents = []
 
       @attributes = Hash.new
       @scenarioAttributes = Array.new(@project.scenarioCount)
@@ -92,6 +98,61 @@ class TaskJuggler
     # references.
     def deep_clone
       self
+    end
+
+    # Adopt _property_ as a step child. Also register the new relationship
+    # with the child.
+    def adopt(property)
+      return if @adoptees.include?(property)
+
+      # The adopted node and the adopting node must not have any common
+      # ancestors.
+      if root == property.root
+        error('adopt_common_root',
+              "The adoptee #{property.fullId} and the parent #{fullId} " +
+              "may not share common ancestors.")
+      end
+
+      # The adopted trees for this node must not overlap.
+      @adoptees.each do |adoptee|
+        # Check if the to be adopted node is an ancestor of an already adopted
+        # node.
+        if adoptee.ancestors.include?(property)
+          error('adopt_duplicate_child',
+                "The child #{adoptee.fullId} of #{property.fullId} " +
+                "has already been adopted by #{fullId}.")
+        end
+        # Check if the already adopted nodes are an ancestor of the to be
+        # adopted node.
+        if property.ancestors.include?(adoptee)
+          error('adopt_duplicate_parent',
+                "The parent #{adoptee.fullId} of #{property.fullId} " +
+                "has already been adopted by #{fullId}.")
+        end
+      end
+
+      @adoptees << property
+      property.getAdopted(self)
+    end
+
+    # Get adopted by _property_. Also register the new relationship with the
+    # step parent. This method is for internal use only. Other classes should
+    # alway use PropertyTreeNode::adopt().
+    def getAdopted(property) # :nodoc:
+      return if @stepParents.include?(property)
+
+      @stepParents << property
+      property.adopt(self)
+    end
+
+    # Return a list of all children including adopted kids.
+    def kids
+      @children + @adoptees
+    end
+
+    # Return a list of all parents including step parents.
+    def parents
+      [ @parent ] + @stepParents
     end
 
     # This method creates a shallow copy of all attributes and returns them as
@@ -270,12 +331,22 @@ class TaskJuggler
 
     # Return true if the node is a leaf node (has no children).
     def leaf?
-      @children.empty?
+      @children.empty? && @adoptees.empty?
     end
 
     # Return true if the node has children.
     def container?
-      !@children.empty?
+      !@children.empty? || !@adoptees.empty?
+    end
+
+    # Return a list with all parent nodes of this node.
+    def ancestors
+      nodes = []
+      n = self
+      while n.parent
+        nodes << (n = n.parent)
+      end
+      nodes
     end
 
     # Return the top-level node for this node.

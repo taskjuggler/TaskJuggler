@@ -244,7 +244,7 @@ class TaskJuggler
                       resource = nil, alertLevel = nil)
       list = entriesByTask(task, startDate, endDate, resource, alertLevel)
 
-      task.children.each do |t|
+      task.kids.each do |t|
         list += entriesByTaskR(t, startDate, endDate, resource, alertLevel)
       end
 
@@ -359,7 +359,7 @@ class TaskJuggler
       maxAlertLevel = 0
       # Now gather all current entries of the child properties and find the
       # date that is closest to and right before the given _date_.
-      property.children.each do |p|
+      property.kids.each do |p|
         currentEntriesR(date, p, minLevel, minDate).each do |e|
           # Find the date of the most recent entry.
           latestDate = e.date if latestDate.nil? || e.date > latestDate
