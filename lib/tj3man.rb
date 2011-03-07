@@ -13,6 +13,7 @@
 
 require 'optparse'
 require 'taskjuggler/Tj3Config'
+require 'taskjuggler/TernarySearchTree'
 require 'taskjuggler/SyntaxReference'
 require 'taskjuggler/UserManual'
 
@@ -66,15 +67,24 @@ def main
   args = Arguments.new(ARGV)
 
   man = TaskJuggler::SyntaxReference.new
-  keywords = args.keywords
+  keywords = TaskJuggler::TernarySearchTree.new(man.all)
 
   if args.manual
     TaskJuggler::UserManual.new.generate(args.directory)
-  elsif keywords.empty?
+  elsif args.keywords.empty?
     puts man.all.join("\n")
   else
-    keywords.each do |keyword|
-      puts man.to_s(keyword)
+    args.keywords.each do |keyword|
+      if (kws = keywords[keyword, true]).empty?
+        $stderr.puts "No matches found for '#{keyword}'"
+        exit 1
+      elsif kws.length == 1
+        puts man.to_s(kws[0])
+      else
+        $stderr.puts "Multiple matches found for '#{keyword}':\n" +
+                     "#{kws.join(', ')}"
+        exit 1
+      end
     end
   end
 
