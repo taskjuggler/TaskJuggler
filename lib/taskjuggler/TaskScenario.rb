@@ -951,7 +951,7 @@ class TaskJuggler
       # The date propagation might have completed the date set of the enclosing
       # containter task. If so, we can schedule it as well.
       @property.parents.each do |parent|
-        parent.scheduleContainer(@scenarioIdx) if parent
+        parent.scheduleContainer(@scenarioIdx)
       end
     end
 
@@ -1609,7 +1609,7 @@ class TaskJuggler
           # anything but to set the 'scheduled' flag.
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
-            parent.scheduleContainer(@scenarioIdx) if parent
+            parent.scheduleContainer(@scenarioIdx)
           end
           return true
         end
@@ -1622,7 +1622,7 @@ class TaskJuggler
            (!a('forward') && slot <= a('start'))
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
-            parent.scheduleContainer(@scenarioIdx) if parent
+            parent.scheduleContainer(@scenarioIdx)
           end
           return true
         end

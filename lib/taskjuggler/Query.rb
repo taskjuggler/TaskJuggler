@@ -112,6 +112,10 @@ class TaskJuggler
         # Resolve property reference from property ID.
         if @property.nil? && !@propertyId.nil?
           @property = resolvePropertyId(@propertyType, @propertyId)
+          unless @propertyType
+            @errorMessage = "Unknown property #{@propertyId} queried"
+            return @ok = false
+          end
         end
 
         unless @property
@@ -136,6 +140,10 @@ class TaskJuggler
         if !@scopeProperty.nil? && !@scopePropertyId.nil?
           @scopeProperty = resolvePropertyId(@scopePropertyType,
                                              @scopePropertyId)
+          unless @scopePropertyType
+            @errorMessage = "Unknown scope property #{@scopePropertyId} queried"
+            return @ok = false
+          end
         end
         # Make sure the have a reference to the project.
         @project = @property.project unless @project

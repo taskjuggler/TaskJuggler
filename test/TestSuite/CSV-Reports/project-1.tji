@@ -33,6 +33,9 @@ task execute "Execute Work" {
       depends !!ex1
       effort 2w
       allocate jack, jill
+      journalentry %{${projectstart} +2d} "Red" {
+        alert red
+      }
     }
   }
   task ms1 "Milestone 1" {
@@ -53,5 +56,11 @@ task check "Check Work" {
   depends !execute
   allocate jill
   effort 1w
+}
+task view "Virtual View" {
+  adopt plan.plan_b
+  adopt execute.ex2
+  adopt execute.ms1
+  adopt check
 }
 

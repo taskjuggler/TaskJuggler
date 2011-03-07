@@ -5848,7 +5848,8 @@ EOT
   def rule_valDate
     pattern(%w( !date ), lambda {
       if @val[0] < @project['start'] || @val[0] > @project['end']
-        error('date_in_range', "Date must be within the project time frame " +
+        error('date_in_range',
+              "Date #{@val[0]} must be within the project time frame " +
               "#{@project['start']}  - #{@project['end']}",
               @sourceFileInfo[0])
       end

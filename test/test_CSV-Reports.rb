@@ -61,7 +61,7 @@ class TestScheduler < Test::Unit::TestCase
       puts diff
       File.new('failed.csv', 'w').write(outStr)
 
-      ref = TaskJuggler::CSVFile.new.read(refStr)
+      ref = TaskJuggler::CSVFile.new.parse(refStr)
       out = TaskJuggler::CSVFile.new.parse(outStr)
 
       assert(ref.length == out.length,

@@ -29,30 +29,30 @@ class TaskJuggler
 
     # Return the result of the query as String.
     def to_s(args)
-      return '' unless prepareQuery(args)
-      if @query.ok
-        @query.to_s
+      return '' unless (query = prepareQuery(args))
+      if query.ok
+        query.to_s
       else
-        error('query_error', @query.errorMessage + recreateQuerySyntax(args))
-        'Query Error: ' + @query.errorMessage
+        error('query_error', query.errorMessage + recreateQuerySyntax(args))
+        'Query Error: ' + query.errorMessage
       end
     end
 
     # Return a XMLElement tree that represents the navigator in HTML code.
     def to_html(args)
-      return nil unless prepareQuery(args)
-      if @query.ok
-        if (rti = @query.to_rti)
+      return nil unless (query = prepareQuery(args))
+      if query.ok
+        if (rti = query.to_rti)
           rti.to_html
-        elsif (str = @query.to_s)
+        elsif (str = query.to_s)
           XMLText.new(str)
         else
           nil
         end
       else
-        error('query_error', @query.errorMessage + recreateQuerySyntax(args))
+        error('query_error', query.errorMessage + recreateQuerySyntax(args))
         font = XMLElement.new('font', 'color' => '#FF0000')
-        font << XMLText.new('Query Error: ' + @query.errorMessage)
+        font << XMLText.new('Query Error: ' + query.errorMessage)
         font
       end
     end
@@ -80,28 +80,42 @@ class TaskJuggler
         end
       end
 
+      if (args['property'] || args['scopeproperty']) && !args['family']
+        error('missing_family',
+              "If you provide a property or scope property you need to " +
+              "provide a family type as well.")
+      end
+
+      query = @query.dup
+
       # Every provided query parameter will overwrite the corresponding value
       # in the Query that was provided by the ReportContext.  The name of the
       # arguments don't always exactly match the Query variables Let's start
       # with the easy ones.
-      @query.propertyId = args['property'] if args['property']
-      @query.scopeProperty = args['scopeproperty'] if args['scopeproperty']
-      @query.attributeId = args['attribute'] if args['attribute']
-      @query.start = args['start'] if args['start']
-      @query.end = args['end'] if args['end']
-      @query.numberFormat = args['numberformat'] if args['numberformat']
-      @query.timeFormat = args['timeformat'] if args['timeformat']
-      @query.currencyFormat = args['currencyformat'] if args['currencyformat']
+      if args['property']
+        query.propertyId = args['property']
+        query.property = nil
+      end
+      if args['scopeproperty']
+        query.scopePropertyId = args['scopeproperty']
+        query.scopeProperty = nil
+      end
+      query.attributeId = args['attribute'] if args['attribute']
+      query.start = args['start'] if args['start']
+      query.end = args['end'] if args['end']
+      query.numberFormat = args['numberformat'] if args['numberformat']
+      query.timeFormat = args['timeformat'] if args['timeformat']
+      query.currencyFormat = args['currencyformat'] if args['currencyformat']
 
       # And now the slighly more complicated ones.
-      setScenarioIdx(args)
-      setPropertyType(args)
-      setLoadUnit(args)
+      setScenarioIdx(query, args)
+      setPropertyType(query, args)
+      setLoadUnit(query, args)
 
       # Now that we have put together the query, we can process it and return
       # the query object for result extraction.
-      @query.process
-      @query
+      query.process
+      query
     end
 
     # Regenerate the original query text based on the argument list.
@@ -113,7 +127,7 @@ class TaskJuggler
       queryText += "->"
     end
 
-    def setPropertyType(args)
+    def setPropertyType(query, args)
       validTypes = { 'account' => :Account,
                      'task' => :Task,
                      'resource' => :Resource }
@@ -124,34 +138,34 @@ class TaskJuggler
                 "Unknown query family type '#{args['family']}'. " +
                 "Use one of #{validTypes}.join(', ')!")
         end
-        @query.propertyType = validTypes[args['family']]
-        if @query.propertyType == :Task
-          @query.scopePropertyType = :Resource
-        elsif @query.propertyType == :Resource
-          @query.scopePropertyType = :Task
+        query.propertyType = validTypes[args['family']]
+        if query.propertyType == :Task
+          query.scopePropertyType = :Resource
+        elsif query.propertyType == :Resource
+          query.scopePropertyType = :Task
         end
       end
     end
 
-    def setLoadUnit(args)
+    def setLoadUnit(query, args)
       units = {
         'days' => :days, 'hours' => :hours, 'longauto' => :longauto,
         'minutes' => :minutes, 'months' => :months, 'shortauto' => :shortauto,
         'weeks' => :weeks, 'years' => :years
       }
-      @query.loadUnit = units[args['loadunit']] if args['loadunit']
+      query.loadUnit = units[args['loadunit']] if args['loadunit']
     end
 
-    def setScenarioIdx(args)
+    def setScenarioIdx(query, args)
       if args['scenario']
         scenarioIdx = @project.scenarioIdx(args['scenario'])
         unless scenarioIdx
           error('rtfq_bad_scenario', "Unknown scenario #{args['scenario']}")
         end
-        @query.scenarioIdx = scenarioIdx
+        query.scenarioIdx = scenarioIdx
       end
       # Default to 0 in case no scenario was provided.
-      @query.scenarioIdx = 0 unless @query.scenarioIdx
+      query.scenarioIdx = 0 unless query.scenarioIdx
     end
 
   end

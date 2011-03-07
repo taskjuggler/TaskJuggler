@@ -152,7 +152,7 @@ class TaskJuggler
 
     # Return a list of all parents including step parents.
     def parents
-      [ @parent ] + @stepParents
+      (@parent ? [ @parent ] : []) + @stepParents
     end
 
     # This method creates a shallow copy of all attributes and returns them as
