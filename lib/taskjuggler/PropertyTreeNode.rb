@@ -576,7 +576,17 @@ class TaskJuggler
       journal = @project['journal']
       query.sortable = query.numerical = alert =
         journal.alertLevel(query.end, self)
-      query.string = @project.alertLevelName(alert)
+      query.string = colorName = @project.alertLevelName(alert)
+      rText = "<fcol:#{colorName.downcase}>#{colorName}</fcol>"
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
+                                 @project.messageHandler).
+                                 generateIntermediateFormat)
+        @project.messageHandler.warning('ptn_journal',
+                                        "Syntax error in journal message")
+        return nil
+      end
+      rti.blockMode = false
+      query.rti = rti
     end
 
     def query_alertmessages(query)

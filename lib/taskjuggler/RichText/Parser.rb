@@ -37,6 +37,7 @@ class TaskJuggler
       @variables = [ :LINEBREAK, :SPACE, :WORD,
                      :BOLD, :ITALIC, :CODE, :BOLDITALIC, :PRE,
                      :HREF, :HREFEND, :REF, :REFEND, :HLINE,
+                     :FCOLSTART, :FCOLEND,
                      :QUERY,
                      :INLINEFUNCSTART, :INLINEFUNCEND,
                      :BLOCKFUNCSTART, :BLOCKFUNCEND, :ID, :STRING,

@@ -221,6 +221,7 @@ class TaskJuggler
         pre = @richText.functionHandler(@data[0]).to_s(@data[1])
       when :italic
       when :bold
+      when :fontCol
       when :code
       when :text
       else
@@ -341,6 +342,9 @@ class TaskJuggler
       when :bold
         pre = '<b>'
         post = '</b>'
+      when :fontCol
+        pre = "<fcol:#{@data}>"
+        post = '</fcol>'
       when :code
         pre = '<code>'
         post = '</code>'
@@ -452,6 +456,8 @@ class TaskJuggler
         XMLElement.new('i')
       when :bold
         XMLElement.new('b')
+      when :fontCol
+        XMLElement.new('span', 'style' => "color:#{@data}")
       when :code
         XMLElement.new('code', attrs)
       when :text

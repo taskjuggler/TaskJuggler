@@ -80,6 +80,7 @@ class TaskJuggler
       end
 
       TjTime.setTimeZone(oldTimeZone)
+      0
     end
 
     # Generate an output format agnostic version that can later be turned into

@@ -925,6 +925,16 @@ EOT
     match(ref, out)
   end
 
+  def test_fontCol
+    inp = 'A <fcol:blue>blue</fcol> word.'
+    tagged = "<div>[A] <fcol:blue>[blue]</fcol> [word.]</div>\n"
+    str = "A blue word.\n"
+    html = "<div>A <span style=\"color:blue\">blue</span> word.</div>\n"
+
+    assert_outputs(inp, tagged, str, html)
+  end
+
+
   def newRichText(text)
     mh = TaskJuggler::MessageHandler.new(true)
     rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ], mh)

@@ -72,15 +72,20 @@ class TaskJuggler
       # Check the user provided arguments. Only the following list is allowed.
       validArgs = %w( family property scopeproperty attribute scenario
                       start end loadunit numberformat timeformat currencyformat )
-      args.each_key do |arg|
+      expandedArgs = {}
+      args.each do |arg, value|
         unless validArgs.include?(arg)
           error('bad_query_parameter', "Unknown query parameter '#{arg}'. " +
                 "Use one of #{validArgs.join(', ')}!")
           return nil
         end
+        expandedArgs[arg] =
+          SimpleQueryExpander.new(value, @query, @messageHandler,
+                                  @sourceFileInfo).expand
       end
 
-      if (args['property'] || args['scopeproperty']) && !args['family']
+      if (expandedArgs['property'] || expandedArgs['scopeproperty']) &&
+          !(expandedArgs['family'] || query.propertyType)
         error('missing_family',
               "If you provide a property or scope property you need to " +
               "provide a family type as well.")
@@ -92,25 +97,29 @@ class TaskJuggler
       # in the Query that was provided by the ReportContext.  The name of the
       # arguments don't always exactly match the Query variables Let's start
       # with the easy ones.
-      if args['property']
-        query.propertyId = args['property']
+      if expandedArgs['property']
+        query.propertyId = expandedArgs['property']
         query.property = nil
       end
-      if args['scopeproperty']
-        query.scopePropertyId = args['scopeproperty']
+      if expandedArgs['scopeproperty']
+        query.scopePropertyId = expandedArgs['scopeproperty']
         query.scopeProperty = nil
       end
-      query.attributeId = args['attribute'] if args['attribute']
-      query.start = args['start'] if args['start']
-      query.end = args['end'] if args['end']
-      query.numberFormat = args['numberformat'] if args['numberformat']
-      query.timeFormat = args['timeformat'] if args['timeformat']
-      query.currencyFormat = args['currencyformat'] if args['currencyformat']
+      query.attributeId = expandedArgs['attribute'] if expandedArgs['attribute']
+      query.start = expandedArgs['start'] if expandedArgs['start']
+      query.end = expandedArgs['end'] if expandedArgs['end']
+      if expandedArgs['numberformat']
+        query.numberFormat = expandedArgs['numberformat']
+      end
+      query.timeFormat = expandedArgs['timeformat'] if expandedArgs['timeformat']
+      if expandedArgs['currencyformat']
+        query.currencyFormat = expandedArgs['currencyformat']
+      end
 
       # And now the slighly more complicated ones.
-      setScenarioIdx(query, args)
-      setPropertyType(query, args)
-      setLoadUnit(query, args)
+      setScenarioIdx(query, expandedArgs)
+      setPropertyType(query, expandedArgs)
+      setLoadUnit(query, expandedArgs)
 
       # Now that we have put together the query, we can process it and return
       # the query object for result extraction.

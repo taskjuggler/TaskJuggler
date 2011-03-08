@@ -56,6 +56,10 @@ class TaskJuggler
         # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
+        [ :FCOLSTART, /<fcol:[a-z]+>/, [ :bop, :bol, :inline ],
+          method('fontColorStart') ],
+        [ :FCOLEND, /<\/fcol>/, [ :bop, :bol, :inline ],
+          method('fontColorEnd') ],
         [ :QUOTES, /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
         [ :REF, /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
         [ :HREF, /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
@@ -131,6 +135,15 @@ class TaskJuggler
     def number(type, match)
       self.mode = :inline
       [ "NUMBER#{match.length - 1}".intern, match ]
+    end
+
+    def fontColorStart(type, match)
+      # Extract color name from <fcol:colname>
+      [ type, match[6..-2] ]
+    end
+
+    def fontColorEnd(type, match)
+      [ type, match ]
     end
 
     def quotes(type, match)

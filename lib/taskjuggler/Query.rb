@@ -112,7 +112,7 @@ class TaskJuggler
         # Resolve property reference from property ID.
         if @property.nil? && !@propertyId.nil?
           @property = resolvePropertyId(@propertyType, @propertyId)
-          unless @propertyType
+          unless @property
             @errorMessage = "Unknown property #{@propertyId} queried"
             return @ok = false
           end
@@ -123,8 +123,8 @@ class TaskJuggler
           supportedAttrs = %w( copyright currency end name now projectid
                                start version )
           unless supportedAttrs.include?(@attributeId)
-            raise TjException.new,
-                  "Unsupported project attribute '#{@attributeId}'"
+            @errorMessage = "Unsupported project attribute '#{@attributeId}'"
+            return @ok = false
           end
           attr = @project[@attributeId]
           if attr.is_a?(TjTime)
@@ -140,7 +140,7 @@ class TaskJuggler
         if !@scopeProperty.nil? && !@scopePropertyId.nil?
           @scopeProperty = resolvePropertyId(@scopePropertyType,
                                              @scopePropertyId)
-          unless @scopePropertyType
+          unless @scopeProperty
             @errorMessage = "Unknown scope property #{@scopePropertyId} queried"
             return @ok = false
           end
