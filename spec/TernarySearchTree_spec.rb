@@ -38,9 +38,17 @@ class TaskJuggler
       @tst.length.should == 2
     end
 
+    it 'should not accept an empty String' do
+      lambda { @tst.insert('') }.should raise_error
+    end
+
+    it 'should not accept nil' do
+      lambda { @tst.insert(nil) }.should raise_error
+    end
+
     it 'should store inserted values' do
       v = %w( foo bar foobar barfoo fo ba foo1 bar1 zzz )
-      v.each { |val| @tst << val }
+      @tst.insertList(v)
 
       @tst.length.should be_equal v.length
       rv = @tst.to_a.sort
@@ -80,6 +88,12 @@ class TaskJuggler
       @tst['', true].should be_nil
     end
 
+    it 'should store duplicate entries only once' do
+      v = %w( foo bar foobar bar foo fo ba foo1 ba foobar bar1 zzz )
+      @tst.insertList(v)
+      @tst.length.should == v.uniq.length
+    end
+
     it 'maxDepth should work' do
       v = %w( a b c d e f)
       v.each { |val| @tst << val }
@@ -94,6 +108,22 @@ class TaskJuggler
       # The tree is not perfectly balanced.
       @tst.maxDepth.should == 5
     end
+
+    #it 'should store integer lists' do
+    #  @tst.insert([ 0, 1, 2 ])
+
+    #  @tst.length.should == 1
+    #  @tst.to_a.should be == [ 0, 1, 2 ]
+    #end
+
+    #it 'should work with integer lists as well' do
+    #  v = [ [ 0, 1, 2], [ 0, 3, 2], [ 1, 3 ], [ 0, 2, 1], [ 1, 0, 3] ]
+    #  @tst.insertList(v)
+
+    #  @tst.length.should be_equal v.length
+    #  rv = @tst.to_a.sort
+    #  rv.should == v.sort
+    #end
 
   end
 

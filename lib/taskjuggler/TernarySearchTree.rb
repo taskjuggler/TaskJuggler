@@ -24,6 +24,7 @@ class TaskJuggler
     # element to store in the new tree or a list of elements to store.
     def initialize(arg = nil)
       clear
+
       if arg.nil?
         return
       elsif arg.is_a?(Array)
@@ -33,54 +34,62 @@ class TaskJuggler
       end
     end
 
-    # Stores _str_ in the tree.
-    def insert(str)
-      first, other = split(str)
+    # Stores _str_ in the tree. _index_ is for internal use only.
+    def insert(str, index = 0)
+      if str.nil? || str.empty?
+        raise ArgumentError, "Cannot insert nil or empty lists"
+      end
+      if index > (maxIdx = str.length - 1) || index < 0
+        raise ArgumentError, "index out of range [0..#{maxIdx}]"
+      end
 
-      @value = first unless @value
+      @value = str[index] unless @value
 
-      if first < @value
+      if str[index] < @value
         @smaller = TernarySearchTree.new unless @smaller
-        @smaller.insert(str)
-      elsif first == @value
-        if other && !other.empty?
-          @equal = TernarySearchTree.new unless @equal
-          @equal.insert(other)
-        else
-          @last = true
-        end
-      else
+        @smaller.insert(str, index)
+      elsif str[index] > @value
         @larger = TernarySearchTree.new unless @larger
-        @larger.insert(str)
+        @larger.insert(str, index)
+      else
+        if index == maxIdx
+          @last = true
+        else
+          @equal = TernarySearchTree.new unless @equal
+          @equal.insert(str, index + 1)
+        end
       end
     end
 
     alias << insert
 
+    # Insert the elements of _list_ into the tree.
+    def insertList(list)
+      list.each { |val| insert(val) }
+    end
+
     # if _str_ is stored in the tree it returns _str_. If _partialMatch_ is
-    # true, it returns all items that start with _str_. _found_ is for
+    # true, it returns all items that start with _str_. _index_ is for
     # internal use only. If nothing is found it returns either nil or an empty
     # list.
-    def find(str, partialMatch = false, found = nil)
-      return nil if str.nil? || str.empty? || @value.nil?
+    def find(str, partialMatch = false, index = 0)
+      return nil if str.nil? || index > (maxIdx = str.length - 1)
 
-      first, other = split(str)
-
-      if first < @value
-        return @smaller.find(str, partialMatch, found) if @smaller
-      elsif first == @value
-        found = found.nil? ? @value : found + @value
-        if other.nil? || other.empty?
+      if str[index] < @value
+        return @smaller.find(str, partialMatch, index) if @smaller
+      elsif str[index] > @value
+        return @larger.find(str, partialMatch, index) if @larger
+      else
+        if index == maxIdx
+          # We've reached the end of the search pattern.
           if partialMatch
-            return collect { |v| found[0..-2] + v }
+            return collect { |v| str[0..-2] + v }
           else
-            return found if @last
+            return str if @last
           end
         end
 
-        return @equal.find(other, partialMatch, found) if @equal
-      else
-        return @larger.find(str, partialMatch, found) if @larger
+        return @equal.find(str, partialMatch, index + 1) if @equal
       end
       nil
     end
@@ -150,6 +159,7 @@ class TaskJuggler
 
     private
 
+    # Reset the node to an empty tree.
     def clear
       @smaller = @equal = @larger = @value = nil
       @last = false
