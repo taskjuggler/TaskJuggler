@@ -43,7 +43,7 @@ class TaskJuggler
       v.each { |val| @tst << val }
 
       @tst.length.should be_equal v.length
-      rv = @tst.collect { |v| v }.sort
+      rv = @tst.to_a.sort
       rv.should == v.sort
     end
 
@@ -67,7 +67,7 @@ class TaskJuggler
     it 'should find partial matches' do
       %w( foo bar foobar barfoo ba foo1 bar1 zzz ).each { |v| @tst << v }
 
-      @tst['foo', true].sort.should == [ 'foo' ]
+      @tst['foo', true].sort.should == %w( foo foobar foo1 ).sort
       @tst['fo', true].sort.should == %w( foo foobar foo1 ).sort
       @tst['b', true].sort.should == %w( bar barfoo ba bar1 ).sort
       @tst['zzz', true].should == [ 'zzz' ]
@@ -88,8 +88,10 @@ class TaskJuggler
 
     it 'should be able to balance a tree' do
       %w( aa ab ac ba bb bc ca cb cc ).each { |v| @tst << v }
-      @tst = @tst.balanced
-      # The tree will not be perfectly balanced.
+      tst = @tst.balanced
+      @tst.balance!
+      @tst.to_a.should == tst.to_a
+      # The tree is not perfectly balanced.
       @tst.maxDepth.should == 5
     end
 

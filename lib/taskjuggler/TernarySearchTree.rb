@@ -23,8 +23,7 @@ class TaskJuggler
     # Create a new TernarySearchTree object. The optional _arg_ can be an
     # element to store in the new tree or a list of elements to store.
     def initialize(arg = nil)
-      @smaller = @equal = @larger = @value = nil
-      @last = false
+      clear
       if arg.nil?
         return
       elsif arg.is_a?(Array)
@@ -72,9 +71,11 @@ class TaskJuggler
       elsif first == @value
         found = found.nil? ? @value : found + @value
         if other.nil? || other.empty?
-          return partialMatch ? [ found ] : found if @last
-
-          return @equal.collect { |v| found + v } if partialMatch && @equal
+          if partialMatch
+            return collect { |v| found[0..-2] + v }
+          else
+            return found if @last
+          end
         end
 
         return @equal.find(other, partialMatch, found) if @equal
@@ -110,7 +111,7 @@ class TaskJuggler
       depths.max
     end
 
-    # Return an Array with all the elements stored in the tree.
+    # Invokes _block_ for each element and returns the results as an Array.
     def collect(str = nil, &block)
       result = []
 
@@ -123,9 +124,21 @@ class TaskJuggler
       result
     end
 
+    # Return an Array with all the elements stored in the tree.
+    def to_a
+      collect{ |x| x}
+    end
+
+    # Balance the tree for more effective data retrieval.
+    def balance!
+      list = sortForBalancedTree(to_a)
+      clear
+      list.each { |x| insert(x) }
+    end
+
     # Return a balanced version of the tree.
     def balanced
-      TernarySearchTree.new(self.collect { |x| x })
+      TernarySearchTree.new(to_a)
     end
 
     def inspect(prefix = ' ', indent = 0)
@@ -136,6 +149,11 @@ class TaskJuggler
     end
 
     private
+
+    def clear
+      @smaller = @equal = @larger = @value = nil
+      @last = false
+    end
 
     # Split the list into the first element and the remaining ones.
     def split(str)

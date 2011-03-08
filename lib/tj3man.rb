@@ -75,11 +75,11 @@ def main
     puts man.all.join("\n")
   else
     args.keywords.each do |keyword|
-      if (kws = keywords[keyword, true]).empty?
+      if (kws = keywords[keyword, true]).nil?
         $stderr.puts "No matches found for '#{keyword}'"
         exit 1
-      elsif kws.length == 1
-        puts man.to_s(kws[0])
+      elsif kws.length == 1 || kws.include?(keyword)
+        puts man.to_s(keyword)
       else
         $stderr.puts "Multiple matches found for '#{keyword}':\n" +
                      "#{kws.join(', ')}"
