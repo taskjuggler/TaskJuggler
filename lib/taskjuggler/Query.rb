@@ -229,10 +229,10 @@ class TaskJuggler
         else
           @attr.value
         end
-      elsif @numerical
-        @numerical
       elsif @rti
         @rti
+      elsif @numerical
+        @numerical
       else
         @string
       end
