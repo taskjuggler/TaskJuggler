@@ -11,9 +11,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'rbconfig'
-require 'rbconfig/datadir'
-
 # This class provides central management of configuration data to an
 # application. It stores the version number, the name of the application and
 # the suite it belongs to. It also holds copyright and license information.
