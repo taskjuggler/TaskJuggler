@@ -618,11 +618,7 @@ class TaskJuggler
           # the whole interval over to the resource scoreboard overriding any
           # global vacations.
           if (v & (1 << 8)) != 0
-            if (v & 0x3E) == 0
-              @scoreboard[i] = nil
-            else
-              @scoreboard[i] = v & 0x3E
-            end
+            @scoreboard[i] = (v & 0x3E == 0) ? nil : (v & 0x3D)
           elsif ((sbV = @scoreboard[i]).nil? || (sbV & 0x3C) == 0) &&
                 (v & 0x3C) != 0
             # We only add the shift vacations but don't turn global vacation
