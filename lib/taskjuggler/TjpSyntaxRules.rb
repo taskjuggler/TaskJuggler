@@ -4949,9 +4949,9 @@ EOT
 
     pattern(%w( _depends !taskDepList ), lambda {
       checkContainer('depends')
-      @property['depends', @scenarioIdx] =
-        @property['depends', @scenarioIdx] + @val[1]
       begin
+        @property['depends', @scenarioIdx] =
+          @property['depends', @scenarioIdx] + @val[1]
         @property['forward', @scenarioIdx] = true
       rescue AttributeOverwrite
       end
@@ -5146,9 +5146,9 @@ EOT
 
     pattern(%w( _precedes !taskPredList ), lambda {
       checkContainer('precedes')
-      @property['precedes', @scenarioIdx] =
-        @property['precedes', @scenarioIdx] + @val[1]
       begin
+        @property['precedes', @scenarioIdx] =
+          @property['precedes', @scenarioIdx] + @val[1]
         @property['forward', @scenarioIdx] = false
       rescue AttributeOverwrite
       end
