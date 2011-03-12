@@ -226,4 +226,3 @@ EOT
 
 end
 
-TaskJuggler::VimSyntax.new.generate('tjp.vim')
