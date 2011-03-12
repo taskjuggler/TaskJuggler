@@ -83,14 +83,14 @@ class TaskJuggler
       files
     end
 
-    def main
+    def main(argv = ARGV)
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
         puts "\nAborting on user request!"
         exit 1
       end
 
-      args = processArguments(ARGV)
+      args = processArguments(argv)
 
       # If DEBUG mode has been enabled, we restore the INT trap handler again
       # to get Ruby backtrackes.
