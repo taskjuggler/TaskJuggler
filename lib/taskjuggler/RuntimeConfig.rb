@@ -28,32 +28,17 @@ class RuntimeConfig
 
     if configFile
       # Read user specified config file.
-      if File.exist?(configFile)
-        begin
-          @config = YAML::load(File.read(configFile))
-        rescue
-          $stderr.puts "Error in config file #{configFile}: #{$!}"
-          exit 1
-        end
-      else
+      unless loadConfigFile(configFile)
         $stderr.puts "Config file #{configFile} not found!"
         exit 1
       end
     else
       # Search config files in certain directories.
-      @path = [ '.', ENV['HOME'], '/etc' ]
-
-      @path.each do |path|
+      [ '.', ENV['HOME'], '/etc' ].each do |path|
         # Try UNIX style hidden file first, then .rc.
         [ "#{path}/.#{appName}rc", "#{path}/#{appName}.rc" ].each do |file|
-          if File.exist?(file)
-            debug("Loading #{file}")
-            @config = YAML::load(File.read(file))
-            debug(@config.to_s)
-            break
-          end
+          break if loadConfigFile(file)
         end
-        break if @config
       end
     end
   end
@@ -83,6 +68,21 @@ class RuntimeConfig
   end
 
   private
+
+  def loadConfigFile(fileName)
+    if File.exist?(fileName)
+      begin
+        debug("Loading #{fileName}")
+        @config = YAML::load(File.read(fileName))
+        debug(@config.to_s)
+      rescue
+        $stderr.puts "Error in config file #{fileName}: #{$!}"
+        exit 1
+      end
+      return true
+    end
+    false
+  end
 
   def debug(message)
     return unless @debugMode

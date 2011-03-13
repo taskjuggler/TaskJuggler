@@ -64,20 +64,19 @@ class TaskJuggler
 
       @opts.on_tail('-h', '--help', format('Show this message')) do
         puts @opts.to_s
-        exit 0
+        quit
       end
       @opts.on_tail('--version', format('Show version info')) do
         puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
           "#{AppConfig.packageInfo}"
-        exit 0
+        quit
       end
 
       begin
         files = @opts.parse(argv)
       rescue OptionParser::ParseError => msg
         puts @opts.to_s + "\n"
-        $stderr.puts msg
-        exit 2
+        error(msg, 2)
       end
 
       files
@@ -86,8 +85,7 @@ class TaskJuggler
     def main(argv = ARGV)
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
-        puts "\nAborting on user request!"
-        exit 1
+        error("\nAborting on user request!")
       end
 
       args = processArguments(argv)
@@ -110,6 +108,15 @@ class TaskJuggler
     end
 
     private
+
+    def quit
+      exit 0
+    end
+
+    def error(message, exitVal = 1)
+      $stderr.puts "ERROR: #{message}"
+      exit exitVal
+    end
 
     def format(str, indent = nil)
       indent = @optsSummaryWidth + @optsSummaryIndent + 1 unless indent
