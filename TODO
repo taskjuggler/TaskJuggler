@@ -47,6 +47,8 @@ used instead of the defined charge set.
 
 * Highlight dependency arrows of a task with mouse-over effect.
 
+* Make gap ends align with certain times or days of week.
+
 = Discontinued 2.x features
 
 TaskJuggler III should be mostly compatible with 2.x. Existing

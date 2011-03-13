@@ -68,6 +68,7 @@ class TaskJuggler
       $stderr.reopen($stdout)
 
       @log.info("The process is running as daemon now with PID #{@pid}")
+      0
     end
 
     # This method may provide some cleanup functionality in the future. You
