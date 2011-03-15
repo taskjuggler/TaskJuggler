@@ -130,7 +130,7 @@ EOT
                  format('Use the specified TCP/IP port')) do |arg|
            @port = arg
         end
-        @opts.on('--urifile', String,
+        @opts.on('--urifile <FILE>', String,
                  format('If the port is 0, use this file to get the URI ' +
                         'of the server.')) do |arg|
           @uriFile = arg
@@ -455,7 +455,9 @@ EOT
 
     def error(message)
       $stderr.puts "ERROR: #{message}"
-      exit 1
+      # Don't call exit in unsafe mode. We are probably running as a RSpec
+      # test.
+      exit 1 unless @unsafeMode
     end
 
   end

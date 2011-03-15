@@ -41,7 +41,7 @@ class TaskJuggler
       elsif !pid.nil?
         # This is the parent. We can exit now.
         @log.debug("Forked a child process with PID #{pid}")
-        exit 0
+        exit! 0
       end
 
       # Create a new session
@@ -52,7 +52,7 @@ class TaskJuggler
       elsif !pid.nil?
         # This is the parent. We can exit now.
         @log.debug("Forked a child process with PID #{pid}")
-        exit 0
+        exit! 0
       end
 
       @pid = Process.pid
