@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/UTF8String'
+
 class TaskJuggler
 
   # Classical ternary search tree implementation. It can store any list
