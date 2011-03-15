@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = Tj3D.rb -- The TaskJuggler III Project Management Software
+# = Tj3Daemon.rb -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
 #               by Chris Schlaeger <chris@linux.com>
