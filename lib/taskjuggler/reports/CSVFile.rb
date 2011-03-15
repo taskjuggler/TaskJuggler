@@ -202,7 +202,7 @@ class TaskJuggler
     def marshal(field)
       if field.nil?
         ''
-      elsif field.is_a?(Fixnum) || field.is_a?(Float)
+      elsif field.is_a?(Fixnum) || field.is_a?(Float) || field.is_a?(Bignum)
         # Numbers don't have to be quoted.
         field.to_s
       else
