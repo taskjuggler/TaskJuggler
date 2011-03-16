@@ -5050,17 +5050,26 @@ EOT
       setDurationAttribute('length', @val[1])
     })
     doc('length', <<'EOT'
-Specifies the time the task occupies the resources. This is working time, not
-calendar time. 7d means 7 working days, not one week. Whether a day is
-considered a working day or not depends on the defined working hours and
-global vacations. A task with a length specification may have resource
-allocations. Resources are allocated when they are available. The availability
-has no impact on the duration of the task. A day where none of the specified
-resources is available is still considered a working day, if there is no
-global vacation or global working time defined.
+Specifies the global working time to be used for this task. The value is
+specified in working time, not calendar time. 7d means 7 working days, or 7
+times 8 hours (assuming default settings), not one week.
+
+A task with a length specification may have resource allocations. Resources
+are allocated when they are available.  There is no guarantee that the task
+will get any resources allocated.  The availability of resources has no impact
+on the duration of the task. A time slot where none of the specified resources
+is available is still considered working time, if there is no global vacation
+and global working hours are defined accordingly.
+
+For the length calculation, only the global working hours and the global
+vacations matter. If a resource has additinal working hours defined, it's
+quite possible that a task with a length of 5d will have an allocated effort
+larger than 40 hours. Resource working hours only have an impact on whether an
+allocation is made or not for a particular time slot. They don't effect the
+resulting duration of the task.
 
 Tasks may not have subtasks if this attribute is used. Setting this attribute
-will reset the [[duration]] and [[effort]] attributes.
+will reset the [[duration]], [[effort]] and [[milestone]] attributes.
 EOT
        )
     also(%w( duration effort ))
