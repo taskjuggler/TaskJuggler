@@ -12,7 +12,7 @@
 #
 
 require 'rbconfig'
-require 'rbconfig/datadir'
+#require 'rbconfig/datadir'
 
 # This class provides central management of configuration data to an
 # application. It stores the version number, the name of the application and
