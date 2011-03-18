@@ -41,7 +41,7 @@ class TaskJuggler
       elsif !pid.nil?
         # This is the parent. We can exit now.
         @log.debug("Forked a child process with PID #{pid}")
-        exit 0
+        exit! 0
       end
 
       # Create a new session
@@ -52,7 +52,7 @@ class TaskJuggler
       elsif !pid.nil?
         # This is the parent. We can exit now.
         @log.debug("Forked a child process with PID #{pid}")
-        exit 0
+        exit! 0
       end
 
       @pid = Process.pid
@@ -68,6 +68,7 @@ class TaskJuggler
       $stderr.reopen($stdout)
 
       @log.info("The process is running as daemon now with PID #{@pid}")
+      0
     end
 
     # This method may provide some cleanup functionality in the future. You

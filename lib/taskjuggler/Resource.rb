@@ -64,7 +64,8 @@ class TaskJuggler
         levelList = listByLevel[level]
         levelRecord = @project['alertLevels'][level]
         if query.selfContained
-          alertName = "<nowiki>[#{levelRecord[1]}]</nowiki>"
+          alertName = "<nowiki>[</nowiki><fcol:#{levelRecord[0]}>" +
+                      "#{levelRecord[1]}</fcol><nowiki>]</nowiki>"
         else
           alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
           "alt=[#{levelRecord[1]}]|text-bottom]]"
@@ -163,8 +164,9 @@ class TaskJuggler
         rText = ''
 
         taskList.each do |task|
-          rText += "=== <nowiki>[#{task.query_alert(query)}] Task: " +
-            "#{task.name}</nowiki> (#{task.fullId}) ===\n\n"
+          rText += "=== <nowiki>[</nowiki>#{task.query_alert(query).richText}" +
+                   "<nowiki>] Task: #{task.name}</nowiki> " +
+                   "(#{task.fullId}) ===\n\n"
           rText += task.query_journalmessages(query).richText.inputText + "\n\n"
         end
       end

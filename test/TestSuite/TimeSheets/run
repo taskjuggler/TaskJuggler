@@ -39,7 +39,7 @@ tj3ts_receiver --dryrun < dev2_mail1 >> receiver.log || error "rec1"
 tj3ts_receiver --dryrun < dev2_mail2 >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
 check "Report from " receiver.log 2
-check "Green" receiver.log 6
+check "Green" receiver.log 9
 
 # Update the project with the server to include the submitted time
 # sheets. This is only to test the time sheet data surpression.
@@ -53,7 +53,7 @@ check "From: foo@bar.com" summary.log 7
 check "Message-ID:" summary.log 8
 check "The following 5 person(s) have not yet submitted their time sheets" summary.log 4
 check "Weekly Report from" summary.log 4
-check "Green" summary.log 12
+check "Green" summary.log 18
 check "Your time sheet for the period ending 2002-03-01 is overdue" summary.log 5
 
 tj3client --silent terminate
