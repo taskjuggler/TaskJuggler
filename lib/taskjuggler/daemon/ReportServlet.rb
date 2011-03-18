@@ -64,9 +64,9 @@ class TaskJuggler
       # report as HTML encoded text. They will be send via DRb, so we have to
       # extend them with DRbUndumped.
       stdOut = StringIO.new('')
-      stdOut.include DRbUndumped
+      stdOut.extend(DRbUndumped)
       stdErr = StringIO.new('')
-      stdErr.include DRbUndumped
+      stdErr.extend(DRbUndumped)
 
       begin
         @reportServer.connect(@rs_authKey, stdOut, stdErr, $stdin, true)

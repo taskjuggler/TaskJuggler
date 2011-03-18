@@ -1153,8 +1153,11 @@ EOT
     pattern(%w( _flags !flagList ), lambda {
       @val[1].each do |flag|
         unless @property['flags', @scenarioIdx].include?(flag)
-          @property['flags', @scenarioIdx] =
-            @property['flags', @scenarioIdx] + @val[1]
+          # We allow multiple instances of flag definitions.
+          begin
+            @property['flags', @scenarioIdx] += @val[1]
+          rescue AttributeOverwrite
+          end
         end
       end
     })
