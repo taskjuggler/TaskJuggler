@@ -12,17 +12,22 @@
 #
 
 require 'rubygems'
+require 'fileutils'
 require 'support/DaemonControl'
 require 'taskjuggler/apps/Tj3TsSender'
 
 class TaskJuggler
 
-  describe TimeSheets do
+  describe TimeSheetSender do
 
     include DaemonControl
     include FileUtils
 
-    before(:each) do
+    before(:all) do
+      # Make sure we run in the same directory as the spec file.
+      @pwd = pwd
+      cd(File.dirname(__FILE__))
+
       cleanup
       startDaemon(<<'EOT'
   smtpServer: foobar.com
@@ -70,24 +75,32 @@ EOT
         raise "Project not loaded: #{res.stdErr}"
       end
       raise "Can't load project" unless res.returnValue == 0
-    end
 
-    after(:each) do
-      stopDaemon
-      cleanup
-    end
-
-    it 'should send out time sheets' do
-      res = stdIoWrapper do
+      @res = stdIoWrapper do
         Tj3TsSender.new.main(%w( --dryrun --silent -e 2011-03-21 ))
       end
-      raise "Timesheet generation failed" unless res.returnValue == 0
-      countLines(res.stdOut,
+      raise "Timesheet generation failed" unless @res.returnValue == 0
+    end
+
+    after(:all) do
+      stopDaemon
+      cleanup
+      cd(@pwd)
+    end
+
+    it 'should generate properly dated headers' do
+      countLines(@res.stdOut,
                  'timesheet r1 2011-03-14-00:00-+0000 - ' +
                  '2011-03-21-00:00-+0000').should == 1
-      countLines(res.stdOut,
+      countLines(@res.stdOut,
                  'timesheet r2 2011-03-14-00:00-+0000 - ' +
                  '2011-03-21-00:00-+0000').should == 1
+    end
+
+    it 'should generate 2 emails' do
+      countLines(@res.stdOut, 'From: foo@example.com').should == 2
+      countLines(@res.stdOut, 'To: r1@example.com').should == 1
+      countLines(@res.stdOut, 'To: r2@example.com').should == 1
     end
 
     private
@@ -107,7 +120,7 @@ EOT
     end
 
     def cleanup
-      rm_rf %w( TimeSheetTemplates timesheets.log tj3ts_sender.log )
+      rm_rf %w( TimeSheetTemplates timesheets.log tj3.log tj3ts_sender.log )
     end
 
   end
