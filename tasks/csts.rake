@@ -15,7 +15,7 @@ EXT_SRC_FILES   = FileList["#{EXT_DIR}/**/*.{c,h}"]
 EXT_FILES       = EXT_SRC_FILES + EXT_CONF_FILES
 
 # FILES
-RAKE_FILES      = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, SETUP_FILE, "#{RAKE_DIR}/*"]
+RAKE_FILES      = FileList[RAKEFILE, PRJ_FILE, GEM_SPEC_FILE, "#{RAKE_DIR}/*"]
 BIN_FILES       = FileList["#{BIN_DIR}/**/*"]
 LIB_FILES       = FileList["#{LIB_DIR}/**/*.rb"]
 TEST_FILES      = FileList["#{TEST_DIR}/**/test_*.rb"]
@@ -34,7 +34,7 @@ DIST_FILES.include(EXT_FILES) if HAVE_EXT
 DIST_FILES.include("#{RDOC_DIR}/**/*.{html,css}", 'man/*.[0-9]')
 DIST_FILES.exclude('**/tmp_*', '**/*.tmp')
 
-# 
+#
 CLEAN.include( MANUAL_DIR + '/html/*' )
 CLEAN.include( 'README' ) if File.exist? 'README.rb'
 

@@ -42,7 +42,6 @@ TaskJuggler is a project management software that goes far beyond the commonly
 known Gantt chart editors.
 EOT
 RAKEFILE        = 'Rakefile'
-SETUP_FILE      = 'setup.rb'
 PRJ_FILE        = 'prj_cfg.rb'
 GEM_SPEC_FILE   = 'gem_spec.rb'
 DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/*", "test/all.rb", "test/MessageChecker.rb", "test/TestSuite/**/*", "spec/**/*", "data/**/*"]
