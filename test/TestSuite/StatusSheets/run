@@ -34,7 +34,6 @@ tj3ss_sender --dryrun -e 2002-03-02 > sender.log || error "sender1"
 check "From: foo@bar.com" sender.log 2
 check "Content-Disposition: attachment;" sender.log 2
 check "^statussheet " sender.log 2
-check "^resource1" sender.log 2
 check "^resource2" sender.log 2
 
 # Run a receiver test
@@ -43,8 +42,8 @@ tj3ss_receiver --dryrun < dev2_mail >> receiver.log || error "rec2"
 check "From: foo@bar.com" receiver.log 2
 check "Status report from " receiver.log 1
 check "Report from " receiver.log 3
-check "Yellow" receiver.log 2
-check "Green" receiver.log 4
+check "Yellow" receiver.log 3
+check "Green" receiver.log 5
 
 check ERROR statussheets.log 0
 check WARN statussheets.log 1
