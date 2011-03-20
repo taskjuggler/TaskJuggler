@@ -17,6 +17,27 @@ compile anything. But TaskJuggler has a very small set of
 dependencies that you have to take care of first. Please make sure you
 have the minimum required version installed.
 
+==== Supported Operating Systems ====
+
+* '''Linux''': Linux is the primary development platform for
+TaskJuggler. Releases are tested on recent openSUSE versions.
+
+* '''Other Unix OSes''': Should work as well, but releases are not
+tested on these OSes.
+
+* '''Windows''': Windows7 and some older version of Windows should
+work. There is no maintainer for this platform, so all releases are
+not tested on this platform.
+
+* '''MacOSX''': Will probably work as well. Releases are not tested
+on this OS. Older MacOS versions will likely not work.
+
+If you are interested in becoming the maintainer for any of the
+currently unmaintained (and untested) OSes, please contact us via the
+developer mailing list.
+
+==== Other required Software ====
+
 * '''Ruby:''' TaskJuggler III is written in Ruby.  You need a Ruby
 runtime environment to run it. This can be downloaded from
 [http://www.ruby-lang.org/en/downloads/ here].  Most Linux
@@ -26,11 +47,14 @@ recommended Ruby version to make full use of TaskJuggler is 1.9.2.
 Ruby 1.9.1 contains some bugs that prevent the multi-core support to
 work. For users that are not interested in multi-core support, the web
 server,  the time sheet infrastructure and daemon Ruby 1.8.7 is still
-ok to use.
+ok to use. On Windows you need at least Ruby 1.9.2.
 
 * '''RubyGems:''' If it did not come with your OS or the Ruby
 installation, see [http://docs.rubygems.org here] how to get and
 install it.
+
+Other versions of Ruby (Rubinius, JRuby, etc.) may work but have not
+been tested.
 
 === Installation Steps for Users ===
 
