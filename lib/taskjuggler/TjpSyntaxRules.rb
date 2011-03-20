@@ -4916,9 +4916,12 @@ EOT
         mode = :perDiem
         amount = @val[1] / 7.0
       end
-      @property['charge', @scenarioIdx] =
-        @property['charge', @scenarioIdx] +
-        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
+      # Multiple 'charge' attributes are allowed.
+      begin
+        @property['charge', @scenarioIdx] +=
+          [ Charge.new(amount, mode, @property, @scenarioIdx) ]
+      rescue AttributeOverwrite
+      end
     })
     doc('charge', <<'EOT'
 Specify a one-time or per-period charge to a certain account. The charge can
