@@ -47,7 +47,7 @@ check "Green" receiver.log 5
 
 check ERROR statussheets.log 0
 check WARN statussheets.log 1
-check INFO statussheets.log 27
+check INFO statussheets.log 21
 check "Your weekly status report template" statussheets.log 2
 
 cleanup

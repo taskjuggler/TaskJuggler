@@ -455,9 +455,12 @@ EOT
 
     def error(message)
       $stderr.puts "ERROR: #{message}"
-      # Don't call exit in unsafe mode. We are probably running as a RSpec
-      # test.
-      exit 1 unless @unsafeMode
+      # Don't call exit in unsafe mode. Raise a StandardError instead.
+      if @unsafeMode
+        raise RuntimeError
+      else
+        exit 1
+      end
     end
 
   end

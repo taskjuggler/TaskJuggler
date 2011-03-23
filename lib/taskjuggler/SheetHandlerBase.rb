@@ -123,11 +123,13 @@ class TaskJuggler
 
       cmd = @scmCommand.gsub(/%m/, message)
       cmd.gsub!(/%f/, fileName)
-      `#{cmd}` unless @dryRun
-      if $? == 0
-        info("Added #{fileName} to SCM")
-      else
-        error("SCM command #{cmd} failed: #{$?}")
+      unless @dryRun
+        `#{cmd}`
+        if $? == 0
+          info("Added #{fileName} to SCM")
+        else
+          error("SCM command #{cmd} failed: #{$?.class}")
+        end
       end
     end
 

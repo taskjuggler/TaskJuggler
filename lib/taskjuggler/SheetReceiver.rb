@@ -13,14 +13,17 @@
 
 require 'digest/md5'
 require 'mail'
-require 'open4'
 require 'yaml'
+require 'taskjuggler/apps/Tj3Client'
+require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/SheetHandlerBase'
 require 'taskjuggler/RichText'
 
 class TaskJuggler
 
   class SheetReceiver < SheetHandlerBase
+
+    include StdIoWrapper
 
     def initialize(appName, type)
       super(appName)
@@ -172,27 +175,26 @@ EOT
     end
 
     def checkSheet(sheet)
-      err = ''
-      status = nil
+      res = nil
       begin
         # Save a copy of the sheet for debugging purposes.
         File.open("#{@failedSheetsDir}/#{@resourceId}-#{@date}.tji", 'w') do |f|
           f.write(sheet)
         end
-        command = "tj3client --silent #{@tj3clientOption} #{@projectId} ."
-        status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
-          # Send the report to the tj3client process via stdin.
-          stdin.write(sheet)
-          stdin.close
-          # Without errors, the incoming report is pretty printed and returned
-          # in RichText format.
-          @report = stdout.read
-          @warnings = stderr.read
+        command = [ '--unsafe', '--silent', *@tj3clientOption.split(' '),
+                    @projectId, '.' ]
+        # Send the report to the tj3client process via stdin.
+        res = stdIoWrapper(sheet) do
+          Tj3Client.new.main(command)
         end
+        # Without errors, the incoming report is pretty printed and returned
+        # in RichText format.
+        @report = res.stdOut
+        @warnings = res.stdErr
       rescue
         fatal("Cannot check #{@sheetType} sheet: #{$!}")
       end
-      if status.exitstatus == 0
+      if res.returnValue == 0
         File.delete("#{@failedSheetsDir}/#{@resourceId}-#{@date}.tji")
         return true
       end
