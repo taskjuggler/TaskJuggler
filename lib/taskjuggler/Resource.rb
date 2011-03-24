@@ -164,7 +164,8 @@ class TaskJuggler
         rText = ''
 
         taskList.each do |task|
-          rText += "=== <nowiki>[</nowiki>#{task.query_alert(query).richText}" +
+          rText += "=== <nowiki>[</nowiki>" +
+                   "#{task.query_alert(query).richText.inputText}" +
                    "<nowiki>] Task: #{task.name}</nowiki> " +
                    "(#{task.fullId}) ===\n\n"
           rText += task.query_journalmessages(query).richText.inputText + "\n\n"

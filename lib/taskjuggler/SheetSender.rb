@@ -11,11 +11,12 @@
 # published by the Free Software Foundation.
 #
 
-require 'open4'
 require 'mail'
 require 'yaml'
+require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/SheetHandlerBase'
 require 'taskjuggler/reports/CSVFile'
+require 'taskjuggler/apps/Tj3Client'
 
 class TaskJuggler
 
@@ -23,6 +24,8 @@ class TaskJuggler
   class SheetSender < SheetHandlerBase
 
     attr_accessor :force, :intervalDuration
+
+    include StdIoWrapper
 
     def initialize(appName, type)
       super(appName)
@@ -244,17 +247,17 @@ EOT
     def generateReport(id, reportDef)
       out = ''
       err = ''
+      res = nil
       begin
-        command = "tj3client --silent report #{@projectId} #{id} = ."
-        status = Open4.popen4(command) do |pid, stdin, stdout, stderr|
-          # Send the report definition to the tj3client process via stdin.
-          stdin.write(reportDef)
-          stdin.close
-          # Retrieve the output
-          out = stdout.read
-          err = stderr.read
+        command = [ '--unsafe', '--silent', 'report', @projectId, id, '=', '.' ]
+
+        # Send the report definition to the tj3client process via stdin.
+        res = stdIoWrapper(reportDef) do
+          Tj3Client.new.main(command)
         end
-        if status.exitstatus != 0
+        out = res.stdOut
+        err = res.stdErr
+        if res.returnValue != 0
           error("generateReport: #{err}")
         end
       rescue

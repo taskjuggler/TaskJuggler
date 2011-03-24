@@ -32,6 +32,6 @@ GEM_SPEC = Gem::Specification.new { |s|
         s.cert_chain  = [CERT_PUBLIC]
     end
     s.platform          = Gem::Platform::RUBY
-    s.required_ruby_version  = '>= 1.8.6'
+    s.required_ruby_version  = '>= 1.8.7'
 }
 

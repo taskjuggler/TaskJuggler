@@ -12,7 +12,7 @@
 #
 
 require 'rubygems'
-require 'support/StdIoWrapper'
+require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/apps/Tj3'
 
 class TaskJuggler

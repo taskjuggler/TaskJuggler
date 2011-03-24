@@ -1,16 +1,16 @@
 = About {TaskJuggler III}[http://www.taskjuggler.org]
 
-TaskJuggler III is a modern and powerful, Free and Open Source Software project
+TaskJuggler is a modern and powerful, Free and Open Source Software project
 management tool. Its new approach to project planing and tracking is more
 flexible and superior to the commonly used Gantt chart editing tools.
 
-TaskJuggler III is project management software for serious project managers. It
+TaskJuggler is project management software for serious project managers. It
 covers the complete spectrum of project management tasks from the first idea
 to the completion of the project. It assists you during project scoping,
 resource assignment, cost and revenue planing, risk and communication
 management.
 
-TaskJuggler III provides an optimizing scheduler that computes your project time
+TaskJuggler provides an optimizing scheduler that computes your project time
 lines and resource assignments based on the project outline and the
 constraints that you have provided. The built-in resource balancer and
 consistency checker offload you from having to worry about irrelevant details
@@ -20,20 +20,20 @@ go, making it also ideal for new management strategies such as Extreme
 Programming and Agile Project Management.
 
 If you are about to build a skyscraper or just want to put together the
-release schedule of your open source project, TaskJuggler III is the right
+release schedule of your open source project, TaskJuggler is the right
 tool for you. If you just want to draw nice looking Gantt charts to impress
-your boss or your investors, TaskJuggler III might not be right for you. You
+your boss or your investors, TaskJuggler might not be right for you. You
 can of course create nice looking Gantt charts. But it takes a little more
-effort to master its power. If you are up for this, TaskJuggler III will
+effort to master its power. If you are up for this, TaskJuggler will
 become a companion that you don't want to miss anymore.
 
-TaskJuggler III is written in {Ruby}[http://www.ruby-lang.org/en/] and should
+TaskJuggler is written in {Ruby}[http://www.ruby-lang.org/en/] and should
 be easily installable and usable on all popular operating systems. It may
 sound surprising at first, but this software does not need a graphical user
 interface. A command shell, a plain text editor (no word processor!) and a web
 browser is all you need for your work.
 
-TaskJuggler III has not yet been released as a stable version. The primary
+TaskJuggler has not yet been released as a stable version. The primary
 reason is that we don't want to freeze the syntax before it has been used by a
 larger audience. By now, changes should be small, but we cannot yet rule out
 minor compatibility issues when upgrading to a newer version. We also have a
@@ -41,19 +41,56 @@ fairly small test suite. It's quite possible, that you will run into a bug or
 two. Please report it into our {issue
 tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
 
+= Features and Highlights
+
+* Manages tasks, resources and accounts of your project
+* Automatic resource leveling and tasks conflict resolution
+* Comprehensive and flexible reports so you can find the information you need when you need it
+* Project tracking and status reporting with dashboard support
+* Time and status sheet reporting infrastructure
+* Unlimited number of scenarios (baselines) of the same project for what-if analysis
+* CSV data export for exchange with Office Suites
+* Projects can be combined to larger projects
+* Multiple project managers can work on the same project
+* Flexible working hours and vacation handling
+* Support for shift working
+* Multiple time zone support
+* Tasks may have initial costs, finishing costs
+* Resources may have running costs
+* Support for profit/loss analysis
+* HTML reports for Web based communication
+* Built-in web server for dynamic and interactive reports
+* Powerful project description syntax with macro support
+* Support for central resource allocation database
+* Scales well on multi-core or multi-CPU systems
+* Runs on all Linux, Unix, Windows, MacOS and several other operating systems
+* Simple installation
+
 = Installation
 
 Installation instructions can be found {here}[http://www.taskjuggler.org/tj3/manual/Installation.html#Installation].
 
 = Introduction and Tutorial
 
-To learn more about how to use TaskJuggler III please see the {user
+To learn more about how to use TaskJuggler please see the {user
 manual}[http://www.taskjuggler.org/tj3/manual/index.html]. It also contains a
 {tutorial}[http://www.taskjuggler.org/tj3/manual/Tutorial.html#The_Tutorial_Your_first_Project]
 to get you started. It will tell you how to generate HTML reports
 like {these}[http://www.taskjuggler.org/tj3/examples/Overview.html]
 from such a {project
 description}[http://www.taskjuggler.org/tj3/examples/tutorial.tjp].
+
+= Getting Help and reporting Bugs
+
+There are several mailing list for TaskJuggler users and developers.
+Please see {this page}[http://www.taskjuggler.org/forum.php] for
+details. If you have a question about TaskJuggler usage, the user
+list is the best place to go. Please remain subscribed and help other
+users when you get more proficient in TaskJuggler.
+
+If you think that you have found a bug in the software, please the
+the {bug reporting
+guidelines}[http://www.taskjuggler.org/tj3/manual/Reporting_Bugs.html#Reporting_Bugs_and_Sending_Feedback].
 
 = Copyright and License
 

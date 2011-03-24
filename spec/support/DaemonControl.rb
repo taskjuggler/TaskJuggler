@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'support/StdIoWrapper'
+require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/apps/Tj3Daemon'
 require 'taskjuggler/apps/Tj3Client'
 
