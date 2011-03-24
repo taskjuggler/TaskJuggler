@@ -45,6 +45,6 @@ RAKEFILE        = 'Rakefile'
 PRJ_FILE        = 'prj_cfg.rb'
 GEM_SPEC_FILE   = 'gem_spec.rb'
 DATA_FILES      = FileList["benchmarks/**/*", "examples/**/*", "manual/*", "test/all.rb", "test/MessageChecker.rb", "test/TestSuite/**/*", "spec/**/*", "data/**/*"]
-DEPENDENCIES    = { 'mail' => '= 2.1.3' }
+DEPENDENCIES    = { 'mail' => '= 2.1.15' }
 DEVEL_DEPENDENCIES = { 'rcov' => '0.9.9',
-                       'rspec' => '2.3.0' }
+                       'rspec' => '2.5.0' }
