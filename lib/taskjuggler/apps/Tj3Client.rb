@@ -453,13 +453,13 @@ EOT
       $stdout.puts "#{message}"
     end
 
-    def error(message)
+    def error(message, exitVal = 1)
       $stderr.puts "ERROR: #{message}"
       # Don't call exit in unsafe mode. Raise a StandardError instead.
       if @unsafeMode
         raise RuntimeError
       else
-        exit 1
+        exit exitVal
       end
     end
 
