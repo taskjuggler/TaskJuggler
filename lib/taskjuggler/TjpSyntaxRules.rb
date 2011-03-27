@@ -5226,8 +5226,8 @@ EOT
        )
 
     pattern(%w( _responsible !resourceList ), lambda {
-      @property['responsible', @scenarioIdx] =
-        @property['responsible', @scenarioIdx] + @val[1]
+      @property['responsible', @scenarioIdx] += @val[1]
+      @property['responsible', @scenarioIdx].uniq!
     })
     doc('responsible', <<'EOT'
 The ID of the resource that is responsible for this task. This value is for
