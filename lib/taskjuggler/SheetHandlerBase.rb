@@ -189,14 +189,14 @@ class TaskJuggler
           subject subject
           text_part do
             content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
-            content_transfer_encoding 'quoted-printable'
-            body message.to_s.to_quoted_printable
+            content_transfer_encoding 'base64'
+            body message.to_s.to_base64
           end
           if message.is_a?(RichTextIntermediate)
             html_part do
               content_type 'text/html; charset=UTF-8'
-              content_transfer_encoding 'quoted-printable'
-              body self_.htmlMailBody(message).to_quoted_printable
+              content_transfer_encoding 'base64'
+              body self_.htmlMailBody(message).to_base64
             end
           end
         end
@@ -219,7 +219,7 @@ class TaskJuggler
 
       if @dryRun
         # For testing and debugging, we only print out the email.
-        puts mail.to_s
+        puts "-- Email Start #{'-' * 60}\n#{mail.to_s}-- Email End #{'-' * 62}"
         log('INFO', "Show email '#{subject}' to #{to}")
       else
         # Actually send out the email via SMTP.

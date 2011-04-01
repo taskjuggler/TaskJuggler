@@ -13,6 +13,8 @@
 
 KCODE='u'
 
+require 'base64'
+
 # This is an extension and modification of the standard String class. We do a
 # lot of UTF-8 character processing in the parser. Ruby 1.8 does not have good
 # enough UTF-8 support and Ruby 1.9 only handles UTF-8 characters as Strings.
@@ -100,6 +102,10 @@ class String
 
   def to_quoted_printable
     [self].pack('M').gsub(/\n/, "\r\n")
+  end
+
+  def to_base64
+    Base64.encode64(self)
   end
 
 end

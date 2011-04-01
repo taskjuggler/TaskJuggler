@@ -79,6 +79,7 @@ EOT
       @res = stdIoWrapper do
         Tj3TsSender.new.main(%w( --dryrun --silent -e 2011-03-21 ))
       end
+      @mails = collectMails(@res.stdOut)
       raise "Timesheet generation failed" unless @res.returnValue == 0
     end
 
@@ -88,19 +89,36 @@ EOT
       cd(@pwd)
     end
 
+    it 'should have generated 2 mails' do
+      @mails.length.should == 2
+    end
+
+    it 'should have email sender foo@example.com' do
+      @mails.each do |mail|
+        mail.from[0].should == 'foo@example.com'
+      end
+    end
+
+    it 'should have proper email receivers' do
+      @mails[0].to[0].should == 'r1@example.com'
+      @mails[1].to[0].should == 'r2@example.com'
+    end
+
     it 'should generate properly dated headers' do
-      countLines(@res.stdOut,
+      countLines(@mails[0].parts[0].decoded,
                  'timesheet r1 2011-03-14-00:00-+0000 - ' +
                  '2011-03-21-00:00-+0000').should == 1
-      countLines(@res.stdOut,
+      countLines(@mails[1].parts[0].decoded,
                  'timesheet r2 2011-03-14-00:00-+0000 - ' +
                  '2011-03-21-00:00-+0000').should == 1
     end
 
-    it 'should generate 2 emails' do
-      countLines(@res.stdOut, 'From: foo@example.com').should == 2
-      countLines(@res.stdOut, 'To: r1@example.com').should == 1
-      countLines(@res.stdOut, 'To: r2@example.com').should == 1
+    it 'should have matching timesheets in body and attachment' do
+      @mails.each do |mail|
+        bodySheet = extractTimeSheet(mail.parts[0].decoded)
+        attachedSheet = extractTimeSheet(mail.part[1].decoded)
+        bodySheet.should == attachedSheet
+      end
     end
 
     private
@@ -117,6 +135,38 @@ EOT
         end
       end
       c
+    end
+
+    def extractTimeSheet(lines)
+      sheet = nil
+      lines.each_line do |line|
+        if line =~ /^# --------8<--------8<--------/
+          sheet = ""
+        elsif line =~ /^# -------->8-------->8--------/
+          raise 'Found end marker, but no start marker' unless sheet
+          return sheet
+        elsif sheet
+          sheet += line
+        end
+      end
+      raise "No end marker found"
+    end
+
+    def collectMails(lines)
+      mails = []
+      mailLines = nil
+      lines.each_line do |line|
+        if line =~ /^-- Email Start ---/
+          mailLines = ""
+        elsif line =~ /^-- Email End ---/
+          raise 'Found end marker, but no start marker' unless mailLines
+          mails << Mail.read_from_string(mailLines)
+          mailLines =  nil
+        elsif mailLines
+          mailLines += line
+        end
+      end
+      mails
     end
 
     def cleanup
