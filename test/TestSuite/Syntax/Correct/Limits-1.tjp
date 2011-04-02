@@ -68,8 +68,6 @@ task t6 "Task 6" {
   allocate r2
   limits { dailymax 4h weeklymax 3d monthlymax 2w }
 }
-# *** EXAMPLE: 1 -
-# *** EXAMPLE: 2 -
 # *** EXAMPLE: 3 -
 # *** EXAMPLE: 5 +
 # *** EXAMPLE: 4 +
@@ -81,6 +79,8 @@ task t7 "Task 7" {
   # Limit r1 to half days only
   limits { dailymax 4h { resources r1 } }
 }
+# *** EXAMPLE: 1 -
+# *** EXAMPLE: 2 -
 # *** EXAMPLE: 4 -
 # *** EXAMPLE: 5 -
 
