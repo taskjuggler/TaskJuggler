@@ -99,6 +99,9 @@ EOT
 
     def main(argv = ARGV)
       files = super
+      if files.empty?
+        error('You must provide at least one .tjp file', 1)
+      end
 
       tj = TaskJuggler.new(true)
       tj.maxCpuCores = @maxCpuCores
