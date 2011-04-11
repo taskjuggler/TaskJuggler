@@ -99,6 +99,21 @@ class TaskJuggler
       value
     end
 
+  if RUBY_VERSION < '1.9.0'
+
+    # Ruby 1.8 has a buggy hash key generation algorithm that leads to many
+    # hash collisions. We completely disable caching on 1.8.
+
+    def load(key)
+      nil
+    end
+
+    def cached(key)
+      yield
+    end
+
+  else
+
     # Retrieve the value indexed by _key_ from the cache. If it's not found,
     # nil is returned.
     def load(key)
@@ -123,6 +138,8 @@ class TaskJuggler
         store(yield, key)
       end
     end
+
+  end
 
     def to_s
       <<"EOT"
