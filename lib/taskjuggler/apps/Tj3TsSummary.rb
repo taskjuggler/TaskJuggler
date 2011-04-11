@@ -65,19 +65,23 @@ EOT
     end
 
     def main(argv = ARGV)
-      super
-      ts = TimeSheetSummary.new
-      @rc.configure(ts, 'global')
-      @rc.configure(ts, 'timesheets')
-      @rc.configure(ts, 'timesheets.summary')
-      ts.workingDir = @workingDir if @workingDir
-      ts.dryRun = @dryRun
-      ts.date = @date if @date
-      ts.sheetRecipients += @sheetRecipients
-      ts.digestRecipients += @digestRecipients
+      begin
+        super
+        ts = TimeSheetSummary.new
+        @rc.configure(ts, 'global')
+        @rc.configure(ts, 'timesheets')
+        @rc.configure(ts, 'timesheets.summary')
+        ts.workingDir = @workingDir if @workingDir
+        ts.dryRun = @dryRun
+        ts.date = @date if @date
+        ts.sheetRecipients += @sheetRecipients
+        ts.digestRecipients += @digestRecipients
 
-      ts.sendSummary(@resourceList)
-      0
+        ts.sendSummary(@resourceList)
+        return 0
+      rescue TjRuntimeError
+        return 1
+      end
     end
 
   end

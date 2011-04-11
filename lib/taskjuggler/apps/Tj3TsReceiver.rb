@@ -41,16 +41,20 @@ EOT
     end
 
     def main(argv = ARGV)
-      super
-      ts = TimeSheetReceiver.new('tj3ts_receiver')
-      @rc.configure(ts, 'global')
-      @rc.configure(ts, 'timesheets')
-      @rc.configure(ts, 'timesheets.receiver')
-      ts.workingDir = @workingDir if @workingDir
-      ts.dryRun = @dryRun
+      begin
+        super
+        ts = TimeSheetReceiver.new('tj3ts_receiver')
+        @rc.configure(ts, 'global')
+        @rc.configure(ts, 'timesheets')
+        @rc.configure(ts, 'timesheets.receiver')
+        ts.workingDir = @workingDir if @workingDir
+        ts.dryRun = @dryRun
 
-      ts.processEmail
-      0
+        ts.processEmail
+        return 0
+      rescue TjRuntimeError
+        return 1
+      end
     end
 
   end

@@ -146,7 +146,7 @@ class TaskJuggler
     def error(message)
       $stderr.puts message if @outputLevel >= 1
       log("ERROR", message) if @logLevel >= 1
-      exit 1
+      raise TjRuntimeError
     end
 
     def log(type, message)
@@ -230,7 +230,7 @@ class TaskJuggler
           # without further attempts.
           if @emailFailure
             log('ERROR', "Email double fault: #{$!}")
-            exit 1
+            raise TjRuntimeError
           else
             @emailFailure = true
             error("Email transmission failed: #{$!}")

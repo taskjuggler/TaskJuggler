@@ -20,6 +20,9 @@ require 'taskjuggler/TextFormatter'
 
 class TaskJuggler
 
+  class TjRuntimeError < RuntimeError
+  end
+
   class Tj3AppBase
 
     def initialize

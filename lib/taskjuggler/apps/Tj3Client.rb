@@ -160,18 +160,22 @@ EOT
     end
 
     def main(argv = ARGV)
-      args = super
-      # Run a first check of the non-optional command line arguments.
-      checkCommand(args)
-      # Read some configuration variables. Except for the authKey, they are
-      # all optional.
-      @rc.configure(self, 'global')
+      begin
+        args = super
+        # Run a first check of the non-optional command line arguments.
+        checkCommand(args)
+        # Read some configuration variables. Except for the authKey, they are
+        # all optional.
+        @rc.configure(self, 'global')
 
-      connectDaemon
-      retVal = executeCommand(args[0], args[1..-1])
-      disconnectDaemon
+        connectDaemon
+        retVal = executeCommand(args[0], args[1..-1])
+        disconnectDaemon
 
-      retVal
+        return retVal
+      rescue TjRuntimeError
+        return 1
+      end
     end
 
     private
@@ -456,11 +460,7 @@ EOT
     def error(message, exitVal = 1)
       $stderr.puts "ERROR: #{message}"
       # Don't call exit in unsafe mode. Raise a StandardError instead.
-      if @unsafeMode
-        raise RuntimeError
-      else
-        exit exitVal
-      end
+      raise TjRuntimeError
     end
 
   end

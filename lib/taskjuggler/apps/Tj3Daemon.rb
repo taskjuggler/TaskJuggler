@@ -73,26 +73,30 @@ EOT
     end
 
     def main(argv = ARGV)
-      files = super
-      broker = ProjectBroker.new
-      @rc.configure(self, 'global')
-      @rc.configure(@log, 'global.log')
-      @rc.configure(broker, 'global')
-      @rc.configure(broker, 'daemon')
+      begin
+        files = super
+        broker = ProjectBroker.new
+        @rc.configure(self, 'global')
+        @rc.configure(@log, 'global.log')
+        @rc.configure(broker, 'global')
+        @rc.configure(broker, 'daemon')
 
-      # Set some config variables if corresponding data was provided via the
-      # command line.
-      broker.port = @port if @port
-      broker.uriFile = @uriFile.untaint
-      broker.enableWebServer = @webServer
-      broker.webServerPort = @webServerPort if @webServerPort
-      broker.projectFiles = sortInputFiles(files) unless files.empty?
-      broker.daemonize = @daemonize
-      # Create log files for standard IO for each child process if the daemon
-      # is not disconnected from the terminal.
-      broker.logStdIO = !@daemonize
+        # Set some config variables if corresponding data was provided via the
+        # command line.
+        broker.port = @port if @port
+        broker.uriFile = @uriFile.untaint
+        broker.enableWebServer = @webServer
+        broker.webServerPort = @webServerPort if @webServerPort
+        broker.projectFiles = sortInputFiles(files) unless files.empty?
+        broker.daemonize = @daemonize
+        # Create log files for standard IO for each child process if the daemon
+        # is not disconnected from the terminal.
+        broker.logStdIO = !@daemonize
 
-      broker.start
+        return broker.start
+      rescue TjRuntimeError
+        return 1
+      end
     end
 
     private

@@ -232,6 +232,35 @@ EOT
         @sheet2.should == File.read('TimeSheets/2011-03-21/r2_2011-03-21.tji')
       end
 
+      it 'should report an error on bad keyword' do
+        sheet = <<'EOT'
+# --------8<--------8<--------
+timesheet r2 2011-03-14-00:00-+0000 - 2011-03-21-00:00-+0000 {
+
+  task t3 {
+    wirk 100.0%
+    remaining 5.0d
+    status green "All green!"
+  }
+}
+# -------->8-------->8--------
+EOT
+        mail = Mail.new do
+          subject "Timesheet"
+          content_type [ 'text', 'plain', { 'charset' => 'UTF-8' } ]
+          content_transfer_encoding 'base64'
+          body sheet.unix2dos.to_base64
+        end
+        mail.to = 'taskjuggler@example.com'
+        mail.from 'r@example.com'
+        res = stdIoWrapper(mail.to_s) do
+          Tj3TsReceiver.new.main(%w( --dryrun --silent ))
+        end
+        countLines(res.stdErr,
+                   /\.\:4\: Error\: Unexpected token 'wirk' found\./).should == 1
+        res.returnValue.should == 1
+      end
+
     end
 
     describe TimeSheetSummary do

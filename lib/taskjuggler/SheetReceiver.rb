@@ -335,7 +335,7 @@ EOT
       sendEmail(@submitter, "Your #{@sheetType} sheet submission failed!",
                 message)
 
-      exit 1
+      raise TjRuntimeError
     end
 
     def fatal(message)
@@ -351,7 +351,7 @@ has been notified and will try to rectify the situation as
 soon as possible. Please re-submit your #{@sheetType} sheet later!
 EOT
                )
-      exit 1
+      raise TjRuntimeError
     end
 
 

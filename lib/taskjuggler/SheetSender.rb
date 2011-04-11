@@ -171,6 +171,9 @@ EOF
 EOT
         generateReport(reportId, reportDef)
       end
+      unless firstTemplateFile
+        error("No #{@sheetType} sheet templates found in #{@templateDir}")
+      end
       enableSignatureForReporting(firstTemplateFile)
     end
 

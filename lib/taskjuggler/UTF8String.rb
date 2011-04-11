@@ -108,4 +108,8 @@ class String
     Base64.encode64(self)
   end
 
+  def unix2dos
+    gsub(/\n/, "\r\n")
+  end
+
 end

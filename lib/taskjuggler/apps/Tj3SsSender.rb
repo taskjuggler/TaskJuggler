@@ -68,20 +68,24 @@ EOT
     end
 
     def main(argv = ARGV)
-      super
-      ts = StatusSheetSender.new('tj3ss_sender')
-      @rc.configure(ts, 'global')
-      @rc.configure(ts, 'statussheets')
-      @rc.configure(ts, 'statussheets.sender')
-      ts.workingDir = @workingDir if @workingDir
-      ts.dryRun = @dryRun
-      ts.force = @force
-      ts.intervalDuration = @intervalDuration if @intervalDuration
-      ts.date = @date if @date
-      ts.hideResource = @hideResource if @hideResource
+      begin
+        super
+        ts = StatusSheetSender.new('tj3ss_sender')
+        @rc.configure(ts, 'global')
+        @rc.configure(ts, 'statussheets')
+        @rc.configure(ts, 'statussheets.sender')
+        ts.workingDir = @workingDir if @workingDir
+        ts.dryRun = @dryRun
+        ts.force = @force
+        ts.intervalDuration = @intervalDuration if @intervalDuration
+        ts.date = @date if @date
+        ts.hideResource = @hideResource if @hideResource
 
-      ts.sendTemplates(@resourceList)
-      0
+        ts.sendTemplates(@resourceList)
+        return 0
+      rescue TjRuntimeError
+        return 1
+      end
     end
 
   end

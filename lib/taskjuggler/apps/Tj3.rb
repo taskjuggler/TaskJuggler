@@ -98,35 +98,40 @@ EOT
     end
 
     def main(argv = ARGV)
-      files = super
-      if files.empty?
-        error('You must provide at least one .tjp file', 1)
+      begin
+        files = super
+        if files.empty?
+          error('You must provide at least one .tjp file', 1)
+        end
+
+        tj = TaskJuggler.new(true)
+        tj.maxCpuCores = @maxCpuCores
+        tj.warnTsDeltas = @warnTsDeltas
+        keepParser = !@timeSheets.empty? || !@statusSheets.empty?
+        return 1 unless tj.parse(files, keepParser)
+
+        return 0 if @checkSyntax
+
+        if !tj.schedule
+          return 1 unless @forceReports
+        end
+
+        # The checks of time and status sheets is probably only used for
+        # debugging.  Normally, this function is provided by tj3client.
+        @timeSheets.each do |ts|
+          return 1 if !tj.checkTimeSheet(ts, File.read(ts)) || tj.errors > 0
+        end
+        @statusSheets.each do |ss|
+          return 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
+        end
+
+        return 0 if @noReports
+
+        return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+
+      rescue TjRuntimeError
+        return 1
       end
-
-      tj = TaskJuggler.new(true)
-      tj.maxCpuCores = @maxCpuCores
-      tj.warnTsDeltas = @warnTsDeltas
-      keepParser = !@timeSheets.empty? || !@statusSheets.empty?
-      return 1 unless tj.parse(files, keepParser)
-
-      return 0 if @checkSyntax
-
-      if !tj.schedule
-        return 1 unless @forceReports
-      end
-
-      # The checks of time and status sheets is probably only used for debugging.
-      # Normally, this function is provided by tj3client.
-      @timeSheets.each do |ts|
-        return 1 if !tj.checkTimeSheet(ts, File.read(ts)) || tj.errors > 0
-      end
-      @statusSheets.each do |ss|
-        return 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
-      end
-
-      return 0 if @noReports
-
-      return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
 
       0
     end
