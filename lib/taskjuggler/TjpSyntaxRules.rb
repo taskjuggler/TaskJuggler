@@ -925,6 +925,9 @@ EOT
                          { 'vacation' => 'Include vacations',
                            'workinghours' => 'Include working hours' })
 
+    pattern(%w( !rollupresource ))
+    pattern(%w( !rolluptask ))
+
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
       @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
@@ -3397,23 +3400,8 @@ span the [[header]] or [[footer]] sections.
 EOT
        )
 
-    pattern(%w( _rollupresource !logicalExpression ), lambda {
-      @property.set('rollupResource', @val[1])
-    })
-    doc('rollupresource', <<'EOT'
-Do not show sub-resources of resources that match the specified logical
-expression.
-EOT
-       )
-    example('RollupResource')
-
-    pattern(%w( _rolluptask !logicalExpression ), lambda {
-      @property.set('rollupTask', @val[1])
-    })
-    doc('rolluptask', <<'EOT'
-Do not show sub-tasks of tasks that match the specified logical expression.
-EOT
-       )
+    pattern(%w( !rollupresource ))
+    pattern(%w( !rolluptask ))
 
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
@@ -3940,6 +3928,29 @@ EOT
     pattern(%w( !workinghoursResource ))
     # Other attributes will be added automatically.
   end
+
+  def rule_rollupresource
+    pattern(%w( _rollupresource !logicalExpression ), lambda {
+      @property.set('rollupResource', @val[1])
+    })
+    doc('rollupresource', <<'EOT'
+Do not show sub-resources of resources that match the specified logical
+expression.
+EOT
+       )
+    example('RollupResource')
+  end
+
+  def rule_rolluptask
+    pattern(%w( _rolluptask !logicalExpression ), lambda {
+      @property.set('rollupTask', @val[1])
+    })
+    doc('rolluptask', <<'EOT'
+Do not show sub-tasks of tasks that match the specified logical expression.
+EOT
+       )
+  end
+
 
   def rule_scenario
     pattern(%w( !scenarioHeader !scenarioBody ), lambda {
