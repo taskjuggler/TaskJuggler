@@ -5217,6 +5217,7 @@ of the subtask.
 EOT
        )
     arg(1, 'value', 'Priority value (1 - 1000)')
+    example('Priority')
 
     pattern(%w( _projectid $ID ), lambda {
       unless @project['projectids'].include?(@val[1])

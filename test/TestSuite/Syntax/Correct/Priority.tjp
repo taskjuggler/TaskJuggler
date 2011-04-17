@@ -1,32 +1,35 @@
-project "Priority Demo" 2005-07-15 - 2005-10-01 {
+project "Priority Demo" 2011-04-17-0:00--0700 +2m {
   timezone "America/Denver"
 }
 
 resource tux "Tux"
 
 task items "Project breakdown" {
-  start 2005-07-15
+  start ${projectstart}
 
-  task coolStuff "Do some cool stuff" {
-    start 2005-08-01
-    effort 10d
-    priority 800
-    allocate tux
-  }
-
-  task otherStuff "Other not so important stuff" {
-    start 2005-08-01
+  task realWork "The real work" {
     effort 20d
     priority 500
     allocate tux
+    limits { weeklymax 35h }
+  }
+
+  task support "Customer Support" {
+    # This is a high priority task. Due to the high priority tux is
+    # spending the required daily maximum on it.
+    end ${projectend}
+    priority 800
+    allocate tux
+    limits { dailymax 2h }
   }
 
   task maintenance "Maintenance work" {
     # This is a fallback task. Whenever tux is not doing something
     # else he is allocated to this task.
-    duration 2m
+    end ${projectend}
     priority 300
     allocate tux
+    limits { weeklymax 2d }
   }
 }
 
