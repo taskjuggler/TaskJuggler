@@ -34,6 +34,7 @@ class TaskJuggler
       @silent = false
       @configFile = nil
       @mandatoryArgs = ''
+      @mininumRubyVersion = '1.9.2'
     end
 
     def processArguments(argv)
@@ -86,6 +87,12 @@ class TaskJuggler
     end
 
     def main(argv = ARGV)
+      if Gem::Version.new(RUBY_VERSION.dup) <
+         Gem::Version.new(@mininumRubyVersion)
+        error('This program requires at least Ruby version ' +
+              "#{@mininumRubyVersion}!")
+      end
+
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
         error("\nAborting on user request!")

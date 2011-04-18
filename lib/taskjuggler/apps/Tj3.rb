@@ -24,6 +24,8 @@ class TaskJuggler
     def initialize
       super
 
+      # tj3 just requires Ruby 1.8.7. All other apps need 1.9.2.
+      @mininumRubyVersion = '1.8.7'
       # By default, we're only using 1 CPU core.
       @maxCpuCores = 1
       # Don't generate warnings for differences between time sheet data and

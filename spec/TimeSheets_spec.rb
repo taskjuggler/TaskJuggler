@@ -257,7 +257,7 @@ EOT
           Tj3TsReceiver.new.main(%w( --dryrun --silent ))
         end
         countLines(res.stdErr,
-                   /\.\:4\: Error\: Unexpected token 'wirk' found\./).should == 1
+                   /\.\:5\: Error\: Unexpected token 'wirk' found\./).should == 1
         res.returnValue.should == 1
       end
 
