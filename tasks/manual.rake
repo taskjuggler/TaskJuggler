@@ -1,6 +1,6 @@
 # TASK MANUAL
 
-require 'taskjuggler/Tj3Man'
+require 'taskjuggler/apps/Tj3Man'
 
 desc 'Generate User Manual'
 task :manual do
