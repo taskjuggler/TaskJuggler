@@ -11,6 +11,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/Tj3Man'
+require 'taskjuggler/apps/Tj3Man'
 
 exit TaskJuggler::Tj3Man.new.main()

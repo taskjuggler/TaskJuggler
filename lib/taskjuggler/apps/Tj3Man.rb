@@ -29,6 +29,7 @@ class TaskJuggler
       @keywords = TernarySearchTree.new(@man.all)
       @manual = false
       @directory = nil
+      @mininumRubyVersion = '1.8.7'
     end
 
     def processArguments(argv)
