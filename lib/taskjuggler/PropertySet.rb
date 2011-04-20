@@ -189,7 +189,7 @@ class TaskJuggler
     # indexed by ID. In case an object with the same ID already exists in the
     # set it will be overwritten.
     #
-    # Whenever the set has been extended, the 'wbs' and 'tree' attributes of the
+    # Whenever the set has been extended, the 'bsi' and 'tree' attributes of the
     # properties are no longer up-to-date. You must call index() before using
     # these attributes.
     def addProperty(property)
@@ -247,22 +247,22 @@ class TaskJuggler
       @propertyMap[id]
     end
 
-    # Update the work-breakdown-structure (wbs) indicies. This method needs to
+    # Update the breakdown structure indicies (bsi). This method needs to
     # be called whenever the set has been modified.
     def index
       each do |p|
-        wbsIdcs = p.getWBSIndicies
-        wbs = ""
+        bsIdcs = p.getBSIndicies
+        bsi = ""
         first = true
-        wbsIdcs.each do |idx|
+        bsIdcs.each do |idx|
           if first
             first = false
           else
-            wbs += '.'
+            bsi += '.'
           end
-          wbs += idx.to_s
+          bsi += idx.to_s
         end
-        p.set('wbs', wbs)
+        p.set('bsi', bsi)
       end
     end
 

@@ -33,7 +33,7 @@ class TestPropertySet < Test::Unit::TestCase
     p['end'] = TjTime.new('2008-08-31')
 
     # This set of Arrays describes the tree structure that we want to test.
-    # Each Array element is an tuple of WBS index and parent node.
+    # Each Array element is an tuple of breakdown structure idex and parent node.
     nodes = [ [ '1', nil ],
               [ '1.1', '1' ],
               [ '1.1.1', '1.1' ],
@@ -46,7 +46,7 @@ class TestPropertySet < Test::Unit::TestCase
     # Now we create the nodes according to the above list.
     i = 0
     nodes.each do |id, parent|
-      # For the node id we use the expected wbs result.
+      # For the node id we use the expected bsi result.
       Task.new(p, id, "Node #{id}", parent ? p.task(parent) : nil)
       Resource.new(p, id, "Node #{id}", parent ? p.resource(parent) : nil)
       i += 1
@@ -55,15 +55,15 @@ class TestPropertySet < Test::Unit::TestCase
     p.resources.index
 
     p.tasks.each do |t|
-      assert_equal(t.fullId, t.get('wbs'))
+      assert_equal(t.fullId, t.get('bsi'))
     end
 
     p.tasks.removeProperty('1.1')
     p.tasks.index
-    assert_equal('1.1', p.task('1.2').get('wbs'))
+    assert_equal('1.1', p.task('1.2').get('bsi'))
 
     p.resources.each do |r|
-      assert_equal(r.fullId, r.get('wbs'))
+      assert_equal(r.fullId, r.get('bsi'))
     end
   end
 

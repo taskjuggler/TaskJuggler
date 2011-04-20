@@ -1,4 +1,4 @@
-"WBS";"Name";"Id";"Duration"
+"BSI";"Name";"Id";"Duration"
 1;"Plan Work";"plan";19.8
 1.1;"  Plan A";"plan.plan_a";11.4
 1.2;"  Plan B";"plan.plan_b";9.2

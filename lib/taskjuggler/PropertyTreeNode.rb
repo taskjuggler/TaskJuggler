@@ -285,9 +285,9 @@ class TaskJuggler
     end
 
     # Return the hierarchical index of this node. In project management lingo
-    # this is called the Work Breakdown Structure (WBS). The result is an Array
+    # this is called the Breakdown Structure Index (BSI). The result is an Array
     # with an index for each level from the root to this node.
-    def getWBSIndicies
+    def getBSIndicies
       idcs = []
       p = self
       begin

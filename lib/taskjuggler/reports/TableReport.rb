@@ -58,7 +58,7 @@ class TaskJuggler
       'scenario'         => [ 'Scenario',          false,  :left,  true ],
       'status'           => [ 'Status',            false,  :left,  true ],
       'targets'          => [ 'Targets',           false,  :left,  true ],
-      'wbs'              => [ 'WBS',               false,  :left,  false ]
+      'bsi'              => [ 'BSI',               false,  :left,  false ]
     }
     @@propertiesByType = {
       # Type                     Indent  Align
@@ -698,7 +698,7 @@ class TaskJuggler
           generateIntermediateFormat
       when 'no'
         cell.text = line.no.to_s
-      when 'wbs'
+      when 'bsi'
         cell.indent = 2 if line.scopeLine
       when 'scenario'
         cell.text = @project.scenario(query.scenarioIdx).name
