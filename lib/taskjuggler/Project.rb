@@ -140,7 +140,7 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'vacations', 'Vacations',    IntervalListAttribute,
               true,  true,    true,  [] ],
-        [ 'wbs',       'WBS',          StringAttribute,
+        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
               true,  true,    true,  nil ]
@@ -157,7 +157,7 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'wbs',       'WBS',          StringAttribute,
+        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ]
       ]
       attrs.each { |a| @accounts.addAttributeType(AttributeDefinition.new(*a)) }
@@ -206,7 +206,7 @@ class TaskJuggler
               true,  true,    true,  [] ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
               false, false,   false, [] ],
-        [ 'wbs',       'WBS',          StringAttribute,
+        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
               true,  true,    true,  nil ]
@@ -293,7 +293,7 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
               false, false,   false, [] ],
-        [ 'wbs',       'WBS',          StringAttribute,
+        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ]
       ]
       attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
@@ -390,7 +390,7 @@ class TaskJuggler
               true, false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'wbs',       'WBS',          StringAttribute,
+        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
               true,  true,    false, false ]

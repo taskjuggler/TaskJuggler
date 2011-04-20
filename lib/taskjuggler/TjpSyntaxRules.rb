@@ -3025,9 +3025,9 @@ EOT
     descr('The headcount number of the resource or group')
 
     pattern([ '_hierarchindex' ], lambda {
-      'wbs'
+      'bsi'
     })
-    descr('Deprecated alias for wbs')
+    descr('Deprecated alias for bsi')
 
     singlePattern('_hourly')
     descr('A group of columns with one column for each hour')
@@ -3253,7 +3253,12 @@ following modes are supported:
 EOT
          )
 
-    singlePattern('_wbs')
+    pattern([ '_wbs' ], lambda {
+      'bsi'
+    })
+    descr('Deprecated alias for bsi.')
+
+    singlePattern('_bsi')
     descr('The hierarchical or work breakdown structure index')
 
     singlePattern('_weekly')
@@ -3565,7 +3570,7 @@ EOT
         @property.typeSpec = :taskreport
         unless @property.modified?('columns')
           # Set the default columns for this report.
-          %w( wbs name start end effort chart ).each do |col|
+          %w( bsi name start end effort chart ).each do |col|
             @property.get('columns') <<
             TableColumnDefinition.new(col, columnTitle(col))
           end
@@ -4270,9 +4275,9 @@ EOT
               "Sorting criterium expected (e.g. tree, start.up or " +
               "plan.end.down).", @sourceFileInfo[0])
       end
-      if attribute == 'wbs'
-        error('sorting_wbs',
-              "Sorting by wbs is not supported. Please use 'tree' " +
+      if attribute == 'bsi'
+        error('sorting_bsi',
+              "Sorting by bsi is not supported. Please use 'tree' " +
               '(without appended .up or .down) instead.',
               @sourceFileInfo[0])
       end
