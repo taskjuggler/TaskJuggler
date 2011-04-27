@@ -1986,7 +1986,7 @@ EOT
   end
 
   def rule_morePredTasks
-    commaListRule('!taskPredList')
+    commaListRule('!taskPred')
   end
 
   def rule_moreSortCriteria
@@ -5163,8 +5163,7 @@ EOT
        )
 
     pattern(%w( _startcredit !number ), lambda {
-      @property['charge', @scenarioIdx] =
-        @property['charge', @scenarioIdx] +
+      @property['charge', @scenarioIdx] +=
         [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
     doc('startcredit', <<'EOT'
@@ -5178,8 +5177,7 @@ EOT
     pattern(%w( _precedes !taskPredList ), lambda {
       checkContainer('precedes')
       begin
-        @property['precedes', @scenarioIdx] =
-          @property['precedes', @scenarioIdx] + @val[1]
+        @property['precedes', @scenarioIdx] += @val[1]
         @property['forward', @scenarioIdx] = false
       rescue AttributeOverwrite
       end
