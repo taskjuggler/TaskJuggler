@@ -3438,6 +3438,11 @@ EOT
     pattern(%w( !reportStart ))
 
     pattern(%w( _resourceroot !resourceId), lambda {
+      if @val[1].leaf?
+        error('resourceroot_leaf',
+              "#{@val[1].fullId} is not a group resource",
+              @sourceFileInfo[1])
+      end
       @property.set('resourceRoot', @val[1])
     })
     doc('resourceroot', <<'EOT'
@@ -3450,6 +3455,11 @@ EOT
     example('ResourceRoot')
 
     pattern(%w( _taskroot !taskId), lambda {
+      if @val[1].leaf?
+        error('taskroot_leaf',
+              "#{@val[1].fullId} is not a container task",
+              @sourceFileInfo[1])
+      end
       @property.set('taskRoot', @val[1])
     })
     doc('taskroot', <<'EOT'
