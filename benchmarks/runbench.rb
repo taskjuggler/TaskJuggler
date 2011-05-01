@@ -9,8 +9,8 @@
 #
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'benchmark'
-require 'TaskJuggler'
-require 'Tj3Config'
+require 'taskjuggler/TaskJuggler'
+require 'taskjuggler/Tj3Config'
 
 AppConfig.appName = 'taskjuggler3'
 ENV['TASKJUGGLER_DATA_PATH'] = '../'
