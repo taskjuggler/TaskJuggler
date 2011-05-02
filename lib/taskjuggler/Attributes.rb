@@ -576,13 +576,13 @@ class TaskJuggler
     end
   end
 
-  class TaskListAttribute < ListAttributeBase
+  class TaskDepListAttribute < ListAttributeBase
     def initialize(property, type)
       super
     end
 
-    def TaskListAttribute::tjpId
-      'tasklist'
+    def TaskDepListAttribute::tjpId
+      'taskdeplist'
     end
 
     def to_s(query = nil)
@@ -594,6 +594,28 @@ class TaskJuggler
     def to_tjp
       out = []
       @value.each { |t, onEnd| out << t.fullId }
+      @type.id + " " + out.join(', ')
+    end
+  end
+
+  class TaskListAttribute < ListAttributeBase
+    def initialize(property, type)
+      super
+    end
+
+    def TaskListAttribute::tjpId
+      'tasklist'
+    end
+
+    def to_s(query = nil)
+      out = []
+      @value.each { |t| out << t.fullId }
+      out.join(", ")
+    end
+
+    def to_tjp
+      out = []
+      @value.each { |t| out << t.fullId }
       @type.id + " " + out.join(', ')
     end
   end
