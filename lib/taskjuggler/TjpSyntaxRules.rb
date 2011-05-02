@@ -1985,7 +1985,7 @@ EOT
   end
 
   def rule_morePredTasks
-    commaListRule('!taskPredList')
+    commaListRule('!taskPred')
   end
 
   def rule_moreSortCriteria
@@ -3437,6 +3437,11 @@ EOT
     pattern(%w( !reportStart ))
 
     pattern(%w( _resourceroot !resourceId), lambda {
+      if @val[1].leaf?
+        error('resourceroot_leaf',
+              "#{@val[1].fullId} is not a group resource",
+              @sourceFileInfo[1])
+      end
       @property.set('resourceRoot', @val[1])
     })
     doc('resourceroot', <<'EOT'
@@ -3449,6 +3454,11 @@ EOT
     example('ResourceRoot')
 
     pattern(%w( _taskroot !taskId), lambda {
+      if @val[1].leaf?
+        error('taskroot_leaf',
+              "#{@val[1].fullId} is not a container task",
+              @sourceFileInfo[1])
+      end
       @property.set('taskRoot', @val[1])
     })
     doc('taskroot', <<'EOT'
@@ -5162,8 +5172,7 @@ EOT
        )
 
     pattern(%w( _startcredit !number ), lambda {
-      @property['charge', @scenarioIdx] =
-        @property['charge', @scenarioIdx] +
+      @property['charge', @scenarioIdx] +=
         [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
     doc('startcredit', <<'EOT'
@@ -5177,8 +5186,7 @@ EOT
     pattern(%w( _precedes !taskPredList ), lambda {
       checkContainer('precedes')
       begin
-        @property['precedes', @scenarioIdx] =
-          @property['precedes', @scenarioIdx] + @val[1]
+        @property['precedes', @scenarioIdx] += @val[1]
         @property['forward', @scenarioIdx] = false
       rescue AttributeOverwrite
       end
