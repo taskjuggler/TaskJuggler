@@ -85,9 +85,32 @@ class TaskJuggler
       # node.
       @stepParents = []
 
-      @attributes = Hash.new
-      @scenarioAttributes = Array.new(@project.scenarioCount)
-      @scenarioAttributes.collect! { |sca| sca = Hash.new }
+      # Attributes are created on-demand. We need to be careful that a pure
+      # check for existance does not create them unecessarily.
+      @attributes = Hash.new do |hash, attributeId|
+        unless (aType = attributeDefinition(attributeId))
+          raise "Unknown attribute '#{attributeId}' requested for " +
+            "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
+        end
+        unless aType.scenarioSpecific
+          hash[attributeId] = aType.objClass.new(@propertySet, aType)
+        else
+          raise "Attribute '#{attributeId}' is scenario specific"
+        end
+      end
+      @scenarioAttributes = Array.new(@project.scenarioCount) do
+        Hash.new do |hash, attributeId|
+          unless (aType = attributeDefinition(attributeId))
+            raise "Unknown attribute '#{attributeId}' requested for " +
+              "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
+          end
+          if aType.scenarioSpecific
+            hash[attributeId] = aType.objClass.new(@propertySet, aType)
+          else
+            raise "Attribute '#{attributeId}' is not scenario specific"
+          end
+        end
+      end
 
       # Scenario specific data
       @data = nil
@@ -242,20 +265,6 @@ class TaskJuggler
       res
     end
 
-    # Iterator over all non-scenario-specific attributes of this node.
-    def eachAttribute
-      @attributes.each do |attr|
-        yield attr
-      end
-    end
-
-    # Iterator over all scenario-specific attributes of this node.
-    def eachScenarioAttribute(scenario)
-      @scenarioAttributes[scenario].each_value do |attr|
-        yield attr
-      end
-    end
-
     # Return the full id of this node. For PropertySet objects with a flat
     # namespace, this is just the ID. Otherwise, the full ID is composed of all
     # IDs from the root node to this node, separating the IDs by a dot.
@@ -358,20 +367,6 @@ class TaskJuggler
       n
     end
 
-    # Register a new attribute with the PropertyTreeNode and create the
-    # instances for each scenario.
-    def declareAttribute(attributeType)
-      if attributeType.scenarioSpecific
-        @project.scenarioCount.times do |i|
-          attribute = attributeType.objClass.new(self, attributeType)
-          @scenarioAttributes[i][attribute.id] = attribute
-        end
-      else
-        attribute = attributeType.objClass.new(self, attributeType)
-        @attributes[attribute.id] = attribute
-      end
-    end
-
     # Return the type of the attribute with ID _attributeId_.
     def attributeDefinition(attributeId)
       @propertySet.attributeDefinitions[attributeId]
@@ -389,10 +384,6 @@ class TaskJuggler
       when 'seqno'
         @sequenceNo
       else
-        unless @attributes.has_key?(attributeId)
-          raise "Unknown attribute '#{attributeId}' requested for " +
-                "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
-        end
         @attributes[attributeId].get
       end
     end
@@ -418,7 +409,7 @@ class TaskJuggler
     end
 
     # This function is similar to getAttr() but it always returns a
-    # AttributeBase object.
+    # AttributeBase object. Return nil for unknown attributes.
     def getAttribute(attributeId, scenarioIdx = nil)
       case attributeId
       when 'id'
@@ -428,17 +419,21 @@ class TaskJuggler
       when 'seqno'
         FixnumAttribute.new(self, @sequenceNo)
       else
-        @attributes[attributeId] ||
-        (scenarioIdx && @scenarioAttributes[scenarioIdx][attributeId])
+        if (aType = @propertySet.attributeDefinitions[attributeId])
+          if aType.scenarioSpecific
+            @scenarioAttributes[scenarioIdx][attributeId]
+          else
+            @attributes[attributeId]
+          end
+        else
+          nil
+        end
       end
     end
 
     # Set the non-scenario-specific attribute with ID _attributeId_ to _value_.
     # In case the attribute does not exist, an exception is raised.
     def set(attributeId, value)
-      unless @attributes.has_key?(attributeId)
-        raise "Unknown attribute #{attributeId}"
-      end
       @attributes[attributeId].set(value)
     end
 
@@ -446,7 +441,11 @@ class TaskJuggler
     # with index _scenario_ to _value_. In case the attribute does not exist, an
     # exception is raised.
     def []=(attributeId, scenario, value)
-      if @scenarioAttributes[scenario].has_key?(attributeId)
+      unless (aType = attributeDefinition(attributeId))
+        raise "Unknown attribute #{attributeId}"
+      end
+
+      if aType.scenarioSpecific
         if AttributeBase.mode == 0
           # If we get values in 'provided' mode, we copy them immedidately to
           # all derived scenarios.
@@ -474,10 +473,8 @@ class TaskJuggler
         else
           @scenarioAttributes[scenario][attributeId].set(value)
         end
-      elsif @attributes.has_key?(attributeId)
-        @attributes[attributeId].set(value)
       else
-        raise "Unknown attribute #{attributeId}"
+        @attributes[attributeId].set(value)
       end
     end
 
@@ -485,21 +482,19 @@ class TaskJuggler
     # scenario-specific attributes, _scenario_ must indicate the index of the
     # Scenario.
     def [](attributeId, scenario)
-      if @scenarioAttributes[scenario].has_key?(attributeId)
-        @scenarioAttributes[scenario][attributeId].get
-      else
-        get(attributeId);
-      end
+      @scenarioAttributes[scenario][attributeId].get
     end
 
     # Returns true if the value of the attribute _attributeId_ (in scenario
     # _scenarioIdx_) has been provided by the user.
     def provided(attributeId, scenarioIdx = nil)
       if scenarioIdx
-        return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
+        unless @scenarioAttributes[scenarioIdx].has_key?(attributeId)
+          return false
+        end
         @scenarioAttributes[scenarioIdx][attributeId].provided
       else
-        return false if @attributes[attributeId].nil?
+        return false unless @attributes.has_key?(attributeId)
         @attributes[attributeId].provided
       end
     end
@@ -508,27 +503,32 @@ class TaskJuggler
     # _scenarioIdx_) has been inherited from a parent node or scenario.
     def inherited(attributeId, scenarioIdx = nil)
       if scenarioIdx
-        return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
+        unless @scenarioAttributes[scenarioIdx].has_key?(attributeId)
+          return false
+        end
         @scenarioAttributes[scenarioIdx][attributeId].inherited
       else
-        return false if @attributes[attributeId].nil?
+        return false unless @attributes.has_key?(attributeId)
         @attributes[attributeId].inherited
       end
     end
 
     def modified?(attributeId, scenarioIdx = nil)
       if scenarioIdx
-        return false if @scenarioAttributes[scenarioIdx][attributeId].nil?
+        unless @scenarioAttributes[scenarioIdx].has_key?(attributeId)
+          return false
+        end
+
         @scenarioAttributes[scenarioIdx][attributeId].provided ||
         @scenarioAttributes[scenarioIdx][attributeId].inherited
       else
-        return false if @attributes[attributeId].nil?
+        return false unless @attributes.has_key?(attributeId)
         @attributes[attributeId].provided || @attributes[attributeId].inherited
       end
     end
 
     def checkFailsAndWarnings
-      if @attributes['fail'] || @attributes['warn']
+      if @attributes.has_key?('fail') || @attributes.has_key?('warn')
         propertyType = case self
                        when Task
                          'task'
@@ -642,22 +642,18 @@ class TaskJuggler
       end
       res += '  Children: ' + children + "\n"  unless children.empty?
       @attributes.sort.each do |key, attr|
-        #if attr.get != @propertySet.defaultValue(key)
-          res += indent("  #{key}: ", attr.to_s)
-        #end
+        res += indent("  #{key}: ", attr.to_s)
       end
       unless @scenarioAttributes.empty?
         project.scenarioCount.times do |sc|
           break if @scenarioAttributes[sc].nil?
           headerShown = false
           @scenarioAttributes[sc].sort.each do |key, attr|
-            if attr.get != @propertySet.defaultValue(key)
-              unless headerShown
-                res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
-                headerShown = true
-              end
-              res += indent("    #{key}: ", attr.to_s)
+            unless headerShown
+              res += "  Scenario #{project.scenario(sc).get('id')} (#{sc})\n"
+              headerShown = true
             end
+            res += indent("    #{key}: ", attr.to_s)
           end
         end
       end

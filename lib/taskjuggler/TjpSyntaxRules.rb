@@ -1128,8 +1128,7 @@ EOT
   def rule_fail
     pattern(%w( _fail !logicalExpression ), lambda {
       begin
-        @property['fail', @scenarioIdx] =
-          @property['fail', @scenarioIdx] + [ @val[1] ]
+        @property.set('fail', @property.get('fail') + [ @val[1] ])
       rescue AttributeOverwrite
       end
     })
@@ -5975,8 +5974,7 @@ EOT
   def rule_warn
     pattern(%w( _warn !logicalExpression ), lambda {
       begin
-        @property['warn', @scenarioIdx] =
-          @property['warn', @scenarioIdx] + [ @val[1] ]
+        @property.set('warn', @property.get('warn') + [ @val[1] ])
       rescue AttributeOverwrite
       end
     })

@@ -193,12 +193,6 @@ class TaskJuggler
     # properties are no longer up-to-date. You must call index() before using
     # these attributes.
     def addProperty(property)
-      # The PropertySet defines the set of attribute that each PropertyTreeNode
-      # in this set has. Create these attributes with their default values.
-      @attributeDefinitions.each_value do |attributeType|
-        property.declareAttribute(attributeType)
-      end
-
       # The PropertyTreeNode objects are indexed by ID or hierachical ID
       # depending on the name space setting of this set.
       if @flatNamespace
