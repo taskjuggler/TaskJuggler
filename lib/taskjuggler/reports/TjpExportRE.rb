@@ -340,12 +340,11 @@ class TaskJuggler
     end
 
     def generateAttribute(property, attrId, indent, scenarioIdx = nil)
-      val = scenarioIdx.nil? ? property.getAttr(attrId) :
-                               property[attrId, scenarioIdx]
+      val = scenarioIdx ? property[attrId, scenarioIdx] : property.get(attrId)
       return if val.nil? || (val.is_a?(Array) && val.empty?) ||
                 (scenarioIdx && inheritable?(property, attrId, scenarioIdx))
 
-      generateAttributeText(property.getAttr(attrId, scenarioIdx).to_tjp,
+      generateAttributeText(property.getAttribute(attrId, scenarioIdx).to_tjp,
                             indent, scenarioIdx)
     end
 

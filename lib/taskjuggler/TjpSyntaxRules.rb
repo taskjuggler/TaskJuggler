@@ -2802,7 +2802,7 @@ EOT
               "#{@val[1]} is not a list attribute. Only those can be purged.",
               @sourceFileInfo[1])
       end
-      @property.getAttr(@val[1], @scenarioIdx).reset
+      @property.getAttribute(@val[1], @scenarioIdx).reset
     })
     doc('purge', <<'EOT'
 List attributes, like regular attributes, can inherit their values from the

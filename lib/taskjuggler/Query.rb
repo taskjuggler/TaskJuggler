@@ -165,7 +165,17 @@ class TaskJuggler
           @property.send(queryMethodName, @scenarioIdx, self)
         else
           # The result is a BaseAttribute
-          unless (@attr = @property.getAttribute(@attributeId, @scenarioIdx))
+          begin
+            # The user may also provide a scenario index for
+            # non-scenario-specific values. We need to check if the attribute
+            # is really scenario specific or not because
+            # PropertyTreeNode::getAttribute can only handle an index for
+            # scenario-specific attributs.
+            aType = @property.attributeDefinition(@attributeId)
+            raise ArgumentError unless aType
+            scIdx = aType.scenarioSpecific ? @scenarioIdx : nil
+            @attr = @property.getAttribute(@attributeId, scIdx)
+          rescue ArgumentError
             @errorMessage = "Unknown attribute #{@attributeId} queried"
             return @ok = false
           end

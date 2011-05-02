@@ -273,7 +273,7 @@ class TaskJuggler
         if attribute == attr
           @property[attr, @scenarioIdx] = value
         else
-          if @property.getAttr(attr, @scenarioIdx).provided
+          if @property.getAttribute(attr, @scenarioIdx).provided
             error('multiple_durations',
                   "This duration criteria is overwriting a previously " +
                   "provided criteria (duration, effort, length or milestone).")

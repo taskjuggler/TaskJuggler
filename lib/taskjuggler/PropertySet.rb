@@ -38,29 +38,21 @@ class TaskJuggler
       @flatNamespace = flatNamespace
       # The main Project data structure reference.
       @project = project
-      # This is the blueprint for PropertyTreeNode attribute sets. Whever a new
-      # PropertTreeNode is created, an attribute is created for each definition
-      # in this list.
-      @attributeDefinitions = Hash.new
       # A list of all PropertyTreeNodes in this set.
       @properties = Array.new
       # A hash of all PropertyTreeNodes in this set, hashed by their ID. This is
       # the same data as in @properties, but hashed by ID for faster access.
       @propertyMap = Hash.new
 
-      # IDs and names of the built-in attributes. TODO: Check performance impact
-      # when making them normal attributes.
-      @@fixedAttributeNames = {
-        'id' => 'ID',
-        'name' => 'Name',
-        'seqno' => 'Seq. No.'
-      }
-      # And their types.
-      @@fixedAttributesTypes = {
-        'id' => :String,
-        'name' => :String,
-        'seqno' => :Fixnum
-      }
+      # This is the blueprint for PropertyTreeNode attribute sets. Whever a new
+      # PropertTreeNode is created, an attribute is created for each definition
+      # in this list.
+      @attributeDefinitions = Hash.new
+      [
+        [ 'id',   'ID',       StringAttribute, false,  false,  false,  '' ],
+        [ 'name', 'Name',     StringAttribute, false,  false,  false,  '' ],
+        [ 'seqno', 'Seq. No', FixnumAttribute, false,  false,  false,  0 ]
+      ].each { |a| addAttributeType(AttributeDefinition.new(*a)) }
     end
 
     # Use the function to declare the various attributes that properties of this
@@ -84,7 +76,6 @@ class TaskJuggler
 
     # Return true if there is an AttributeDefinition for _attrId_.
     def knownAttribute?(attrId)
-      @@fixedAttributeNames.include?(attrId) ||
       @attributeDefinitions.include?(attrId)
     end
 
@@ -160,12 +151,8 @@ class TaskJuggler
     def attributeName(attrId)
       # Some attributes are hardwired into the properties. These need to be
       # treated separately.
-      if @@fixedAttributeNames[attrId].nil?
-        if @attributeDefinitions.include?(attrId)
-          return @attributeDefinitions[attrId].name
-        end
-      else
-        return @@fixedAttributeNames[attrId]
+      if @attributeDefinitions.include?(attrId)
+        return @attributeDefinitions[attrId].name
       end
 
       nil
@@ -174,14 +161,10 @@ class TaskJuggler
     # Return the type of the attribute with the Id specified by _attrId_.
     def attributeType(attrId)
       # Hardwired attributes need special treatment.
-      if @@fixedAttributesTypes[attrId].nil?
-        if @attributeDefinitions.has_key?(attrId)
-          @attributeDefinitions[attrId].objClass
-        else
-          nil
-        end
+      if @attributeDefinitions.has_key?(attrId)
+        @attributeDefinitions[attrId].objClass
       else
-        @@fixedAttributesTypes[attrId]
+        nil
       end
     end
 

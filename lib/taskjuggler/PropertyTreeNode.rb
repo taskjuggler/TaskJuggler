@@ -42,6 +42,38 @@ class TaskJuggler
     # specified by a hierachical _id_ (e. g. 'father.son').
     def initialize(propertySet, id, name, parent)
       @propertySet = propertySet
+      @project = propertySet.project
+      @parent = parent
+      # Attributes are created on-demand. We need to be careful that a pure
+      # check for existance does not create them unecessarily.
+      @attributes = Hash.new do |hash, attributeId|
+        unless (aType = attributeDefinition(attributeId))
+          raise ArgumentError,
+            "Unknown attribute '#{attributeId}' requested for " +
+            "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
+        end
+        unless aType.scenarioSpecific
+          hash[attributeId] = aType.objClass.new(@propertySet, aType)
+        else
+          raise ArgumentError, "Attribute '#{attributeId}' is scenario specific"
+        end
+      end
+      @scenarioAttributes = Array.new(@project.scenarioCount) do
+        Hash.new do |hash, attributeId|
+          unless (aType = attributeDefinition(attributeId))
+            raise ArgumentError,
+              "Unknown attribute '#{attributeId}' requested for " +
+              "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
+          end
+          if aType.scenarioSpecific
+            hash[attributeId] = aType.objClass.new(@propertySet, aType)
+          else
+            raise ArgumentError,
+              "Attribute '#{attributeId}' is not scenario specific"
+          end
+        end
+      end
+
       # If _id_ is still nil, we generate a unique id.
       unless id
         tag = self.class.to_s.gsub(/TaskJuggler::/, '')
@@ -65,13 +97,18 @@ class TaskJuggler
       else
         @id = id
       end
+      # The attribute 'id' is either the short ID or the full hierarchical ID.
+      set('id', fullId)
+
+      # The name of the property.
       @name = name
-      @project = propertySet.project
+      set('name', name)
+
       @level = -1
       @sourceFileInfo = nil
 
-      @parent = parent
       @sequenceNo = @propertySet.items + 1
+      set('seqno', @sequenceNo)
       # This is a list of the real sub nodes of this PropertyTreeNode.
       @children = []
       # This is a list of the adopted sub nodes of this PropertyTreeNode.
@@ -84,33 +121,6 @@ class TaskJuggler
       # This is a list of the PropertyTreeNode objects that have adopted this
       # node.
       @stepParents = []
-
-      # Attributes are created on-demand. We need to be careful that a pure
-      # check for existance does not create them unecessarily.
-      @attributes = Hash.new do |hash, attributeId|
-        unless (aType = attributeDefinition(attributeId))
-          raise "Unknown attribute '#{attributeId}' requested for " +
-            "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
-        end
-        unless aType.scenarioSpecific
-          hash[attributeId] = aType.objClass.new(@propertySet, aType)
-        else
-          raise "Attribute '#{attributeId}' is scenario specific"
-        end
-      end
-      @scenarioAttributes = Array.new(@project.scenarioCount) do
-        Hash.new do |hash, attributeId|
-          unless (aType = attributeDefinition(attributeId))
-            raise "Unknown attribute '#{attributeId}' requested for " +
-              "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
-          end
-          if aType.scenarioSpecific
-            hash[attributeId] = aType.objClass.new(@propertySet, aType)
-          else
-            raise "Attribute '#{attributeId}' is not scenario specific"
-          end
-        end
-      end
 
       # Scenario specific data
       @data = nil
@@ -373,61 +383,22 @@ class TaskJuggler
     end
 
     # Return the value of the non-scenario-specific attribute with ID
-    # _attributeId_. In case the attribute does not exist, an exception is
-    # raised.
+    # _attributeId_. This method works for built-in attributes as well.
+    # In case the attribute does not exist, an exception is raised.
     def get(attributeId)
-      case attributeId
-      when 'id'
-        @id
-      when 'name'
-        @name
-      when 'seqno'
-        @sequenceNo
-      else
-        @attributes[attributeId].get
-      end
+      @attributes[attributeId].get
     end
 
-    # Return the value of the attribute with ID _attributeId_. In case this is a
+    # Return the value of the attribute with ID _attributeId_. This method
+    # works for built-in attributes as well. In case this is a
     # scenario-specific attribute, the scenario index needs to be provided by
-    # _scenarioIdx_.
-    def getAttr(attributeId, scenarioIdx = nil)
-      if scenarioIdx.nil?
-        case attributeId
-        when 'id'
-          @id
-        when 'name'
-          @name
-        when 'seqno'
-          @sequenceNo
-        else
-          @attributes[attributeId]
-        end
-      else
-        @scenarioAttributes[scenarioIdx][attributeId]
-      end
-    end
-
-    # This function is similar to getAttr() but it always returns a
-    # AttributeBase object. Return nil for unknown attributes.
+    # _scenarioIdx_, otherwise it must be nil.  In case the attribute does not
+    # exist, an exception is raised.
     def getAttribute(attributeId, scenarioIdx = nil)
-      case attributeId
-      when 'id'
-        StringAttribute.new(self, fullId)
-      when 'name'
-        StringAttribute.new(self, @name)
-      when 'seqno'
-        FixnumAttribute.new(self, @sequenceNo)
+      if scenarioIdx
+        @scenarioAttributes[scenarioIdx][attributeId]
       else
-        if (aType = @propertySet.attributeDefinitions[attributeId])
-          if aType.scenarioSpecific
-            @scenarioAttributes[scenarioIdx][attributeId]
-          else
-            @attributes[attributeId]
-          end
-        else
-          nil
-        end
+        @attributes[attributeId]
       end
     end
 
@@ -437,15 +408,12 @@ class TaskJuggler
       @attributes[attributeId].set(value)
     end
 
-    # Set the scenario specific attribute with ID _attributeId_ for the scenario
-    # with index _scenario_ to _value_. In case the attribute does not exist, an
-    # exception is raised.
+    # Set the scenario specific attribute with ID _attributeId_ for the
+    # scenario with index _scenario_ to _value_. If _scenario_ is nil, the
+    # attribute must not be scenario specific. In case the attribute does not
+    # exist, an exception is raised.
     def []=(attributeId, scenario, value)
-      unless (aType = attributeDefinition(attributeId))
-        raise "Unknown attribute #{attributeId}"
-      end
-
-      if aType.scenarioSpecific
+      if scenario
         if AttributeBase.mode == 0
           # If we get values in 'provided' mode, we copy them immedidately to
           # all derived scenarios.
