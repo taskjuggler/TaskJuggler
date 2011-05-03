@@ -121,10 +121,10 @@ EOT
         # The checks of time and status sheets is probably only used for
         # debugging.  Normally, this function is provided by tj3client.
         @timeSheets.each do |ts|
-          return 1 if !tj.checkTimeSheet(ts, File.read(ts)) || tj.errors > 0
+          return 1 if !tj.checkTimeSheet(ts) || tj.errors > 0
         end
         @statusSheets.each do |ss|
-          return 1 if !tj.checkStatusSheet(ss, File.read(ss)) || tj.errors > 0
+          return 1 if !tj.checkStatusSheet(ss) || tj.errors > 0
         end
 
         return 0 if @noReports
