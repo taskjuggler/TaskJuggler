@@ -115,3 +115,9 @@ impact on the expansion of the macro.
 * ''''today'''' Identical to ''''now'''' but formatted according to
 the [[timeformat]] setting of the current context.
 
+=== Environment Variable Expansions ===
+
+By using the $(VAR) syntax, you can insert the value of the
+environment variable name VAR. The name of the variable must consists
+only of uppercase ASCII letters, underscore or decimal digits.
+

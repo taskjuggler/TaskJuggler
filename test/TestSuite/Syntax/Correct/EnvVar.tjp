@@ -1,0 +1,12 @@
+project "Test" 2011-05-05 +6m
+
+task t "A $(TEST1) task" {
+  note $(TEST2)
+  duration 12$(TEST3)d
+}
+
+taskreport "EnvVar" {
+  columns name, duration, note
+  formats html
+}
+

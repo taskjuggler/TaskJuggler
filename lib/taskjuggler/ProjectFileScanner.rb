@@ -71,6 +71,10 @@ class TaskJuggler
         # neither the start nor the end of the macro.
         [ nil, /.*\n/, :macroCall, method('midMacroCall') ],
 
+        # Environment variable reference. This is similar to the macro call,
+        # but the it can only extend within the starting line.
+        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\([A-Z_][A-Z_0-9]*\)/,
+          :tjp, method('environmentVariable') ],
         # An ID with a colon suffix: foo:
         [ :ID_WITH_COLON, /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
 
@@ -289,6 +293,29 @@ class TaskJuggler
     def endStringSZR(type, match)
       self.mode = :tjp
       [ :STRING, @string ]
+    end
+
+    def environmentVariable(type, match)
+      # Store any characters that precede the $( in prefix and remove it from
+      # @macroCall.
+      if (start = match.index('$(')) > 0
+        prefix = match[0..(start - 1)]
+        envRef = match[start..-1]
+      else
+        prefix = ''
+        envRef = match
+      end
+
+      # Remove '$(' and ')'
+      varName = envRef[2..-2]
+
+      if (value = ENV[varName])
+        @cf.injectText(prefix + value)
+      else
+        error('unknown_env_var', "Unknown environment variable '#{varName}'")
+      end
+
+      [ nil, '' ]
     end
 
     def startMacroDef(type, match)

@@ -1,0 +1,7 @@
+project "Test" "1.0" 2011-05-05 +2m
+
+task "T" {
+# MARK: error 5 unknown_env_var
+	note $(UNSET_VAR)
+}
+

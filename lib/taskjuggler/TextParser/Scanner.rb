@@ -67,12 +67,18 @@ class TaskJuggler::TextParser
         @stream = nil
       end
 
-      def injectMacro(macro, args, text)
+      # Inject the String _text_ into the input stream at the current cursor
+      # position.
+      def injectText(text)
         pos = @scanner.pos
         @nextMacroEnd = pos + text.length
         @line = @line[0, pos] + text + @line[pos..-1]
         @scanner = StringScanner.new(@line)
         @scanner.pos = pos
+      end
+
+      def injectMacro(macro, args, text)
+        injectText(text)
 
         # Simple detection for recursive macro calls.
         return false if @macroStack.length > 20

@@ -24,6 +24,9 @@ class TestSyntax < Test::Unit::TestCase
   include MessageChecker
 
   def test_syntaxCorrect
+    ENV['TEST1'] = 't_e_s_t_1'
+    ENV['TEST2'] = '"A test String"'
+    ENV['TEST3'] = '3'
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
