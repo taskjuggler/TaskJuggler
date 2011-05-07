@@ -1,0 +1,20 @@
+project prj "Test" "1.0" 2011-05-05-00:00-+0000 - 2011-11-03-12:00-+0000 {
+  timezone "UTC"
+  scenario plan "Plan Scenario" {
+  }
+}
+
+projectids prj
+
+
+task t "A t_e_s_t_1 task" {
+  start 2011-05-05-00:00-+0000
+  end 2011-09-05-00:00-+0000
+  scheduling asap
+  scheduled
+}
+supplement task t {
+  note "A test String"
+  priority 500
+  projectid prj
+}

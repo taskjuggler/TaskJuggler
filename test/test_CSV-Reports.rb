@@ -116,9 +116,6 @@ class TestScheduler < Test::Unit::TestCase
   def test_CSV_Reports
     path = File.dirname(__FILE__)
 
-    ENV['TEST1'] = 't_e_s_t_1'
-    ENV['TEST2'] = '"A test String"'
-    ENV['TEST3'] = '3'
     testDir = path + '/TestSuite/CSV-Reports/'
     Dir.glob(testDir + '*.tjp').each do |f|
       TaskJuggler::TjTime.setTimeZone('Europe/Berlin')

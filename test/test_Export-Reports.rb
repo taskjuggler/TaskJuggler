@@ -98,6 +98,9 @@ class TestExportReport < Test::Unit::TestCase
   def test_Export_Reports
     path = File.dirname(__FILE__)
 
+    ENV['TEST1'] = 't_e_s_t_1'
+    ENV['TEST2'] = '"A test String"'
+    ENV['TEST3'] = '3'
     testDir = path + '/TestSuite/Syntax/Correct/'
     Dir.glob(testDir + '*.tjp').each do |f|
       # We ignore some test cases that cannot work in this setup.
