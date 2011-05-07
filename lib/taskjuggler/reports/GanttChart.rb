@@ -207,7 +207,7 @@ class TaskJuggler
     # Utility function that convers a date to the corresponding X-position in
     # the Gantt chart.
     def dateToX(date)
-      (@width / (@end - @start)) * (date - @start)
+      ((@width / (@end - @start)) * (date - @start)).to_i
     end
 
     # This is not a user callable function. It's only meant for use within the
