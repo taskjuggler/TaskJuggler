@@ -448,17 +448,16 @@ class TaskJuggler
       out = []
       if query
         @value.each do |r|
-          case query.listMode
-          when 1
-            out << r.fullId
-          when 2, nil
-            out << r.name
-          when 3
-            out << "#{r.name} (#{r.fullId})"
-          when 4
-            out << "#{r.fullId}: #{r.name}"
+          if query.listItem
+            rti = RichText.new(query.listItem, RTFHandlers.create(@project),
+                               r.project.messageHandler).
+                               generateIntermediateFormat
+            q = query.dup
+            q.property = r
+            rti.setQuery(q)
+            out << "<nowiki>rti.to_s</nowiki>"
           else
-            out << "Bad listmode #{query.listmode}. Use 1 - 4."
+            out << "<nowiki>r.name</nowiki>"
           end
         end
         query.assignList(out)

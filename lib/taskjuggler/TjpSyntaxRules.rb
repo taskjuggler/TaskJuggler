@@ -635,21 +635,22 @@ each cell.
 EOT
        )
 
-    pattern(%w( _listmode $INTEGER ), lambda {
-      @column.listMode = @val[1]
+    pattern(%w( _listitem $STRING ), lambda {
+      @column.listItem = @val[1]
     })
-    also(%w( listtype.column ))
-    doc('listmode.column', <<'EOT'
-Specifies how the list items look like. The result of this setting depends on
-the actual column. Please refer to the [columnid|documentation for the
-specific column] to learn more about the effect that this setting has.
+    doc('listitem.column', <<'EOT'
+Specifies a RichText pattern that is used to generate the text for the list
+items. The pattern should contain at least one ''''<nowiki><</nowiki>-query
+attribute='XXX'->'''' element that will be replaced with the value of
+attribute XXX. For the replacement, the property of the query will be the list
+item.
 EOT
        )
 
     pattern(%w( _listtype !listType ), lambda {
       @column.listType = @val[1]
     })
-    also(%w( listmode.column ))
+    also(%w( listitem.column ))
     doc('listtype.column', <<'EOT'
 Specifies what type of list should be used. This attribute only affects
 columns that contain a list of items.
@@ -2937,13 +2938,7 @@ EOT
     descr(<<'EOT'
 The resources that have this resource assigned as manager.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name ''(This is the default)''
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 
@@ -2985,21 +2980,9 @@ symbols are used for <nowiki><dep></nowiki>.
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID <nowiki><dep></nowiki> Date
-# Name <nowiki><dep></nowiki> Date
-# Name (ID) <nowiki><dep></nowiki> Date
-# ID: Name <nowiki><dep></nowiki> Date
-# ID <nowiki><dep></nowiki>
-# Name <nowiki><dep></nowiki>
-# Name (ID) <nowiki><dep></nowiki>
-# ID: Name <nowiki><dep></nowiki>
-# ID
-# Name
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
+The dependency symbol can be generated via the ''''dependency'''' attribute
+inthe query, the target date via the ''''date'''' attribute.
 EOT
          )
 
@@ -3043,17 +3026,7 @@ A list of milestones that are a prerequiste for the current task. For
 container tasks it will also include the inputs of the child tasks. Inputs may
 not have any predecessors.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name
-# Name (ID)
-# ID: Name
-# ID (Date)
-# Name (Date)
-# Name (ID) Date ''(This is the default)''
-# ID: Name Date
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 
@@ -3091,13 +3064,7 @@ EOT
     descr(<<'EOT'
 A list of managers that the resource reports to.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name ''(This is the default)''
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
         )
 
@@ -3140,21 +3107,9 @@ are used
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID <nowiki><dep></nowiki> Date
-# Name <nowiki><dep></nowiki> Date
-# Name (ID) <nowiki><dep></nowiki> Date
-# ID: Name <nowiki><dep></nowiki> Date
-# ID <nowiki><dep></nowiki>
-# Name <nowiki><dep></nowiki>
-# Name (ID) <nowiki><dep></nowiki>
-# ID: Name <nowiki><dep></nowiki>
-# ID
-# Name
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
+The dependency symbol can be generated via the ''''dependency'''' attribute
+inthe query, the target date via the ''''date'''' attribute.
 EOT
          )
 
@@ -3171,13 +3126,7 @@ EOT
     descr(<<'EOT'
 All resources that have this resource assigned as a direct or indirect manager.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name ''(This is the default)''
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 
@@ -3185,13 +3134,7 @@ EOT
     descr(<<'EOT'
 A list of resources that are assigned to the task in the report time frame.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name ''(This is the default)''
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 
@@ -3199,13 +3142,7 @@ EOT
     descr(<<'EOT'
 The responsible people for this task.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name ''(This is the default)''
-# Name (ID)
-# ID: Name
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 
@@ -3238,17 +3175,7 @@ A list of milestones that depend on the current task. For container tasks it
 will also include the targets of the child tasks. Targets may not have any
 follower tasks.
 
-The list can be customized by the [listmode.column listmode] attribute. The
-following modes are supported:
-
-# ID
-# Name
-# Name (ID)
-# ID: Name
-# ID (Date)
-# Name (Date)
-# Name (ID) Date ''(This is the default)''
-# ID: Name Date
+The list can be customized by the [listitem.column listitem] attribute.
 EOT
          )
 

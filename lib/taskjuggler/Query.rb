@@ -36,7 +36,8 @@ class TaskJuggler
     @@ps = %w( project propertyType propertyId property
                scopePropertyType scopePropertyId scopeProperty
                attributeId scenario scenarioIdx
-               loadUnit listType listMode numberFormat currencyFormat timeFormat
+               loadUnit numberFormat currencyFormat timeFormat
+               listItem listType
                costAccount revenueAccount selfContained)
     @@ps.each do |p|
       attr_accessor p.to_sym
@@ -58,6 +59,10 @@ class TaskJuggler
       %w( end endIdx start startIdx ).each do |p|
         send(p + '=', parameters[p]) if parameters[p]
       end
+      # The custom data hash can be filled with results to be returned for
+      # special attributes that are not directly property attributes or
+      # computed attributes.
+      @customData = {}
 
       reset
     end
@@ -99,6 +104,13 @@ class TaskJuggler
       else
         raise "Unsupported type #{idx.class}"
       end
+    end
+
+    # Set a custom data entry. _name_ is the name of the pseudo attribute.
+    # _data_ must be a Hash that contains the value for :numberical, :string,
+    # :sortable or :rti results.
+    def setCustomData(name, data)
+      @customData[name] = data
     end
 
     # This method tries to resolve the query and return a result. In case it
@@ -157,7 +169,12 @@ class TaskJuggler
 
         queryMethodName = 'query_' + @attributeId
         # First we check for non-scenario-specific query functions.
-        if @property.respond_to?(queryMethodName)
+        if (data = @customData[@attributeId])
+          @sortable = data[:sortable]
+          @numerical = data[:numerical]
+          @string = data[:string]
+          @rti = data[:rti]
+        elsif @property.respond_to?(queryMethodName)
           @property.send(queryMethodName, self)
         elsif @scenarioIdx &&
               @property.data[@scenarioIdx].respond_to?(queryMethodName)

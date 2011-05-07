@@ -604,7 +604,7 @@ class TaskJuggler
     def genStandardCell(query, line, columnDef)
       query = query.dup
       query.listType = columnDef.listType
-      query.listMode = columnDef.listMode
+      query.listItem = columnDef.listItem
 
       # Find out, what type of PropertyTreeNode we are dealing with.
       property = line.property
@@ -650,7 +650,7 @@ class TaskJuggler
     def genCalculatedCell(query, line, columnDef, property)
       query = query.dup
       query.listType = columnDef.listType
-      query.listMode = columnDef.listMode
+      query.listItem = columnDef.listItem
 
       # Create a new cell
       cell = newCell(query, line)

@@ -1253,7 +1253,7 @@ class TaskJuggler
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
           dep "[->["
         end
-        list << generateDepencyListItem(query.listMode, task, dep, date)
+        list << generateDepencyListItem(query, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
       a('endsuccs').each do |task, onEnd|
@@ -1264,7 +1264,7 @@ class TaskJuggler
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
           dep = "]->["
         end
-        list << generateDepencyListItem(query.listMode, task, dep, date)
+        list << generateDepencyListItem(query, task, dep, date)
       end
 
       query.assignList(list)
@@ -1282,7 +1282,7 @@ class TaskJuggler
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
           dep = "[->["
         end
-        list << generateDepencyListItem(query.listMode, task, dep, date)
+        list << generateDepencyListItem(query, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
       a('endpreds').each do |task, onEnd|
@@ -1293,7 +1293,7 @@ class TaskJuggler
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
           dep = "[->]"
         end
-        list << generateDepencyListItem(query.listMode, task, dep, date)
+        list << generateDepencyListItem(query, task, dep, date)
       end
 
       query.assignList(list)
@@ -1308,19 +1308,16 @@ class TaskJuggler
       a('assignedresources').each do |resource|
         if resource.allocated?(@scenarioIdx,
                                Interval.new(query.start, query.end), @property)
-          case query.listMode
-          when 1
-            list << "#{resource.fullId}"
-          when 2
-            list << "#{resource.name}"
-          when 3, nil
-            list << "#{resource.name} (#{resource.fullId})"
-          when 4
-            list << "#{resource.fullId}: #{resource.name}"
+          if query.listItem
+            rti = RichText.new(query.listItem, RTFHandlers.create(@project),
+                               @project.messageHandler).
+                               generateIntermediateFormat
+            q = query.dup
+            q.property = resource
+            rti.setQuery(q)
+            list << rti.to_s
           else
-            error('bad_listmode_qr',
-                  "Unsupported list mode #{query.listMode} used for " +
-                  "resources column.")
+            list << "#{resource.name} (#{resource.fullId})"
           end
         end
       end
@@ -1359,7 +1356,7 @@ class TaskJuggler
                             ['seqno', true, -1 ]])
       inputList.sort!
 
-      query.assignList(generateTaskList(inputList, query.listMode))
+      query.assignList(generateTaskList(inputList, query))
     end
 
     def query_targets(query)
@@ -1370,7 +1367,7 @@ class TaskJuggler
                              ['seqno', true, -1 ]])
       targetList.sort!
 
-      query.assignList(generateTaskList(targetList, query.listMode))
+      query.assignList(generateTaskList(targetList, query))
     end
 
 
@@ -2306,66 +2303,36 @@ class TaskJuggler
       amount
     end
 
-    def generateDepencyListItem(mode, task, dep, date)
-      str =
-        case mode
-        when 1
-          "#{task.fullId} #{dep} #{date}"
-        when 2
-          "#{task.name} #{dep} #{date}"
-        when 3, nil
-          "#{task.name} (#{task.fullId}) #{dep} #{date}"
-        when 4
-          "#{task.fullId}: #{task.name} #{dep} #{date}"
-        when 5
-          "#{task.fullId} #{dep}"
-        when 6
-          "#{task.name} #{dep}"
-        when 7
-          "#{task.name} (#{task.fullId}) #{dep}"
-        when 8
-          "#{task.fullId}: #{task.name} #{dep}"
-        when 9
-          "#{task.fullId}"
-        when 10
-          "#{task.name}"
-        when 11
-          "#{task.name} (#{task.fullId})"
-        when 12
-          "#{task.fullId}: #{task.name}"
-        else
-          error('bad_listmode_deps',
-                "Unsupported list mode #{query.listMode} used for " +
-                "dependency column. Use 1 - 12.")
-        end
-
-      "* <nowiki>#{str}</nowiki>"
+    def generateDepencyListItem(query, task, dep, date)
+      if query.listItem
+        rti = RichText.new(query.listItem, RTFHandlers.create(@project),
+                           @project.messageHandler).generateIntermediateFormat
+        q = query.dup
+        q.property = task
+        q.setCustomData('dependency', { :string => dep })
+        q.setCustomData('date', { :string => date })
+        rti.setQuery(q)
+        rti.to_s
+      else
+        "<nowiki>#{task.name} (#{task.fullId}) #{dep} #{date}</nowiki>"
+      end
     end
 
-    def generateTaskList(taskList, mode)
+    def generateTaskList(taskList, query)
       list = []
       taskList.each do |task|
-        date = task['start', @scenarioIdx].to_s(@property.project['timeFormat'])
-        case mode
-        when 1
-          list << "#{task.fullId}"
-        when 2
-          list << "#{task.name}"
-        when 3
-          list << "#{task.name} (#{task.fullId})"
-        when 4
-          list << "#{task.fullId}: #{task.name}"
-        when 5
-          list << "#{task.fullId} (#{date})"
-        when 6
-          list << "#{task.name} (#{date})"
-        when 7, nil
-          list << "#{task.name} (#{task.fullId}) #{date}"
-        when 8
-          list << "#{task.fullId}: #{task.name} #{date}"
+        date = task['start', @scenarioIdx].
+               to_s(@property.project['timeFormat'])
+        if query.listItem
+          rti = RichText.new(query.listItem, RTFHandlers.create(@project),
+                             @project.messageHandler).generateIntermediateFormat
+          q = query.dup
+          q.property = task
+          q.setCustomData('date', { :string => date })
+          rti.setQuery(q)
+          list << "<nowiki>#{rti.to_s}</nowiki>"
         else
-          error('bad_listmode_qt',
-                "Bad listmode #{mode}. Use 1 - 8.")
+          list << "<nowiki>#{task.name} (#{task.fullId}) #{date}</nowiki>"
         end
       end
       list

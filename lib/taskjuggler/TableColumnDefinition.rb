@@ -59,7 +59,7 @@ class TaskJuggler
   class TableColumnDefinition
 
     attr_reader :id, :cellText, :tooltip, :hAlign, :cellColor, :fontColor
-    attr_accessor :title, :start, :end, :scale, :listType, :listMode,
+    attr_accessor :title, :start, :end, :scale, :listItem, :listType,
                   :width, :content, :column
 
     def initialize(id, title)
@@ -88,11 +88,12 @@ class TaskJuggler
       # An alternative font color for the cell. The format is equivalent to
       # the @cellColor setting.
       @fontColor = CellSettingPatternList.new
+      # Specifies a RichText pattern to be used to generate the text of the
+      # individual list items.
+      @listItem = nil
       # Specifies whether list items are comma separated, bullet or numbered
       # list.
       @listType = nil
-      # Specifies how the list entries look like.
-      @listMode = nil
       # The scale attribute is only used for Gantt chart columns. It specifies
       # the minimum resolution of the chart.
       @scale = 'week'
