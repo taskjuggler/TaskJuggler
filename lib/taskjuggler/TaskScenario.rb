@@ -1248,10 +1248,10 @@ class TaskJuggler
       a('startsuccs').each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
-          dep "[->]"
+          dep = "[->]"
         else
           date = task['start', query.scenarioIdx].to_s(query.timeFormat)
-          dep "[->["
+          dep = "[->["
         end
         list << generateDepencyListItem(query, task, dep, date)
       end
@@ -2312,7 +2312,7 @@ class TaskJuggler
         q.setCustomData('dependency', { :string => dep })
         q.setCustomData('date', { :string => date })
         rti.setQuery(q)
-        rti.to_s
+        "<nowiki>#{rti.to_s}</nowiki>"
       else
         "<nowiki>#{task.name} (#{task.fullId}) #{dep} #{date}</nowiki>"
       end
