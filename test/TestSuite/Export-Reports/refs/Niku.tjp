@@ -8,6 +8,7 @@ project prj "Niku Test" "1.0" 2010-02-01-00:00-+0000 - 2010-05-03-06:00-+0000 {
     text ClarityPName "Clarity Project Name"
   }
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

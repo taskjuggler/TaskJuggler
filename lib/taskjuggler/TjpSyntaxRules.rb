@@ -871,7 +871,7 @@ EOT
 
       # By default, we export all scenarios.
       scenarios = Array.new(@project.scenarios.items) { |i| i }
-      scenarios.delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
       report.set('scenarios', scenarios)
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
@@ -931,7 +931,7 @@ EOT
 
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
-      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('active') }
       @property.set('scenarios', @val[1])
     })
     doc('scenarios.export', <<'EOT'
@@ -3336,7 +3336,7 @@ EOT
 
     pattern(%w( _scenarios !scenarioIdList ), lambda {
       # Don't include disabled scenarios in the report
-      @val[1].delete_if { |sc| !@project.scenario(sc).get('enabled') }
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('active') }
       @property.set('scenarios', @val[1])
     })
     doc('scenarios', <<'EOT'
@@ -3923,42 +3923,34 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _active !yesNo), lambda {
+      @property.set('active', @val[1])
+    })
+    doc('active', <<'EOT'
+Enable the scenario to be scheduled or not. By default, all scenarios will be
+scheduled. If a scenario is marked as inactive, it not be scheduled and will
+be ignored in the reports.
+EOT
+       )
     pattern(%w( _disabled ), lambda {
-      @property.set('enabled', false)
+      @property.set('active', false)
     })
     doc('disabled', <<'EOT'
+This attribute is deprecated. Please use [active] instead.
+
 Disable the scenario for scheduling. The default for the top-level
 scenario is to be enabled.
 EOT
        )
     example('Scenario')
     pattern(%w( _enabled ), lambda {
-      @property.set('enabled', true)
+      @property.set('active', true)
     })
     doc('enabled', <<'EOT'
+This attribute is deprecated. Please use [active] instead.
+
 Enable the scenario for scheduling. This is the default for the top-level
 scenario.
-EOT
-       )
-
-    pattern(%w( _minslackrate !number ), lambda {
-       @property.set('minslackrate', @val[1] / 100.0)
-    })
-    doc('minslackrate', <<'EOT'
-Specifies the minimum percentage of slack a task path must have before it is
-marked as critical. A path is any list of explicitely or implicitely connected
-tasks measured from first task to last task. The slack is the time between
-start of the first task and end of the last task that is not covered by any
-task of the path.
-
-Larger values in combination with a project that uses lots of inherited
-dependencies and long dependency pathes can result in very long scheduling
-times. The more slack you require, the more pathes have to be searched till
-the end. For larger projects an increase of 5% can turn a 10 second scheduling
-run into a 1 hour or more scheduling run. If you need larger slack rate
-values, avoid the use of inherited dependencies.
-
-The default value is 0% which turns off the critical path detector.
 EOT
        )
 

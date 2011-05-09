@@ -115,10 +115,8 @@ class TaskJuggler
       attrs = [
         # ID           Name          Type
         #     Inh.   Inh.Prj  Scen.  Default
-        [ 'enabled',   'Enabled',    BooleanAttribute,
+        [ 'active',   'Enabled',    BooleanAttribute,
               true,  false,   false, true ],
-        [ 'minslackrate', 'Min. Slack Rate', FloatAttribute,
-              true,  false,   false, 1.0 ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
               true,  false,   false, false ],
         [ 'strict', 'Strict Bookings', BooleanAttribute,
@@ -606,7 +604,7 @@ class TaskJuggler
 
       @scenarios.each do |sc|
         # Skip disabled scenarios
-        next unless sc.get('enabled')
+        next unless sc.get('active')
 
         scIdx = scenarioIdx(sc)
 

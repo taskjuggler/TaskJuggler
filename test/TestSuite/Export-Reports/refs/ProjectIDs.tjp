@@ -1,6 +1,7 @@
 project prj1 "ProjectIDs example" "1.0" 2006-08-22-00:00-+0000 - 2006-09-21-10:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

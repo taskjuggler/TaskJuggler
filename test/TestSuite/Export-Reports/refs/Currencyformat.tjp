@@ -1,6 +1,7 @@
 project prj "Project" "1.0" 2007-01-01-00:00-+0000 - 2007-03-01-00:00-+0000 {
   timezone "Europe/Berlin"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

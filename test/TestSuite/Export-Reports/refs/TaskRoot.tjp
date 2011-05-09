@@ -1,6 +1,7 @@
 project prj "Taskroot Example" "1.0" 2005-07-22-00:00-+0000 - 2005-08-26-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

@@ -1,6 +1,7 @@
 project prj "Logical Function Demo" "1.0" 2009-11-21-00:00-+0000 - 2009-12-05-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

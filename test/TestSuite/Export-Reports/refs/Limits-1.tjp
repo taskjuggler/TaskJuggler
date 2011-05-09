@@ -1,6 +1,7 @@
 project limits "Limits" "1.0" 2007-03-01-00:00-+0000 - 2008-02-29-00:00-+0000 {
   timezone "Europe/Amsterdam"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

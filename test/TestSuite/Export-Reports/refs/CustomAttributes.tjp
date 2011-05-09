@@ -5,6 +5,7 @@ project prj "Custom Attributes" "1.0" 2007-05-28-00:00-+0000 - 2007-06-28-00:00-
     text MyText "My Text"
   }
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

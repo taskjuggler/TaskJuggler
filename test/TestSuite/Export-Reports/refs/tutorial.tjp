@@ -5,7 +5,9 @@ project acso "Accounting Software" "1.0" 2002-01-16-00:00-+0000 - 2002-05-17-16:
   }
   scenario plan "Plan" {
     scenario delayed "Delayed" {
+      active yes
     }
+    active yes
   }
 }
 

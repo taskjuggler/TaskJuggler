@@ -1,6 +1,7 @@
 project project "Include task prefix test" "1.0" 2010-12-01-00:00-+0000 - 2010-12-31-10:00-+0000 {
   timezone "Europe/Amsterdam"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

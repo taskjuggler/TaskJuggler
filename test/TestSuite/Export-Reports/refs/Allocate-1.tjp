@@ -1,6 +1,7 @@
 project allocate "allocate" "1.0" 2003-06-05-00:00-+0000 - 2003-07-05-00:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
+    active yes
   }
 }
 

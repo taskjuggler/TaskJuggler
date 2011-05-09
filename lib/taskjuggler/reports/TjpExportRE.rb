@@ -87,7 +87,8 @@ class TaskJuggler
       scenario.children.each do |sc|
         generateScenarioDefinition(sc, indent + 2)
       end
-      @file << "#{' ' * (indent + 2)}disabled\n" unless scenario.get('enabled')
+      @file << "#{' ' * (indent + 2)}active " +
+               "#{scenario.get('active') ? 'yes' : 'no'}\n"
       @file << "#{' ' * indent}}\n"
     end
 
