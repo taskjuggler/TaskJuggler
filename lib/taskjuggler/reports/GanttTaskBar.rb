@@ -91,7 +91,8 @@ class TaskJuggler
       if @query
         @query.attributeId = 'complete'
         @query.process
-        completion = @query.result / 100.0
+        res = @query.result
+        completion = res ? res / 100.0 : 0.0
       else
         completion = 0.5
       end

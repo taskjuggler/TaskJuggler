@@ -188,6 +188,7 @@ class TaskJuggler
       # Remove all reports that the user doesn't want to have include.
       query = @project.reportContexts.last.query.dup
       query.scopeProperty = nil
+      query.scenarioIdx = query.scenario = nil
       list.delete_if do |property|
         query.property = property
         @hideReport.eval(query)

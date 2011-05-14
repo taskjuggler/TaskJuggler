@@ -176,7 +176,7 @@ class TaskJuggler
           @rti = data[:rti]
         elsif @property.respond_to?(queryMethodName)
           @property.send(queryMethodName, self)
-        elsif @scenarioIdx &&
+        elsif @scenarioIdx && @property.data &&
               @property.data[@scenarioIdx].respond_to?(queryMethodName)
           # Then we check for scenario-specific ones via the @data member.
           @property.send(queryMethodName, @scenarioIdx, self)
