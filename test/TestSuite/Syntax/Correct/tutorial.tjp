@@ -574,7 +574,7 @@ taskreport status "" {
     columns name { title "Task" ${AlertColor} width 200},
             resources { width 200 ${AlertColor}
                         listtype bullets
-                        listitem "<query attribute='name'->"
+                        listitem "<-query attribute='name'->"
                         start ${projectstart} end ${projectend} },
             alerttrend { title "Trend" ${AlertColor} width 50 },
             journalmessages { width 350 ${AlertColor} }

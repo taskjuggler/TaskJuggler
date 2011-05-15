@@ -449,15 +449,15 @@ class TaskJuggler
       if query
         @value.each do |r|
           if query.listItem
-            rti = RichText.new(query.listItem, RTFHandlers.create(@project),
+            rti = RichText.new(query.listItem, RTFHandlers.create(r.project),
                                r.project.messageHandler).
                                generateIntermediateFormat
             q = query.dup
             q.property = r
             rti.setQuery(q)
-            out << "<nowiki>rti.to_s</nowiki>"
+            out << "<nowiki>#{rti.to_s}</nowiki>"
           else
-            out << "<nowiki>r.name</nowiki>"
+            out << "<nowiki>#{r.name}</nowiki>"
           end
         end
         query.assignList(out)

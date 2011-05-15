@@ -1315,9 +1315,9 @@ class TaskJuggler
             q = query.dup
             q.property = resource
             rti.setQuery(q)
-            list << rti.to_s
+            list << "<nowiki>#{rti.to_s}</nowiki>"
           else
-            list << "#{resource.name} (#{resource.fullId})"
+            list << "<nowiki>#{resource.name} (#{resource.fullId})</nowiki>"
           end
         end
       end
