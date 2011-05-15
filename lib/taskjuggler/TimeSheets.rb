@@ -284,7 +284,12 @@ class TaskJuggler
         totalSlots += record.work
       end
 
-      if @resource['efficiency', @resource.project['trackingScenarioIdx']] > 0.0
+      unless (scenarioIdx = @resource.project['trackingScenarioIdx'])
+        error('ts_no_tracking_scenario',
+              'No trackingscenario has been defined.')
+      end
+
+      if @resource['efficiency', scenarioIdx] > 0.0
         targetSlots = totalNetWorkingSlots
         # This is acceptable rounding error when checking the total reported
         # work.

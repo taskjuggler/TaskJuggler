@@ -2481,6 +2481,18 @@ Do not use this option after you've set the time zone!
 EOT
         )
 
+    pattern(%w( _trackingscenario !scenarioId ), lambda {
+      @project['trackingScenarioIdx'] = @val[1]
+    })
+    doc('trackingscenario', <<'EOT'
+Specifies which scenario is used to capture what actually has happened with
+the project. All sub-scenarios of this scenario inherit the bookings of the
+tracking scenario and may not have any bookings of their own. The tracking
+scenario must also be specified to use time and status sheet reports.
+EOT
+       )
+    example('TimeSheet1', '2')
+
     pattern(%w( _weekstartsmonday ), lambda {
       @project['weekStartsMonday'] = true
     })
@@ -2517,6 +2529,14 @@ EOT
 
   def rule_projectDeclaration
     pattern(%w( !projectHeader !projectBody ), lambda {
+      # If the user has specified a tracking scenario, we mark all children of
+      # that scenario to disallow own bookings. These scenarios will inherit
+      # their bookings from the tracking scenario.
+      if (idx = @project['trackingScenarioIdx'])
+        @project.scenario(idx).allLeaves(true).each do |scenario|
+          scenario.set('ownbookings', false)
+        end
+      end
       @val[0]
     })
     doc('project', <<'EOT'
@@ -2751,16 +2771,6 @@ part-time, or vice versa, please refer to the 'Shift' property.
 EOT
        )
     arg(1, 'name', 'Name or purpose of the vacation')
-
-    pattern(%w( _trackingscenario !scenarioId ), lambda {
-      @project['trackingScenarioIdx'] = @val[1]
-    })
-    doc('trackingscenario', <<'EOT'
-Specifies which scenario should be used for time sheet reports. By default,
-the top-level scenario will be used.
-EOT
-       )
-    example('TimeSheet1', '2')
   end
 
   def rule_propertiesFile
@@ -3681,6 +3691,12 @@ EOT
 
   def rule_resourceBooking
     pattern(%w( !resourceBookingHeader !bookingBody ), lambda {
+      unless @project.scenario(@scenarioIdx).get('ownbookings')
+        error('no_own_resource_booking',
+              "The scenario #{@project.scenario(@scenarioIdx).fullId} " +
+              'inherits its bookings from the tracking ' +
+              'scenario. You cannot specificy additional bookings for it.')
+      end
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
@@ -3773,7 +3789,9 @@ bookings has been done up to now. It then schedules a plan for the still
 missing effort. All task with bookings must be scheduled in ''''asap'''' mode.
 
 Bookings are only valid in the scenario they have been defined in. They will
-not be passed to any other scenario.
+in general not be passed to any other scenario. If you have defined a
+[trackingscenario], the bookings of this scenario will be passed to all its
+derived scenarios.
 
 The sloppy attribute can be used when you want to skip non-working time or
 other allocations automatically. If it's not given, all bookings must only
@@ -4374,6 +4392,10 @@ EOT
 
   def rule_statusSheetHeader
     pattern(%w( _statussheet !resourceId !valIntervalOrDate ), lambda {
+      unless (scenarioIdx = @project['trackingScenarioIdx'])
+        error('ss_no_tracking_scenario',
+              'No trackingscenario defined.')
+      end
       @sheetAuthor = @val[1]
       @sheetStart = @val[2].start
       @sheetEnd = @val[2].end
@@ -4395,7 +4417,8 @@ A status sheet report is a template for a status sheet. It collects all the
 status information of the top-level task that a resource is responsible for.
 This report is typically used by managers or team leads to review the time
 sheet status information and destill it down to a summary that can be
-forwarded to the next person in the reporting chain.
+forwarded to the next person in the reporting chain. The report will be for
+the specified [trackingscenario].
 EOT
        )
   end
@@ -4602,6 +4625,12 @@ EOT
 
   def rule_taskBooking
     pattern(%w( !taskBookingHeader !bookingBody ), lambda {
+      unless @project.scenario(@scenarioIdx).get('ownbookings')
+        error('no_own_task_booking',
+              "The scenario #{@project.scenario(@scenarioIdx).fullId} " +
+              'inherits its bookings from the tracking ' +
+              'scenario. You cannot specificy additional bookings for it.')
+      end
       @val[0].task.addBooking(@scenarioIdx, @val[0])
     })
   end
@@ -4814,7 +4843,9 @@ bookings has been done up to now. It then schedules a plan for the still
 missing effort. All task with bookings must be scheduled in ''''asap'''' mode.
 
 Bookings are only valid in the scenario they have been defined in. They will
-not be passed to any other scenario.
+in general not be passed to any other scenario. If you have defined a
+[trackingscenario], the bookings of this scenario will be passed to all its
+derived scenarios.
 
 The sloppy attribute can be used when you want to skip non-working time or
 other allocations automatically. If it's not given, all bookings must only
@@ -5553,9 +5584,12 @@ EOT
               'A resource group cannot file a time sheet',
               @sourceFileInfo[1])
       end
+      unless (scenarioIdx = @project['trackingScenarioIdx'])
+        error('ts_no_tracking_scenario',
+              'No trackingscenario defined.')
+      end
       # Currently time sheets are hardcoded for scenario 0.
-      @timeSheet = TimeSheet.new(@sheetAuthor, @val[2],
-                                 @project['trackingScenarioIdx'])
+      @timeSheet = TimeSheet.new(@sheetAuthor, @val[2], scenarioIdx)
       @timeSheet.sourceFileInfo = @sourceFileInfo[0]
       @project.timeSheets << @timeSheet
     })
@@ -5570,7 +5604,7 @@ For projects that flow mostly according to plan, TaskJuggler already knows
 much of the information that should be contained in the time sheets. With this
 property, you can generate a report that contains drafts of the time sheets
 for one or more resources. The time sheet drafts will be for the
-specified report period.
+specified report period and the specified [trackingscenario].
 EOT
        )
   end

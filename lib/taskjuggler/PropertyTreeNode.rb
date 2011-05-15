@@ -263,9 +263,9 @@ class TaskJuggler
     end
 
     # Return a list of all leaf nodes of this node.
-    def allLeaves
+    def allLeaves(withoutSelf = false)
       if leaf?
-        res = [ self ]
+        res = withoutSelf ? [] : [ self ]
       else
         res = []
         @children.each do |c|

@@ -1,4 +1,6 @@
-project "test" 2010-02-21 +2m
+project "test" 2010-02-21 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -11,7 +13,7 @@ timesheet r1 2010-02-21 +1w {
   task t1 {
     work 100%
     remaining 0d
-# MARK: error 17 ts_summary_too_long
+# MARK: error 19 ts_summary_too_long
     status green "headline" {
       summary -8<-
 012345678901234567890123456789012345678901234567890123456789

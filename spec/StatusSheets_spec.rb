@@ -45,7 +45,10 @@ _statussheets:
 EOT
                  )
       prj = <<'EOT'
-project sstest "Time Sheet Test" 2011-03-14 +2m
+project sstest "Time Sheet Test" 2011-03-14 +2m {
+  trackingscenario plan
+}
+
 flags manager
 resource "Team" {
   resource boss "Boss" {

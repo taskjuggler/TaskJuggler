@@ -1,4 +1,6 @@
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -8,7 +10,7 @@ task t1 "Task 1" {
 }
 
 timesheet r1 2009-11-30 +1w {
-# MARK: error 12 ts_no_remaining
+# MARK: error 14 ts_no_remaining
   task t1 {
     work 0d
     status green "All work done" {

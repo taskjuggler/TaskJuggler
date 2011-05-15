@@ -146,11 +146,15 @@ class TaskJuggler
     def dashboard(query)
       scenarioIdx = @project['trackingScenarioIdx']
       taskList = []
-      @project.tasks.each do |task|
-        if task['responsible', scenarioIdx].include?(self) &&
-           !@project['journal'].currentEntries(query.end, task,
-                                              0, query.start).empty?
-          taskList << task
+      unless scenarioIdx
+        rText = "No 'trackingscenario' defined."
+      else
+        @project.tasks.each do |task|
+          if task['responsible', scenarioIdx].include?(self) &&
+            !@project['journal'].currentEntries(query.end, task,
+                                                0, query.start).empty?
+            taskList << task
+          end
         end
       end
 

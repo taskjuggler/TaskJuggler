@@ -95,7 +95,7 @@ class TaskJuggler
         'start' => nil,
         'timeFormat' => "%Y-%m-%d",
         'timezone' => TjTime.timeZone,
-        'trackingScenarioIdx' => 0,
+        'trackingScenarioIdx' => nil,
         'vacations' => [],
         'version' => version || "1.0",
         'weekStartsMonday' => true,
@@ -117,6 +117,8 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'active',   'Enabled',    BooleanAttribute,
               true,  false,   false, true ],
+        [ 'ownbookings', 'Own Bookings', BooleanAttribute,
+              false, false,   false, true ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
               true,  false,   false, false ],
         [ 'strict', 'Strict Bookings', BooleanAttribute,

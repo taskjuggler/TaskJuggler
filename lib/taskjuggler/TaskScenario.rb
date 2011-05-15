@@ -1802,7 +1802,7 @@ class TaskJuggler
     def bookBookings
       scheduled = a('scheduled')
       slotDuration = @project['scheduleGranularity']
-      a('booking').each do |booking|
+      findBookings.each do |booking|
         unless booking.resource.leaf?
           error('booking_resource_not_leaf',
                 "Booked resources may not be group resources",
@@ -2336,6 +2336,19 @@ class TaskJuggler
         end
       end
       list
+    end
+
+    def findBookings
+      # Map the index back to the Scenario object.
+      scenario = @property.project.scenario(@scenarioIdx)
+      # Check if the current scenario should inherit its bookings from the
+      # parent. If so, redirect 'scenario' to the parent. The top-level
+      # scenario can never inherit bookings.
+      while !scenario.get('ownbookings') do
+        scenario = scenario.parent
+      end
+      # Return the bookings of the found scenario.
+      @property['booking', @property.project.scenarioIdx(scenario)]
     end
 
   end

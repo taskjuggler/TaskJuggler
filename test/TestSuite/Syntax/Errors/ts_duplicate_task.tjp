@@ -1,4 +1,6 @@
-project "test" 2010-02-21 +2m
+project "test" 2010-02-21 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -7,7 +9,7 @@ task t1 "Task 1" {
   allocate r1
 }
 
-# MARK: error 11 ts_duplicate_task 
+# MARK: error 13 ts_duplicate_task
 timesheet r1 2010-02-21 +1w {
   task t1 {
     work 80%

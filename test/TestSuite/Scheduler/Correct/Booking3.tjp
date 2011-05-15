@@ -1,0 +1,30 @@
+project "Test" 2011-05-15 +1w {
+  scenario s1 "S1" {
+    projection { strict }
+    scenario s2 "S2" {
+      projection { strict }
+    }
+  }
+  trackingscenario s2
+  now 2011-05-17
+}
+
+include 'checks.tji'
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "T1" {
+  effort 2d
+  allocate r1
+  booking r1 2011-05-16-9:00 +3h,
+             2011-05-16-13:00 +5h
+  ${FixEndSc "2011-05-17-18:00" "s1"}
+  ${FixEndSc "2011-05-18-18:00" "s2"}
+}
+
+taskreport "Booking3" {
+  formats html
+  columns no, name, scenario, start, end, hourly
+  scenarios s1, s2
+}

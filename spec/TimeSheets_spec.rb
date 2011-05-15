@@ -48,7 +48,10 @@ _timesheets:
 EOT
                  )
       prj = <<'EOT'
-project tstest "Time Sheet Test" 2011-03-14 +2m
+project tstest "Time Sheet Test" 2011-03-14 +2m {
+  trackingscenario plan
+}
+
 resource "Team" {
   resource r1 "R1" {
     email "r1@example.com"

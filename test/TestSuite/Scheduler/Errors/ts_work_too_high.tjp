@@ -1,4 +1,6 @@
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -7,7 +9,7 @@ task t1 "Task 1" {
   allocate r1
 }
 
-# MARK: error 11 ts_work_too_high
+# MARK: error 13 ts_work_too_high
 timesheet r1 2009-11-30 +1w {
   task t1 {
     work 8d

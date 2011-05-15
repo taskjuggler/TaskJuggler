@@ -1,12 +1,11 @@
 # *** EXAMPLE: 2 +
+# *** EXAMPLE: 1 +
 project "test" 2009-11-30 +2m {
   timezone "America/Denver"
+  trackingscenario plan
 }
-
-# *** EXAMPLE: 1 +
-trackingscenario plan
-
 # *** EXAMPLE: 1 -
+
 resource r1 "R1"
 # *** EXAMPLE: 2 -
 resource r2 "R2"

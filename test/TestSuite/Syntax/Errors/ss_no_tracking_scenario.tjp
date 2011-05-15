@@ -1,0 +1,14 @@
+project "Test" 2011-05-15 +1w
+
+resource r "R"
+task t "T"
+
+# MARK: error 7 ss_no_tracking_scenario
+statussheet r 2011-05-15 +1w {
+  task t {
+    work 80%
+    priority 1001
+    end 2011-05-18
+    status green "Lots of work done"
+  }
+}

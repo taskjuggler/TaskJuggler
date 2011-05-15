@@ -1,5 +1,6 @@
 project "test" 2009-11-30 +2m {
   timezone "America/Denver"
+  trackingscenario plan
 }
 
 resource r1 "R1"

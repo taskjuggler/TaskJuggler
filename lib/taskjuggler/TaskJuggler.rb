@@ -211,6 +211,13 @@ class TaskJuggler
   def checkTimeSheet(fileName)
     begin
       Log.enter('checkTimeSheet', 'Parsing #{fileName} ...')
+
+      # To use this feature, the user must have specified which scenario is
+      # the tracking scenario.
+      unless @project['trackingScenarioIdx']
+        raise TjException.new, 'No trackingscenario defined'
+      end
+
       # Make sure we don't use data from old time sheets or Journal entries.
       @project.timeSheets.clear
       @project['journal'] = Journal.new
@@ -243,6 +250,13 @@ class TaskJuggler
   def checkStatusSheet(fileName)
     begin
       Log.enter('checkStatusSheet', 'Parsing #{fileName} ...')
+
+      # To use this feature, the user must have specified which scenario is
+      # the tracking scenario.
+      unless @project['trackingScenarioIdx']
+        raise TjException.new, 'No trackingscenario defined'
+      end
+
       return false unless (ss = parseFile(fileName, :statusSheetFile))
       queryAttrs = { 'project' => @project,
                      'property' => ss[0],

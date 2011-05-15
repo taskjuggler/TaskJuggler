@@ -1,4 +1,6 @@
-project "test" 2010-02-21 +2m
+project "test" 2010-02-21 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -12,7 +14,7 @@ timesheet r1 2010-02-21 +1w {
     work 100%
     remaining 0d
     status green "Green" {
-# MARK: error 17 ts_default_details
+# MARK: error 19 ts_default_details
       details -8<-
       Some more details
       ->8-

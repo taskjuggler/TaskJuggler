@@ -1,4 +1,6 @@
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -11,7 +13,7 @@ timesheet r1 2009-11-30 +1w {
   task t1 {
     work 2d
     remaining 0d
-# MARK: error 15 ts_no_headline
+# MARK: error 17 ts_no_headline
     status green "Your headline here!" {
       summary "I had good fun!"
       details -8<-

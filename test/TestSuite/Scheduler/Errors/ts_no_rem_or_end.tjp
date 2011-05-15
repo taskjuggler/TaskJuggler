@@ -1,4 +1,6 @@
-project "test" 2009-11-30 +2m
+project "test" 2009-11-30 +2m {
+  trackingscenario plan
+}
 
 resource r1 "R1"
 
@@ -8,7 +10,7 @@ task t1 "Task 1" {
 }
 
 timesheet r1 2009-11-30 +1w {
-# MARK: error 12 ts_no_rem_or_end
+# MARK: error 14 ts_no_rem_or_end
   newtask t2 "A new task" {
     work 5d
     status green "All work done" {

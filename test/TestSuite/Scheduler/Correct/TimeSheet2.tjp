@@ -1,4 +1,6 @@
-project "test" 2010-02-21 +2m
+project "test" 2010-02-21 +2m {
+  trackingscenario plan
+}
 
 vacation 2010-02-24
 
@@ -56,7 +58,7 @@ timesheet r2 2010-02-21 +1w {
     work 60%
     remaining 8d
     status red "I need more time" {
-      summary "This takes longer than expected" 
+      summary "This takes longer than expected"
       details -8<-
         To finish on time, I need help. Get this r1 guy to help me out
         here.
