@@ -83,14 +83,14 @@ class TaskJuggler
       if !@propertySet.flatNamespace && id.include?('.')
         parentId = id[0..(id.rindex('.') - 1)]
         # Set parent to the parent property if it's still nil.
-        parent = @propertySet[parentId] unless parent
+        @parent = @propertySet[parentId] unless @parent
         if $DEBUG
-          if !parent || !@propertySet[parent.fullId]
+          if !@parent || !@propertySet[@parent.fullId]
             raise "Fatal Error: parent must be member of same property set"
           end
-          if parentId != parent.fullId
-            raise "Fatal Error: parent (#{parent.fullId}) and parent ID " +
-                "(#{parentId}) don't match"
+          if parentId != @parent.fullId
+            raise "Fatal Error: parent (#{@parent.fullId}) and parent ID " +
+                "(#{@parentId}) don't match"
           end
         end
         @id = id[(id.rindex('.') + 1).. -1]
