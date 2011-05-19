@@ -123,6 +123,7 @@ class TaskJuggler
           1
         else
           error("Ups, you have triggered a bug in #{AppConfig.softwareName}!\n" +
+                "#{e}\n" +
                 e.backtrace.join("\n") +
                 "Please see the user manual on how to get this bug fixed!")
         end

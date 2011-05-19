@@ -85,7 +85,7 @@ class TaskJuggler
       end
 
       if (expandedArgs['property'] || expandedArgs['scopeproperty']) &&
-          !(expandedArgs['family'] || query.propertyType)
+          !(expandedArgs['family'] || @query.propertyType)
         error('missing_family',
               "If you provide a property or scope property you need to " +
               "provide a family type as well.")
@@ -106,8 +106,8 @@ class TaskJuggler
         query.scopeProperty = nil
       end
       query.attributeId = expandedArgs['attribute'] if expandedArgs['attribute']
-      query.start = expandedArgs['start'] if expandedArgs['start']
-      query.end = expandedArgs['end'] if expandedArgs['end']
+      query.start = TjTime.new(expandedArgs['start']) if expandedArgs['start']
+      query.end = TjTime.new(expandedArgs['end']) if expandedArgs['end']
       if expandedArgs['numberformat']
         query.numberFormat = expandedArgs['numberformat']
       end
@@ -145,7 +145,7 @@ class TaskJuggler
         unless validTypes[args['family']]
           error('rtfq_bad_query_family',
                 "Unknown query family type '#{args['family']}'. " +
-                "Use one of #{validTypes}.join(', ')!")
+                "Use one of #{validTypes.keys.join(', ')}!")
         end
         query.propertyType = validTypes[args['family']]
         if query.propertyType == :Task

@@ -73,10 +73,10 @@ class TaskJuggler
     def start=(date)
       if date.is_a?(TjTime)
         @start = date
-        @startIdx = @project.dateToIdx(date)
       else
         raise "Unsupported type #{date.class}"
       end
+      @startIdx = @project.dateToIdx(@start)
     end
 
     def startIdx=(idx)
@@ -91,10 +91,10 @@ class TaskJuggler
     def end=(date)
       if date.is_a?(TjTime)
         @end = date
-        @endIdx = @project.dateToIdx(date)
       else
         raise "Unsupported type #{date.class}"
       end
+      @endIdx = @project.dateToIdx(@end)
     end
 
     def endIdx=(idx)
