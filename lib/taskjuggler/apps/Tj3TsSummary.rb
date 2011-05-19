@@ -64,9 +64,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(argv)
       begin
-        super
         ts = TimeSheetSummary.new
         @rc.configure(ts, 'global')
         @rc.configure(ts, 'timesheets')

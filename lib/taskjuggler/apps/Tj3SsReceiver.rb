@@ -37,9 +37,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(argv)
       begin
-        super
         ts = TaskJuggler::StatusSheetReceiver.new('tj3ss_receiver')
         @rc.configure(ts, 'global')
         @rc.configure(ts, 'statussheets')

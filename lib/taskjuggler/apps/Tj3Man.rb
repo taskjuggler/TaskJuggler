@@ -50,8 +50,7 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
-      requestedKeywords = super
+    def appMain(requestedKeywords)
       if @manual
         UserManual.new.generate(@directory)
       elsif requestedKeywords.empty?

@@ -98,23 +98,35 @@ class TaskJuggler
         error("\nAborting on user request!")
       end
 
-      args = processArguments(argv)
+      begin
+        args = processArguments(argv)
 
-      # If DEBUG mode has been enabled, we restore the INT trap handler again
-      # to get Ruby backtrackes.
-      Kernel.trap('INT', intHandler) if $DEBUG
+        # If DEBUG mode has been enabled, we restore the INT trap handler again
+        # to get Ruby backtrackes.
+        Kernel.trap('INT', intHandler) if $DEBUG
 
-      unless @silent
-        puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
-             "#{AppConfig.packageInfo}\n\n" +
-             "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
-             "              by #{AppConfig.authors.join(', ')}\n\n" +
-             "#{AppConfig.license}\n"
+        unless @silent
+          puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
+            "#{AppConfig.packageInfo}\n\n" +
+            "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+            "              by #{AppConfig.authors.join(', ')}\n\n" +
+            "#{AppConfig.license}\n"
+        end
+
+        @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
+
+        appMain(args)
+      rescue Exception => e
+        if e.is_a?(SystemExit) || e.is_a?(Interrupt)
+          # Don't show backtrace on user interrupt unless we are in debug mode.
+          $stderr.puts e.backtrace.join("\n") if $DEBUG
+          1
+        else
+          error("Ups, you have triggered a bug in #{AppConfig.softwareName}!\n" +
+                e.backtrace.join("\n") +
+                "Please see the user manual on how to get this bug fixed!")
+        end
       end
-
-      @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
-
-      args
     end
 
     private

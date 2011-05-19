@@ -99,9 +99,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(files)
       begin
-        files = super
         if files.empty?
           error('You must provide at least one .tjp file', 1)
         end

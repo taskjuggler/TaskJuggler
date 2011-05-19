@@ -67,9 +67,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(argv)
       begin
-        super
         ts = StatusSheetSender.new('tj3ss_sender')
         @rc.configure(ts, 'global')
         @rc.configure(ts, 'statussheets')

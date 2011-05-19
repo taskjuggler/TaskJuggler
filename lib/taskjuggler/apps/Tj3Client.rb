@@ -159,9 +159,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(args)
       begin
-        args = super
         # Run a first check of the non-optional command line arguments.
         checkCommand(args)
         # Read some configuration variables. Except for the authKey, they are

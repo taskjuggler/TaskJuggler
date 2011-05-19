@@ -72,9 +72,8 @@ EOT
       end
     end
 
-    def main(argv = ARGV)
+    def appMain(files)
       begin
-        files = super
         broker = ProjectBroker.new
         @rc.configure(self, 'global')
         @rc.configure(@log, 'global.log')
