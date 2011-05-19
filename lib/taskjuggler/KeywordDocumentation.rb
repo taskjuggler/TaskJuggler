@@ -206,7 +206,8 @@ class TaskJuggler
         else
           argStr = ''
           @args.each do |arg|
-            argText = arg.text || "See '#{arg.name}' for details."
+            argText = newRichText(arg.text ||
+              "See '#{arg.name}' for details.").to_s
             if arg.typeSpec.nil? || ("<#{arg.name}>") == arg.typeSpec
               indent = arg.name.length + 2
               argStr += "#{arg.name}: " +
