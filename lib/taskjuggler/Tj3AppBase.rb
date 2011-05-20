@@ -95,7 +95,7 @@ class TaskJuggler
 
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
-        error("\nAborting on user request!")
+        error("Aborting on user request!")
       end
 
       begin
@@ -107,10 +107,10 @@ class TaskJuggler
 
         unless @silent
           puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
-            "#{AppConfig.packageInfo}\n\n" +
-            "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
-            "              by #{AppConfig.authors.join(', ')}\n\n" +
-            "#{AppConfig.license}\n"
+               "#{AppConfig.packageInfo}\n\n" +
+               "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+               "              by #{AppConfig.authors.join(', ')}\n\n" +
+               "#{AppConfig.license}\n"
         end
 
         @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
@@ -137,7 +137,7 @@ class TaskJuggler
     end
 
     def error(message, exitVal = 1)
-      $stderr.puts "ERROR: #{message}"
+      $stderr.puts "\nERROR: #{message}"
       exit exitVal
     end
 
