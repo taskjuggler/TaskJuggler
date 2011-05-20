@@ -4,7 +4,7 @@ project "Example" 2007-05-29 - 2007-07-01 {
   scenario plan "Planned Scenario" {
     scenario actual "Actual Scenario"
     scenario test "Test Scenario" {
-      disabled
+      active no
     }
   }
 }

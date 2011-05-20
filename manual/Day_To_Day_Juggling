@@ -22,7 +22,7 @@ and ''''test''''. These two scenarios are identical to the
 ''''plan'''' scenario except for those attributes that are changed
 for these scenarios. Normally, all scenarios are scheduled on each
 ''''tj3'''' run. To temporarily disable the scheduling of a scenario,
-you can use the [[disabled]] attribute.
+you can set the [[active]] attribute to ''''no''''.
 
 <[example file="Scenario" tag="task"]>
 
@@ -36,6 +36,43 @@ scenario of plan.
 
 The syntax reference lists for each attribute whether it is scenario
 specific or not.
+
+=== Important and fall-back Tasks ===
+
+By default, the scheduler tries to guess the right priority of tasks.
+The higher the priority, the more likely it will get the requested
+resources. To override this mechanism, the [[priority]] attribute can
+be used.
+
+<[example file="Priority" tag="project"]>
+
+In the above example, the regular project work needs to be frequently 
+interrupted by the ''Customer Support'' task. It's only 2 hours a
+day, but it's pretty important that this is done. Since the task has
+a higher priority than the regular work, the scheduler will try to
+ensure that a maximum of 2 hours per day is spent on support. There
+is no guarantee, that the task will always get the resource for 2
+hours each day, but it's pretty likely in this setup.
+
+There is only one task that is more important, the ''Attend
+Conference'' task. It has fixed dates and we want to make sure
+''Tux'' can attend. So we use ''''priority 1000'''', the highest possible
+priority. There should be only one such task. If not, you need to
+ensure that the top priority tasks don't compete for the same resource
+in the same time frame.
+
+In contrast to the support and conference task, the ''Maintenance
+work'' task is a fall-back task. It has a lower priority than the
+regular work. Tux only gets assigned to it when there is no other
+work. We have limited the regular work to 25 hours per week. Since we
+spend up to 10 hours per week on support, there should be a remainder
+of 5 hours per week for the maintenance task. Again, no guarantees
+given.
+
+If you want to ensure that a certain minimum or maximum effort is
+spent on a task, you can use the [[warn]] attribute. This will not
+affect the decisions of the scheduler, but at least it will trigger a
+warning if your criteria are not met.
 
 === Tracking the Project ===
 
