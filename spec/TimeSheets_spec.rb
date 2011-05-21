@@ -52,6 +52,8 @@ project tstest "Time Sheet Test" 2011-03-14 +2m {
   trackingscenario plan
 }
 
+flags important, late
+
 resource "Team" {
   resource r1 "R1" {
     email "r1@example.com"
@@ -95,6 +97,7 @@ timesheet r1 2011-03-14-00:00-+0000 - 2011-03-21-00:00-+0000 {
     work 30.0%
     remaining 2.0d
     status red "More work" {
+      flags important, late
       details -8<-
       This is more work than expected.
       ->8-

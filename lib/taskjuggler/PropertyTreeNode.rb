@@ -663,6 +663,9 @@ class TaskJuggler
         if entry.author
           rText += "''by <nowiki>#{entry.author.name}</nowiki>''"
         end
+        unless entry.flags.empty?
+          rText += "\nFlags: #{entry.flags.join(', ')}"
+        end
         rText += "\n\n"
         if entry.summary
           rText += entry.summary.richText.inputText + "\n\n"

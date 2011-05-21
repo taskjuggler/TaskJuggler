@@ -49,7 +49,8 @@ project sstest "Time Sheet Test" 2011-03-14 +2m {
   trackingscenario plan
 }
 
-flags manager
+flags manager, important, late
+
 resource "Team" {
   resource boss "Boss" {
     email "boss@example.com"
@@ -83,6 +84,7 @@ timesheet r1 2011-03-14-00:00-+0000 - 2011-03-21-00:00-+0000 {
     work 30.0%
     remaining 2.0d
     status red "More work" {
+      flags important, late
       details -8<-
       This is more work than expected.
       ->8-
@@ -113,6 +115,7 @@ timesheet r2 2011-03-14-00:00-+0000 - 2011-03-21-00:00-+0000 {
   }
 
   status yellow "I'm not feeling good!" {
+    flags important
     summary -8<-
     We all live on a yellow submarine!
     ->8-
@@ -143,6 +146,7 @@ statussheet boss 2011-03-16-00:00-+0000 - 2011-03-23-00:00-+0000 {
       # Date: 2011-03-21-00:00-+0000
       # Work: 30% (50%)    Remaining: 2.0d (0.0d)
       author r1
+      flags late
       details -8<-
       This is job is a breeze.
       ->8-

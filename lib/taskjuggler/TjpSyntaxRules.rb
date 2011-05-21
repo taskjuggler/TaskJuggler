@@ -1171,12 +1171,12 @@ EOT
   def rule_flags
     pattern(%w( _flags !flagList ), lambda {
       @val[1].each do |flag|
-        unless @property['flags', @scenarioIdx].include?(flag)
-          # We allow multiple instances of flag definitions.
-          begin
-            @property['flags', @scenarioIdx] += @val[1]
-          rescue AttributeOverwrite
-          end
+        next if @property['flags', @scenarioIdx].include?(flag)
+
+        # We allow multiple instances of flag definitions.
+        begin
+          @property['flags', @scenarioIdx] << flag
+        rescue AttributeOverwrite
         end
       end
     })
@@ -1629,6 +1629,19 @@ EOT
        )
 
     pattern(%w( !author ))
+
+    pattern(%w( _flags !flagList ), lambda {
+      @val[1].each do |flag|
+        next if @journalEntry.flags.include?(flag)
+
+        @journalEntry.flags << flag
+      end
+    })
+    doc('flags.journalentry', <<'EOT'
+Journal entries can have flags attached to them. These can be used to
+include only entries in a report that have a certain flag.
+EOT
+       )
 
     pattern(%w( !summary ))
 
@@ -4356,6 +4369,20 @@ EOT
 
     pattern(%w( !author ))
     pattern(%w( !details ))
+
+    pattern(%w( _flags !flagList ), lambda {
+      @val[1].each do |flag|
+        next if @journalEntry.flags.include?(flag)
+
+        @journalEntry.flags << flag
+      end
+    })
+    doc('flags.statussheet', <<'EOT'
+Status sheet entries can have flags attached to them. These can be used to
+include only entries in a report that have a certain flag.
+EOT
+       )
+
     pattern(%w( !summary ))
   end
 
@@ -5714,6 +5741,20 @@ EOT
     repeatable
 
     pattern(%w( !details ))
+
+    pattern(%w( _flags !flagList ), lambda {
+      @val[1].each do |flag|
+        next if @journalEntry.flags.include?(flag)
+
+        @journalEntry.flags << flag
+      end
+    })
+    doc('flags.timesheet', <<'EOT'
+Time sheet entries can have flags attached to them. These can be used to
+include only entries in a report that have a certain flag.
+EOT
+       )
+
     pattern(%w( !summary ))
   end
 

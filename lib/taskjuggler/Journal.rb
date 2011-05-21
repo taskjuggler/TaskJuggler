@@ -22,7 +22,8 @@ class TaskJuggler
   class JournalEntry
 
     attr_reader :date, :headline, :property, :sourceFileInfo
-    attr_accessor :author, :summary, :details, :alertLevel, :timeSheetRecord
+    attr_accessor :author, :summary, :details, :alertLevel, :flags,
+                  :timeSheetRecord
 
     # Create a new JournalEntry object.
     def initialize(journal, date, headline, property, sourceFileInfo = nil)
@@ -45,6 +46,8 @@ class TaskJuggler
       @details = nil
       # The alert level.
       @alertLevel = 0
+      # A list of flags.
+      @flags = []
       # A reference to a time sheet record that was used to create this
       # JournalEntry object.
       @timeSheetRecord = nil

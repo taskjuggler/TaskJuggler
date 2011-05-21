@@ -183,6 +183,9 @@ class TaskJuggler
                 @file << "\n"
               end
               @file << "    #   author #{entry.author.fullId}\n" if entry.author
+              unless entry.flags.empty?
+                @file << "    #   flags #{entry.flags.join(', ')}\n"
+              end
               if entry.summary
                 @file << "    #   summary -8<-\n" +
                          indentBlock(4, entry.summary.richText.inputText) +
