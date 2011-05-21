@@ -126,21 +126,22 @@ class TaskJuggler
         @projects.keys.sort.each do |projectId|
           next if projectTotal(projectId) <= 0.0
           value = sum(projectId, resourceId)
-          tr << htmlTabCell(value >= 0.01 ? format("%.2f", value) : '')
+          valStr = numberFormat.format(value)
+          valStr = '' if valStr.to_i == 0.0
+          tr << htmlTabCell(valStr)
         end
 
-        tr << htmlTabCell(format("%.2f", resourceTotal(resourceId)), true)
+        tr << htmlTabCell(numberFormat.format(resourceTotal(resourceId)), true)
       end
 
       # Project totals
       tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
       tr << htmlTabCell('Total', 'true', 'left')
       @projects.keys.sort.each do |projectId|
-        next if projectTotal(projectId) <= 0.0
-        tr << htmlTabCell(format("%.2f", projectTotal(projectId)), true,
-                          'right')
+        next if (pTotal = projectTotal(projectId)) <= 0.0
+        tr << htmlTabCell(numberFormat.format(pTotal), true, 'right')
       end
-      tr << htmlTabCell(format("%.2f", total()), true, 'right')
+      tr << htmlTabCell(numberFormat.format(total()), true, 'right')
       tableFrame
     end
 
@@ -166,6 +167,7 @@ EOT
       nikuDataBus << (projects = XMLElement.new('Projects'))
 
       timeFormat = '%Y-%m-%dT%H:%M:%S'
+      numberFormat = a('numberFormat')
       @projects.keys.sort.each do |projectId|
         prj = @projects[projectId]
         projects << (project =
@@ -185,7 +187,8 @@ EOT
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => sum(prj.id, res.id).to_s))
+                                        'sum' => numberFormat.format(
+                                          sum(prj.id, res.id)).to_s))
         end
 
         # The custom information section usually contains Clarity installation

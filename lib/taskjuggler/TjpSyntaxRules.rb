@@ -728,6 +728,22 @@ EOT
        )
   end
 
+  def rule_currencyFormat
+    pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $INTEGER ),
+        lambda {
+      RealFormat.new(@val.slice(1, 5))
+    })
+    doc('currencyformat',
+        'These values specify the default format used for all currency ' +
+        'values.')
+    example('Currencyformat')
+    arg(1, 'negativeprefix', 'Prefix for negative numbers')
+    arg(2, 'negativesuffix', 'Suffix for negative numbers')
+    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
+    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
+    arg(5, 'fractiondigits', 'Number of fraction digits to show')
+  end
+
   def rule_date
     pattern(%w( !dateCalcedOrNot ), lambda {
       resolution = @project.nil? ? Project.maxScheduleGranularity :
@@ -2045,10 +2061,16 @@ EOT
     pattern(%w( !headline ))
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
+
+    pattern(%w( !numberFormat ), lambda {
+      @property.set('numberFormat', @val[0])
+    })
+
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
     pattern(%w( !reportTitle ))
+
     pattern(%w( _timeoff $STRING $STRING ), lambda {
       @property.set('timeOffId', @val[1])
       @property.set('timeOffName', @val[2])
@@ -2070,6 +2092,7 @@ EOF
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
       newReport(@val[1], @val[2], :niku, sourceFileInfo)
+      @property.set('numberFormat', RealFormat.new(['-', '', '', '.', 2]))
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -2140,6 +2163,21 @@ EOT
   def rule_number
     singlePattern('$INTEGER')
     singlePattern('$FLOAT')
+  end
+
+  def rule_numberFormat
+    pattern(%w( _numberformat $STRING $STRING $STRING $STRING $INTEGER ),
+        lambda {
+      RealFormat.new(@val.slice(1, 5))
+    })
+    doc('numberformat',
+        'These values specify the default format used for all numerical ' +
+        'real values.')
+    arg(1, 'negativeprefix', 'Prefix for negative numbers')
+    arg(2, 'negativesuffix', 'Suffix for negative numbers')
+    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
+    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
+    arg(5, 'fractiondigits', 'Number of fraction digits to show')
   end
 
   def rule_operand
@@ -2348,19 +2386,9 @@ EOT
     repeatable
     optional
 
-    pattern(%w( _currencyformat $STRING $STRING $STRING $STRING $INTEGER ),
-        lambda {
-      @project['currencyFormat'] = RealFormat.new(@val.slice(1, 5))
+    pattern(%w( !currencyFormat ), lambda {
+      @project['currencyFormat'] = @val[0]
     })
-    doc('currencyformat',
-        'These values specify the default format used for all currency ' +
-        'values.')
-    example('Currencyformat')
-    arg(1, 'negativeprefix', 'Prefix for negative numbers')
-    arg(2, 'negativesuffix', 'Suffix for negative numbers')
-    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
-    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
-    arg(5, 'fractiondigits', 'Number of fraction digits to show')
 
     pattern(%w( _currency $STRING ), lambda {
       @project['currency'] = @val[1]
@@ -2419,18 +2447,9 @@ EOT
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
-    pattern(%w( _numberformat $STRING $STRING $STRING $STRING $INTEGER ),
-        lambda {
-      @project['numberFormat'] = RealFormat.new(@val.slice(1, 5))
+    pattern(%w( !numberFormat ), lambda {
+      @project['numberFormat'] = @val[0]
     })
-    doc('numberformat',
-        'These values specify the default format used for all numerical ' +
-        'real values.')
-    arg(1, 'negativeprefix', 'Prefix for negative numbers')
-    arg(2, 'negativesuffix', 'Suffix for negative numbers')
-    arg(3, 'thousandsep', 'Separator used for every 3rd digit')
-    arg(4, 'fractionsep', 'Separator used to separate the fraction digits')
-    arg(5, 'fractiondigits', 'Number of fraction digits to show')
 
     pattern(%w( !scenario ))
     pattern(%w( _shorttimeformat $STRING ), lambda {
@@ -3248,6 +3267,10 @@ report.
 EOT
        )
 
+    pattern(%w( !currencyFormat ), lambda {
+      @property.set('currencyFormat', @val[0])
+    })
+
     pattern(%w( !reportEnd ))
 
     pattern(%w( _epilog $STRING ), lambda {
@@ -3311,6 +3334,10 @@ EOT
 Determines what unit should be used to display all load values in this report.
 EOT
        )
+
+    pattern(%w( !numberFormat ), lambda {
+      @property.set('numberFormat', @val[0])
+    })
 
     pattern(%w( !reportPeriod ))
 
