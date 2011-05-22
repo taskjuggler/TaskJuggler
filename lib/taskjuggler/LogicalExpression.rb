@@ -40,8 +40,8 @@ class TaskJuggler
     def eval(query)
       @query = query
       res = @operation.eval(self)
-      return res if res.class == TrueClass || res.class == FalseClass ||
-                    res.class == String
+      return res if res.is_a?(TrueClass) || res.is_a?(FalseClass) ||
+                    res.is_a?(String)
       # In TJP syntax 'non 0' means false.
       return res != 0
     end

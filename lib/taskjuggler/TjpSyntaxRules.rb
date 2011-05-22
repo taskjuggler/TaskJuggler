@@ -1168,6 +1168,100 @@ EOT
     })
   end
 
+  def rule_flagLogicalExpression
+    pattern(%w( !flagOperation ), lambda {
+      LogicalExpression.new(@val[0], sourceFileInfo)
+    })
+    doc('logicalflagexpression', <<'EOT'
+A logical flag expression is a combination of operands and mathematical
+operations.  The final result of a logical expression is always true or false.
+Logical expressions are used the reduce the properties in a report to a
+certain subset or to select alternatives for the cell content of a table. When
+used with attributes like [[hidejournalentry]] the logical expression
+evaluates to true for a certain property, this property is hidden or rolled-up
+in the report.
+
+Operands must be previously declared flags or another logical expression.
+When you combine logical operations to a more complex expression, the
+operators are evaluated from left to right. '''a | b & c''' is identical to
+'''(a | b) & c'''. It's highly recommended that you always use brackets to
+control the evaluation sequence. Currently, TaskJuggler does not support the
+concept of operator precedence or right-left associativity. This may change in
+the future.
+EOT
+       )
+    also(%w( functions ))
+  end
+
+  def rule_flagOperand
+    pattern(%w( _( !flagOperation _) ), lambda {
+      @val[1]
+    })
+    pattern(%w( _~ !flagOperand ), lambda {
+      operation = LogicalOperation.new(@val[1])
+      operation.operator = '~'
+      operation
+    })
+
+    pattern(%w( $ID ), lambda {
+      unless @project['flags'].include?(@val[0])
+        error('operand_unkn_flag', "Undeclared flag '#{@val[0]}'",
+              @sourceFileInfo[0])
+      end
+      LogicalFlag.new(@val[0])
+    })
+  end
+
+  def rule_flagOperation
+    pattern(%w( !flagOperand !flagOperationChain ), lambda {
+      operation = LogicalOperation.new(@val[0])
+      if @val[1]
+        # Further operators/operands create an operation tree.
+        @val[1].each do |ops|
+          operation = LogicalOperation.new(operation)
+          operation.operator = ops[0]
+          operation.operand2 = ops[1]
+        end
+      end
+      operation
+    })
+    arg(0, 'operand', <<'EOT'
+An operand is a declared flag. An operand can be a negated operand by
+prefixing a ~ charater or it can be another logical expression enclosed in
+braces.
+EOT
+        )
+  end
+
+  def rule_flagOperationChain
+    optional
+    repeatable
+    pattern(%w( !flagOperatorAndOperand), lambda {
+      @val[0]
+    })
+  end
+
+  def rule_flagOperatorAndOperand
+    pattern(%w( !flagOperator !flagOperand), lambda{
+      [ @val[0], @val[1] ]
+    })
+    arg(1, 'operand', <<'EOT'
+An operand is a declared flag. An operand can be a negated operand by
+prefixing a ~ charater or it can be another logical expression enclosed in
+braces.
+EOT
+        )
+  end
+
+  def rule_flagOperator
+    singlePattern('_|')
+    descr('The \'or\' operator')
+
+    singlePattern('_&')
+    descr('The \'and\' operator')
+  end
+
+
   def rule_flags
     pattern(%w( _flags !flagList ), lambda {
       @val[1].each do |flag|
@@ -1351,14 +1445,24 @@ EOT
        )
   end
 
+  def rule_hidejournalentry
+    pattern(%w( _hidejournalentry !flagLogicalExpression ), lambda {
+      @property.set('hideJournalEntry', @val[1])
+    })
+    doc('hidejournalentry', <<'EOT'
+Do not include journal entries that match the specified logical expression.
+EOT
+       )
+  end
+
   def rule_hideresource
     pattern(%w( _hideresource !logicalExpression ), lambda {
       @property.set('hideResource', @val[1])
     })
     doc('hideresource', <<'EOT'
 Do not include resources that match the specified logical expression. If the
-report is sorted in tree mode (default) then enclosing resources are listed
-even if the expression matches the resource.
+report is sorted in ''''tree'''' mode (default) then enclosing resources are
+listed even if the expression matches the resource.
 EOT
        )
     also(%w( sortresources ))
@@ -1370,8 +1474,8 @@ EOT
     })
     doc('hidetask', <<'EOT'
 Do not include tasks that match the specified logical expression. If the
-report is sorted in tree mode (default) then enclosing tasks are listed even
-if the expression matches the task.
+report is sorted in ''''tree'''' mode (default) then enclosing tasks are
+listed even if the expression matches the task.
 EOT
        )
     also(%w( sorttasks ))
@@ -3326,6 +3430,7 @@ EOT
     also(%w( epilog footer prolog ))
 
     pattern(%w( !headline ))
+    pattern(%w( !hidejournalentry ))
     pattern(%w( !hideresource ))
 
     pattern(%w( !hidetask ))

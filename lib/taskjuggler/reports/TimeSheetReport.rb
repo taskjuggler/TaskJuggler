@@ -119,6 +119,7 @@ EOT
                      "    #  details -8<-\n" +
                      "    #  Some more details\n" +
                      "    #  ->8-\n" +
+                     "    #  flags ...\n" +
                      "    #{c}}\n"
             @file << "  }\n\n"
           end
@@ -136,6 +137,7 @@ EOT
   #     details -8<-
   #     Some more details
   #     ->8-
+  #     flags ...
   #   }
   # }
 

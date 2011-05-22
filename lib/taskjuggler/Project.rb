@@ -330,6 +330,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'headline',  'Headline',     RichTextAttribute,
               true, false,   false, nil ],
+        [ 'hideJournalEntry', 'Hide JournalEntry', LogicalExpressionAttribute,
+              true,  false,   false, nil ],
         [ 'hideResource', 'Hide Resource', LogicalExpressionAttribute,
               true,  false,   false, nil ],
         [ 'hideTask',  'Hide Task',    LogicalExpressionAttribute,
