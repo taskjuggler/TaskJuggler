@@ -52,7 +52,8 @@ class TaskJuggler
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
       rText = ''
-      list = @project['journal'].entriesByResource(self, query.start, query.end)
+      list = @project['journal'].entriesByResource(self, query.start, query.end,
+                                                   query.hideJournalEntry)
       # Sort all entries in buckets by their alert level.
       numberOfLevels = project['alertLevels'].length
       listByLevel = []
@@ -152,7 +153,8 @@ class TaskJuggler
         @project.tasks.each do |task|
           if task['responsible', scenarioIdx].include?(self) &&
             !@project['journal'].currentEntries(query.end, task,
-                                                0, query.start).empty?
+                                                0, query.start,
+                                                query.hideJournalEntry).empty?
             taskList << task
           end
         end

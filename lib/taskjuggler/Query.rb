@@ -37,7 +37,7 @@ class TaskJuggler
                scopePropertyType scopePropertyId scopeProperty
                attributeId scenario scenarioIdx
                loadUnit numberFormat currencyFormat timeFormat
-               listItem listType
+               listItem listType hideJournalEntry
                costAccount revenueAccount selfContained)
     @@ps.each do |p|
       attr_accessor p.to_sym

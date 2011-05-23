@@ -35,6 +35,7 @@ class TaskJuggler
         'currencyFormat' => @report.get('currencyFormat'),
         'start' => @report.get('start'),
         'end' => @report.get('end'),
+        'hideJournalEntry' => @report.get('hideJournalEntry'),
         'costAccount' => @report.get('costAccount'),
         'revenueAccount' => @report.get('revenueAccount')
       }

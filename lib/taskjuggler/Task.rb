@@ -49,9 +49,11 @@ class TaskJuggler
       # we compose the result as RichText markup first.
       rText = ''
       if recursive
-        list = @project['journal'].entriesByTaskR(self, query.start, query.end)
+        list = @project['journal'].entriesByTaskR(self, query.start, query.end,
+                                                  query.hideJournalEntry)
       else
-        list = @project['journal'].entriesByTask(self, query.start, query.end)
+        list = @project['journal'].entriesByTask(self, query.start, query.end,
+                                                 query.hideJournalEntry)
       end
       list.reverse.each do |entry|
         tsRecord = entry.timeSheetRecord

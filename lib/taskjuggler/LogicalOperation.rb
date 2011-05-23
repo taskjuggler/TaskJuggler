@@ -224,12 +224,22 @@ class TaskJuggler
 
     # Return true if the property has the flag assigned.
     def eval(expr)
-      expr.query.property['flags', 0].include?(@operand1)
+      if expr.query.is_a?(Query)
+        # This is used for Project or PTN related Queries
+        expr.query.property['flags', 0].include?(@operand1)
+      else
+        # This is used for Journal objects.
+        expr.query.flags.include?(@operand1)
+      end
     end
 
     def to_s(query)
       if query
-        query.property['flags', 0].include(@operand1) ? 'true' : 'false'
+        if query.is_a?(Query)
+          query.property['flags', 0].include(@operand1) ? 'true' : 'false'
+        else
+          query.flags.include(@operand1) ? 'true' : 'false'
+        end
       else
         @operand1
       end

@@ -1,14 +1,29 @@
 project "Journal" 2010-06-07 +1m
 
+flags foo, bar
+
 task "T" {
   duration 3w
-  journalentry 2010-06-07-8:00 "Entry 1"
-  journalentry 2010-06-14-8:00 "Entry 2"
-  journalentry 2010-06-21-8:00 "Entry 3"
+  journalentry 2010-06-07-8:00 "Entry 1" {
+    flags foo, bar
+  }
+  journalentry 2010-06-14-8:00 "Entry 2" {
+    flags foo
+  }
+  journalentry 2010-06-21-8:00 "Entry 3" {
+    flags bar
+  }
 }
 
 taskreport "Journal-1" {
   formats csv
   # Only "Entry 2" should be included
   columns name, journal { period 2010-06-14 +1w }
+}
+
+taskreport "Journal-2" {
+  formats csv
+  # Only "Entry 1" should be included
+  columns name, journal
+  hidejournalentry ~(foo & bar)
 }
