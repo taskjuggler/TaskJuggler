@@ -543,7 +543,7 @@ class TaskJuggler
     def query_alert(query)
       journal = @project['journal']
       query.sortable = query.numerical = alert =
-        journal.alertLevel(query.end, self)
+        journal.alertLevel(query.end, self, query.hideJournalEntry)
       query.string = colorName = @project.alertLevelName(alert)
       rText = "<fcol:#{colorName.downcase}>#{colorName}</fcol>"
       unless (rti = RichText.new(rText, RTFHandlers.create(@project),
@@ -559,32 +559,36 @@ class TaskJuggler
 
     def query_alertmessages(query)
       journalMessages(@project['journal'].alertEntries(query.end, self, 1,
-                                                       query.start),
+                                                       query.start,
+                                                       query.hideJournalEntry),
                       query, true)
     end
 
     def query_alertsummaries(query)
       journalMessages(@project['journal'].alertEntries(query.end, self, 1,
-                                                       query.start),
+                                                       query.start,
+                                                       query.hideJournalEntry),
                       query, false)
     end
 
     def query_journalmessages(query)
       journalMessages(@project['journal'].currentEntries(query.end, self, 0,
-                                                         query.start),
+                                                         query.start,
+                                                         query.hideJournalEntry),
                       query, true)
     end
 
     def query_journalsummaries(query)
       journalMessages(@project['journal'].currentEntries(query.end, self, 0,
-                                                         query.start),
+                                                         query.start,
+                                                         query.hideJournalEntry),
                       query, false)
     end
 
     def query_alerttrend(query)
       journal = @project['journal']
-      startAlert = journal.alertLevel(query.start, self)
-      endAlert = journal.alertLevel(query.end, self)
+      startAlert = journal.alertLevel(query.start, self, query.hideJournalEntry)
+      endAlert = journal.alertLevel(query.end, self, query.hideJournalEntry)
       if startAlert < endAlert
         query.sortable = 0
         query.string = 'Up'

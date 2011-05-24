@@ -87,6 +87,7 @@ class TaskJuggler
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => a('start'), 'end' => a('end'),
+                     'hideJournalEntry' => a('hideJournalEntry'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       resourceList.query = Query.new(queryAttrs)
@@ -123,8 +124,9 @@ class TaskJuggler
         topLevelTasks.each do |task|
           # Get a list of all the current Journal entries for this task and
           # all it's sub tasks.
-          entries = @project['journal'].currentEntriesR(a('end'), task,
-                                                        0, a('start') + 1)
+          entries = @project['journal'].
+            currentEntriesR(a('end'), task, 0, a('start') + 1,
+                            resourceList.query.hideJournalEntry)
           next if entries.empty?
 
           manager.responsibilities << ManagerResponsibilities.new(task, entries)

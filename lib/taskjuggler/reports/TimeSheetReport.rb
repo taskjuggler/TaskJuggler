@@ -192,6 +192,7 @@ EOT
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => from, 'end' => to,
+                     'hideJournalEntry' => a('hideJournalEntry'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       resourceList.query = Query.new(queryAttrs)

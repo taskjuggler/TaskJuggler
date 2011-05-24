@@ -200,11 +200,12 @@ class TaskJuggler
     end
 
     # Return a list of all JournalEntry objects for the given _resource_ that
-    # are dated between _startDate_ and _endDate_, are for Task _task_ and
-    # have at least the alert level _alertLevel. If an optional parameter is
-    # nil, it always matches the entry.
+    # are dated between _startDate_ and _endDate_, are not hidden by their
+    # flags matching _logExp_, are for Task _task_ and have at least the alert
+    # level _alertLevel. If an optional parameter is nil, it always matches
+    # the entry.
     def entriesByResource(resource, startDate = nil, endDate = nil,
-                          task = nil, alertLevel = nil)
+                          logExp = nil, task = nil, alertLevel = nil)
       list = []
       @entries.each do |entry|
         if entry.author == resource &&
@@ -212,18 +213,19 @@ class TaskJuggler
            (endDate.nil? || entry.date <= endDate) &&
            (task.nil? || entry.property == task) &&
            (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
-           !entry.headline.empty?
+           !entry.headline.empty? && !hidden(entry, logExp)
           list << entry
         end
       end
       list
     end
 
-    # Return a list of all JournalEntry objects for the given _task_ that
-    # are dated between _startDate_ and _endDate_ (end date not included), are
-    # from Author _resource_ and have at least the alert level _alertLevel. If
-    # an optional parameter is nil, it always matches the entry.
-    def entriesByTask(task, startDate = nil, endDate = nil,
+    # Return a list of all JournalEntry objects for the given _task_ that are
+    # dated between _startDate_ and _endDate_ (end date not included), are not
+    # hidden by their flags matching _logExp_ are from Author _resource_ and
+    # have at least the alert level _alertLevel. If an optional parameter is
+    # nil, it always matches the entry.
+    def entriesByTask(task, startDate = nil, endDate = nil, logExp = nil,
                       resource = nil, alertLevel = nil)
       list = []
       @entries.each do |entry|
@@ -232,7 +234,7 @@ class TaskJuggler
            (endDate.nil? || entry.date < endDate) &&
            (resource.nil? || entry.author == resource) &&
            (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
-           !entry.headline.empty?
+           !entry.headline.empty? && !hidden(entry, logExp)
           list << entry
         end
       end
@@ -240,21 +242,24 @@ class TaskJuggler
     end
 
     # Return a list of all JournalEntry objects for the given _task_ or any of
-    # its sub tasks that are dated between _startDate_ and _endDate_, are from
-    # Author _resource_ and have at least the alert level _alertLevel. If an
-    # optional parameter is nil, it always matches the entry.
-    def entriesByTaskR(task, startDate = nil, endDate = nil,
-                      resource = nil, alertLevel = nil)
-      list = entriesByTask(task, startDate, endDate, resource, alertLevel)
+    # its sub tasks that are dated between _startDate_ and _endDate_, are not
+    # hidden by their flags matching _logExp_, are from Author _resource_ and
+    # have at least the alert level _alertLevel. If an optional parameter is
+    # nil, it always matches the entry.
+    def entriesByTaskR(task, startDate = nil, endDate = nil, logExp = nil,
+                       resource = nil, alertLevel = nil)
+      list = entriesByTask(task, startDate, endDate, logExp, resource,
+                           alertLevel)
 
       task.kids.each do |t|
-        list += entriesByTaskR(t, startDate, endDate, resource, alertLevel)
+        list += entriesByTaskR(t, startDate, endDate, logExp, resource,
+                               alertLevel)
       end
 
       list
     end
 
-    def entries(startDate = nil, endDate = nil, property = nil,
+    def entries(startDate = nil, endDate = nil, logExp = nil, property = nil,
                 alertLevel = nil)
       list = []
       @entries.each do |entry|
@@ -262,7 +267,8 @@ class TaskJuggler
            (endDate.nil? || endDate >= entry.date) &&
            (property.nil? || property == entry.property ||
                              entry.property.isChildOf?(property)) &&
-           (alertLevel.nil? || alertLevel == entry.alertLevel)
+           (alertLevel.nil? || alertLevel == entry.alertLevel) &&
+           !hidden(entry, logExp)
           list << entry
         end
       end
@@ -272,12 +278,13 @@ class TaskJuggler
     # Determine the alert level for the given _property_ at the given _date_.
     # If the property does not have any JournalEntry objects or they are out
     # of date compared to the child properties, the level is computed based on
-    # the highest level of the children.
-    def alertLevel(date, property)
+    # the highest level of the children. Only take the entries that are not
+    # filtered by _logExp_ into account.
+    def alertLevel(date, property, logExp)
       maxLevel = 0
       # Gather all the current (as of the specified _date_) JournalEntry
       # objects for the property and than find the highest level.
-      currentEntriesR(date, property).each do |e|
+      currentEntriesR(date, property, 0, nil, logExp).each do |e|
         maxLevel = e.alertLevel if maxLevel < e.alertLevel
       end
       maxLevel
@@ -286,12 +293,12 @@ class TaskJuggler
     # Return the list of JournalEntry objects that are dated at or before
     # _date_, are for _property_ or any of its childs, have at least _level_
     # alert and are after _minDate_.
-    def alertEntries(date, property, minLevel, minDate)
+    def alertEntries(date, property, minLevel, minDate, logExp)
       maxLevel = 0
       entries = []
       # Gather all the current (as of the specified _date_) JournalEntry
       # objects for the property and than find the highest level.
-      currentEntriesR(date, property, minLevel, minDate).each do |e|
+      currentEntriesR(date, property, minLevel, minDate, logExp).each do |e|
         if maxLevel < e.alertLevel
           maxLevel = e.alertLevel
           entries = [ e ]
@@ -306,7 +313,7 @@ class TaskJuggler
     # date and are the last entries before the deadline _date_. Only messages
     # with at least the required alert level _minLevel_ are returned. Messages
     # with alert level _minLevel_ must be newer than _minDate_.
-    def currentEntries(date, property, minLevel, minDate)
+    def currentEntries(date, property, minLevel, minDate, logExp)
       pEntries = @propertyToEntries[property] ?
                  @propertyToEntries[property].last(date) : JournalEntryList.new
       # Remove entries below the minium alert level or before the timeout
@@ -332,6 +339,11 @@ class TaskJuggler
         p = p.parent
       end
 
+      # Remove all entries that are filtered by logExp.
+      if logExp
+        pEntries.delete_if { |e| hidden(e, logExp) }
+      end
+
       pEntries
     end
 
@@ -340,7 +352,8 @@ class TaskJuggler
     # property unless there is a property in the sub-tree specified by the
     # root _property_ with more up-to-date entries. The result is a
     # JournalEntryList.
-    def currentEntriesR(date, property, minLevel = 0, minDate = nil)
+    def currentEntriesR(date, property, minLevel = 0, minDate = nil,
+                        logExp = nil)
       # See if this property has any current JournalEntry objects.
       pEntries = @propertyToEntries[property] ?
                  @propertyToEntries[property].last(date) : JournalEntryList.new
@@ -348,7 +361,8 @@ class TaskJuggler
       # date.
       pEntries.delete_if do |e|
         e.headline.empty? || e.alertLevel < minLevel ||
-        (e.alertLevel == minLevel && minDate && e.date < minDate)
+        (e.alertLevel == minLevel && minDate && e.date < minDate) ||
+        hidden(e, logExp)
       end
 
       # Determine the highest alert level of the pEntries.
@@ -363,7 +377,7 @@ class TaskJuggler
       # Now gather all current entries of the child properties and find the
       # date that is closest to and right before the given _date_.
       property.kids.each do |p|
-        currentEntriesR(date, p, minLevel, minDate).each do |e|
+        currentEntriesR(date, p, minLevel, minDate, logExp).each do |e|
           # Find the date of the most recent entry.
           latestDate = e.date if latestDate.nil? || e.date > latestDate
           # Find the highest alert level.
@@ -382,10 +396,18 @@ class TaskJuggler
       # Remove all child entries that are older than the current parent
       # entries (if we have parent entries).
       unless pEntries.empty?
-        entries.delete_if { |e| e.date <= pEntries.first.date }
+        entries.delete_if do |e|
+          e.date <= pEntries.first.date
+        end
       end
       # Otherwise return the list provided by the childen.
       entries
+    end
+
+    private
+
+    def hidden(entry, logExp)
+      logExp.nil? ? false : logExp.eval(entry)
     end
 
   end

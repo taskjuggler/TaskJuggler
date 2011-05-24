@@ -330,6 +330,7 @@ class TaskJuggler
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
+                     'hideJournalEntry' => a('hideJournalEntry'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       taskList.query = Query.new(queryAttrs)
@@ -394,6 +395,7 @@ class TaskJuggler
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
+                     'hideJournalEntry' => a('hideJournalEntry'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       resourceList.query = Query.new(queryAttrs)

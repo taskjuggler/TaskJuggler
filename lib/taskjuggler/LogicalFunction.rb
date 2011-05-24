@@ -96,7 +96,8 @@ class TaskJuggler
       query = expr.query
       project = property.project
       !project['journal'].currentEntries(query.end, property,
-                                         args[0], query.start).empty?
+                                         args[0], query.start,
+                                         query.hideJournalEntry).empty?
     end
 
     def isactive(expr, args)

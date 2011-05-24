@@ -125,19 +125,19 @@ class TestJournal < Test::Unit::TestCase
     createTaskTree
     # Set a 0 alert for a task
     addAlert('2009-11-29', 0, t = task('p1.m1.l1'))
-    assert_equal(0, @j.alertLevel(tm('2009-12-01'), t))
+    assert_equal(0, @j.alertLevel(tm('2009-12-01'), t, nil))
 
     # Now add a later 1 alert
     addAlert('2009-12-01', 1, t)
-    assert_equal(1, @j.alertLevel(tm('2009-12-02'), t))
+    assert_equal(1, @j.alertLevel(tm('2009-12-02'), t, nil))
 
     # Set a 2 alert for p1.m1.l2
     addAlert('2009-11-29', 2, task('p1.m1.l2'))
-    assert_equal(2, @j.alertLevel(tm('2009-12-01'), task('p1')))
+    assert_equal(2, @j.alertLevel(tm('2009-12-01'), task('p1'), nil))
 
     # Overide p1.m1 with 0 alert
     addAlert('2009-12-01', 0, task('p1.m1'))
-    assert_equal(0, @j.alertLevel(tm('2009-12-01'), task('p1')))
+    assert_equal(0, @j.alertLevel(tm('2009-12-01'), task('p1'), nil))
   end
 
   private
