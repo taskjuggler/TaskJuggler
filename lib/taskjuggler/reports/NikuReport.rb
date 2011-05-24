@@ -118,6 +118,7 @@ class TaskJuggler
 
       # The actual content. One line per resource.
       table << (tbody = XMLElement.new('tbody'))
+      numberFormat = a('numberFormat')
       @resourcesTotalEffort.keys.sort.each do |resourceId|
         tbody << (tr = XMLElement.new('tr', 'class' => 'tabline'))
         tr << htmlTabCell("#{@resources[resourceId].name} (#{resourceId})",
