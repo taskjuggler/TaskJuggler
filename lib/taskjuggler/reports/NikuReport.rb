@@ -128,7 +128,7 @@ class TaskJuggler
           next if projectTotal(projectId) <= 0.0
           value = sum(projectId, resourceId)
           valStr = numberFormat.format(value)
-          valStr = '' if valStr.to_i == 0.0
+          valStr = '' if valStr.to_f == 0.0
           tr << htmlTabCell(valStr)
         end
 
