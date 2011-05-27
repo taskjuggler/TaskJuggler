@@ -75,9 +75,13 @@ task t7 "Task 7" {
   start 2007-06-20
   duration 20d
   allocate r1, r2
-  # limits can also be specified per allocation
-  # Limit r1 to half days only
-  limits { dailymax 4h { resources r1 } }
+  # limits can also be specified per resource
+  limits {
+    # Limit r1 to half days only
+    dailymax 4h { resources r1 }
+    # Limit r2 to 6 hours per day
+    dailymax 6h { resources r2 }
+  }
 }
 # *** EXAMPLE: 1 -
 # *** EXAMPLE: 2 -
