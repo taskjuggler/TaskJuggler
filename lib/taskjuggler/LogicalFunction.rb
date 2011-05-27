@@ -26,6 +26,7 @@ class TaskJuggler
     @@functions = {
         'hasalert' => 1,
         'isactive' => 1,
+        'ischildof' => 1,
         'isdependencyof' => 3,
         'isdutyof' => 2,
         'isfeatureof' => 2,
@@ -114,6 +115,15 @@ class TaskJuggler
       query = expr.query
       property.getAllocatedTime(scenarioIdx, query.start, query.end,
                                 scopeProperty) > 0.0
+    end
+
+    def ischildof(expr, args)
+      # The the context property.
+      property = properties(expr)[0]
+      # Find the prospective parent ID in the current PropertySet.
+      return false unless (parent = property.propertySet[args[0]])
+
+      property.isChildOf?(parent)
     end
 
     def isdependencyof(expr, args)

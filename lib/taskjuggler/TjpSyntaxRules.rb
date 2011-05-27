@@ -1358,6 +1358,14 @@ EOT
        )
     arg(2, 'ID', 'A scenario ID')
 
+    pattern(%w( _ischildof _( $ID _) ))
+    doc('ischildof', <<'EOT'
+Will evaluate to true for tasks and resources if current property is a child
+of the provided parent property.
+EOT
+       )
+    arg(2, 'ID', 'The ID of the parent')
+
     pattern(%w( _isdependencyof _( $ID _, $ID _, $INTEGER _) ))
     doc('isdependencyof', <<'EOT'
 Will evaluate to true for tasks that depend on the specified task in

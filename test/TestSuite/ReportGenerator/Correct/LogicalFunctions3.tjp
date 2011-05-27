@@ -1,0 +1,20 @@
+project "LogFunc3" 2011-05-27 +1m
+
+task t1 "Task 1" {
+  task t2 "Task 2" {
+    task t3 "Task 3" {
+      task t6 "Task 6"
+    }
+    task t7 "Task 7"
+  }
+  task t4 "Task 4"
+}
+task t5 "Task 5"
+
+taskreport "LogicalFunctions3-1" {
+  formats csv
+  sorttasks id.up
+  hidetask ~(ischildof(t1.t2))
+  columns name
+}
+
