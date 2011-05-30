@@ -72,6 +72,9 @@ class TaskJuggler
             rText += "''by <nowiki>#{entry.author.name}</nowiki>''"
           end
           rText += "\n\n"
+          unless entry.flags.empty?
+            rText += "'''Flags:''' #{entry.flags.join(', ')}\n\n"
+          end
           if tsRecord
             rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
             if tsRecord.remaining

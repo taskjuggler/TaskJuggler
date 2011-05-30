@@ -77,6 +77,9 @@ class TaskJuggler
           if entry.property.is_a?(Task)
             rText += "=== #{alertName} <nowiki>#{entry.property.name}" +
                      "</nowiki> (ID: #{entry.property.fullId}) ===\n\n"
+            unless entry.flags.empty?
+              rText += "'''Flags:''' #{entry.flags.join(', ')}\n\n"
+            end
             if tsRecord
               rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
               if tsRecord.actualWorkPercent != tsRecord.planWorkPercent
