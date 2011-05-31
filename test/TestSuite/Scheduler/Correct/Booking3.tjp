@@ -1,9 +1,6 @@
 project "Test" 2011-05-15 +1w {
   scenario s1 "S1" {
-    projection { strict }
-    scenario s2 "S2" {
-      projection { strict }
-    }
+    scenario s2 "S2"
   }
   trackingscenario s2
   now 2011-05-17

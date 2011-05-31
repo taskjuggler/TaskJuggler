@@ -47,6 +47,7 @@ EOT
       prj = <<'EOT'
 project sstest "Time Sheet Test" 2011-03-14 +2m {
   trackingscenario plan
+  now ${projectstart}
 }
 
 flags manager, important, late

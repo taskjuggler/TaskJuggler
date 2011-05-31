@@ -121,8 +121,6 @@ class TaskJuggler
               false, false,   false, true ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
               true,  false,   false, false ],
-        [ 'strict', 'Strict Bookings', BooleanAttribute,
-              true, false,    false, false ]
       ]
       attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 

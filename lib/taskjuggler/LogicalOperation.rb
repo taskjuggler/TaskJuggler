@@ -182,7 +182,7 @@ class TaskJuggler
   class LogicalAttribute < LogicalOperation
 
     def initialize(attribute, scenario)
-      @scenarioIdx = scenario
+      @scenario = scenario
       super
     end
 
@@ -190,7 +190,7 @@ class TaskJuggler
     # the value.
     def eval(expr)
       query = expr.query
-      query.scenarioIdx = @scenarioIdx
+      query.scenarioIdx = @scenario.sequenceNo - 1
       query.attributeId = @operand1
       query.process
       # The logical expressions are mostly about comparing values. So we use
@@ -208,7 +208,7 @@ class TaskJuggler
         query.process
         query.to_s
       else
-        "#{@scenarioIdx}.#{@operand1}"
+        "#{@scenario.fullId}.#{@operand1}"
       end
     end
 

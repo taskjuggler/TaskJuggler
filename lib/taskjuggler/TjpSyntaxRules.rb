@@ -2326,7 +2326,7 @@ EOT
         error('operand_unkn_scen', "Unknown scenario ID #{scenario}",
               @sourceFileInfo[0])
       end
-      LogicalAttribute.new(attribute, scenarioIdx)
+      LogicalAttribute.new(attribute, @project.scenario(scenarioIdx))
     })
     pattern(%w( !date ), lambda {
       LogicalOperation.new(@val[0])
@@ -2627,12 +2627,23 @@ EOT
 
     pattern(%w( _trackingscenario !scenarioId ), lambda {
       @project['trackingScenarioIdx'] = @val[1]
+      # The tracking scenario and all child scenarios will always be scheduled
+      # in projection mode.
+      @project.scenario(@val[1]).all.each do |scenario|
+        scenario.set('projection', true)
+      end
     })
     doc('trackingscenario', <<'EOT'
 Specifies which scenario is used to capture what actually has happened with
 the project. All sub-scenarios of this scenario inherit the bookings of the
 tracking scenario and may not have any bookings of their own. The tracking
 scenario must also be specified to use time and status sheet reports.
+
+The tracking scenario and all scenarios derived from it will be scheduled in
+projection mode. This means that the scheduler will only add bookings after
+the current date or the date specified by [[now]]. It is assumed that all
+allocations prior to this date have been provided as [[booking.task|
+task bookings]] or [[booking.resource|resource bookings]].
 EOT
        )
     example('TimeSheet1', '2')
@@ -2721,19 +2732,23 @@ EOT
     optional
     repeatable
     pattern(%w( _sloppy ), lambda {
-      @property.set('strict', false)
+      warning('projection_sloppy',
+              'The sloppy projection mode has been deprecated. The ' +
+              'functionality is no longer supported.')
     })
     doc('sloppy.projection', <<'EOT'
-In sloppy mode tasks with no bookings will be filled from the original start.
+The sloppy projection mode has been deprecated. Please use
+[[trackingscenario]] feature instead.
 EOT
        )
 
     pattern(%w( _strict ), lambda {
-      @property.set('strict', true)
+      warning('projection_strict',
+              'The strict mode is now always used.')
     })
     doc('strict.projection', <<'EOT'
-In strict mode all tasks will be filled starting with the current date. No
-bookings will be added prior to the current date.
+The strict projection mode has been deprecated. Please use
+[[trackingscenario]] feature instead.
 EOT
        )
   end
@@ -3935,16 +3950,16 @@ EOT
 
     pattern(%w( _booking !resourceBooking ))
     doc('booking.resource', <<'EOT'
-The booking attribute can be used to report completed work. This can be part
-of the necessary effort or the whole effort. When the scenario is scheduled in
-[[projection]] mode, TaskJuggler assumes that only the work reported with
-bookings has been done up to now. It then schedules a plan for the still
-missing effort. All task with bookings must be scheduled in ''''asap'''' mode.
+The booking attribute can be used to report actually completed work.  A task
+with bookings must be [[scheduling|scheduled]] in ''''asap'''' mode.  If the
+scenario is not the [[trackingscenario|tracking scenario]] or derived from it,
+the scheduler will not allocate resources prior to the current date or the
+date specified with [[now]] when a task has at least one booking.
 
 Bookings are only valid in the scenario they have been defined in. They will
 in general not be passed to any other scenario. If you have defined a
-[trackingscenario], the bookings of this scenario will be passed to all its
-derived scenarios.
+[[trackingscenario|tracking scenario]], the bookings of this scenario will be
+passed to all the derived scenarios of the tracking scenario.
 
 The sloppy attribute can be used when you want to skip non-working time or
 other allocations automatically. If it's not given, all bookings must only
@@ -4126,13 +4141,15 @@ EOT
        )
 
     pattern(%w( _projection !projection ), lambda {
-      @property.set('projection', true)
+      warning('projection',
+              'The \'projection\' keyword has been deprecated. Please use ' +
+              '[[trackingscenario]] feature instead.')
     })
     doc('projection', <<'EOT'
-Enables the projection mode for the scenario. All tasks will be scheduled
-taking the manual bookings into account. The tasks will be extended by
-scheduling new bookings starting with the current date until the specified
-effort, length or duration has been reached.
+This keyword has been deprecated! Don't use it anymore!
+
+Projection mode is now automatically enabled as soon as a scenario has
+bookings.
 EOT
        )
 
@@ -5003,16 +5020,16 @@ EOT
 
     pattern(%w( _booking !taskBooking ))
     doc('booking.task', <<'EOT'
-The booking attribute can be used to report completed work. This can be part
-of the necessary effort or the whole effort. When the scenario is scheduled in
-[[projection]] mode, TaskJuggler assumes that only the work reported with
-bookings has been done up to now. It then schedules a plan for the still
-missing effort. All task with bookings must be scheduled in ''''asap'''' mode.
+The booking attribute can be used to report actually completed work.  A task
+with bookings must be [[scheduling|scheduled]] in ''''asap'''' mode.  If the
+scenario is not the [[trackingscenario|tracking scenario]] or derived from it,
+the scheduler will not allocate resources prior to the current date or the
+date specified with [[now]] when a task has at least one booking.
 
 Bookings are only valid in the scenario they have been defined in. They will
 in general not be passed to any other scenario. If you have defined a
-[trackingscenario], the bookings of this scenario will be passed to all its
-derived scenarios.
+[[trackingscenario|tracking scenario]], the bookings of this scenario will be
+passed to all the derived scenarios of the tracking scenario.
 
 The sloppy attribute can be used when you want to skip non-working time or
 other allocations automatically. If it's not given, all bookings must only

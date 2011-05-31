@@ -2,11 +2,6 @@ project project "Simple Project" "1.0" 2007-01-05 +1m {
   timezone "America/Denver"
   # The baseline date for the projection.
   now 2007-01-15
-  scenario plan "Plan" {
-    # Compute when the task will be ready based on the already done
-    # work and the current date.
-    projection { strict }
-  }
 }
 
 resource tux "Tux"

@@ -1,5 +1,6 @@
 project "test" 2009-11-30 +2m {
   trackingscenario plan
+  now ${projectstart}
 }
 
 resource r1 "R1"
@@ -10,7 +11,7 @@ task t1 "Task 1" {
 }
 
 timesheet r1 2009-11-30 +1w {
-# MARK: warning 14 ts_res_new_task
+# MARK: warning 15 ts_res_new_task
   newtask t1 "T1" {
     work 5d
     remaining 0d

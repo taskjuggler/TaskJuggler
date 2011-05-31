@@ -512,7 +512,7 @@ class TaskJuggler
                        'end' => @project['end'],
                        'loadUnit' => :days,
                        'numberFormat' => @project['numberFormat'],
-                       'timeFormat' => @project['timeFormat'],
+                       'timeFormat' => nil,
                        'currencyFormat' => @project['currencyFormat'] }
         query = Query.new(queryAttrs)
         if @attributes['fail']

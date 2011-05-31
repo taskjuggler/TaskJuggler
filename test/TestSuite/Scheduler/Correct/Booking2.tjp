@@ -1,4 +1,7 @@
-project "Booking2" 2010-02-08 +1m
+project "Booking2" 2010-02-08 +1m {
+  now 2010-02-15
+  trackingscenario plan
+}
 
 include "checks.tji"
 
@@ -7,7 +10,8 @@ resource r1 "R1"
 task "T1" {
   effort 40h
   allocate r1
-	${FixEnd "2010-02-12-18:00"}
+  ${FixStart "2010-02-15-9:00"}
+	${FixEnd "2010-02-19-18:00"}
 }
 
 resource r2 "R2"
@@ -15,7 +19,8 @@ resource r2 "R2"
 task "T2" {
   effort 40h
   allocate r2
-  booking r2 2010-02-08 +1d { sloppy 1 }
+  booking r2 2010-02-08-9:00 +5d { sloppy 1 }
+  ${FixStart "2010-02-08-9:00"}
 	${FixEnd "2010-02-12-18:00"}
 }
 
@@ -27,7 +32,8 @@ task "T3" {
   effort 32h
   allocate r3
   booking r3 2010-02-08 +2d { sloppy 2 }
-	${FixEnd "2010-02-12-18:00"}
+  ${FixStart "2010-02-08-9:00"}
+	${FixEnd "2010-02-17-18:00"}
 }
 
 resource r4 "R4"
@@ -35,8 +41,9 @@ resource r4 "R4"
 task "T4" {
   effort 56h
   allocate r4
-  booking r4 2010-02-08 +1d { overtime 1 }
-	${FixEnd "2010-02-12-18:00"}
+  booking r4 2010-02-08 +2d { overtime 1 }
+  ${FixStart "2010-02-08"}
+	${FixEnd "2010-02-15-18:00"}
 }
 
 resource r5 "r5" {
@@ -44,10 +51,10 @@ resource r5 "r5" {
 }
 
 task "T5" {
-  effort 72h
+  effort 56h
   allocate r5
   booking r5 2010-02-08 +2d { overtime 2 }
-	${FixEnd "2010-02-12-18:00"}
+	${FixEnd "2010-02-15-18:00"}
 }
 
 taskreport "Booking2" {

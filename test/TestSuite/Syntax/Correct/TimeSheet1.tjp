@@ -3,6 +3,7 @@
 project "test" 2009-11-30 +2m {
   timezone "America/Denver"
   trackingscenario plan
+  now ${projectstart}
 }
 # *** EXAMPLE: 1 -
 

@@ -1,8 +1,6 @@
 project test "Test" "1.0" 2007-04-22 +5w {
 	now 2007-04-30
-	scenario plan "Plan" {
-		projection
-	}
+	scenario plan "Plan"
 }
 
 include "checks.tji"
@@ -19,12 +17,14 @@ resource tux4 "Tux 4" {
 }
 
 task t1 "Task 1" {
-	effort 10d
+	effort 7d
 	allocate tux1
+  # We got 2d from bookings. See supplement below!
 	booking tux1 2007-04-24 +10h,
 					    2007-04-25 +10h { sloppy 1 }
   booking tux1 2007-04-27 +10h { overtime 2 }
-	${FixEnd "2007-05-08-18:00"}
+  ${FixStart "2007-04-24-9:00"}
+	${FixEnd "2007-05-04-18:00"}
 }
 
 task t2 "Task 2" {
@@ -49,7 +49,7 @@ task t4 "Task 3" {
 }
 
 supplement resource tux1 {
-	booking t1 2007-04-26-5:00 +10h { sloppy 1 }
+	booking t1 2007-04-26-4:00 +10h { sloppy 1 }
 }
 
 resource r10 "R10"
@@ -86,7 +86,7 @@ task t12 "Task 12" {
   allocate r12
   booking r12 2007-04-23-9:00 +1h
   ${FixStart "2007-04-23-9:00"}
-  ${FixEnd "2007-04-23-18:00"}
+  ${FixEnd "2007-04-30-17:00"}
 }
 
 task t13 "Task 13" {

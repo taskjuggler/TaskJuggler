@@ -1644,14 +1644,13 @@ class TaskJuggler
 
     def bookResources(date, slotDuration)
       # If there are no allocations defined, we can't do any bookings.
-      # In projection mode we do not allow bookings prior to the current date
-      # for any task (in strict mode) or tasks which have user specified
-      # bookings (sloppy mode).
+      # In projection mode we do not allow allocations prior to the current
+      # date. If the scenario is not scheduled in projection mode, this
+      # restriction only applies to tasks with bookings.
       if a('allocate').empty? ||
-         (@project.scenario(@scenarioIdx).get('projection') &&
-          date < @project['now'] &&
-          (@project.scenario(@scenarioIdx).get('strict') ||
-           a('assignedresources').empty?))
+         ((@project.scenario(@scenarioIdx).get('projection') ||
+          !a('booking').empty?) &&
+          date < @project['now'])
         return
       end
 
