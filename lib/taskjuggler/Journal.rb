@@ -68,6 +68,8 @@ class TaskJuggler
   # date. This is a utility class only. Use Journal to store a journal.
   class JournalEntryList
 
+    attr_reader :entries
+
     def initialize
       @entries = []
       @sorted = false
@@ -84,13 +86,13 @@ class TaskJuggler
       @sorted = false
     end
 
-    # This function is probably obsolete!
     # Add a list of JournalEntry objects to the existing list. The list will
     # be marked unsorted.
-    #def +(list)
-    #  @entries += list
-    #  @sorted = false
-    #end
+    def +(list)
+      @entries += list.entries
+      @sorted = false
+      self
+    end
 
     # Return the _index_-th entry.
     def[](index)
@@ -114,6 +116,11 @@ class TaskJuggler
     # Like Array::empty?
     def empty?
       @entries.empty?
+    end
+
+    # Like Array:length
+    def length
+      @entries.length
     end
 
     # Like Array::include?

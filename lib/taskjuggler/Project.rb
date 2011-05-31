@@ -914,6 +914,58 @@ class TaskJuggler
       name
     end
 
+    def journal(query)
+      entries = JournalEntryList.new
+      @tasks.each do |task|
+        next if task.parent
+        entries += @attributes['journal'].
+          currentEntriesR(query.end, task, 0, query.start,
+                          query.hideJournalEntry)
+      end
+
+      journalMessages(entries, query, true)
+    end
+
+    # Create a blog-style list of all alert messages that match the Query.
+    def journalMessages(entries, query, longVersion)
+      # The components of the message are either UTF-8 text or RichText. For
+      # the RichText components, we use the originally provided markup since
+      # we compose the result as RichText markup first.
+      rText = ''
+      entries.each do |entry|
+        rText += "==== <nowiki>" + entry.headline + "</nowiki> ====\n"
+        #rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "
+        #if entry.author
+        #  rText += "''by <nowiki>#{entry.author.name}</nowiki>''"
+        #end
+        #rText += "\n\n"
+        #unless entry.flags.empty?
+        #  rText += "''Flags:'' #{entry.flags.join(', ')}\n\n"
+        #end
+        if entry.summary
+          rText += entry.summary.richText.inputText + "\n\n"
+        end
+        if longVersion && entry.details
+          rText += entry.details.richText.inputText + "\n\n"
+        end
+      end
+      # Now convert the RichText markup String into RichTextIntermediate
+      # format.
+      unless (rti = RichText.new(rText, RTFHandlers.create(self),
+                                 @messageHandler).
+                                 generateIntermediateFormat)
+        @messageHandler.warning('ptn_journal',
+                                "Syntax error in journal message")
+        return nil
+      end
+      # No section numbers, please!
+      rti.sectionNumbers = false
+      # We use a special class to allow CSS formating.
+      rti.cssClass = 'tj_journal'
+      query.rti = rti
+    end
+
+
     # Print the attribute values. It's used for debugging only.
     def to_s
       #raise "STOP!"

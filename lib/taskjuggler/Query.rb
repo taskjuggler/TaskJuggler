@@ -132,13 +132,17 @@ class TaskJuggler
 
         unless @property
           # No property was provided. We are looking for a project attribute.
-          supportedAttrs = %w( copyright currency end name now projectid
+          supportedAttrs = %w( copyright currency end journal name now projectid
                                start version )
           unless supportedAttrs.include?(@attributeId)
             @errorMessage = "Unsupported project attribute '#{@attributeId}'"
             return @ok = false
           end
-          attr = @project[@attributeId]
+          if @project.respond_to?(attributeId)
+            @project.send(attributeId, self)
+          else
+            attr = @project[@attributeId]
+          end
           if attr.is_a?(TjTime)
             @sortable = @numerical = attr
             @string = attr.to_s(@timeFormat)

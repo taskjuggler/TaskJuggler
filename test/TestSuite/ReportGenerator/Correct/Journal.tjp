@@ -27,3 +27,12 @@ taskreport "Journal-2" {
   columns name, journal
   hidejournalentry ~(foo & bar)
 }
+
+textreport "Journal-3" {
+  formats html
+
+  hidejournalentry foo
+  left -8<-
+  <-query attribute='journal'->
+  ->8-
+}
