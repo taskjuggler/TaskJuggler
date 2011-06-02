@@ -278,17 +278,19 @@ class TaskJuggler
           transition = state.transition(token = getNextToken)
         end
 
-        if transition
-          # Shift: This for normal state transitions. This may be from one
-          # token of a pattern to the next token of the same pattern, to the
-          # start of a new pattern or a loop-back to the start of a pattern of
-          # the same rule. The transition tells us what state we have to
-          # process next.
-          state = transition.state
+        # If we have looped-back we need to finish the pattern first. Final
+        # tokens of repeatable rules do have transitions!
+        if transition && transition.loopBack
+          finishPattern(token)
+          transition = state.transition(token = getNextToken)
+        end
 
-          # If we have looped-back we need to finish the pattern first. Final
-          # tokens of repeatable rules do have transitions!
-          finishPattern(token) if transition.loopBack
+        if transition
+          # Shift: This is for normal state transitions. This may be from one
+          # token of a pattern to the next token of the same pattern or to the
+          # start of a new pattern. The transition tells us what state we have
+          # to process next.
+          state = transition.state
 
           # Transitions that enter rules generate states which we need to
           # resume at when a rule has been completely processed. We push this
@@ -341,7 +343,6 @@ class TaskJuggler
                   "#{@stack.last.state.expectedTokens.join(', ')}",
                   @scanner.sourceFileInfo)
           end
-          returnToken(token) if token
           if finishPattern(token)
             # Accept: We're done with parsing.
             break
@@ -354,13 +355,17 @@ class TaskJuggler
     end
 
     def finishPattern(token)
+      # The method to finish this pattern may include another file or change
+      # the parser rules. Therefor we have to return the token to the scanner.
+      returnToken(token) if token
+
       #dumpStack
       # To finish a pattern we need to pop the StackElement with the token
       # values from the stack.
       stackEntry = @stack.pop
       if stackEntry.nil? || @stack.empty?
         # Check if we have reached the bottom of the stack.
-        token = getNextToken unless token
+        token = getNextToken
         if token[0] == :endOfText
           # If the token is the end of the top-level file, we're done. We push
           # back the StackEntry since it holds the overall result of the

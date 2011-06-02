@@ -44,6 +44,15 @@ class TaskJuggler
       @files[fileName] = FileRecord.new(fileName)
     end
 
+    # Return the name of the master file or nil of the master file was stdin.
+    def masterFile
+      @files.each_key do |file|
+        return file if file[-4, 4] == '.tjp'
+      end
+
+      nil
+    end
+
     # Return true if any of the files in the list have been modified after
     # they were added to the list.
     def modified?

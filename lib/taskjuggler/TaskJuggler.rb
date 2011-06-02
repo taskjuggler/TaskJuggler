@@ -205,6 +205,66 @@ class TaskJuggler
     true
   end
 
+  # Generate an export report definition for bookings up to the _freezeDate_.
+  def freeze(freezeDate)
+    # Check the master file is really a file and not stdin.
+    unless (masterFile = @project.inputFiles.masterFile)
+      error('cannot_freeze_stdin',
+            "The project freeze feature only when the master file is a " +
+            "real file, not standard input.")
+    end
+
+    # Derive the file names for the header and bookings file from the base
+    # name of the master file.
+    masterFileBase = File.basename(masterFile, '.tjp')
+    headerFile = masterFileBase + '-header.tji'
+    bookingsFileBase = masterFileBase + '-bookings'
+    bookingsFile = bookingsFileBase + '.tji'
+
+    if !File.exists?(bookingsFile) || !File.exists?(headerFile)
+      @messageHandler.info('incl_freeze_files',
+                           "Please make sure you include #{headerFile} at " +
+                           "the end of the project header and " +
+                           "#{bookingsFile} at the end of #{masterFile}.")
+    end
+
+    # Generate the project header include file with the new 'now' date.
+    begin
+      File.open(headerFile, 'w') do |f|
+        f.puts("now #{freezeDate}")
+      end
+    rescue
+      @messageHandler.critical('write_header_incl',
+                               "Cannote write header include file " +
+                               "#{headerFile}")
+    end
+
+    # Generate an export report for the bookings.
+    report = Report.new(@project, '_bookings_', bookingsFileBase, nil)
+    report.typeSpec = :export
+    report.set('formats', [ :tjp ])
+    report.inheritAttributes
+
+    # We export only the tracking scenario.
+    unless (trackingScenarioIdx = @project['trackingScenarioIdx'])
+      @messageHandler.critical('no_tracking_scen',
+                               'No trackingscenario defined')
+    end
+    report.set('scenarios', [ trackingScenarioIdx ])
+
+    # Show all tasks, sorted by seqno-up.
+    report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+    report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+    # Show all resources, sorted by seqno-up.
+    report.set('hideResource',
+                LogicalExpression.new(LogicalOperation.new(0)))
+    report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+    # Only generate bookings, no other attributes or definitions.
+    report.set('definitions', [])
+    report.set('taskAttributes', [ 'booking' ])
+    report.set('resourceAttributes', [])
+  end
+
   # Check the content of the file _fileName_ and interpret it as a time sheet.
   # If the sheet is syntaxtically correct and matches the loaded project, true
   # is returned. Otherwise false.

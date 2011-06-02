@@ -35,6 +35,10 @@ class TaskJuggler
       @checkSyntax = false
       # Don't generate reports when previous errors have been found.
       @forceReports = false
+      # Should a booking file be generated?
+      @freeze = false
+      # The cut-off date for the freeze
+      @freezeDate = TjTime.new.align(3600)
       # Don't generate any reports.
       @noReports = false
       # The directory where generated reports should be put in.
@@ -65,6 +69,22 @@ EOT
         @opts.on('-f', '--force-reports',
                 format('Generate reports despite scheduling errors')) do
           @forceReports = true
+        end
+        @opts.on('--freeze',
+                 format('Generate or update the booking file for ' +
+                        'the project. The file will have the same ' +
+                        'base name as the project file but has a ' +
+                        '-bookings.tji extension.')) do
+          @freeze = true
+        end
+        @opts.on('--freezedate <date>', String,
+                 format('Use a different date than the current moment' +
+                        'as cut-off date for the booking file')) do |arg|
+          begin
+            @freezeDate = TjTime.new(arg).align(3600)
+          rescue TjException => msg
+            error("Invalid freeze date: #{msg}")
+          end
         end
         @opts.on('--check-time-sheet <tji-file>', String,
                 format("Check the given time sheet")) do |arg|
@@ -125,6 +145,9 @@ EOT
         @statusSheets.each do |ss|
           return 1 if !tj.checkStatusSheet(ss) || tj.errors > 0
         end
+
+        # Check for freeze mode and generate the booking file if requested.
+        tj.freeze(@freezeDate) if @freeze
 
         return 0 if @noReports
 
