@@ -80,19 +80,24 @@ Once the initial plan has been made and the project has started, TaskJuggler
 can be turned from a planning tool into a tracking tool. You don't have to
 change a lot to do this. After all, as the initial plan is almost always just a
 first guess, you need to continue planning your project as new details become
-evident. So what you really want is a way to gradually freeze the plan as work
-has been completed, while still having full flexibility with all future work.
+evident. As the work progresses, you continuously review the state of
+the project and update the plan accordingly. A weekly review and
+update cycle seems to be pretty common for most projects. Usually the
+plan for the past week and the reality are mostly aligned. The future
+parts of the project often are more affected by necessary changes.
 
 While it is generally accepted to invest some amount of time in project
 planning, it is very common that once the project has been started, project
 managers tend to avoid a proper tracking of the project. Our bet is that the
 vast majority of project plans are only made to get management or investor
 approval. After the approval phase, many project managers only work with their
-project plan again when the project is running really late. On the other hand
-there are projects that are done using strict project management techniques
-that require detailed status tracking. Both extremes probably have their fans
-and TaskJuggler offers good support for both extremes as well as various
-techniques in between.
+project plan again when the project is getting out of control and
+they are desperate for any help they can get.
+
+Of course, there are projects that are done using strict project
+management techniques that require detailed status tracking. Both
+extremes probably have their fans and TaskJuggler offers good support
+for both extremes as well as various techniques in between.
 
 === Recording Progress ===
 
@@ -119,7 +124,7 @@ the complete attribute.
 
 This tells TaskJuggler that 50% of the task's effort has been completed by the
 [[now|current date]]. Tasks that have no completion specification will
-be assumed to be on track. TaskJuggler calculates the expected
+be assumed to be on track and TaskJuggler calculates the expected
 completion degree based on the current date. Completion specifications
 only need to be supplied for tasks that are either ahead of schedule
 or behind schedule. Please be aware that the completion degree does
@@ -139,8 +144,9 @@ described by providing booking statements, you can enable
 
 Entering all the bookings for each resource and task may sound like a
 daunting task at first. If you do it manually, it certainly is.
-Fortunately, TaskJuggler can generate them for you by using
-[[export|export reports]]. Before we discuss this in more detail, we
+Fortunately, TaskJuggler can generate them for you by using either
+the ''''--freeze'''' option of ''''tj3'''' or by generating a manual
+[[export|export report]]. Before we discuss this in more detail, we
 need to make sure that the plan is up-to-date.
 
 === Tracking status and actuals ===
@@ -148,13 +154,14 @@ need to make sure that the plan is up-to-date.
 Creating a good project plan is one thing. Executing it is a whole
 new story. Usually, the first plan is never fully correct and the
 only way to make sure that you are making progress according to plan
-is to regularly get status updates from all resources.
+is to regularly get status updates from all the project contributors.
 
-Status updates should be provided by all project contributors on a
-regular basis, usually once a week. These updates should tell project
-managers who really worked how much on what tasks and how much work
-the contributors believe is really left now. There are two categories
-of tasks in a project that need to be treated slightly differently.
+These status updates should be provided by all project contributors on
+a regular basis, usually once a week. The gathered information should
+tell project managers who really worked how much on what tasks and how
+much work the contributors believe is really left now. There are two
+categories of tasks in a project that need to be treated slightly
+differently.
 
 A task can either be effort based or duration based. In the former
 case, the contributors must tell how much effort is left. For
@@ -166,22 +173,24 @@ want to have a textual status that describes what happened and what
 kind of issues were encountered. Usually, these textual status
 reports are combined with alert levels like green, yellow and red.
 Green means everything is progressing according to plan, yellow means
-there is some schedule risk and red means serious trouble. Usually
-first line managers like to get all the details while people further
-up in the reporting chain only like to see summaries varying level of
-details.
+there is some schedule risk and red means the project is in serious
+trouble. Usually first line managers like to get all the details while
+people further up in the reporting chain only like to see summaries
+with varying level of details.
 
 All of this creates additional overhead but is usually inevitable to
-ensure that you complete the project within time and budget. As a
-comprehensive project management solution, TaskJuggler provides full
-support for all those tracking and reporting steps. It comes with a
-powerful email and web based communication system that simplifies the
-tracking process for individual contributors as well as managers.
+ensure that you complete the project within the given time and budget.
+As a comprehensive project management solution, TaskJuggler provides
+full support for all those tracking and reporting steps. It comes with
+a powerful email and web based communication system that simplifies
+the tracking process for individual contributors as well as managers.
 
 As a side note we would like to mention that the recording of the work
 time of employees is regulated by labor law in certain countries. You
 might also require approval from a Worker's Council before you can
-deploy time recording tools.
+deploy any time recording tools. Please consult with your corporate
+counsel or legal expert for all geographic regions of your teams
+before you deploy a time tracking solution.
 
 We also would like to point out that introducing status reporting and
 time sheets is usually a big change for every staff. Don't
@@ -189,7 +198,7 @@ underestimate the psychological impact and the training requirements.
 We also recommend to test the described process with a small group of
 employees first to get familiar with the process and to adapt it to
 your needs. Don't rush a deployment! You usually only have one chance
-to roll-out such a process.
+to roll-out such a new process.
 
 ==== The reporting and tracking cycle ====
 
@@ -216,7 +225,7 @@ contributors that have not submitted their report.
 # On Monday the project managers need to review the time sheets and
 update the plan accordingly. TaskJuggler can compile a list changes
 compared to the plan. This makes it easy to update the plan according
-to the actual progress that was made. The close the actuals match the
+to the actual progress that was made. The closer the actuals match the
 plan the less work this is. The project managers now generate
 bookings for the last week and add them to the database with previous
 bookings. Doing so, will prevent changes to the plan to affect the
@@ -620,118 +629,69 @@ further submissions of time sheets for this time period.
 === Recording actual Resource Usage ===
 
 To ensure that future changes won't change the past of the project,
-you should follow the procedure described in this section. 
+we need to freeze the history of the project. History in this context
+means which resource worked on what task from when to when. Since
+TaskJuggler cannot know what level of detail you want to include in
+the reports, this information has to be recorded with the highest
+possible accuracy. This means that we have to capture the exact start
+and end dates for every period that a resource worked on a task.
 
-The initial project plan should be made by entering the minimum amount of
-required information such as task dependencies and efforts. TaskJuggler will
-then compute all the missing data based on this initial setup. This is your
-project baseline. As the project progresses you can now track the work already
-completed by recording the work that your resources have done. Let's assume you
-had the following task in your original plan: 
+Unless you use some external time tracking system to capture this
+information and export it to TaskJuggler, you probably want
+TaskJuggler to generate this data for you based on the plan
+information. 
 
- task impl "Implementation" {
-   depends !spec
-   effort 4w
-   allocate dev1, dev2
- }
+Before you can freeze that past part of your project, you need to
+tell TaskJuggler which scenario should be used for tracking the
+actual progress. See the [[trackingscenario]] documentation for more
+details on this. Before you freeze your project for the first time,
+you should make sure that the current date is still before the
+project start. If that is not the case, use the [[now]] attribute to
+set the current date to the project start:
 
-After the first week of work on this task the two resources have really been
-able to complete half the job. You can capture this in your project plan using
-the booking attribute. Bookings are resource specific, so you have to add the
-booking to the resource definition, not the task definition.
+ now ${projectstart}
 
- resource dev1 "Developer 1" {
-   booking impl 2005-04-11 - 2005-04-16 { sloppy 2 }
- }
- 
- resource dev2 "Developer 2" {
-   booking impl 2005-04-11 - 2005-04-16 { sloppy 2 }
- }
+Once you have frozen the project for the first time, you should
+remove the [[now]] attribute again. It will be automatically updated.
 
-The sloppy attribute defines the accuracy of your bookings. If it's missing or
-0, the booking must only describe a continuous working period during working
-hours. With higher values the interval may overlap with off-hour or vacation
-time slots. See details on sloppy.
+To freeze your project up to a certain date, you can use the following
+command:
 
-The booking statements are designed to describe actual work performed
-by resources at a very accurate level. Many project managers are too
-lazy to record information at such a level of detail. TaskJuggler
-offers some mechanisms to simplify your work. Using ''''sloppy'''' is
-one of them, but you should read very carefully what it does. In
-almost every case we recommend to use the procedure described below
-instead.
+  tj3 --freeze yourproject.tjp --freezedate YYYY-MM-DD
 
-Another popular mistake is that user forget that dates for bookings
-behave just like every other date in TaskJuggler.
+This will generate two files, ''''yourproject-header.tji'''' and
+''''yourproject-bookings.tji''''. The header files contains the date
+of the freeze as a [[now]] attribute. You must [[include.project|
+include]] this file at the end of your project header section.
 
- resource dev1 "Developer 1" {
-   booking impl 2005-04-11 +8h { sloppy 2 }
- }
+The bookings file contains the resource assignment data. It usually
+contains many [[booking.task|booking]] entries that look similar to
+this:
 
-This is almost a classic on the mailing list. 2005-04-11 means
-2005-04-11-0:00. So you are trying to allocate dev1 from midnight to
-8am. Since dev1 is usually is off duty at this time no allocations
-will be performed. By using the ''''sloppy 2'''' attribute you won't
-even get a warning for this mistake.
+  supplement task t {
+    booking r 2010-02-19-09:00-+0000 + 3.0h,
+            2010-02-19-13:00-+0000 + 5.0h,
+            2010-02-22-09:00-+0000 + 3.0h,
+            2010-02-22-13:00-+0000 + 5.0h,
+  }
 
-If you don't like to mix the resource definitions and their bookings, you can
-specify the bookings with supplement statements. These supplement statements
-can even reside in an other file.
+The booking file must be [[include.properties|included]] at the end of
+your main project file.
 
-It is ok to specify bookings beyond the effort value found in the task
-definition. In case you want to declare a task as done, even if the bookings do
-not reach the specified effort or length, you can use the scheduled property.
+In case there are still some discrepancies between the booking data
+and the actual assignments of the resources, you can edit the booking
+file to correct the data.
 
- supplement task impl {
-   actual:scheduled
- }
+The next time you run ''''tj3'''' with your project, all assignments
+prior to the date in the project header file will be taken only from
+the bookings file. All assignments after this date will be determined
+by the scheduler according to your provided constraints.
 
-In case your actual progress does not deviate a lot from your project plan, you
-can generate the file with the booking statements automatically.
-
- export "DoneWork-Week15.tji" {
-   hideresource 0
-   start 2005-04-11
-   end 2005-04-16
-   taskattributes *
- }
-
-This will generate a TaskJuggler include file that contains all bookings
-according to the project plan for the specified interval. You can then use this
-file as a baseline and modify it to reflect the real work that has happened
-during the interval. After that you can include it into your project again.
-
- include "DoneWork-Week15.tji"
-
-As this include file references the tasks and resources of your project you
-should include it after all task and resource definitions.
-
-To make TaskJuggler aware that you want to compute the end date based on the
-bookings and the effort you need to enable the projection mode for the
-scenario. This has to be done in the scenario definition in the project header.
-If you don't have a scenario definition because you are only using the built-in
-default scenario, you have to add a scenario definition.
-
- project prj "Project" "1.0" 2005-04-01 - 2005-05-01 {
-   scenario plan "Plan" {
-     # Compute when the task will be ready based on the already
-     # done work and the current date.
-     projection
-   }
- }
-
-TaskJuggler now assumes that for all tasks that have bookings, all work has
-been specified with bookings up to the current date. It then calculates the end
-date of the task based on the effort that is still left over. It also computes
-the complete value based on the specified bookings. So if you specify bookings
-for a task you should not specify a completion value as well. It will be
-ignored and replaced by a value based on the specified bookings.
-
-When you now schedule the project again, it will take these bookings into
-account and generate a new project plan based on your current project status.
-Each time you review your project status you should generate such an include
-file for the period that you are reviewing. Then you sync the content with the
-feedback that you get from your resources and add the file to the project plan.
+When you run ''''tj3 --freeze'''' again, it will update the header
+and booking files. Since you have included your booking file, any
+modifications you have made, will be preserved. That is, the actual
+data will be preserved, not the formatting since the file will be
+completely re-generated again.
 
 ==== Status Sheets ====
 
