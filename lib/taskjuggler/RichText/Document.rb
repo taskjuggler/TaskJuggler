@@ -130,9 +130,9 @@ class TaskJuggler
 
       body << generateHTMLCover <<
         @toc.to_html <<
-        XMLElement.new('br') <<
-        XMLElement.new('hr') <<
-        XMLElement.new('br') <<
+        XMLElement.new('br', {}, true) <<
+        XMLElement.new('hr', {}, true) <<
+        XMLElement.new('br', {}, true) <<
         generateHTMLFooter
 
       html.write(directory + 'toc.html')

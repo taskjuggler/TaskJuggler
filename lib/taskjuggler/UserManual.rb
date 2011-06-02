@@ -97,18 +97,18 @@ class TaskJuggler
                               'h1')
       div << XMLNamedText.new('Project Management beyond Gantt Chart drawing',
                               'em')
-      div << XMLElement.new('br')
+      div << XMLElement.new('br', {}, true)
       div << XMLNamedText.new(
         "Copyright (c) #{AppConfig.copyright.join(', ')} " +
         "by #{AppConfig.authors.join(', ')}", 'b')
-      div << XMLElement.new('br')
+      div << XMLElement.new('br', {}, true)
       div << XMLText.new("Generated on #{TjTime.new.strftime('%Y-%m-%d')}")
-      div << XMLElement.new('br')
+      div << XMLElement.new('br', {}, true)
       div << XMLNamedText.new("This manual covers #{AppConfig.softwareName} " +
                               "version #{AppConfig.version}.", 'h3')
-      html << XMLElement.new('br')
-      html << XMLElement.new('hr')
-      html << XMLElement.new('br')
+      html << XMLElement.new('br', {}, true)
+      html << XMLElement.new('hr', {}, true)
+      html << XMLElement.new('br', {}, true)
 
       html
     end
@@ -150,8 +150,8 @@ class TaskJuggler
     # _succURL: URL to the next page.
     def generateHTMLNavigationBar(predLabel, predURL, succLabel, succURL)
       html = []
-      html << XMLElement.new('br')
-      html << XMLElement.new('hr')
+      html << XMLElement.new('br', {}, true)
+      html << XMLElement.new('hr', {}, true)
       if predLabel || succLabel
         # We use a tabel to get the desired layout.
         html << (tab = XMLElement.new('table',
@@ -177,9 +177,9 @@ class TaskJuggler
           td << XMLNamedText.new(succLabel, 'a', 'href' => succURL)
           td << XMLText.new(' >>')
         end
-        html << XMLElement.new('hr')
+        html << XMLElement.new('hr', {}, true)
       end
-      html << XMLElement.new('br')
+      html << XMLElement.new('br', {}, true)
 
       html
     end

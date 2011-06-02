@@ -1400,7 +1400,7 @@ EOT
     doc('isleaf', 'The result is true if the property is not a container.')
 
     pattern(%w( _ismilestone _( $ID _) ))
-    doc('istask', <<'EOT'
+    doc('ismilestone', <<'EOT'
 The result is true if the property is a milestone in the provided scenario.
 EOT
        )

@@ -146,7 +146,7 @@ class TaskJuggler
       html << (body = XMLElement.new('body'))
 
       body << XMLNamedText.new('Table Of Contents', 'a', 'href' => 'toc.html')
-      body << XMLElement.new('br')
+      body << XMLElement.new('br', {}, true)
 
       normalizedKeywords = {}
       keywords.each do |keyword|
@@ -164,7 +164,7 @@ class TaskJuggler
         keyword = normalizedKeywords[normalized]
         body << XMLNamedText.new("#{normalized}", 'a',
                                  'href' => "#{keyword}.html")
-        body << XMLElement.new('br')
+        body << XMLElement.new('br', {}, true)
       end
 
       html.write(directory + 'navbar.html')

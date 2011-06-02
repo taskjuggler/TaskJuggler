@@ -68,7 +68,7 @@ class TaskJuggler
       end
       @elements.each do |element|
         if element.current && !element.elements.empty?
-          html << XMLElement.new('hr') unless first
+          html << XMLElement.new('hr', {}, true) unless first
           html << element.to_html
         end
       end
