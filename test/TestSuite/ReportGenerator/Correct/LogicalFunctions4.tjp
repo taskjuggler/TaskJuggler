@@ -1,0 +1,16 @@
+project "LogFunc4" 2011-06-02 +1m
+
+task "Task 1" {
+  duration 1w
+}
+task "Milestone"
+task "Task 2" {
+  duration 1d
+}
+
+taskreport "LogicalFunctions4-1" {
+  formats csv
+  hidetask ~ismilestone(plan)
+  columns name
+}
+

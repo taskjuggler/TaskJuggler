@@ -1399,6 +1399,13 @@ EOT
     pattern(['_isleaf', '_(', '_)' ])
     doc('isleaf', 'The result is true if the property is not a container.')
 
+    pattern(%w( _ismilestone _( $ID _) ))
+    doc('istask', <<'EOT'
+The result is true if the property is a milestone in the provided scenario.
+EOT
+       )
+    arg(2, 'Scenario ID', 'A scenario ID')
+
     pattern(%w( _isongoing _( $ID _) ))
     doc('isongoing', <<'EOT'
 Will evaluate to true for tasks that overlap with the report period in given

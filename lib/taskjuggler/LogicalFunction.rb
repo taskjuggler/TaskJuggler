@@ -31,6 +31,7 @@ class TaskJuggler
         'isdutyof' => 2,
         'isfeatureof' => 2,
         'isleaf' => 0,
+        'ismilestone' => 1,
         'isongoing' => 1,
         'isresource' => 0,
         'istask' => 0,
@@ -171,6 +172,15 @@ class TaskJuggler
       property = properties(expr)[0]
       return false unless property
       property.leaf?
+    end
+
+    def ismilestone(expr, args)
+      property = properties(expr)[0]
+      return false unless property
+      # 1st arg must be a scenario index.
+      return false if (scenarioIdx = property.project.scenarioIdx(args[0])).nil?
+
+      property.is_a?(Task) && property['milestone', scenarioIdx]
     end
 
     def isongoing(expr, args)
