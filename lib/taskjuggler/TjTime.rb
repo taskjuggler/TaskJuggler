@@ -143,32 +143,37 @@ class TaskJuggler
 
     # Return true if time is smaller than _t_.
     def <(t)
+      return false unless t
       @time < t.time
     end
 
     # Return true if time is smaller or equal than _t_.
     def <=(t)
+      return false unless t
       @time <= t.time
     end
 
     # Return true if time is larger than _t_.
     def >(t)
+      return true unless t
       @time > t.time
     end
 
     # Return true if time is larger or equal than _t_.
     def >=(t)
+      return true unless t
       @time >= t.time
     end
 
     # Return true if time and _t_ are identical.
     def ==(t)
-      return false if t.nil?
+      return false unless t
       @time == t.time
     end
 
     # Coparison operator for time with another time _t_.
     def <=>(t)
+      return -1 unless t
       @time <=> t.time
     end
 
