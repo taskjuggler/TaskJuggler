@@ -15,7 +15,7 @@ or should be done for TaskJuggler III.
 
 * Lots more test cases for the test suite.
 
-== Other items for 3.0 release ==
+== New features (probably after first stable release)
 
 * Make web server reports more dynamic with controller elements.
 
@@ -28,8 +28,6 @@ used instead of the defined charge set.
 
 * Evaluate if account name space should be hierarchical.
 
-== New features (probably after first stable release)
-
 * Hammock tasks
 
 * Delta reports that show only the differences between 2 arbitrary
@@ -37,7 +35,7 @@ used instead of the defined charge set.
 
 * Per scenario purging
 
-* User defined numerial attributes that add-up.
+* User defined numerical attributes that add-up.
 
 * Critical path detection after scheduling.
 
@@ -47,7 +45,8 @@ used instead of the defined charge set.
 
 * Highlight dependency arrows of a task with mouse-over effect.
 
-* Make gap ends align with certain times or days of week.
+* Make gap ends align with certain times or days of week, day of
+  weeks or day of months.
 
 = Discontinued 2.x features
 
