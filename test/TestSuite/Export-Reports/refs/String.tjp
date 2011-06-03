@@ -11,24 +11,22 @@ resource tux "Tux \"The Penguing\" Tuxus"
 
 task items "Project Plan\\\\Breakdown" {
   start 2005-06-06-15:00-+0000
-  end 2005-06-08-00:00-+0000
+  end 2005-06-07-23:00-+0000
   scheduling asap
   scheduled
 }
 supplement task items {
-  booking tux 2005-06-06-15:00-+0000 + 3.0h,
-          2005-06-06-19:00-+0000 + 5.0h,
-          2005-06-07-15:00-+0000 + 3.0h,
-          2005-06-07-19:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2005-06-06-15:00-+0000 + 8.0h,
+          2005-06-07-15:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource tux {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

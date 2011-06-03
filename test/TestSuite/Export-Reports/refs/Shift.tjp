@@ -12,7 +12,7 @@ resource r2 "Resource2"
 
 task t1 "Task1" {
   start 2000-01-01-07:00-+0000
-  end 2000-02-05-01:00-+0000
+  end 2000-02-05-00:00-+0000
   scheduling asap
   scheduled
 }
@@ -22,19 +22,19 @@ supplement task t1 {
 }
 supplement resource r1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r2 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

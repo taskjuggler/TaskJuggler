@@ -11,7 +11,7 @@ resource tux "Tux"
 
 task t1 "Task1" {
   start 2000-01-01-19:00-+0000
-  end 2000-01-04-01:00-+0000
+  end 2000-01-04-00:00-+0000
   scheduling asap
   scheduled
 }
@@ -23,7 +23,7 @@ task t2 "Task2" {
 }
 task t3 "Task3" {
   start 2000-01-03-16:00-+0000
-  end 2000-01-04-01:00-+0000
+  end 2000-01-04-00:00-+0000
   scheduling asap
   scheduled
 }
@@ -36,17 +36,16 @@ supplement task t2 {
   projectid prj
 }
 supplement task t3 {
-  booking tux 2000-01-03-16:00-+0000 + 3.0h,
-          2000-01-03-20:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2000-01-03-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource tux {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

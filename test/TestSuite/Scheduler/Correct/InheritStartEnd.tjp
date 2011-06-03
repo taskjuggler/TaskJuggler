@@ -72,27 +72,27 @@ task p1 "Parent Tasks" {
       allocate r1
       effort 20d
       scheduling asap
-      ${FixTask "2009-02-04-09:00" "2009-03-03-18:00"}
+      ${FixTask "2009-02-04-09:00" "2009-03-03-17:00"}
     }
     task t2 "Task 2" {
       start 2009-02-06
       effort 20d
       scheduling asap
       allocate r2
-      ${FixTask "2009-02-06-09:00" "2009-03-05-18:00"}
+      ${FixTask "2009-02-06-09:00" "2009-03-05-17:00"}
     }
     task t3 "Task 3" {
       effort 20d
       allocate r3
       scheduling alap
-      ${FixTask "2009-05-04-09:00" "2009-05-29-18:00"}
+      ${FixTask "2009-05-04-09:00" "2009-05-29-17:00"}
     }
     task t4 "Task 4" {
       end 2009-05-01
       scheduling alap
       effort 20d
       allocate r4
-      ${FixTask "2009-04-03-09:00" "2009-04-30-18:00"}
+      ${FixTask "2009-04-03-09:00" "2009-04-30-17:00"}
     }
   }
 }

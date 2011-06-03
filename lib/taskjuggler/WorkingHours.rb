@@ -60,11 +60,10 @@ class TaskJuggler
 
         # Create a new object with default working hours.
         @timezone = timeZone
-        # Set the default working hours. Monday to Friday 9am - 12pm, 1pm - 6pm.
+        # Set the default working hours. Monday to Friday 9am - 5pm.
         # Saturday and Sunday are days off.
         1.upto(5) do |day|
-          @days[day] = [ [ 9 * 60 * 60, 12 * 60 * 60 ],
-                         [ 13 * 60 * 60, 18 * 60 * 60 ] ]
+          @days[day] = [ [ 9 * 60 * 60, 17 * 60 * 60 ] ]
         end
       end
     end

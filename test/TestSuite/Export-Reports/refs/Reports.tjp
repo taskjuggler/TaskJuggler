@@ -17,7 +17,7 @@ resource r4 "FooResource 4"
 task t1 "FooTask1" {
   task t1_1 "FooTask1_1" {
     start 2000-01-03-16:00-+0000
-    end 2000-01-15-01:00-+0000
+    end 2000-01-15-00:00-+0000
     scheduling asap
     scheduled
   }
@@ -39,46 +39,26 @@ supplement task t1 {
   projectid prj
 }
 supplement task t1.t1_1 {
-  booking r1 2000-01-03-16:00-+0000 + 3.0h,
-          2000-01-03-20:00-+0000 + 5.0h,
-          2000-01-04-16:00-+0000 + 3.0h,
-          2000-01-04-20:00-+0000 + 5.0h,
-          2000-01-05-16:00-+0000 + 3.0h,
-          2000-01-05-20:00-+0000 + 5.0h,
-          2000-01-06-16:00-+0000 + 3.0h,
-          2000-01-06-20:00-+0000 + 5.0h,
-          2000-01-07-16:00-+0000 + 3.0h,
-          2000-01-07-20:00-+0000 + 5.0h,
-          2000-01-10-16:00-+0000 + 3.0h,
-          2000-01-10-20:00-+0000 + 5.0h,
-          2000-01-11-16:00-+0000 + 3.0h,
-          2000-01-11-20:00-+0000 + 5.0h,
-          2000-01-12-16:00-+0000 + 3.0h,
-          2000-01-12-20:00-+0000 + 5.0h,
-          2000-01-13-16:00-+0000 + 3.0h,
-          2000-01-13-20:00-+0000 + 5.0h,
-          2000-01-14-16:00-+0000 + 3.0h,
-          2000-01-14-20:00-+0000 + 5.0h { overtime 2 }
-  booking r2 2000-01-03-16:00-+0000 + 3.0h,
-          2000-01-03-20:00-+0000 + 5.0h,
-          2000-01-04-16:00-+0000 + 3.0h,
-          2000-01-04-20:00-+0000 + 5.0h,
-          2000-01-05-16:00-+0000 + 3.0h,
-          2000-01-05-20:00-+0000 + 5.0h,
-          2000-01-06-16:00-+0000 + 3.0h,
-          2000-01-06-20:00-+0000 + 5.0h,
-          2000-01-07-16:00-+0000 + 3.0h,
-          2000-01-07-20:00-+0000 + 5.0h,
-          2000-01-10-16:00-+0000 + 3.0h,
-          2000-01-10-20:00-+0000 + 5.0h,
-          2000-01-11-16:00-+0000 + 3.0h,
-          2000-01-11-20:00-+0000 + 5.0h,
-          2000-01-12-16:00-+0000 + 3.0h,
-          2000-01-12-20:00-+0000 + 5.0h,
-          2000-01-13-16:00-+0000 + 3.0h,
-          2000-01-13-20:00-+0000 + 5.0h,
-          2000-01-14-16:00-+0000 + 3.0h,
-          2000-01-14-20:00-+0000 + 5.0h { overtime 2 }
+  booking r1 2000-01-03-16:00-+0000 + 8.0h,
+          2000-01-04-16:00-+0000 + 8.0h,
+          2000-01-05-16:00-+0000 + 8.0h,
+          2000-01-06-16:00-+0000 + 8.0h,
+          2000-01-07-16:00-+0000 + 8.0h,
+          2000-01-10-16:00-+0000 + 8.0h,
+          2000-01-11-16:00-+0000 + 8.0h,
+          2000-01-12-16:00-+0000 + 8.0h,
+          2000-01-13-16:00-+0000 + 8.0h,
+          2000-01-14-16:00-+0000 + 8.0h { overtime 2 }
+  booking r2 2000-01-03-16:00-+0000 + 8.0h,
+          2000-01-04-16:00-+0000 + 8.0h,
+          2000-01-05-16:00-+0000 + 8.0h,
+          2000-01-06-16:00-+0000 + 8.0h,
+          2000-01-07-16:00-+0000 + 8.0h,
+          2000-01-10-16:00-+0000 + 8.0h,
+          2000-01-11-16:00-+0000 + 8.0h,
+          2000-01-12-16:00-+0000 + 8.0h,
+          2000-01-13-16:00-+0000 + 8.0h,
+          2000-01-14-16:00-+0000 + 8.0h { overtime 2 }
   flags flag2
   priority 500
   projectid prj
@@ -95,37 +75,37 @@ supplement task t3 {
 }
 supplement resource r1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r2 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r3 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r4 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

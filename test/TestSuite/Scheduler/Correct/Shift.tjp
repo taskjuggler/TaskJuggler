@@ -1,4 +1,6 @@
-project test "Test" "1.0" 2007-08-22 +2m
+project test "Test" "1.0" 2007-08-22 +2m {
+  workinghours mon-fri 9:00 - 12:00, 13:00 - 18:00
+}
 
 include "checks.tji"
 
@@ -60,7 +62,7 @@ task prj "Project" {
     allocate mdf
     ${FixEnd "2007-10-01-16:00"}
   }
-  
+
   task ttss "TTSS Task" {
     effort 5w
     allocate ttss
@@ -93,11 +95,11 @@ task prj "Project" {
     shifts morning 2007-09-01 +4w
     ${FixEnd "2007-10-02-18:00"}
   }
-    
+
 }
-  
+
 taskreport shift "Shift" {
   formats html
   columns name, start, end, daily
 }
-  
+

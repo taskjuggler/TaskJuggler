@@ -21,7 +21,7 @@ task t2 "Task 2" {
 }
 task t3 "Task 3" {
   depends t1
-  start 2005-06-04-00:00-+0000
+  start 2005-06-03-23:00-+0000
   milestone
   scheduled
 }

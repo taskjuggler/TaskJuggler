@@ -13,7 +13,7 @@ resource _Resource_1 "Team" {
 
 task _Task_1 "Parent" {
   task _Task_2 "Sub" {
-    start 2009-11-21-00:00-+0000
+    start 2009-11-23-16:00-+0000
     end 2009-11-28-00:00-+0000
     scheduling asap
     scheduled
@@ -24,35 +24,29 @@ supplement task _Task_1 {
   projectid prj
 }
 supplement task _Task_1._Task_2 {
-  booking joe 2009-11-21-00:00-+0000 + 1.0h,
-          2009-11-23-16:00-+0000 + 3.0h,
-          2009-11-23-20:00-+0000 + 5.0h,
-          2009-11-24-16:00-+0000 + 3.0h,
-          2009-11-24-20:00-+0000 + 5.0h,
-          2009-11-25-16:00-+0000 + 3.0h,
-          2009-11-25-20:00-+0000 + 5.0h,
-          2009-11-26-16:00-+0000 + 3.0h,
-          2009-11-26-20:00-+0000 + 5.0h,
-          2009-11-27-16:00-+0000 + 3.0h,
-          2009-11-27-20:00-+0000 + 4.0h { overtime 2 }
+  booking joe 2009-11-23-16:00-+0000 + 8.0h,
+          2009-11-24-16:00-+0000 + 8.0h,
+          2009-11-25-16:00-+0000 + 8.0h,
+          2009-11-26-16:00-+0000 + 8.0h,
+          2009-11-27-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource _Resource_1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource joe {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

@@ -12,39 +12,34 @@ resource r2 "Resource 2"
 
 task t1 "Task 1" {
   start 2003-06-05-15:00-+0000
-  end 2003-06-12-00:00-+0000
+  end 2003-06-11-23:00-+0000
   scheduling asap
   scheduled
 }
 supplement task t1 {
-  booking r1 2003-06-05-15:00-+0000 + 3.0h,
-          2003-06-05-19:00-+0000 + 5.0h,
-          2003-06-06-15:00-+0000 + 3.0h,
-          2003-06-06-19:00-+0000 + 5.0h,
-          2003-06-09-15:00-+0000 + 3.0h,
-          2003-06-09-19:00-+0000 + 5.0h,
-          2003-06-10-15:00-+0000 + 3.0h,
-          2003-06-10-19:00-+0000 + 5.0h,
-          2003-06-11-15:00-+0000 + 3.0h,
-          2003-06-11-19:00-+0000 + 5.0h { overtime 2 }
+  booking r1 2003-06-05-15:00-+0000 + 8.0h,
+          2003-06-06-15:00-+0000 + 8.0h,
+          2003-06-09-15:00-+0000 + 8.0h,
+          2003-06-10-15:00-+0000 + 8.0h,
+          2003-06-11-15:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource r1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r2 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

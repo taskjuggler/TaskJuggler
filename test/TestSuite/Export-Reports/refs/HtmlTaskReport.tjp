@@ -12,21 +12,21 @@ resource tux "Tux"
 task items "Project breakdown" {
   task plan "Plan work" {
     start 2005-06-06-06:00-+0000
-    end 2005-06-09-00:00-+0000
+    end 2005-06-08-23:00-+0000
     scheduling asap
     scheduled
   }
   task implementation "Implement work" {
     depends items.plan
     start 2005-06-09-15:00-+0000
-    end 2005-06-16-00:00-+0000
+    end 2005-06-15-23:00-+0000
     scheduling asap
     scheduled
   }
   task acceptance "Customer acceptance" {
     depends items.implementation
-    start 2005-06-16-00:00-+0000
-    end 2005-06-21-00:00-+0000
+    start 2005-06-15-23:00-+0000
+    end 2005-06-20-23:00-+0000
     scheduling asap
     scheduled
   }
@@ -40,16 +40,11 @@ supplement task items.plan {
   projectid prj
 }
 supplement task items.implementation {
-  booking tux 2005-06-09-15:00-+0000 + 3.0h,
-          2005-06-09-19:00-+0000 + 5.0h,
-          2005-06-10-15:00-+0000 + 3.0h,
-          2005-06-10-19:00-+0000 + 5.0h,
-          2005-06-13-15:00-+0000 + 3.0h,
-          2005-06-13-19:00-+0000 + 5.0h,
-          2005-06-14-15:00-+0000 + 3.0h,
-          2005-06-14-19:00-+0000 + 5.0h,
-          2005-06-15-15:00-+0000 + 3.0h,
-          2005-06-15-19:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2005-06-09-15:00-+0000 + 8.0h,
+          2005-06-10-15:00-+0000 + 8.0h,
+          2005-06-13-15:00-+0000 + 8.0h,
+          2005-06-14-15:00-+0000 + 8.0h,
+          2005-06-15-15:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
@@ -59,10 +54,10 @@ supplement task items.acceptance {
 }
 supplement resource tux {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

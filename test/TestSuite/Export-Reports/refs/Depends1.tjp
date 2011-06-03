@@ -17,7 +17,7 @@ task foo1 "foo1" {
   task foo3 "foo3" {
     depends foo1.foo2
     start 2007-12-04-07:00-+0000
-    end 2007-12-05-01:00-+0000
+    end 2007-12-05-00:00-+0000
     scheduling asap
     scheduled
   }
@@ -25,14 +25,14 @@ task foo1 "foo1" {
 task bar "bar" {
   depends foo1.foo2
   start 2007-12-04-07:00-+0000
-  end 2007-12-06-01:00-+0000
+  end 2007-12-06-00:00-+0000
   scheduling asap
   scheduled
 }
 task bar1 "bar1" {
   depends foo1, bar
-  start 2007-12-07-01:00-+0000
-  end 2007-12-09-01:00-+0000
+  start 2007-12-07-00:00-+0000
+  end 2007-12-09-00:00-+0000
   scheduling asap
   scheduled
 }

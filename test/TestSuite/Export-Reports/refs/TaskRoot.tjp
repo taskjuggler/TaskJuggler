@@ -11,37 +11,37 @@ projectids prj
 task items "Project breakdown" {
   task plan "Plan work" {
     start 2005-07-22-06:00-+0000
-    end 2005-07-27-00:00-+0000
+    end 2005-07-26-23:00-+0000
     scheduling asap
     scheduled
   }
   task implementation "Implement work" {
     task phase1 "Phase 1" {
       depends items.plan
-      start 2005-07-27-00:00-+0000
-      end 2005-08-03-00:00-+0000
+      start 2005-07-26-23:00-+0000
+      end 2005-08-02-23:00-+0000
       scheduling asap
       scheduled
     }
     task phase2 "Phase 2" {
       depends items.implementation.phase1
-      start 2005-08-03-00:00-+0000
-      end 2005-08-06-00:00-+0000
+      start 2005-08-02-23:00-+0000
+      end 2005-08-05-23:00-+0000
       scheduling asap
       scheduled
     }
     task phase3 "Phase 3" {
       depends items.implementation.phase2
-      start 2005-08-06-00:00-+0000
-      end 2005-08-12-00:00-+0000
+      start 2005-08-05-23:00-+0000
+      end 2005-08-11-23:00-+0000
       scheduling asap
       scheduled
     }
   }
   task acceptance "Customer acceptance" {
     depends items.implementation
-    start 2005-08-12-00:00-+0000
-    end 2005-08-17-00:00-+0000
+    start 2005-08-11-23:00-+0000
+    end 2005-08-16-23:00-+0000
     scheduling asap
     scheduled
   }

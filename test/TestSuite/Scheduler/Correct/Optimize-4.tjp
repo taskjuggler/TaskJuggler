@@ -10,21 +10,21 @@ resource tux2 "Tux2"
 
 task t1 "Task1" {
   start 2000-01-01
-	${FixEnd "2000-01-07-18:00"}
+	${FixEnd "2000-01-07-17:00"}
 	effort 5d
 	allocate tux1
 }
 
 task t2 "Task2" {
 	start 2000-01-01
-	${FixEnd "2000-01-24-18:00"}
+	${FixEnd "2000-01-24-17:00"}
 	effort 6d
 	allocate tux1
 }
 
 task t3 "Task3" {
 	depends !t1
-	${FixEnd "2000-01-14-18:00"}
+	${FixEnd "2000-01-14-17:00"}
 	effort 10d
 	allocate tux1, tux2
 }

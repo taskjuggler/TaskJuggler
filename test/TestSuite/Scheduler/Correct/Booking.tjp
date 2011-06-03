@@ -1,6 +1,7 @@
 project test "Test" "1.0" 2007-04-22 +5w {
 	now 2007-04-30
 	scenario plan "Plan"
+  workinghours mon - fri 9:00 - 12:00, 13:00 - 18:00
 }
 
 include "checks.tji"

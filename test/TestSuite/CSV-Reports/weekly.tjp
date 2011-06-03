@@ -1,5 +1,6 @@
 project "Weekly" "1.0" 2007-12-16 +3m {
   timezone 'UTC'
+  workinghours mon - fri 9:00 - 12:00, 13:00 - 18:00
 }
 include "project-1.tji"
 

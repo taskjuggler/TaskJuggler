@@ -25,36 +25,31 @@ supplement task t {
           2009-09-17-14:00-+0000 + 7.0h,
           2009-09-18-14:00-+0000 + 7.0h,
           2009-09-21-14:00-+0000 + 3.0h { overtime 2 }
-  booking foo 2009-09-14-15:00-+0000 + 3.0h,
-          2009-09-14-19:00-+0000 + 5.0h,
-          2009-09-15-15:00-+0000 + 3.0h,
-          2009-09-15-19:00-+0000 + 5.0h,
-          2009-09-16-15:00-+0000 + 3.0h,
-          2009-09-16-19:00-+0000 + 5.0h,
-          2009-09-17-15:00-+0000 + 3.0h,
-          2009-09-17-19:00-+0000 + 5.0h,
-          2009-09-18-15:00-+0000 + 3.0h,
-          2009-09-18-19:00-+0000 + 5.0h,
+  booking foo 2009-09-14-15:00-+0000 + 8.0h,
+          2009-09-15-15:00-+0000 + 8.0h,
+          2009-09-16-15:00-+0000 + 8.0h,
+          2009-09-17-15:00-+0000 + 8.0h,
+          2009-09-18-15:00-+0000 + 8.0h,
           2009-09-21-15:00-+0000 + 2.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource team {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource foo {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource bar {

@@ -12,14 +12,14 @@ resource tux "Tux"
 task parent_task "Parent task" {
   task sub_task1 "Sub task 1" {
     start 2010-12-01-08:00-+0000
-    end 2010-12-01-17:00-+0000
+    end 2010-12-01-16:00-+0000
     scheduling asap
     scheduled
   }
 }
 task other_task "Other task" {
   start 2010-12-01-00:00-+0000
-  end 2010-12-02-17:00-+0000
+  end 2010-12-02-16:00-+0000
   scheduling asap
   scheduled
 }
@@ -28,23 +28,21 @@ supplement task parent_task {
   projectid project
 }
 supplement task parent_task.sub_task1 {
-  booking tux 2010-12-01-08:00-+0000 + 3.0h,
-          2010-12-01-12:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2010-12-01-08:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid project
 }
 supplement task other_task {
-  booking tux 2010-12-02-08:00-+0000 + 3.0h,
-          2010-12-02-12:00-+0000 + 5.0h { overtime 2 }
+  booking tux 2010-12-02-08:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid project
 }
 supplement resource tux {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

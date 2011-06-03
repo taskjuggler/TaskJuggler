@@ -13,29 +13,24 @@ resource r3 "R3"
 
 task t1 "Task 1" {
   start 2009-11-30-16:00-+0000
-  end 2009-12-05-01:00-+0000
+  end 2009-12-05-00:00-+0000
   scheduling asap
   scheduled
 }
 task t2 "Task 2" {
   task t3 "Task 3" {
     start 2009-11-30-16:00-+0000
-    end 2009-12-12-01:00-+0000
+    end 2009-12-12-00:00-+0000
     scheduling asap
     scheduled
   }
 }
 supplement task t1 {
-  booking r1 2009-11-30-16:00-+0000 + 3.0h,
-          2009-11-30-20:00-+0000 + 5.0h,
-          2009-12-01-16:00-+0000 + 3.0h,
-          2009-12-01-20:00-+0000 + 5.0h,
-          2009-12-02-16:00-+0000 + 3.0h,
-          2009-12-02-20:00-+0000 + 5.0h,
-          2009-12-03-16:00-+0000 + 3.0h,
-          2009-12-03-20:00-+0000 + 5.0h,
-          2009-12-04-16:00-+0000 + 3.0h,
-          2009-12-04-20:00-+0000 + 5.0h { overtime 2 }
+  booking r1 2009-11-30-16:00-+0000 + 8.0h,
+          2009-12-01-16:00-+0000 + 8.0h,
+          2009-12-02-16:00-+0000 + 8.0h,
+          2009-12-03-16:00-+0000 + 8.0h,
+          2009-12-04-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
@@ -44,53 +39,43 @@ supplement task t2 {
   projectid prj
 }
 supplement task t2.t3 {
-  booking r2 2009-11-30-16:00-+0000 + 3.0h,
-          2009-11-30-20:00-+0000 + 5.0h,
-          2009-12-01-16:00-+0000 + 3.0h,
-          2009-12-01-20:00-+0000 + 5.0h,
-          2009-12-02-16:00-+0000 + 3.0h,
-          2009-12-02-20:00-+0000 + 5.0h,
-          2009-12-03-16:00-+0000 + 3.0h,
-          2009-12-03-20:00-+0000 + 5.0h,
-          2009-12-04-16:00-+0000 + 3.0h,
-          2009-12-04-20:00-+0000 + 5.0h,
-          2009-12-07-16:00-+0000 + 3.0h,
-          2009-12-07-20:00-+0000 + 5.0h,
-          2009-12-08-16:00-+0000 + 3.0h,
-          2009-12-08-20:00-+0000 + 5.0h,
-          2009-12-09-16:00-+0000 + 3.0h,
-          2009-12-09-20:00-+0000 + 5.0h,
-          2009-12-10-16:00-+0000 + 3.0h,
-          2009-12-10-20:00-+0000 + 5.0h,
-          2009-12-11-16:00-+0000 + 3.0h,
-          2009-12-11-20:00-+0000 + 5.0h { overtime 2 }
+  booking r2 2009-11-30-16:00-+0000 + 8.0h,
+          2009-12-01-16:00-+0000 + 8.0h,
+          2009-12-02-16:00-+0000 + 8.0h,
+          2009-12-03-16:00-+0000 + 8.0h,
+          2009-12-04-16:00-+0000 + 8.0h,
+          2009-12-07-16:00-+0000 + 8.0h,
+          2009-12-08-16:00-+0000 + 8.0h,
+          2009-12-09-16:00-+0000 + 8.0h,
+          2009-12-10-16:00-+0000 + 8.0h,
+          2009-12-11-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource r1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r2 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource r3 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

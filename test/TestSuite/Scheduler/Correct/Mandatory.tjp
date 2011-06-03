@@ -17,13 +17,13 @@ resource e "E"
 task "T1" {
   effort 16d
   allocate a { mandatory}, b
-  ${FixTask "2009-11-03-9:00" "2009-11-26-18:00"}
+  ${FixTask "2009-11-03-9:00" "2009-11-26-17:00"}
 }
 
 task "T2" {
   effort 24d
   allocate c { mandatory}, d { mandatory}, e
-  ${FixTask "2009-11-02-9:00" "2009-11-27-18:00"}
+  ${FixTask "2009-11-02-9:00" "2009-11-27-17:00"}
 }
 
 taskreport "Mandatory" {

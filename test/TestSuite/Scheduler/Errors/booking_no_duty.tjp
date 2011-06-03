@@ -5,5 +5,5 @@ resource tux "Tux"
 # MARK: error 8 booking_no_duty
 
 task foo "Foo" {
-	booking tux 2007-04-26-11:00 +3h
+	booking tux 2007-04-26-16:00 +3h
 }

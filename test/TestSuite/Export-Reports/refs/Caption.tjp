@@ -12,21 +12,21 @@ resource r1 "Resource 1"
 task plant "How to plant a tree" {
   task plan "Choose the planting site" {
     start 2007-01-01-16:00-+0000
-    end 2007-01-03-01:00-+0000
+    end 2007-01-03-00:00-+0000
     scheduling asap
     scheduled
   }
   task buy "Get a tree" {
     depends plant.plan
     start 2007-01-03-16:00-+0000
-    end 2007-01-04-01:00-+0000
+    end 2007-01-04-00:00-+0000
     scheduling asap
     scheduled
   }
   task action "Plant the tree" {
     depends plant.buy
     start 2007-01-04-16:00-+0000
-    end 2007-01-04-21:00-+0000
+    end 2007-01-04-20:00-+0000
     scheduling asap
     scheduled
   }
@@ -36,31 +36,27 @@ supplement task plant {
   projectid simple
 }
 supplement task plant.plan {
-  booking r1 2007-01-01-16:00-+0000 + 3.0h,
-          2007-01-01-20:00-+0000 + 5.0h,
-          2007-01-02-16:00-+0000 + 3.0h,
-          2007-01-02-20:00-+0000 + 5.0h { overtime 2 }
+  booking r1 2007-01-01-16:00-+0000 + 8.0h,
+          2007-01-02-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement task plant.buy {
-  booking r1 2007-01-03-16:00-+0000 + 3.0h,
-          2007-01-03-20:00-+0000 + 5.0h { overtime 2 }
+  booking r1 2007-01-03-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement task plant.action {
-  booking r1 2007-01-04-16:00-+0000 + 3.0h,
-          2007-01-04-20:00-+0000 + 1.0h { overtime 2 }
+  booking r1 2007-01-04-16:00-+0000 + 4.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement resource r1 {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

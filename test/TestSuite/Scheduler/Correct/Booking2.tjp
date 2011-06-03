@@ -11,7 +11,7 @@ task "T1" {
   effort 40h
   allocate r1
   ${FixStart "2010-02-15-9:00"}
-	${FixEnd "2010-02-19-18:00"}
+	${FixEnd "2010-02-19-17:00"}
 }
 
 resource r2 "R2"
@@ -21,7 +21,7 @@ task "T2" {
   allocate r2
   booking r2 2010-02-08-9:00 +5d { sloppy 1 }
   ${FixStart "2010-02-08-9:00"}
-	${FixEnd "2010-02-12-18:00"}
+	${FixEnd "2010-02-12-17:00"}
 }
 
 resource r3 "r3" {
@@ -33,7 +33,7 @@ task "T3" {
   allocate r3
   booking r3 2010-02-08 +2d { sloppy 2 }
   ${FixStart "2010-02-08-9:00"}
-	${FixEnd "2010-02-17-18:00"}
+	${FixEnd "2010-02-17-17:00"}
 }
 
 resource r4 "R4"
@@ -43,7 +43,7 @@ task "T4" {
   allocate r4
   booking r4 2010-02-08 +2d { overtime 1 }
   ${FixStart "2010-02-08"}
-	${FixEnd "2010-02-15-18:00"}
+	${FixEnd "2010-02-15-17:00"}
 }
 
 resource r5 "r5" {
@@ -54,7 +54,7 @@ task "T5" {
   effort 56h
   allocate r5
   booking r5 2010-02-08 +2d { overtime 2 }
-	${FixEnd "2010-02-15-18:00"}
+	${FixEnd "2010-02-15-17:00"}
 }
 
 taskreport "Booking2" {

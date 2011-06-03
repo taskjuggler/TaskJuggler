@@ -13,28 +13,28 @@ resource konqui "Konqui"
 task items "Room decoration" {
   task plan "Plan work and buy material" {
     start 2007-01-06-07:00-+0000
-    end 2007-01-10-01:00-+0000
+    end 2007-01-10-00:00-+0000
     scheduling asap
     scheduled
   }
   task remove "Remove old inventory" {
     depends items.plan
     start 2007-01-10-16:00-+0000
-    end 2007-01-10-21:00-+0000
+    end 2007-01-10-20:00-+0000
     scheduling asap
     scheduled
   }
   task implement "Arrange new decoration" {
     depends items.remove
-    start 2007-01-10-21:00-+0000
-    end 2007-01-13-01:00-+0000
+    start 2007-01-10-20:00-+0000
+    end 2007-01-13-00:00-+0000
     scheduling asap
     scheduled
   }
   task acceptance "Presentation and customer acceptance" {
     depends items.implement
-    start 2007-01-13-01:00-+0000
-    end 2007-01-18-01:00-+0000
+    start 2007-01-13-00:00-+0000
+    end 2007-01-18-00:00-+0000
     scheduling asap
     scheduled
   }
@@ -48,24 +48,18 @@ supplement task items.plan {
   projectid simple
 }
 supplement task items.remove {
-  booking konqui 2007-01-10-16:00-+0000 + 3.0h,
-          2007-01-10-20:00-+0000 + 1.0h { overtime 2 }
-  booking tux 2007-01-10-16:00-+0000 + 3.0h,
-          2007-01-10-20:00-+0000 + 1.0h { overtime 2 }
+  booking konqui 2007-01-10-16:00-+0000 + 4.0h { overtime 2 }
+  booking tux 2007-01-10-16:00-+0000 + 4.0h { overtime 2 }
   priority 500
   projectid simple
 }
 supplement task items.implement {
-  booking konqui 2007-01-10-21:00-+0000 + 4.0h,
-          2007-01-11-16:00-+0000 + 3.0h,
-          2007-01-11-20:00-+0000 + 5.0h,
-          2007-01-12-16:00-+0000 + 3.0h,
-          2007-01-12-20:00-+0000 + 5.0h { overtime 2 }
-  booking tux 2007-01-10-21:00-+0000 + 4.0h,
-          2007-01-11-16:00-+0000 + 3.0h,
-          2007-01-11-20:00-+0000 + 5.0h,
-          2007-01-12-16:00-+0000 + 3.0h,
-          2007-01-12-20:00-+0000 + 5.0h { overtime 2 }
+  booking konqui 2007-01-10-20:00-+0000 + 4.0h,
+          2007-01-11-16:00-+0000 + 8.0h,
+          2007-01-12-16:00-+0000 + 8.0h { overtime 2 }
+  booking tux 2007-01-10-20:00-+0000 + 4.0h,
+          2007-01-11-16:00-+0000 + 8.0h,
+          2007-01-12-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid simple
 }
@@ -75,19 +69,19 @@ supplement task items.acceptance {
 }
 supplement resource tux {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }
 supplement resource konqui {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

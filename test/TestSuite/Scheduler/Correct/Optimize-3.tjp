@@ -9,21 +9,21 @@ resource tux2 "Tux2"
 
 task t1 "Task1" {
   start 2000-01-04
-	${FixEnd "2000-01-10-18:00"}
+	${FixEnd "2000-01-10-17:00"}
 	effort 5d
 	allocate tux1
 }
 
 task t2 "Task2" {
 	start 2000-01-10
-	${FixEnd "2000-01-17-18:00"}
+	${FixEnd "2000-01-17-17:00"}
 	effort 5d
 	allocate tux1
 }
 
 task t3 "Task3" {
 	start 2000-01-02
-	${FixEnd "2000-01-06-18:00"}
+	${FixEnd "2000-01-06-17:00"}
 	effort 4d
 	allocate tux1 { alternative tux2 persistent }
 }

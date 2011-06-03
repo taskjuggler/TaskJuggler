@@ -25,18 +25,16 @@ supplement task top {
   projectid prj
 }
 supplement task top.sub {
-  booking joe 2000-01-01-00:00-+0000 + 1.0h,
-          2000-01-03-16:00-+0000 + 3.0h,
-          2000-01-03-20:00-+0000 + 4.0h { overtime 2 }
+  booking joe 2000-01-03-16:00-+0000 + 8.0h { overtime 2 }
   priority 500
   projectid prj
 }
 supplement resource joe {
   workinghours sun off
-               workinghours mon 9:00 - 12:00, 13:00 - 18:00
-               workinghours tue 9:00 - 12:00, 13:00 - 18:00
-               workinghours wed 9:00 - 12:00, 13:00 - 18:00
-               workinghours thu 9:00 - 12:00, 13:00 - 18:00
-               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
                workinghours sat off
 }

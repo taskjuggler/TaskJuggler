@@ -25,7 +25,7 @@ resource r1 "r1"
 task "T1" {
   effort 32h
   allocate r1
-  ${FixEnd "2010-02-12-18:00"}
+  ${FixEnd "2010-02-12-17:00"}
 }
 
 resource r2 "r2" {

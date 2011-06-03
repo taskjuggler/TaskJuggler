@@ -37,7 +37,7 @@ task ProductionPlan "Production Plan" {
     ${allocNodes}
     ${allocNodes}
     ${allocNodes}
-    minend 2007-11-26-18:00
-    maxend 2007-11-26-18:00
+    minend 2007-11-26-17:00
+    maxend 2007-11-26-17:00
   }
 }

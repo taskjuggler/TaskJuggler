@@ -10,42 +10,42 @@ resource tux3 "Tux3"
 
 task t0 "Task0" {
 	start 2000-01-01
-	${FixEnd "2000-01-07-18:00"}
+	${FixEnd "2000-01-07-17:00"}
 	effort 5d
 	allocate tux1 { alternative tux3 }
 }
 
 task t1 "Task1" {
   start 2000-01-01
-	${FixEnd "2000-01-07-18:00"}
+	${FixEnd "2000-01-07-17:00"}
 	effort 5d
 	allocate tux1
 }
 
 task t2 "Task2" {
 	start 2000-01-01
-	${FixEnd "2000-01-07-18:00"}
+	${FixEnd "2000-01-07-17:00"}
 	effort 5d
 	allocate tux2
 }
 
 task t3 "Task3" {
 	depends !t1, !t2
-	${FixEnd "2000-01-11-18:00"}
+	${FixEnd "2000-01-11-17:00"}
 	effort 4d
 	allocate tux1, tux2
 }
 
 task t4 "Task4" {
 	depends !t3
-	${FixEnd "2000-01-18-18:00"}
+	${FixEnd "2000-01-18-17:00"}
 	effort 5d
 	allocate tux1
 }
 
 task t5 "Task5" {
 	depends !t3
-	${FixEnd "2000-01-25-18:00"}
+	${FixEnd "2000-01-25-17:00"}
 	effort 10d
 	allocate tux2
 }
@@ -54,7 +54,7 @@ task t6 "Task6" {
 	start 2000-01-01
 	effort 5d
 	allocate tux1
-	${FixEnd "2000-01-25-18:00"}
+	${FixEnd "2000-01-25-17:00"}
 }
 
 taskreport optimize5 "Optimize-5" {

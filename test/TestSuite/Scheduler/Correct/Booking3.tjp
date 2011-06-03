@@ -4,6 +4,7 @@ project "Test" 2011-05-15 +1w {
   }
   trackingscenario s2
   now 2011-05-17
+  workinghours mon-fri 9:00 - 12:00, 13:00 - 18:00
 }
 
 include 'checks.tji'
