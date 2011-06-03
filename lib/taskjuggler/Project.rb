@@ -917,11 +917,16 @@ class TaskJuggler
     def journal(query)
       entries = JournalEntryList.new
       @tasks.each do |task|
+        # We only care about top-level tasks.
         next if task.parent
-        entries += @attributes['journal'].
+
+        entries += (e = @attributes['journal'].
           currentEntriesR(query.end, task, 0, query.start,
-                          query.hideJournalEntry)
+                          query.hideJournalEntry))
       end
+
+      # Eliminate duplicates due to entries from adopted tasks
+      entries.uniq!
 
       journalMessages(entries, query, true)
     end

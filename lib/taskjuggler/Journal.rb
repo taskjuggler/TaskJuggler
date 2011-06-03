@@ -178,6 +178,11 @@ class TaskJuggler
       self
     end
 
+    # Eliminate duplicate entries.
+    def uniq!
+      @entries.uniq!
+    end
+
   end
 
   # A Journal is a list of JournalEntry objects. It provides methods to add
@@ -330,20 +335,20 @@ class TaskJuggler
         (e.alertLevel == minLevel && minDate && e.date < minDate)
       end
 
-      return pEntries if pEntries.empty?
+      unless pEntries.empty?
+        # Check parents for a more important or more up-to-date message.
+        p = property.parent
+        while p do
+          ppEntries = @propertyToEntries[p] ?
+            @propertyToEntries[p].last(date) : JournalEntryList.new
 
-      # Check parents for a more important or more up-to-date message.
-      p = property.parent
-      while p do
-        ppEntries = @propertyToEntries[p] ?
-                    @propertyToEntries[p].last(date) : JournalEntryList.new
+          # A parent has a more up-to-date message.
+          if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
+            return JournalEntryList.new
+          end
 
-        # A parent has a more up-to-date message.
-        if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
-          return JournalEntryList.new
+          p = p.parent
         end
-
-        p = p.parent
       end
 
       # Remove all entries that are filtered by logExp.
@@ -368,8 +373,7 @@ class TaskJuggler
       # date.
       pEntries.delete_if do |e|
         e.headline.empty? || e.alertLevel < minLevel ||
-        (e.alertLevel == minLevel && minDate && e.date < minDate) ||
-        hidden(e, logExp)
+        (e.alertLevel == minLevel && minDate && e.date < minDate)
       end
 
       # Determine the highest alert level of the pEntries.
@@ -384,7 +388,7 @@ class TaskJuggler
       # Now gather all current entries of the child properties and find the
       # date that is closest to and right before the given _date_.
       property.kids.each do |p|
-        currentEntriesR(date, p, minLevel, minDate, logExp).each do |e|
+        currentEntriesR(date, p, minLevel, minDate).each do |e|
           # Find the date of the most recent entry.
           latestDate = e.date if latestDate.nil? || e.date > latestDate
           # Find the highest alert level.
@@ -398,8 +402,15 @@ class TaskJuggler
       if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
                               latestDate.nil? ||
                               pEntries.first.date >= latestDate)
+
+        # Remove all entries that are filtered by logExp.
+        if logExp
+          pEntries.delete_if { |e| hidden(e, logExp) }
+        end
+
         return pEntries
       end
+
       # Remove all child entries that are older than the current parent
       # entries (if we have parent entries).
       unless pEntries.empty?
@@ -407,6 +418,12 @@ class TaskJuggler
           e.date <= pEntries.first.date
         end
       end
+
+      # Remove all entries that are filtered by logExp.
+      if logExp
+        entries.delete_if { |e| hidden(e, logExp) }
+      end
+
       # Otherwise return the list provided by the childen.
       entries
     end
