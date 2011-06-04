@@ -17,6 +17,7 @@ require 'taskjuggler/RichText/Document'
 require 'taskjuggler/SyntaxReference'
 require 'taskjuggler/TjTime'
 require 'taskjuggler/RichText/FunctionExample'
+require 'taskjuggler/HTMLElements'
 
 class TaskJuggler
 
@@ -24,6 +25,8 @@ class TaskJuggler
   # manual. This manual is not only generated from a set of RichTextSnip files,
   # but also contains the SyntaxReference for the TJP syntax.
   class UserManual < RichTextDocument
+
+    include HTMLElements
 
     # Create a UserManual object and gather the TJP syntax information.
     def initialize
@@ -90,27 +93,28 @@ class TaskJuggler
     # Callback function used by the RichTextDocument class to generate the cover
     # page for the manual.
     def generateHTMLCover
-      html = []
-      html << (div = XMLElement.new('div', 'align' => 'center',
-        'style' => 'margin-top:40px; margin-botton:40px'))
-      div << XMLNamedText.new("The #{AppConfig.softwareName} User Manual",
-                              'h1')
-      div << XMLNamedText.new('Project Management beyond Gantt Chart drawing',
-                              'em')
-      div << XMLElement.new('br', {}, true)
-      div << XMLNamedText.new(
-        "Copyright (c) #{AppConfig.copyright.join(', ')} " +
-        "by #{AppConfig.authors.join(', ')}", 'b')
-      div << XMLElement.new('br', {}, true)
-      div << XMLText.new("Generated on #{TjTime.new.strftime('%Y-%m-%d')}")
-      div << XMLElement.new('br', {}, true)
-      div << XMLNamedText.new("This manual covers #{AppConfig.softwareName} " +
-                              "version #{AppConfig.version}.", 'h3')
-      html << XMLElement.new('br', {}, true)
-      html << XMLElement.new('hr', {}, true)
-      html << XMLElement.new('br', {}, true)
-
-      html
+      [
+        DIV.new('align' => 'center',
+                'style' => 'margin-top:40px; margin-botton:40px') do
+          [
+            H1.new { "The #{AppConfig.softwareName} User Manual" },
+            EM.new { 'Project Management beyond Gantt Chart drawing' },
+            BR.new,
+            B.new do
+              "Copyright (c) #{AppConfig.copyright.join(', ')} " +
+              "by #{AppConfig.authors.join(', ')}"
+            end,
+            BR.new,
+            "Generated on #{TjTime.new.strftime('%Y-%m-%d')}",
+            BR.new,
+            H3.new { "This manual covers #{AppConfig.softwareName} " +
+                     "version #{AppConfig.version}." }
+          ]
+        end,
+        BR.new,
+        HR.new,
+        BR.new
+      ]
     end
 
     # Callback function used by the RichTextDocument class to generate the

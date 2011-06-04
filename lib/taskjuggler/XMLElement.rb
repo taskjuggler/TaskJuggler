@@ -20,7 +20,7 @@ class TaskJuggler
   class XMLElement
 
     # Construct a new XML element and include it in an existing XMLElement tree.
-    def initialize(name, attributes = {}, selfClosing = false)
+    def initialize(name, attributes = {}, selfClosing = false, &block)
       if (name.nil? && attributes.length > 0) ||
          (!name.nil? && !name.is_a?(String))
         raise "Name must be nil or a String "
@@ -32,9 +32,21 @@ class TaskJuggler
         end
       end
       @attributes = attributes
-      @children = []
       # This can be set to true if <name /> is legal for this element.
       @selfClosing = selfClosing
+
+      @children = block ? yield(block) : []
+      # Allow blocks with single elements not to be Arrays. They will be
+      # automatically converted into Arrays here.
+      unless @children.is_a?(Array)
+        @children = [ @children ]
+      end
+
+      # Convert all children that are text String objects into XMLText
+      # objects.
+      @children.collect! do |c|
+        c.is_a?(String) ? XMLText.new(c) : c
+      end
     end
 
     # Add a new child or a set of new childs to the element.
