@@ -47,6 +47,9 @@ class TaskJuggler
       @children.collect! do |c|
         c.is_a?(String) ? XMLText.new(c) : c
       end
+
+      # Make sure we have no nil objects in the list.
+      @children.delete_if { |c| c.nil? }
     end
 
     # Add a new child or a set of new childs to the element.
@@ -55,13 +58,16 @@ class TaskJuggler
       # individually.
       if arg.is_a?(XMLElement)
         @children << arg
+      elsif arg.is_a?(String)
+        @children << XMLText.new(arg)
       elsif arg.is_a?(Array)
         # Delete all nil entries
         arg.delete_if { |i| i.nil? }
         # Check that the rest are really all XMLElement objects.
         arg.each do |i|
           unless i.is_a?(XMLElement)
-            raise "Element must be of type XMLElement not #{i.class}"
+            raise "Element must be of type XMLElement not #{i.class}: " +
+                  "#{i.inspect}"
           end
         end
         @children += arg

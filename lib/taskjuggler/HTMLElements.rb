@@ -18,7 +18,8 @@ class TaskJuggler
   module HTMLElements
 
     # A list of supported HTML tags.
-    htmlTags = %w( b br div em h1 h2 h3 hr )
+    htmlTags = %w( a b body br div em frame frameset footer
+                   h1 h2 h3 head hr table td tr )
     # A list of HTML tags that are self-closing.
     closureTags = %w( area base basefont br hr input img link meta )
 

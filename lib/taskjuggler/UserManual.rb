@@ -120,30 +120,31 @@ class TaskJuggler
     # Callback function used by the RichTextDocument class to generate the
     # header for the manual pages.
     def generateHTMLHeader
-      html = []
-      html << (headline = XMLElement.new('div', 'align' => 'center'))
-      headline << XMLNamedText.new(
-        "The #{AppConfig.softwareName} User Manual", 'h3',
-        'align' => 'center')
-      headline << XMLNamedText.new(
-        'Project Management beyond Gantt Chart Drawing', 'em',
-        'align' => 'center')
-
-      html
+      DIV.new('align' => 'center') do
+        [
+          H3.new('align' => 'center') do
+            "The #{AppConfig.softwareName} User Manual"
+          end,
+          EM.new('align' => 'center') do
+            'Project Management beyond Gantt Chart Drawing'
+          end
+        ]
+      end
     end
 
     # Callback function used by the RichTextDocument class to generate the
     # footer for the manual pages.
     def generateHTMLFooter
-      html = []
-      html << (div = XMLElement.new('div', 'align' => 'center',
-                                    'style' => 'font-size:10px;'))
-      div << XMLText.new("Copyright (c) #{AppConfig.copyright.join(', ')} by " +
-                         "#{AppConfig.authors.join(', ')}.")
-      div << XMLNamedText.new('TaskJuggler', 'a', 'href' => AppConfig.contact)
-      div << XMLText.new(' is a trademark of Chris Schlaeger.')
-
-      html
+      DIV.new('align' => 'center', 'style' => 'font-size:10px;') do
+        [
+          "Copyright (c) #{AppConfig.copyright.join(', ')} by " +
+          "#{AppConfig.authors.join(', ')}.",
+          A.new('href' => AppConfig.contact) do
+            'TaskJuggler'
+          end,
+          ' is a trademark of Chris Schlaeger.'
+        ]
+      end
     end
 
     # Callback function used by the RichTextDocument and KeywordDocumentation
@@ -153,37 +154,37 @@ class TaskJuggler
     # _succLabel_: Text for the reference to the next page. May be nil.
     # _succURL: URL to the next page.
     def generateHTMLNavigationBar(predLabel, predURL, succLabel, succURL)
-      html = []
-      html << XMLElement.new('br', {}, true)
-      html << XMLElement.new('hr', {}, true)
+      html = [ BR.new, HR.new ]
       if predLabel || succLabel
         # We use a tabel to get the desired layout.
-        html << (tab = XMLElement.new('table',
-          'style' => 'width:90%; margin-left:5%; margin-right:5%'))
-        tab << (tr = XMLElement.new('tr'))
-        tr << (td = XMLElement.new('td',
-          'style' => 'text-align:left; width:35%;'))
-        if predLabel
-          # Link to previous page.
-          td << XMLText.new('<< ')
-          td << XMLNamedText.new(predLabel, 'a', 'href' => predURL)
-          td << XMLText.new(' <<')
-        end
-        # Link to table of contents
-        tr << (td = XMLElement.new('td',
-          'style' => 'text-align:center; width:30%;'))
-        td << XMLNamedText.new('Table Of Contents', 'a', 'href' => 'toc.html')
-        tr << (td = XMLElement.new('td',
-          'style' => 'text-align:right; width:35%;'))
-        if succLabel
-          # Link to next page.
-          td << XMLText.new('>> ')
-          td << XMLNamedText.new(succLabel, 'a', 'href' => succURL)
-          td << XMLText.new(' >>')
-        end
-        html << XMLElement.new('hr', {}, true)
+        html += [
+          TABLE.new('style' => 'width:90%; margin-left:5%; ' +
+                                       'margin-right:5%') do
+            TR.new do
+              [
+                TD.new('style' => 'text-align:left; width:35%;') do
+                  if predLabel
+                    # Link to previous page.
+                    [ '<< ', A.new('href' => predURL) { predLabel }, ' <<' ]
+                  end
+                end,
+                # Link to table of contents
+                TD.new('style' => 'text-align:center; width:30%;') do
+                  A.new('href' => 'toc.html') { 'Table Of Contents' }
+                end,
+                TD.new('style' => 'text-align:right; width:35%;') do
+                  if succLabel
+                    # Link to next page.
+                    [ '>> ', A.new('href' => succURL) { succLabel }, ' >>' ]
+                  end
+                end
+              ]
+            end
+          end,
+          HR.new
+        ]
       end
-      html << XMLElement.new('br', {}, true)
+      html << BR.new
 
       html
     end
@@ -191,19 +192,22 @@ class TaskJuggler
     # Generate the top-level file for the HTML user manual.
     def generateHTMLindex(directory)
       html = HTMLDocument.new(:frameset)
-      head = html.generateHead("The #{AppConfig.softwareName} User Manual",
-                               { 'description' =>
-                                 'A reference and user manual for the ' +
-                                 'TaskJuggler project management software.',
-                                 'keywords' => 'taskjuggler, manual, reference'})
-      html << (frameset = XMLElement.new('frameset', 'cols' => '15%, 85%'))
-      frameset << (navFrames = XMLElement.new('frameset', 'rows' => '15%, 85%'))
-      navFrames << XMLElement.new('frame', 'src' => 'alphabet.html',
-                                  'name' => 'alphabet')
-      navFrames << XMLElement.new('frame', 'src' => 'navbar.html',
-                                  'name' => 'navigator')
-      frameset << XMLElement.new('frame', 'src' => 'toc.html',
-                                 'name' => 'display')
+      html.generateHead("The #{AppConfig.softwareName} User Manual",
+                        { 'description' =>
+                          'A reference and user manual for the ' +
+                          'TaskJuggler project management software.',
+                          'keywords' => 'taskjuggler, manual, reference'})
+      html << FRAMESET.new('cols' => '15%, 85%') do
+        [
+          FRAMESET.new('rows' => '15%, 85%') do
+            [
+              FRAME.new('src' => 'alphabet.html', 'name' => 'alphabet'),
+              FRAME.new('src' => 'navbar.html', 'name' => 'navigator')
+            ]
+          end,
+          FRAME.new('src' => 'toc.html', 'name' => 'display')
+        ]
+      end
 
       html.write(directory + 'index.html')
     end
