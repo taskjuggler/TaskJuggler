@@ -31,6 +31,8 @@ class TaskJuggler
   # specific or not.
   class KeywordDocumentation
 
+    include HTMLElements
+
     attr_reader :keyword, :names, :pattern, :references, :optionalAttributes
     attr_accessor :contexts, :scenarioSpecific, :inheritedFromProject,
                   :inheritedFromParent, :predecessor, :successor
@@ -312,191 +314,23 @@ class TaskJuggler
                                  'taskjuggler, project, management' })
       head << @manual.generateStyleSheet
 
-      html << (body = XMLElement.new('body'))
-      body << @manual.generateHTMLHeader <<
-        generateHTMLNavigationBar
+      html << BODY.new do
+        [
+          @manual.generateHTMLHeader,
+          generateHTMLNavigationBar,
 
-      # Box with keyword name.
-      body << (bbox = XMLElement.new('div',
-        'style' => 'margin-left:5%; margin-right:5%'))
-      bbox << (p = XMLElement.new('p'))
-      p << (tab = XMLElement.new('table', 'align' => 'center',
-                                 'class' => 'table'))
-
-      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-      tr << XMLNamedText.new('Keyword', 'td', 'class' => 'tag',
-                            'style' => 'width:15%')
-      tr << XMLNamedText.new(title, 'td', 'class' => 'descr',
-                             'style' => 'width:85%; font-weight:bold')
-
-      # Box with purpose, syntax, arguments and context.
-      bbox << (p = XMLElement.new('p'))
-      p << (tab = XMLElement.new('table', 'align' => 'center',
-                                 'class' => 'table'))
-      tab << (colgroup = XMLElement.new('colgroup'))
-      colgroup << XMLElement.new('col', 'width' => '15%')
-      colgroup << XMLElement.new('col', 'width' => '85%')
-
-      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-      tr << XMLNamedText.new('Purpose', 'td', 'class' => 'tag')
-      tr << (td = XMLElement.new('td', 'class' => 'descr'))
-      td << newRichText(@pattern.doc).to_html
-      if @syntax != '[{ <attributes> }]'
-        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-        tr << XMLNamedText.new('Syntax', 'td', 'class' => 'tag')
-        tr << (td = XMLElement.new('td', 'class' => 'descr'))
-        td << XMLNamedText.new("#{@syntax}", 'code')
-
-        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-        tr << XMLNamedText.new('Arguments', 'td', 'class' => 'tag')
-        if @args.empty?
-          tr << XMLNamedText.new('none', 'td', 'class' => 'descr')
-        else
-          tr << (td = XMLElement.new('td'))
-          td << (tab1 = XMLElement.new('table', 'class' => 'attrtable',
-                                       'style' => 'width:100%;'))
-          @args.each do |arg|
-            tab1 << (tr1 = XMLElement.new('tr'))
-            if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
-              tr1 << XMLNamedText.new("#{arg.name}", 'td', 'class' => 'attrtag',
-                                                           'width' => '30%')
-            else
-              typeSpec = arg.typeSpec
-              typeName = typeSpec[1..-2]
-              typeSpec[0] = '['
-              typeSpec[-1] = ']'
-              tr1 << (td = XMLElement.new('td', 'class' => 'attrtag',
-                                                'width' => '30%'))
-              td << XMLText.new("#{arg.name} [")
-              td << XMLNamedText.new(
-                typeName, 'a', 'href' =>
-                               "The_TaskJuggler_Syntax.html\##{typeName}")
-              td << XMLText.new(']')
-            end
-            tr1 << (td = XMLElement.new('td', 'class' => 'attrdescr',
-              'style' => 'margin-top:2px; margin-bottom:2px;'))
-            td << newRichText(arg.text ||
-                              "See [[#{arg.name}]] for details.").to_html
-          end
-        end
+          DIV.new('style' => 'margin-left:5%; margin-right:5%') do
+            [
+              generateHTMLKeywordBox,
+              generateHTMLDescriptionBox,
+              generateHTMLOptionalAttributesBox,
+              generateHTMLExampleBox
+            ]
+          end,
+          generateHTMLNavigationBar,
+          @manual.generateHTMLFooter
+        ]
       end
-
-      tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-      tr << XMLNamedText.new('Context', 'td', 'class' => 'tag')
-      if @contexts.empty?
-        tr << (td = XMLElement.new('td', 'class' => 'descr'))
-        td << XMLNamedText.new('Global scope', 'a',
-          'href' => 'Getting_Started.html#Structure_of_a_TJP_File')
-      else
-        tr << (td = XMLElement.new('td', 'class' => 'descr'))
-        first = true
-        @contexts.each do |context|
-          if first
-            first = false
-          else
-            td << XMLText.new(', ')
-          end
-          keywordHTMLRef(td, context)
-        end
-      end
-
-      unless @seeAlso.empty?
-        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-        tr << XMLNamedText.new('See also', 'td', 'class' => 'tag')
-        first = true
-        tr << (td = XMLElement.new('td', 'class' => 'descr'))
-        @seeAlso.each do |also|
-          if first
-            first = false
-          else
-            td << XMLText.new(', ')
-          end
-          keywordHTMLRef(td, also)
-        end
-      end
-
-      # Box with attributes.
-      unless @optionalAttributes.empty?
-        @optionalAttributes.sort! do |a, b|
-          a.keyword <=> b.keyword
-        end
-
-        showDetails = false
-        @optionalAttributes.each do |attr|
-          if attr.scenarioSpecific || attr.inheritedFromProject ||
-             attr.inheritedFromParent
-            showDetails = true
-            break
-          end
-        end
-
-        bbox << (p = XMLElement.new('p'))
-        p << (tab = XMLElement.new('table', 'align' => 'center',
-                                   'class' => 'table'))
-        tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-        if showDetails
-          # Table of all attributes with checkmarks for being scenario
-          # specific, inherited from parent and inherited from global scope.
-          tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
-                                 'rowspan' =>
-                                 "#{@optionalAttributes.length + 1}",
-                                 'style' => 'width:15%')
-          tr << XMLNamedText.new('Name', 'td', 'class' => 'tag',
-                                 'style' => 'width:40%')
-          tr << XMLNamedText.new('Scen. spec.', 'td', 'class' => 'tag',
-                                 'style' => 'width:15%')
-          tr << XMLNamedText.new('Inh. fm. Global', 'td', 'class' => 'tag',
-                                 'style' => 'width:15%')
-          tr << XMLNamedText.new('Inh. fm. Parent', 'td', 'class' => 'tag',
-                                 'style' => 'width:15%')
-          @optionalAttributes.each do |attr|
-            tab << (tr = XMLElement.new('tr', 'align' => 'left'))
-            tr << (td = XMLElement.new('td', 'class' => 'descr'))
-            keywordHTMLRef(td, attr)
-            tr << (td = XMLElement.new('td', 'align' => 'center',
-                                       'class' => 'descr'))
-            td << XMLText.new('x') if attr.scenarioSpecific
-            tr << (td = XMLElement.new('td', 'align' => 'center',
-                                       'class' => 'descr'))
-            td << XMLText.new('x') if attr.inheritedFromProject
-            tr << (td = XMLElement.new('td', 'align' => 'center',
-                                       'class' => 'descr'))
-            td << XMLText.new('x') if attr.inheritedFromParent
-          end
-        else
-          # Comma separated list of all attributes.
-          tr << XMLNamedText.new('Attributes', 'td', 'class' => 'tag',
-                                 'style' => 'width:15%')
-          tr << (td = XMLElement.new('td', 'class' => 'descr',
-                                     'style' => 'width:85%'))
-          first = true
-          @optionalAttributes.each do |attr|
-            if first
-              first = false
-            else
-              td << XMLText.new(', ')
-            end
-            keywordHTMLRef(td, attr)
-          end
-        end
-      end
-
-      if @pattern.exampleFile
-        exampleDir = AppConfig.dataDirs('test')[0] + "TestSuite/Syntax/Correct/"
-        example = TjpExample.new
-        fileName = "#{exampleDir}/#{@pattern.exampleFile}.tjp"
-        example.open(fileName)
-        bbox << (frame = XMLElement.new('div', 'class' => 'codeframe'))
-        frame << (pre = XMLElement.new('pre', 'class' => 'code'))
-        unless (text = example.to_s(@pattern.exampleTag))
-          raise "There is no tag '#{@pattern.exampleTag}' in file " +
-            "#{fileName}."
-        end
-        pre << XMLText.new(text)
-      end
-
-      body << generateHTMLNavigationBar
-      body << @manual.generateHTMLFooter
 
       if directory
         html.write(directory + "#{keyword}.html")
@@ -570,6 +404,234 @@ class TaskJuggler
 
     def format(indent, str, width)
       TextFormatter.new(width, indent).format(str)[indent..-1]
+    end
+
+    def generateHTMLKeywordBox
+      # Box with keyword name.
+      P.new do
+        TABLE.new('align' => 'center', 'class' => 'table') do
+          TR.new('align' => 'left') do
+            [
+              TD.new({ 'class' => 'tag',
+                       'style' => 'width:16%'}) { 'Keyword' },
+              TD.new({ 'class' => 'descr',
+                       'style' => 'width:84%; font-weight:bold' }) { title }
+            ]
+          end
+        end
+      end
+    end
+
+    def generateHTMLDescriptionBox
+      # Box with purpose, syntax, arguments and context.
+      P.new do
+        TABLE.new({ 'align' => 'center', 'class' => 'table' }) do
+          [
+            COLGROUP.new do
+              [
+                COL.new('width' => '16%'),
+                COL.new('width' => '24%'),
+                COL.new('width' => '60%')
+              ]
+            end,
+            generateHTMLPurposeLine,
+            generateHTMLSyntaxLine,
+            generateHTMLArgumentsLine,
+            generateHTMLContextLine,
+            generateHTMLAlsoLine
+          ]
+        end
+      end
+    end
+
+    def generateHTMLPurposeLine
+      generateHTMLTableLine('Purpose', newRichText(@pattern.doc).to_html)
+    end
+
+    def generateHTMLSyntaxLine
+      if @syntax != '[{ <attributes> }]'
+        generateHTMLTableLine('Syntax', CODE.new { @syntax })
+      end
+    end
+
+    def generateHTMLArgumentsLine
+      return nil unless @syntax != '[{ <attributes> }]'
+
+      if @args.empty?
+        generateHTMLTableLine('Arguments', 'none')
+      else
+        rows = []
+        first = true
+        @args.each do |arg|
+          if first
+            col1 = 'Arguments'
+            col1rows = @args.length
+            first = false
+          else
+            col1 = col1rows = nil
+          end
+          if arg.typeSpec.nil? || ('<' + arg.name + '>') == arg.typeSpec
+            col2 = "#{arg.name}"
+          else
+            typeSpec = arg.typeSpec
+            typeName = typeSpec[1..-2]
+            typeSpec[0] = '['
+            typeSpec[-1] = ']'
+            col2 = [
+              "#{arg.name} [",
+              A.new('href' =>
+                    "The_TaskJuggler_Syntax.html" +
+                    "\##{typeName}") { typeName },
+              ']'
+            ]
+          end
+          col3 = newRichText(arg.text ||
+                             "See [[#{arg.name}]] for details.").to_html
+          rows << generateHTMLTableLine(col1, col2, col3, col1rows)
+        end
+        rows
+      end
+    end
+
+    def generateHTMLContextLine
+      if @contexts.empty?
+        descr = A.new('href' =>
+                      'Getting_Started.html#Structure_of_a_TJP_File') do
+                        'Global scope'
+                      end
+      else
+        descr = []
+        @contexts.each do |c|
+          descr << ', ' unless descr.empty?
+          descr << A.new('href' => "#{c.keyword}.html") { c.title }
+        end
+      end
+      generateHTMLTableLine('Context', descr)
+    end
+
+    def generateHTMLAlsoLine
+      unless @seeAlso.empty?
+        descr = []
+        @seeAlso.each do |a|
+          descr << ', ' unless descr.empty?
+          descr << A.new('href' => "#{a.keyword}.html") { a.title }
+        end
+        generateHTMLTableLine('See also', descr)
+      end
+    end
+
+    def generateHTMLTableLine(col1, col2, col3 = nil, col1rows = nil)
+      TR.new('align' => 'left') do
+        columns = []
+        attrs = { 'class' => 'tag' }
+        attrs['rowspan'] = col1rows.to_s if col1rows
+        columns << TD.new(attrs) { col1 } if col1
+        attrs = { 'class' => 'descr' }
+        attrs['colspan'] = '2' unless col3
+        columns << TD.new(attrs) { col2 }
+        columns << TD.new('class' => 'descr') { col3 } if col3
+        columns
+      end
+    end
+
+    def generateHTMLOptionalAttributesBox
+      # Box with attributes.
+      unless @optionalAttributes.empty?
+        @optionalAttributes.sort! do |a, b|
+          a.keyword <=> b.keyword
+        end
+
+        showDetails = false
+        @optionalAttributes.each do |attr|
+          if attr.scenarioSpecific || attr.inheritedFromProject ||
+             attr.inheritedFromParent
+            showDetails = true
+            break
+          end
+        end
+
+        P.new do
+          TABLE.new('align' => 'center', 'class' => 'table') do
+            if showDetails
+              # Table of all attributes with checkmarks for being scenario
+              # specific, inherited from parent and inherited from global
+              # scope.
+              rows = []
+              rows << COLGROUP.new do
+                [ 16, 24, 20, 20, 20 ].map { |p| COL.new('width' => "#{p}%") }
+              end
+              rows <<  TR.new('align' => 'left') do
+                  [
+                    TD.new('class' => 'tag',
+                           'rowspan' => "#{@optionalAttributes.length + 1}") do
+                      'Attributes'
+                    end,
+                    TD.new('class' => 'tag') { 'Name' },
+                    TD.new('class' => 'tag') { 'Scen. spec.' },
+                    TD.new('class' => 'tag') { 'Inh. fm. Global' },
+                    TD.new('class' => 'tag') { 'Inh. fm. Parent' }
+                  ]
+              end
+
+              @optionalAttributes.each do |attr|
+                rows << TR.new('align' => 'left') do
+                  [
+                    TD.new('align' => 'left', 'class' => 'descr') do
+                      A.new('href' => "#{attr.keyword}.html") { attr.title }
+                    end,
+                    TD.new('align' => 'center', 'class' => 'descr') do
+                      'x' if attr.scenarioSpecific
+                    end,
+                    TD.new('align' => 'center', 'class' => 'descr') do
+                      'x' if attr.inheritedFromProject
+                    end,
+                    TD.new('align' => 'center', 'class' => 'descr') do
+                      'x' if attr.inheritedFromParent
+                    end
+                  ]
+                end
+              end
+              rows
+            else
+              # Comma separated list of all attributes.
+              TR.new('align' => 'left') do
+                [
+                  TD.new('class' => 'tag', 'style' => 'width:16%') do
+                    'Attributes'
+                  end,
+                  TD.new('class' => 'descr', 'style' => 'width:84%') do
+                    list = []
+                    @optionalAttributes.each do |attr|
+                      list << ', ' unless list.empty?
+                      list << A.new('href' => "#{attr.keyword}.html") do
+                        attr.title
+                      end
+                    end
+                    list
+                  end
+                ]
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def generateHTMLExampleBox
+      if @pattern.exampleFile
+        exampleDir = AppConfig.dataDirs('test')[0] + "TestSuite/Syntax/Correct/"
+        example = TjpExample.new
+        fileName = "#{exampleDir}/#{@pattern.exampleFile}.tjp"
+        example.open(fileName)
+        unless (text = example.to_s(@pattern.exampleTag))
+          raise "There is no tag '#{@pattern.exampleTag}' in file " +
+            "#{fileName}."
+        end
+
+        DIV.new('class' => 'codeframe') do
+          PRE.new('class' => 'code') { text }
+        end
+      end
     end
 
   end

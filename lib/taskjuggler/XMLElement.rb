@@ -40,6 +40,8 @@ class TaskJuggler
       # automatically converted into Arrays here.
       unless @children.is_a?(Array)
         @children = [ @children ]
+      else
+        @children.flatten!
       end
 
       # Convert all children that are text String objects into XMLText
@@ -50,6 +52,14 @@ class TaskJuggler
 
       # Make sure we have no nil objects in the list.
       @children.delete_if { |c| c.nil? }
+
+      # Now all children must be XMLElement objects.
+      @children.each do |c|
+        unless c.is_a?(XMLElement)
+          raise ArgumentError,
+            "Element must be of type XMLElement, not #{c.class}: #{c.inspect}"
+        end
+      end
     end
 
     # Add a new child or a set of new childs to the element.
@@ -66,8 +76,8 @@ class TaskJuggler
         # Check that the rest are really all XMLElement objects.
         arg.each do |i|
           unless i.is_a?(XMLElement)
-            raise "Element must be of type XMLElement not #{i.class}: " +
-                  "#{i.inspect}"
+            raise ArgumentError,
+              "Element must be of type XMLElement, not #{i.class}: #{i.inspect}"
           end
         end
         @children += arg

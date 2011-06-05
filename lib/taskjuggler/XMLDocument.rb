@@ -22,13 +22,22 @@ class TaskJuggler
   class XMLDocument
 
     # Create an empty XML document.
-    def initialize
-      @elements = []
+    def initialize(&block)
+      @elements = block ? yield(block) : []
     end
 
     # Add a top-level XMLElement.
-    def <<(element)
-      @elements << element
+    def <<(arg)
+      if arg.is_a?(Array)
+        @elements += arg.flatten
+      elsif arg.nil?
+        # do nothing
+      elsif arg.is_a?(XMLElement)
+        @elements << arg
+      else
+        raise ArgumentError, "Unsupported argument of type #{arg.class}: " +
+                             "#{arg.inspect}"
+      end
     end
 
     # Produce the XMLDocument as String.
