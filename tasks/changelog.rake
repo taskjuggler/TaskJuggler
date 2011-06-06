@@ -62,9 +62,9 @@ task :CHANGELOG do
 
     # We use RDOC markup syntax to generate a title
     if version
-      text += "= Release #{version} (#{date})\n\n"
+      text += "= Release #{version} (#{date})\n\n" + logText
     else
-      text += "= Next Release (Some Day)\n\n"
+      text += "= Next Release (Some Day)\n\n" + logText
     end
     sections << text
   end
