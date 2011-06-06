@@ -1,0 +1,8 @@
+project "Test" 2011-06-06 +1m
+
+task "Foo" {
+# MARK: error 6 runaway_token
+  note -8<-
+    This note never
+    ends...
+

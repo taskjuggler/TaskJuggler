@@ -219,6 +219,8 @@ class TaskJuggler::TextParser
       @patternsByMode = { }
       # The currently active scanner mode.
       @scannerMode = nil
+      # The mode that the scanner is in at the start and end of file
+      @defaultMode = defaultMode
       # Points to the currently active pattern set as defined by the mode.
       @activePatterns = nil
 
@@ -408,6 +410,14 @@ class TaskJuggler::TextParser
           @activePatterns.each do |type, re, postProc|
             if (match = @cf.scan(re))
               if match == :scannerEOF
+                if @scannerMode != @defaultMode
+                  # The stream resets the line number to 1. Since we still
+                  # know the start of the token, we setup @lineDelta so that
+                  # sourceFileInfo() returns the proper line number.
+                  @lineDelta = -(@startOfToken.lineNo - 1)
+                  error('runaway_token',
+                        "Unterminated token starting at #{@startOfToken}")
+                end
                 # We've found the end of an input file. Return a special token
                 # that describes the end of a file.
                 @finishLastFile = true
