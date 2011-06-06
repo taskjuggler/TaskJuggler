@@ -19,6 +19,7 @@ task :CHANGELOG do
   # Get list of release tags from Git repository
   releases = `git tag`.split("\n").map { |r| r.chomp }.
     sort{ |a, b| compareTags(a, b) }
+  releases << 'HEAD'
 
   # Now we get the commit entries for each release
   sections = []
@@ -36,9 +37,8 @@ task :CHANGELOG do
     # Get the date of the release
     date = Time.parse(/Date: (.*)/.match(`git show #{release}`)[1]).utc
     date = date.strftime("%Y-%m-%d")
-    # We use RDOC markup syntax to generate a title
-    text += "= Release #{version} (#{date})\n\n"
 
+    logText = ''
     # Use -z option for git-log to get 0 bytes as separators.
     `git log -z #{interval}`.split("\0").each do |commit|
       # We ignore merges.
@@ -54,7 +54,17 @@ task :CHANGELOG do
       message.gsub!(/Signed-off-by: .*\n/, '')
       message.strip!
 
-      text += "  * #{message}\n"
+      logText += "  * #{message}\n"
+    end
+
+    # Skip the release if there are no changes. E. g. HEAD at release.
+    next if logText.empty?
+
+    # We use RDOC markup syntax to generate a title
+    if version
+      text += "= Release #{version} (#{date})\n\n"
+    else
+      text += "= Next Release (Some Day)\n\n"
     end
     sections << text
   end
