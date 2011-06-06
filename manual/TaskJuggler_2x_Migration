@@ -2,6 +2,26 @@
 
 This section will cover changes between TaskJuggler 2.x and 3.x.
 
+* The syntax for macros has changed slightly. The terminating
+''''<nowiki>]</nowiki>'''' must be the last character before the
+line break. No spaces or comments are allowed here. Parameters of
+macro calls must always be enclosed by double quotes. In contrast to
+regular strings, single quotes are not allowed here. The parameter
+may not span multiple lines.
+
+* The ''''projection'''' attribute has been removed. The
+is now provided by [[trackingscenario]].
+
+* The default working hours have been changed to 9:00 - 17:00.
+
+* IDs for properties such as tasks, resources and reports are now
+optional. If you don't need to reference a property, you can omit the
+ID. TaskJuggler will automatically assign an ID then.
+
+* Top-level accounts no longer need a ''''cost'''' or ''''revenue''''
+attribute. Any two top level accounts can now be balanced against
+each other using the [[balance]] attribute in the report.
+
 * The ''''shift'''' attribute for tasks and resources has been
 renamed to ''''shifts'''' to allow support for multiple shifts.
 
@@ -10,24 +30,32 @@ tasks and resources have a ''''limits'''' attribute, a global
 attribute was inconsistent as only resources inherited this
 attribute. Use a parent resource to emulate the old behaviour.
 
+* Shifts and limits for allocations have been deprecated. The concept
+was bogus and not compatible with bookings. The functionality is
+now provided by [[shifts.task|shifts]] and [[limits.task|limits]] on the
+task level. Limits for a task can be [[resources.limit|selectively
+applied]] to certain resources.
+
 * The ''''startbuffer'''' and ''''endbuffer'''' attributes have been
 deprecated. They have not been widely used and had no impact on
 scheduling.
-
-* The ''''barlabels'''' attribute for reports is no longer needed.
-HTML reports have always empty Gantt-chart bars and the calendar
-reports always have values.
 
 * The project attribute ''''allowredifinitions'''' has been dropped.
 It was an ugly workaround for a rare corner case. Using [[supplement]] is
 the clean way to do this.
 
 * Camel case names for function names in logical expressions have
-been deprecated. Function names need to be all lower case now.
+been deprecated. Function names need to be all lower case now. Some
+functions have been removed as all attributes can now be accessed by
+scenario.attribute_id notation.
 
-* Top-level accounts no longer need a ''''cost'''' or ''''revenue''''
-attribute. Any two top level accounts can now be balanced against
-each other using the [[balance]] attribute in the report.
+* The format for [[report|reports]] has been changed considerably.
+The old format was not very flexible and had some design flaws.
+TaskJuggler III now supports report nesting and composition. A report
+definition can be used to generated multiple output [[formats]]. The
+name of a report must now be specified without the file name
+extension. It will be automatically added depending on the output
+format.
 
 * The sorting modes have been extended to include the scenario. Also,
 the sorting direction is no longer mangled with the attribute name.
@@ -39,11 +67,9 @@ longer supported. The naming was inconsistent with TaskJuggler lingo
 and did not handle tasks and resources separately. It has been
 replaced with [[taskattributes]] and [[resourceattributes]].
 
-* Shifts and limits for allocations have been deprecated. The concept
-was bogus and not compatible with bookings. The functionality is
-now provided by [[shifts.task|shifts]] and [[limits.task|limits]] on the
-task level. Limits for a task can be [[resources.limit|selectively
-applied]] to certain resources.
+* The ''''barlabels'''' attribute for reports is no longer needed.
+HTML reports have always empty Gantt-chart bars and the calendar
+reports always have values.
 
 * Support for reading and writing XML files is no longer available.
 The content was redundant with the TJP file format and it was not
@@ -51,25 +77,6 @@ widely used. Keeping it in sync was too much of an effort to be worth
 it. There is nothing in the TJ3 design that would prevent this
 feature from being added again, but there are no plans for this right
 now.
-
-* The format for [[report|reports]] has been changed considerably.
-The old format was not very flexible and had some design flaws.
-TaskJuggler III now supports report nesting and composition. A report
-definition can be used to generated multiple output [[formats]]. The
-name of a report must now be specified without the file name
-extension. It will be automatically added depending on the output
-format.
-
-* IDs for properties such as tasks, resources and reports are now
-optional. If you don't need to reference a property, you can omit the
-ID. TaskJuggler will automatically assign an ID then.
-
-* The syntax for macros has changed slightly. The terminating
-''''<nowiki>]</nowiki>'''' must be the last character before the
-line break. No spaces or comments are allowed here. Parameters of
-macro calls must always be enclosed by double quotes. In contrast to
-regular strings, single quotes are not allowed here. The parameter
-may not span multiple lines.
 
 === Using TaskJuggler 2.x and TaskJuggler 3.x in parallel ===
 
