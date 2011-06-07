@@ -143,7 +143,7 @@ class TaskJuggler
       html = HTMLDocument.new
       head = html.generateHead('TaskJuggler Syntax Reference Navigator')
       head << XMLElement.new('base', 'target' => 'display')
-      html << (body = XMLElement.new('body'))
+      html.html << (body = XMLElement.new('body'))
 
       body << XMLNamedText.new('Table Of Contents', 'a', 'href' => 'toc.html')
       body << XMLElement.new('br', {}, true)
@@ -172,7 +172,7 @@ class TaskJuggler
       html = HTMLDocument.new
       head = html.generateHead('TaskJuggler Syntax Reference Navigator')
       head << XMLElement.new('base', 'target' => 'navigator')
-      html << (body = XMLElement.new('body'))
+      html.html << (body = XMLElement.new('body'))
 
       body << (h3 = XMLElement.new('h3'))
       letters.each do |l|

@@ -314,7 +314,7 @@ class TaskJuggler
                                  'taskjuggler, project, management' })
       head << @manual.generateStyleSheet
 
-      html << BODY.new do
+      html.html << BODY.new do
         [
           @manual.generateHTMLHeader,
           generateHTMLNavigationBar,

@@ -264,7 +264,7 @@ EOT
       head << (style = XMLElement.new('style', 'type' => 'text/css'))
       style << XMLBlob.new("\n" + cssFile)
 
-      html << (body = XMLElement.new('body'))
+      html.html << (body = XMLElement.new('body'))
       body << message.to_html
 
       html.to_s

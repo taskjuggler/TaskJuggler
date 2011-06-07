@@ -126,7 +126,7 @@ class TaskJuggler
     def generateHTMLTableOfContents(directory)
       html = HTMLDocument.new
       head = html.generateHead('Index')
-      html << (body = XMLElement.new('body'))
+      html.html << (body = XMLElement.new('body'))
 
       body << generateHTMLCover <<
         @toc.to_html <<

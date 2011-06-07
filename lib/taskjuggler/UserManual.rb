@@ -197,7 +197,7 @@ class TaskJuggler
                           'A reference and user manual for the ' +
                           'TaskJuggler project management software.',
                           'keywords' => 'taskjuggler, manual, reference'})
-      html << FRAMESET.new('cols' => '15%, 85%') do
+      html.html << FRAMESET.new('cols' => '15%, 85%') do
         [
           FRAMESET.new('rows' => '15%, 85%') do
             [

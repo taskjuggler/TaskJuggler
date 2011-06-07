@@ -79,7 +79,7 @@ class TaskJuggler
       head = html.generateHead(@name)
       head << @document.generateStyleSheet
 
-      html << (body = XMLElement.new('body'))
+      html.html << (body = XMLElement.new('body'))
       body << @document.generateHTMLHeader
       body << generateHTMLNavigationBar
 

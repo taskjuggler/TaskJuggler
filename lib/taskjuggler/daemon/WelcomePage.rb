@@ -71,7 +71,7 @@ EOT
       rti.sectionNumbers = false
       page = HTMLDocument.new
       page.generateHead("Welcome to TaskJuggler")
-      page << rti.to_html
+      page.html << rti.to_html
       @res['content-type'] = 'text/html'
       @res.body = page.to_s
     end
