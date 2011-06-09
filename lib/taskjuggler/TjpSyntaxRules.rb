@@ -1495,6 +1495,67 @@ EOT
        )
     also(%w( sorttasks ))
   end
+  def rule_iCalReport
+    pattern(%w( !iCalReportHeader !iCalReportBody ), lambda {
+      @property = nil
+    })
+    doc('icalreport', <<'EOT'
+Generates an RFC5546 compliant iCalendar file. This file can be used to export
+task information to calendar applications or other tools that read iCalendar
+files.
+EOT
+       )
+  end
+  def rule_iCalReportBody
+    optionsRule('iCalReportAttributes')
+  end
+
+  def rule_iCalReportAttributes
+    optional
+    repeatable
+
+    pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
+    pattern(%w( !reportEnd ))
+    pattern(%w( !reportPeriod ))
+    pattern(%w( !reportStart ))
+    pattern(%w( !rollupresource ))
+    pattern(%w( !rolluptask ))
+
+    pattern(%w( _scenario !scenarioId ), lambda {
+      # Don't include disabled scenarios in the report
+      @val[1].delete_if { |sc| !@project.scenario(sc).get('active') }
+      @property.set('scenarios', @val[1])
+    })
+    doc('scenario.ical', <<'EOT'
+Id of the scenario that should be included in the report. By default, the
+top-level scenario will be included. This attribute can be used select another
+scenario.
+EOT
+       )
+  end
+
+  def rule_iCalReportHeader
+    pattern(%w( _icalreport !optionalID $STRING ), lambda {
+      report = newReport(@val[1], @val[2], :iCal, sourceFileInfo)
+
+      @property.set('formats', [ :iCal ])
+      # By default, we export only the first scenario.
+      report.set('scenarios', [ 0 ])
+      # Show all tasks, sorted by seqno-up.
+      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      # Show all resources, sorted by seqno-up.
+      report.set('hideResource',
+                  LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the report file to generate without an extension.  Use . to use
+the standard output channel.
+EOT
+       )
+  end
 
   def rule_idOrAbsoluteId
     singlePattern('$ID')
@@ -2852,6 +2913,7 @@ Declare one or more flag for later use. Flags can be used to mark tasks, resourc
 EOT
        )
 
+    pattern(%w( !iCalReport ))
     pattern(%w( !propertiesInclude ))
 
     pattern(%w( !limits ), lambda {

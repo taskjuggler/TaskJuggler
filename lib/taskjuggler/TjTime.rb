@@ -114,6 +114,11 @@ class TaskJuggler
       TjTime.new((localtime.to_i / clock) * clock)
     end
 
+    # Return the time object in UTC.
+    def utc
+      TjTime.new(@time.dup.gmtime)
+    end
+
     # Returns the total number of seconds of the day. The time is assumed to be
     # in the time zone specified by _tz_.
     def secondsOfDay(tz = nil)

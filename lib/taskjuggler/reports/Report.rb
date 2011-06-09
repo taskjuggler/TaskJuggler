@@ -21,6 +21,7 @@ require 'taskjuggler/reports/TjpExportRE'
 require 'taskjuggler/reports/StatusSheetReport'
 require 'taskjuggler/reports/TimeSheetReport'
 require 'taskjuggler/reports/NikuReport'
+require 'taskjuggler/reports/ICalReport'
 require 'taskjuggler/reports/CSVFile'
 require 'taskjuggler/reports/Navigator'
 require 'taskjuggler/reports/ReportContext'
@@ -65,6 +66,8 @@ class TaskJuggler
         end
 
         case format
+        when :iCal
+          generateICal
         when :html
           generateHTML
           copyAuxiliaryFiles
@@ -90,6 +93,8 @@ class TaskJuggler
       case @typeSpec
       when :export
         @content = TjpExportRE.new(self)
+      when :iCal
+        @content = ICalReport.new(self)
       when :niku
         @content = NikuReport.new(self)
       when :resourcereport
@@ -290,6 +295,25 @@ EOT
         f.puts "#{@content.to_niku}"
       rescue IOError
         error('write_niku', "Cannot write to file #{@name}.\n#{$!}")
+      end
+    end
+
+    # Generate Niku report
+    def generateICal
+      unless @content.respond_to?('to_iCal')
+        warning('ical_not_supported',
+                "iCalendar format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
+      begin
+        f = @name == '.' ? $stdout :
+          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
+                    @name + '.ical').untaint, 'w')
+        f.puts "#{@content.to_iCal}"
+      rescue IOError
+        error('write_ical', "Cannot write to file #{@name}.\n#{$!}")
       end
     end
 
