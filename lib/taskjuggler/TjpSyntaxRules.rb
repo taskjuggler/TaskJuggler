@@ -1269,7 +1269,7 @@ EOT
 
         # We allow multiple instances of flag definitions.
         begin
-          @property['flags', @scenarioIdx] << flag
+          @property['flags', @scenarioIdx] += [ flag ]
         rescue AttributeOverwrite
         end
       end
