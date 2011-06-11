@@ -15,15 +15,81 @@ require 'taskjuggler/Tj3Config'
 
 class TaskJuggler
 
-  # This class implements a very basic RFC5546 compliant iCalendar file
+  # This class implements a very basic RFC5545 compliant iCalendar file
   # generator. It currently only supports a very small subset of the tags that
   # are needed for TaskJuggler.
   class ICalendar
 
-    # Stores the data of an VTODO record and can generate one.
-    class Todo
+    # The maximum allowed length of a content line without line end character.
+    LINELENGTH = 75
 
-      attr_accessor :description, :relatedTo, :priority, :percentComplete
+    class Person < Struct.new(:name, :email)
+    end
+
+    # Base class for all ICalendar components.
+    class Component
+
+      attr_accessor :description, :relatedTo, :organizer
+
+      def initialize(ical, uid, summary, startDate)
+        @ical = ical
+        @uid = uid
+        @summary = summary
+        @startDate = startDate
+
+        # Optional attributes
+        @description = nil
+        @relatedTo = nil
+        @organizer = nil
+        @attendees = []
+      end
+
+      def setOrganizer(name, email)
+        @organizer = Person.new(name, email)
+      end
+
+      def addAttendee(name, email)
+        @attendees << Person.new(name, email)
+      end
+
+      def to_s
+        str = <<"EOT"
+DTSTAMP:#{dateTime(TjTime.new.utc)}
+CREATED:#{dateTime(@ical.creationDate)}
+UID:#{@uid}
+LAST-MODIFIED:#{dateTime(@ical.lastModified)}
+SUMMARY:#{quoted(@summary)}
+DTSTART:#{dateTime(@startDate)}
+EOT
+        str += "DESCRIPTION:#{quoted(@description)}\n" if @description
+        str += "RELATED-TO:#{@relatedTo}\n" if @relatedTo
+
+        if @organizer
+          str += "ORGANIZER;CN=#{@organizer.name}:mailto:#{@organizer.email}\n"
+        end
+        @attendees.each do |attendee|
+          str += "ATTENDEE;CN=#{attendee.name}:mailto:#{attendee.email}\n"
+        end
+
+        str
+      end
+
+      private
+
+      def dateTime(date)
+        @ical.dateTime(date)
+      end
+
+      def quoted(str)
+        str.gsub(/([;,"\\])/, '\\\\\1').gsub(/\n/, '\n')
+      end
+
+    end
+
+    # Stores the data of an VTODO component and can generate one.
+    class Todo < Component
+
+      attr_accessor :priority, :percentComplete
       attr_reader :uid
 
       # Create the Todo object with some mandatory data. _ical_ is a reference
@@ -32,54 +98,37 @@ class TaskJuggler
       # is used to generate DTSTART. _endDate_ is used to either generate
       # the COMPLETED or DUE tag.
       def initialize(ical, uid, summary, startDate, endDate)
+        super(ical, uid, summary, startDate)
+
         # Mandatory attributes
-        @ical = ical
         @ical.addTodo(self)
-        @uid = uid
-        @summary = summary
-        @startDate = startDate
         @endDate = endDate
-        # Optional attributes
-        @description = nil
-        @relatedTo = nil
-        @priority = 1
+        # Priority value (0 - 9)
+        @priority = 0
         @percentComplete = -1
       end
 
       # Generate the VTODO record as String.
       def to_s
-        str = <<"EOT"
-BEGIN:VTODO
-DTSTAMP:#{@ical.dateToRFC(TjTime.new.utc)}
-CREATED:#{@ical.dateToRFC(TjTime.new.utc)}
-UID: #{@uid}
-LAST-MODIFIED:#{@ical.dateToRFC(TjTime.new.utc)}
-SUMMARY:#{@summary}
-PRIORITY:#{@priority}
-DTSTART:#{@ical.dateToRFC(@startDate)}
-EOT
-         str += "DESCRIPTION:#{@description}\n" if @description
-         str += "RELATED-TO:#{@relatedTo}\n" if @relatedTo
-
-         if @percentComplete < 0
-           str += "DUE:#{@ical.dateToRFC(@endDate)}\n"
-         else
-           str += "COMPLETED:#{@ical.dateToRFC(@completed)}\n"
-         end
-         str += <<"EOT"
+        str = "BEGIN:VTODO\n"
+        str += super
+        if @percentComplete < 100.0
+          str += "DUE:#{dateTime(@endDate)}\n"
+        else
+          str += "COMPLETED:#{dateTime(@endDate)}\n"
+        end
+        str += <<"EOT"
 PERCENT-COMPLETE:#{@percentComplete}
 END:VTODO
 
 EOT
-         str
+        str
       end
 
     end
 
-    # Stores the data of an VTODO record and can generate one.
-    class Event
-
-      attr_accessor :description
+    # Stores the data of an VTODO component and can generate one.
+    class Event < Component
 
       # Create the Event object with some mandatory data. _ical_ is a
       # reference to the parent ICalendar object. _uid_ is a unique pattern
@@ -87,36 +136,22 @@ EOT
       # _startDate_ is used to generate DTSTART. _endDate_ is used to either
       # generate the COMPLETED or DUE tag.
       def initialize(ical, uid, summary, startDate, endDate)
-        # Mandatory attributes
-        @ical = ical
+        super(ical, uid, summary, startDate)
         @ical.addEvent(self)
-        @uid = uid
-        @summary = summary
-        @startDate = startDate
+
+        # Mandatory attributes
         @endDate = endDate
         # Optional attributes
-        @description = nil
         @priority = 1
-        @percentComplete = -1
       end
 
       # Generate the VEVENT record as String.
       def to_s
-        str = <<"EOT"
-BEGIN:VEVENT
-DTSTAMP:#{@ical.dateToRFC(TjTime.new.utc)}
-CREATED:#{@ical.dateToRFC(TjTime.new.utc)}
-UID: #{@uid}
-LAST-MODIFIED:#{@ical.dateToRFC(TjTime.new.utc)}
-SUMMARY:#{@summary}
+        str = "BEGIN:VEVENT\n"
+        str += super
+        str += <<"EOT"
 PRIORITY:#{@priority}
-DTSTART:#{@ical.dateToRFC(@startDate)}
-DTEND:#{@ical.dateToRFC(@endDate)}
-EOT
-         if @description
-           str += "DESCRIPTION:#{@description}\n"
-         end
-         str += <<"EOT"
+DTEND:#{dateTime(@endDate)}
 TRANSP:TRANSPARENT
 END:VEVENT
 
@@ -127,17 +162,22 @@ EOT
     end
 
     attr_reader :uid
+    attr_accessor :creationDate, :lastModified
 
     def initialize(uid)
-      @uid = uid
+      @uid = "#{AppConfig.packageName}-#{uid}"
+      @creationDate = @lastModified = TjTime.new.utc
+
       @todos = []
       @events = []
     end
 
+    # Add a now VTODO component. For internal use only!
     def addTodo(todo)
       @todos << todo
     end
 
+    # Add a now VEVENT component. For internal use only!
     def addEvent(event)
       @events << event
     end
@@ -145,8 +185,9 @@ EOT
     def to_s
       str = <<"EOT"
 BEGIN:VCALENDAR
-PRODID:-//#{AppConfig.softwareName}/#{AppConfig.packageName} #{AppConfig.version}//EN
+PRODID:-//The #{AppConfig.softwareName} Project/NONSGML #{AppConfig.softwareName} #{AppConfig.version}//EN
 VERSION:2.0
+
 EOT
       @todos.each { |todo| str += todo.to_s }
       @events.each { |event| str += event.to_s }
@@ -155,12 +196,35 @@ EOT
 END:VCALENDAR
 EOT
 
-      # Convert all '\n' to '\r\n'
-      str.gsub(/\n/, "\r\n")
+      foldLines(str)
     end
 
-    def dateToRFC(date)
+    def dateTime(date)
       date.to_s("%Y%m%dT%H%M%SZ")
+    end
+
+    private
+
+    # Make sure that no line is longer than LINELENTH octets (excl. the
+    # newline character)
+    def foldLines(str)
+      newStr = ''
+      str.each_line do |line|
+        bytes = 0
+        line.each_utf8_char do |c|
+          # Make sure we support Ruby 1.8 and 1.9 String handling.
+          cBytes = c.bytesize
+          if bytes + cBytes > LINELENGTH && c != "\n"
+            newStr += "\n "
+            bytes = 0
+          else
+            bytes += cBytes
+          end
+          newStr << c
+        end
+      end
+      # Convert line ends to CR+LF
+      newStr.gsub(/\n/, "\r\n")
     end
 
   end

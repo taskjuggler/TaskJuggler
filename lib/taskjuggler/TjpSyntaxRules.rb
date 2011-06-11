@@ -1500,7 +1500,7 @@ EOT
       @property = nil
     })
     doc('icalreport', <<'EOT'
-Generates an RFC5546 compliant iCalendar file. This file can be used to export
+Generates an RFC5545 compliant iCalendar file. This file can be used to export
 task information to calendar applications or other tools that read iCalendar
 files.
 EOT

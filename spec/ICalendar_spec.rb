@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby -w
+# encoding: UTF-8
+#
+# = IntervalList_spec.rb -- The TaskJuggler III Project Management Software
+#
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+#               by Chris Schlaeger <chris@linux.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+
+require 'rubygems'
+
+require 'taskjuggler/ICalendar'
+
+class TaskJuggler
+
+  describe ICalendar do
+
+    describe ICalendar::Component do
+
+      it 'should quote properly' do
+        c = ICalendar::Component.new(nil, nil, nil, nil)
+        [
+          [ '', '' ],
+          [ 'foo', 'foo' ],
+          [ '"', '\"' ],
+          [ ';', '\;' ],
+          [ ',', '\,' ],
+          [ "\n", '\n' ],
+          [ "foo\nbar", 'foo\nbar' ],
+          [ 'a"b"c', 'a\"b\"c' ]
+        ].each do |i, o|
+          c.send('quoted', i).should == o
+        end
+      end
+
+    end
+
+  end
+
+end
+
