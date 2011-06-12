@@ -1515,6 +1515,7 @@ EOT
     repeatable
 
     pattern(%w( !hideresource ))
+    pattern(%w( !hidejournalentry ))
     pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
@@ -1549,6 +1550,9 @@ EOT
       report.set('hideResource',
                   LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      # Show all journal entries.
+      report.set('hideJournalEntry',
+                 LogicalExpression.new(LogicalOperation.new(0)))
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate without an extension.  Use . to use

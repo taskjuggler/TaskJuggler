@@ -23,6 +23,7 @@ class TaskJuggler
     # The maximum allowed length of a content line without line end character.
     LINELENGTH = 75
 
+    # Utility class to store name and email of a person.
     class Person < Struct.new(:name, :email)
     end
 
@@ -30,10 +31,12 @@ class TaskJuggler
     class Component
 
       attr_accessor :description, :relatedTo, :organizer
+      attr_reader :uid
 
       def initialize(ical, uid, summary, startDate)
         @ical = ical
-        @uid = uid
+        @type = self.class.to_s.split('::').last.upcase
+        @uid = uid + "-#{@type}"
         @summary = summary
         @startDate = startDate
 
@@ -54,6 +57,7 @@ class TaskJuggler
 
       def to_s
         str = <<"EOT"
+BEGIN:V#{@type}
 DTSTAMP:#{dateTime(TjTime.new.utc)}
 CREATED:#{dateTime(@ical.creationDate)}
 UID:#{@uid}
@@ -71,7 +75,9 @@ EOT
           str += "ATTENDEE;CN=#{attendee.name}:mailto:#{attendee.email}\n"
         end
 
-        str
+        str += yield if block_given?
+
+        str += "END:V#{@type}\n\n"
       end
 
       private
@@ -90,7 +96,6 @@ EOT
     class Todo < Component
 
       attr_accessor :priority, :percentComplete
-      attr_reader :uid
 
       # Create the Todo object with some mandatory data. _ical_ is a reference
       # to the parent ICalendar object. _uid_ is a unique pattern used to
@@ -110,19 +115,15 @@ EOT
 
       # Generate the VTODO record as String.
       def to_s
-        str = "BEGIN:VTODO\n"
-        str += super
-        if @percentComplete < 100.0
-          str += "DUE:#{dateTime(@endDate)}\n"
-        else
-          str += "COMPLETED:#{dateTime(@endDate)}\n"
+        super do
+          str = ''
+          if @percentComplete < 100.0
+            str += "DUE:#{dateTime(@endDate)}\n"
+          else
+            str += "COMPLETED:#{dateTime(@endDate)}\n"
+          end
+          str += "PERCENT-COMPLETE:#{@percentComplete}\n"
         end
-        str += <<"EOT"
-PERCENT-COMPLETE:#{@percentComplete}
-END:VTODO
-
-EOT
-        str
       end
 
     end
@@ -147,16 +148,26 @@ EOT
 
       # Generate the VEVENT record as String.
       def to_s
-        str = "BEGIN:VEVENT\n"
-        str += super
-        str += <<"EOT"
+        super do
+          <<"EOT"
 PRIORITY:#{@priority}
 DTEND:#{dateTime(@endDate)}
 TRANSP:TRANSPARENT
-END:VEVENT
-
 EOT
-         str
+        end
+      end
+
+    end
+
+    class Journal < Component
+
+      def initialize(ical, uid, summary, startDate)
+        super
+        @ical.addJournal(self)
+      end
+
+      def to_s
+        super
       end
 
     end
@@ -170,16 +181,22 @@ EOT
 
       @todos = []
       @events = []
+      @journals = []
     end
 
-    # Add a now VTODO component. For internal use only!
+    # Add a new VTODO component. For internal use only!
     def addTodo(todo)
       @todos << todo
     end
 
-    # Add a now VEVENT component. For internal use only!
+    # Add a new VEVENT component. For internal use only!
     def addEvent(event)
       @events << event
+    end
+
+    # Add a new VJOURNAL component. For internal user only!
+    def addJournal(journal)
+      @journals << journal
     end
 
     def to_s
@@ -191,6 +208,7 @@ VERSION:2.0
 EOT
       @todos.each { |todo| str += todo.to_s }
       @events.each { |event| str += event.to_s }
+      @journals.each { |journal| str += journal.to_s }
 
       str << <<"EOT"
 END:VCALENDAR

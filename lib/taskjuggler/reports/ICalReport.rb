@@ -64,17 +64,17 @@ class TaskJuggler
         @query.scenarioIdx = scenarioIdx
         @query.process
         todo.percentComplete = @query.to_num.to_i
-        # We must conver the TJ priority range (1 - 1000) to iCalendar range
+        # We must convert the TJ priority range (1 - 1000) to iCalendar range
         # (0 - 9).
         todo.priority = (task['priority', scenarioIdx] - 1) / 100
-        todo.relatedTo = uidMap[task.parent] if task.parent
+        # If there is a parent task and it's known already, we set the
+        # relation in the TODO component.
+        if task.parent && uidMap[task.parent]
+          todo.relatedTo = uidMap[task.parent]
+        end
         # If we have a task note, use this for the DESCRIPTION property.
         if (note = task.get('note'))
-          if note.respond_to?('functionHandler')
-            note.setQuery(@query)
-          end
           note = note.to_s
-
           todo.description = note
         end
         # Check if we have a responsible resource with an email address. Since
@@ -107,6 +107,21 @@ class TaskJuggler
           end
         end
 
+        # Generate VJOURNAL entries for all the journal entries of this task.
+        @report.project['journal'].
+          entriesByTask(task, a('start'), a('end'),
+                        a('hideJournalEntry')).each do |entry|
+          journal = ICalendar::Journal.new(
+            @ical, "#{task['projectid', scenarioIdx]}-#{task.fullId}",
+            entry.headline, entry.date)
+          journal.relatedTo = uidMap[task]
+          journal.description = entry.summary.to_s + entry.details.to_s
+          # Set the author of the journal entry as organizer.
+          if (author = entry.author) && resourceList.include?(author) &&
+             author.get('email')
+            journal.setOrganizer(author.name, author.get('email'))
+          end
+        end
       end
     end
 

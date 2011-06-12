@@ -22,7 +22,7 @@ class TaskJuggler
     describe ICalendar::Component do
 
       it 'should quote properly' do
-        c = ICalendar::Component.new(nil, nil, nil, nil)
+        c = ICalendar::Component.new(nil, '', nil, nil)
         [
           [ '', '' ],
           [ 'foo', 'foo' ],
