@@ -852,22 +852,46 @@ class TaskJuggler
       limit = @project[forward ? 'end' : 'start']
       # Number of seconds per time slot.
       slotDuration = @project['scheduleGranularity']
-      slot = nextSlot(slotDuration)
+
+      # Compute the date of the next slot this task wants to have scheduled.
+      # This must either be the first slot ever or it must be directly
+      # adjecent to the previous slot. If this task has not yet been scheduled
+      # at all, @lastSlot is still nil. Otherwise it contains the date of the
+      # last scheduled slot.
+      if a('forward')
+        # On first call, the @lastSlot is not set yet. We set it to the start
+        # slot.
+        if @lastSlot.nil?
+          @lastSlot = a('start')
+          @tentativeEnd = @lastSlot + slotDuration
+        else
+          @lastSlot += slotDuration
+        end
+      else
+        # On first call, the @lastSlot is not set yet. We set it to the slot
+        # to the end slot.
+        if @lastSlot.nil?
+          @lastSlot = a('end') - slotDuration
+          @tentativeStart = @lastSlot - slotDuration
+        else
+          @lastSlot -= slotDuration
+        end
+      end
 
       # Schedule all time slots from slot in the scheduling direction until
       # the task is completed or a problem has been found.
-      while !scheduleSlot(slot, slotDuration)
+      while !scheduleSlot(slotDuration)
         if forward
           # The task is scheduled from start to end.
-          slot += slotDuration
-          if slot > limit
+          @lastSlot += slotDuration
+          if @lastSlot > limit
             markAsRunaway
             return false
           end
         else
           # The task is scheduled from end to start.
-          slot -= slotDuration
-          if slot < limit
+          @lastSlot -= slotDuration
+          if @lastSlot < limit
             markAsRunaway
             return false
           end
@@ -1531,41 +1555,32 @@ class TaskJuggler
     end
 
   private
-    def scheduleSlot(slot, slotDuration)
+    def scheduleSlot(slotDuration)
       # Tasks must always be scheduled in a single contigous fashion. @lastSlot
       # indicates the slot that was used for the previous call. Depending on the
       # scheduling direction the next slot must be scheduled either right before
       # or after this slot. If the current slot is not directly aligned, we'll
       # wait for another call with a proper slot. The function returns true
       # only if a slot could be scheduled.
-      if a('forward')
-        # On first call, the @lastSlot is not set yet. We set it to the slot
-        # before the start slot.
-        if @lastSlot.nil?
-          @lastSlot = a('start') - slotDuration
-          @tentativeEnd = slot + slotDuration
+      if a('effort') > 0
+        bookResources(@lastSlot, slotDuration) if @doneEffort < a('effort')
+        if @doneEffort >= a('effort')
+          # The specified effort has been reached. The task has been fully
+          # scheduled now.
+          if a('forward')
+            propagateDate(@tentativeEnd, true, true)
+          else
+            propagateDate(@tentativeStart, false, true)
+          end
+          return true
         end
-
-        return false unless slot == @lastSlot + slotDuration
-      else
-        # On first call, the @lastSlot is not set yet. We set it to the slot
-        # to the end slot.
-        if @lastSlot.nil?
-          @lastSlot = a('end')
-          @tentativeStart = slot
-        end
-
-        return false unless slot == @lastSlot - slotDuration
-      end
-      @lastSlot = slot
-
-      if a('length') > 0 || a('duration') > 0
+      elsif a('length') > 0 || a('duration') > 0
         # The doneDuration counts the number of scheduled slots. It is increased
         # by one with every scheduled slot. The doneLength is only increased for
         # global working time slots.
-        bookResources(slot, slotDuration)
+        bookResources(@lastSlot, slotDuration)
         @doneDuration += 1
-        if @project.isWorkingTime(slot, slot + slotDuration)
+        if @project.isWorkingTime(@lastSlot, @lastSlot + slotDuration)
           @doneLength += 1
         end
 
@@ -1574,21 +1589,9 @@ class TaskJuggler
         if (a('length') > 0 && @doneLength >= a('length')) ||
            (a('duration') > 0 && @doneDuration >= a('duration'))
           if a('forward')
-            propagateDate(slot + slotDuration, true)
+            propagateDate(@lastSlot + slotDuration, true)
           else
-            propagateDate(slot, false)
-          end
-          return true
-        end
-      elsif a('effort') > 0
-        bookResources(slot, slotDuration) if @doneEffort < a('effort')
-        if @doneEffort >= a('effort')
-          # The specified effort has been reached. The task has been fully
-          # scheduled now.
-          if a('forward')
-            propagateDate(@tentativeEnd, true, true)
-          else
-            propagateDate(@tentativeStart, false, true)
+            propagateDate(@lastSlot, false)
           end
           return true
         end
@@ -1611,12 +1614,12 @@ class TaskJuggler
           return true
         end
 
-        bookResources(slot, slotDuration)
+        bookResources(@lastSlot, slotDuration)
 
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
-        if (a('forward') && slot + slotDuration >= a('end')) ||
-           (!a('forward') && slot <= a('start'))
+        if (a('forward') && @lastSlot + slotDuration >= a('end')) ||
+           (!a('forward') && @lastSlot <= a('start'))
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
@@ -1626,20 +1629,6 @@ class TaskJuggler
       end
 
       false
-    end
-
-    # Return the date of the next slot this task wants to have scheduled. This
-    # must either be the first slot ever or it must be directly adjecent to the
-    # previous slot. If this task has not yet been scheduled at all, @lastSlot
-    # is still nil. Otherwise it contains the date of the last scheduled slot.
-    def nextSlot(slotDuration)
-      return nil if a('scheduled') || @isRunAway
-
-      if a('forward')
-        @lastSlot.nil? ? a('start') : @lastSlot + slotDuration
-      else
-        @lastSlot.nil? ? a('end') - slotDuration : @lastSlot - slotDuration
-      end
     end
 
     def bookResources(date, slotDuration)
