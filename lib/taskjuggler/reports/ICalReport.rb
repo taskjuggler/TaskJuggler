@@ -117,7 +117,7 @@ class TaskJuggler
           journal.relatedTo = uidMap[task]
           journal.description = entry.summary.to_s + entry.details.to_s
           # Set the author of the journal entry as organizer.
-          if (author = entry.author) && resourceList.include?(author) &&
+          if (author = entry.author) && @resourceList.include?(author) &&
              author.get('email')
             journal.setOrganizer(author.name, author.get('email'))
           end
