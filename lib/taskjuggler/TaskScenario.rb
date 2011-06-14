@@ -1555,6 +1555,7 @@ class TaskJuggler
     end
 
   private
+
     def scheduleSlot(slotDuration)
       # Tasks must always be scheduled in a single contigous fashion. @lastSlot
       # indicates the slot that was used for the previous call. Depending on the
@@ -1636,8 +1637,7 @@ class TaskJuggler
       # In projection mode we do not allow allocations prior to the current
       # date. If the scenario is not scheduled in projection mode, this
       # restriction only applies to tasks with bookings.
-      if a('allocate').empty? ||
-         ((@project.scenario(@scenarioIdx).get('projection') ||
+      if ((@project.scenario(@scenarioIdx).get('projection') ||
           !a('booking').empty?) &&
           date < @project['now'])
         return
