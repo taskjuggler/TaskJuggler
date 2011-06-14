@@ -294,7 +294,8 @@ class TaskJuggler
 
         # Since 'booking' is a task attribute, we need a special handling if
         # we want to list them in the resource context.
-        if a('resourceAttributes').include?('booking')
+        if a('resourceAttributes').include?('booking') &&
+           a('resourceAttributes')[0] != '*'
           a('scenarios').each do |scenarioIdx|
             generateBookingsByResource(resource, 2, scenarioIdx)
           end

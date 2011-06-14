@@ -939,7 +939,8 @@ Define a list of resource attributes that should be included in the report.
 EOT
        )
     allOrNothingListRule('exportableResourceAttributes',
-                         { 'vacation' => 'Include vacations',
+                         { 'booking' => 'Include bookings',
+                           'vacation' => 'Include vacations',
                            'workinghours' => 'Include working hours' })
 
     pattern(%w( !rollupresource ))
