@@ -147,7 +147,7 @@ EOT
         end
 
         # Check for freeze mode and generate the booking file if requested.
-        tj.freeze(@freezeDate) if @freeze
+        return 1 if @freeze && tj.freeze(@freezeDate) && tj.errors > 0
 
         return 0 if @noReports
 
