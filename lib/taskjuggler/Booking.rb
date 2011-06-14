@@ -40,8 +40,8 @@ class TaskJuggler
       end
     end
 
-    def to_tjp
-      out = "#{@resource.fullId} "
+    def to_tjp(taskMode)
+      out = taskMode ? "#{@task.fullId} " : "#{@resource.fullId} "
       first = true
       @intervals.each do |iv|
         if first

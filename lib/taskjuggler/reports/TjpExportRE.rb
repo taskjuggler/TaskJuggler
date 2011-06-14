@@ -26,7 +26,7 @@ class TaskJuggler
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority
                                 projectid responsible )
-      @supportedResourceAttrs = %w( flags vacation workinghours )
+      @supportedResourceAttrs = %w( booking flags vacation workinghours )
     end
 
     def generateIntermediateFormat
@@ -274,7 +274,6 @@ class TaskJuggler
     def generateResourceAttributes
       @resourceList.each do |resource|
         Log.activity if resource.sequenceNo % 100 == 0
-
         @file << "supplement resource #{resource.fullId} {\n"
         @project.resources.eachAttributeDefinition do |attrDef|
           id = attrDef.id
@@ -285,10 +284,19 @@ class TaskJuggler
           if attrDef.scenarioSpecific
             a('scenarios').each do |scenarioIdx|
               next if inheritable?(resource, id, scenarioIdx)
+
               generateAttribute(resource, id, 2, scenarioIdx)
             end
           else
             generateAttribute(resource, id, 2)
+          end
+        end
+
+        # Since 'booking' is a task attribute, we need a special handling if
+        # we want to list them in the resource context.
+        if a('resourceAttributes').include?('booking')
+          a('scenarios').each do |scenarioIdx|
+            generateBookingsByResource(resource, 2, scenarioIdx)
           end
         end
 
@@ -326,7 +334,7 @@ class TaskJuggler
               when 'depends'
                 next     # already taken care of
               when 'booking'
-                generateBooking(task, 2, scenarioIdx)
+                generateBookingsByTask(task, 2, scenarioIdx)
               else
                 generateAttribute(task, id, 2, scenarioIdx)
               end
@@ -363,7 +371,8 @@ class TaskJuggler
     # report.
     def getBookings
       @bookings = {}
-      if a('taskAttributes').include?('booking')
+      if a('taskAttributes').include?('booking') ||
+         a('resourceAttributes').include?('booking')
         a('scenarios').each do |scenarioIdx|
           @bookings[scenarioIdx] = {}
           @resourceList.each do |resource|
@@ -387,7 +396,7 @@ class TaskJuggler
       end
     end
 
-    def generateBooking(task, indent, scenarioIdx)
+    def generateBookingsByTask(task, indent, scenarioIdx)
       return unless @bookings[scenarioIdx].include?(task)
 
       # Convert Hash into an [ Resource, Booking ] Array sorted by Resource
@@ -397,9 +406,22 @@ class TaskJuggler
       end
 
       resourceBookings.each do |resourceId, booking|
-        generateAttributeText('booking ' + booking.to_tjp, indent, scenarioIdx)
+        generateAttributeText('booking ' + booking.to_tjp(false), indent,
+                              scenarioIdx)
       end
     end
+
+    def generateBookingsByResource(resource, indent, scenarioIdx)
+      # Get the bookings for this resource hashed by task.
+      bookings = resource.getBookings(scenarioIdx,
+                                      Interval.new(a('start'), a('end')))
+      bookings.keys.sort { |a, b| a.fullId <=> a.fullId }.each do |task|
+        next unless @taskList.include?(task)
+        generateAttributeText('booking ' + bookings[task].to_tjp(true), indent,
+                              scenarioIdx)
+      end
+    end
+
 
     # This utility function is used to indent multi-line attributes. All
     # attributes should be filtered through this function. Attributes that

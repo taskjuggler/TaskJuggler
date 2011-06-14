@@ -206,7 +206,7 @@ class TaskJuggler
   end
 
   # Generate an export report definition for bookings up to the _freezeDate_.
-  def freeze(freezeDate)
+  def freeze(freezeDate, taskBookings)
     begin
       # Check the master file is really a file and not stdin.
       unless (masterFile = @project.inputFiles.masterFile)
@@ -264,8 +264,15 @@ class TaskJuggler
       report.set('sortResources', [ [ 'seqno', true, -1 ] ])
       # Only generate bookings, no other attributes or definitions.
       report.set('definitions', [])
-      report.set('taskAttributes', [ 'booking' ])
-      report.set('resourceAttributes', [])
+      # We group the bookings by task or by resource depending on the user
+      # request.
+      if taskBookings
+        report.set('taskAttributes', [ 'booking' ])
+        report.set('resourceAttributes', [])
+      else
+        report.set('taskAttributes', [])
+        report.set('resourceAttributes', [ 'booking' ])
+      end
     rescue TjException
       return false
     end

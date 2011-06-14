@@ -39,6 +39,8 @@ class TaskJuggler
       @freeze = false
       # The cut-off date for the freeze
       @freezeDate = TjTime.new.align(3600)
+      # Should bookings be grouped by Task or by Resource (default).
+      @freezeByTask = false
       # Don't generate any reports.
       @noReports = false
       # The directory where generated reports should be put in.
@@ -85,6 +87,11 @@ EOT
           rescue TjException => msg
             error("Invalid freeze date: #{msg}")
           end
+        end
+        @opts.on('--freezebytask',
+                 format('Group the bookings in the booking file generated ' +
+                        'during a freeze by task instead of by resource.')) do
+          @freezeByTask = true
         end
         @opts.on('--check-time-sheet <tji-file>', String,
                 format("Check the given time sheet")) do |arg|
@@ -147,7 +154,8 @@ EOT
         end
 
         # Check for freeze mode and generate the booking file if requested.
-        return 1 if @freeze && tj.freeze(@freezeDate) && tj.errors > 0
+        return 1 if @freeze && tj.freeze(@freezeDate, @freezeByTask) &&
+                    tj.errors > 0
 
         return 0 if @noReports
 
