@@ -440,14 +440,14 @@ class TaskJuggler
         if a('start') < parent['start', @scenarioIdx]
           error('task_start_in_parent',
                 "The start date (#{a('start')}) of task #{@property.fullId} " +
-                "is before the start date of the enclosing task " +
-                "#{parent['start', @scenarioIdx]}. ")
+                "is before the start date (#{parent['start', @scenarioIdx]}) " +
+                "of the enclosing task.")
         end
         if a('end') > parent['end', @scenarioIdx]
           error('task_end_in_parent',
                 "The end date (#{a('end')}) of task #{@property.fullId} " +
-                "is after the end date of the enclosing task " +
-                "#{parent['end', @scenarioIdx]}. ")
+                "is after the end date (#{parent['end', @scenarioIdx]}) " +
+                "of the enclosing task.")
         end
       end
 
@@ -458,8 +458,8 @@ class TaskJuggler
         next if limit.nil?
         if a('start') < limit
           error('task_pred_before',
-                "Task #{@property.fullId} must start after " +
-                "#{dependency.onEnd ? 'end' : 'start'} of task " +
+                "Task #{@property.fullId} (#{a('start')}) must start after " +
+                "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
                 "#{task.fullId}.")
         end
         if dependency.gapDuration > 0
@@ -494,8 +494,9 @@ class TaskJuggler
         next if limit.nil?
         if limit < a('end')
           error('task_succ_after',
-                "Task #{@property.fullId} must end before " +
-                "#{dependency.onEnd ? 'end' : 'start'} of task #{task.fullId}.")
+                "Task #{@property.fullId} (#{a('end')}) must end before " +
+                "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
+                "#{task.fullId}.")
         end
         if dependency.gapDuration > 0
           if limit - dependency.gapDuration < a('end')
