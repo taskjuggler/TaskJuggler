@@ -153,7 +153,7 @@ class TaskJuggler
     # +value+ is the new limit value (in time slots). In case the interval
     # is nil, the complete project time frame is used.
     def setLimit(name, value, interval = nil, resource = nil)
-      iv = interval || Interval.new(@project['start'], @project['end'])
+      iv = interval || TimeInterval.new(@project['start'], @project['end'])
       # If we have already a limit for the name + interval + resource
       # combination, we delete it first.
       @limits.delete_if do |l|

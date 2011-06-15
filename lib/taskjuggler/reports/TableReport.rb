@@ -488,7 +488,7 @@ class TaskJuggler
                            t.send(name1Func) == currentInterval)
           # call TjTime::sameTimeNext... function to get the end of the column.
           nextT = t.send(sameTimeNextFunc)
-          iv = Interval.new(t, nextT)
+          iv = TimeInterval.new(t, nextT)
           # Create the new column object.
           column = ReportTableColumn.new(table, nil, '')
           # Store the date of the column in the original form.
@@ -736,8 +736,8 @@ class TaskJuggler
       # scheduling problem, we use the full project interval.
       taskStart = task['start', origQuery.scenarioIdx]
       taskEnd = task['end', origQuery.scenarioIdx]
-      taskIv = Interval.new(taskStart.nil? ?  @project['start'] : taskStart,
-                            taskEnd.nil? ?  @project['end'] : taskEnd)
+      taskIv = TimeInterval.new(taskStart.nil? ?  @project['start'] : taskStart,
+                                taskEnd.nil? ?  @project['end'] : taskEnd)
 
       firstCell = nil
       while t < @end
@@ -747,7 +747,7 @@ class TaskJuggler
         query = origQuery.dup
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
-        cellIv = Interval.new(t, nextT)
+        cellIv = TimeInterval.new(t, nextT)
         case columnDef.content
         when 'empty'
           # Create a new cell
@@ -814,8 +814,9 @@ class TaskJuggler
         # scheduling problem, we use the full project interval.
         taskStart = task['start', origQuery.scenarioIdx]
         taskEnd = task['end', origQuery.scenarioIdx]
-        taskIv = Interval.new(taskStart.nil? ?  @project['start'] : taskStart,
-                              taskEnd.nil? ?  @project['end'] : taskEnd)
+        taskIv = TimeInterval.new(taskStart.nil? ? @project['start'] :
+                                                   taskStart,
+                                  taskEnd.nil? ?  @project['end'] : taskEnd)
       else
         task = nil
       end
@@ -832,7 +833,7 @@ class TaskJuggler
 
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
-        cellIv = Interval.new(t, nextT)
+        cellIv = TimeInterval.new(t, nextT)
         # Get work load for all tasks.
         query.scopeProperty = nil
         query.attributeId = 'effort'

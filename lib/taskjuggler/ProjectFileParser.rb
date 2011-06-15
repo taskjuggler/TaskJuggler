@@ -132,8 +132,8 @@ class TaskJuggler
       end
     end
 
-    # Convenience function to check that an Interval fits completely within the
-    # project time frame.
+    # Convenience function to check that an TimeInterval fits completely
+    # within the project time frame.
     def checkInterval(iv)
       # Make sure the interval is within the project time frame.
       if iv.start < @project['start'] || iv.start >= @project['end']

@@ -289,7 +289,7 @@ EOT
       end
 
       if @val[1].nil?
-        intervals = [ Interval.new(@project['start'], @project['end']) ]
+        intervals = [ TimeInterval.new(@project['start'], @project['end']) ]
       else
         intervals = @val[1]
       end
@@ -1668,12 +1668,12 @@ EOT
             error('start_before_end', "The end date (#{endSpec}) must be " +
                   "after the start date (#{@val[0]}).", @sourceFileInfo[0])
           end
-          Interval.new(@val[0], endSpec)
+          TimeInterval.new(@val[0], endSpec)
         else
-          Interval.new(@val[0], @val[0] + endSpec)
+          TimeInterval.new(@val[0], @val[0] + endSpec)
         end
       else
-        Interval.new(@val[0], @val[0].sameTimeNextDay)
+        TimeInterval.new(@val[0], @val[0].sameTimeNextDay)
       end
     })
     doc('interval3', <<'EOT'
@@ -1699,9 +1699,9 @@ EOT
           error('start_before_end', "The end date (#{endSpec}) must be after " +
                 "the start date (#{@val[0]}).", @sourceFileInfo[0])
         end
-        Interval.new(@val[0], endSpec)
+        TimeInterval.new(@val[0], endSpec)
       else
-        Interval.new(@val[0], @val[0] + endSpec)
+        TimeInterval.new(@val[0], @val[0] + endSpec)
       end
     })
     doc('interval2', <<'EOT'
@@ -1909,7 +1909,7 @@ EOT
 
   def rule_limitValue
     pattern([ '!workingDuration' ], lambda {
-      @limitInterval = Interval.new(@project['start'], @project['end'])
+      @limitInterval = TimeInterval.new(@project['start'], @project['end'])
       @limitResources = []
       @val[0]
     })
@@ -4314,7 +4314,7 @@ EOT
       sa.project = @project
 
       if @val[1].nil?
-        intervals = [ Interval.new(@project['start'], @project['end']) ]
+        intervals = [ TimeInterval.new(@project['start'], @project['end']) ]
       else
         intervals = @val[1]
       end
@@ -6142,12 +6142,12 @@ EOT
                   "after the start date (#{@val[0]}).",
                   @sourceFileInfo[1])
           end
-          iv = Interval.new(@val[0], endSpec)
+          iv = TimeInterval.new(@val[0], endSpec)
         else
-          iv = Interval.new(@val[0], @val[0] + endSpec)
+          iv = TimeInterval.new(@val[0], @val[0] + endSpec)
         end
       else
-        iv = Interval.new(@val[0], @val[0].sameTimeNextDay)
+        iv = TimeInterval.new(@val[0], @val[0].sameTimeNextDay)
       end
       checkInterval(iv)
       iv
@@ -6178,9 +6178,9 @@ EOT
           error('start_before_end', "The end date (#{endSpec}) must be after " +
                 "the start date (#{@val[0]}).", @sourceFileInfo[1])
         end
-        iv = Interval.new(@val[0], endSpec)
+        iv = TimeInterval.new(@val[0], endSpec)
       else
-        iv = Interval.new(@val[0], @val[0] + endSpec)
+        iv = TimeInterval.new(@val[0], @val[0] + endSpec)
       end
       checkInterval(iv)
       iv

@@ -378,8 +378,8 @@ class TaskJuggler
           @bookings[scenarioIdx] = {}
           @resourceList.each do |resource|
             # Get the bookings for this resource hashed by task.
-            bookings = resource.getBookings(scenarioIdx,
-                                            Interval.new(a('start'), a('end')))
+            bookings = resource.getBookings(
+              scenarioIdx, TimeInterval.new(a('start'), a('end')))
             next if bookings.nil?
 
             # Now convert/add them to a tripple-stage hash by scenarioIdx, task
@@ -415,7 +415,7 @@ class TaskJuggler
     def generateBookingsByResource(resource, indent, scenarioIdx)
       # Get the bookings for this resource hashed by task.
       bookings = resource.getBookings(scenarioIdx,
-                                      Interval.new(a('start'), a('end')))
+                                      TimeInterval.new(a('start'), a('end')))
       bookings.keys.sort { |a, b| a.fullId <=> a.fullId }.each do |task|
         next unless @taskList.include?(task)
         generateAttributeText('booking ' + bookings[task].to_tjp(true), indent,

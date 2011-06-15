@@ -317,7 +317,7 @@ class TaskJuggler
     # resource int the chart. Depending on the resolution, the only periods with
     # a duration above the threshold are shown.
     def generateTimeOffZones
-      iv = Interval.new(@chart.start, @chart.end)
+      iv = TimeInterval.new(@chart.start, @chart.end)
       # Don't show any zones if the threshold for this scale is 0 or smaller.
       return if (minTimeOff = @chart.scale['minTimeOff']) <= 0
 

@@ -54,8 +54,8 @@ class TestLimits < Test::Unit::TestCase
   def test_inc
     l = Limits.new
     l.setProject(@p)
-    l.setLimit('weeklymax', 2, Interval.new(TjTime.new('2009-02-10'),
-                                            TjTime.new('2009-02-15')))
+    l.setLimit('weeklymax', 2, TimeInterval.new(TjTime.new('2009-02-10'),
+                                                TjTime.new('2009-02-15')))
     # Outside of limit interval, should be ignored
     l.inc(TjTime.new('2009-02-05-10:00'))
     l.inc(TjTime.new('2009-02-20-10:00'))

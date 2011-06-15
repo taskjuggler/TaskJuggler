@@ -136,7 +136,7 @@ class TaskJuggler
               true,  true,    true,  TjTime.timeZone ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'vacations', 'Vacations',    IntervalListAttribute,
+        [ 'vacations', 'Vacations',    TimeIntervalListAttribute,
               true,  true,    true,  [] ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
@@ -200,7 +200,7 @@ class TaskJuggler
               true, false,    true,  nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'vacations',  'Vacations',   IntervalListAttribute,
+        [ 'vacations',  'Vacations',   TimeIntervalListAttribute,
               true,  true,    true,  [] ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
               false, false,   false, [] ],
@@ -793,21 +793,21 @@ class TaskJuggler
     #   isWorkingTime(interval) -> true or false
     #
     # Return true if the _slot_ (TjTime) is withing globally defined working
-    # time or false if not. If the argument is an Interval, all slots of the
-    # interval must be working time to return true as result. Global work time
-    # means, no vacation defined and the slot lies within a defined working time
-    # period.
+    # time or false if not. If the argument is a TimeInterval, all slots of
+    # the interval must be working time to return true as result. Global work
+    # time means, no vacation defined and the slot lies within a defined
+    # working time period.
     def isWorkingTime(*args)
-      # Normalize argument(s) to Interval
+      # Normalize argument(s) to TimeInterval
       if args.length == 1
-        if args[0].is_a?(Interval)
+        if args[0].is_a?(TimeInterval)
           iv = args[0]
         else
-          iv = Interval.new(args[0], args[0] +
+          iv = TimeInterval.new(args[0], args[0] +
                             @attributes['scheduleGranularity'])
         end
       else
-        iv = Interval.new(args[0], args[1])
+        iv = TimeInterval.new(args[0], args[1])
       end
 
       # Check if the interval has overlap with any of the global vacations.

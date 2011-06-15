@@ -39,8 +39,8 @@ class TestPropertySet < Test::Unit::TestCase
     sas1.project = @p
     assert_equal(0, TaskJuggler::ShiftAssignments.scoreboards.length)
     sas1.addAssignment(sa1 = TaskJuggler::ShiftAssignment.new(@s1,
-      TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
-                                TaskJuggler::TjTime.new('2008-08-05'))))
+      TaskJuggler::TimeInterval.new(TaskJuggler::TjTime.new('2008-08-01'),
+                                    TaskJuggler::TjTime.new('2008-08-05'))))
     assert_equal(1, TaskJuggler::ShiftAssignments.scoreboards.length)
 
     # Call finalizer directly to check for runtime errors that would otherwise
@@ -54,22 +54,22 @@ class TestPropertySet < Test::Unit::TestCase
     sas1.project = @p
     assert_equal(0, TaskJuggler::ShiftAssignments.scoreboards.length)
     sas1.addAssignment(TaskJuggler::ShiftAssignment.new(@s1,
-      TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
-                                TaskJuggler::TjTime.new('2008-08-05'))))
+      TaskJuggler::TimeInterval.new(TaskJuggler::TjTime.new('2008-08-01'),
+                                    TaskJuggler::TjTime.new('2008-08-05'))))
 
     sas2 = TaskJuggler::ShiftAssignments.new
     sas2.project = @p
     sas2.addAssignment(TaskJuggler::ShiftAssignment.new(@s1,
-      TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
-                                TaskJuggler::TjTime.new('2008-08-05'))))
+      TaskJuggler::TimeInterval.new(TaskJuggler::TjTime.new('2008-08-01'),
+                                    TaskJuggler::TjTime.new('2008-08-05'))))
 
     assert_equal(1, TaskJuggler::ShiftAssignments.scoreboards.length)
 
     sas3 = TaskJuggler::ShiftAssignments.new
     sas3.project = @p
     sas3.addAssignment(TaskJuggler::ShiftAssignment.new(@s2,
-      TaskJuggler::Interval.new(TaskJuggler::TjTime.new('2008-08-01'),
-                                TaskJuggler::TjTime.new('2008-08-05'))))
+      TaskJuggler::TimeInterval.new(TaskJuggler::TjTime.new('2008-08-01'),
+                                    TaskJuggler::TjTime.new('2008-08-05'))))
 
     assert_equal(2, TaskJuggler::ShiftAssignments.scoreboards.length)
 

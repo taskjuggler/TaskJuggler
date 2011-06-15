@@ -1332,7 +1332,8 @@ class TaskJuggler
       list = []
       a('assignedresources').each do |resource|
         if resource.allocated?(@scenarioIdx,
-                               Interval.new(query.start, query.end), @property)
+                               TimeInterval.new(query.start, query.end),
+                               @property)
           if query.listItem
             rti = RichText.new(query.listItem, RTFHandlers.create(@project),
                                @project.messageHandler).
@@ -1466,7 +1467,7 @@ class TaskJuggler
       @dCache.cached(key) do
         workLoad = @dCache.load(key)
         il = IntervalList.new
-        il << Interval.new(@project['start'], @project['end'])
+        il << TimeInterval.new(@project['start'], @project['end'])
         if @property.leaf?
           unless (resources = a('assignedresources')).empty?
             # The task has assigned resources, so we can use their common time
@@ -1787,7 +1788,7 @@ class TaskJuggler
 
     # Register the user provided bookings with the Resource scoreboards. A
     # booking describes the assignment of a Resource to a certain Task for a
-    # specified Interval.
+    # specified TimeInterval.
     def bookBookings
       scheduled = a('scheduled')
       slotDuration = @project['scheduleGranularity']
@@ -2272,7 +2273,7 @@ class TaskJuggler
             @project.idxToDate(startIdx)
           endDate = endIdx.is_a?(TjTime) ? endIdx :
             @project.idxToDate(endIdx)
-          iv = Interval.new(startDate, endDate)
+          iv = TimeInterval.new(startDate, endDate)
           a('charge').each do |charge|
             otherCost += charge.turnover(iv)
           end

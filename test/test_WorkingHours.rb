@@ -165,8 +165,8 @@ class TestLimits < Test::Unit::TestCase
       [ '2010-09-20-17:00', '2010-09-21-10:00' ]
     ]
     workTimes.each do |iv|
-      assert(!wh.timeOff?(Interval.new(TjTime.new(iv[0]),
-                                       TjTime.new(iv[1]))),
+      assert(!wh.timeOff?(TimeInterval.new(TjTime.new(iv[0]),
+                                           TjTime.new(iv[1]))),
              "Work time interval #{iv[0]} - #{iv[1]} failed")
     end
 
@@ -178,8 +178,8 @@ class TestLimits < Test::Unit::TestCase
     ]
 
     offTimes.each do |iv|
-      assert(wh.timeOff?(Interval.new(TjTime.new(iv[0]),
-                                      TjTime.new(iv[1]))),
+      assert(wh.timeOff?(TimeInterval.new(TjTime.new(iv[0]),
+                                          TjTime.new(iv[1]))),
              "Off time interval #{iv[0]} - #{iv[1]} failed")
     end
   end

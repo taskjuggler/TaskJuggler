@@ -33,11 +33,11 @@ class TaskJuggler
             si += 1
           elsif self[si].end < list[li].end
             # self[si] does overlap with list[li] but list[li] goes further
-            res << Interval.new(list[li].start, self[si].end)
+            res << TimeInterval.new(list[li].start, self[si].end)
             si += 1
           else
             # self[si] does overlap with list[li] but self[si] goes further
-            res << Interval.new(list[li].start, list[li].end)
+            res << TimeInterval.new(list[li].start, list[li].end)
             li += 1
           end
         elsif list[li].start < self[si].start
@@ -48,11 +48,11 @@ class TaskJuggler
             li += 1
           elsif list[li].end < self[si].end
             # list[li] does overlap with self[si] but self[si] goes further
-            res << Interval.new(self[si].start, list[li].end)
+            res << TimeInterval.new(self[si].start, list[li].end)
             li += 1
           else
             # list[li] does overlap with self[si] but list[li] goes further
-            res << Interval.new(self[si].start, self[si].end)
+            res << TimeInterval.new(self[si].start, self[si].end)
             si += 1
           end
         else
@@ -86,7 +86,7 @@ class TaskJuggler
           raise "Intervals may not overlap and must be added in " +
                 "ascending order."
         elsif last.end == iv.start
-          self[-1] = Interval.new(last.start, iv.end)
+          self[-1] = TimeInterval.new(last.start, iv.end)
           return self
         end
       end

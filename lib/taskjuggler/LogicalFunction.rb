@@ -195,12 +195,12 @@ class TaskJuggler
       end
 
       query = expr.query
-      iv1 = Interval.new(query.start, query.end)
+      iv1 = TimeInterval.new(query.start, query.end)
       tStart = task['start', scenarioIdx]
       tEnd = task['end', scenarioIdx]
       # This helps to show tasks with scheduling errors.
       return true unless tStart && tEnd
-      iv2 = Interval.new(tStart, tEnd)
+      iv2 = TimeInterval.new(tStart, tEnd)
 
       return iv1.overlaps?(iv2)
     end

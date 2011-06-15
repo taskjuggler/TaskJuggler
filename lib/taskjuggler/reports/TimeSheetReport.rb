@@ -241,9 +241,9 @@ EOT
 
         assignedTaskList.each do |task|
           # Time sheet task records only make sense for leaf tasks.
-          reportIv = Interval.new(from, to)
-          taskIv = Interval.new(task['start', scenarioIdx],
-                                task['end', scenarioIdx])
+          reportIv = TimeInterval.new(from, to)
+          taskIv = TimeInterval.new(task['start', scenarioIdx],
+                                    task['end', scenarioIdx])
           next if !task.leaf? || !reportIv.overlaps?(taskIv)
 
           queryAttrs['property'] = task

@@ -22,7 +22,7 @@ class TaskJuggler
       super
     end
 
-    # Compute the turnover for the _period_. Period should be an Interval.
+    # Compute the turnover for the _period_. Period should be a TimeInterval.
     def turnover(period)
       amount = 0.0
       if container?

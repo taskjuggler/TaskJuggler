@@ -15,28 +15,28 @@ require 'taskjuggler/TjTime'
 
 class TaskJuggler
 
-  # The Interval class provides objects that model a time interval. The start
-  # end end time are represented as seconds after Jan 1, 1970. The start is part
-  # of the interval, the end is not.
-  class Interval
+  # The TimeInterval class provides objects that model a time interval. The
+  # start end end time are represented as seconds after Jan 1, 1970. The start
+  # is part of the interval, the end is not.
+  class TimeInterval
 
     attr_accessor :start, :end
 
-    # Create a new Interval. _args_ can be three different kind of arguments.
+    # Create a new TimeInterval. _args_ can be three different kind of arguments.
     #
     # a and b should be TjTime objects.
     #
-    # Interval.new(a, b)  | -> Interval(a, b)
-    # Interval.new(a)     | -> Interval(a, a)
-    # Interval.new(iv)    | -> Interval(iv.start, iv.end)
+    # TimeInterval.new(a, b)  | -> Interval(a, b)
+    # TimeInterval.new(a)     | -> Interval(a, a)
+    # TimeInterval.new(iv)    | -> Interval(iv.start, iv.end)
     #
     def initialize(*args)
       if args.length == 1
         if args[0].is_a?(TjTime)
           # Just one argument, a date
           @start = @end = args[0]
-        elsif args[0].is_a?(Interval)
-          # Just one argument, an Interval
+        elsif args[0].is_a?(TimeInterval)
+          # Just one argument, a TimeInterval
           @start = args[0].start
           @end = args[0].end
         else
@@ -56,13 +56,13 @@ class TaskJuggler
       end
     end
 
-    # Return the duration of the Interval.
+    # Return the duration of the TimeInterval.
     def duration
       @end - @start
     end
 
-    # Return true if _arg_ is contained within the Interval. It can either be a
-    # single TjTime or another Interval.
+    # Return true if _arg_ is contained within the Interval. It can either
+    # be a single TjTime or another Interval.
     def contains?(arg)
       if arg.is_a?(TjTime)
         return @start <= arg && arg < @end
@@ -71,7 +71,7 @@ class TaskJuggler
       end
     end
 
-    # Check whether the Interval _arg_ overlaps with this interval.
+    # Check whether the Interval _arg_ overlaps with this Interval.
     def overlaps?(arg)
       if arg.is_a?(TjTime)
         return @start <= arg && arg < @end
@@ -86,7 +86,7 @@ class TaskJuggler
     def intersection(iv)
       newStart = @start > iv.start ? @start : iv.start
       newEnd = @end < iv.end ? @end : iv.end
-      newStart < newEnd ? Interval.new(newStart, newEnd) : nil
+      newStart < newEnd ? TimeInterval.new(newStart, newEnd) : nil
     end
 
     # Append or prepend the Interval _iv_ to self. If _iv_ does not directly
@@ -94,10 +94,10 @@ class TaskJuggler
     def combine(iv)
       if iv.end == @start
         # Prepend iv
-        Array.new Interval(iv.start, @end)
+        Array.new TimeInterval(iv.start, @end)
       elsif @end == iv.start
         # Append iv
-        Array.new Interval(@start, iv.end)
+        Array.new TimeInterval(@start, iv.end)
       else
         self
       end
@@ -119,7 +119,7 @@ class TaskJuggler
       @start == iv.start && @end == iv.end
     end
 
-    # Turn the Interval into a human readable form.
+    # Turn the TimeInterval into a human readable form.
     def to_s
       @start.to_s + ' - ' + @end.to_s
     end

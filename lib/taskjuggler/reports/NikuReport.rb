@@ -305,7 +305,7 @@ EOT
       query = Query.new(queryAttrs)
 
       # Calculate the number of working days in the report interval.
-      workingDays = @project.workingDays(Interval.new(a('start'), a('end')))
+      workingDays = @project.workingDays(TimeInterval.new(a('start'), a('end')))
 
       resourceList.each do |resource|
         # We only care about leaf resources that have the custom attribute

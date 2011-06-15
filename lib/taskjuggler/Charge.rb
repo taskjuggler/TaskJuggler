@@ -33,7 +33,7 @@ class TaskJuggler
       @scenarioIdx = scenarioIdx
     end
 
-    # Compute the total charge for the Interval described by _period_.
+    # Compute the total charge for the TimeInterval described by _period_.
     def turnover(period)
       case @mode
       when :onStart
@@ -41,8 +41,8 @@ class TaskJuggler
       when :onEnd
         return period.contains?(@task['end', @scenarioIdx]) ? @amount : 0.0
       else
-        iv = period.intersection(Interval.new(@task['start', @scenarioIdx],
-                                              @task['end', @scenarioIdx]))
+        iv = period.intersection(TimeInterval.new(@task['start', @scenarioIdx],
+                                                  @task['end', @scenarioIdx]))
         if iv
           return (iv.duration / (60 * 60 * 24)) * @amount
         else

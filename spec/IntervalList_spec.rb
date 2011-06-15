@@ -27,17 +27,17 @@ class TaskJuggler
       @t4 = TjTime.new('2011-01-05').freeze
       @t5 = TjTime.new('2011-01-06').freeze
       @t6 = TjTime.new('2011-01-07').freeze
-      @i0_1 = Interval.new(@t0, @t1).freeze
-      @i0_2 = Interval.new(@t0, @t2).freeze
-      @i0_3 = Interval.new(@t0, @t3).freeze
-      @i1_2 = Interval.new(@t1, @t2).freeze
-      @i1_3 = Interval.new(@t1, @t3).freeze
-      @i2_3 = Interval.new(@t2, @t3).freeze
-      @i3_4 = Interval.new(@t3, @t4).freeze
-      @i3_6 = Interval.new(@t3, @t6).freeze
-      @i4_5 = Interval.new(@t4, @t5).freeze
-      @i4_6 = Interval.new(@t4, @t6).freeze
-      @i5_6 = Interval.new(@t5, @t6).freeze
+      @i0_1 = TimeInterval.new(@t0, @t1).freeze
+      @i0_2 = TimeInterval.new(@t0, @t2).freeze
+      @i0_3 = TimeInterval.new(@t0, @t3).freeze
+      @i1_2 = TimeInterval.new(@t1, @t2).freeze
+      @i1_3 = TimeInterval.new(@t1, @t3).freeze
+      @i2_3 = TimeInterval.new(@t2, @t3).freeze
+      @i3_4 = TimeInterval.new(@t3, @t4).freeze
+      @i3_6 = TimeInterval.new(@t3, @t6).freeze
+      @i4_5 = TimeInterval.new(@t4, @t5).freeze
+      @i4_6 = TimeInterval.new(@t4, @t6).freeze
+      @i5_6 = TimeInterval.new(@t5, @t6).freeze
     end
 
     describe "#<<" do

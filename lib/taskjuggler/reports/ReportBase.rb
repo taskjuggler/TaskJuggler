@@ -64,7 +64,7 @@ class TaskJuggler
         list.delete_if do |task|
           delete = true
           a('scenarios').each do |scenarioIdx|
-            iv = Interval.new(a('start'), a('end'))
+            iv = TimeInterval.new(a('start'), a('end'))
             if task.hasResourceAllocated?(scenarioIdx, iv, resource)
               delete = false
               break;
@@ -92,7 +92,7 @@ class TaskJuggler
       if task
         # If we have a task we need to check that the resources are assigned
         # to the task in any of the reported scenarios.
-        iv = Interval.new(a('start'), a('end'))
+        iv = TimeInterval.new(a('start'), a('end'))
         list.delete_if do |resource|
           delete = true
           a('scenarios').each do |scenarioIdx|

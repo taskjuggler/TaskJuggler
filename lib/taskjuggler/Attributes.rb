@@ -307,12 +307,12 @@ class TaskJuggler
 
   end
 
-  class IntervalListAttribute < ListAttributeBase
+  class TimeIntervalListAttribute < ListAttributeBase
     def initialize(property, type)
       super
     end
 
-    def IntervalListAttribute::tjpId
+    def TimeIntervalListAttribute::tjpId
       'intervallist'
     end
 

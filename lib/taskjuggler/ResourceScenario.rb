@@ -290,7 +290,7 @@ class TaskJuggler
     end
 
     # The work time of the Resource that was blocked by a vacation during the
-    # specified Interval. The result is in working days (effort).
+    # specified TimeInterval. The result is in working days (effort).
     def query_vacationdays(query)
       query.sortable = query.numerical = time =
         getVacationDays(query.startIdx, query.endIdx)
@@ -427,15 +427,15 @@ class TaskJuggler
       amount
     end
 
-    # Returns the cost for using this resource during the specified Interval
-    # _period_. If a Task _task_ is provided, only the work on this particular
-    # task is considered.
+    # Returns the cost for using this resource during the specified
+    # TimeInterval _period_. If a Task _task_ is provided, only the work on
+    # this particular task is considered.
     def cost(startIdx, endIdx, task = nil)
       getAllocatedTime(startIdx, endIdx, task) * a('rate')
     end
 
     # Returns true if the resource or any of its children is allocated during
-    # the period specified with the Interval _iv_. If task is not nil
+    # the period specified with the TimeInterval _iv_. If task is not nil
     # only allocations to this tasks are respected.
     def allocated?(iv, task = nil)
       return false if task && !a('duties').include?(task)
@@ -450,7 +450,7 @@ class TaskJuggler
     end
 
     # Iterate over the scoreboard and turn its content into a set of Bookings.
-    #  _iv_ can be an Interval to limit the bookings within the provided
+    #  _iv_ can be a TimeInterval to limit the bookings within the provided
     #  period.
     def getBookings(iv = nil)
       return {} if @property.container? || @scoreboard.nil? ||
@@ -468,8 +468,8 @@ class TaskJuggler
       # In case the index markers are still uninitialized, we have no bookings.
       return {} if startIdx.nil? || endIdx.nil?
 
-      # If the user provided an Interval, we only return bookings within this
-      # Interval.
+      # If the user provided a TimeInterval, we only return bookings within
+      # this TimeInterval.
       if iv
         ivStartIdx = @project.dateToIdx(iv.start)
         ivEndIdx = @project.dateToIdx(iv.end)
@@ -490,8 +490,8 @@ class TaskJuggler
 
             # Append the new interval to the Booking.
             bookings[lastTask].intervals <<
-              Interval.new(@scoreboard.idxToDate(bookingStart),
-                           @scoreboard.idxToDate(idx))
+              TimeInterval.new(@scoreboard.idxToDate(bookingStart),
+                               @scoreboard.idxToDate(idx))
           end
           # Get ready for the next task booking interval
           if task.is_a?(Task)

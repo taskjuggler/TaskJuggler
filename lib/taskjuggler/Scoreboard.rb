@@ -154,7 +154,7 @@ class TaskJuggler
               start = sIdx if start < sIdx
               idx = eIdx if idx > eIdx
 
-              intervals << Interval.new(idxToDate(start), idxToDate(idx))
+              intervals << TimeInterval.new(idxToDate(start), idxToDate(idx))
             end
             duration = start = 0
           end

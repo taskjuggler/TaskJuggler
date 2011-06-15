@@ -34,7 +34,7 @@ class TaskJuggler
 
     # Return a deep copy of self.
     def copy
-      ShiftAssignment.new(@shiftScenario, Interval.new(@interval))
+      ShiftAssignment.new(@shiftScenario, TimeInterval.new(@interval))
     end
 
     # Return true if the _iv_ interval overlaps with the assignment interval.
