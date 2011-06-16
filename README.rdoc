@@ -49,7 +49,6 @@ tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
 * Project tracking and status reporting with dashboard support
 * Time and status sheet reporting infrastructure
 * Unlimited number of scenarios (baselines) of the same project for what-if analysis
-* CSV data export for exchange with Office Suites
 * Projects can be combined to larger projects
 * Multiple project managers can work on the same project
 * Flexible working hours and vacation handling
@@ -58,7 +57,9 @@ tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
 * Tasks may have initial costs, finishing costs
 * Resources may have running costs
 * Support for profit/loss analysis
-* HTML reports for Web based communication
+* HTML reports for Web publishing
+* CSV data export for data exchange productivity suites
+* iCalendar export for data exchange with calendar applications
 * Built-in web server for dynamic and interactive reports
 * Powerful project description syntax with macro support
 * Support for central resource allocation database
