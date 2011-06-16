@@ -2053,7 +2053,8 @@ EOT
     pattern([ '_longauto'] , lambda { :longauto })
     descr(<<'EOT'
 Automatically select the unit that produces the shortest and most readable
-value. The unit name will not be abbreviated.
+value. The unit name will not be abbreviated. It will not use quarters since
+it is not common.
 EOT
          )
 
@@ -2061,12 +2062,16 @@ EOT
     descr('Display all load and duration values as minutes.')
 
     pattern([ '_months' ], lambda { :months })
-    descr('Display all load and duration values as monts.')
+    descr('Display all load and duration values as months.')
+
+    pattern([ '_quarters' ], lambda { :quarters })
+    descr('Display all load and duration values as quarters.')
 
     pattern([ '_shortauto' ], lambda { :shortauto })
     descr(<<'EOT'
 Automatically select the unit that produces the shortest and most readable
-value. The unit name will be abbreviated.
+value. The unit name will be abbreviated. It will not use quarters since it is
+not common.
 EOT
          )
 

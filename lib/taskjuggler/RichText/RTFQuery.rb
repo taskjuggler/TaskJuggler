@@ -159,8 +159,8 @@ class TaskJuggler
     def setLoadUnit(query, args)
       units = {
         'days' => :days, 'hours' => :hours, 'longauto' => :longauto,
-        'minutes' => :minutes, 'months' => :months, 'shortauto' => :shortauto,
-        'weeks' => :weeks, 'years' => :years
+        'minutes' => :minutes, 'months' => :months, 'quarters' => :quarters,
+        'shortauto' => :shortauto, 'weeks' => :weeks, 'years' => :years
       }
       query.loadUnit = units[args['loadunit']] if args['loadunit']
     end

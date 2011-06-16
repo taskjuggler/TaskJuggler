@@ -273,7 +273,8 @@ class TaskJuggler
     # duration effort in days. The return value is the converted value with
     # optional unit as a String.
     def scaleDuration(value)
-      scaleValue(value, [ 24 * 60, 24, 1, 1.0 / 7, 1.0 / 30.42, 1.0 / 365 ])
+      scaleValue(value, [ 24 * 60, 24, 1, 1.0 / 7, 1.0 / 30.42,
+                          1.0 / 91.25, 1.0 / 365 ])
     end
 
     # Convert a load or effort value to the format specified by @loadUnit.
@@ -285,6 +286,7 @@ class TaskJuggler
                           1.0,
                           1.0 / @project.weeklyWorkingDays,
                           1.0 / @project.monthlyWorkingDays,
+                          1.0 / (@project.yearlyWorkingDays / 4),
                           1.0 / @project.yearlyWorkingDays ])
     end
 
@@ -319,8 +321,9 @@ class TaskJuggler
         # the original value.
         delta = []
         # For each of the units we can define a maximum value that the value
-        # should not exceed. nil means no limit.
-        max = [ 60, 48, nil, 8, 24, nil ]
+        # should not exceed. nil means no limit. Never use quarters since it's
+        # pretty uncommon to use.
+        max = [ 60, 48, nil, 8, 24, 0, nil ]
 
         i = 0
         factors.each do |factor|
@@ -359,18 +362,18 @@ class TaskJuggler
           # other languages as well.
           units = []
           if str == "1"
-            units = %w( minute hour day week month year )
+            units = %w( minute hour day week month quarter year )
           else
-            units = %w( minutes hours days weeks months years )
+            units = %w( minutes hours days weeks months quarters years )
           end
           str += ' ' + units[shortest]
         else
-          str += %w( min h d w m y )[shortest]
+          str += %w( min h d w m q y )[shortest]
         end
       else
         # For fixed units we just need to do the conversion. No unit is
         # included.
-        units = [ :minutes, :hours, :days, :weeks, :months, :years ]
+        units = [ :minutes, :hours, :days, :weeks, :months, :quarters, :years ]
         str = @numberFormat.format(value * factors[units.index(@loadUnit)])
       end
       str
