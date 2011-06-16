@@ -209,7 +209,7 @@ class TaskJuggler
       end
 
       # Restore old time zone setting.
-      if @timezone
+      if @timezone && oldTimezone
         TjTime.setTimeZone(oldTimezone)
       end
     end

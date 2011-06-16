@@ -26,9 +26,8 @@ class TaskJuggler
     # The number of days per month. Leap years are taken care of separately.
     MON_MAX = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
 
-    # The current time zone name.
-    @@tz = 'UTC'
-    ENV['TZ'] = @@tz
+    # Initialize @@tz with the current time zone if it is set.
+    @@tz = ENV['TZ']
 
     # call-seq:
     #   TjTime() -> TjTime (now)
