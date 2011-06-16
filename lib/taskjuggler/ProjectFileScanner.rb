@@ -310,7 +310,7 @@ class TaskJuggler
       varName = envRef[2..-2]
 
       if (value = ENV[varName])
-        @cf.injectText(prefix + value)
+        @cf.injectText(prefix + value, envRef.length)
       else
         error('unknown_env_var', "Unknown environment variable '#{varName}'")
       end

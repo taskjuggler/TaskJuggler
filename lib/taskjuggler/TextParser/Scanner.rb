@@ -69,16 +69,25 @@ class TaskJuggler::TextParser
 
       # Inject the String _text_ into the input stream at the current cursor
       # position.
-      def injectText(text)
+      def injectText(text, callLength)
+        # Current scanner position in _bytes_ form start
         pos = @scanner.pos
-        @nextMacroEnd = pos + text.length
-        @line = @line[0, pos] + text + @line[pos..-1]
+        # Remove the macro call from the end of the already parsed input.
+        preCall = @scanner.pre_match[0..-(callLength + 1)]
+        # Store the end position of the inserted macro in bytes.
+        @nextMacroEnd = preCall.bytesize + text.bytesize
+        # Compose the new @line from the cleaned input, the injected text and
+        # the remainer of the old @line.
+        @line = preCall + text + @scanner.post_match
+        # Start the StringScanner again at the first character of the injected
+        # text.
         @scanner = StringScanner.new(@line)
-        @scanner.pos = pos
+        @scanner.pos = preCall.bytesize
       end
 
       def injectMacro(macro, args, text)
-        injectText(text)
+        # We add 3 chars more for the ${}.
+        injectText(text, macro.name.length + 3)
 
         # Simple detection for recursive macro calls.
         return false if @macroStack.length > 20
@@ -151,7 +160,7 @@ class TaskJuggler::TextParser
       def line
         return '' unless @line
 
-        @line[0..(@scanner.pos - 1)]
+        @scanner.pre_match
       end
 
     end
@@ -514,7 +523,8 @@ class TaskJuggler::TextParser
             args = entry.args[1..-1]
             args.collect! { |a| '"' + a + '"' }
             @messageHandler.info('macro_stack',
-                                 "  ${#{macro.name} #{args.join(' ')}}",
+                                 "  ${#{macro.name}#{args.empty? ? '' : ' '}" +
+                                 "#{args.join(' ')}}",
                                  macro.sourceFileInfo)
           end
         end

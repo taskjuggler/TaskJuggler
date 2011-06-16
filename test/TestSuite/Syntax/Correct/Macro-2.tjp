@@ -3,6 +3,9 @@ project "Test" 2010-04-28 +1w {
 }
 
 macro task [ task "${0}" ]
-macro tname [ "foo" ]
-${task "${tname}"} { }
+macro tname [ Prepare ]
+macro meal [ Crème brûlée ]
+
+task "${meal} ${tname}"
+${task "${tname} ${meal} "}
 
