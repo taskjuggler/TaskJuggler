@@ -85,9 +85,9 @@ class TaskJuggler::TextParser
         @scanner.pos = preCall.bytesize
       end
 
-      def injectMacro(macro, args, text)
+      def injectMacro(macro, args, text, callLength)
         # We add 3 chars more for the ${}.
-        injectText(text, macro.name.length + 3)
+        injectText(text, callLength)
 
         # Simple detection for recursive macro calls.
         return false if @macroStack.length > 20
@@ -483,8 +483,9 @@ class TaskJuggler::TextParser
     # Expand a macro and inject it into the input stream. _prefix_ is any
     # string that was found right before the macro call. We have to inject it
     # before the expanded macro. _args_ is an Array of Strings. The first is
-    # the macro name, the rest are the parameters.
-    def expandMacro(prefix, args)
+    # the macro name, the rest are the parameters. _callLength_ is the number
+    # of characters for the complete macro call "${...}".
+    def expandMacro(prefix, args, callLength)
       # Get the expanded macro from the @macroTable.
       macro, text = @macroTable.resolve(args, sourceFileInfo)
       unless macro && text
@@ -494,7 +495,7 @@ class TaskJuggler::TextParser
       # If the expanded macro is empty, we can ignore it.
       return if text == ''
 
-      unless @cf.injectMacro(macro, args, prefix + text)
+      unless @cf.injectMacro(macro, args, prefix + text, callLength)
         error('macro_stack_overflow', "Too many nested macro calls.")
       end
     end

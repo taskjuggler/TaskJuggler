@@ -362,11 +362,12 @@ class TaskJuggler
         prefix = ''
       end
 
-      # Remove '${' and '}'
-      argsStr = @macroCall[2..-2]
+      macroCallLength = @macroCall.length
+      # Remove '${' and '}' and white spaces at begin and end
+      argsStr = @macroCall.sub(/^\$\{[ \t\n]*(.*?)[ \t\n]*\}$/, '\1')
       # Extract the macro name.
       if argsStr.index(' ').nil?
-        expandMacro(prefix, [ argsStr ])
+        expandMacro(prefix, [ argsStr ], macroCallLength)
       else
         macroName = argsStr[0, argsStr.index(' ')]
         # Remove the name part from argsStr
@@ -385,7 +386,7 @@ class TaskJuggler
         end
 
         # Expand the macro and inject it into the scanner.
-        expandMacro(prefix, [ macroName ] + args)
+        expandMacro(prefix, [ macroName ] + args, macroCallLength)
       end
 
       [ nil, '' ]
