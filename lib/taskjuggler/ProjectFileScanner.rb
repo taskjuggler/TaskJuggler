@@ -364,7 +364,7 @@ class TaskJuggler
 
       macroCallLength = @macroCall.length
       # Remove '${' and '}' and white spaces at begin and end
-      argsStr = @macroCall.sub(/^\$\{[ \t\n]*(.*?)[ \t\n]*\}$/, '\1')
+      argsStr = @macroCall[2..-2].sub(/^[ \t\n]*(.*?)[ \t\n]*$/, '\1')
       # Extract the macro name.
       if argsStr.index(' ').nil?
         expandMacro(prefix, [ argsStr ], macroCallLength)
@@ -382,7 +382,7 @@ class TaskJuggler
         end
 
         unless scanner.eos?
-          raise "Junk found at end of macro: #{argsStr[scanner.pos..-1]}"
+          raise "Junk found at end of macro: #{scanner.post_match}"
         end
 
         # Expand the macro and inject it into the scanner.
