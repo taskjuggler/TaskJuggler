@@ -415,10 +415,11 @@ class TaskJuggler
     def generateBookingsByResource(resource, indent, scenarioIdx)
       # Get the bookings for this resource hashed by task.
       bookings = resource.getBookings(scenarioIdx,
-                                      TimeInterval.new(a('start'), a('end')))
-      bookings.keys.sort { |a, b| a.fullId <=> a.fullId }.each do |task|
-        next unless @taskList.include?(task)
-        generateAttributeText('booking ' + bookings[task].to_tjp(true), indent,
+                                      TimeInterval.new(a('start'), a('end')),
+                                      false)
+      bookings.each do |booking|
+        next unless @taskList.include?(booking.task)
+        generateAttributeText('booking ' + booking.to_tjp(true), indent,
                               scenarioIdx)
       end
     end

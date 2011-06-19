@@ -451,22 +451,18 @@ class TaskJuggler
 
     # Iterate over the scoreboard and turn its content into a set of Bookings.
     #  _iv_ can be a TimeInterval to limit the bookings within the provided
-    #  period.
-    def getBookings(iv = nil)
-      return {} if @property.container? || @scoreboard.nil? ||
-                   @firstBookedSlot.nil? || @lastBookedSlot.nil?
-
-      bookings = {}
-      lastTask = nil
-      bookingStart = nil
+    #  period. if _hashByTask_ is true, the result is a Hash of Arrays with
+    #  bookings hashed by Task. Otherwise it's just a plain Array with
+    #  Bookings.
+    def getBookings(iv = nil, hashByTask = true)
+      bookings = hashByTask ? {} : []
+      return bookings if @property.container? || @scoreboard.nil? ||
+                         @firstBookedSlot.nil? || @lastBookedSlot.nil?
 
       # To speedup the collection we start with the first booked slot and end
       # with the last booked slot.
       startIdx = @firstBookedSlot
       endIdx = @lastBookedSlot + 1
-
-      # In case the index markers are still uninitialized, we have no bookings.
-      return {} if startIdx.nil? || endIdx.nil?
 
       # If the user provided a TimeInterval, we only return bookings within
       # this TimeInterval.
@@ -477,21 +473,35 @@ class TaskJuggler
         endIdx = ivEndIdx if ivEndIdx < endIdx
       end
 
+      lastTask = nil
+      bookingStart = nil
+
       startIdx.upto(endIdx) do |idx|
         task = @scoreboard[idx]
         # Now we watch for task changes.
-        if task != lastTask || (lastTask == nil && task.is_a?(Task)) ||
-           (task.is_a?(Task) && idx == endIdx)
-          unless lastTask.nil?
+        if task != lastTask ||
+           (task.is_a?(Task) && (lastTask.nil? || idx == endIdx))
+          if lastTask
+            # We've found the end of a task booking series.
             # If we don't have a Booking for the task yet, we create one.
-            if bookings[lastTask].nil?
-              bookings[lastTask] = Booking.new(@property, lastTask, [])
-            end
-
-            # Append the new interval to the Booking.
-            bookings[lastTask].intervals <<
+            if hashByTask
+              if bookings[lastTask].nil?
+                bookings[lastTask] = Booking.new(@property, lastTask, [])
+              end
+              # Append the new interval to the Booking.
+              bookings[lastTask].intervals <<
               TimeInterval.new(@scoreboard.idxToDate(bookingStart),
                                @scoreboard.idxToDate(idx))
+            else
+              if bookings.empty? || bookings.last.task != lastTask
+                bookings << Booking.new(@property, lastTask, [])
+              end
+              # Append the new interval to the Booking.
+              bookings.last.intervals <<
+              TimeInterval.new(@scoreboard.idxToDate(bookingStart),
+                               @scoreboard.idxToDate(idx))
+            end
+
           end
           # Get ready for the next task booking interval
           if task.is_a?(Task)
