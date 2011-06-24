@@ -87,7 +87,7 @@ class TaskJuggler
   class MessageHandler
 
     attr_reader :messages, :errors
-    attr_accessor :scenario
+    attr_accessor :scenario, :abortOnWarning
 
     # Initialize the MessageHandler. _console_ specifies if the messages
     # should be printed to $stderr.
@@ -96,6 +96,8 @@ class TaskJuggler
       @console = console
       # We count the errors.
       @errors = 0
+      # Set to true if program should be exited on warnings.
+      @abortOnWarning = false
     end
 
     # Generate a fatal message that will abort the application.
@@ -137,7 +139,6 @@ class TaskJuggler
     # Generate a message by specifying the _type_.
     def addMessage(type, id, message, sourceFileInfo = nil, line = nil,
                    data = nil, scenario = nil)
-      abortOnError = type == :error
       # Treat criticals like errors but without generating another
       # exception.
       type = :error if type == :critical
@@ -148,10 +149,13 @@ class TaskJuggler
       $stderr.puts msg.to_s if @console
 
       case type
+      when :critical
+      when :warning
+        raise TjException.new, '' if @abortOnWarning
       when :error
         # Increase the error counter.
         @errors += 1
-        raise TjException.new, '' if abortOnError
+        raise TjException.new, ''
       when :fatal
         raise RuntimeError
       end

@@ -43,6 +43,8 @@ class TaskJuggler
       @freezeByTask = false
       # Don't generate any reports.
       @noReports = false
+      # Treat warnings like errors or not.
+      @abortOnWarning = false
       # The directory where generated reports should be put in.
       @outputDir = ''
       # The file names of the time sheet files to check.
@@ -115,6 +117,10 @@ EOT
                        'reports.')) do
          @noReports = true
         end
+        @opts.on('--abort-on-warnings',
+                 format('Abort program on warnings like we do on errors.')) do
+          @abortOnWarning = true
+        end
         @opts.on('-o', '--output-dir <directory>', String,
                 format('Directory the reports should go into')) do |arg|
           @outputDir = arg + '/'
@@ -135,6 +141,7 @@ EOT
         tj = TaskJuggler.new(true)
         tj.maxCpuCores = @maxCpuCores
         tj.warnTsDeltas = @warnTsDeltas
+        tj.messageHandler.abortOnWarning = @abortOnWarning
         keepParser = !@timeSheets.empty? || !@statusSheets.empty?
         return 1 unless tj.parse(files, keepParser)
 

@@ -2,7 +2,7 @@ project "Test" 2011-06-24 +1m
 
 resource r "R"
 
-# MARK: error 6 overbooked_length
+# MARK: warning 6 overbooked_length
 task "T" {
   allocate r
   length 1d
