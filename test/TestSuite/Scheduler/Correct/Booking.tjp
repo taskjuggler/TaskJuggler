@@ -99,7 +99,7 @@ task t13 "Task 13" {
 }
 
 task t14 "Task 14" {
-  effort 3h
+  effort 4h
   allocate r14
   booking r14 2007-04-23-9:00 +5h { sloppy 2 }
   ${FixStart "2007-04-23-9:00"}
@@ -107,7 +107,7 @@ task t14 "Task 14" {
 }
 
 task t15 "Task 15" {
-  length 3h
+  length 4h
   allocate r15
   booking r15 2007-04-23-9:00 +5h { sloppy 2 }
   ${FixStart "2007-04-23-9:00"}
@@ -131,7 +131,7 @@ task t17 "Task 17" {
 }
 
 task t18 "Task 18" {
-  duration 3h
+  duration 5h
   allocate r18
   booking r18 2007-04-23-9:00 +5h { sloppy 2 }
   ${FixStart "2007-04-23-9:00"}

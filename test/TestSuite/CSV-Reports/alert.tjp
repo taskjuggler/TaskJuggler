@@ -1,0 +1,9 @@
+project "Alert" 2011-03-07 +2m
+
+include "project-1.tji"
+
+taskreport '.' {
+  formats csv
+  columns name, alert
+}
+

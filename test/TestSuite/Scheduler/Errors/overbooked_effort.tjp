@@ -1,0 +1,11 @@
+project "Test" 2011-06-24 +1m
+
+resource r "R"
+
+# MARK: error 6 overbooked_effort
+task "T" {
+  allocate r
+  effort 1d
+  booking r 2011-06-24-9:00 +8h,
+            2011-06-27-9:00 +1h
+}

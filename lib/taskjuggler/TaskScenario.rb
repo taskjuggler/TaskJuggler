@@ -1849,6 +1849,35 @@ class TaskJuggler
           end
         end
       end
+
+      if a('effort') > 0
+        effort = @project.slotsToDays(@doneEffort)
+        requestedEffort = @project.slotsToDays(a('effort'))
+        if effort > requestedEffort
+          error('overbooked_effort',
+                "The total effort (#{effort}d) of the provided bookings " +
+                "for task #{@property.fullId} exceeds the specified effort of " +
+                "#{requestedEffort}d.")
+        end
+      end
+      if a('length') > 0 && @doneLength > a('length')
+        length = @project.slotsToDays(@doneLength)
+        requestedLength = @project.slotsToDays(a('length'))
+        error('overbooked_length',
+              "The total length (#{length}d) of the provided bookings " +
+              "for task #{@property.fullId} exceeds the specified length of " +
+              "#{requestedLength}d.")
+      end
+      if a('duration') > 0 && @doneDuration > a('duration')
+        duration = @doneDuration * @project['scheduleGranularity'] /
+                   (60.0 * 60 * 24)
+        requestedDuration = a('duration') * @project['scheduleGranularity'] /
+                            (60.0 * 60 * 24)
+        error('overbooked_duration',
+              "The total duration (#{duration}d) of the provided bookings " +
+              "for task #{@property.fullId} exceeds the specified duration of " +
+              "#{requestedDuration}d.")
+      end
     end
 
     # This function checks if the task has a dependency on another task or
