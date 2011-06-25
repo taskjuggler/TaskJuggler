@@ -1220,7 +1220,7 @@ class TaskJuggler
                    query.scopeProperty)
         query.string = query.currencyFormat.format(cost)
       else
-        query.string = 'No cost account'
+        query.string = 'No \'balance\' defined!'
       end
     end
 
@@ -1360,7 +1360,7 @@ class TaskJuggler
                    query.scopeProperty)
         query.string = query.currencyFormat.format(revenue)
       else
-        query.string = 'No revenue account'
+        query.string = 'No \'balance\' defined!'
       end
     end
 

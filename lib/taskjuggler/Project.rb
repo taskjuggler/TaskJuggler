@@ -601,7 +601,7 @@ class TaskJuggler
       end
 
       if @tasks.empty?
-        @messageHandler.error('no_tasks', "No tasks defined")
+        error('no_tasks', "No tasks defined")
       end
 
       @scenarios.each do |sc|
@@ -643,18 +643,29 @@ class TaskJuggler
     # format.
     def checkReports
       if @reports.empty?
-        @messageHandler.warning('no_report_defined',
-                                "This project has no reports defined. " +
-                                "No output data will be generated.")
+        warning('no_report_defined',
+                "This project has no reports defined. " +
+                "No output data will be generated.")
+      end
+
+      unless @accounts.empty?
+        @reports.each do |report|
+          if report.get('costAccount').nil? || report.get('revenueAccount').nil?
+            warning('report_without_balance',
+                    "The report #{report.fullId} has no 'balance' defined. " +
+                    "No cost or revenue computation will be possible.",
+                    report.sourceFileInfo)
+          end
+        end
       end
 
       @reports.each do |report|
         return unless report.get('formats').empty?
       end
 
-      @messageHandler.warning('all_formats_empty',
-                              "None of the reports has a 'formats' attribute. " +
-                              "No output data will be generated.")
+      warning('all_formats_empty',
+              "None of the reports has a 'formats' attribute. " +
+              "No output data will be generated.")
     end
 
     # Call this function to generate the reports based on the scheduling result.
@@ -689,10 +700,10 @@ class TaskJuggler
           $stdout.print(report.stdout)
           $stderr.print(report.stderr)
           if report.retVal.signaled?
-            @messageHandler.error('rg_signal', "Signal raised")
+            error('rg_signal', "Signal raised")
           end
           unless report.retVal.success?
-            @messageHandler.error('rg_abort', "Process aborted")
+            error('rg_abort', "Process aborted")
           end
           Log.stopProgressMeter
         end
@@ -709,9 +720,9 @@ class TaskJuggler
                 "Request to generate unknown report #{id}")
         end
         if formats.nil? && report.get('formats').empty?
-          @messageHandler.error('formats_empty',
-           "The report #{report.fullId} has no 'formats' attribute. " +
-           "No output data will be generated.")
+          error('formats_empty',
+                "The report #{report.fullId} has no 'formats' attribute. " +
+                "No output data will be generated.", report.sourceFileInfo)
         end
 
         Log.startProgressMeter("Report #{report.name}")
@@ -959,8 +970,7 @@ class TaskJuggler
       unless (rti = RichText.new(rText, RTFHandlers.create(self),
                                  @messageHandler).
                                  generateIntermediateFormat)
-        @messageHandler.warning('ptn_journal',
-                                "Syntax error in journal message")
+        warning('ptn_journal', "Syntax error in journal message: #{rText}")
         return nil
       end
       # No section numbers, please!
@@ -984,10 +994,16 @@ class TaskJuggler
       str
     end
 
-    # This function sends an error message to the message handler.
-    def error(id, text)
-      @messageHandler.error(id, text)
+    # Generate an error message via the message handler.
+    def error(id, text, sourceFileInfo = nil)
+      @messageHandler.error(id, text, sourceFileInfo)
     end
+
+    # Generate a warning message via the message handle.
+    def warning(id, text, sourceFileInfo = nil)
+      @messageHandler.warning(id, text, sourceFileInfo)
+    end
+
 
   protected
 
@@ -1137,17 +1153,15 @@ class TaskJuggler
       # Check for unscheduled tasks and report the first 10 of them as
       # warnings.
       unless unscheduledTasks.empty?
-        @messageHandler.warning(
-          'unscheduled_tasks',
-          "#{unscheduledTasks.length} tasks could not be scheduled")
+        warning('unscheduled_tasks',
+                "#{unscheduledTasks.length} tasks could not be scheduled")
         i = 0
         unscheduledTasks.each do |t|
-          @messageHandler.warning(
-            'unscheduled_task',
-            "Task #{t.fullId}: " +
-            "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
-            "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", nil, nil, t,
-            scenario(scIdx))
+          warning('unscheduled_task',
+                  "Task #{t.fullId}: " +
+                  "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
+                  "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", nil, nil, t,
+                  scenario(scIdx))
 
           i += 1
           break if i >= 10
