@@ -54,17 +54,19 @@ class TestLimits < Test::Unit::TestCase
   def test_inc
     l = Limits.new
     l.setProject(@p)
-    l.setLimit('weeklymax', 2, TimeInterval.new(TjTime.new('2009-02-10'),
-                                                TjTime.new('2009-02-15')))
+    l.setLimit('weeklymax', 2,
+               ScoreboardInterval.new(@p['start'], @p['scheduleGranularity'],
+                                      TjTime.new('2009-02-10'),
+                                      TjTime.new('2009-02-15')))
     # Outside of limit interval, should be ignored
-    l.inc(TjTime.new('2009-02-05-10:00'))
-    l.inc(TjTime.new('2009-02-20-10:00'))
+    l.inc(-1)
+    l.inc(100000)
     assert(l.ok?)
     # Inside the calendar week interval
-    l.inc(TjTime.new('2009-02-09-10:00'))
+    l.inc(dateToIdx('2009-02-09-10:00'))
     assert(l.ok?)
     # The inc will exceed the weekly limit
-    l.inc(TjTime.new('2009-02-09-11:00'))
+    l.inc(dateToIdx('2009-02-09-11:00'))
     assert(!l.ok?)
   end
 
@@ -73,17 +75,17 @@ class TestLimits < Test::Unit::TestCase
     l.setProject(@p)
     l.setLimit('dailymax', 4)
     assert_equal(l.limits.length, 1, 'setLimits() failed')
-    l.inc(TjTime.new('2009-02-01-10:00'))
+    l.inc(dateToIdx('2009-02-01-10:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'))
+    l.inc(dateToIdx('2009-02-01-11:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'))
+    l.inc(dateToIdx('2009-02-01-12:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-13:00'))
+    l.inc(dateToIdx('2009-02-01-13:00'))
     assert(!l.ok?)
-    assert(l.ok?(TjTime.new('2009-01-31')))
-    assert(!l.ok?(TjTime.new('2009-02-01')))
-    assert(l.ok?(TjTime.new('2009-02-01'), false))
+    assert(l.ok?(dateToIdx('2009-01-31')))
+    assert(!l.ok?(dateToIdx('2009-02-01')))
+    assert(l.ok?(dateToIdx('2009-02-01'), false))
   end
 
   def test_with_resource_1
@@ -92,13 +94,13 @@ class TestLimits < Test::Unit::TestCase
     l.setLimit('dailymax', 4)
     r = Resource.new(@p, 'r', 'R', nil)
     l.setLimit('dailymax', 5, nil, r)
-    l.inc(TjTime.new('2009-02-01-10:00'))
+    l.inc(dateToIdx('2009-02-01-10:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'))
+    l.inc(dateToIdx('2009-02-01-11:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'))
+    l.inc(dateToIdx('2009-02-01-12:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-13:00'))
+    l.inc(dateToIdx('2009-02-01-13:00'))
     assert(!l.ok?)
     assert(l.ok?(nil, true, r))
   end
@@ -109,16 +111,16 @@ class TestLimits < Test::Unit::TestCase
     l.setLimit('dailymax', 5)
     r = Resource.new(@p, 'r', 'R', nil)
     l.setLimit('dailymax', 1, nil, r)
-    l.inc(TjTime.new('2009-02-01-10:00'))
+    l.inc(dateToIdx('2009-02-01-10:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'))
+    l.inc(dateToIdx('2009-02-01-11:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'))
+    l.inc(dateToIdx('2009-02-01-12:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-13:00'))
+    l.inc(dateToIdx('2009-02-01-13:00'))
     assert(l.ok?)
     assert(l.ok?(nil, true, r))
-    l.inc(TjTime.new('2009-02-01-14:00'), r)
+    l.inc(dateToIdx('2009-02-01-14:00'), r)
     assert(!l.ok?)
     assert(!l.ok?(nil, true, r))
   end
@@ -129,13 +131,13 @@ class TestLimits < Test::Unit::TestCase
     l.setLimit('dailymax', 5)
     r = Resource.new(@p, 'r', 'R', nil)
     l.setLimit('dailymax', 3, nil, r)
-    l.inc(TjTime.new('2009-02-01-10:00'), r)
+    l.inc(dateToIdx('2009-02-01-10:00'), r)
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'))
+    l.inc(dateToIdx('2009-02-01-11:00'))
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'), r)
+    l.inc(dateToIdx('2009-02-01-12:00'), r)
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-13:00'), r)
+    l.inc(dateToIdx('2009-02-01-13:00'), r)
     assert(l.ok?)
     assert(!l.ok?(nil, true, r))
   end
@@ -146,16 +148,22 @@ class TestLimits < Test::Unit::TestCase
     l.setLimit('dailymax', 2)
     r = Resource.new(@p, 'r', 'R', nil)
     l.setLimit('dailymax', 3, nil, r)
-    l.inc(TjTime.new('2009-02-01-10:00'), r)
+    l.inc(dateToIdx('2009-02-01-10:00'), r)
     assert(l.ok?)
-    l.inc(TjTime.new('2009-02-01-11:00'))
+    l.inc(dateToIdx('2009-02-01-11:00'))
     assert(!l.ok?)
-    l.inc(TjTime.new('2009-02-01-12:00'), r)
+    l.inc(dateToIdx('2009-02-01-12:00'), r)
     assert(!l.ok?)
     assert(l.ok?(nil, true, r))
-    l.inc(TjTime.new('2009-02-01-13:00'), r)
+    l.inc(dateToIdx('2009-02-01-13:00'), r)
     assert(!l.ok?)
     assert(!l.ok?(nil, true, r))
+  end
+
+  private
+
+  def dateToIdx(date)
+    @p.dateToIdx(TjTime.new(date))
   end
 
 end

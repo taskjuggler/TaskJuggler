@@ -138,7 +138,7 @@ class TaskJuggler
       return false unless @scoreboard[sbIdx].nil?
 
       limits = a('limits')
-      return false if limits && !limits.ok?(@scoreboard.idxToDate(sbIdx))
+      return false if limits && !limits.ok?(sbIdx)
 
       true
     end
@@ -170,7 +170,7 @@ class TaskJuggler
         t['effort', @scenarioIdx] += 1
         t = t.parent
       end
-      a('limits').inc(@scoreboard.idxToDate(sbIdx)) if a('limits')
+      a('limits').inc(sbIdx) if a('limits')
 
       # Scoreboard iterations are fairly expensive but they are very frequent
       # operations in later processing. To limit the interations to the

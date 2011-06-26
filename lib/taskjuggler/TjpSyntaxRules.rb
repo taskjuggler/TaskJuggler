@@ -1877,7 +1877,9 @@ EOT
     )
 
     pattern(%w( _period !valInterval ), lambda {
-      @limitInterval = @val[1]
+      @limitInterval = ScoreboardInterval.new(@project['start'],
+                                              @project['scheduleGranularity'],
+                                              @val[1].start, @val[1].end)
     })
     doc('period.limit', <<'EOT'
 This property is a shortcut for setting the start and end dates of the limit
@@ -1909,7 +1911,9 @@ EOT
 
   def rule_limitValue
     pattern([ '!workingDuration' ], lambda {
-      @limitInterval = TimeInterval.new(@project['start'], @project['end'])
+      @limitInterval = ScoreboardInterval.new(@project['start'],
+                                              @project['scheduleGranularity'],
+                                              @project['start'], @project['end'])
       @limitResources = []
       @val[0]
     })

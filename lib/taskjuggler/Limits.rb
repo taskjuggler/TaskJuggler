@@ -54,35 +54,36 @@ class TaskJuggler
       end
 
       # This function can be used to reset the counter for a specific period
-      # specified by +date+ or to reset all counters.
-      def reset(date = nil)
+      # specified by +index+ or to reset all counters.
+      def reset(index = nil)
         return unless @dirty
 
-        if date.nil?
-          @scoreboard = Scoreboard.new(@interval.start, @interval.end,
+        if index.nil?
+          @scoreboard = Scoreboard.new(@interval.startDate, @interval.endDate,
                                        @period, 0)
         else
-          return unless @interval.contains?(date)
-          @scoreboard.set(date, 0)
+          return unless @interval.contains?(index)
+          # The scoreboard may be just a subset of the @interval period.
+          @scoreboard[idxToSbIdx(index)] = 0
         end
         @dirty = false
       end
 
-      # Increase the counter if the _date_ matches the @interval. The
+      # Increase the counter if the _index_ matches the @interval. The
       # relationship between @resource and _resource_ is described below.
       # @r \ _r_  nil    y
       # nil       inc   inc
       #  x         -    if x==y inc else -
-      def inc(date, resource)
-        if @interval.contains?(date) &&
+      def inc(index, resource)
+        if @interval.contains?(index) &&
            (@resource.nil? || @resource == resource)
           # The condition is met, increment the counter for the interval.
           @dirty = true
-          @scoreboard.set(date, @scoreboard.get(date) + 1)
+          @scoreboard[idxToSbIdx(index)] += 1
         end
       end
 
-      # Returns true if the counter for the time slot specified by +date+ or
+      # Returns true if the counter for the time slot specified by +index+ or
       # all counters are within the limit. If +upper+ is true, only upper
       # limits are checked. If not, only lower limits are checked. The
       # dependency between _resource_ and @resource is described in the matrix
@@ -90,27 +91,39 @@ class TaskJuggler
       # @r \ _r_  nil   y
       # nil       test  true
       #  x        true  if x==y test else true
-      def ok?(date, upper, resource)
+      def ok?(index, upper, resource)
         # if @upper does not match or the provided resource does not match,
         # we can ignore this limit.
         return true if @upper != upper ||
                        (!@resource.nil? ^ !resource.nil?) ||
                        (@resource && resource && @resource != resource)
 
-        if date.nil?
-          # No date given. We need to check all counters.
+        if index.nil?
+          # No index given. We need to check all counters.
           @scoreboard.each do |i|
             return false if @upper ? i >= @value : i < @value
           end
           return true
         else
-          # If the date is outside the interval we don't have to check
+          # If the index is outside the interval we don't have to check
           # anything. Everything is ok.
-          return true if !@interval.contains?(date)
+          return true if !@interval.contains?(index)
 
-          return @upper ? @scoreboard.get(date) < @value :
-                          @scoreboard.get(date) >= @value
+          return @upper ? @scoreboard[idxToSbIdx(index)] < @value :
+                          @scoreboard[idxToSbIdx(index)] >= @value
         end
+      end
+
+      private
+
+      # The project scoreboard and the Limit scoreboard differ from each
+      # other. The Limit scoreboard may only be a subset of the project
+      # scoreboard interval. And the Limit scoreboard has a larger slot
+      # duration that depends on what kind of limit it is (daily, weekly,
+      # etc.). Therefor, we have to use this method to translate project
+      # scoreboard indexes to Limit scoreboard indexes.
+      def idxToSbIdx(index)
+        (index - @interval.start) * @interval.slotDuration / @period
       end
 
     end
@@ -153,46 +166,16 @@ class TaskJuggler
     # +value+ is the new limit value (in time slots). In case the interval
     # is nil, the complete project time frame is used.
     def setLimit(name, value, interval = nil, resource = nil)
-      iv = interval || TimeInterval.new(@project['start'], @project['end'])
-      # If we have already a limit for the name + interval + resource
-      # combination, we delete it first.
-      @limits.delete_if do |l|
-        l.name == name && l.interval.start == iv.start &&
-        l.interval.end == iv.end && l.resource == resource
+      iv = interval || ScoreboardInterval.new(@project['start'],
+                                              @project['scheduleGranularity'],
+                                              @project['start'], @project['end'])
+      unless iv.is_a?(ScoreboardInterval)
+        raise ArgumentError, "interval must be of class ScoreboardInterval"
       end
 
-      newLimit(name, value, iv, resource)
-    end
-
-    # This function increases the counters for all limits for a specific
-    # interval identified by _date_.
-    def inc(date, resource = nil)
-      @limits.each do |limit|
-        limit.inc(date, resource)
-      end
-    end
-
-    # Check all upper limits and return true if none is exceeded. If a _date_
-    # is specified only the counters for that specific period are tested.
-    # Otherwise all periods are tested. If _resource_ is nil, only
-    # non-resource-specific counters are checked, otherwise only the ones that
-    # match the _resource_.
-    def ok?(date = nil, upper = true, resource = nil)
-      @limits.each do |limit|
-        return false unless limit.ok?(date, upper, resource)
-      end
-      true
-    end
-
-  private
-
-    # This function creates a new Limit identified by _name_. In case _name_ is
-    # none of the predefined intervals (e. g. dailymax, weeklymin, monthlymax) a
-    # the whole interval is used for the period length.
-    def newLimit(name, value, interval, resource)
-      # The known intervals are aligned to start at their respective start.
-      interval.start = interval.start.midnight
-      interval.end = interval.end.midnight
+      # The known ivs are aligned to start at their respective start.
+      iv.start = iv.startDate.midnight
+      iv.end = iv.endDate.midnight
       case name
       when 'dailymax'
         period = 60 * 60 * 24
@@ -201,44 +184,71 @@ class TaskJuggler
         period = 60 * 60 * 24
         upper = false
       when 'weeklymax'
-        interval.start = interval.start.beginOfWeek(
+        iv.start = iv.startDate.beginOfWeek(
           @project['weekStartsMonday'])
-        interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
+        iv.end = iv.endDate.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = true
       when 'weeklymin'
-        interval.start = interval.start.beginOfWeek(
+        iv.start = iv.startDate.beginOfWeek(
           @project['weekStartsMonday'])
-        interval.end = interval.end.beginOfWeek(@project['weekStartsMonday'])
+        iv.end = iv.endDate.beginOfWeek(@project['weekStartsMonday'])
         period = 60 * 60 * 24 * 7
         upper = false
       when 'monthlymax'
-        interval.start = interval.start.beginOfMonth
-        interval.end = interval.end.beginOfMonth
-        # We use 30 days intervals here. This will cause the interval to drift
+        iv.start = iv.startDate.beginOfMonth
+        iv.end = iv.endDate.beginOfMonth
+        # We use 30 days ivs here. This will cause the iv to drift
         # away from calendar months. But it's better than using 30.4167 which
         # does not align with day boundaries.
         period = 60 * 60 * 24 * 30
         upper = true
       when 'monthlymin'
-        interval.start = interval.start.beginOfMonth
-        interval.end = interval.end.beginOfMonth
-        # We use 30 days intervals here. This will cause the interval to drift
+        iv.start = iv.startDate.beginOfMonth
+        iv.end = iv.endDate.beginOfMonth
+        # We use 30 days ivs here. This will cause the iv to drift
         # away from calendar months. But it's better than using 30.4167 which
         # does not align with day boundaries.
         period = 60 * 60 * 24 * 30
         upper = false
       when 'maximum'
-        period = interval.end - interval.start
+        period = iv.duration
         upper = true
       when 'minimum'
-        period = interval.end - interval.start
+        period = iv.duration
         upper = false
       else
         raise "Limit period undefined"
       end
 
-      @limits << Limit.new(name, interval, period, value, upper, resource)
+      # If we have already a limit for the name + interval + resource
+      # combination, we delete it first.
+      @limits.delete_if do |l|
+        l.name == name && l.interval.startDate == iv.startDate &&
+        l.interval.endDate == iv.endDate && l.resource == resource
+      end
+
+      @limits << Limit.new(name, iv, period, value, upper, resource)
+    end
+
+    # This function increases the counters for all limits for a specific
+    # interval identified by _index_.
+    def inc(index, resource = nil)
+      @limits.each do |limit|
+        limit.inc(index, resource)
+      end
+    end
+
+    # Check all upper limits and return true if none is exceeded. If an
+    # _index_ is specified only the counters for that specific period are
+    # tested.  Otherwise all periods are tested. If _resource_ is nil, only
+    # non-resource-specific counters are checked, otherwise only the ones that
+    # match the _resource_.
+    def ok?(index = nil, upper = true, resource = nil)
+      @limits.each do |limit|
+        return false unless limit.ok?(index, upper, resource)
+      end
+      true
     end
 
   end

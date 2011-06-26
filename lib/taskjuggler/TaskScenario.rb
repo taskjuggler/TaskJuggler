@@ -1652,11 +1652,11 @@ class TaskJuggler
          return if !shifts.onShift?(date)
       end
 
+      sbIdx = @project.dateToIdx(date, false)
+
       # If the task has resource independent allocation limits we need to make
       # sure that none of them is already exceeded.
-      return unless limitsOk?(date)
-
-      sbIdx = @project.dateToIdx(date, false)
+      return unless limitsOk?(sbIdx)
 
       # We first have to make sure that if there are mandatory resources
       # that these are all available for the time slot.
@@ -1672,7 +1672,7 @@ class TaskJuggler
           # group must be available.
           allAvailable = true
           candidate.allLeaves.each do |resource|
-            if !limitsOk?(date, resource) ||
+            if !limitsOk?(sbIdx, resource) ||
                !resource.available?(@scenarioIdx, sbIdx) ||
                takenMandatories.include?(resource)
               # We've found a mandatory resource that is not available for
@@ -1699,12 +1699,12 @@ class TaskJuggler
         # In case we have a persistent allocation we need to check if there is
         # already a locked resource and use it.
         if allocation.persistent && !allocation.lockedResource.nil?
-          bookResource(allocation.lockedResource, sbIdx, date)
+          bookResource(allocation.lockedResource, sbIdx)
         else
           # If not, we create a list of candidates in the proper order and
           # assign the first one available.
           allocation.candidates(@scenarioIdx).each do |candidate|
-            if bookResource(candidate, sbIdx, date)
+            if bookResource(candidate, sbIdx)
               allocation.lockedResource = candidate
               break
             end
@@ -1713,14 +1713,14 @@ class TaskJuggler
       end
     end
 
-    def bookResource(resource, sbIdx, date)
+    def bookResource(resource, sbIdx)
       booked = false
       resource.allLeaves.each do |r|
         # Prevent overbooking when multiple resources are allocated and
         # available. If the task has allocation limits we need to make sure
         # that none of them is already exceeded.
         break if a('effort') > 0 && @doneEffort >= a('effort') ||
-                 !limitsOk?(date, resource)
+                 !limitsOk?(sbIdx, resource)
 
         if r.book(@scenarioIdx, sbIdx, @property)
           # For effort based task we adjust the the start end (as defined by
@@ -1751,7 +1751,7 @@ class TaskJuggler
           # Limits do not take efficiency into account. Limits are usage limits,
           # not effort limits.
           @limits.each do |limit|
-            limit.inc(date, resource)
+            limit.inc(sbIdx, resource)
           end
 
           unless a('assignedresources').include?(r)
@@ -1764,13 +1764,13 @@ class TaskJuggler
       booked
     end
 
-    # Check if all of the task limits are not exceded at the given _date_. If
+    # Check if all of the task limits are not exceded at the given _sbIdx_. If
     # a _resource_ is provided, the limit for that particular resource is
     # checked. If no resource is provided, only non-resource-specific limits
     # are checked.
-    def limitsOk?(date, resource = nil)
+    def limitsOk?(sbIdx, resource = nil)
       @limits.each do |limit|
-        return false if !limit.ok?(date, true, resource)
+        return false if !limit.ok?(sbIdx, true, resource)
       end
       true
     end

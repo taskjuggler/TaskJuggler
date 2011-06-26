@@ -815,7 +815,7 @@ class TaskJuggler
           iv = args[0]
         else
           iv = TimeInterval.new(args[0], args[0] +
-                            @attributes['scheduleGranularity'])
+                                @attributes['scheduleGranularity'])
         end
       else
         iv = TimeInterval.new(args[0], args[1])
