@@ -1645,14 +1645,14 @@ class TaskJuggler
         return
       end
 
+      sbIdx = @project.dateToIdx(date, false)
+
       # If the task has shifts to limit the allocations, we check that we are
       # within a defined shift interval. If yes, we need to be on shift to
       # continue.
-      if (shifts = a('shifts')) && shifts.assigned?(date)
-         return if !shifts.onShift?(date)
+      if (shifts = a('shifts')) && shifts.assigned?(sbIdx)
+         return if !shifts.onShift?(sbIdx)
       end
-
-      sbIdx = @project.dateToIdx(date, false)
 
       # If the task has resource independent allocation limits we need to make
       # sure that none of them is already exceeded.
@@ -1662,7 +1662,7 @@ class TaskJuggler
       # that these are all available for the time slot.
       takenMandatories = []
       @mandatories.each do |allocation|
-        return unless allocation.onShift?(date)
+        return unless allocation.onShift?(sbIdx)
 
         # For mandatory allocations with alternatives at least one of the
         # alternatives must be available.
@@ -1694,7 +1694,7 @@ class TaskJuggler
       end
 
       a('allocate').each do |allocation|
-        next unless allocation.onShift?(date)
+        next unless allocation.onShift?(sbIdx)
 
         # In case we have a persistent allocation we need to check if there is
         # already a locked resource and use it.

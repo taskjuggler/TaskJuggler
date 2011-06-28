@@ -595,7 +595,7 @@ class TaskJuggler
       date = @scoreboard.idxToDate(0)
       delta = @project['scheduleGranularity']
       @project.scoreboardSize.times do |i|
-        @scoreboard[i] = nil if onShift?(date)
+        @scoreboard[i] = nil if onShift?(i, date)
         date += delta
       end
 
@@ -623,7 +623,7 @@ class TaskJuggler
       unless @shifts.nil?
         # Mark the vacations from all the shifts the resource is assigned to.
         @project.scoreboardSize.times do |i|
-          v = @shifts.getSbSlot(@scoreboard.idxToDate(i))
+          v = @shifts.getSbSlot(i)
           # Check if the vacation replacement bit is set. In that case we copy
           # the whole interval over to the resource scoreboard overriding any
           # global vacations.
@@ -674,9 +674,9 @@ class TaskJuggler
       end
     end
 
-    def onShift?(date)
-      if @shifts && @shifts.assigned?(date)
-        return @shifts.onShift?(date)
+    def onShift?(sbIdx, date)
+      if @shifts && @shifts.assigned?(sbIdx)
+        return @shifts.onShift?(sbIdx)
       else
         @workinghours.onShift?(date)
       end

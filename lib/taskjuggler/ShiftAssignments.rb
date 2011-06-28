@@ -143,13 +143,12 @@ class TaskJuggler
     end
 
     # This function returns the entry in the scoreboard that corresponds to
-    # _date_. If the slot has not yet been determined, it's calculated first.
-    def getSbSlot(date)
-      idx = @scoreboard.dateToIdx(date)
+    # _idx_. If the slot has not yet been determined, it's calculated first.
+    def getSbSlot(idx)
       # Check if we have a value already for this slot.
       return @scoreboard[idx] unless @scoreboard[idx].nil?
 
-
+      date = @scoreboard.idxToDate(idx)
       # If not, compute it.
       @assignments.each do |sa|
         next unless sa.assigned?(date)
@@ -175,27 +174,30 @@ class TaskJuggler
     end
 
     # Returns true if any of the defined shift periods overlaps with the date or
-    # interval specified by _date_.
-    def assigned?(date)
-      (getSbSlot(date) & 1) == 1
+    # interval specified by _idx_.
+    def assigned?(idx)
+      (getSbSlot(idx) & 1) == 1
     end
 
-    # Returns true if any of the defined shift periods contains the
-    # _date_ and the shift has working hours defined for that _date_.
-    def onShift?(date)
-      (getSbSlot(date) & (1 << 1)) == 0
+    # Returns true if any of the defined shift periods contains the date
+    # specified by the scoreboard index _idx_ and the shift has working hours
+    # defined for that date.
+    def onShift?(idx)
+      (getSbSlot(idx) & (1 << 1)) == 0
     end
 
-    # Returns true if any of the defined shift periods contains the _date_ and
-    # the shift has a vacation defined or all off hours defined for that _date_.
-    def timeOff?(date)
-      (getSbSlot(date) & 0x3E) != 0
+    # Returns true if any of the defined shift periods contains the date
+    # specified by the scoreboard index _idx_ and the shift has a vacation
+    # defined or all off hours defined for that date.
+    def timeOff?(idx)
+      (getSbSlot(idx) & 0x3E) != 0
     end
 
-    # Returns true if any of the defined shift periods contains the _date_ and
-    # if the shift has a vacation defined for the _date_.
-    def onVacation?(date)
-      (getSbSlot(date) & 0x3C) != 0
+    # Returns true if any of the defined shift periods contains the date
+    # specified by the scoreboard index _idx_ and if the shift has a vacation
+    # defined for the date.
+    def onVacation?(idx)
+      (getSbSlot(idx) & 0x3C) != 0
     end
 
     # Return a list of intervals that lay within _iv_ and are at least
