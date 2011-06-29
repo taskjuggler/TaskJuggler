@@ -141,17 +141,18 @@ class TaskJuggler
                    data = nil, scenario = nil)
       # Treat criticals like errors but without generating another
       # exception.
-      type = :error if type == :critical
-
-      msg = Message.new(type, id, message, sourceFileInfo, line, data, scenario)
+      msg = Message.new(type == :critical ? :error : type, id, message,
+                        sourceFileInfo, line, data, scenario)
       @messages << msg
       # Print the message to $stderr if requested by the user.
       $stderr.puts msg.to_s if @console
 
       case type
-      when :critical
       when :warning
         raise TjException.new, '' if @abortOnWarning
+      when :critical
+        # Increase the error counter.
+        @errors += 1
       when :error
         # Increase the error counter.
         @errors += 1
