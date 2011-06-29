@@ -641,15 +641,15 @@ class TaskJuggler
     end
 
     def error(id, text)
-      @project.messageHandler.error(id, text, sourceFileInfo, nil, self, nil)
+      @project.messageHandler.error(id, text, @sourceFileInfo, nil, self, nil)
     end
 
     def warning(id, text)
-      @project.messageHandler.warning(id, text, sourceFileInfo, nil, self, nil)
+      @project.messageHandler.warning(id, text, @sourceFileInfo, nil, self, nil)
     end
 
     def info(id, text)
-      @project.messageHandler.info(id, text, sourceFileInfo, nil, self, nil)
+      @project.messageHandler.info(id, text, @sourceFileInfo, nil, self, nil)
     end
 
 
