@@ -1100,7 +1100,11 @@ class TaskJuggler
     # Schedule all tasks for the given Scenario with index +scIdx+.
     def scheduleScenario(scIdx)
       tasks = PropertyList.new(@tasks)
-      tasks.delete_if { |task| !task.leaf? }
+      # Only care about leaf tasks that are not milestones are aren't
+      # scheduled already (due to bookings).
+      tasks.delete_if { |task| !task.leaf? ||
+                               task['milestone', scIdx] ||
+                               task['scheduled', scIdx] }
 
       Log.enter('scheduleScenario', "#{tasks.length} leaf tasks")
       # The sorting of the work item list determines which tasks will get their
@@ -1120,43 +1124,53 @@ class TaskJuggler
       # true.
       Log.startProgressMeter("Scheduling scenario " +
                              "#{scenario(scIdx).get('name')}")
-      loop do
-        # The main scheduler loop only needs to look at the first task that is
-        # ready to be scheduled.
-        workItems = tasks.to_ary
-
-        # Count the already completed tasks.
-        completedTasks = 0
-        workItems.each do |task|
-          completedTasks += 1 if task['scheduled', scIdx]
+      failedTasks = []
+      while !tasks.empty?
+        # Only update the progress bar every 10 completed tasks.
+        if tasks.length % 10 == 0
+          percentComplete = (totalTasks - tasks.length).to_f / totalTasks
+          Log.progress(percentComplete)
         end
 
-        Log.progress(completedTasks.to_f / totalTasks)
-        # Remove all tasks that are not ready for scheduling yet.
-        workItems.delete_if { |task| !task.readyForScheduling?(scIdx) }
+        # Now find the task with the highest priority that can be scheduled
+        # and schedule it.
+        taskToRemove = nil
+        tasks.each do |task|
+          # Task not ready? Ignore it.
+          next unless task.readyForScheduling?(scIdx)
 
-        # Check if we are done.
-        break if workItems.empty?
+          if task.schedule(scIdx)
+            Log << "Task #{task.fullId}: #{task['start', scIdx]} -> " +
+                   "#{task['end', scIdx]}"
+          else
+            failedTasks << task
+          end
+          # The tasks has been completed or failed. But we can remove it from
+          # the todo list.
+          taskToRemove = task
+          # The scheduling of this task may cause other higher priority tasks
+          # to be ready now. So we terminate the inner loop and start at the
+          # top of the list again.
+          break
+        end
 
-        # The first task in the list is the one with the highes priority and
-        # the largest path criticalness that is ready to be scheduled.
-        task = workItems[0]
-        # Schedule it.
-        if task.schedule(scIdx)
-          Log << "Task #{task.fullId}: #{task['start', scIdx]} -> " +
-                 "#{task['end', scIdx]}"
+        # There should always be a task to be removed. If not, the scheduler
+        # has found a set of tasks that deadlock each other.
+        if taskToRemove
+          tasks.delete(taskToRemove)
+        else
+          tasks.each { |t| puts t.fullId }
+          raise 'Scheduler deadlock: Cannot schedule any further tasks'
         end
       end
-      unscheduledTasks = []
-      tasks.each { |t| unscheduledTasks << t unless t['scheduled', scIdx] }
 
-      # Check for unscheduled tasks and report the first 10 of them as
+      # Check for failed tasks and report the first 10 of them as
       # warnings.
-      unless unscheduledTasks.empty?
+      unless failedTasks.empty?
         warning('unscheduled_tasks',
-                "#{unscheduledTasks.length} tasks could not be scheduled")
+                "#{failedTasks.length} tasks could not be scheduled")
         i = 0
-        unscheduledTasks.each do |t|
+        failedTasks.each do |t|
           warning('unscheduled_task',
                   "Task #{t.fullId}: " +
                   "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
