@@ -853,7 +853,9 @@ class TaskJuggler
       # Is the task scheduled from start to end or vice versa?
       forward = a('forward')
       # The task may not excede the project interval.
-      limit = @project[forward ? 'end' : 'start']
+      limit = @project.dateToIdx(@project[forward ? 'end' : 'start'])
+      # We need this very often. Save the now date as SB index.
+      @nowIdx = @project.dateToIdx(@project['now'])
       # Number of seconds per time slot.
       slotDuration = @project['scheduleGranularity']
 
@@ -887,7 +889,7 @@ class TaskJuggler
           # The task is scheduled from start to end.
           @currentSlot += slotDuration
           @currentSlotIdx += 1
-          if @currentSlot > limit
+          if @currentSlotIdx > limit
             markAsRunaway
             return false
           end
@@ -895,7 +897,7 @@ class TaskJuggler
           # The task is scheduled from end to start.
           @currentSlot -= slotDuration
           @currentSlotIdx -= 1
-          if @currentSlot < limit
+          if @currentSlotIdx < limit
             markAsRunaway
             return false
           end
@@ -1586,7 +1588,7 @@ class TaskJuggler
         # global working time slots.
         bookResources
         @doneDuration += 1
-        if @project.isWorkingTime(@currentSlot, @currentSlot + slotDuration)
+        if @project.isWorkingTime(@currentSlotIdx)
           @doneLength += 1
         end
 
@@ -1643,8 +1645,7 @@ class TaskJuggler
       # date. If the scenario is not scheduled in projection mode, this
       # restriction only applies to tasks with bookings.
       if ((@project.scenario(@scenarioIdx).get('projection') ||
-          !a('booking').empty?) &&
-          @currentSlot < @project['now'])
+          !a('booking').empty?) && @currentSlotIdx < @nowIdx)
         return
       end
 
@@ -1807,7 +1808,6 @@ class TaskJuggler
           startIdx = @project.dateToIdx(interval.start, false)
           date = interval.start
           endIdx = @project.dateToIdx(interval.end, false)
-          tEnd = nil
           startIdx.upto(endIdx - 1) do |idx|
             tEnd = date + slotDuration
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
@@ -1817,7 +1817,7 @@ class TaskJuggler
               # Set start and currentSlot if appropriate. The task start will be
               # set to the begining of the first booked slot. The currentSlot
               # will be set to the last booked slot
-              if @currentSlot.nil? || date > @currentSlot
+              if @currentSlot.nil? || idx > @currentSlotIdx
                 @currentSlot = tEnd
                 @currentSlotIdx = @project.dateToIdx(@currentSlot)
               end
@@ -1832,7 +1832,7 @@ class TaskJuggler
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            if a('length') > 0 && @project.isWorkingTime(date)
+            if a('length') > 0 && @project.isWorkingTime(idx)
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1

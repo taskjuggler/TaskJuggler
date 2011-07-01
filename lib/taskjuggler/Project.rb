@@ -799,34 +799,37 @@ class TaskJuggler
     end
 
     # call-seq:
+    #   isWorkingTime(slotIdx) -> true or false
     #   isWorkingTime(slot) -> true or false
     #   isWorkingTime(startTime, endTime) -> true or false
     #   isWorkingTime(interval) -> true or false
     #
-    # Return true if the _slot_ (TjTime) is withing globally defined working
+    # Return true if the slot or interval is withing globally defined working
     # time or false if not. If the argument is a TimeInterval, all slots of
     # the interval must be working time to return true as result. Global work
-    # time means, no vacation defined and the slot lies within a defined
-    # working time period.
+    # time means, no global vacation defined and the slot lies within a
+    # defined global working time period.
     def isWorkingTime(*args)
       # Normalize argument(s) to TimeInterval
       if args.length == 1
-        if args[0].is_a?(TimeInterval)
-          iv = args[0]
+        if args[0].is_a?(Fixnum) || args[0].is_a?(Bignum)
+          return @scoreboard[args[0]].nil?
+        elsif args[0].is_a?(TjTime)
+          return @scoreboard[dateToIdx(args[0])].nil?
+        elsif args[0].is_a?(TimeInterval)
+          startIdx = dateToIdx(args[0].start)
+          endIdx = dateToIdx(args[0].end)
         else
-          iv = TimeInterval.new(args[0], args[0] +
-                                @attributes['scheduleGranularity'])
+          raise ArgumentError, "Unsupported argument type #{args[0].class}"
         end
       else
-        iv = TimeInterval.new(args[0], args[1])
+        startIdx = dateToIdx(args[0])
+        endIdx = dateToIdx(args[1])
       end
 
-      # Check if the interval has overlap with any of the global vacations.
-      @attributes['vacations'].each do |vacation|
-        return false if vacation.overlaps?(iv)
+      startIdx.upto(endIdx) do |idx|
+        return false if @scoreboard[idx]
       end
-
-      return false if @attributes['workinghours'].timeOff?(iv)
 
       true
     end
