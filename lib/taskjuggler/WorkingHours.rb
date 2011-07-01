@@ -48,6 +48,9 @@ class TaskJuggler
         @startDate = wh.startDate
         @endDate = wh.endDate
         @slotDuration = wh.slotDuration
+        # Make sure the copied scoreboard has been created, so we can share it
+        # copy-on-write.
+        wh.onShift?(@startDate)
         @scoreboard = wh.scoreboard
       else
         slotDuration = arg1
