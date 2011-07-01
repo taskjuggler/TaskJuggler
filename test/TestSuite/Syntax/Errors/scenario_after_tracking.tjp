@@ -1,0 +1,8 @@
+project "Test" 2011-06-27 +1m {
+  trackingscenario plan
+# MARK: error 4 scenario_after_tracking
+  scenario foo "Bar"
+}
+
+task "Foo"
+

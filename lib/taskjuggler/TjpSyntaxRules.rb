@@ -2721,6 +2721,8 @@ the project. All sub-scenarios of this scenario inherit the bookings of the
 tracking scenario and may not have any bookings of their own. The tracking
 scenario must also be specified to use time and status sheet reports.
 
+The tracking scenario must be defined after all scenario have been defined.
+
 The tracking scenario and all scenarios derived from it will be scheduled in
 projection mode. This means that the scheduler will only add bookings after
 the current date or the date specified by [[now]]. It is assumed that all
@@ -4248,6 +4250,12 @@ EOT
     pattern(%w( _scenario $ID $STRING ), lambda {
       # If this is the top-level scenario, we must delete the default scenario
       # first.
+      @project.scenarios.each do |scenario|
+        if scenario.get('projection')
+          error('scenario_after_tracking',
+                'Scenarios must be defined before a tracking scenario is set.')
+        end
+      end
       @project.scenarios.clearProperties if @property.nil?
       if @project.scenario(@val[1])
         error('scenario_exists',

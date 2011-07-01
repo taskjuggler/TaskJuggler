@@ -160,7 +160,7 @@ class TaskJuggler::TextParser
       def line
         return '' unless @line
 
-        @scanner.pre_match + @scanner.matched
+        (@scanner.pre_match || '') + (@scanner.matched || '')
       end
 
     end
