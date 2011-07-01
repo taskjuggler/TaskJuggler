@@ -50,7 +50,7 @@ class TaskJuggler
         @slotDuration = wh.slotDuration
         # Make sure the copied scoreboard has been created, so we can share it
         # copy-on-write.
-        wh.onShift?(@startDate)
+        wh.onShift?(0)
         @scoreboard = wh.scoreboard
       else
         slotDuration = arg1
@@ -129,11 +129,16 @@ class TaskJuggler
       @days[dayOfWeek]
     end
 
-    # Return true if _date_ is within the defined working hours.
-    def onShift?(date)
+    # Return true if _arg_ is within the defined working hours. _arg_ can be a
+    # TjTime object or a global scoreboard index.
+    def onShift?(arg)
       initScoreboard unless @scoreboard
 
-      @scoreboard.get(date)
+      if arg.is_a?(TjTime)
+        @scoreboard.get(arg)
+      else
+        @scoreboard[arg]
+      end
     end
 
     # Return true only if all slots in the _interval_ are offhour slots.
