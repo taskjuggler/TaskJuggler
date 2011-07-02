@@ -592,7 +592,6 @@ class TaskJuggler
       @workinghours = a('workinghours')
 
       # Change all work time slots to nil (available) again.
-      delta = @project['scheduleGranularity']
       @project.scoreboardSize.times do |i|
         @scoreboard[i] = nil if onShift?(i)
       end
