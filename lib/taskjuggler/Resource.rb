@@ -28,6 +28,11 @@ class TaskJuggler
       end
     end
 
+    # Just a shortcut to avoid the slower calls via method_missing.
+    def book(scenarioIdx, sbIdx, task)
+      @data[scenarioIdx].book(sbIdx, task)
+    end
+
     # Many Resource functions are scenario specific. These functions are
     # provided by the class ResourceScenario. In case we can't find a
     # function called for the Resource class we try to find it in

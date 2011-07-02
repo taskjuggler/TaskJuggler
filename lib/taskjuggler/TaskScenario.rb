@@ -53,6 +53,9 @@ class TaskJuggler
       @duration = a('duration')
       @forward = a('forward')
       @allocate = a('allocate')
+      @booking = a('booking')
+      @shifts = a('shifts')
+      @projectionMode = @project.scenario(@scenarioIdx).get('projection')
 
       @startIsDetermed = nil
       @endIsDetermed = nil
@@ -1641,16 +1644,15 @@ class TaskJuggler
       # In projection mode we do not allow allocations prior to the current
       # date. If the scenario is not scheduled in projection mode, this
       # restriction only applies to tasks with bookings.
-      if ((@project.scenario(@scenarioIdx).get('projection') ||
-          !a('booking').empty?) && @currentSlotIdx < @nowIdx)
+      if ((@projectionMode || !@booking.empty?) && @currentSlotIdx < @nowIdx)
         return
       end
 
       # If the task has shifts to limit the allocations, we check that we are
       # within a defined shift interval. If yes, we need to be on shift to
       # continue.
-      if (shifts = a('shifts')) && shifts.assigned?(@currentSlotIdx)
-         return if !shifts.onShift?(@currentSlotIdx)
+      if @shifts && @shifts.assigned?(@currentSlotIdx)
+         return if !@shifts.onShift?(@currentSlotIdx)
       end
 
       # If the task has resource independent allocation limits we need to make
@@ -1718,7 +1720,7 @@ class TaskJuggler
         # Prevent overbooking when multiple resources are allocated and
         # available. If the task has allocation limits we need to make sure
         # that none of them is already exceeded.
-        break if a('effort') > 0 && @doneEffort >= a('effort') ||
+        break if @effort > 0 && @doneEffort >= @effort ||
                  !limitsOk?(@currentSlotIdx, resource)
 
         if r.book(@scenarioIdx, @currentSlotIdx, @property)
