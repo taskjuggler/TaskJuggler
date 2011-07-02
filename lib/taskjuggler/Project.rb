@@ -449,12 +449,6 @@ class TaskJuggler
             WorkingHours.new(@attributes['scheduleGranularity'],
                              @attributes['start'], @attributes['end'],
                              @attributes['timezone'])
-          # WorkingHours is using a copy-on-write scheme to prevent multiple
-          # copies of the same Scoreboard. All other WorkingHours objects are
-          # created as copies of this object. By calling
-          # WorkingHours::onShift? we make sure this instance has got a
-          # Scoreboard that gets reused by the other instances.
-          @attributes['workinghours'].onShift?(@attributes['start'])
         end
       end
       value

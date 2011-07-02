@@ -71,6 +71,14 @@ class TaskJuggler
       end
     end
 
+    # Since we want to share the scoreboard among instances with identical
+    # working hours, we need to prevent the scoreboard from being deep cloned.
+    # Calling the constructor with self in a re-defined deep_clone method will
+    # do just that.
+    def deep_clone
+      WorkingHours.new(self)
+    end
+
     # Return true of the given WorkingHours object +wh+ is identical to this
     # object.
     def ==(wh)
