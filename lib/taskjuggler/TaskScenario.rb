@@ -47,6 +47,13 @@ class TaskJuggler
       # Due to the 'efficiency' factor the effort slots must be a float.
       @doneEffort = 0.0
 
+      # Cache some frequently used attributes.
+      @effort = a('effort')
+      @length = a('length')
+      @duration = a('duration')
+      @forward = a('forward')
+      @allocate = a('allocate')
+
       @startIsDetermed = nil
       @endIsDetermed = nil
 
@@ -79,7 +86,7 @@ class TaskJuggler
 
       # Collect the mandatory allocations.
       @mandatories = []
-      a('allocate').each do |allocation|
+      @allocate.each do |allocation|
         @mandatories << allocation if allocation.mandatory
       end
 
@@ -1559,19 +1566,19 @@ class TaskJuggler
       # either right before or after this slot. If the current slot is not
       # directly aligned, we'll wait for another call with a proper slot. The
       # function returns true only if a slot could be scheduled.
-      if a('effort') > 0
-        bookResources if @doneEffort < a('effort')
-        if @doneEffort >= a('effort')
+      if @effort > 0
+        bookResources if @doneEffort < @effort
+        if @doneEffort >= @effort
           # The specified effort has been reached. The task has been fully
           # scheduled now.
-          if a('forward')
+          if @forward
             propagateDate(@project.idxToDate(@currentSlotIdx + 1), true, true)
           else
             propagateDate(@project.idxToDate(@currentSlotIdx), false, true)
           end
           return true
         end
-      elsif a('length') > 0 || a('duration') > 0
+      elsif @length > 0 || @duration > 0
         # The doneDuration counts the number of scheduled slots. It is increased
         # by one with every scheduled slot. The doneLength is only increased for
         # global working time slots.
@@ -1583,25 +1590,18 @@ class TaskJuggler
 
         # If we have reached the specified duration or lengths, we set the end
         # or start date and propagate the value to neighbouring tasks.
-        if (a('length') > 0 && @doneLength >= a('length')) ||
-           (a('duration') > 0 && @doneDuration >= a('duration'))
-          if a('forward')
+        if (@length > 0 && @doneLength >= @length) ||
+           (@duration > 0 && @doneDuration >= @duration)
+          if @forward
             propagateDate(@project.idxToDate(@currentSlotIdx + 1), true)
           else
             propagateDate(@project.idxToDate(@currentSlotIdx), false)
           end
           return true
         end
-      elsif a('milestone')
-        if a('forward')
-          propagateDate(a('start'), true)
-        else
-          propagateDate(a('end'), false)
-        end
-        return true
       elsif a('start') && a('end')
         # Task with start and end date but no duration criteria
-        if a('allocate').empty?
+        if @allocate.empty?
           # For start-end-tasks without allocation, we don't have to do
           # anything but to set the 'scheduled' flag.
           @property['scheduled', @scenarioIdx] = true
@@ -1616,14 +1616,21 @@ class TaskJuggler
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
         currentSlot = @project.idxToDate(@currentSlotIdx)
-        if (a('forward') && currentSlot + slotDuration >= a('end')) ||
-           (!a('forward') && currentSlot <= a('start'))
+        if (@forward && currentSlot + slotDuration >= a('end')) ||
+           (!@forward && currentSlot <= a('start'))
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
           end
           return true
         end
+      elsif a('milestone')
+        if @forward
+          propagateDate(a('start'), true)
+        else
+          propagateDate(a('end'), false)
+        end
+        return true
       end
 
       false
@@ -1685,7 +1692,7 @@ class TaskJuggler
         return unless found
       end
 
-      a('allocate').each do |allocation|
+      @allocate.each do |allocation|
         next unless allocation.onShift?(@currentSlotIdx)
 
         # In case we have a persistent allocation we need to check if there is
@@ -1718,8 +1725,8 @@ class TaskJuggler
           # For effort based task we adjust the the start end (as defined by
           # the scheduling direction) to align with the first booked time
           # slot.
-          if a('effort') > 0 && a('assignedresources').empty?
-            if a('forward')
+          if @effort > 0 && a('assignedresources').empty?
+            if @forward
               @property['start', @scenarioIdx] =
                 @project.idxToDate(@currentSlotIdx)
               Log << "Task #{@property.fullId} first assignment: " +
