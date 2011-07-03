@@ -12,6 +12,7 @@ execs = Dir.glob('./bin/*') + Dir.glob('./**/run') +
 
 task :release => [:clobber] do
     puts "Preparing release of #{PROJECT_NAME} version #{PROJECT_VERSION}"
+    Rake::Task[:vim].invoke
     Rake::Task[:spec].invoke
     Rake::Task[:test].invoke
     Rake::Task[:rdoc].invoke

@@ -49,6 +49,9 @@ work. For users that are not interested in multi-core support, the web
 server,  the time sheet infrastructure and daemon Ruby 1.8.7 is still
 ok to use. On Windows you need at least Ruby 1.9.2.
 
+See below for instructions on how to use the latest and greates Ruby
+version in parallel with your distribution Ruby.
+
 * '''RubyGems:''' If it did not come with your OS or the Ruby
 installation, see [http://docs.rubygems.org here] how to get and
 install it.
@@ -209,4 +212,121 @@ manual and some other parts do require a build step.
  rake release
 
 will do it all and even create installable gem files again.
+
+=== Installing a newer Ruby version ===
+
+New Ruby versions are released usually about once or twice a year.
+Unfortunately, it takes some time before Linux distributions pick up
+the new release. Depending on your distribution, this can take
+anything from a few weeks to several years. Many distributions still
+have not yet made the switch to Ruby 1.9. The core part of
+TaskJuggler can be used with Ruby 1.8.9, but it is at least 3 times
+slower. Therefor it is recommended, that you install the latest
+stable release of Ruby to use TaskJuggler. This can easily and safely
+being done in parallel to your distribution Ruby. Both versions can
+be used in parallel without interfering each other.
+
+This section only covers Linux. For other operating system, please
+search the web for instructions. If you want to contribute the
+description for another OS, please see [[How_To_Contribute]].
+
+First, you need to download the source code of the latest stable
+release from
+[http://www.ruby-lang.org/en/downloads/ www.ruby-lang.org].
+
+The source code is distributed as zipped tarfile. You can extract it
+like this. Change the file name to the actual version you have
+downloaded.
+
+  tar -Zxvf ruby-X.X.X-*.tar.gz
+
+This will create a directory with the same name as the archive, but
+without the ''''.tar.gz'''' extension. Now change into this directory
+and configure the source code for your specific OS and compile it.
+For this to work, you need to have the GNU C compiler and related
+utilities installed. We configure Ruby to append ''''19'''' to all
+executable names. This way, you can easily choose if you want to run
+the old or the new Ruby. ''''ruby'''' runs your distribution Ruby,
+''''ruby19'''' runs your new ruby.
+
+  cd ruby-X.X.X-*
+  ./configure --program-suffix=19
+  make
+
+If all goes well, you can install it now. This requires root
+permission, so you need to enter the root password. All executables
+will be installed into ''''/usr/local/bin''''.
+
+  sudo make install
+
+As a final step, you need to install the ''''mail'''' gem.
+
+  sudo gem19 install mail
+
+If you don't want to use TaskJuggler from the git repository, you can
+install the TaskJuggler gem as well.
+
+  sudo gem19 install taskjuggler
+
+That's it. You now have the latest Ruby installed and are ready to
+use TaskJuggler.
+
+=== Installing the Vim Support ===
+
+TaskJuggler can be used with any text editor that supports UTF-8 text
+file editing. If you don't have a preference yet, we recommend to try
+the [http://www.vim.org Vim] text editor. It's a very powerful editor
+and it has been customized for better integration with TaskJuggler.
+This section describes, how to activate and use the Vim integration.
+Vim is provided by pretty much any Linux distribution and also works
+well on MacOX and Windows. See the web page for how to install it if
+you don't have it yet.
+
+This section describes the integration on Linux. Please see the
+[[How_To_Contribute]] section if you want to contribute the
+description for another OS.
+
+If you have never customized Vim, you need to create a few
+directories first.
+
+  cd ${HOME}
+  mkdir .vim
+  mkdir .vim/syntax
+
+Then copy the syntax file ''''tjp.vim'''' into the vim syntax
+directory. The following command works if you have installed
+TaskJuggler as a gem with the system provided Ruby. For other cases,
+you may have to modify it accordingly.
+
+  cp `gem contents taskjuggler | fgrep tjp.vim` .vim/syntax
+
+Now we have to make sure, Vim detects the file. Edit the
+''''.vim/filetype.vim'''' file to contain the following section.
+
+ augroup filetypedetect
+ au BufNewFile,BufRead *.tjp,*.tji               setf tjp
+ augroup END
+
+And edit the ''''.vim/syntax.vim'''' file to contain the following line.
+
+ au! Syntax tjp          so ~/.vim/syntax/tjp.vim
+
+When you now open a ''''.tjp'''' or ''''.tji'''' file in Vim, you should have the following features available:
+
+* Syntax highlighting. TJP keywords should be colored in different colors.
+* Syntax folding. The optional parts of properties within the curly
+  braces can be collapsed. For this to work, the opening brace needs
+  to be on the same line as the property keyword. The closing brace
+  must be the first non-black character of the last line of the
+  block. See the '''':help fold'''' Vim help command for details how
+  to open and close folds.
+* Tag navigation. If you include a [tagfile] report in your project,
+  Vim will know all property IDs and can jump to them. If you have a
+  task with the ID ''''foo.bar'''', the command '''':ta foo.bar''''
+  will put the cursor right where task ''''foo.bar'''' was declared.
+* ID completion. If you include a [tagfile] report in your project,
+  Vim can tell you the full hierarchical ID of a property. Just move
+  the cursor to the first line of the property definition and press
+  ''''Ctrl-]''''.
+
 
