@@ -17,6 +17,7 @@ require 'taskjuggler/PropertyTreeNode'
 require 'taskjuggler/reports/TextReport'
 require 'taskjuggler/reports/TaskListRE'
 require 'taskjuggler/reports/ResourceListRE'
+require 'taskjuggler/reports/TagFile'
 require 'taskjuggler/reports/TjpExportRE'
 require 'taskjuggler/reports/StatusSheetReport'
 require 'taskjuggler/reports/TimeSheetReport'
@@ -73,6 +74,8 @@ class TaskJuggler
           copyAuxiliaryFiles
         when :csv
           generateCSV
+        when :ctags
+          generateCTags
         when :niku
           generateNiku
         when :tjp
@@ -99,6 +102,8 @@ class TaskJuggler
         @content = NikuReport.new(self)
       when :resourcereport
         @content = ResourceListRE.new(self)
+      when :tagfile
+        @content = TagFile.new(self)
       when :textreport
         @content = TextReport.new(self)
       when :taskreport
@@ -314,6 +319,25 @@ EOT
         f.puts "#{@content.to_iCal}"
       rescue IOError
         error('write_ical', "Cannot write to file #{@name}.\n#{$!}")
+      end
+    end
+
+    # Generate ctags file
+    def generateCTags
+      unless @content.respond_to?('to_ctags')
+        warning('ctags_not_supported',
+                "ctags format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
+      begin
+        f = @name == '.' ? $stdout :
+          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
+                    @name).untaint, 'w')
+        f.puts "#{@content.to_ctags}"
+      rescue IOError
+        error('write_ctags', "Cannot write to file #{@name}.\n#{$!}")
       end
     end
 

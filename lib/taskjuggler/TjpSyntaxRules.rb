@@ -883,7 +883,7 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :export, sourceFileInfo)
+      report = newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
 
       # By default, we export all scenarios.
       scenarios = Array.new(@project.scenarios.items) { |i| i }
@@ -1539,7 +1539,7 @@ EOT
 
   def rule_iCalReportHeader
     pattern(%w( _icalreport !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :iCal, sourceFileInfo)
+      report = newReport(@val[1], @val[2], :iCal, @sourceFileInfo[0])
 
       @property.set('formats', [ :iCal ])
       # By default, we export only the first scenario.
@@ -2298,7 +2298,7 @@ EOF
 
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :niku, sourceFileInfo)
+      newReport(@val[1], @val[2], :niku, @sourceFileInfo[0])
       @property.set('numberFormat', RealFormat.new(['-', '', '', '.', 2]))
     })
     arg(1, 'file name', <<'EOT'
@@ -2980,6 +2980,7 @@ EOT
 
     pattern(%w( !report ))
     pattern(%w( !resource ))
+    pattern(%w( !tagfile ))
     pattern(%w( !shift ))
     pattern(%w( !statusSheet ))
     pattern(%w( !statusSheetReport ))
@@ -4549,7 +4550,7 @@ EOT
       else
         fileName = "statusSheet#{@project.reports.length + 1}"
       end
-      report = newReport(@val[1], fileName, :statusSheet, sourceFileInfo)
+      report = newReport(@val[1], fileName, :statusSheet, @sourceFileInfo[0])
       report.set('scenarios', [ 0 ])
       # Show all tasks, sorted by id-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
@@ -4817,6 +4818,54 @@ EOT
     })
     arg(1, 'task ID', 'The ID of an already defined task.')
   end
+
+  def rule_tagfile
+    pattern(%w( !tagfileHeader !tagfileBody ), lambda {
+      @property = nil
+    })
+    doc('tagfile', <<'EOT'
+The tagfile report generates a file that maps properties to source file
+locations. This can be used by editors to quickly jump to a certain task or
+resource definition. Currently only the ctags format is supported that is used
+by editors like [http://www.vim.org|vim].
+EOT
+       )
+  end
+
+  def rule_tagfileHeader
+    pattern(%w( _tagfile !optionalID $STRING ), lambda {
+      report = newReport(@val[1], @val[2], :tagfile, @sourceFileInfo[0])
+
+      @property.set('formats', [ :ctags ])
+      # Include all tasks.
+      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      # Include all resources.
+      report.set('hideResource',
+                  LogicalExpression.new(LogicalOperation.new(0)))
+      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+    })
+    arg(1, 'file name', <<'EOT'
+The name of the tagfile to generate. You can leave it empty and it will
+default to the commonly used name ''''tags''''.
+EOT
+       )
+  end
+
+  def rule_tagfileAttributes
+    optional
+    repeatable
+
+    pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
+    pattern(%w( !rollupresource ))
+    pattern(%w( !rolluptask ))
+  end
+
+  def rule_tagfileBody
+    optionsRule('tagfileAttributes')
+  end
+
 
   def rule_task
     pattern(%w( !taskHeader !taskBody ), lambda {
@@ -5925,7 +5974,8 @@ EOT
   end
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :timeSheet, sourceFileInfo)
+      report = newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
+
       report.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
       report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
