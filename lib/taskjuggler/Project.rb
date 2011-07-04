@@ -828,6 +828,34 @@ class TaskJuggler
       true
     end
 
+    # call-seq:
+    #   hasWorkingTime(startTime, endTime) -> true or false
+    #   hasWorkingTime(interval) -> true or false
+    #
+    # Return true if the interval overlaps with a globally defined working
+    # time or false if not. Global work time means, no global vacation defined
+    # and the slot lies within a defined global working time period.
+    def hasWorkingTime(*args)
+      # Normalize argument(s) to TimeInterval
+      if args.length == 1
+        if args[0].is_a?(TimeInterval)
+          startIdx = dateToIdx(args[0].start)
+          endIdx = dateToIdx(args[0].end)
+        else
+          raise ArgumentError, "Unsupported argument type #{args[0].class}"
+        end
+      else
+        startIdx = dateToIdx(args[0])
+        endIdx = dateToIdx(args[1])
+      end
+
+      startIdx.upto(endIdx) do |idx|
+        return true if @scoreboard[idx]
+      end
+
+      false
+    end
+
     # Convert working _seconds_ to working days. The result depends on the
     # setting of the global 'dailyworkinghours' attribute.
     def convertToDailyLoad(seconds)

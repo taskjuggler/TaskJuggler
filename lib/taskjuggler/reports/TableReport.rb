@@ -505,7 +505,7 @@ class TaskJuggler
           # TODO: The width should be taken from some data structure.
           column.cell2.width = 20
           # Off-duty cells will have a different color than working time cells.
-          unless @project.isWorkingTime(iv)
+          unless @project.hasWorkingTime(iv)
             column.cell2.category = 'tabhead_offduty'
           end
           cellsInInterval += 1
