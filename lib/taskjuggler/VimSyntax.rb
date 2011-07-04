@@ -217,7 +217,7 @@ map <C-]> :call ShowFullID()<CR>
 function! ShowFullID()
   let linenumber = line(".")
   let filename = bufname("%")
-  execute "!grep '".filename."\t".linenumber."' tags|cut -f 1"
+  execute "!grep '".filename."\t".linenumber.";' tags|cut -f 1"
 endfunction
 
 augroup TaskJugglerSource
