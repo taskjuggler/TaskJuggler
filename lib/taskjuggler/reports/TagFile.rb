@@ -66,6 +66,7 @@ class TaskJuggler
       @resourceList = filterResourceList(@resourceList, nil, a('hideResource'),
                                          a('rollupResource'), a('openNodes'))
       @resourceList.each do |resource|
+        next unless resource.sourceFileInfo
         @tags << TagFileEntry.new(resource.fullId,
                                   resource.sourceFileInfo.fileName,
                                   resource.sourceFileInfo.lineNo, 'r')
@@ -77,6 +78,7 @@ class TaskJuggler
       @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'),
                                  a('openNodes'))
       @taskList.each do |task|
+        next unless task.sourceFileInfo
         @tags << TagFileEntry.new(task.fullId,
                                   task.sourceFileInfo.fileName,
                                   task.sourceFileInfo.lineNo, 't')
@@ -84,6 +86,7 @@ class TaskJuggler
 
       # Add the reports.
       @project.reports.each do |report|
+        next unless report.sourceFileInfo
         @tags << TagFileEntry.new(report.fullId,
                                   report.sourceFileInfo.fileName,
                                   report.sourceFileInfo.lineNo, 'p')
