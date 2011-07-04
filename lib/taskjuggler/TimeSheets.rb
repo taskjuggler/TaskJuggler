@@ -102,7 +102,7 @@ class TaskJuggler
         if @status.headline.empty?
           error('ts_no_headline',
                 "You must provide a headline for the status of " +
-                "task #{@task.fullId}")
+                "task #{taskId}")
         end
         if @status.summary &&
           @status.summary.richText.inputText == "A summary text\n"
