@@ -33,7 +33,7 @@ class TaskJuggler
     # scheduling.
     def prepareScheduling
       @property['startpreds', @scenarioIdx] = []
-      @property['startsuccs', @scenarioIdx] =[]
+      @property['startsuccs', @scenarioIdx] = []
       @property['endpreds', @scenarioIdx] = []
       @property['endsuccs', @scenarioIdx] = []
 
@@ -47,14 +47,14 @@ class TaskJuggler
       # Due to the 'efficiency' factor the effort slots must be a float.
       @doneEffort = 0.0
 
-      # Cache some frequently used attributes.
-      @effort = a('effort')
-      @length = a('length')
-      @duration = a('duration')
-      @forward = a('forward')
-      @allocate = a('allocate')
-      @booking = a('booking')
-      @shifts = a('shifts')
+      # Attributed are only really created when they are assigned to. So make
+      # sure some needed attributes really exist. We don't want to check for
+      # existance each time we access them.
+      %w( allocate booking duration effort end forward length
+          milestone scheduled shifts start).each do |attr|
+        @property[attr, @scenarioIdx]
+      end
+
       @projectionMode = @project.scenario(@scenarioIdx).get('projection')
 
       @startIsDetermed = nil
@@ -76,13 +76,13 @@ class TaskJuggler
 
       # Collect the limits of this task and all parent tasks into a single
       # Array.
-      @limits = []
+      @allLimits = []
       task = @property
       # Reset the counters of all limits of this task.
       task['limits', @scenarioIdx].reset if task['limits', @scenarioIdx]
       until task.nil?
         if task['limits', @scenarioIdx]
-          @limits << task['limits', @scenarioIdx]
+          @allLimits << task['limits', @scenarioIdx]
         end
         task = task.parent
       end
@@ -1644,7 +1644,8 @@ class TaskJuggler
       # In projection mode we do not allow allocations prior to the current
       # date. If the scenario is not scheduled in projection mode, this
       # restriction only applies to tasks with bookings.
-      if ((@projectionMode || !@booking.empty?) && @currentSlotIdx < @nowIdx)
+      if ((@projectionMode || !@booking.empty?) &&
+          @currentSlotIdx < @nowIdx)
         return
       end
 
@@ -1697,8 +1698,8 @@ class TaskJuggler
       @allocate.each do |allocation|
         next unless allocation.onShift?(@currentSlotIdx)
 
-        # In case we have a persistent allocation we need to check if there is
-        # already a locked resource and use it.
+        # In case we have a persistent allocation we need to check if there
+        # is already a locked resource and use it.
         if allocation.persistent && !allocation.lockedResource.nil?
           bookResource(allocation.lockedResource)
         else
@@ -1750,7 +1751,7 @@ class TaskJuggler
           @doneEffort += r['efficiency', @scenarioIdx]
           # Limits do not take efficiency into account. Limits are usage limits,
           # not effort limits.
-          @limits.each do |limit|
+          @allLimits.each do |limit|
             limit.inc(@currentSlotIdx, resource)
           end
 
@@ -1769,7 +1770,7 @@ class TaskJuggler
     # checked. If no resource is provided, only non-resource-specific limits
     # are checked.
     def limitsOk?(sbIdx, resource = nil)
-      @limits.each do |limit|
+      @allLimits.each do |limit|
         return false if !limit.ok?(sbIdx, true, resource)
       end
       true

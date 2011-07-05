@@ -27,7 +27,7 @@ class TaskJuggler
   # attribute like an URL that contains more details about the task.
   class PropertyTreeNode
 
-    attr_reader :propertySet, :id, :parent, :project, :sequenceNo,
+    attr_reader :propertySet, :id, :subId, :parent, :project, :sequenceNo,
                 :children, :adoptees
     attr_accessor :name, :sourceFileInfo
     attr_reader :data
@@ -53,12 +53,12 @@ class TaskJuggler
             "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
         end
         unless aType.scenarioSpecific
-          hash[attributeId] = aType.objClass.new(@propertySet, aType)
+          hash[attributeId] = aType.objClass.new(@propertySet, aType, self)
         else
           raise ArgumentError, "Attribute '#{attributeId}' is scenario specific"
         end
       end
-      @scenarioAttributes = Array.new(@project.scenarioCount) do
+      @scenarioAttributes = Array.new(@project.scenarioCount) do |scenarioIdx|
         Hash.new do |hash, attributeId|
           unless (aType = attributeDefinition(attributeId))
             raise ArgumentError,
@@ -66,7 +66,8 @@ class TaskJuggler
               "#{self.class.to_s.sub(/TaskJuggler::/, '')} '#{fullId}'"
           end
           if aType.scenarioSpecific
-            hash[attributeId] = aType.objClass.new(@propertySet, aType)
+            hash[attributeId] = aType.objClass.new(@propertySet, aType,
+                                                   @data[scenarioIdx])
           else
             raise ArgumentError,
               "Attribute '#{attributeId}' is not scenario specific"
@@ -93,9 +94,9 @@ class TaskJuggler
                 "(#{@parentId}) don't match"
           end
         end
-        @id = id[(id.rindex('.') + 1).. -1]
+        @subId = id[(id.rindex('.') + 1).. -1]
       else
-        @id = id
+        @subId = id
       end
       # The attribute 'id' is either the short ID or the full hierarchical ID.
       set('id', fullId)
@@ -279,11 +280,11 @@ class TaskJuggler
     # namespace, this is just the ID. Otherwise, the full ID is composed of all
     # IDs from the root node to this node, separating the IDs by a dot.
     def fullId
-      res = @id
+      res = @subId
       unless @propertySet.flatNamespace
         t = self
         until (t = t.parent).nil?
-          res = t.id + "." + res
+          res = t.subId + "." + res
         end
       end
       res

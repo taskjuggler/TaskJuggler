@@ -193,7 +193,7 @@ class TaskJuggler
     def generateTask(task, indent)
       Log.activity if task.sequenceNo % 100 == 0
 
-      @file << ' ' * indent + "task #{task.id} " +
+      @file << ' ' * indent + "task #{task.subId} " +
                "#{quotedString(task.name)} {\n"
 
       if a('taskAttributes').include?('depends')

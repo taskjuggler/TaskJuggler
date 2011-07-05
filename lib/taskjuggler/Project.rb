@@ -117,10 +117,16 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'active',   'Enabled',    BooleanAttribute,
               true,  false,   false, true ],
+        [ 'id',       'ID',         StringAttribute,
+              false, false,   false, nil ],
+        [ 'name',     'Name',       StringAttribute,
+              false, false,   false, nil ],
         [ 'ownbookings', 'Own Bookings', BooleanAttribute,
               false, false,   false, true ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
               true,  false,   false, false ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
       ]
       attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -128,18 +134,24 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
+        [ 'bsi',      'BSI',          StringAttribute,
+              false, false,   false, "" ],
+        [ 'id',       'ID',         StringAttribute,
+              false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
+        [ 'name',     'Name',       StringAttribute,
+              false, false,   false, nil ],
         [ 'replace',   'Replace',      BooleanAttribute,
               true,  false,   true,  false ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
               true,  true,    true,  TjTime.timeZone ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'vacations', 'Vacations',    TimeIntervalListAttribute,
               true,  true,    true,  [] ],
-        [ 'bsi',       'BSI',          StringAttribute,
-              false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
               true,  true,    true,  nil ]
       ]
@@ -149,13 +161,19 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
+        [ 'bsi',       'BSI',          StringAttribute,
+              false, false,   false, "" ],
+        [ 'id',       'ID',         StringAttribute,
+              false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
+        [ 'name',     'Name',       StringAttribute,
+              false, false,   false, nil ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
-              false, false,   false, "" ],
-        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ]
       ]
       attrs.each { |a| @accounts.addAttributeType(AttributeDefinition.new(*a)) }
@@ -166,6 +184,8 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'alloctdeffort', 'Alloctd. Effort', FloatAttribute,
               false, false,   true,  0.0 ],
+        [ 'bsi',       'BSI',          StringAttribute,
+              false, false,   false, "" ],
         [ 'criticalness', 'Criticalness', FloatAttribute,
               false, false,   true,  0.0 ],
         [ 'duties',    'Duties',       TaskListAttribute,
@@ -196,6 +216,8 @@ class TaskJuggler
               true,  true,    true,  0.0 ],
         [ 'reports', 'Reports', ResourceListAttribute,
               false, false,   true,  [] ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
         [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
               true, false,    true,  nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
@@ -204,8 +226,6 @@ class TaskJuggler
               true,  true,    true,  [] ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
               false, false,   false, [] ],
-        [ 'bsi',       'BSI',          StringAttribute,
-              false, false,   false, "" ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
               true,  true,    true,  nil ]
       ]
@@ -221,6 +241,8 @@ class TaskJuggler
               false, false,   true,  [] ],
         [ 'booking',   'Bookings',     BookingListAttribute,
               false, false,   true,  [] ],
+        [ 'bsi',       'BSI',          StringAttribute,
+              false, false,   false, "" ],
         [ 'charge',    'Charges',      ChargeListAttribute,
               false, false,   true,  [] ],
         [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute,
@@ -247,6 +269,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'forward',   'Scheduling',   BooleanAttribute,
               true,  false,   true,  true ],
+        [ 'id',       'ID',         StringAttribute,
+              false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
         [ 'length',    'Length',       DurationAttribute,
@@ -263,6 +287,8 @@ class TaskJuggler
               false, false,   true,  nil ],
         [ 'minstart',  'Min. Start',   DateAttribute,
               true,  false,   true,  nil ],
+        [ 'name',     'Name',       StringAttribute,
+              false, false,   false, nil ],
         [ 'note',      'Note',         RichTextAttribute,
               false, false,   false, nil ],
         [ 'pathcriticalness', 'Path Criticalness', FloatAttribute,
@@ -277,6 +303,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'scheduled', 'Scheduled',    BooleanAttribute,
               true,  false,   true,  false ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
         [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute,
               true,  false,   true, nil ],
         [ 'start',     'Start',        DateAttribute,
@@ -290,9 +318,7 @@ class TaskJuggler
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
-              false, false,   false, [] ],
-        [ 'bsi',       'BSI',          StringAttribute,
-              false, false,   false, "" ]
+              false, false,   false, [] ]
       ]
       attrs.each { |a| @tasks.addAttributeType(AttributeDefinition.new(*a)) }
 
@@ -300,6 +326,8 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
+        [ 'bsi',       'BSI',          StringAttribute,
+              false, false,   false, "" ],
         [ 'caption',   'Caption',      RichTextAttribute,
               true, false,   false, nil ],
         [ 'center',    'Center',       RichTextAttribute,
@@ -334,6 +362,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'hideTask',  'Hide Task',    LogicalExpressionAttribute,
               true,  false,   false, nil ],
+        [ 'id',       'ID',         StringAttribute,
+              false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
         [ 'interactive', 'Interactive', BooleanAttribute,
@@ -342,6 +372,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'loadUnit',  'Load Unit',    StringAttribute,
               true,  true,    false, nil ],
+        [ 'name',     'Name',       StringAttribute,
+              false, false,   false, nil ],
         [ 'now',       'Now',          DateAttribute,
               true,  true,    false, nil ],
         [ 'numberFormat', 'Number Format', RealFormatAttribute,
@@ -366,6 +398,8 @@ class TaskJuggler
               true, false,    false, [ 0 ] ],
         [ 'selfcontained', 'Selfcontained', BooleanAttribute,
               true, false,    false, false ],
+        [ 'seqno',    'No',          FixnumAttribute,
+              false, false,   false, nil ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
               true,  true,    false, nil ],
         [ 'sortResources', 'Sort Resources', SortListAttribute,
@@ -389,8 +423,6 @@ class TaskJuggler
         [ 'title',    'Title',         StringAttribute,
               true, false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
-              false, false,   false, "" ],
-        [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
               true,  true,    false, false ]

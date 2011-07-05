@@ -23,7 +23,7 @@ require 'taskjuggler/WorkingHours'
 class TaskJuggler
 
   class AccountAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -32,20 +32,20 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value ? @value.id : ''
+      (v = get) ? v.id : ''
     end
 
     def to_tjp
-      @value ? @value.id : ''
+      (v = get)? v.id : ''
     end
 
   end
 
   class AllocationAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
 
-      @value = Array.new
+      set(Array.new)
     end
 
     def AllocationAttribute::tjpId
@@ -54,7 +54,7 @@ class TaskJuggler
 
     def to_tjp
       out = []
-      @value.each do |allocation|
+      get.each do |allocation|
         out.push("allocate #{allocation.to_tjp}\n")
         # TODO: incomplete
       end
@@ -64,7 +64,7 @@ class TaskJuggler
     def to_s(query = nil)
       out = ''
       first = true
-      @value.each do |allocation|
+      get.each do |allocation|
         if first
           first = false
         else
@@ -91,7 +91,7 @@ class TaskJuggler
   end
 
   class BookingListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -100,7 +100,7 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value.collect{ |x| x.to_s }.join(', ')
+      get.collect{ |x| x.to_s }.join(', ')
     end
 
     def to_tjp
@@ -110,7 +110,7 @@ class TaskJuggler
   end
 
   class BooleanAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -119,17 +119,17 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value ? 'true' : 'false'
+      get ? 'true' : 'false'
     end
 
     def to_tjp
-      @type.id + ' ' + (@value ? 'yes' : 'no')
+      @type.id + ' ' + (get ? 'yes' : 'no')
     end
 
   end
 
   class ChargeListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -138,7 +138,7 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value.join(', ')
+      get.join(', ')
     end
 
   end
@@ -147,7 +147,7 @@ class TaskJuggler
   # PropertyTreeNode attributes.
   class ChargeSetListAttribute < ListAttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -157,13 +157,13 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |i| out << i.to_s }
+      get.each { |i| out << i.to_s }
       out.join(", ")
     end
 
     def to_tjp
       out = []
-      @value.each { |i| out << i.to_s }
+      get.each { |i| out << i.to_s }
       @type.id + " " + out.join(', ')
     end
 
@@ -171,7 +171,7 @@ class TaskJuggler
 
   class ColumnListAttribute < ListAttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -185,13 +185,13 @@ class TaskJuggler
   end
 
   class DateAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
     def to_s(query = nil)
-      if @value
-        @value.to_s(query ? query.timeFormat : '%Y-%m-%d')
+      if (v = get)
+        v.to_s(query ? query.timeFormat : '%Y-%m-%d')
       else
         'Error'
       end
@@ -203,13 +203,13 @@ class TaskJuggler
   end
 
   class DefinitionListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
   end
 
   class DependencyListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -219,20 +219,20 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |t| out << t.task.fullId if t.task }
+      get.each { |t| out << t.task.fullId if t.task }
       out.join(', ')
     end
 
     def to_tjp
       out = []
-      @value.each { |taskDep| out << taskDep.task.fullId }
+      get.each { |taskDep| out << taskDep.task.fullId }
       @type.id + " " + out.join(', ')
     end
 
   end
 
   class DurationAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -241,18 +241,18 @@ class TaskJuggler
     end
 
     def to_tjp
-      @type.id + ' ' + @value.to_s + 'h'
+      @type.id + ' ' + get.to_s + 'h'
     end
 
     def to_s(query = nil)
-      query ? query.scaleDuration(query.project.slotsToDays(@value)) :
-              @value.to_s
+      query ? query.scaleDuration(query.project.slotsToDays(get)) :
+              get.to_s
     end
 
   end
 
   class FixnumAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -262,7 +262,7 @@ class TaskJuggler
   end
 
   class FlagListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -271,17 +271,17 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value.join(', ')
+      get.join(', ')
     end
 
     def to_tjp
-      "flags #{@value.join(', ')}"
+      "flags #{get.join(', ')}"
     end
 
   end
 
   class FloatAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -290,25 +290,25 @@ class TaskJuggler
     end
 
     def to_tjp
-      id + ' ' + @value.to_s
+      id + ' ' + get.to_s
     end
 
   end
 
   class FormatListAttribute < ListAttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
     def to_s(query = nil)
-      @value.join(', ')
+      get.join(', ')
     end
 
   end
 
   class TimeIntervalListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -318,13 +318,13 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |i| out << i.to_s }
+      get.each { |i| out << i.to_s }
       out.join(", ")
     end
 
     def to_tjp
       out = []
-      @value.each { |i| out << i.to_s }
+      get.each { |i| out << i.to_s }
       @type.id + " " + out.join(', ')
     end
 
@@ -332,9 +332,10 @@ class TaskJuggler
 
   class LimitsAttribute < AttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
-      @value.setProject(property.project) if @value
+      v = get
+      v.setProject(property.project) if v
     end
 
     def LimitsAttribute::tjpId
@@ -349,7 +350,7 @@ class TaskJuggler
 
   class LogicalExpressionAttribute < AttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -361,7 +362,7 @@ class TaskJuggler
 
   class LogicalExpressionListAttribute < ListAttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -372,13 +373,13 @@ class TaskJuggler
   end
 
   class NodeListAttribute < ListAttributeBase
-    def initialize(propery, type)
+    def initialize(property, type, container)
       super
     end
   end
 
   class PropertyAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -389,14 +390,14 @@ class TaskJuggler
 
   class RealFormatAttribute < AttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
   end
 
   class ReferenceAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -409,7 +410,7 @@ class TaskJuggler
     end
 
     def to_rti(query)
-      return nil unless @value
+      return nil unless get
 
       rText = RichText.new("[#{url} #{label}]")
       rText.generateIntermediateFormat
@@ -420,17 +421,17 @@ class TaskJuggler
     end
 
     def url
-      @value ? @value[0] : nil
+      (v = get) ? v[0] : nil
     end
 
     def label
-      @value ? (@value[1] ? @value[1][0] : @value[0]) : nil
+      (v = get) ? (v[1] ? v[1][0] : v[0]) : nil
     end
 
   end
 
   class ResourceListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -440,14 +441,14 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |r| out << r.fullId }
+      get.each { |r| out << r.fullId }
       out.join(", ")
     end
 
     def to_rti(query = nil)
       out = []
       if query
-        @value.each do |r|
+        get.each do |r|
           if query.listItem
             rti = RichText.new(query.listItem, RTFHandlers.create(r.project),
                                r.project.messageHandler).
@@ -462,7 +463,7 @@ class TaskJuggler
         end
         query.assignList(out)
       else
-        @value.each { |r| out << r.name }
+        get.each { |r| out << r.name }
         rText = RichText.new(out.join(', '))
         rText.generateIntermediateFormat
       end
@@ -470,19 +471,19 @@ class TaskJuggler
 
     def to_tjp
       out = []
-      @value.each { |r| out << r.fullId }
+      get.each { |r| out << r.fullId }
       @type.id + " " + out.join(', ')
     end
 
   end
 
   class RichTextAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
     def inputText
-      @value ? @value.richText.inputText : ''
+      (v = get) ? v.richText.inputText : ''
     end
 
     def RichTextAttribute::tjpId
@@ -490,11 +491,11 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value ? @value.to_s : ''
+      (v = get) ? v.to_s : ''
     end
 
     def to_tjp
-      inputText = @value.richText.inputText
+      inputText = get.richText.inputText
       if inputText[-1] == ?\n
         "#{@type.id} -8<-\n#{inputText}\n->8-"
       else
@@ -506,7 +507,7 @@ class TaskJuggler
   end
 
   class ScenarioListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -515,7 +516,7 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      @value.join(', ')
+      get.join(', ')
     end
 
   end
@@ -523,9 +524,10 @@ class TaskJuggler
 
   class ShiftAssignmentsAttribute < AttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
-      @value.project = property.project if @value
+      v = get
+      v.project = property.project if v
     end
 
     def ShiftAssignmentsAttribute::tjpId
@@ -540,7 +542,7 @@ class TaskJuggler
 
   class SortListAttribute < ListAttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -551,7 +553,7 @@ class TaskJuggler
   end
 
   class StringAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -560,13 +562,13 @@ class TaskJuggler
     end
 
     def to_tjp
-      "#{@type.id} \"#{@value}\""
+      "#{@type.id} \"#{get}\""
     end
 
   end
 
   class SymbolAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -576,7 +578,7 @@ class TaskJuggler
   end
 
   class TaskDepListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -586,19 +588,19 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |t, onEnd| out << t.fullId }
+      get.each { |t, onEnd| out << t.fullId }
       out.join(", ")
     end
 
     def to_tjp
       out = []
-      @value.each { |t, onEnd| out << t.fullId }
+      get.each { |t, onEnd| out << t.fullId }
       @type.id + " " + out.join(', ')
     end
   end
 
   class TaskListAttribute < ListAttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -608,19 +610,19 @@ class TaskJuggler
 
     def to_s(query = nil)
       out = []
-      @value.each { |t| out << t.fullId }
+      get.each { |t| out << t.fullId }
       out.join(", ")
     end
 
     def to_tjp
       out = []
-      @value.each { |t| out << t.fullId }
+      get.each { |t| out << t.fullId }
       @type.id + " " + out.join(', ')
     end
   end
 
   class WorkingHoursAttribute < AttributeBase
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
@@ -633,7 +635,7 @@ class TaskJuggler
       str = ''
       7.times do |day|
         str += "workinghours #{dayNames[day]} "
-        whs = @value.getWorkingHours(day)
+        whs = get.getWorkingHours(day)
         if whs.empty?
           str += "off"
           str += "\n" if day < 6

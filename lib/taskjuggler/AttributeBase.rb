@@ -27,7 +27,7 @@ class TaskJuggler
   # Attributes that are of an inherited type will be copied from a parent
   # property or the global scope.
   class AttributeBase
-    attr_reader :property, :type, :provided, :inherited, :value
+    attr_reader :property, :type, :provided, :inherited
 
     # The mode is flag that controls how value assignments affect the flags.
     @@mode = 0
@@ -35,9 +35,10 @@ class TaskJuggler
     # Create a new AttributeBase object. _type_ specifies the specific type of
     # the object. _property_ is the PropertyTreeNode object this attribute
     # belongs to.
-    def initialize(property, type)
+    def initialize(property, type, container)
       @type = type
       @property = property
+      @container = container
 
       reset
     end
@@ -52,9 +53,10 @@ class TaskJuggler
       # to the specified default for this type. Otherwise type is the initial
       # value.
       if @type.is_a?(AttributeDefinition)
-        @value = @type.default.deep_clone
+        @container.instance_variable_set(('@' + type.id).intern,
+                                         @type.default.deep_clone)
       else
-        @value = @type
+        @container.instance_variable_set(('@' + type.id).intern, @type)
       end
     end
 
@@ -63,7 +65,7 @@ class TaskJuggler
     # later on.
     def inherit(value)
       @inherited = true
-      @value = value.deep_clone
+      @container.instance_variable_set(('@' + type.id).intern, value.deep_clone)
     end
 
     # Return the current attribute setting mode.
@@ -90,60 +92,66 @@ class TaskJuggler
     # Set the value of the attribute. Depending on the mode we are in, the flags
     # are updated accordingly.
     def set(value)
-      @value = value
       case @@mode
         when 0
           @provided = true
         when 1
           @inherited = true
       end
+      # Store the value in an instance variable in the PropertyTreeNode or
+      # ScenarioData object referred to by @container.
+      @container.instance_variable_set(('@' + type.id).intern, value)
     end
 
     # Return the attribute value.
     def get
-      @value
+      @container.instance_variable_get(('@' + type.id).intern)
     end
+
+    # For legacy purposes we provide another name for get().
+    alias value get
 
     # Check whether the value is uninitialized or nil.
     def nil?
-      if @value.is_a?(Array)
-        @value.empty?
+      if (v = get).is_a?(Array)
+        v.empty?
       else
-        @value.nil?
+        v.nil?
       end
     end
 
     # Return the value as String.
     def to_s(query = nil)
-      @value.to_s
+      get.to_s
     end
 
     def to_num
-      if @value.is_a?(Fixnum) || @value.is_a?(Bignum) || @value.is_a?(Float)
-        @value
+      v = get
+      if v.is_a?(Fixnum) || v.is_a?(Bignum) || v.is_a?(Float)
+        v
       else
         nil
       end
     end
 
     def to_sort
-      if @value.is_a?(Fixnum) || @value.is_a?(Bignum) ||
-         @value.is_a?(Float)
-        @value
-      elsif @value.respond_to?('to_s')
-        @value.to_s
+      v = get
+      if v.is_a?(Fixnum) || v.is_a?(Bignum) || v.is_a?(Float)
+        v
+      elsif v.respond_to?('to_s')
+        v.to_s
       else
         nil
       end
     end
 
     def to_rti(query)
-      @value.is_a?(RichTextIntermediate) ? !value : nil
+      get.is_a?(RichTextIntermediate) ? !value : nil
     end
 
     # Return the value in TJP file syntax.
     def to_tjp
-      @type.id + " " + @value.to_s
+      @type.id + " " + get.to_s
     end
 
   end
@@ -153,12 +161,12 @@ class TaskJuggler
   # attributes that hold lists.
   class ListAttributeBase < AttributeBase
 
-    def initialize(property, type)
+    def initialize(property, type, container)
       super
     end
 
     def to_s
-      @value.join(', ')
+      get.join(', ')
     end
 
   end

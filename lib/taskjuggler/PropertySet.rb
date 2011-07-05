@@ -178,11 +178,7 @@ class TaskJuggler
     def addProperty(property)
       # The PropertyTreeNode objects are indexed by ID or hierachical ID
       # depending on the name space setting of this set.
-      if @flatNamespace
-        @propertyMap[property.id] = property
-      else
-        @propertyMap[property.fullId] = property
-      end
+      @propertyMap[property.id] = property
       @properties << property
     end
 

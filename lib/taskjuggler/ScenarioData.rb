@@ -28,7 +28,7 @@ class TaskJuggler
     end
 
     def a(attributeName)
-      @attributes[attributeName].value
+      @attributes[attributeName].get
     end
 
     def error(id, text, sourceFileInfo = nil, property = nil)
