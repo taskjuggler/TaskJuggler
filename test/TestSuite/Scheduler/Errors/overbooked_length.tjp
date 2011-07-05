@@ -1,8 +1,10 @@
-project "Test" 2011-06-24 +1m
+project "Test" 2011-06-24 +1m {
+  now 2011-07-01
+}
 
 resource r "R"
 
-# MARK: warning 6 overbooked_length
+# MARK: warning 8 overbooked_length
 task "T" {
   allocate r
   length 1d

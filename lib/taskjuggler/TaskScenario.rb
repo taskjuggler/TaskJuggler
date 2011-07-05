@@ -66,13 +66,21 @@ class TaskJuggler
       @startPropagated = false
       @endPropagated = false
 
+      markMilestone
       # Milestones may only have start or end date even when the 'scheduled'
       # attribute is set. For further processing, we need to add the missing
       # date.
-      if @milestone && @scheduled
+      if @milestone
         @property['end', @scenarioIdx] = @start if @start && !@end
         @property['start', @scenarioIdx] = @end if !@start && @end
-        Log << "Milestone #{@property.fullId}: #{@start} -> #{@end}"
+      end
+
+      # For start-end-tasks without allocation, we don't have to do
+      # anything but to set the 'scheduled' flag.
+      if @start && @end && @effort == 0 && @length == 0 && @duration == 0 &&
+         @allocate.empty?
+        @property['scheduled', @scenarioIdx] = true
+        Log << "Task #{@property.fullId}: #{@start} -> #{@end}"
       end
 
       # Collect the limits of this task and all parent tasks into a single
@@ -92,10 +100,11 @@ class TaskJuggler
       @mandatories = []
       @allocate.each do |allocation|
         @mandatories << allocation if allocation.mandatory
+        allocation.lockedResource = nil
       end
 
       bookBookings
-      markMilestone
+
     end
 
     # The parser only stores the full task IDs for each of the dependencies.
@@ -861,8 +870,6 @@ class TaskJuggler
       forward = @forward
       # The task may not excede the project interval.
       limit = @project.dateToIdx(@project[forward ? 'end' : 'start'])
-      # We need this very often. Save the now date as SB index.
-      @nowIdx = @project.dateToIdx(@project['now'])
       # Number of seconds per time slot.
       slotDuration = @project['scheduleGranularity']
 
@@ -873,9 +880,12 @@ class TaskJuggler
       # of the last scheduled slot.
       if @forward
         # On first call, the @currentSlotIdx is not set yet. We set it to the
-        # start slot index.
+        # start slot index or the 'now' slot if we are in projection mode and
+        # the tasks has allocations.
         if @currentSlotIdx.nil?
-          @currentSlotIdx = @project.dateToIdx(@start)
+          @currentSlotIdx = @project.dateToIdx(
+            @projectionMode && (@project['now'] > @start) && !@allocate.empty? ?
+            @project['now'] : @start)
         end
       else
         # On first call, the @currentSlotIdx is not set yet. We set it to the
@@ -1605,16 +1615,6 @@ class TaskJuggler
         end
       elsif @start && @end
         # Task with start and end date but no duration criteria
-        if @allocate.empty?
-          # For start-end-tasks without allocation, we don't have to do
-          # anything but to set the 'scheduled' flag.
-          @property['scheduled', @scenarioIdx] = true
-          @property.parents.each do |parent|
-            parent.scheduleContainer(@scenarioIdx)
-          end
-          return true
-        end
-
         bookResources
 
         # Depending on the scheduling direction we can mark the task as
@@ -1628,26 +1628,15 @@ class TaskJuggler
           end
           return true
         end
-      elsif @milestone
-        if @forward
-          propagateDate(@start, true)
-        else
-          propagateDate(@end, false)
-        end
-        return true
       end
 
       false
     end
 
     def bookResources
-      # In projection mode we do not allow allocations prior to the current
-      # date. If the scenario is not scheduled in projection mode, this
-      # restriction only applies to tasks with bookings.
-      if ((@projectionMode || !@booking.empty?) &&
-          @currentSlotIdx < @nowIdx)
-        return
-      end
+      # If the task has resource independent allocation limits we need to make
+      # sure that none of them is already exceeded.
+      return unless limitsOk?(@currentSlotIdx)
 
       # If the task has shifts to limit the allocations, we check that we are
       # within a defined shift interval. If yes, we need to be on shift to
@@ -1655,10 +1644,6 @@ class TaskJuggler
       if @shifts && @shifts.assigned?(@currentSlotIdx)
          return if !@shifts.onShift?(@currentSlotIdx)
       end
-
-      # If the task has resource independent allocation limits we need to make
-      # sure that none of them is already exceeded.
-      return unless limitsOk?(@currentSlotIdx)
 
       # We first have to make sure that if there are mandatory resources
       # that these are all available for the time slot.
@@ -1700,14 +1685,14 @@ class TaskJuggler
 
         # In case we have a persistent allocation we need to check if there
         # is already a locked resource and use it.
-        if allocation.persistent && !allocation.lockedResource.nil?
+        if allocation.lockedResource
           bookResource(allocation.lockedResource)
         else
           # If not, we create a list of candidates in the proper order and
           # assign the first one available.
           allocation.candidates(@scenarioIdx).each do |candidate|
             if bookResource(candidate)
-              allocation.lockedResource = candidate
+              allocation.lockedResource = candidate if allocation.persistent
               break
             end
           end
@@ -1816,10 +1801,10 @@ class TaskJuggler
 
               # Set start if appropriate. The task start will be set to the
               # begining of the first booked slot. The currentSlotIdx
-              # will be set to the last booked slot.
-              if @currentSlotIdx.nil? || idx > @currentSlotIdx
-                @currentSlotIdx = @project.dateToIdx(tEnd)
-              end
+              # will be set to the slot after the last booked slot.
+              #if @currentSlotIdx.nil? || @currentSlotIdx <= idx
+              #  @currentSlotIdx = idx + 1
+              #end
               # Save the date of what could be the end of the last booked
               # slot.
               tentativeEnd = tEnd if tentativeEnd.nil? || tentativeEnd < tEnd
@@ -1833,37 +1818,57 @@ class TaskJuggler
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            if @length > 0 && @project.isWorkingTime(idx)
-              # For tasks with a 'length' we track the covered work time and
-              # set the task to 'scheduled' when we have enough length.
-              @doneLength += 1
-            end
             date = tEnd
           end
-          # Check if the the duration criteria has already been reached by the
-          # supplied bookings and set the task end to the last booked slot.
-          # Also the task is marked as scheduled.
-          if tentativeEnd && !scheduled
-            if @effort > 0
-              if @doneEffort >= @effort
-                @property['end', @scenarioIdx] = tentativeEnd
-                @property['scheduled', @scenarioIdx] = true
-              end
-            elsif @length > 0
-              if @doneLength >= @length
-                @property['end', @scenarioIdx] = tentativeEnd
-                @property['scheduled', @scenarioIdx] = true
-              end
-            elsif @duration > 0
-              @doneDuration = ((tentativeEnd - @start) /
-                               @project['scheduleGranularity']).to_i
-              if @doneDuration >= @duration
-                @property['end', @scenarioIdx] = tentativeEnd
-                @property['scheduled', @scenarioIdx] = true
-              end
+        end
+      end
+
+      # Check if the the duration criteria has already been reached by the
+      # supplied bookings and set the task end to the last booked slot.
+      # Also the task is marked as scheduled.
+      if tentativeEnd && !scheduled
+        if @effort > 0
+          if @doneEffort >= @effort
+            @property['end', @scenarioIdx] = tentativeEnd
+            @property['scheduled', @scenarioIdx] = true
+          end
+        elsif @length > 0
+          @doneLength = 0
+          slotDuration = @project['scheduleGranularity']
+          startIdx = @project.dateToIdx(date = @start)
+          endIdx = @project.dateToIdx(@project['now'])
+          startIdx.upto(endIdx) do |idx|
+            @doneLength += 1 if @project.isWorkingTime(idx)
+            date += slotDuration
+            # Continue not only until the @length has been reached, but also
+            # the tentativeEnd date. This allows us to detect overbookings.
+            if @doneLength >= @length && date >= tentativeEnd
+              endDate = @project.idxToDate(idx + 1)
+              @property['end', @scenarioIdx] = [ endDate, tentativeEnd ].max
+              @property['scheduled', @scenarioIdx] = true
+              break
             end
           end
+        elsif @duration > 0
+          slotDuration = @project['scheduleGranularity']
+          @doneDuration = ((tentativeEnd - @start) / slotDuration).to_i
+          if @doneDuration >= @duration
+            @property['end', @scenarioIdx] = tentativeEnd
+            @property['scheduled', @scenarioIdx] = true
+          elsif @duration * slotDuration < (@project['now'] - @start)
+            # This handles the case where the bookings don't provide enough
+            # @doneDuration to reach @duration, but the now date would be
+            # after the @start + @duration date.
+            @property['end', @scenarioIdx] = @start + @duration * slotDuration
+            @property['scheduled', @scenarioIdx] = true
+          end
         end
+      end
+
+      # If the task has bookings, we assume that the bookings describe all
+      # work up to the 'now' date.
+      if @doneEffort > 0
+        @currentSlotIdx = @project.dateToIdx(@project['now'])
       end
 
       if @effort > 0
@@ -2016,7 +2021,7 @@ class TaskJuggler
       @isRunAway = true
     end
 
-    # This function determines if a task is really a milestones and marks them
+    # This function determines if a task is a milestones and marks it
     # accordingly.
     def markMilestone
       return if @property.container? || hasDurationSpec? ||

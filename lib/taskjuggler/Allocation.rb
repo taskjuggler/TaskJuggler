@@ -61,9 +61,9 @@ class TaskJuggler
     end
 
     # Returns true if we either have no shifts defined or the defined shifts
-    # are active at _date_.
-    def onShift?(date)
-      return @shifts.onShift?(date) if @shifts
+    # are active at date specified by global scoreboard index _sbIdx_.
+    def onShift?(sbIdx)
+      return @shifts.onShift?(sbIdx) if @shifts
 
       true
     end

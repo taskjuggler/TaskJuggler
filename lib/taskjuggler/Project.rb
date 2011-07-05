@@ -1231,8 +1231,8 @@ class TaskJuggler
           warning('unscheduled_task',
                   "Task #{t.fullId}: " +
                   "#{t['start', scIdx] ? t['start', scIdx] : '<?>'} -> " +
-                  "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}", nil, nil, t,
-                  scenario(scIdx))
+                  "#{t['end', scIdx] ? t['end', scIdx] : '<?>'}",
+                  t.sourceFileInfo)
 
           i += 1
           break if i >= 10
