@@ -46,6 +46,14 @@ class TaskJuggler
       # Same but for each assigned resource.
       @lastBookedSlots = {}
 
+      # Attributed are only really created when they are accessed the first
+      # time. So make sure some needed attributes really exist so we don't
+      # have to check for existance each time we access them.
+      %w( alloctdeffort directreports duties efficiency limits managers
+          rate reports shifts vacations workinghours ).each do |attr|
+        @property[attr, @scenarioIdx]
+      end
+
       @dCache = DataCache.instance
     end
 
@@ -73,7 +81,7 @@ class TaskJuggler
           freeSlots += 1 if slot.nil?
         end
         @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
-          a('alloctdeffort') / freeSlots
+          @alloctdeffort / freeSlots
       end
     end
 
@@ -84,7 +92,7 @@ class TaskJuggler
       # The 'directreports' attribute is the reverse link for the 'managers'
       # attribute. In contrast to the 'managers' attribute, the
       # 'directreports' list has no duplicate entries.
-      a('managers').each do |manager|
+      @managers.each do |manager|
         unless manager['directreports', @scenarioIdx].include?(@property)
           manager['directreports', @scenarioIdx] << @property
         end
@@ -92,15 +100,15 @@ class TaskJuggler
     end
 
     def setReports
-      return unless a('directreports').empty?
+      return unless @directreports.empty?
 
-      a('managers').each do |r|
+      @managers.each do |r|
         r.setReports_i(@scenarioIdx, [ @property ])
       end
     end
 
     def preScheduleCheck
-      a('managers').each do |manager|
+      @managers.each do |manager|
         unless manager.leaf?
           error('manager_is_group',
                 "Resource #{@property.fullId} has group #{manager.fullId} " +
@@ -124,7 +132,7 @@ class TaskJuggler
 
       if (parent = @property.parent)
         # Add the assigned task to the parent duties list.
-        a('duties').each do |task|
+        @duties.each do |task|
           unless parent['duties', @scenarioIdx].include?(task)
             parent['duties', @scenarioIdx] << task
           end
@@ -137,7 +145,7 @@ class TaskJuggler
     def available?(sbIdx)
       return false unless @scoreboard[sbIdx].nil?
 
-      limits = a('limits')
+      limits = @limits
       return false if limits && !limits.ok?(sbIdx)
 
       true
@@ -156,7 +164,7 @@ class TaskJuggler
       return false if !force && !available?(sbIdx)
 
       # Make sure the task is in the list of duties.
-      unless a('duties').include?(task)
+      unless @duties.include?(task)
         @property['duties', @scenarioIdx] << task
       end
 
@@ -170,7 +178,7 @@ class TaskJuggler
         t['effort', @scenarioIdx] += 1
         t = t.parent
       end
-      a('limits').inc(sbIdx) if a('limits')
+      @limits.inc(sbIdx) if @limits
 
       # Scoreboard iterations are fairly expensive but they are very frequent
       # operations in later processing. To limit the interations to the
@@ -302,7 +310,7 @@ class TaskJuggler
     def getEffectiveWork(startIdx, endIdx, task = nil)
       # There can't be any effective work if the start is after the end or the
       # todo list doesn't contain the specified task.
-      return 0.0 if startIdx >= endIdx || (task && !a('duties').include?(task))
+      return 0.0 if startIdx >= endIdx || (task && !@duties.include?(task))
 
       # The unique key we use to address the result in the cache.
       key = [ self, :ResourceScenarioEffectiveWork, startIdx, endIdx,
@@ -324,7 +332,7 @@ class TaskJuggler
 
         work = @project.convertToDailyLoad(
                  getAllocatedSlots(startIdx, endIdx, task) *
-                 @project['scheduleGranularity']) * a('efficiency')
+                 @project['scheduleGranularity']) * @efficiency
       end
       @dCache.store(work, key)
     end
@@ -384,7 +392,7 @@ class TaskJuggler
       else
         work = @project.convertToDailyLoad(
                  getFreeSlots(startIdx, endIdx) *
-                 @project['scheduleGranularity']) * a('efficiency')
+                 @project['scheduleGranularity']) * @efficiency
       end
       work
     end
@@ -406,7 +414,7 @@ class TaskJuggler
 
         vacationDays = @project.convertToDailyLoad(
           getVacationSlots(startIdx, endIdx) *
-          @project['scheduleGranularity']) * a('efficiency')
+          @project['scheduleGranularity']) * @efficiency
       end
       vacationDays
     end
@@ -418,7 +426,7 @@ class TaskJuggler
           amount += child.turnover(@scenarioIdx, startIdx, endIdx, account, task)
         end
       else
-        a('duties').each do |duty|
+        @duties.each do |duty|
           amount += duty.turnover(@scenarioIdx, startIdx, endIdx, account,
                                   @property)
         end
@@ -431,14 +439,14 @@ class TaskJuggler
     # TimeInterval _period_. If a Task _task_ is provided, only the work on
     # this particular task is considered.
     def cost(startIdx, endIdx, task = nil)
-      getAllocatedTime(startIdx, endIdx, task) * a('rate')
+      getAllocatedTime(startIdx, endIdx, task) * @rate
     end
 
     # Returns true if the resource or any of its children is allocated during
     # the period specified with the TimeInterval _iv_. If task is not nil
     # only allocations to this tasks are respected.
     def allocated?(iv, task = nil)
-      return false if task && !a('duties').include?(task)
+      return false if task && !@duties.include?(task)
 
       startIdx = @project.dateToIdx(iv.start)
       endIdx = @project.dateToIdx(iv.end)
@@ -588,8 +596,8 @@ class TaskJuggler
                                    @project['scheduleGranularity'], 2)
 
       # We'll need this frequently and can savely cache it here.
-      @shifts = a('shifts')
-      @workinghours = a('workinghours')
+      @shifts = @shifts
+      @workinghours = @workinghours
 
       # Change all work time slots to nil (available) again.
       @project.scoreboardSize.times do |i|
@@ -597,7 +605,7 @@ class TaskJuggler
       end
 
       # Mark all resource specific vacation slots as such
-      a('vacations').each do |vacation|
+      @vacations.each do |vacation|
         startIdx = @scoreboard.dateToIdx(vacation.start)
         endIdx = @scoreboard.dateToIdx(vacation.end)
         startIdx.upto(endIdx - 1) do |i|
@@ -664,10 +672,10 @@ class TaskJuggler
       @property['reports', @scenarioIdx] += reports
       # Resources can end up multiple times in the list if they have multiple
       # reporting chains. We only need them once in the list.
-      a('reports').uniq!
+      @reports.uniq!
 
-      a('managers').each do |r|
-        r.setReports_i(@scenarioIdx, a('reports'))
+      @managers.each do |r|
+        r.setReports_i(@scenarioIdx, @reports)
       end
     end
 
@@ -689,7 +697,7 @@ class TaskJuggler
                                                task)
         end
       else
-        return false unless @scoreboard && a('duties').include?(task)
+        return false unless @scoreboard && @duties.include?(task)
 
         startIdx, endIdx = fitIndicies(startIdx, endIdx, task)
         return false if startIdx >= endIdx
@@ -710,7 +718,7 @@ class TaskJuggler
         end
         dailyRate
       else
-        a('rate')
+        @rate
       end
     end
 

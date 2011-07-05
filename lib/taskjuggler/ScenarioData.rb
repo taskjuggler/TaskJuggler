@@ -25,6 +25,9 @@ class TaskJuggler
       @project = property.project
       @scenarioIdx = idx
       @attributes = attributes
+
+      # Register the scenario with the Task.
+      @property.data[idx] = self
     end
 
     def a(attributeName)

@@ -26,7 +26,7 @@ class TaskJuggler
 
       @data = Array.new(@project.scenarioCount, nil)
       @project.scenarioCount.times do |i|
-        @data[i] = ShiftScenario.new(self, i, @scenarioAttributes[i])
+        ShiftScenario.new(self, i, @scenarioAttributes[i])
       end
     end
 

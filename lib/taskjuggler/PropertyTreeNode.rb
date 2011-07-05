@@ -44,6 +44,10 @@ class TaskJuggler
       @propertySet = propertySet
       @project = propertySet.project
       @parent = parent
+
+      # Scenario specific data
+      @data = nil
+
       # Attributes are created on-demand. We need to be careful that a pure
       # check for existance does not create them unecessarily.
       @attributes = Hash.new do |hash, attributeId|
@@ -122,9 +126,6 @@ class TaskJuggler
       # This is a list of the PropertyTreeNode objects that have adopted this
       # node.
       @stepParents = []
-
-      # Scenario specific data
-      @data = nil
     end
 
     # We only use deep_clone for attributes, never for properties. Since
@@ -387,7 +388,9 @@ class TaskJuggler
     # _attributeId_. This method works for built-in attributes as well.
     # In case the attribute does not exist, an exception is raised.
     def get(attributeId)
-      @attributes[attributeId].get
+      # Make sure the attribute gets created if it doesn't exist already.
+      @attributes[attributeId]
+      instance_variable_get(('@' + attributeId).intern)
     end
 
     # Return the value of the attribute with ID _attributeId_. This method
@@ -451,7 +454,8 @@ class TaskJuggler
     # scenario-specific attributes, _scenario_ must indicate the index of the
     # Scenario.
     def [](attributeId, scenario)
-      @scenarioAttributes[scenario][attributeId].get
+      @scenarioAttributes[scenario][attributeId]
+      @data[scenario].instance_variable_get(('@' + attributeId).intern)
     end
 
     # Returns true if the value of the attribute _attributeId_ (in scenario

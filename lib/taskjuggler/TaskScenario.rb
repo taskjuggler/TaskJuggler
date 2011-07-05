@@ -23,6 +23,15 @@ class TaskJuggler
     # Create a new TaskScenario object.
     def initialize(task, scenarioIdx, attributes)
       super
+      # Attributed are only really created when they are accessed the first
+      # time. So make sure some needed attributes really exist so we don't
+      # have to check for existance each time we access them.
+      %w( allocate assignedresources booking chargeset
+          depends duration effort end forward length
+          maxend maxstart minend minstart milestone precedes scheduled
+          shifts start).each do |attr|
+        @property[attr, @scenarioIdx]
+      end
 
       # A list of all allocated leaf resources.
       @candidates = []
@@ -47,14 +56,6 @@ class TaskJuggler
       # Due to the 'efficiency' factor the effort slots must be a float.
       @doneEffort = 0.0
 
-      # Attributed are only really created when they are assigned to. So make
-      # sure some needed attributes really exist. We don't want to check for
-      # existance each time we access them.
-      %w( allocate booking duration effort end forward length
-          milestone scheduled shifts start).each do |attr|
-        @property[attr, @scenarioIdx]
-      end
-
       @projectionMode = @project.scenario(@scenarioIdx).get('projection')
 
       @startIsDetermed = nil
@@ -68,10 +69,10 @@ class TaskJuggler
       # Milestones may only have start or end date even when the 'scheduled'
       # attribute is set. For further processing, we need to add the missing
       # date.
-      if a('milestone') && a('scheduled')
-        @property['end', @scenarioIdx] = a('start') if a('start') && !a('end')
-        @property['start', @scenarioIdx] = a('end') if !a('start') && a('end')
-        Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
+      if @milestone && @scheduled
+        @property['end', @scenarioIdx] = @start if @start && !@end
+        @property['start', @scenarioIdx] = @end if !@start && @end
+        Log << "Milestone #{@property.fullId}: #{@start} -> #{@end}"
       end
 
       # Collect the limits of this task and all parent tasks into a single
@@ -111,14 +112,14 @@ class TaskJuggler
     def Xref
       @property['depends', @scenarioIdx].each do |dependency|
         depTask = checkDependency(dependency, 'depends')
-        a('startpreds').push([ depTask, dependency.onEnd ])
+        @startpreds.push([ depTask, dependency.onEnd ])
         depTask[dependency.onEnd ? 'endsuccs' : 'startsuccs', @scenarioIdx].
           push([ @property, false ])
       end
 
       @property['precedes', @scenarioIdx].each do |dependency|
         predTask = checkDependency(dependency, 'precedes')
-        a('endsuccs').push([ predTask, dependency.onEnd ])
+        @endsuccs.push([ predTask, dependency.onEnd ])
         predTask[dependency.onEnd ? 'endpreds' : 'startpreds', @scenarioIdx].
           push([@property, true ])
       end
@@ -132,8 +133,8 @@ class TaskJuggler
 
     def propagateInitialValues
       unless @startPropagated
-        if a('start')
-          propagateDate(a('start'), false)
+        if @start
+          propagateDate(@start, false)
         elsif @property.parent.nil? &&
               @property.canInheritDate?(@scenarioIdx, false)
           propagateDate(@project['start'], false)
@@ -141,8 +142,8 @@ class TaskJuggler
       end
 
       unless @endPropagated
-        if a('end')
-          propagateDate(a('end'), true)
+        if @end
+          propagateDate(@end, true)
         elsif @property.parent.nil? &&
               @property.canInheritDate?(@scenarioIdx, true)
           propagateDate(@project['end'], true)
@@ -155,7 +156,7 @@ class TaskJuggler
     def preScheduleCheck
       # Accounts can have sub accounts added after being used in a chargetset.
       # So we need to re-test here.
-      a('chargeset').each do |chargeset|
+      @chargeset.each do |chargeset|
         chargeset.each do |account, share|
           unless account.leaf?
             error('account_no_leaf',
@@ -166,36 +167,36 @@ class TaskJuggler
 
       # Leaf tasks can be turned into containers after bookings have been added.
       # We need to check for this.
-      unless @property.leaf? || a('booking').empty?
+      unless @property.leaf? || @booking.empty?
         error('container_booking',
               "Container task #{@property.fullId} may not have bookings.")
       end
 
       # Milestones may not have bookings.
-      if a('milestone') && !a('booking').empty?
+      if @milestone && !@booking.empty?
         error('milestone_booking',
               "Milestone #{@property.fullId} may not have bookings.")
       end
 
       # All 'scheduled' tasks must have a fixed start and end date.
-      if a('scheduled') && (a('start').nil? || a('end').nil?)
+      if @scheduled && (@start.nil? || @end.nil?)
         error('not_scheduled',
               "Task #{@property.fullId} is marked as scheduled but does not " +
               'have a fixed start and end date.')
       end
 
       # If an effort has been specified resources must be allocated as well.
-      if a('effort') > 0 && a('allocate').empty?
+      if @effort > 0 && @allocate.empty?
         error('effort_no_allocations',
               "Task #{@property.fullId} has an effort but no resource " +
               "allocations.")
       end
 
       durationSpecs = 0
-      durationSpecs += 1 if a('effort') > 0
-      durationSpecs += 1 if a('length') > 0
-      durationSpecs += 1 if a('duration') > 0
-      durationSpecs += 1 if a('milestone')
+      durationSpecs += 1 if @effort > 0
+      durationSpecs += 1 if @length > 0
+      durationSpecs += 1 if @duration > 0
+      durationSpecs += 1 if @milestone
 
       # The rest of this function performs a number of plausibility tests with
       # regards to task start and end critiria. To explain the various cases,
@@ -216,7 +217,7 @@ class TaskJuggler
                 "Container task #{@property.fullId} may not have a duration " +
                 "or be marked as milestones.")
         end
-      elsif a('milestone')
+      elsif @milestone
         if durationSpecs > 1
           error('milestone_duration',
                 "Milestone task #{@property.fullId} may not have a duration.")
@@ -232,9 +233,9 @@ class TaskJuggler
         # already handled by 'start_undetermed' or 'end_undetermed'
 
         # err2: differnt start and end dates
-        if a('start') && a('end') && a('start') != a('end')
+        if @start && @end && @start != @end
           error('milestone_start_end',
-                "Start (#{a('start')}) and end (#{a('end')}) dates of " +
+                "Start (#{@start}) and end (#{@end}) dates of " +
                 "milestone task #{@property.fullId} must be identical.")
         end
       else
@@ -277,8 +278,8 @@ class TaskJuggler
         #   -  <-- -D
         #   -  <-- |D
         if durationSpecs == 0 &&
-           ((a('forward') && a('end').nil? && !hasDependencies(true)) ||
-            (!a('forward') && a('start').nil? && !hasDependencies(false)))
+           ((@forward && @end.nil? && !hasDependencies(true)) ||
+            (!@forward && @start.nil? && !hasDependencies(false)))
           error('task_underspecified',
                 "Task #{@property.fullId} has too few specifations to be " +
                 "scheduled.")
@@ -305,8 +306,8 @@ class TaskJuggler
         startSpeced = @property.provided('start', @scenarioIdx)
         endSpeced = @property.provided('end', @scenarioIdx)
         if ((startSpeced && endSpeced) ||
-            (hasDependencies(false) && a('forward') && endSpeced) ||
-            (hasDependencies(true) && !a('forward') && startSpeced)) &&
+            (hasDependencies(false) && @forward && endSpeced) ||
+            (hasDependencies(true) && !@forward && startSpeced)) &&
            durationSpecs > 0 && !@property.provided('scheduled', @scenarioIdx)
           error('task_overspecified',
                 "Task #{@property.fullId} has a start, an end and a " +
@@ -314,7 +315,7 @@ class TaskJuggler
         end
       end
 
-      if !a('booking').empty? && !a('forward') && !a('scheduled')
+      if !@booking.empty? && !@forward && !@scheduled
         error('alap_booking',
               'A task scheduled in ALAP mode may only have bookings if it ' +
               'has been marked as fully scheduled. Keep in mind that ' +
@@ -322,14 +323,14 @@ class TaskJuggler
               'switch the task to ALAP mode.')
       end
 
-      a('startsuccs').each do |task, onEnd|
+      @startsuccs.each do |task, onEnd|
         unless task['forward', @scenarioIdx]
           task.data[@scenarioIdx].error(
             'onstart_wrong_direction',
             'Tasks with on-start dependencies must be ASAP scheduled')
         end
       end
-      a('endpreds').each do |task, onEnd|
+      @endpreds.each do |task, onEnd|
         if task['forward', @scenarioIdx]
           task.data[@scenarioIdx].error(
             'onend_wrong_direction',
@@ -349,7 +350,7 @@ class TaskJuggler
 
       if (parent = @property.parent)
         # Add the assigned resources to the parent task list.
-        a('assignedresources').each do |resource|
+        @assignedresources.each do |resource|
           unless parent['assignedresources', @scenarioIdx].include?(resource)
             parent['assignedresources', @scenarioIdx] << resource
           end
@@ -380,65 +381,65 @@ class TaskJuggler
       end
 
       # Make sure the task is marked complete
-      unless a('scheduled')
+      unless @scheduled
         error('not_scheduled',
               "Task #{@property.fullId} has not been marked as scheduled.")
       end
 
       # If the task has a follower or predecessor that is a runaway this task
       # is also incomplete.
-      (a('startsuccs') + a('endsuccs')).each do |task, onEnd|
+      (@startsuccs + @endsuccs).each do |task, onEnd|
         return false if task.isRunAway(@scenarioIdx)
       end
-      (a('startpreds') + a('endpreds')).each do |task, onEnd|
+      (@startpreds + @endpreds).each do |task, onEnd|
         return false if task.isRunAway(@scenarioIdx)
       end
 
       # Check if the start time is ok
-      if a('start').nil?
+      if @start.nil?
         error('task_start_undef',
               "Task #{@property.fullId} has undefined start time")
       end
-      if a('start') < @project['start'] || a('start') > @project['end']
+      if @start < @project['start'] || @start > @project['end']
         error('task_start_range',
-              "The start time (#{a('start')}) of task #{@property.fullId} " +
+              "The start time (#{@start}) of task #{@property.fullId} " +
               "is outside the project interval (#{@project['start']} - " +
               "#{@project['end']})")
       end
-      if !a('minstart').nil? && a('start') < a('minstart')
+      if !@minstart.nil? && @start < @minstart
         warning('minstart',
-               "The start time (#{a('start')}) of task #{@property.fullId} " +
-               "is too early. Must be after #{a('minstart')}.")
+               "The start time (#{@start}) of task #{@property.fullId} " +
+               "is too early. Must be after #{@minstart}.")
       end
-      if !a('maxstart').nil? && a('start') > a('maxstart')
+      if !@maxstart.nil? && @start > @maxstart
         warning('maxstart',
-               "The start time (#{a('start')}) of task #{@property.fullId} " +
-               "is too late. Must be before #{a('maxstart')}.")
+               "The start time (#{@start}) of task #{@property.fullId} " +
+               "is too late. Must be before #{@maxstart}.")
       end
       # Check if the end time is ok
       error('task_end_undef',
-            "Task #{@property.fullId} has undefined end time") if a('end').nil?
-      if a('end') < @project['start'] || a('end') > @project['end']
+            "Task #{@property.fullId} has undefined end time") if @end.nil?
+      if @end < @project['start'] || @end > @project['end']
         error('task_end_range',
-              "The end time (#{a('end')}) of task #{@property.fullId} " +
+              "The end time (#{@end}) of task #{@property.fullId} " +
               "is outside the project interval (#{@project['start']} - " +
               "#{@project['end']})")
       end
-      if !a('minend').nil? && a('end') < a('minend')
+      if !@minend.nil? && @end < @minend
         warning('minend',
-                "The end time (#{a('end')}) of task #{@property.fullId} " +
-                "is too early. Must be after #{a('minend')}.")
+                "The end time (#{@end}) of task #{@property.fullId} " +
+                "is too early. Must be after #{@minend}.")
       end
-      if !a('maxend').nil? && a('end') > a('maxend')
+      if !@maxend.nil? && @end > @maxend
         warning('maxend',
-                "The end time (#{a('end')}) of task #{@property.fullId} " +
-                "is too late. Must be before #{a('maxend')}.")
+                "The end time (#{@end}) of task #{@property.fullId} " +
+                "is too late. Must be before #{@maxend}.")
       end
       # Make sure the start is before the end
-      if a('start') > a('end')
+      if @start > @end
         error('start_after_end',
-              "The start time (#{a('start')}) of task #{@property.fullId} " +
-              "is after the end time (#{a('end')}).")
+              "The start time (#{@start}) of task #{@property.fullId} " +
+              "is after the end time (#{@end}).")
       end
 
 
@@ -446,15 +447,15 @@ class TaskJuggler
       unless (parent = @property.parent).nil? ||
               parent['start', @scenarioIdx].nil? ||
               parent['end', @scenarioIdx].nil?
-        if a('start') < parent['start', @scenarioIdx]
+        if @start < parent['start', @scenarioIdx]
           error('task_start_in_parent',
-                "The start date (#{a('start')}) of task #{@property.fullId} " +
+                "The start date (#{@start}) of task #{@property.fullId} " +
                 "is before the start date (#{parent['start', @scenarioIdx]}) " +
                 "of the enclosing task.")
         end
-        if a('end') > parent['end', @scenarioIdx]
+        if @end > parent['end', @scenarioIdx]
           error('task_end_in_parent',
-                "The end date (#{a('end')}) of task #{@property.fullId} " +
+                "The end date (#{@end}) of task #{@property.fullId} " +
                 "is after the end date (#{parent['end', @scenarioIdx]}) " +
                 "of the enclosing task.")
         end
@@ -465,14 +466,14 @@ class TaskJuggler
         task = dependency.task
         limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         next if limit.nil?
-        if a('start') < limit
+        if @start < limit
           error('task_pred_before',
-                "Task #{@property.fullId} (#{a('start')}) must start after " +
+                "Task #{@property.fullId} (#{@start}) must start after " +
                 "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
                 "#{task.fullId}.")
         end
         if dependency.gapDuration > 0
-          if limit + dependency.gapDuration > a('start')
+          if limit + dependency.gapDuration > @start
             error('task_pred_before_gd',
                   "Task #{@property.fullId} must start " +
                   "#{dependency.gapDuration / (60 * 60 * 24)} days after " +
@@ -483,7 +484,7 @@ class TaskJuggler
           end
         end
         if dependency.gapLength > 0
-          if calcLength(limit, a('start')) < dependency.gapLength
+          if calcLength(limit, @start) < dependency.gapLength
             error('task_pred_before_gl',
                   "Task #{@property.fullId} must start " +
                   "#{@project.slotsToDays(dependency.gapLength)} " +
@@ -501,14 +502,14 @@ class TaskJuggler
         task = dependency.task
         limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         next if limit.nil?
-        if limit < a('end')
+        if limit < @end
           error('task_succ_after',
-                "Task #{@property.fullId} (#{a('end')}) must end before " +
+                "Task #{@property.fullId} (#{@end}) must end before " +
                 "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
                 "#{task.fullId}.")
         end
         if dependency.gapDuration > 0
-          if limit - dependency.gapDuration < a('end')
+          if limit - dependency.gapDuration < @end
             error('task_succ_after_gd',
                   "Task #{@property.fullId} must end " +
                   "#{dependency.gapDuration / (60 * 60 * 24)} days before " +
@@ -519,7 +520,7 @@ class TaskJuggler
           end
         end
         if dependency.gapLength > 0
-          if calcLength(a('end'), limit) < dependency.gapLength
+          if calcLength(@end, limit) < dependency.gapLength
             error('task_succ_after_gl',
                   "Task #{@property.fullId} must end " +
                   "#{@project.slotsToDays(dependency.gapLength)} " +
@@ -532,7 +533,7 @@ class TaskJuggler
         end
       end
 
-      if a('milestone') && a('start') != a('end')
+      if @milestone && @start != @end
         error('milestone_times_equal',
               "Milestone #{@property.fullId} must have identical start and " +
               "end date.")
@@ -628,12 +629,12 @@ class TaskJuggler
             #    -->| o---->
             #       +--------
             #
-            if (forward && a('forward')) || a('milestone')
+            if (forward && @forward) || @milestone
               checkForLoops(path, true, false, true)
             end
           end
         else
-          if a('startpreds').empty?
+          if @startpreds.empty?
             #
             #         ^
             #         |
@@ -655,7 +656,7 @@ class TaskJuggler
             #          ^
             #          |
             #
-            a('startpreds').each do |task, targetEnd|
+            @startpreds.each do |task, targetEnd|
               task.checkForLoops(@scenarioIdx, path, targetEnd, true, forward)
             end
           end
@@ -682,12 +683,12 @@ class TaskJuggler
             #     <----o |<--
             #    --------+
             #
-            if (!forward && !a('forward')) || a('milestone')
+            if (!forward && !@forward) || @milestone
               checkForLoops(path, false, false, false)
             end
           end
         else
-          if a('endsuccs').empty?
+          if @endsuccs.empty?
             #
             #          ^
             #          |
@@ -708,7 +709,7 @@ class TaskJuggler
             #          ^
             #          |
             #
-            a('endsuccs').each do |task, targetEnd|
+            @endsuccs.each do |task, targetEnd|
               task.checkForLoops(@scenarioIdx, path, targetEnd, true, forward)
             end
           end
@@ -725,7 +726,7 @@ class TaskJuggler
     # list of leaf resources that are allocated to this task.
     def candidates
       @candidates = []
-      a('allocate').each do |allocation|
+      @allocate.each do |allocation|
         allocation.candidates.each do |candidate|
           candidate.allLeaves.each do |resource|
             @candidates << resource unless @candidates.include?(resource)
@@ -740,9 +741,9 @@ class TaskJuggler
     # stores it in @candidates. It also adds the allocated effort to
     # the 'alloctdeffort' counter of each resource.
     def countResourceAllocations
-      return if @candidates.empty? || a('effort') <= 0
+      return if @candidates.empty? || @effort <= 0
 
-      avgEffort = a('effort') / @candidates.length
+      avgEffort = @effort / @candidates.length
       @candidates.each do |resource|
         resource['alloctdeffort', @scenarioIdx] += avgEffort
       end
@@ -762,12 +763,12 @@ class TaskJuggler
       # so the user has some control over it. Priority 0 is 0, 500 is 1.0 and
       # 1000 is 2.0. These values are pretty much randomly picked and probably
       # require some more tuning based on real projects.
-      if a('milestone')
-        @property['criticalness', @scenarioIdx] = a('priority') / 500.0
+      if @milestone
+        @property['criticalness', @scenarioIdx] = @priority / 500.0
       end
 
       # Task without efforts of allocations are not critical.
-      return if a('effort') <= 0 || @candidates.empty?
+      return if @effort <= 0 || @candidates.empty?
 
       # Determine the average criticalness of all allocated resources.
       criticalness = 0.0
@@ -778,7 +779,7 @@ class TaskJuggler
 
       # The task criticalness is the product of effort and average resource
       # criticalness.
-      @property['criticalness', @scenarioIdx] = a('effort') * criticalness
+      @property['criticalness', @scenarioIdx] = @effort * criticalness
     end
 
     # The path criticalness is a measure for the overall criticalness of the
@@ -791,8 +792,8 @@ class TaskJuggler
       # If we have computed this already, just return the value. If we are only
       # at the end of the task, we do not include the criticalness of this task
       # as it is not really part of the path.
-      if a('pathcriticalness')
-        return a('pathcriticalness') - (atEnd ? 0 : a('criticalness'))
+      if @pathcriticalness
+        return @pathcriticalness - (atEnd ? 0 : @criticalness)
       end
 
       maxCriticalness = 0.0
@@ -818,7 +819,7 @@ class TaskJuggler
           # For leaf tasks, we check all pathes through the start successors and
           # then the pathes through the end successors of this task and all its
           # parent tasks.
-          a('startsuccs').each do |task, onEnd|
+          @startsuccs.each do |task, onEnd|
             if (criticalness = task.calcPathCriticalness(@scenarioIdx, onEnd)) >
               maxCriticalness
               maxCriticalness = criticalness
@@ -829,7 +830,7 @@ class TaskJuggler
             maxCriticalness = criticalness
           end
 
-          maxCriticalness += a('criticalness')
+          maxCriticalness += @criticalness
         end
       end
 
@@ -840,12 +841,12 @@ class TaskJuggler
     # least one specified end date and a duration criteria or the other end
     # date.
     def readyForScheduling?
-      return false if a('scheduled') || @isRunAway
+      return false if @scheduled || @isRunAway
 
-      if a('forward')
-        return true if a('start') && (hasDurationSpec? || a('end'))
+      if @forward
+        return true if @start && (hasDurationSpec? || @end)
       else
-        return true if a('end') && (hasDurationSpec? || a('start'))
+        return true if @end && (hasDurationSpec? || @start)
       end
 
       false
@@ -857,7 +858,7 @@ class TaskJuggler
     # scheduling now.
     def schedule
       # Is the task scheduled from start to end or vice versa?
-      forward = a('forward')
+      forward = @forward
       # The task may not excede the project interval.
       limit = @project.dateToIdx(@project[forward ? 'end' : 'start'])
       # We need this very often. Save the now date as SB index.
@@ -870,17 +871,17 @@ class TaskJuggler
       # adjecent to the previous slot. If this task has not yet been scheduled
       # at all, @currentSlotIdx is still nil. Otherwise it contains the index
       # of the last scheduled slot.
-      if a('forward')
+      if @forward
         # On first call, the @currentSlotIdx is not set yet. We set it to the
         # start slot index.
         if @currentSlotIdx.nil?
-          @currentSlotIdx = @project.dateToIdx(a('start'))
+          @currentSlotIdx = @project.dateToIdx(@start)
         end
       else
         # On first call, the @currentSlotIdx is not set yet. We set it to the
         # slot index of the slot before the end slot.
         if @currentSlotIdx.nil?
-          @currentSlotIdx = @project.dateToIdx(a('end') - slotDuration)
+          @currentSlotIdx = @project.dateToIdx(@end - slotDuration)
         end
       end
 
@@ -927,19 +928,19 @@ class TaskJuggler
       # are only set in scheduleContainer().
       if @property.leaf?
         @property[thisEnd, @scenarioIdx] = date
-        Log << "Task #{@property.fullId}: #{a('start')} -> #{a('end')}"
+        Log << "Task #{@property.fullId}: #{@start} -> #{@end}"
       end
 
-      if a('milestone')
+      if @milestone
         # Start and end date of a milestone are identical.
         @property['scheduled', @scenarioIdx] = true
         if a(otherEnd).nil?
           propagateDate(a(thisEnd), !atEnd)
         end
-        Log << "Milestone #{@property.fullId}: #{a('start')} -> #{a('end')}"
-      elsif !a('scheduled') && a('start') && a('end') &&
-            !(a('length') == 0 && a('duration') == 0 && a('effort') == 0 &&
-              !a('allocate').empty?)
+        Log << "Milestone #{@property.fullId}: #{@start} -> #{@end}"
+      elsif !@scheduled && @start && @end &&
+            !(@length == 0 && @duration == 0 && @effort == 0 &&
+              !@allocate.empty?)
         @property['scheduled', @scenarioIdx] = true
         Log << "Task #{@property.fullId} has been scheduled"
       end
@@ -950,21 +951,21 @@ class TaskJuggler
       # allocation. In these cases, bookResource() has to propagate the final
       # date.
       if atEnd
-        if ignoreEffort || a('effort') == 0
-          a('endpreds').each do |task, onEnd|
+        if ignoreEffort || @effort == 0
+          @endpreds.each do |task, onEnd|
             propagateDateToDep(task, onEnd)
           end
         end
-        a('endsuccs').each do |task, onEnd|
+        @endsuccs.each do |task, onEnd|
           propagateDateToDep(task, onEnd)
         end
       else
-        if ignoreEffort || a('effort') == 0
-          a('startsuccs').each do |task, onEnd|
+        if ignoreEffort || @effort == 0
+          @startsuccs.each do |task, onEnd|
             propagateDateToDep(task, onEnd)
           end
         end
-        a('startpreds').each do |task, onEnd|
+        @startpreds.each do |task, onEnd|
           propagateDateToDep(task, onEnd)
         end
       end
@@ -1018,24 +1019,24 @@ class TaskJuggler
 
       # Check for tasks that have no start and end spec, no duration spec but
       # allocates. They can inherit the start and end date.
-      return true if hasThatSpec && !hasDurationSpec && !a('allocate').empty?
+      return true if hasThatSpec && !hasDurationSpec && !@allocate.empty?
 
-      if a('forward') ^ atEnd
+      if @forward ^ atEnd
         # the scheduling direction is pointing away from this end
-        return true if hasDurationSpec || !a('booking').empty?
+        return true if hasDurationSpec || !@booking.empty?
 
         return hasThatSpec
       else
         # the scheduling direction is pointing towards this end
         return a(thatEnd) && !hasDurationSpec &&
-               a('booking').empty? #&& a('allocate').empty?
+               @booking.empty? #&& @allocate.empty?
       end
     end
 
     # Find the smallest possible interval that encloses all child tasks. Abort
     # the operation if any of the child tasks are not yet scheduled.
     def scheduleContainer
-      return if a('scheduled') || !@property.container?
+      return if @scheduled || !@property.container?
 
       nStart = nil
       nEnd = nil
@@ -1058,19 +1059,19 @@ class TaskJuggler
 
       startSet = endSet = false
       # Propagate the dates to other dependent tasks.
-      if a('start').nil? || a('start') > nStart
+      if @start.nil? || @start > nStart
         @property['start', @scenarioIdx] = nStart
         startSet = true
       end
-      if a('end').nil? || a('end') < nEnd
+      if @end.nil? || @end < nEnd
         @property['end', @scenarioIdx] = nEnd
         endSet = true
       end
-      unless a('start') && a('end')
-        raise "Start (#{a('start')}) and end (#{a('end')}) must be set"
+      unless @start && @end
+        raise "Start (#{@start}) and end (#{@end}) must be set"
       end
       @property['scheduled', @scenarioIdx] = true
-      Log << "Container task #{@property.fullId} completed: #{a('start')} -> #{a('end')}"
+      Log << "Container task #{@property.fullId} completed: #{@start} -> #{@end}"
 
       # If we have modified the start or end date, we need to communicate this
       # new date to surrounding tasks.
@@ -1080,7 +1081,7 @@ class TaskJuggler
 
     # Return true if the task has a effort, length or duration setting.
     def hasDurationSpec?
-      a('length') > 0 || a('duration') > 0 || a('effort') > 0 || a('milestone')
+      @length > 0 || @duration > 0 || @effort > 0 || @milestone
     end
 
     # Find the earliest possible start date for the task. This date must be
@@ -1089,7 +1090,7 @@ class TaskJuggler
     def earliestStart
       # This is the date that we will return.
       startDate = nil
-      a('depends').each do |dependency|
+      @depends.each do |dependency|
         potentialStartDate =
           dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         return nil if potentialStartDate.nil?
@@ -1131,7 +1132,7 @@ class TaskJuggler
       # task B depends on A and they are specified this way:
       # task A: | --> D-
       # task B: -D <-- |
-      if a('end') && startDate > a('end')
+      if @end && startDate > @end
         error('weak_start_dep',
               "Task #{@property.fullId} has a too weak start dependencies " +
               "to be scheduled properly.")
@@ -1146,7 +1147,7 @@ class TaskJuggler
     def latestEnd
       # This is the date that we will return.
       endDate = nil
-      a('precedes').each do |dependency|
+      @precedes.each do |dependency|
         potentialEndDate =
           dependency.task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         return nil if potentialEndDate.nil?
@@ -1188,7 +1189,7 @@ class TaskJuggler
       # task A precedes B and they are specified this way:
       # task A: | --> D-
       # task B: -D <-- |
-      if a('start') && (endDate.nil? || endDate > a('start'))
+      if @start && (endDate.nil? || endDate > @start)
         error('weak_end_dep',
               "Task #{@property.fullId} has a too weak end dependencies " +
               "to be scheduled properly.")
@@ -1205,9 +1206,9 @@ class TaskJuggler
 
     def query_complete(query)
       # If we haven't calculated the value yet, calculate it first.
-      unless (complete = a('complete'))
+      unless (complete = @complete)
         calcCompletion
-        complete = a('complete')
+        complete = @complete
       end
 
       query.sortable = query.numerical = complete
@@ -1233,7 +1234,7 @@ class TaskJuggler
     # all tasks. Also for those who did not have a 'duration' attribute.
     def query_duration(query)
       query.sortable = query.numerical = duration =
-        (a('end') - a('start')) / (60 * 60 * 24)
+        (@end - @start) / (60 * 60 * 24)
       query.string = query.scaleDuration(duration)
     end
 
@@ -1275,7 +1276,7 @@ class TaskJuggler
       list = []
 
       # First gather the task that depend on the start of this task.
-      a('startsuccs').each do |task, onEnd|
+      @startsuccs.each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
           dep = "[->]"
@@ -1286,7 +1287,7 @@ class TaskJuggler
         list << generateDepencyListItem(query, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
-      a('endsuccs').each do |task, onEnd|
+      @endsuccs.each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
           dep = "]->]"
@@ -1304,7 +1305,7 @@ class TaskJuggler
       list = []
 
       # First gather the task that depend on the start of this task.
-      a('startpreds').each do |task, onEnd|
+      @startpreds.each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
           dep = "]->["
@@ -1315,7 +1316,7 @@ class TaskJuggler
         list << generateDepencyListItem(query, task, dep, date)
       end
       # Than add the tasks that depend on the end of this task.
-      a('endpreds').each do |task, onEnd|
+      @endpreds.each do |task, onEnd|
         if onEnd
           date = task['end', query.scenarioIdx].to_s(query.timeFormat)
           dep = "]->]"
@@ -1335,7 +1336,7 @@ class TaskJuggler
       return '' unless @property.leaf?
 
       list = []
-      a('assignedresources').each do |resource|
+      @assignedresources.each do |resource|
         if resource.allocated?(@scenarioIdx,
                                TimeInterval.new(query.start, query.end),
                                @property)
@@ -1371,9 +1372,9 @@ class TaskJuggler
 
     def query_status(query)
       # If we haven't calculated the completion yet, calculate it first.
-      if (status = a('status')).empty?
+      if (status = @status).empty?
         calcCompletion
-        status = a('status')
+        status = @status
       end
 
       query.string = status
@@ -1405,8 +1406,8 @@ class TaskJuggler
     # Compute the total time _resource_ or all resources are allocated during
     # interval specified by _startIdx_ and _endIdx_.
     def getAllocatedTime(startIdx, endIdx, resource = nil)
-      return 0.0 if a('milestone') || startIdx >= endIdx ||
-                    (resource && !a('assignedresources').include?(resource))
+      return 0.0 if @milestone || startIdx >= endIdx ||
+                    (resource && !@assignedresources.include?(resource))
 
       key = [ self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource ].hash
       @dCache.cached(key) do
@@ -1422,7 +1423,7 @@ class TaskJuggler
                                                        startIdx, endIdx,
                                                        @property)
           else
-            a('assignedresources').each do |r|
+            @assignedresources.each do |r|
               allocatedTime += r.getAllocatedTime(@scenarioIdx, startIdx, endIdx,
                                                   @property)
             end
@@ -1436,8 +1437,8 @@ class TaskJuggler
     # interval specified by _startIdx_ and _endIdx_. The effective work is the
     # actual work multiplied by the efficiency of the resource.
     def getEffectiveWork(startIdx, endIdx, resource = nil)
-      return 0.0 if a('milestone') || startIdx >= endIdx ||
-                    (resource && !a('assignedresources').include?(resource))
+      return 0.0 if @milestone || startIdx >= endIdx ||
+                    (resource && !@assignedresources.include?(resource))
 
       key = [ self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource ].hash
       @dCache.cached(key) do
@@ -1452,7 +1453,7 @@ class TaskJuggler
             workLoad += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
                                                   @property)
           else
-            a('assignedresources').each do |r|
+            @assignedresources.each do |r|
               workLoad += r.getEffectiveWork(@scenarioIdx, startIdx, endIdx,
                                              @property)
             end
@@ -1474,7 +1475,7 @@ class TaskJuggler
         il = IntervalList.new
         il << TimeInterval.new(@project['start'], @project['end'])
         if @property.leaf?
-          unless (resources = a('assignedresources')).empty?
+          unless (resources = @assignedresources).empty?
             # The task has assigned resources, so we can use their common time
             # off intervals.
             resources.each do |resource|
@@ -1511,7 +1512,7 @@ class TaskJuggler
       end
 
 
-      a('startsuccs').each do |dep|
+      @startsuccs.each do |dep|
         unless dep[1]
           # must be a start->start dependency
           return true if dep[0].isDependencyOf(@scenarioIdx, task, depth)
@@ -1520,7 +1521,7 @@ class TaskJuggler
 
       return false if depth == 1
 
-      a('endsuccs').each do |dep|
+      @endsuccs.each do |dep|
         unless dep[1]
           # must be an end->start dependency
           return true if dep[0].isDependencyOf(@scenarioIdx, task, depth - 1)
@@ -1548,7 +1549,7 @@ class TaskJuggler
     # Returns true of the _resource_ is assigned to this task or any of its
     # children.
     def hasResourceAllocated?(interval, resource)
-      return false unless a('assignedresources').include?(resource)
+      return false unless @assignedresources.include?(resource)
 
       if @property.leaf?
         return resource.allocated?(@scenarioIdx, interval, @property)
@@ -1602,7 +1603,7 @@ class TaskJuggler
           end
           return true
         end
-      elsif a('start') && a('end')
+      elsif @start && @end
         # Task with start and end date but no duration criteria
         if @allocate.empty?
           # For start-end-tasks without allocation, we don't have to do
@@ -1619,19 +1620,19 @@ class TaskJuggler
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
         currentSlot = @project.idxToDate(@currentSlotIdx)
-        if (@forward && currentSlot + slotDuration >= a('end')) ||
-           (!@forward && currentSlot <= a('start'))
+        if (@forward && currentSlot + slotDuration >= @end) ||
+           (!@forward && currentSlot <= @start)
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
           end
           return true
         end
-      elsif a('milestone')
+      elsif @milestone
         if @forward
-          propagateDate(a('start'), true)
+          propagateDate(@start, true)
         else
-          propagateDate(a('end'), false)
+          propagateDate(@end, false)
         end
         return true
       end
@@ -1640,7 +1641,6 @@ class TaskJuggler
     end
 
     def bookResources
-      # If there are no allocations defined, we can't do any bookings.
       # In projection mode we do not allow allocations prior to the current
       # date. If the scenario is not scheduled in projection mode, this
       # restriction only applies to tasks with bookings.
@@ -1728,22 +1728,22 @@ class TaskJuggler
           # For effort based task we adjust the the start end (as defined by
           # the scheduling direction) to align with the first booked time
           # slot.
-          if @effort > 0 && a('assignedresources').empty?
+          if @effort > 0 && @assignedresources.empty?
             if @forward
               @property['start', @scenarioIdx] =
                 @project.idxToDate(@currentSlotIdx)
               Log << "Task #{@property.fullId} first assignment: " +
-                     "#{a('start')} -> #{a('end')}"
-              a('startsuccs').each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, a('start'), false, true)
+                     "#{@start} -> #{@end}"
+              @startsuccs.each do |task, onEnd|
+                task.propagateDate(@scenarioIdx, @start, false, true)
               end
             else
               @property['end', @scenarioIdx] =
                 @project.idxToDate(@currentSlotIdx + 1)
               Log << "Task #{@property.fullId} last assignment: " +
-                     "#{a('start')} -> #{a('end')}"
-              a('endpreds').each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, a('end'), true, true)
+                     "#{@start} -> #{@end}"
+              @endpreds.each do |task, onEnd|
+                task.propagateDate(@scenarioIdx, @end, true, true)
               end
             end
           end
@@ -1755,7 +1755,7 @@ class TaskJuggler
             limit.inc(@currentSlotIdx, resource)
           end
 
-          unless a('assignedresources').include?(r)
+          unless @assignedresources.include?(r)
             @property['assignedresources', @scenarioIdx] << r
           end
           booked = true
@@ -1791,7 +1791,7 @@ class TaskJuggler
     # booking describes the assignment of a Resource to a certain Task for a
     # specified TimeInterval.
     def bookBookings
-      scheduled = a('scheduled')
+      scheduled = @scheduled
       slotDuration = @project['scheduleGranularity']
       tentativeEnd = nil
       findBookings.each do |booking|
@@ -1800,7 +1800,7 @@ class TaskJuggler
                 "Booked resources may not be group resources",
                 booking.sourceFileInfo)
         end
-        unless a('forward') || scheduled
+        unless @forward || scheduled
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
@@ -1823,17 +1823,17 @@ class TaskJuggler
               # Save the date of what could be the end of the last booked
               # slot.
               tentativeEnd = tEnd if tentativeEnd.nil? || tentativeEnd < tEnd
-              if !scheduled && (a('start').nil? || date < a('start'))
+              if !scheduled && (@start.nil? || date < @start)
                 @property['start', @scenarioIdx] = date
                 Log << "Task #{@property.fullId} first booking: " +
-                  "#{a('start')} -> #{a('end')}"
+                  "#{@start} -> #{@end}"
               end
 
-              unless a('assignedresources').include?(booking.resource)
+              unless @assignedresources.include?(booking.resource)
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            if a('length') > 0 && @project.isWorkingTime(idx)
+            if @length > 0 && @project.isWorkingTime(idx)
               # For tasks with a 'length' we track the covered work time and
               # set the task to 'scheduled' when we have enough length.
               @doneLength += 1
@@ -1844,20 +1844,20 @@ class TaskJuggler
           # supplied bookings and set the task end to the last booked slot.
           # Also the task is marked as scheduled.
           if tentativeEnd && !scheduled
-            if a('effort') > 0
-              if @doneEffort >= a('effort')
+            if @effort > 0
+              if @doneEffort >= @effort
                 @property['end', @scenarioIdx] = tentativeEnd
                 @property['scheduled', @scenarioIdx] = true
               end
-            elsif a('length') > 0
-              if @doneLength >= a('length')
+            elsif @length > 0
+              if @doneLength >= @length
                 @property['end', @scenarioIdx] = tentativeEnd
                 @property['scheduled', @scenarioIdx] = true
               end
-            elsif a('duration') > 0
-              @doneDuration = ((tentativeEnd - a('start')) /
+            elsif @duration > 0
+              @doneDuration = ((tentativeEnd - @start) /
                                @project['scheduleGranularity']).to_i
-              if @doneDuration >= a('duration')
+              if @doneDuration >= @duration
                 @property['end', @scenarioIdx] = tentativeEnd
                 @property['scheduled', @scenarioIdx] = true
               end
@@ -1866,10 +1866,10 @@ class TaskJuggler
         end
       end
 
-      if a('effort') > 0
+      if @effort > 0
         effort = @project.slotsToDays(@doneEffort)
         effortHours = effort * @project['dailyworkinghours']
-        requestedEffort = @project.slotsToDays(a('effort'))
+        requestedEffort = @project.slotsToDays(@effort)
         requestedEffortHours = requestedEffort * @project['dailyworkinghours']
         if effort > requestedEffort
           warning('overbooked_effort',
@@ -1879,18 +1879,18 @@ class TaskJuggler
                   "#{requestedEffortHours}h.")
         end
       end
-      if a('length') > 0 && @doneLength > a('length')
+      if @length > 0 && @doneLength > @length
         length = @project.slotsToDays(@doneLength)
-        requestedLength = @project.slotsToDays(a('length'))
+        requestedLength = @project.slotsToDays(@length)
         warning('overbooked_length',
                 "The total length (#{length}d) of the provided bookings " +
                 "for task #{@property.fullId} exceeds the specified length of " +
                 "#{requestedLength}d.")
       end
-      if a('duration') > 0 && @doneDuration > a('duration')
+      if @duration > 0 && @doneDuration > @duration
         duration = @doneDuration * @project['scheduleGranularity'] /
                    (60.0 * 60 * 24)
-        requestedDuration = a('duration') * @project['scheduleGranularity'] /
+        requestedDuration = @duration * @project['scheduleGranularity'] /
                             (60.0 * 60 * 24)
         warning('overbooked_duration',
                 "The total duration (#{duration}d) of the provided bookings " +
@@ -1982,23 +1982,23 @@ class TaskJuggler
       # dependency no matter how it was set.
       unless atEnd
         # Row 1
-        a('startpreds').each do |task, onEnd|
+        @startpreds.each do |task, onEnd|
           if (onEnd && (task['forward', @scenarioIdx] ||
                         task['end', @scenarioIdx])) || !onEnd
             return true
           end
         end
         # Row 2
-        a('startsuccs').each do |task, onEnd|
+        @startsuccs.each do |task, onEnd|
           return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
         end
       else
         # Row 3
-        a('endpreds').each do |task, onEnd|
+        @endpreds.each do |task, onEnd|
           return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
         end
         # Row 4
-        a('endsuccs').each do |task, onEnd|
+        @endsuccs.each do |task, onEnd|
           if (!onEnd && (!task['forward', @scenarioIdx] ||
                          task['start', @scenarioIdx])) || onEnd
             return true
@@ -2020,7 +2020,7 @@ class TaskJuggler
     # accordingly.
     def markMilestone
       return if @property.container? || hasDurationSpec? ||
-        !a('booking').empty? || !a('allocate').empty?
+        !@booking.empty? || !@allocate.empty?
 
       # The following cases qualify for an automatic milestone promotion.
       #   -  --> -
@@ -2031,12 +2031,12 @@ class TaskJuggler
       #   -  <-- |
       #   -  <-- -D
       #   -  <-- |D
-      hasStartSpec = !a('start').nil? || !a('depends').empty?
-      hasEndSpec = !a('end').nil? || !a('precedes').empty?
+      hasStartSpec = !@start.nil? || !@depends.empty?
+      hasEndSpec = !@end.nil? || !@precedes.empty?
 
       @property['milestone', @scenarioIdx] =
-        (hasStartSpec && a('forward') && !hasEndSpec) ||
-        (!hasStartSpec && !a('forward') && hasEndSpec) ||
+        (hasStartSpec && @forward && !hasEndSpec) ||
+        (!hasStartSpec && !@forward && hasEndSpec) ||
         (!hasStartSpec && !hasEndSpec)
     end
 
@@ -2150,23 +2150,23 @@ class TaskJuggler
       # If the user provided a completion degree we are not touching it.
       if @property.provided('complete', @scenarioIdx)
         calcStatus
-        return a('complete')
+        return @complete
       end
 
       # We cannot compute a completion degree without a start or end date.
-      if a('start').nil? || a('end').nil?
+      if @start.nil? || @end.nil?
         @property['complete', @scenarioIdx] = 0.0
         @property['status', @scenarioIdx] = 'unknown'
         return nil
       end
 
       completion = 0.0
-      if a('milestone')
+      if @milestone
         # Milestones are either 0% or 100% complete.
         @property['complete', @scenarioIdx] = completion =
           @property['end', @scenarioIdx] <= @project['now'] ? 100.0 : 0.0
         @property['status', @scenarioIdx] =
-          a('end') <= @project['now'] ? 'done' : 'not reached'
+          @end <= @project['now'] ? 'done' : 'not reached'
       else
         # The task is in progress. Calculate the current completion
         # degree.
@@ -2179,24 +2179,24 @@ class TaskJuggler
             completion += comp
           end
           completion /= @property.children.length
-        elsif a('end') <= @project['now']
+        elsif @end <= @project['now']
           # The task has ended already. It's 100% complete.
           completion = 100.0
-        elsif @project['now'] <= a('start')
+        elsif @project['now'] <= @start
           # The task has not started yet. Its' 0% complete.
           completion = 0.0
-        elsif a('effort') > 0
+        elsif @effort > 0
           # Effort based leaf tasks. The completion degree is the percentage
           # of effort that has been done already.
-          done = getEffectiveWork(@project.dateToIdx(a('start'), false),
+          done = getEffectiveWork(@project.dateToIdx(@start, false),
                                   @project.dateToIdx(@project['now']))
           total = @project.convertToDailyLoad(
-            a('effort') * @project['scheduleGranularity'])
+            @effort * @project['scheduleGranularity'])
           completion = done / total * 100.0
         else
           # Length/duration leaf tasks.
-          completion = ((@project['now'] - a('start')) /
-                        (a('end') - a('start'))) * 100.0
+          completion = ((@project['now'] - @start) /
+                        (@end - @start)) * 100.0
         end
         @property['complete', @scenarioIdx] = completion
         calcStatus
@@ -2208,9 +2208,9 @@ class TaskJuggler
     # Calculate the status of the task based on the 'complete' attribute.
     def calcStatus
       @property['status', @scenarioIdx] =
-        if a('complete') == 0.0
+        if @complete == 0.0
           'not started'
-        elsif a('complete') >= 100.0
+        elsif @complete >= 100.0
           'done'
         else
           'in progress'
@@ -2226,12 +2226,12 @@ class TaskJuggler
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
       # targets.
-      if @property.leaf? && !hasPredecessors && a('milestone')
+      if @property.leaf? && !hasPredecessors && @milestone
         list << @property
         return
       end
 
-      a('startpreds').each do |t, onEnd|
+      @startpreds.each do |t, onEnd|
         t.inputs(@scenarioIdx, list, false)
       end
 
@@ -2259,12 +2259,12 @@ class TaskJuggler
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
       # targets.
-      if @property.leaf? && !hasSuccessors && a('milestone')
+      if @property.leaf? && !hasSuccessors && @milestone
         list << @property
         return
       end
 
-      a('endsuccs').each do |t, onEnd|
+      @endsuccs.each do |t, onEnd|
         t.targets(@scenarioIdx, list, false)
       end
 
@@ -2299,7 +2299,7 @@ class TaskJuggler
 
       # If there are no chargeset defined for this task, we don't need to
       # compute the resource related or other cost.
-      unless a('chargeset').empty?
+      unless @chargeset.empty?
         resourceCost = 0.0
         otherCost = 0.0
 
@@ -2309,27 +2309,27 @@ class TaskJuggler
             resourceCost = resource.cost(@scenarioIdx, startIdx, endIdx,
                                          @property)
           else
-            a('assignedresources').each do |r|
+            @assignedresources.each do |r|
               resourceCost += r.cost(@scenarioIdx, startIdx, endIdx, @property)
             end
           end
         end
 
-        unless a('charge').empty?
+        unless @charge.empty?
           # Add one-time and periodic charges to the amount.
           startDate = startIdx.is_a?(TjTime) ? startIdx :
             @project.idxToDate(startIdx)
           endDate = endIdx.is_a?(TjTime) ? endIdx :
             @project.idxToDate(endIdx)
           iv = TimeInterval.new(startDate, endDate)
-          a('charge').each do |charge|
+          @charge.each do |charge|
             otherCost += charge.turnover(iv)
           end
         end
 
         totalCost = resourceCost + otherCost
         # Now weight the total cost by the share of the account
-        a('chargeset').each do |set|
+        @chargeset.each do |set|
           set.each do |accnt, share|
             if share > 0.0 && (accnt == account || accnt.isChildOf?(account))
               amount += totalCost * share
