@@ -26,8 +26,8 @@ class TaskJuggler
       # Attributed are only really created when they are accessed the first
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
-      %w( allocate assignedresources booking chargeset complete criticalness
-          depends duration effort end forward length
+      %w( allocate assignedresources booking charge chargeset complete
+          criticalness depends duration effort end forward length
           maxend maxstart minend minstart milestone pathcriticalness
           precedes scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
