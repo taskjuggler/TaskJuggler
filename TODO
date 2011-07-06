@@ -7,9 +7,9 @@ or should be done for TaskJuggler III.
 
 * Add missing functions for logical expressions.
 
-* Missing reports (calendar)
+* Account reports
 
-* Some dynamic report columns are still missing.
+* Missing reports (calendar)
 
 * More unit tests for core classes.
 
