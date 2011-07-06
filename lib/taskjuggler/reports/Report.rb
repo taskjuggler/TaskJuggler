@@ -30,6 +30,10 @@ require 'taskjuggler/HTMLDocument'
 
 class TaskJuggler
 
+  # Just a dummy class to make the 'flags' attribute work.
+  class ReportScenario < ScenarioData
+  end
+
   # The Report class holds the fundamental description and functionality to
   # turn the scheduled project into a user readable form. A report may contain
   # other reports.
@@ -45,6 +49,13 @@ class TaskJuggler
       # The type specifier must be set for every report. It tells whether this
       # is a task, resource, text or other report.
       @typeSpec = nil
+      # Reports don't really have any scenario specific attributes. But the
+      # flag handling code assumes they are. To use flags, we need them as
+      # well.
+      @data = Array.new(@project.scenarioCount, nil)
+      @project.scenarioCount.times do |i|
+        ReportScenario.new(self, i, @scenarioAttributes[i])
+      end
     end
 
     # The generate function is where the action happens in this class. The

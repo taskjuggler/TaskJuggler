@@ -49,8 +49,9 @@ class TaskJuggler
       # Attributed are only really created when they are accessed the first
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
-      %w( alloctdeffort directreports duties efficiency limits managers
-          rate reports shifts vacations workinghours ).each do |attr|
+      %w( alloctdeffort criticalness directreports duties efficiency
+          effort limits managers rate reports shifts
+          vacations workinghours ).each do |attr|
         @property[attr, @scenarioIdx]
       end
 
@@ -60,7 +61,7 @@ class TaskJuggler
     # This method must be called at the beginning of each scheduling run. It
     # initializes variables used during the scheduling process.
     def prepareScheduling
-      @property['effort', @scenarioIdx] = 0
+      @effort = 0
       initScoreboard if @property.leaf?
 
       setDirectReports
@@ -74,13 +75,13 @@ class TaskJuggler
     def calcCriticalness
       if @scoreboard.nil?
         # Resources that are not allocated are not critical at all.
-        @property['criticalness', @scenarioIdx] = 0.0
+        @criticalness = 0.0
       else
         freeSlots = 0
         @scoreboard.each do |slot|
           freeSlots += 1 if slot.nil?
         end
-        @property['criticalness', @scenarioIdx] = freeSlots == 0 ? 1.0 :
+        @criticalness = freeSlots == 0 ? 1.0 :
           @alloctdeffort / freeSlots
       end
     end
@@ -165,7 +166,7 @@ class TaskJuggler
 
       # Make sure the task is in the list of duties.
       unless @duties.include?(task)
-        @property['duties', @scenarioIdx] << task
+        @duties << task
       end
 
       #puts "Booking resource #{@property.fullId} at " +
@@ -669,7 +670,7 @@ class TaskJuggler
               "Management loop detected. #{@property.fullId} has self " +
               "in list of reports")
       end
-      @property['reports', @scenarioIdx] += reports
+      @reports += reports
       # Resources can end up multiple times in the list if they have multiple
       # reporting chains. We only need them once in the list.
       @reports.uniq!
