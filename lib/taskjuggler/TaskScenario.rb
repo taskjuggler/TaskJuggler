@@ -105,6 +105,16 @@ class TaskJuggler
 
       bookBookings
 
+      @durationType =
+        if @effort > 0
+          :effortTask
+        elsif @length > 0
+          :lengthTask
+        elsif @duration > 0
+          :durationTask
+        else
+          :startEndTask
+        end
     end
 
     # The parser only stores the full task IDs for each of the dependencies.
@@ -866,13 +876,6 @@ class TaskJuggler
     # or end date has been determined and other tasks may be ready for
     # scheduling now.
     def schedule
-      # Is the task scheduled from start to end or vice versa?
-      forward = @forward
-      # The task may not excede the project interval.
-      limit = @project.dateToIdx(@project[forward ? 'end' : 'start'])
-      # Number of seconds per time slot.
-      slotDuration = @project['scheduleGranularity']
-
       # Compute the date of the next slot this task wants to have scheduled.
       # This must either be the first slot ever or it must be directly
       # adjecent to the previous slot. If this task has not yet been scheduled
@@ -891,27 +894,21 @@ class TaskJuggler
         # On first call, the @currentSlotIdx is not set yet. We set it to the
         # slot index of the slot before the end slot.
         if @currentSlotIdx.nil?
-          @currentSlotIdx = @project.dateToIdx(@end - slotDuration)
+          @currentSlotIdx = @project.dateToIdx(@end) - 1
         end
       end
 
       # Schedule all time slots from slot in the scheduling direction until
       # the task is completed or a problem has been found.
-      while !scheduleSlot(slotDuration)
-        if forward
-          # The task is scheduled from start to end.
-          @currentSlotIdx += 1
-          if @currentSlotIdx > limit
-            markAsRunaway
-            return false
-          end
-        else
-          # The task is scheduled from end to start.
-          @currentSlotIdx -= 1
-          if @currentSlotIdx < limit
-            markAsRunaway
-            return false
-          end
+      # The task may not excede the project interval.
+      lowerLimit = @project.dateToIdx(@project['start'])
+      upperLimit = @project.dateToIdx(@project['end'])
+      delta = @forward ? 1 : -1
+      while scheduleSlot
+        @currentSlotIdx += delta
+        if @currentSlotIdx < lowerLimit || upperLimit < @currentSlotIdx
+          markAsRunaway
+          return false
         end
       end
 
@@ -1574,13 +1571,14 @@ class TaskJuggler
 
   private
 
-    def scheduleSlot(slotDuration)
+    def scheduleSlot
       # Tasks must always be scheduled in a single contigous fashion.
       # Depending on the scheduling direction the next slot must be scheduled
       # either right before or after this slot. If the current slot is not
       # directly aligned, we'll wait for another call with a proper slot. The
-      # function returns true only if a slot could be scheduled.
-      if @effort > 0
+      # function returns false if the task has been completely scheduled.
+      case @durationType
+      when :effortTask
         bookResources if @doneEffort < @effort
         if @doneEffort >= @effort
           # The specified effort has been reached. The task has been fully
@@ -1590,47 +1588,59 @@ class TaskJuggler
           else
             propagateDate(@project.idxToDate(@currentSlotIdx), false, true)
           end
-          return true
+          return false
         end
-      elsif @length > 0 || @duration > 0
-        # The doneDuration counts the number of scheduled slots. It is increased
-        # by one with every scheduled slot. The doneLength is only increased for
-        # global working time slots.
+      when :lengthTask
         bookResources
-        @doneDuration += 1
-        if @project.isWorkingTime(@currentSlotIdx)
-          @doneLength += 1
-        end
+        # The doneLength is only increased for global working time slots.
+        @doneLength += 1 if @project.isWorkingTime(@currentSlotIdx)
 
         # If we have reached the specified duration or lengths, we set the end
         # or start date and propagate the value to neighbouring tasks.
-        if (@length > 0 && @doneLength >= @length) ||
-           (@duration > 0 && @doneDuration >= @duration)
+        if @doneLength >= @length
           if @forward
             propagateDate(@project.idxToDate(@currentSlotIdx + 1), true)
           else
             propagateDate(@project.idxToDate(@currentSlotIdx), false)
           end
-          return true
+          return false
         end
-      elsif @start && @end
+      when :durationTask
+        # The doneDuration counts the number of scheduled slots. It is increased
+        # by one with every scheduled slot.
+        bookResources
+        @doneDuration += 1
+
+        # If we have reached the specified duration or lengths, we set the end
+        # or start date and propagate the value to neighbouring tasks.
+        if @doneDuration >= @duration
+          if @forward
+            propagateDate(@project.idxToDate(@currentSlotIdx + 1), true)
+          else
+            propagateDate(@project.idxToDate(@currentSlotIdx), false)
+          end
+          return false
+        end
+      when :startEndTask
         # Task with start and end date but no duration criteria
         bookResources
 
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
         currentSlot = @project.idxToDate(@currentSlotIdx)
-        if (@forward && currentSlot + slotDuration >= @end) ||
+        if (@forward && currentSlot + @project['scheduleGranularity'] >= @end) ||
            (!@forward && currentSlot <= @start)
           @property['scheduled', @scenarioIdx] = true
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
           end
-          return true
+          return false
         end
+      else
+        raise "Unknown task duration type #{@durationType}"
       end
 
-      false
+      true
     end
 
     def bookResources
@@ -1756,7 +1766,7 @@ class TaskJuggler
     # are checked.
     def limitsOk?(sbIdx, resource = nil)
       @allLimits.each do |limit|
-        return false if !limit.ok?(sbIdx, true, resource)
+        return false unless limit.ok?(sbIdx, true, resource)
       end
       true
     end
@@ -1776,57 +1786,59 @@ class TaskJuggler
     # booking describes the assignment of a Resource to a certain Task for a
     # specified TimeInterval.
     def bookBookings
-      scheduled = @scheduled
-      slotDuration = @project['scheduleGranularity']
-      tentativeEnd = nil
+      firstSlotIdx = nil
+      lastSlotIdx = nil
       findBookings.each do |booking|
         unless booking.resource.leaf?
           error('booking_resource_not_leaf',
                 "Booked resources may not be group resources",
                 booking.sourceFileInfo)
         end
-        unless @forward || scheduled
+        unless @forward || @scheduled
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
         booking.intervals.each do |interval|
           startIdx = @project.dateToIdx(interval.start, false)
-          date = interval.start
           endIdx = @project.dateToIdx(interval.end, false)
           startIdx.upto(endIdx - 1) do |idx|
-            tEnd = date + slotDuration
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
               # Booking was successful for this time slot.
               @doneEffort += booking.resource['efficiency', @scenarioIdx]
 
-              # Set start if appropriate. The task start will be set to the
-              # begining of the first booked slot. The currentSlotIdx
-              # will be set to the slot after the last booked slot.
-              #if @currentSlotIdx.nil? || @currentSlotIdx <= idx
-              #  @currentSlotIdx = idx + 1
-              #end
-              # Save the date of what could be the end of the last booked
-              # slot.
-              tentativeEnd = tEnd if tentativeEnd.nil? || tentativeEnd < tEnd
-              if !scheduled && (@start.nil? || date < @start)
-                @property['start', @scenarioIdx] = date
-                Log << "Task #{@property.fullId} first booking: " +
-                  "#{@start} -> #{@end}"
-              end
+              # Store the indexes of the first slot and the slot after the
+              # last slot.
+              firstSlotIdx = idx if !firstSlotIdx || firstSlotIdx > idx
+              lastSlotIdx = idx if !lastSlotIdx || lastSlotIdx < idx
 
               unless @assignedresources.include?(booking.resource)
                 @property['assignedresources', @scenarioIdx] << booking.resource
               end
             end
-            date = tEnd
           end
+        end
+      end
+
+      # For effort based tasks, or tasks without a start date, with bookings
+      # that have not yet been marked as scheduled we set the start date to
+      # the date of the first booked slot.
+      if (@start.nil? || (@doneEffort > 0 && @effort > 0)) &&
+         !@scheduled && firstSlotIdx
+        firstSlotDate = @project.idxToDate(firstSlotIdx)
+        if @start.nil? || firstSlotDate > @start
+          @property['start', @scenarioIdx] = firstSlotDate
+          Log << "Task #{@property.fullId} first booking: " +
+            "#{@start} -> #{@end}"
         end
       end
 
       # Check if the the duration criteria has already been reached by the
       # supplied bookings and set the task end to the last booked slot.
       # Also the task is marked as scheduled.
-      if tentativeEnd && !scheduled
+      if lastSlotIdx && !@scheduled
+        tentativeEnd = @project.idxToDate(lastSlotIdx + 1)
+        slotDuration = @project['scheduleGranularity']
+
         if @effort > 0
           if @doneEffort >= @effort
             @property['end', @scenarioIdx] = tentativeEnd
@@ -1834,7 +1846,6 @@ class TaskJuggler
           end
         elsif @length > 0
           @doneLength = 0
-          slotDuration = @project['scheduleGranularity']
           startIdx = @project.dateToIdx(date = @start)
           endIdx = @project.dateToIdx(@project['now'])
           startIdx.upto(endIdx) do |idx|
@@ -1850,7 +1861,6 @@ class TaskJuggler
             end
           end
         elsif @duration > 0
-          slotDuration = @project['scheduleGranularity']
           @doneDuration = ((tentativeEnd - @start) / slotDuration).to_i
           if @doneDuration >= @duration
             @property['end', @scenarioIdx] = tentativeEnd
@@ -1871,6 +1881,9 @@ class TaskJuggler
         @currentSlotIdx = @project.dateToIdx(@project['now'])
       end
 
+      # Finally, we check if the bookings caused more effort, length or
+      # duration than was requested by the user. This is only flagged as a
+      # warning.
       if @effort > 0
         effort = @project.slotsToDays(@doneEffort)
         effortHours = effort * @project['dailyworkinghours']

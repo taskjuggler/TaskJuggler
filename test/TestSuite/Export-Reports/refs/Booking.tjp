@@ -10,7 +10,7 @@ projectids project
 resource tux "Tux"
 
 task test "Testing" {
-  start 2007-01-05-07:00-+0000
+  start 2007-01-08-20:00-+0000
   end 2007-01-24-22:00-+0000
   scheduling asap
   scheduled

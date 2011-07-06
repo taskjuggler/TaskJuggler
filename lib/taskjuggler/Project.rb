@@ -1090,11 +1090,15 @@ class TaskJuggler
       resources.each { |resource| resource.setDirectReports(scIdx) }
       resources.each { |resource| resource.setReports(scIdx) }
 
+      Log.progress(0.81)
       tasks.each { |task| task.prepareScheduling(scIdx) }
+      Log.progress(0.82)
       tasks.each { |task| task.Xref(scIdx) }
       tasks.each { |task| task.propagateInitialValues(scIdx) }
+      Log.progress(0.83)
       tasks.each { |task| task.preScheduleCheck(scIdx) }
 
+      Log.progress(0.84)
       # Check for dependency loops in the task graph.
       tasks.each { |task| task.resetLoopFlags(scIdx) }
       tasks.each do |task|
