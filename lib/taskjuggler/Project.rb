@@ -949,6 +949,12 @@ class TaskJuggler
       slotsToDays(slots)
     end
 
+    # Return true if for the date specified by the global scoreboard index
+    # _sbIdx_ there is any resource that is available.
+    def anyResourceAvailable?(sbIdx)
+      @resourceAvailability[sbIdx]
+    end
+
     # TaskJuggler keeps all times in UTC. All time values must be multiples of
     # the used scheduling granularity. If the local time zone is not
     # hour-aligned to UTC, the maximum allowed schedule granularity is
@@ -1089,6 +1095,8 @@ class TaskJuggler
 
       resources.each { |resource| resource.setDirectReports(scIdx) }
       resources.each { |resource| resource.setReports(scIdx) }
+
+      computeResourceAvailabilities(scIdx, usedResources)
 
       Log.progress(0.81)
       tasks.each { |task| task.prepareScheduling(scIdx) }
@@ -1285,6 +1293,22 @@ class TaskJuggler
         end
       end
     end
+
+    def computeResourceAvailabilities(scIdx, usedResources)
+      @resourceAvailability =
+        Scoreboard.new(@attributes['start'], @attributes['end'],
+                       @attributes['scheduleGranularity'])
+
+      @resourceAvailability.each_index do |idx|
+        usedResources.each do |resource|
+          if resource.available?(scIdx, idx)
+            @resourceAvailability[idx] = true
+            break
+          end
+        end
+      end
+    end
+
 
     def matchingReports(reportId)
       list = []

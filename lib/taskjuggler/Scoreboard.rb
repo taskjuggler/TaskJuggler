@@ -81,6 +81,13 @@ class TaskJuggler
       end
     end
 
+    # Iterate over all scoreboard entries by index.
+    def each_index
+      @sb.each_index do |index|
+        yield index
+      end
+    end
+
     # Assign result of block to each element.
     def collect!
       @sb.collect! { |x| yield x }

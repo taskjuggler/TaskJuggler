@@ -1656,6 +1656,9 @@ class TaskJuggler
     end
 
     def bookResources
+      # First check if there is any resource at all for this slot.
+      return true unless @project.anyResourceAvailable?(@currentSlotIdx)
+
       # If the task has resource independent allocation limits we need to make
       # sure that none of them is already exceeded.
       return unless limitsOk?(@currentSlotIdx)
