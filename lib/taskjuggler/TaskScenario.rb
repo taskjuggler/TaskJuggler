@@ -558,6 +558,18 @@ class TaskJuggler
               "end date.")
       end
 
+      if @effort == 0 && !@milestone && !@allocate.empty? &&
+         @assignedresources.empty?
+        # The user used an 'allocate' for the task, but did not specify any
+        # 'effort'. Actual allocations will only happen when resources are
+        # available by chance. If there are no assigned resources, we generate
+        # a warning as this is probably not what the user intended.
+        warning('allocate_no_assigned',
+                "Task #{@property.id} has resource allocation requested, but " +
+                "did not get any resources assigned. Either use 'effort' " +
+                "to ensure allocations or use a higher 'priority'.")
+      end
+
       @errors == 0
     end
 

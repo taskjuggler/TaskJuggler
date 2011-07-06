@@ -39,10 +39,10 @@ class TestScheduler < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      tj = TaskJuggler.new(true)
+      tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
-      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+      checkMessages(tj, f)
     end
   end
 

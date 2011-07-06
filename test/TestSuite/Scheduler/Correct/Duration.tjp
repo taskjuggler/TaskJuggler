@@ -7,7 +7,7 @@ resource r4 "R4"
 
 task duration "Duration Tasks" {
   start 2007-03-27
-
+# MARK: warning 11 allocate_no_assigned
   task t1 "Duration 5h" {
     duration 5h
     allocate r1
@@ -40,10 +40,10 @@ task duration "Duration Tasks" {
     fail plan.effort != 109
   }
 }
-  
+
 taskreport duration "Duration" {
   formats html
   loadunit days
 	columns name, start, effort, end, daily
 }
-  
+

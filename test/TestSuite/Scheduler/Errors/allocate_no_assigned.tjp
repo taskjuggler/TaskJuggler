@@ -1,0 +1,15 @@
+project "Test" 2011-07-06 +1m
+
+resource r "R"
+
+task "T1" {
+  effort 5d
+  allocate r
+  priority 600
+}
+# MARK: warning 11 allocate_no_assigned
+task "T2" {
+  length 5d
+  allocate r
+}
+
