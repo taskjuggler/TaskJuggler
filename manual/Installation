@@ -311,7 +311,8 @@ And edit the ''''.vim/syntax.vim'''' file to contain the following line.
 
  au! Syntax tjp          so ~/.vim/syntax/tjp.vim
 
-When you now open a ''''.tjp'''' or ''''.tji'''' file in Vim, you should have the following features available:
+When you now open a ''''.tjp'''' or ''''.tji'''' file in Vim, you
+should have the following features available:
 
 * Syntax highlighting. TJP keywords should be colored in different colors.
 * Syntax folding. The optional parts of properties within the curly
@@ -328,5 +329,10 @@ When you now open a ''''.tjp'''' or ''''.tji'''' file in Vim, you should have th
   Vim can tell you the full hierarchical ID of a property. Just move
   the cursor to the first line of the property definition and press
   ''''Ctrl-]''''.
-
+* Run tj3 from within vim. Just type '''':make your_project.tjp'''' to
+  start the scheduling process. In case of errors or warnings, you
+  will be able to navigate the errors with '''':cn'''' and
+  '''':cp''''.
+* Move the cursor over any TaskJuggler syntax keyword and press
+  ''''shift-k'''' to get the manual page for this keyword.
 
