@@ -318,7 +318,7 @@ should have the following features available:
 * Syntax folding. The optional parts of properties within the curly
   braces can be collapsed. For this to work, the opening brace needs
   to be on the same line as the property keyword. The closing brace
-  must be the first non-black character of the last line of the
+  must be the first non-blank character of the last line of the
   block. See the '''':help fold'''' Vim help command for details how
   to open and close folds.
 * Tag navigation. If you include a [tagfile] report in your project,
