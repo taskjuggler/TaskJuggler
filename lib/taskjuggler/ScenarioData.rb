@@ -30,6 +30,13 @@ class TaskJuggler
       @property.data[idx] = self
     end
 
+    # We only use deep_clone for attributes, never for properties. Since
+    # attributes may reference properties these references should remain
+    # references.
+    def deep_clone
+      self
+    end
+
     def a(attributeName)
       @attributes[attributeName].get
     end
