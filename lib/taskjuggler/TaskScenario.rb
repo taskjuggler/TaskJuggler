@@ -872,7 +872,11 @@ class TaskJuggler
     # least one specified end date and a duration criteria or the other end
     # date.
     def readyForScheduling?
-      return false if @scheduled || @isRunAway
+      # If the tasks has already been scheduled, we still call it 'ready' so
+      # it will be removed from the todo list.
+      return true if @scheduled
+
+      return false if @isRunAway
 
       if @forward
         return true if @start && (hasDurationSpec? || @end)
@@ -888,6 +892,9 @@ class TaskJuggler
     # or end date has been determined and other tasks may be ready for
     # scheduling now.
     def schedule
+      # Check if the task has already been scheduled e. g. by propagateDate().
+      return true if @scheduled
+
       # Compute the date of the next slot this task wants to have scheduled.
       # This must either be the first slot ever or it must be directly
       # adjecent to the previous slot. If this task has not yet been scheduled
