@@ -77,6 +77,45 @@ class TaskJuggler
       @entries = {}
     end
 
+  if RUBY_VERSION < '1.9.0'
+
+    # Ruby 1.8 has a buggy hash key generation algorithm that leads to many
+    # hash collisions. We completely disable caching on 1.8.
+
+    def cached(*args)
+      yield
+    end
+
+  else
+
+    # _args_ is a set of arguments that unambigously identify the data entry.
+    # It's converted into a hash to store or recover a previously stored
+    # entry. If we have a value for the key, return the value. Otherwise call the
+    # block to compute the value, store it and return it.
+    def cached(*args)
+      key = args.hash
+      if @entries.has_key?(key)
+        e = @entries[key]
+        @hits += 1
+        e.value
+      else
+        @misses += 1
+        store(yield, key)
+      end
+    end
+
+  end
+
+    def to_s
+      <<"EOT"
+Entries: #{@entries.size}   Stores: #{@stores}
+Hits: #{@hits}   Misses: #{@misses}
+Hit Rate: #{@hits * 100.0 / (@hits + @misses)}%
+EOT
+    end
+
+    private
+
     # Store _value_ into the cache using _key_ to tag it. _key_ must be unique
     # and must be used to load the value from the cache again. You cannot
     # store nil values!
@@ -97,56 +136,6 @@ class TaskJuggler
       @entries[key] = DataCacheEntry.new(value)
 
       value
-    end
-
-  if RUBY_VERSION < '1.9.0'
-
-    # Ruby 1.8 has a buggy hash key generation algorithm that leads to many
-    # hash collisions. We completely disable caching on 1.8.
-
-    def load(key)
-      nil
-    end
-
-    def cached(key)
-      yield
-    end
-
-  else
-
-    # Retrieve the value indexed by _key_ from the cache. If it's not found,
-    # nil is returned.
-    def load(key)
-      if (e = @entries[key])
-        @hits += 1
-        e.value
-      else
-        @misses += 1
-        nil
-      end
-    end
-
-    # If we have a value for the _key_, return the value. Otherwise call the
-    # block to compute the value, store it and return it.
-    def cached(key)
-      if @entries.has_key?(key)
-        e = @entries[key]
-        @hits += 1
-        e.value
-      else
-        @misses += 1
-        store(yield, key)
-      end
-    end
-
-  end
-
-    def to_s
-      <<"EOT"
-Entries: #{@entries.size}   Stores: #{@stores}
-Hits: #{@hits}   Misses: #{@misses}
-Hit Rate: #{@hits * 100.0 / (@hits + @misses)}%
-EOT
     end
 
   end

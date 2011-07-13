@@ -314,28 +314,25 @@ class TaskJuggler
       return 0.0 if startIdx >= endIdx || (task && !@duties.include?(task))
 
       # The unique key we use to address the result in the cache.
-      key = [ self, :ResourceScenarioEffectiveWork, startIdx, endIdx,
-              task ].hash
-      work = @dCache.load(key)
-      return work if work
+      @dCache.cached(self, :ResourceScenarioEffectiveWork, startIdx, endIdx, task) do
+        # Convert the interval dates to indexes if needed.
+        startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
+        endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
-      # Convert the interval dates to indexes if needed.
-      startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
-      endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
-
-      work = 0.0
-      if @property.container?
-        @property.kids.each do |resource|
-          work += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx, task)
+        work = 0.0
+        if @property.container?
+          @property.kids.each do |resource|
+            work += resource.getEffectiveWork(@scenarioIdx, startIdx, endIdx, task)
+          end
+        else
+          unless @scoreboard.nil?
+            work = @project.convertToDailyLoad(
+                     getAllocatedSlots(startIdx, endIdx, task) *
+                     @project['scheduleGranularity']) * @efficiency
+          end
+          work
         end
-      else
-        return 0.0 if @scoreboard.nil?
-
-        work = @project.convertToDailyLoad(
-                 getAllocatedSlots(startIdx, endIdx, task) *
-                 @project['scheduleGranularity']) * @efficiency
       end
-      @dCache.store(work, key)
     end
 
     # Returns the allocated accumulated time of this resource and its children.

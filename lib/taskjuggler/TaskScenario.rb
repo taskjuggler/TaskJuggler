@@ -1435,8 +1435,7 @@ class TaskJuggler
       return 0.0 if @milestone || startIdx >= endIdx ||
                     (resource && !@assignedresources.include?(resource))
 
-      key = [ self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource ].hash
-      @dCache.cached(key) do
+      @dCache.cached(self, :TaskScenarioAllocatedTime, startIdx, endIdx, resource) do
         allocatedTime = 0.0
         if @property.container?
           @property.kids.each do |task|
@@ -1466,8 +1465,7 @@ class TaskJuggler
       return 0.0 if @milestone || startIdx >= endIdx ||
                     (resource && !@assignedresources.include?(resource))
 
-      key = [ self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource ].hash
-      @dCache.cached(key) do
+      @dCache.cached(self, :TaskScenarioEffectiveWork, startIdx, endIdx, resource) do
         workLoad = 0.0
         if @property.container?
           @property.kids.each do |task|
@@ -1495,9 +1493,7 @@ class TaskJuggler
       # This function is often called recursively for the same parameters. We
       # store the results in the cache to avoid repeated computations of the
       # same results.
-      key = [ self, :TaskScenarioCollectTimeOffIntervals, iv, minDuration ].hash
-      @dCache.cached(key) do
-        workLoad = @dCache.load(key)
+      @dCache.cached(self, :TaskScenarioCollectTimeOffIntervals, iv, minDuration) do
         il = IntervalList.new
         il << TimeInterval.new(@project['start'], @project['end'])
         if @property.leaf?
