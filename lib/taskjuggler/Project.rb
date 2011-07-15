@@ -1227,9 +1227,12 @@ class TaskJuggler
         # has found a set of tasks that deadlock each other.
         if taskToRemove
           tasks.delete(taskToRemove)
-        else
+        elsif failedTasks.empty?
           tasks.each { |t| puts t.fullId }
           raise 'Scheduler deadlock: Cannot schedule any further tasks'
+        else
+          # We have some tasks that cannot be scheduled.
+          break
         end
       end
 
