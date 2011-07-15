@@ -5287,17 +5287,21 @@ EOT
     also(%w( effort length ))
 
     pattern(%w( _effort !workingDuration ), lambda {
-      if @val[1] <= 0.0
-        error('effort_zero', "Effort value must be larger than 0",
+      if @val[1] <= 0
+        error('effort_zero', "Effort value must at least as large as the " +
+                             "timing resolution " +
+                             "(#{@project['scheduleGranularity'] / 60}min).",
               @sourceFileInfo[1], @property)
       end
       setDurationAttribute('effort', @val[1])
     })
     doc('effort', <<'EOT'
-Specifies the effort needed to complete the task. An effort of 4d can be done
-with 2 full-time resources in 2 days. The task will not finish before the
-resources have contributed the specified effort. So the duration of the task
-will depend on the availability of the resources.
+Specifies the effort needed to complete the task. An effort of ''''6d'''' (6
+resource-days) can be done with 2 full-time resources in 3 working days. The
+task will not finish before the allocated resources have contributed the
+specified effort. Hence the duration of the task will depend on the
+availability of the allocated resources. The specified effort value must be at
+least as large as the [[timingresolution]].
 
 WARNING: In almost all real world projects effort is not the product of time
 and resources. This is only true if the task can be partitioned without adding
@@ -5305,7 +5309,8 @@ any overhead. For more information about this read ''The Mythical Man-Month'' by
 Frederick P. Brooks, Jr.
 
 Tasks may not have subtasks if this attribute is used. Setting this attribute
-will reset the [[duration]] and [[length]] attributes.
+will reset the [[duration]] and [[length]] attributes. A task with an effort
+value cannot be a [[milestone]].
 EOT
        )
     example('Durations')
