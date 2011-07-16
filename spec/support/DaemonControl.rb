@@ -77,7 +77,7 @@ EOT
     def cleanup
       rm_rf %w( TimeSheetTemplates TimeSheets timesheets.log
                 StatusSheetTemplates StatusSheets statussheets.log
-                tj3d.log tj3client.log
+                tj3d.log tj3client.log tj3.log
                 tj3ss_sender.log tj3ss_receiver.log tj3ss_summary.log
                 tj3ts_sender.log tj3ts_receiver.log tj3ts_summary.log )
     end
