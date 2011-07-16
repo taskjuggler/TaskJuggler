@@ -2,8 +2,6 @@
 require 'rake/gempackagetask'
 require 'find'
 
-execs = Dir.glob('./bin/*') + Dir.glob('./test/**/genrefs')
-
 task :release => [:clobber] do
   Rake::Task[:test].invoke
   Rake::Task[:spec].invoke
@@ -19,10 +17,19 @@ task :release => [:clobber] do
     pkg.need_tar = true
   end
 
+  # Find the bin and test directories relative to this file.
+  baseDir = File.expand_path('..', File.dirname(__FILE__))
+
+  execs = Dir.glob("#{baseDir}/bin/*") +
+          Dir.glob("#{baseDir}/test/**/genrefs")
   # Make sure all files and directories are readable.
-  Find.find('.') do |f|
+  Find.find(baseDir) do |f|
+    # Ignore the whoke pkg directory as it may contain links to the other
+    # directories.
+    next if Regexp.new("#{baseDir}/pkg/*").match(f)
+
     FileUtils.chmod_R((FileTest.directory?(f) ||
-                       execs.include?(f)) ? 0755 : 0644, f)
+                       execs.include?(f) ? 0755 : 0644), f)
   end
   Rake::Task[:package].invoke
 end
