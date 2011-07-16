@@ -14,12 +14,14 @@
 require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/apps/Tj3Daemon'
 require 'taskjuggler/apps/Tj3Client'
+require 'fileutils'
 
 class TaskJuggler
 
   module DaemonControl
 
     include StdIoWrapper
+    include FileUtils
 
     def startDaemon(config = '')
       (f = File.new('taskjuggler.rc', 'w')).write(<<"EOT"
@@ -70,6 +72,14 @@ EOT
       %w( taskjuggler.rc stdout.log stderr.log ).each do |file|
         File.delete(file)
       end
+    end
+
+    def cleanup
+      rm_rf %w( TimeSheetTemplates TimeSheets timesheets.log
+                StatusSheetTemplates StatusSheets statussheets.log
+                tj3d.log tj3client.log
+                tj3ss_sender.log tj3ss_receiver.log tj3ss_summary.log
+                tj3ts_sender.log tj3ts_receiver.log tj3ts_summary.log )
     end
 
   end

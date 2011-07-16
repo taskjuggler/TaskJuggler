@@ -12,7 +12,6 @@
 #
 
 require 'rubygems'
-require 'fileutils'
 require 'support/DaemonControl'
 require 'taskjuggler/apps/Tj3TsSender'
 require 'taskjuggler/apps/Tj3TsReceiver'
@@ -23,7 +22,6 @@ class TaskJuggler
   describe TimeSheets do
 
     include DaemonControl
-    include FileUtils
 
     before(:all) do
       # Make sure we run in the same directory as the spec file.
@@ -338,10 +336,6 @@ EOT
         end
       end
       mails
-    end
-
-    def cleanup
-      rm_rf %w( TimeSheetTemplates TimeSheets timesheets.log tj3.log tj3ts_sender.log tj3ts_receiver.log )
     end
 
   end

@@ -21,11 +21,13 @@ class TaskJuggler
     include DaemonControl
 
     before(:each) do
+      cleanup
       startDaemon
     end
 
     after(:each) do
       stopDaemon
+      cleanup
     end
 
     it 'should be startable and stopable' do

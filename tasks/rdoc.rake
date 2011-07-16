@@ -1,17 +1,10 @@
-
 require 'rake/rdoctask'
-
-# RDOC
-GENERAL_RDOC_OPTS = {
-    "--title"   => "#{PROJECT_NAME} API documentation",
-    "--main"    => 'README.rdoc'
-}
 
 # RDOC TASK
 Rake::RDocTask.new(:rdoc) do |t|
-    t.rdoc_files    = RDOC_FILES + LIB_FILES
-    t.title         = GENERAL_RDOC_OPTS['--title']
-    t.main          = GENERAL_RDOC_OPTS['--main']
-    t.rdoc_dir      = RDOC_DIR
-    t.options       += [ ]
+  t.rdoc_files = %w( README.rdoc COPYING CHANGELOG ) +
+                 `git ls-files -- lib`.split("\n")
+  t.title = "TaskJuggler API documentation"
+  t.main = 'README.rdoc'
+  t.rdoc_dir = 'doc'
 end

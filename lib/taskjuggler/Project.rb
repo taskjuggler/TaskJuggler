@@ -1214,7 +1214,7 @@ class TaskJuggler
           else
             failedTasks << task
           end
-          # The tasks has been completed or failed. But we can remove it from
+          # The task has been completed or failed. But we can remove it from
           # the todo list.
           taskToRemove = task
           # The scheduling of this task may cause other higher priority tasks

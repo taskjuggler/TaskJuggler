@@ -4,7 +4,7 @@ require 'taskjuggler/apps/Tj3Man'
 
 desc 'Generate User Manual'
 task :manual do
-  htmldir = MANUAL_DIR + '/html'
+  htmldir = 'manual/html'
   rm_rf htmldir if File.exists? htmldir
   mkdir_p htmldir
   # Make sure we can run 'rake manual' from all subdirs.

@@ -12,7 +12,6 @@
 #
 
 require 'rubygems'
-require 'fileutils'
 require 'support/DaemonControl'
 require 'taskjuggler/apps/Tj3SsSender'
 require 'taskjuggler/apps/Tj3SsReceiver'
@@ -25,7 +24,6 @@ class TaskJuggler
   describe StatusSheetTest do
 
     include DaemonControl
-    include FileUtils
 
     before(:all) do
       @beforeExecuted = true
@@ -302,10 +300,6 @@ EOT
         end
       end
       mails
-    end
-
-    def cleanup
-      rm_rf %w( StatusSheetTemplates StatusSheets statussheets.log tj3.log tj3ss_sender.log tj3ss_receiver.log tj3ts_summary.log )
     end
 
   end
