@@ -29,7 +29,7 @@ class TaskJuggler
       %w( allocate assignedresources booking charge chargeset complete
           criticalness depends duration effort end forward length
           maxend maxstart minend minstart milestone pathcriticalness
-          precedes scheduled shifts start status ).each do |attr|
+          precedes priority scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
       end
 
