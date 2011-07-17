@@ -14,5 +14,5 @@ Dir.glob( 'tasks/*.rake').each do |fn|
   end
 end
 
-task :default  => [ :test, :spec ]
-
+task :default  => [ :test ]
+task :test => [ :unittest, :spec ]
