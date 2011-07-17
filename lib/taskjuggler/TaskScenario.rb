@@ -1012,7 +1012,6 @@ class TaskJuggler
       end
     end
 
-
     # This function determines if a task can inherit the start or end date
     # from a parent task or the project time frame. +atEnd+ specifies whether
     # the check should be done for the task end (true) or task start (false).
@@ -1034,13 +1033,15 @@ class TaskJuggler
       thisEnd, thatEnd = atEnd ? [ 'end', 'start' ] : [ 'start', 'end' ]
       # Return false if we already have a date for this end or if we have a
       # strong dependency for this end.
-      return false if a(thisEnd) || hasStrongDeps(atEnd)
+      return false if instance_variable_get('@' + thisEnd) ||
+                      hasStrongDeps?(atEnd)
 
       # Containter task can inherit the date if they have no dependencies at
       # this end.
       return true if @property.container?
 
-      hasThatSpec = a(thatEnd) || hasStrongDeps(!atEnd)
+      hasThatSpec = !instance_variable_get('@' + thatEnd).nil? ||
+                    hasStrongDeps?(!atEnd)
       hasDurationSpec = hasDurationSpec?
 
       # Check for tasks that have no start and end spec, no duration spec but
@@ -1054,8 +1055,8 @@ class TaskJuggler
         return hasThatSpec
       else
         # the scheduling direction is pointing towards this end
-        return a(thatEnd) && !hasDurationSpec &&
-               @booking.empty? #&& @allocate.empty?
+        return !instance_variable_get('@' + thatEnd).nil? &&
+               !hasDurationSpec && @booking.empty? #&& @allocate.empty?
       end
     end
 
@@ -1965,82 +1966,18 @@ class TaskJuggler
       false
     end
 
-    def hasStrongDeps(atEnd)
-      # A dependency that could determine the date on this side of the
-      # dependency is a strong dependency. If the scheduling direction of the
-      # task on the other side leads away from the dependency point, then the
-      # dependency is weak. This date will influence the other date for weak
-      # dependencies. > means ASAP task, < means ALAP task.
-      #
-      #
-      # T2 depends on T1 start
-      #
-      # +---          SS -> S> : Weak
-      # |-+           SS -> S< : Weak
-      # +-|-          SP -> S> : Strong
-      #   | +---      SP -> S< : Strong
-      #   +-|
-      #     +---
-      #
-      #
-      # T2 depends on T1 end
-      # T1 precedes T2 start
-      #
-      # ---+          ES -> S> : Weak
-      #    |-+        ES -> S< : Strong
-      # ---+ |        SP -> E> : Strong
-      #      | +---   SP -> E< : Weak
-      #      +-|
-      #        +---
-      #
-      #
-      # T1 precedes T2 end
-      #
-      #     ---+      ES -> E> : Strong
-      #      +-|      ES -> E< : Strong
-      #     -|-+      EP -> E> : Weak
-      # ---+ |        EP -> E< : Weak
-      #    |-+
-      # ---+
-      #
-      # All other combinations are illegal and should be caught earlier. So,
-      # illegal values can be considered don't care values.
-      #
-      # f/t S>  S<  E>  E<
-      # SP  S   S   S   W     Row 1
-      # SS  W   W   x   x     Row 2
-      # EP  x   x   W   W     Row 3
-      # ES  W   S   S   S     Row 4
-      #
-      # If the other end of the dependency already has a date, it's a strong
-      # dependency no matter how it was set.
-      unless atEnd
-        # Row 1
-        @startpreds.each do |task, onEnd|
-          if (onEnd && (task['forward', @scenarioIdx] ||
-                        task['end', @scenarioIdx])) || !onEnd
-            return true
-          end
-        end
-        # Row 2
-        @startsuccs.each do |task, onEnd|
-          return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
-        end
+    # Return true if the task has a 'strong' dependency at the start if
+    # _atEnd_ is false or at the end. A 'strong' dependency is an outer
+    # dependency. At the start a predecessor is strong, and the end a
+    # successor. start successors or end predecessors are considered weak
+    # dependencies since this task will always have to get the date first and
+    # then pass it on to the inner dependencies.
+    def hasStrongDeps?(atEnd)
+      if atEnd
+        return !@endsuccs.empty?
       else
-        # Row 3
-        @endpreds.each do |task, onEnd|
-          return true if task[onEnd ? 'end' : 'start', @scenarioIdx]
-        end
-        # Row 4
-        @endsuccs.each do |task, onEnd|
-          if (!onEnd && (!task['forward', @scenarioIdx] ||
-                         task['start', @scenarioIdx])) || onEnd
-            return true
-          end
-        end
+        return !@startpreds.empty?
       end
-
-      false
     end
 
     def markAsRunaway
@@ -2150,7 +2087,7 @@ class TaskJuggler
 
       # Looks like it is ok to propagate the date.
       task.propagateDate(@scenarioIdx, nDate, atEnd)
-      # puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
+      #puts "Propagate #{atEnd ? 'end' : 'start'} to dep. #{task.fullId} done"
     end
 
     # This is a helper function for calcPathCriticalness(). It computes the

@@ -1228,8 +1228,14 @@ class TaskJuggler
         if taskToRemove
           tasks.delete(taskToRemove)
         elsif failedTasks.empty?
-          tasks.each { |t| puts t.fullId }
-          raise 'Scheduler deadlock: Cannot schedule any further tasks'
+          warning('deadlock',
+                  'Some tasks reference each other but don\'t provide ' +
+                  'enough information to start the scheduling. The ' +
+                  'scheduler does not know where to start scheduling ' +
+                  'these tasks. You need to provide more fixed dates ' +
+                  'or dependencies on already scheduled tasks.')
+          failedTasks = tasks
+          break
         else
           # We have some tasks that cannot be scheduled.
           break
