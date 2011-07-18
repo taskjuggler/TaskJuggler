@@ -174,7 +174,7 @@ class TaskJuggler::TextParser
         super(log)
         @fileName = fileName.dup.untaint
         @stream = fileName == '.' ? $stdin : File.new(@fileName, 'r')
-        @log << "Parsing file #{@fileName} ..."
+        @log.msg { "Parsing file #{@fileName} ..." }
         @log.startProgressMeter("Reading file #{fileName}")
       end
 
@@ -191,7 +191,7 @@ class TaskJuggler::TextParser
       def initialize(buffer, log)
         super(log)
         @stream = StringIO.new(buffer)
-        @log << "Parsing buffer #{buffer[0, 20]} ..."
+        @log.msg { "Parsing buffer #{buffer[0, 20]} ..." }
       end
 
     end
@@ -286,8 +286,8 @@ class TaskJuggler::TextParser
         begin
           @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile, @log),
                            nil, nil ] ]
-        rescue StandardError
-          error('open_file', "Cannot open file #{@masterFile}")
+        rescue IOError
+          error('open_file', "Cannot open file #{@masterFile}: #{$!}")
         end
       end
       @masterPath = @cf.dirname + '/'
@@ -335,7 +335,7 @@ class TaskJuggler::TextParser
       begin
         @fileStack << [ (@cf = FileStreamHandle.new(includeFileName, @log)),
                         nil, block ]
-        @log << "Parsing file #{includeFileName}"
+        @log.msg { "Parsing file #{includeFileName}" }
       rescue StandardError
         error('bad_include', "Cannot open include file #{includeFileName}", sfi)
       end
@@ -384,7 +384,7 @@ class TaskJuggler::TextParser
         # completion. Close it and remove the corresponding entry from the
         # @fileStack.
         @finishLastFile = false
-        #@log << "Completed file #{@cf.fileName}"
+        @log.msg { "Completed file #{@cf.fileName}" }
 
         # If we have a block to be executed on EOF, we call it now.
         onEof = @fileStack.last[2]
@@ -401,7 +401,7 @@ class TaskJuggler::TextParser
         else
           # Continue parsing the file that included the current file.
           @cf, tokenBuffer = @fileStack.last
-          @log << "Parsing file #{@cf.fileName} ..."
+          @log.msg { "Parsing file #{@cf.fileName} ..." }
           # If we have a left over token from previously processing this file,
           # return it now.
           if tokenBuffer
@@ -462,7 +462,7 @@ class TaskJuggler::TextParser
     # Return a token to retrieve it with the next nextToken() call again. Only 1
     # token can be returned before the next nextToken() call.
     def returnToken(token)
-      #@log << "-> Returning Token: [#{token[0]}][#{token[1]}]"
+      #@log.msg { "-> Returning Token: [#{token[0]}][#{token[1]}]" }
       unless @tokenBuffer.nil?
         $stderr.puts @tokenBuffer
         raise "Fatal Error: Cannot return more than 1 token in a row"

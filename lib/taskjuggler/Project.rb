@@ -1071,6 +1071,8 @@ class TaskJuggler
   protected
 
     def prepareScenario(scIdx)
+      Log.enter('prepareScenario',
+                "Finishing scenario #{scenario(scIdx).get('name')}")
       Log.startProgressMeter("Preparing scenario " +
                              "#{scenario(scIdx).get('name')}")
       resources = PropertyList.new(@resources)
@@ -1141,9 +1143,13 @@ class TaskJuggler
           puts "#{task}"
         end
       end
+      Log.exit('prepareScenario',
+               "Preparing scenario #{scenario(scIdx).get('name')} completed")
     end
 
     def finishScenario(scIdx)
+      Log.enter('finishScenario',
+                "Finishing scenario #{scenario(scIdx).get('name')}")
       Log.startProgressMeter("Checking scenario #{scenario(scIdx).get('name')}")
       @tasks.each do |task|
         # Recursively traverse the top-level tasks to finish all tasks.
@@ -1164,6 +1170,8 @@ class TaskJuggler
       end
 
       Log.stopProgressMeter
+      Log.exit('finishScenario',
+               "Finishing scenario #{scenario(scIdx).get('name')} completed")
     end
 
     # Schedule all tasks for the given Scenario with index +scIdx+.
@@ -1208,10 +1216,7 @@ class TaskJuggler
           # Task not ready? Ignore it.
           next unless task.readyForScheduling?(scIdx)
 
-          if task.schedule(scIdx)
-            Log << "Task #{task.fullId}: #{task['start', scIdx]} -> " +
-                   "#{task['end', scIdx]}"
-          else
+          unless task.schedule(scIdx)
             failedTasks << task
           end
           # The task has been completed or failed. But we can remove it from

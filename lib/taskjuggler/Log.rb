@@ -42,7 +42,7 @@ class TaskJuggler
     # into the shown segments will be shown for the next @@level nested
     # segments.
     def Log.segments=(s)
-      @@segments = []
+      @@segments = s
     end
 
     # if +s+ is true, progress information will not be shown.
@@ -61,7 +61,7 @@ class TaskJuggler
       return if @@level == 0
 
       @@stack << segment
-      Log.<< ">> [#{segment}] #{message}"
+      Log.msg { ">> [#{segment}] #{message}" }
     end
 
     # This function is used to close an open segment. To make this mechanism a
@@ -70,7 +70,7 @@ class TaskJuggler
     def Log.exit(segment, message = nil)
       return if @@level == 0
 
-      Log.<< "<< [#{segment}] #{message}" if message
+      Log.msg { "<< [#{segment}] #{message}" } if message
       if @@stack.include?(segment)
         loop do
           m = @@stack.pop
@@ -80,8 +80,9 @@ class TaskJuggler
     end
 
     # Use this function to show a log message within the currently active
-    # segment.
-    def Log.<<(message)
+    # segment. The message is the result of the passed block. The block will
+    # only be evaluated if the message will actually be shown.
+    def Log.msg(&block)
       return if @@level == 0
 
       offset = 0
@@ -91,8 +92,8 @@ class TaskJuggler
           # If a segment list is used to filter the output, we look for the
           # first listed segments on the stack. This and all nested segments
           # will be shown.
-          if @@segments.include?(segment) &&
-            (offset = @@stack.length - @@stack.index(segment)) >= @@level
+          if @@segments.include?(segment)
+            offset = @@stack.index(segment)
             showMessage = true
             break
           end
@@ -100,7 +101,7 @@ class TaskJuggler
         return unless showMessage
       end
       if @@stack.length - offset < @@level
-        $stderr.puts ' ' * (@@stack.length - offset) + message
+        $stderr.puts ' ' * (@@stack.length - offset) + yield(block)
       end
     end
 

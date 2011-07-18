@@ -80,7 +80,7 @@ class TaskJuggler
       if @start && @end && @effort == 0 && @length == 0 && @duration == 0 &&
          @allocate.empty?
         @scheduled = true
-        Log << "Task #{@property.fullId}: #{@start} -> #{@end}"
+        Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
       end
 
       # Collect the limits of this task and all parent tasks into a single
@@ -895,6 +895,8 @@ class TaskJuggler
       # Check if the task has already been scheduled e. g. by propagateDate().
       return true if @scheduled
 
+      logTag = "schedule_#{@property.id}"
+      Log.enter(logTag, "Scheduling task #{@property.id}")
       # Compute the date of the next slot this task wants to have scheduled.
       # This must either be the first slot ever or it must be directly
       # adjecent to the previous slot. If this task has not yet been scheduled
@@ -927,16 +929,21 @@ class TaskJuggler
         @currentSlotIdx += delta
         if @currentSlotIdx < lowerLimit || upperLimit < @currentSlotIdx
           markAsRunaway
+          Log.exit(logTag, "Scheduling of task #{@property.id} failed")
           return false
         end
       end
 
+      Log.exit(logTag, "Scheduling of task #{@property.id} completed")
       true
     end
 
     # Set a new start or end date and propagate the value to all other
     # task ends that have a direct dependency to this end of the task.
     def propagateDate(date, atEnd, ignoreEffort = false)
+      logTag = "propagateDate_#{@property.id}_#{atEnd ? 'end' : 'start'}"
+      Log.enter(logTag, "Propagating #{atEnd ? 'end' : 'start'} date " +
+                        "to task #{@property.id}")
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
       #puts "Propagating #{thisEnd} date #{date} of #{@property.fullId} " +
@@ -954,7 +961,7 @@ class TaskJuggler
       # are only set in scheduleContainer().
       if @property.leaf?
         instance_variable_set(('@' + thisEnd).intern, date)
-        Log << "Task #{@property.fullId}: #{@start} -> #{@end}"
+        Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
       end
 
       if @milestone
@@ -963,12 +970,12 @@ class TaskJuggler
         if a(otherEnd).nil?
           propagateDate(a(thisEnd), !atEnd)
         end
-        Log << "Milestone #{@property.fullId}: #{@start} -> #{@end}"
+        Log.msg { "Milestone #{@property.fullId}: #{period_to_s}" }
       elsif !@scheduled && @start && @end &&
             !(@length == 0 && @duration == 0 && @effort == 0 &&
               !@allocate.empty?)
         @scheduled = true
-        Log << "Task #{@property.fullId} has been scheduled"
+        Log.msg { "Task #{@property.fullId} has been scheduled" }
       end
 
       # Propagate date to all dependent tasks. Don't do this for start
@@ -1010,6 +1017,9 @@ class TaskJuggler
       @property.parents.each do |parent|
         parent.scheduleContainer(@scenarioIdx)
       end
+      Log.exit(logTag, "Finished propagation of " +
+                       "#{atEnd ? 'end' : 'start'} date " +
+                       "to task #{@property.id}")
     end
 
     # This function determines if a task can inherit the start or end date
@@ -1098,7 +1108,7 @@ class TaskJuggler
         raise "Start (#{@start}) and end (#{@end}) must be set"
       end
       @scheduled = true
-      Log << "Container task #{@property.fullId} completed: #{@start} -> #{@end}"
+      Log.msg { "Container task #{@property.fullId} completed: #{period_to_s}" }
 
       # If we have modified the start or end date, we need to communicate this
       # new date to surrounding tasks.
@@ -1745,15 +1755,15 @@ class TaskJuggler
           if @effort > 0 && @assignedresources.empty?
             if @forward
               @start = @project.idxToDate(@currentSlotIdx)
-              Log << "Task #{@property.fullId} first assignment: " +
-                     "#{@start} -> #{@end}"
+              Log.msg { "Task #{@property.fullId} first assignment: " +
+                        "#{period_to_s}" }
               @startsuccs.each do |task, onEnd|
                 task.propagateDate(@scenarioIdx, @start, false, true)
               end
             else
               @end = @project.idxToDate(@currentSlotIdx + 1)
-              Log << "Task #{@property.fullId} last assignment: " +
-                     "#{@start} -> #{@end}"
+              Log.msg { "Task #{@property.fullId} last assignment: " +
+                        "#{period_to_s}" }
               @endpreds.each do |task, onEnd|
                 task.propagateDate(@scenarioIdx, @end, true, true)
               end
@@ -1844,8 +1854,7 @@ class TaskJuggler
         firstSlotDate = @project.idxToDate(firstSlotIdx)
         if @start.nil? || firstSlotDate > @start
           @start = firstSlotDate
-          Log << "Task #{@property.fullId} first booking: " +
-            "#{@start} -> #{@end}"
+          Log.msg { "Task #{@property.fullId} first booking: #{period_to_s}" }
         end
       end
 
@@ -2355,6 +2364,10 @@ class TaskJuggler
       end
       # Return the bookings of the found scenario.
       @property['booking', @property.project.scenarioIdx(scenario)]
+    end
+
+    def period_to_s
+      "#{@start ? @start.to_s : '<?>'} -> #{@end ? @end.to_s : '<?>'}"
     end
 
   end

@@ -68,7 +68,7 @@ EOT
         end
         @opts.on('--debugmodules x,y,z', Array,
                 format('Restrict debug output to a list of modules')) do |arg|
-          TaskJuggler::Log.segments = arg.split(',')
+          TaskJuggler::Log.segments = arg
         end
         @opts.on('-f', '--force-reports',
                 format('Generate reports despite scheduling errors')) do
