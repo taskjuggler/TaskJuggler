@@ -15,4 +15,6 @@ Dir.glob( 'tasks/*.rake').each do |fn|
 end
 
 task :default  => [ :test ]
+
+desc 'Run all unit and spec tests'
 task :test => [ :unittest, :spec ]

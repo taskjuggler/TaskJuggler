@@ -1,28 +1,40 @@
 # GEM TASK
-require 'rake/gempackagetask'
 require 'find'
 
-task :release => [:clobber] do
-  Rake::Task[:test].invoke
-  Rake::Task[:spec].invoke
-  Rake::Task[:rdoc].invoke
-
+# Unfortunately Rake::GemPackageTest cannot deal with files that are generated
+# by Rake targets. So we have to write our own packaging task.
+desc 'Build the gem package'
+task :gem => [:clobber] do
   Rake::Task[:vim].invoke
   Rake::Task[:manual].invoke
+  Rake::Task[:changelog].invoke
+  Rake::Task[:permissions].invoke
 
   load 'taskjuggler.gemspec';
 
-  Rake::GemPackageTask.new(GEM_SPEC) do |pkg|
-    pkg.need_zip = false
-    pkg.need_tar = true
-  end
+  # Build the gem file according to the loaded spec.
+  Gem::Builder.new(GEM_SPEC).build
+  pkgBase = "#{GEM_SPEC.name}-#{GEM_SPEC.version}"
+  # Create a pkg directory if it doesn't exist already.
+  FileUtils.mkdir_p('pkg')
+  # Move the gem file into the pkg directory.
+  verbose(true) { FileUtils.mv("#{pkgBase}.gem", "pkg/#{pkgBase}.gem")}
+  # Create a tar file with all files that are in the gem.
+  FileUtils.rm_f("pkg/#{pkgBase}.tar")
+  FileUtils.rm_f("pkg/#{pkgBase}.tar.gz")
+  verbose(false) {GEM_SPEC.files.each { |f| `tar rf pkg/#{pkgBase}.tar "#{f}"` } }
+  # And gzip the file.
+  `gzip pkg/#{pkgBase}.tar`
+end
 
+desc 'Make sure all files and directories are readable'
+task :permissions do
   # Find the bin and test directories relative to this file.
   baseDir = File.expand_path('..', File.dirname(__FILE__))
 
   execs = Dir.glob("#{baseDir}/bin/*") +
           Dir.glob("#{baseDir}/test/**/genrefs")
-  # Make sure all files and directories are readable.
+
   Find.find(baseDir) do |f|
     # Ignore the whoke pkg directory as it may contain links to the other
     # directories.
@@ -31,6 +43,13 @@ task :release => [:clobber] do
     FileUtils.chmod_R((FileTest.directory?(f) ||
                        execs.include?(f) ? 0755 : 0644), f)
   end
-  Rake::Task[:package].invoke
+end
+
+desc 'Run all tests and build scripts and create the gem package'
+task :release do
+  Rake::Task[:test].invoke
+  Rake::Task[:spec].invoke
+  Rake::Task[:rdoc].invoke
+  Rake::Task[:gem].invoke
 end
 

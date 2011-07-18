@@ -1,7 +1,7 @@
 require 'time'
 
-desc 'update changelog'
-task :CHANGELOG do
+desc 'Generate the CHANGELOG file'
+task :changelog do
 
   class Entry
 
