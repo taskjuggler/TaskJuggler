@@ -153,19 +153,19 @@ class TaskJuggler
     def propagateInitialValues
       unless @startPropagated
         if @start
-          propagateDate(@start, false)
+          propagateDate(@start, false, true)
         elsif @property.parent.nil? &&
               @property.canInheritDate?(@scenarioIdx, false)
-          propagateDate(@project['start'], false)
+          propagateDate(@project['start'], false, true)
         end
       end
 
       unless @endPropagated
         if @end
-          propagateDate(@end, true)
+          propagateDate(@end, true, true)
         elsif @property.parent.nil? &&
               @property.canInheritDate?(@scenarioIdx, true)
-          propagateDate(@project['end'], true)
+          propagateDate(@project['end'], true, true)
         end
       end
     end
