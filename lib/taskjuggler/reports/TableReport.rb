@@ -778,6 +778,7 @@ class TaskJuggler
           # If the user has requested a custom tooltip, add it to each task cell.
           cell.tooltip = columnDef.tooltip.getPattern(query) || nil
           cell.showTooltipHint = false
+          setCustomCellAttributes(cell, columnDef, query)
         elsif !@project.isWorkingTime(cellIv)
           # The cell is a vacation cell.
           cell.category = 'offduty'
