@@ -1526,8 +1526,12 @@ EOT
 
     pattern(%w( _scenario !scenarioId ), lambda {
       # Don't include disabled scenarios in the report
-      @val[1].delete_if { |sc| !@project.scenario(sc).get('active') }
-      @property.set('scenarios', @val[1])
+      sc = @val[1]
+      unless @project.scenario(sc).get('active')
+        warning('ical_sc_disabled',
+                "Scenario #{sc} has been disabled")
+      end
+      @property.set('scenarios', [ @val[1] ])
     })
     doc('scenario.ical', <<'EOT'
 Id of the scenario that should be included in the report. By default, the

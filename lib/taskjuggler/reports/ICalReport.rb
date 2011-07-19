@@ -80,10 +80,10 @@ class TaskJuggler
         # Check if we have a responsible resource with an email address. Since
         # ICalendar only knows one organizer we ignore all but the first.
         organizer = nil
-        unless (responsible = task['responsible', scenarioIdx]).empty? &&
-               @resourceList.include?(organizer = responsible[0]) &&
-               organizer.get('email')
-          todo.setOrganizer(responsible[0].name, responsible[0].get('email'))
+        if !(responsible = task['responsible', scenarioIdx]).empty? &&
+           @resourceList.include?(organizer = responsible[0]) &&
+           organizer.get('email')
+          todo.setOrganizer(organizer.name, organizer.get('email'))
         end
         # Set the assigned resources as attendees.
         attendees = []
