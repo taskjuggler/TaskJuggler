@@ -770,14 +770,12 @@ class TaskJuggler
 
         cdText = columnDef.cellText.getPattern(query)
         cell.text = cdText if cdText
+        cell.showTooltipHint = false
 
         # Determine cell category (mostly the background color)
         if cellIv.overlaps?(taskIv)
           # The cell is either a container or leaf task
           cell.category = task.container? ? 'calconttask' : 'caltask'
-          # If the user has requested a custom tooltip, add it to each task cell.
-          cell.tooltip = columnDef.tooltip.getPattern(query) || nil
-          cell.showTooltipHint = false
           setCustomCellAttributes(cell, columnDef, query)
         elsif !@project.isWorkingTime(cellIv)
           # The cell is a vacation cell.
