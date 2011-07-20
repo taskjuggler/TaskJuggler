@@ -124,6 +124,11 @@ class AppConfig
         dirs << path + "/#{baseDir}/"
       end
     end
+
+    # Find the data dir relative to the source of this file. This should
+    # always work.
+    dirs << File.join(File.dirname(__FILE__), '..', '..', 'data')
+
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.
     # This one is for RPM based distros like Novell
