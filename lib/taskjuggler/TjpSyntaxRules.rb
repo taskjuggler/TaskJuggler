@@ -3062,7 +3062,11 @@ EOT
               "#{@val[1]} is not a list attribute. Only those can be purged.",
               @sourceFileInfo[1])
       end
-      @property.getAttribute(@val[1], @scenarioIdx).reset
+      if @property.attributeDefinition(@val[1]).scenarioSpecific
+        @property.getAttribute(@val[1], @scenarioIdx).reset
+      else
+        @property.getAttribute(@val[1]).reset
+      end
     })
     doc('purge', <<'EOT'
 List attributes, like regular attributes, can inherit their values from the
@@ -3570,6 +3574,11 @@ EOT
       @property.set('numberFormat', @val[0])
     })
 
+    pattern(%w( _opennodes !nodeIdList ), lambda {
+      @property.set('openNodes', @val[1])
+    })
+    doc('opennodes', 'For internal use only!')
+
     pattern(%w( !reportPeriod ))
 
     pattern(%w( _prolog $STRING ), lambda {
@@ -3582,11 +3591,7 @@ EOT
        )
     also(%w( epilog footer header ))
 
-    pattern(%w( _opennodes !nodeIdList ), lambda {
-      @property.set('openNodes', @val[1])
-    })
-    doc('opennodes', 'For internal use only!')
-
+    pattern(%w( !purge ))
     pattern(%w( !report ))
 
     pattern(%w( _right $STRING ), lambda {
