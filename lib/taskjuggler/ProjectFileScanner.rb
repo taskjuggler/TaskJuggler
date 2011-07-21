@@ -382,7 +382,8 @@ class TaskJuggler
         end
 
         unless scanner.eos?
-          raise "Junk found at end of macro: #{scanner.post_match}"
+          error('junk_at_eom',
+                "Junk found at end of macro: #{scanner.post_match}")
         end
 
         # Expand the macro and inject it into the scanner.

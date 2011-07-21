@@ -2148,7 +2148,13 @@ class TaskJuggler
       else
         # The task is in progress. Calculate the current completion
         # degree.
-        if !property.leaf?
+        if @end <= @project['now']
+          # The task has ended already. It's 100% complete.
+          completion = 100.0
+        elsif @project['now'] <= @start
+          # The task has not started yet. Its' 0% complete.
+          completion = 0.0
+        elsif !property.leaf?
           # For container task the completion degree is the average of the
           # sub tasks.
           completion = 0.0
@@ -2157,12 +2163,6 @@ class TaskJuggler
             completion += comp
           end
           completion /= @property.children.length
-        elsif @end <= @project['now']
-          # The task has ended already. It's 100% complete.
-          completion = 100.0
-        elsif @project['now'] <= @start
-          # The task has not started yet. Its' 0% complete.
-          completion = 0.0
         elsif @effort > 0
           # Effort based leaf tasks. The completion degree is the percentage
           # of effort that has been done already.

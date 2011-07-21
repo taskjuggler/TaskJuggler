@@ -3176,7 +3176,18 @@ EOT
          )
 
     singlePattern('_complete')
-    descr('The completion degree of a task')
+    descr(<<'EOT'
+The completion degree of a task. Unless a completion degree is manually
+provided, this is a computed value relative the [[now]] date of the project. A
+task that has ended before the now date is always 100% complete. A task that
+starts at or after the now date is always 0%. For [[effort]] based task the
+computation degree is the percentage of done effort of the overall effort. For
+other leaf task, the completion degree is the percentage of the already passed
+duration of the overall task duration. For container task, it's always the
+average of the direct sub tasks. If the sub tasks consist of a mixture of
+effort and non-effort tasks, the completion value is only of limited value.
+EOT
+         )
 
     pattern([ '_completed' ], lambda {
       'complete'
