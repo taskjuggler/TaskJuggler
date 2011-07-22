@@ -28,6 +28,8 @@ class TaskJuggler
       @man = SyntaxReference.new
       @keywords = TernarySearchTree.new(@man.all)
       @manual = false
+      @showHtml = false
+      @browser = ENV['BROWSER'] || 'firefox'
       @directory = nil
       @mininumRubyVersion = '1.8.7'
     end
@@ -42,6 +44,17 @@ EOT
                 format('directory to put the manual')) do |dir|
           @directory = dir
         end
+        @opts.on('--html',
+                 format('Show the user manual in your local web browser. ' +
+                        'By default, Firefox is used or the brower specified ' +
+                        'with the $BROWSER environment variable.')) do
+          @showHtml = true
+        end
+        @opts.on('--browser <command>', String,
+                 format('Specify the command to start your web browser. ' +
+                        'The default is \'firefox\'.')) do |browser|
+          @browser = browser
+        end
         @opts.on('-m', '--manual',
                 format('Generate the user manual into the current directory ' +
                        'or the directory specified with the -d option.')) do
@@ -54,14 +67,14 @@ EOT
       if @manual
         UserManual.new.generate(@directory)
       elsif requestedKeywords.empty?
-        puts @man.all.join("\n")
+        showManual
       else
         requestedKeywords.each do |keyword|
           if (kws = @keywords[keyword, true]).nil?
             $stderr.puts "No matches found for '#{keyword}'"
             exit 1
           elsif kws.length == 1 || kws.include?(keyword)
-            puts @man.to_s(keyword)
+            showManual(keyword)
           else
             $stderr.puts "Multiple matches found for '#{keyword}':\n" +
                          "#{kws.join(', ')}"
@@ -70,6 +83,45 @@ EOT
         end
       end
       0
+    end
+
+    private
+
+    def showManual(keyword = nil)
+      if @showHtml
+        # If the user requested HTML format, we start the browser.
+        startBrowser(keyword)
+      else
+        if keyword
+          # Print the documentation for the keyword.
+          puts @man.to_s(keyword)
+        else
+          # Print a list of all documented keywords.
+          puts @man.all.join("\n")
+        end
+      end
+    end
+
+    # Start the web browser with either the entry page or the page for the
+    # specified keyword.
+    def startBrowser(keyword = nil)
+      # Find the manual relative to this file.
+      manualDir = File.join(File.dirname(__FILE__), '..', '..', '..',
+                            'manual', 'html')
+      file = "#{manualDir}/#{keyword || 'index'}.html"
+      # Make sure the file exists.
+      unless File.exists?(file)
+        $stderr.puts "Cannot open manual file #{file}"
+        exit 1
+      end
+
+      # Start the browser.
+      begin
+        `#{@browser} file:#{file}`
+      rescue
+        $stderr.puts "Cannot open browser: #{$!}"
+        exit 1
+      end
     end
 
   end
