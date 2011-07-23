@@ -52,7 +52,15 @@ class TaskJuggler
       taskList.query = @report.project.reportContexts.last.query
       taskList.sort!
 
-      adjustReportPeriod(taskList, @report.get('scenarios'),
+      assignedTaskList = []
+      resourceList.each do |resource|
+        assignedTaskList = assignedTaskList + filterTaskList(taskList, resource,
+                                          @report.get('hideTask'), @report.get('rollupTask'),
+                                          @report.get('openNodes'))
+      end
+      assignedTaskList.uniq!
+
+      adjustReportPeriod(assignedTaskList, @report.get('scenarios'),
                          @report.get('columns'))
 
       # Generate the table header.
