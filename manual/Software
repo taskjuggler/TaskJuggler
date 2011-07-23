@@ -47,7 +47,7 @@ You will see an output similar to the one below.
   Report ContactList                                           [      Done      ]
   Report ResourceGraph                                         [      Done      ]
 
-''''tj3'''' support a number of runtime options that control the
+''''tj3'''' supports a number of runtime options that control the
 behavior. Please use the ''''--help'''' option to get more details.
 
  tj3 --help
@@ -77,7 +77,7 @@ it as parameter to ''''tj3man''''.
 
 ''''tj3d'''' is the TaskJuggler daemon. It is a program that runs
 in the background, disconnected from your shell to provide certain
-services. It can generate reports on demand and sever them as web
+services. It can generate reports on demand and serves them as web
 pages to a web browser. It's also used to process incoming time
 sheets.
 
@@ -177,7 +177,7 @@ with the authentication key.
 
  tj3client --help
 
-will provide a full lust of supported commands. To load a project
+will provide a full list of supported commands. To load a project
 simply type
 
  tj3client add yourproject.tjp
