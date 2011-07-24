@@ -33,9 +33,11 @@ class TaskJuggler
         'numberFormat' => @report.get('numberFormat'),
         'timeFormat' => @report.get('timeFormat'),
         'currencyFormat' => @report.get('currencyFormat'),
-        'start' => @report.get('start'),
-        'end' => @report.get('end'),
+        'start' => @report.get('start'), 'end' => @report.get('end'),
         'hideJournalEntry' => @report.get('hideJournalEntry'),
+        'journalMode' => @report.get('journalMode'),
+        'journalAttributes' => @report.get('journalAttributes'),
+        'sortJournalEntries' => @report.get('sortJournalEntries'),
         'costAccount' => @report.get('costAccount'),
         'revenueAccount' => @report.get('revenueAccount')
       }

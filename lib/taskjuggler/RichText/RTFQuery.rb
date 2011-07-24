@@ -70,8 +70,9 @@ class TaskJuggler
       end
 
       # Check the user provided arguments. Only the following list is allowed.
-      validArgs = %w( family property scopeproperty attribute scenario
-                      start end loadunit numberformat timeformat currencyformat )
+      validArgs = %w( attribute currencyformat end family journalattributes
+                      journalmode loadunit numberformat property scenario
+                      scopeproperty start timeformat )
       expandedArgs = {}
       args.each do |arg, value|
         unless validArgs.include?(arg)
@@ -120,6 +121,8 @@ class TaskJuggler
       setScenarioIdx(query, expandedArgs)
       setPropertyType(query, expandedArgs)
       setLoadUnit(query, expandedArgs)
+      setJournalMode(query, expandedArgs)
+      setJournalAttributes(query, expandedArgs)
 
       # Now that we have put together the query, we can process it and return
       # the query object for result extraction.
@@ -175,6 +178,39 @@ class TaskJuggler
       end
       # Default to 0 in case no scenario was provided.
       query.scenarioIdx = 0 unless query.scenarioIdx
+    end
+
+    def setJournalMode(query, args)
+      if (mode = args['journalmode'])
+        validModes = %w( journal jounal_sub status alerts )
+        unless validModes.include?(mode)
+          error('rtfq_bad_journalmode',
+                "Unknown journalmode #{mode}. Must be one of " +
+                "#{validModes.join(', ')}.")
+        end
+        query.journalMode = mode.intern
+      elsif !query.journalMode
+        query.journalMode = :journal
+      end
+    end
+
+    def setJournalAttributes(query, args)
+      if (attrListStr = args['journalattributes'])
+        attrs = attrListStr.split(', ').map { |a| a.delete(' ') }
+        query.journalAttributes = []
+        validAttrs = %w( author date details flags summary )
+        attrs.each do |attr|
+          if validAttrs.include?(attr)
+            query.journalAttributes << attr
+          else
+            error('rtfq_bad_journalattr',
+                  "Unknown journalattribute #{attr}. Must be one of " +
+                  "#{validAttrs.join(', ')}.")
+          end
+        end
+      elsif !query.journalAttributes
+        query.journalAttributes = %w( date summary details )
+      end
     end
 
   end

@@ -2,21 +2,42 @@ project "Journal" 2010-06-07 +1m
 
 flags foo, bar
 
+resource a1 "A1"
+resource a2 "A2"
+resource a3 "A3"
+
 task "T" {
   duration 3w
   journalentry 2010-06-07-8:00 "Entry 1" {
     flags foo, bar
+    author a1
+    summary "Summary 1"
+    details "Deails 1"
   }
   journalentry 2010-06-14-8:00 "Entry 2" {
     flags foo
+    author a2
+    summary "Summary 1"
+    details "Deails 1"
   }
   journalentry 2010-06-21-8:00 "Entry 3" {
     flags bar
+    author a3
+    summary "Summary 1"
+    details "Deails 1"
   }
 }
 
+textreport "Journal-0" {
+  formats html
+  journalmode journal
+  journalattributes *
+  sortjournalentries date.up
+  center "<-query attribute='journal'->"
+}
 taskreport "Journal-1" {
   formats csv
+  journalmode alerts
   # Only "Entry 2" should be included
   columns name, journal { period 2010-06-14 +1w }
 }

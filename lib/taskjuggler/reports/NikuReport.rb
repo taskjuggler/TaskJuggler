@@ -300,6 +300,9 @@ EOT
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => a('start'), 'end' => a('end'),
+                     'journalMode' => a('journalMode'),
+                     'journalAttributes' => a('journalAttributes'),
+                     'sortJournalEntries' => a('sortJournalEntries'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       query = Query.new(queryAttrs)
@@ -431,6 +434,9 @@ EOT
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
                      'start' => a('start'), 'end' => a('end'),
+                     'journalMode' => a('journalMode'),
+                     'journalAttributes' => a('journalAttributes'),
+                     'sortJournalEntries' => a('sortJournalEntries'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       query = Query.new(queryAttrs)

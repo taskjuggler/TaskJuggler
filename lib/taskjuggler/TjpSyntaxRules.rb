@@ -1772,6 +1772,50 @@ EOT
     singlePattern('!intervals')
   end
 
+  def rule_journalReportAttributes
+    pattern(%w( _journalattributes !journalReportAttributesList ), lambda {
+      @property.set('journalAttributes', @val[1])
+    })
+    doc('journalattributes', <<'EOT'
+A list that determines which of the journal attributes should be included in
+the journal report.
+EOT
+       )
+    allOrNothingListRule('journalReportAttributesList',
+                         { 'author' => 'Include the author if known',
+                           'date' => 'Include the date',
+                           'details' => 'Include the details',
+                           'summary' => 'Include the summary' })
+  end
+
+  def rule_journalReportMode
+    pattern(%w( _journal ), lambda { :journal })
+    descr(<<'EOT'
+This is the regular journal. It contains all journal entries that are dated in
+the query interval. If a property is given, only entries of this property are
+included.
+EOT
+       )
+    pattern(%w( _journal_sub ), lambda { :journal_sub })
+    descr(<<'EOT'
+This mode also contains all journal entries that are dated in the query
+interval. A property must be given and only entries of this property and all
+its children are included.
+EOT
+       )
+    pattern(%w( _status ), lambda { :status })
+    descr(<<'EOT'
+In this mode only the last entries for each task is included.
+EOT
+       )
+    pattern(%w( _alerts ), lambda { :alerts })
+    descr(<<'EOT'
+In this mode only the last entries for each task is included.
+And only if the alert level is raised from the default.
+EOT
+       )
+  end
+
   def rule_journalEntry
     pattern(%w( !journalEntryHeader !journalEntryBody ), lambda {
       @val[0]
@@ -1852,6 +1896,30 @@ The headline of the journal entry. It will be interpreted as
 EOT
        )
   end
+
+  def rule_journalSortCriteria
+    pattern(%w( !journalSortCriterium !moreJournalSortCriteria ), lambda {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
+    })
+  end
+
+  def rule_journalSortCriterium
+    pattern(%w( $ABSOLUTE_ID ), lambda {
+      supported = []
+      JournalEntryList::SortingAttributes.each do |attr|
+        supported << "#{attr}.up"
+        supported << "#{attr}.down"
+      end
+      unless supported.include?(@val[0])
+        error('bad_journal_sort_criterium',
+              "Unsupported sorting criterium #{@val[0]}. Must be one of " +
+              "#{supported.join(', ')}.")
+      end
+      attr, direction = @val[0].split('.')
+      [ attr.intern, direction == 'up' ? 1 : -1 ]
+    })
+  end
+
   def rule_leafResourceId
     pattern(%w( !resourceId ), lambda {
       resource = @val[0]
@@ -2194,6 +2262,10 @@ EOT
 
   def rule_moreDepTasks
     commaListRule('!taskDep')
+  end
+
+  def rule_moreJournalSortCriteria
+    commaListRule('!journalSortCriterium')
   end
 
   def rule_moreLeafResources
@@ -3560,8 +3632,11 @@ EOT
     pattern(%w( !headline ))
     pattern(%w( !hidejournalentry ))
     pattern(%w( !hideresource ))
-
     pattern(%w( !hidetask ))
+    pattern(%w( !journalReportAttributes ))
+    pattern(%w( _journalmode !journalReportMode ), lambda {
+      @property.set('journalMode', @val[1])
+    })
 
     pattern(%w( _left $STRING ), lambda {
       @property.set('left', newRichText(@val[1], @sourceFileInfo[1]))
@@ -3642,6 +3717,7 @@ used.
 EOT
        )
 
+    pattern(%w( !sortJournalEntries ))
     pattern(%w( !sortResources ))
     pattern(%w( !sortTasks ))
 
@@ -4519,6 +4595,31 @@ prefixed with a scenario ID and a dot to determine the scenario that should be
 used for sorting. So, possible values are 'plan.start.up' or 'priority.down'.
 EOT
          )
+  end
+
+  def rule_sortJournalEntries
+    pattern(%w( _sortjournalentries !journalSortCriteria ), lambda {
+      @property.set('sortJournalEntries', @val[1])
+    })
+    doc('sortjournalentries', <<'EOT'
+Determines how the entries in a journal are sorted. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of journal entries, the next criteria will be used to sort the entries
+in this group.
+
+The following values are supported:
+* ''''date.down'''': Sort descending order by the date of the journal entry
+* ''''date.up'''': Sort ascending order by the date of the journal entry
+* ''''alert.down'''': Sort in descending order by the alert level of the
+journal entry
+* ''''alert.up'''': Sort in ascending order by the alert level of the
+journal entry
+ ''''property.down'''': Sort in descending order by the task or resource
+the journal entry is associated with
+* ''''property.up'''': Sort in ascending order by the task or resource the
+journal entry is associated with
+EOT
+        )
   end
 
   def rule_sortResources

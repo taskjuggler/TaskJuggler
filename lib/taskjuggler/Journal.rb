@@ -56,6 +56,64 @@ class TaskJuggler
       @journal.addEntry(self)
     end
 
+    # Convert the entry into a RichText string. The formatting is controlled
+    # by the Query parameters.
+    def to_rText(query)
+      # We use the alert level a sortable and numerical result.
+      if query.journalAttributes.include?('alert')
+        levelRecord = query.project['alertLevels'][alertLevel]
+        if query.selfContained
+          alertName = "<nowiki>[#{levelRecord[1]}]</nowiki> "
+        else
+          alertName = "[[File:icons/flag-#{levelRecord[0]}.png|" +
+          "alt=[#{levelRecord[1]}]|text-bottom]] "
+        end
+      else
+        alertName = ''
+      end
+
+      rText = "==== #{alertName}<nowiki>" + @headline + "</nowiki> ====\n"
+
+      showDate = query.journalAttributes.include?('date')
+      showAuthor = query.journalAttributes.include?('author') && @author
+      if showDate || showAuthor
+        rText += "''Reported "
+      end
+      if showDate
+        rText += "on #{@date.to_s(query.timeFormat)} "
+      end
+      if showAuthor
+        rText += "by <nowiki>#{@author.name}</nowiki>"
+      end
+      rText += "''\n\n" if showDate || showAuthor
+
+      if query.journalAttributes.include?('flags') && !@flags.empty?
+        rText += "''Flags:'' #{@flags.join(', ')}\n\n"
+      end
+
+      # Add time sheet information if available and requested.
+      if query.property && query.property.is_a?(Task) &&
+         query.journalAttributes.include?('timesheet') &&
+         (tsRecord = entry.timeSheetRecord)
+        rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
+        if tsRecord.remaining
+          rText += "'''Remaining:''' #{tsRecord.actualRemaining}d "
+        else
+          rText += "'''End:''' " +
+                   "#{tsRecord.actualEnd.to_s(query.timeFormat)} "
+        end
+        rText += "\n\n"
+      end
+
+      if query.journalAttributes.include?('summary') && @summary
+        rText += @summary.richText.inputText + "\n\n"
+      end
+      if query.journalAttributes.include?('details') && @details
+        rText += @details.richText.inputText + "\n\n"
+      end
+      rText
+    end
+
     # Just for debugging
     def to_s # :nodoc:
       "Headline: #{@headline}\nProperty: #{@property.class}: #{@property.fullId}"
@@ -70,10 +128,26 @@ class TaskJuggler
 
     attr_reader :entries
 
+    JournalEntryList::SortingAttributes = [ :alert, :date, :seqno ]
+
     def initialize
       @entries = []
       @sorted = false
+      @sortBy = [ [ :date, 1 ], [ :alert, 1 ], [ :seqno, 1 ] ]
     end
+
+    def setSorting(by)
+      by.each do |attr, direction|
+        unless SortingAttributes.include?(attr)
+          raise ArgumentError, "Unknown attribute #{attr}"
+        end
+        if (direction != 1) && (direction != -1)
+          raise ArgumentError, "Unknown direction #{direction}"
+        end
+      end
+      @sortBy = by
+    end
+
 
     # Return the number of entries.
     def count
@@ -167,12 +241,21 @@ class TaskJuggler
       else
         return self if @sorted
 
-        @entries.sort! { |a, b| a.date != b.date ?
-                                a.date <=> b.date :
-                                (a.alertLevel != b.alertLevel ?
-                                 a.alertLevel <=> b.alertLevel :
-                                 a.property.sequenceNo <=>
-                                 b.property.sequenceNo) }
+        @entries.sort! do |a, b|
+          res = 0
+          @sortBy.each do |attr, direction|
+            res = case attr
+                  when :date
+                    a.date <=> b.date
+                  when :alert
+                    a.alertLevel <=> b.alertLevel
+                  when :seqno
+                    a.property.sequenceNo <=> b.property.sequenceNo
+                  end * direction
+            break if res != 0
+          end
+          res
+        end
       end
       @sorted = true
       self
@@ -211,6 +294,84 @@ class TaskJuggler
       @propertyToEntries[entry.property] << entry
     end
 
+    def to_rti(query, messageHandler)
+      entries = JournalEntryList.new
+
+      case query.journalMode
+      when :journal
+        # This is the regular journal. It contains all journal entries that
+        # are dated in the query interval. If a property is given, only
+        # entries of this property are included.
+        if query.property
+          if query.property.is_a?(Task)
+            entries = entriesByTask(query.property, query.start, query.end,
+                                    query.hideJournalEntry)
+          else
+            entries = entriesByResource(query.property, query.start, query.end,
+                                        query.hideJournalEntry)
+          end
+        else
+          entries = self.entries(query.start, query.end, query.hideJournalEntry)
+        end
+      when :journal_sub
+        # This mode also contains all journal entries that are dated in the
+        # query interval. A property must be given and only entries of this
+        # property and all its children are included.
+        if query.property.is_a?(Task)
+          entries = entriesByTaskR(query.property, query.start, query.end,
+                                   query.hideJournalEntry)
+        end
+      when :status, :alerts
+        # In this mode only the last entries for each task is included. In
+        # alert mode, the alert level must be at least 1.
+        if query.property
+          properties = [ query.property ]
+        else
+          properties = query.project.tasks
+        end
+
+        properties.each do |task|
+          # We only care about top-level tasks.
+          next if task.parent
+
+          entries += currentEntriesR(query.end, task,
+                                     query.journalMode == :alerts ? 1 : 0,
+                                     query.start, query.hideJournalEntry)
+        end
+
+        # Eliminate duplicates due to entries from adopted tasks
+        entries.uniq!
+      else
+        raise "Unknown jourmal mode: #{query.journalMode}"
+      end
+      # Sort entries according to the user specified sorting criteria.
+      entries.setSorting(query.sortJournalEntries)
+      entries.sort!
+
+      # The components of the message are either UTF-8 text or RichText. For
+      # the RichText components, we use the originally provided markup since
+      # we compose the result as RichText markup first.
+      rText = ''
+      entries.each do |entry|
+        rText += entry.to_rText(query)
+      end
+
+      # Now convert the RichText markup String into RichTextIntermediate
+      # format.
+      unless (rti = RichText.new(rText, RTFHandlers.create(query.project),
+                                 messageHandler).
+                                 generateIntermediateFormat)
+        query.project.warning('ptn_journal',
+                              "Syntax error in journal: #{rText}")
+        return nil
+      end
+      # No section numbers, please!
+      rti.sectionNumbers = false
+      # We use a special class to allow CSS formating.
+      rti.cssClass = 'tj_journal'
+      query.rti = rti
+    end
+
     # Return a list of all JournalEntry objects for the given _resource_ that
     # are dated between _startDate_ and _endDate_, are not hidden by their
     # flags matching _logExp_, are for Task _task_ and have at least the alert
@@ -218,7 +379,7 @@ class TaskJuggler
     # the entry.
     def entriesByResource(resource, startDate = nil, endDate = nil,
                           logExp = nil, task = nil, alertLevel = nil)
-      list = []
+      list = JournalEntryList.new
       @entries.each do |entry|
         if entry.author == resource &&
            (startDate.nil? || entry.date > startDate) &&
@@ -239,7 +400,7 @@ class TaskJuggler
     # nil, it always matches the entry.
     def entriesByTask(task, startDate = nil, endDate = nil, logExp = nil,
                       resource = nil, alertLevel = nil)
-      list = []
+      list = JournalEntryList.new
       @entries.each do |entry|
         if entry.property == task &&
            (startDate.nil? || entry.date >= startDate) &&
@@ -273,7 +434,7 @@ class TaskJuggler
 
     def entries(startDate = nil, endDate = nil, logExp = nil, property = nil,
                 alertLevel = nil)
-      list = []
+      list = JournalEntryList.new
       @entries.each do |entry|
         if (startDate.nil? || startDate <= entry.date) &&
            (endDate.nil? || endDate >= entry.date) &&

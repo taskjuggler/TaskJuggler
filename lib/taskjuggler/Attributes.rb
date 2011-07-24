@@ -306,6 +306,18 @@ class TaskJuggler
     end
 
   end
+  class JournalSortListAttribute < ListAttributeBase
+
+    def initialize(property, type, container)
+      super
+    end
+
+    def JournalSortListAttribute ::tjpId
+      'journalsorting'
+    end
+
+  end
+
 
   class TimeIntervalListAttribute < ListAttributeBase
     def initialize(property, type, container)
@@ -574,6 +586,16 @@ class TaskJuggler
 
     def SymbolAttribute::tjpId
       'symbol'
+    end
+  end
+
+  class SymbolListAttribute < ListAttributeBase
+    def initialize(property, type, container)
+      super
+    end
+
+    def SymbolListAttribute::tjpId
+      'symbollist'
     end
   end
 

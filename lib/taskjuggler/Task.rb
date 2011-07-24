@@ -55,7 +55,9 @@ class TaskJuggler
         list = @project['journal'].entriesByTask(self, query.start, query.end,
                                                  query.hideJournalEntry)
       end
-      list.reverse.each do |entry|
+      list.setSorting([ [ :alert, -1 ], [ :date, -1 ], [ :seqno, 1 ] ])
+      list.sort!
+      list.each do |entry|
         tsRecord = entry.timeSheetRecord
 
         if entry.property.is_a?(Task)

@@ -331,6 +331,9 @@ class TaskJuggler
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
                      'hideJournalEntry' => a('hideJournalEntry'),
+                     'journalMode' => a('journalMode'),
+                     'journalAttributes' => a('journalAttributes'),
+                     'sortJournalEntries' => a('sortJournalEntries'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       taskList.query = Query.new(queryAttrs)
@@ -396,6 +399,9 @@ class TaskJuggler
                      'currencyFormat' => a('currencyFormat'),
                      'start' => @start, 'end' => @end,
                      'hideJournalEntry' => a('hideJournalEntry'),
+                     'journalMode' => a('journalMode'),
+                     'journalAttributes' => a('journalAttributes'),
+                     'sortJournalEntries' => a('sortJournalEntries'),
                      'costAccount' => a('costAccount'),
                      'revenueAccount' => a('revenueAccount') }
       resourceList.query = Query.new(queryAttrs)

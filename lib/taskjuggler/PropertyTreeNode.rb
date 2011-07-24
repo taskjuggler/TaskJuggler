@@ -545,6 +545,10 @@ class TaskJuggler
       end
     end
 
+    def query_journal(query)
+      @project['journal'].to_rti
+    end
+
     def query_alert(query)
       journal = @project['journal']
       query.sortable = query.numerical = alert =

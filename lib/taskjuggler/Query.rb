@@ -38,7 +38,8 @@ class TaskJuggler
                attributeId scenario scenarioIdx
                loadUnit numberFormat currencyFormat timeFormat
                listItem listType hideJournalEntry
-               costAccount revenueAccount selfContained)
+               journalMode journalAttributes sortJournalEntries
+               costAccount revenueAccount selfContained )
     @@ps.each do |p|
       attr_accessor p.to_sym
     end
