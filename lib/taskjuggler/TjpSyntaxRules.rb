@@ -1793,25 +1793,41 @@ EOT
     descr(<<'EOT'
 This is the regular journal. It contains all journal entries that are dated in
 the query interval. If a property is given, only entries of this property are
-included.
+included. Without a property context, all the project entries are included
+unless hidden by other attributes like [[hidejournalentry]].
 EOT
        )
     pattern(%w( _journal_sub ), lambda { :journal_sub })
     descr(<<'EOT'
-This mode also contains all journal entries that are dated in the query
-interval. A property must be given and only entries of this property and all
-its children are included.
+This mode only yields entries if used in the context of a task. It contains
+all journal entries that are dated in the query interval for the task and all
+its sub tasks.
 EOT
        )
-    pattern(%w( _status ), lambda { :status })
+    pattern(%w( _status_down ), lambda { :status_down })
     descr(<<'EOT'
-In this mode only the last entries for each task is included.
+In this mode only the last entries before the report end date for each
+property and all its sub-properties are included. If there are multiple entries
+at the exact same date, then all these entries are included.
 EOT
        )
-    pattern(%w( _alerts ), lambda { :alerts })
+    pattern(%w( _status_up ), lambda { :status_up })
     descr(<<'EOT'
-In this mode only the last entries for each task is included.
-And only if the alert level is raised from the default.
+In this mode only the last entries before the report end date for each
+property are included. If there are multiple entries at the exact same date,
+then all these entries are included. If any of the parent properties has a
+more recent entry that is still before the report end date, no entries will be
+included.
+EOT
+       )
+    pattern(%w( _alerts_down ), lambda { :alerts_down })
+    descr(<<'EOT'
+In this mode only the last entries before the report end date for the context
+property and all its sub-properties is included. If there are multiple entries
+at the exact same date, then all these entries are included. In contrast to
+the ''''status_down'''' mode, only entries with an alert level above the
+default level, and only those with the highest overall alert level are
+included.
 EOT
        )
   end
@@ -3214,20 +3230,10 @@ EOT
          )
 
     singlePattern('_alertmessages')
-    descr(<<'EOT'
-The headlines, the summary and the details of the message from the journal
-entries that caused the current alert level to be larger than the defaul level
-for this task or any of its sub tasks.
-EOT
-         )
+    descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_alertsummaries')
-    descr(<<'EOT'
-The headlines and the summary message from the journal entries that caused the
-current alert level to be larger than the default for this task or any of its
-sub tasks.
-EOT
-         )
+    descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_alerttrend')
     descr(<<'EOT'
@@ -3378,30 +3384,22 @@ EOT
 
     singlePattern('_journal')
     descr(<<'EOT'
-The journal entries for the task or resource for the reported interval.
+The journal entries for the task or resource for the reported interval. The
+generated text can be customized with the [[journalmode]],
+[[journalattributes]], [[hidejournalentry]] and [[sortjournalentries]]. If
+used in queries without a property context, the journal for the complete
+project is generated.
 EOT
          )
 
     singlePattern('_journal_sub')
-    descr(<<'EOT'
-The journal entries for the task or resource and all its subtasks or resources
-for the reported interval.
-EOT
-         )
+    descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_journalmessages')
-    descr(<<'EOT'
-The headlines, the summary and the details of the message from the journal
-entries that caused the current alert level for this task.
-EOT
-         )
+    descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_journalsummaries')
-    descr(<<'EOT'
-The headlines and the summary message from the journal entries that caused the
-current alert level for this task.
-EOT
-         )
+    descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_line')
     descr('The line number in the report')
@@ -3637,6 +3635,10 @@ EOT
     pattern(%w( _journalmode !journalReportMode ), lambda {
       @property.set('journalMode', @val[1])
     })
+    doc('journalmode', <<'EOT'
+This attribute controls what journal entries are aggregated into the report.
+EOT
+       )
 
     pattern(%w( _left $STRING ), lambda {
       @property.set('left', newRichText(@val[1], @sourceFileInfo[1]))

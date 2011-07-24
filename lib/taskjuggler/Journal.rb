@@ -321,9 +321,11 @@ class TaskJuggler
           entries = entriesByTaskR(query.property, query.start, query.end,
                                    query.hideJournalEntry)
         end
-      when :status, :alerts
-        # In this mode only the last entries for each task is included. In
-        # alert mode, the alert level must be at least 1.
+      when :status_up
+        # In this mode only the last entries before the query end date for
+        # each task are included. An entry is not included if any of the
+        # parent tasks has a more recent entry that is still before the query
+        # end date.
         if query.property
           properties = [ query.property ]
         else
@@ -334,13 +336,49 @@ class TaskJuggler
           # We only care about top-level tasks.
           next if task.parent
 
-          entries += currentEntriesR(query.end, task,
-                                     query.journalMode == :alerts ? 1 : 0,
-                                     query.start, query.hideJournalEntry)
+          entries += currentEntries(query.end, task, 0, query.start,
+                                    query.hideJournalEntry)
+          # Eliminate duplicates due to entries from adopted tasks
+          entries.uniq!
+        end
+      when :status_down
+        # In this mode only the last entries before the query end date for
+        # each task (incl. sub tasks) are included.
+        if query.property
+          properties = [ query.property ]
+        else
+          properties = query.project.tasks
         end
 
-        # Eliminate duplicates due to entries from adopted tasks
-        entries.uniq!
+        properties.each do |task|
+          # We only care about top-level tasks.
+          next if task.parent
+
+          entries += currentEntriesR(query.end, task, 0, query.start,
+                                     query.hideJournalEntry)
+          # Eliminate duplicates due to entries from adopted tasks
+          entries.uniq!
+        end
+      when :alerts_down
+        # In this mode only the last entries before the query end date for
+        # each task (incl. sub tasks) and only the ones with the highest alert
+        # level are included.
+        if query.property
+          properties = [ query.property ]
+        else
+          properties = query.project.tasks
+        end
+
+        properties.each do |task|
+          # We only care about top-level tasks.
+          next if task.parent
+
+          entries += alertEntries(query.end, task, 1, query.start,
+                                  query.hideJournalEntry)
+          # Eliminate duplicates due to entries from adopted tasks
+          entries.uniq!
+        end
+
       else
         raise "Unknown jourmal mode: #{query.journalMode}"
       end
@@ -465,7 +503,8 @@ class TaskJuggler
 
     # Return the list of JournalEntry objects that are dated at or before
     # _date_, are for _property_ or any of its childs, have at least _level_
-    # alert and are after _minDate_.
+    # alert and are after _minDate_. We only return those entries with the
+    # highest overall alert level.
     def alertEntries(date, property, minLevel, minDate, logExp)
       maxLevel = 0
       entries = []

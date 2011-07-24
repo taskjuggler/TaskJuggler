@@ -182,7 +182,7 @@ class TaskJuggler
 
     def setJournalMode(query, args)
       if (mode = args['journalmode'])
-        validModes = %w( journal jounal_sub status alerts )
+        validModes = %w( journal journal_sub status_up status_down alerts_down )
         unless validModes.include?(mode)
           error('rtfq_bad_journalmode',
                 "Unknown journalmode #{mode}. Must be one of " +

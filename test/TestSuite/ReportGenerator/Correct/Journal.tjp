@@ -37,7 +37,7 @@ textreport "Journal-0" {
 }
 taskreport "Journal-1" {
   formats csv
-  journalmode alerts
+  journalmode alerts_down
   # Only "Entry 2" should be included
   columns name, journal { period 2010-06-14 +1w }
 }
