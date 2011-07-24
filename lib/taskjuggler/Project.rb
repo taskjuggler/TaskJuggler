@@ -369,7 +369,7 @@ class TaskJuggler
         [ 'interactive', 'Interactive', BooleanAttribute,
               false, false,   false, false ],
         [ 'journalAttributes', 'Journal Attributes', SymbolListAttribute,
-              true,  false,   false, [] ],
+              true,  false,   false, KeywordArray.new([ '*' ]) ],
         [ 'journalMode', 'Journal Mode', SymbolAttribute,
               true,  false,   false, :journal ],
         [ 'left',      'Left',         RichTextAttribute,
