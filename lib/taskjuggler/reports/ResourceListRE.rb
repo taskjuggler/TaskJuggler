@@ -54,11 +54,12 @@ class TaskJuggler
 
       assignedTaskList = []
       resourceList.each do |resource|
-        assignedTaskList = assignedTaskList + filterTaskList(taskList, resource,
-                                          @report.get('hideTask'), @report.get('rollupTask'),
-                                          @report.get('openNodes'))
+        assignedTaskList += filterTaskList(taskList, resource,
+                                           @report.get('hideTask'),
+                                           @report.get('rollupTask'),
+                                           @report.get('openNodes'))
+        assignedTaskList.uniq!
       end
-      assignedTaskList.uniq!
 
       adjustReportPeriod(assignedTaskList, @report.get('scenarios'),
                          @report.get('columns'))
