@@ -127,7 +127,7 @@ class AppConfig
 
     # Find the data dir relative to the source of this file. This should
     # always work.
-    dirs << File.join(File.dirname(__FILE__), '..', '..', 'data')
+    dirs << File.join(File.dirname(__FILE__), '..', '..', baseDir)
 
     # This hopefully works for all setups. Otherwise we have to add more
     # alternative pathes.

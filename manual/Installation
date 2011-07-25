@@ -154,28 +154,17 @@ The following command will create a gem package from the source code.
  
 If you plan to modify the TaskJuggler files, creating and installing
 the gem file for every test run is not very comfortable. To run tj3
-from source put the following code in ''''${HOME}/bin/tj3''''. 
+from source put the following code in your ''''.profile'''' file.
+This is for users of the bash shell. Adapt it accordingly if you use
+another shell. 
 
- #! /usr/bin/ruby
- 
- # Set this to your source code directory
- ENV['TASKJUGGLER_DATA_PATH'] = "#{ENV['HOME']}/src/taskjuggler3"
- 
- $:.unshift "#{ENV['TASKJUGGLER_DATA_PATH']}/lib/"
- 
- require File.basename(__FILE__)
-
-Don't forget to mark it as executable.
-
- chmod 750 ${HOME}/bin/tj3
-
-Other programs like ''''tj3client'''', ''''tj3man'''' or ''''tj3d'''' can simply be
-added as symbolic links to tj3.
-
-  cd ${HOME}/bin
-  ln -s tj3 tj3man
-  ln -s tj3 tj3client
-  ln -s tj3 tj3d
+ # To use TaskJuggler directly from the source. This must point to
+ # the directory where you have put the TaskJuggler source files.
+ TASKJUGGLER_DIR=${HOME}/src/taskjuggler3
+ # Make sure Ruby finds the program files
+ export RUBYLIB=${TASKJUGGLER_DIR}/lib
+ # Make sure the shell finds the TaskJuggler programs
+ export PATH=${PATH}:${TASKJUGGLER_DIR}/bin
 
 === Quickly switching between various TaskJuggler III versions ===
 

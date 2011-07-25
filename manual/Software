@@ -73,6 +73,20 @@ it as parameter to ''''tj3man''''.
 
  tj3man shift.task
 
+The same information that is available in your shell is also available
+in your web browser.
+
+ tj3man --html <keyword>
+
+The latter defaults to using the
+[http://www.mozilla.com/en-US/firefox/new/ Mozilla Firefox] web
+browser . Please see
+
+ tj3man --help
+
+how to use a different browser. If you omit the keyword, you will
+get this user manual (browser).
+
 === ''''tj3d'''' ===
 
 ''''tj3d'''' is the TaskJuggler daemon. It is a program that runs
