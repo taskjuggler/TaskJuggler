@@ -306,7 +306,7 @@ class TaskJuggler
           if query.property.is_a?(Task)
             entries = entriesByTask(query.property, query.start, query.end,
                                     query.hideJournalEntry)
-          else
+          elsif query.property.is_a?(Resource)
             entries = entriesByResource(query.property, query.start, query.end,
                                         query.hideJournalEntry)
           end
@@ -332,11 +332,11 @@ class TaskJuggler
           properties = query.project.tasks
         end
 
-        properties.each do |task|
+        properties.each do |property|
           # We only care about top-level tasks.
           next if task.parent
 
-          entries += currentEntries(query.end, task, 0, query.start,
+          entries += currentEntries(query.end, property, 0, query.start,
                                     query.hideJournalEntry)
           # Eliminate duplicates due to entries from adopted tasks
           entries.uniq!
@@ -350,11 +350,11 @@ class TaskJuggler
           properties = query.project.tasks
         end
 
-        properties.each do |task|
+        properties.each do |property|
           # We only care about top-level tasks.
           next if task.parent
 
-          entries += currentEntriesR(query.end, task, 0, query.start,
+          entries += currentEntriesR(query.end, property, 0, query.start,
                                      query.hideJournalEntry)
           # Eliminate duplicates due to entries from adopted tasks
           entries.uniq!
@@ -369,11 +369,11 @@ class TaskJuggler
           properties = query.project.tasks
         end
 
-        properties.each do |task|
+        properties.each do |property|
           # We only care about top-level tasks.
           next if task.parent
 
-          entries += alertEntries(query.end, task, 1, query.start,
+          entries += alertEntries(query.end, property, 1, query.start,
                                   query.hideJournalEntry)
           # Eliminate duplicates due to entries from adopted tasks
           entries.uniq!
