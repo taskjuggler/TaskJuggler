@@ -53,13 +53,22 @@ class TaskJuggler
       taskList.sort!
 
       assignedTaskList = []
+      resourceToRemove = []
       resourceList.each do |resource|
-        assignedTaskList += filterTaskList(taskList, resource,
-                                           @report.get('hideTask'),
-                                           @report.get('rollupTask'),
-                                           @report.get('openNodes'))
-        assignedTaskList.uniq!
+        currentResourceAssignedTaskList = filterTaskList(taskList, resource,
+                                                          @report.get('hideTask'),
+                                                          @report.get('rollupTask'),
+                                                          @report.get('openNodes'))
+        if currentResourceAssignedTaskList.any?
+          assignedTaskList += currentResourceAssignedTaskList
+          assignedTaskList.uniq!
+        else
+          resourceToRemove << resource
+        end
       end
+
+      resourceList.remove(resourceToRemove)
+
 
       adjustReportPeriod(assignedTaskList, @report.get('scenarios'),
                          @report.get('columns'))

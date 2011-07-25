@@ -95,6 +95,21 @@ class TaskJuggler
       sort!
     end
 
+    # Remove Array of PropertyTreeNodes or a PropertyList of this. The 
+    # list will be sorted again.
+    def remove(list)
+      if $DEBUG
+        list.each do |node|
+          unless node.propertySet != @propertySet
+            raise "Fatal Error: All nodes must not belong to the same PropertySet."
+          end
+        end
+      end
+      # @items.delete(item)
+       @items -= list
+      sort!
+    end
+
     # If the first sorting level is 'tree' the breakdown structure of the
     # list is preserved. This is a somewhat special mode and this function
     # returns true if the mode is set.
