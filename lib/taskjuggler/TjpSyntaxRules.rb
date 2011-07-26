@@ -1785,7 +1785,11 @@ EOT
                          { 'author' => 'Include the author if known',
                            'date' => 'Include the date',
                            'details' => 'Include the details',
-                           'summary' => 'Include the summary' })
+                           'flags' => 'Include the flags',
+                           'headline' => 'Include the headline',
+                           'property' => 'Include the task or resource name',
+                           'summary' => 'Include the summary',
+                           'timesheet' => 'Include the timesheet information' })
   end
 
   def rule_journalReportMode

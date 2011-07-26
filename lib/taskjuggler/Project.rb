@@ -995,7 +995,7 @@ class TaskJuggler
     end
 
     def journal(query)
-      @attributes['journal'].to_rti(query, @messageHandler)
+      @attributes['journal'].to_rti(query)
     end
 
     # Print the attribute values. It's used for debugging only.

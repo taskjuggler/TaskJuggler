@@ -303,6 +303,10 @@ class TaskJuggler
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'start' => ts.interval.start,
                      'end' => ts.interval.end,
+                     'journalMode' => :journal,
+                     'journalAttributes' => %w( alert property headline flags
+                                                timesheet summary details ),
+                     'sortJournalEntries' => [ [ :seqno, 1 ] ],
                      'timeFormat' => '%Y-%m-%d',
                      'selfContained' => true }
       query = Query.new(queryAttrs)

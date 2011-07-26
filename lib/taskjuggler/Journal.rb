@@ -72,7 +72,76 @@ class TaskJuggler
         alertName = ''
       end
 
-      rText = "==== #{alertName}<nowiki>" + @headline + "</nowiki> ====\n"
+      # The String that will hold the result as RichText markup.
+      rText = ''
+
+      # Markup to use for headlines.
+      hlMark = '==='
+
+      if query.journalAttributes.include?('property') && @property
+        if @property.is_a?(Task)
+          # Include the alert level, task name and ID.
+          rText += "#{hlMark} #{alertName} <nowiki>#{@property.name}" +
+                   "</nowiki> (ID: #{@property.fullId}) #{hlMark}\n\n"
+
+          if query.journalAttributes.include?('timesheet') && @timeSheetRecord
+            # Include the reported time sheet data for this task.
+            rText += "'''Work:''' #{@timeSheetRecord.actualWorkPercent.to_i}% "
+            if @timeSheetRecord.actualWorkPercent !=
+               @timeSheetRecord.planWorkPercent
+              rText += "(#{@timeSheetRecord.planWorkPercent.to_i}%) "
+            end
+            if @timeSheetRecord.remaining
+              rText += "'''Remaining:''' #{@timeSheetRecord.actualRemaining}d "
+              if @timeSheetRecord.actualRemaining !=
+                 @timeSheetRecord.planRemaining
+                rText += "(#{@timeSheetRecord.planRemaining}d) "
+              end
+            else
+              rText += "'''End:''' " +
+                "#{@timeSheetRecord.actualEnd.to_s(query.timeFormat)} "
+              if @timeSheetRecord.actualEnd != @timeSheetRecord.planEnd
+                rText += "(#{@timeSheetRecord.planEnd.to_s(query.timeFormat)}) "
+              end
+            end
+            rText += "\n\n"
+          end
+        elsif !(@timeSheetRecord = @timeSheetRecord).nil? &&
+              @timeSheetRecord.task.is_a?(String)
+          # There is only an entry in the timesheet, but we don't have a
+          # corresponding Task in the Project. This must be a new task created
+          # by the timesheet submitter.
+          rText += "#{hlMark} #{alertName} <nowiki>[New Task] " +
+                   "#{@timeSheetRecord.name} " +
+          "</nowiki> (ID: #{@timeSheetRecord.task}) #{hlMark}\n\n"
+
+          if query.journalAttributes.include?('timesheet') && @timeSheetRecord
+            # We don't have any plan data since it's a new task. Just include
+            # the reported time sheet actuals.
+            rText += "'''Work:''' #{@timeSheetRecord.actualWorkPercent}% "
+            if @timeSheetRecord.remaining
+              rText += "'''Remaining:''' #{@timeSheetRecord.actualRemaining}d "
+            else
+              rText += "'''End:''' " +
+                       "#{@timeSheetRecord.actualEnd.to_s(query.timeFormat)} "
+            end
+            rText += "\n\n"
+          end
+        else
+          # Property must be a Resource
+          rText += "#{hlMark} #{alertName} Personal Notes #{hlMark}\n\n"
+        end
+
+        # We've shown the alert now. Don't show it again with the headline.
+        alertName = ''
+        # Increase level for subsequent headlines.
+        hlMark += '='
+      end
+
+      if query.journalAttributes.include?('headline')
+        rText += "#{hlMark} #{alertName}<nowiki>" + @headline +
+                 "</nowiki> #{hlMark}\n\n"
+      end
 
       showDate = query.journalAttributes.include?('date')
       showAuthor = query.journalAttributes.include?('author') && @author
@@ -89,20 +158,6 @@ class TaskJuggler
 
       if query.journalAttributes.include?('flags') && !@flags.empty?
         rText += "''Flags:'' #{@flags.join(', ')}\n\n"
-      end
-
-      # Add time sheet information if available and requested.
-      if query.property && query.property.is_a?(Task) &&
-         query.journalAttributes.include?('timesheet') &&
-         (tsRecord = entry.timeSheetRecord)
-        rText += "'''Work:''' #{tsRecord.actualWorkPercent.to_i}% "
-        if tsRecord.remaining
-          rText += "'''Remaining:''' #{tsRecord.actualRemaining}d "
-        else
-          rText += "'''End:''' " +
-                   "#{tsRecord.actualEnd.to_s(query.timeFormat)} "
-        end
-        rText += "\n\n"
       end
 
       if query.journalAttributes.include?('summary') && @summary
@@ -294,7 +349,7 @@ class TaskJuggler
       @propertyToEntries[entry.property] << entry
     end
 
-    def to_rti(query, messageHandler)
+    def to_rti(query)
       entries = JournalEntryList.new
 
       case query.journalMode
@@ -334,7 +389,7 @@ class TaskJuggler
 
         properties.each do |property|
           # We only care about top-level tasks.
-          next if task.parent
+          next if property.parent
 
           entries += currentEntries(query.end, property, 0, query.start,
                                     query.hideJournalEntry)
@@ -352,7 +407,7 @@ class TaskJuggler
 
         properties.each do |property|
           # We only care about top-level tasks.
-          next if task.parent
+          next if property.parent
 
           entries += currentEntriesR(query.end, property, 0, query.start,
                                      query.hideJournalEntry)
@@ -371,7 +426,7 @@ class TaskJuggler
 
         properties.each do |property|
           # We only care about top-level tasks.
-          next if task.parent
+          next if property.parent
 
           entries += alertEntries(query.end, property, 1, query.start,
                                   query.hideJournalEntry)
@@ -397,7 +452,7 @@ class TaskJuggler
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
       unless (rti = RichText.new(rText, RTFHandlers.create(query.project),
-                                 messageHandler).
+                                 query.project.messageHandler).
                                  generateIntermediateFormat)
         query.project.warning('ptn_journal',
                               "Syntax error in journal: #{rText}")

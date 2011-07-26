@@ -546,7 +546,7 @@ class TaskJuggler
     end
 
     def query_journal(query)
-      @project['journal'].to_rti
+      @project['journal'].to_rti(query)
     end
 
     def query_alert(query)

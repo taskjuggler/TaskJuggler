@@ -1,0 +1,126 @@
+"Name";"Journal";"Journal";"Journal";"Journal";"Journal"
+"R1";"[Green]T2 (ID: t1.t2)
+
+Work: 60% (0%) Remaining: 6.0d (5.0d)
+
+All good
+
+Reported on 2011-08-08 by R1
+
+No problems found
+
+Work is progressing well
+
+[Yellow]T3 (ID: t1.t3)
+
+Work: 20% (0%) Remaining: 2.0d (0.0d)
+
+Helped out
+
+Reported on 2011-08-08 by R1
+
+r2 asked for d2
+
+[Red][New Task] T4 (ID: t4)
+
+Work: 20.0% Remaining: 3.0d
+
+Big Problem
+
+Reported on 2011-08-08 by R1
+
+Flags: foo
+
+Had to help out
+
+Unplanned distraction";"";"[Red][New Task] T4 (ID: t4)
+
+Work: 20.0% Remaining: 3.0d
+
+Big Problem
+
+Reported on 2011-08-08 by R1
+
+Flags: foo
+
+Had to help out
+
+Unplanned distraction";"[Red][New Task] T4 (ID: t4)
+
+Work: 20.0% Remaining: 3.0d
+
+Big Problem
+
+Reported on 2011-08-08 by R1
+
+Flags: foo
+
+Had to help out
+
+Unplanned distraction";"[Red][New Task] T4 (ID: t4)
+
+Work: 20.0% Remaining: 3.0d
+
+Big Problem
+
+Reported on 2011-08-08 by R1
+
+Flags: foo
+
+Had to help out
+
+Unplanned distraction"
+"R2";"[Green]T3 (ID: t1.t3)
+
+r1 had to help out
+
+Reported on 2011-08-08 by R2";"";"";"";""
+"R3";"[Green][New Task] Out sick (ID: sick)
+
+Work: 100.0% Remaining: 2.0d
+
+Hope to feel better soon
+
+Reported on 2011-08-08 by R3
+
+[Yellow]Personal Notes
+
+Not feeling good
+
+Reported on 2011-08-08 by R3
+
+Will see the doctor again";"";"[Green][New Task] Out sick (ID: sick)
+
+Work: 100.0% Remaining: 2.0d
+
+Hope to feel better soon
+
+Reported on 2011-08-08 by R3
+
+[Yellow]Personal Notes
+
+Not feeling good
+
+Reported on 2011-08-08 by R3
+
+Will see the doctor again";"[Green][New Task] Out sick (ID: sick)
+
+Work: 100.0% Remaining: 2.0d
+
+Hope to feel better soon
+
+Reported on 2011-08-08 by R3
+
+[Yellow]Personal Notes
+
+Not feeling good
+
+Reported on 2011-08-08 by R3
+
+Will see the doctor again";"[Yellow]Personal Notes
+
+Not feeling good
+
+Reported on 2011-08-08 by R3
+
+Will see the doctor again"
