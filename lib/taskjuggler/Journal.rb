@@ -83,7 +83,7 @@ class TaskJuggler
           # Include the alert level, task name and ID.
           rText += "#{hlMark} #{alertName} <nowiki>#{@property.name}</nowiki>"
           if query.journalAttributes.include?('propertyid')
-            rText += "(ID: #{@property.fullId})"
+            rText += " (ID: #{@property.fullId})"
           end
           rText += " #{hlMark}\n\n"
 
@@ -115,8 +115,11 @@ class TaskJuggler
           # corresponding Task in the Project. This must be a new task created
           # by the timesheet submitter.
           rText += "#{hlMark} #{alertName} <nowiki>[New Task] " +
-                   "#{@timeSheetRecord.name} " +
-          "</nowiki> (ID: #{@timeSheetRecord.task}) #{hlMark}\n\n"
+                   "#{@timeSheetRecord.name}</nowiki>"
+          if query.journalAttributes.include?('propertyid')
+            rText += " (ID: #{@timeSheetRecord.task})"
+          end
+          rText += " #{hlMark}\n\n"
 
           if query.journalAttributes.include?('timesheet') && @timeSheetRecord
             # We don't have any plan data since it's a new task. Just include
@@ -385,58 +388,60 @@ class TaskJuggler
         # parent tasks has a more recent entry that is still before the query
         # end date.
         if query.property
-          properties = [ query.property ]
+          if query.property.is_a?(Task)
+            entries += currentEntries(query.end, query.property, 0, query.start,
+                                      query.hideJournalEntry)
+          end
         else
-          properties = query.project.tasks
-        end
+          query.project.tasks do |task|
+            # We only care about top-level tasks.
+            next if task.parent
 
-        properties.each do |property|
-          # We only care about top-level tasks.
-          next if property.parent
-
-          entries += currentEntries(query.end, property, 0, query.start,
-                                    query.hideJournalEntry)
-          # Eliminate duplicates due to entries from adopted tasks
-          entries.uniq!
+            entries += currentEntries(query.end, task, 0, query.start,
+                                      query.hideJournalEntry)
+            # Eliminate duplicates due to entries from adopted tasks
+            entries.uniq!
+          end
         end
       when :status_down
         # In this mode only the last entries before the query end date for
         # each task (incl. sub tasks) are included.
         if query.property
-          properties = [ query.property ]
+          if query.property.is_a?(Task)
+            entries += currentEntriesR(query.end, query.property, 0, query.start,
+                                       query.hideJournalEntry)
+          end
         else
-          properties = query.project.tasks
-        end
+          query.project.tasks do |task|
+            # We only care about top-level tasks.
+            next if task.parent
 
-        properties.each do |property|
-          # We only care about top-level tasks.
-          next if property.parent
-
-          entries += currentEntriesR(query.end, property, 0, query.start,
-                                     query.hideJournalEntry)
-          # Eliminate duplicates due to entries from adopted tasks
-          entries.uniq!
+            entries += currentEntriesR(query.end, task, 0, query.start,
+                                       query.hideJournalEntry)
+            # Eliminate duplicates due to entries from adopted tasks
+            entries.uniq!
+          end
         end
       when :alerts_down
         # In this mode only the last entries before the query end date for
         # each task (incl. sub tasks) and only the ones with the highest alert
         # level are included.
         if query.property
-          properties = [ query.property ]
+          if query.property.is_a?(Task)
+            entries += alertEntries(query.end, query.property, 1, query.start,
+                                    query.hideJournalEntry)
+          end
         else
-          properties = query.project.tasks
+          query.project.tasks do |task|
+            # We only care about top-level tasks.
+            next if task.parent
+
+            entries += alertEntries(query.end, task, 1, query.start,
+                                    query.hideJournalEntry)
+            # Eliminate duplicates due to entries from adopted tasks
+            entries.uniq!
+          end
         end
-
-        properties.each do |property|
-          # We only care about top-level tasks.
-          next if property.parent
-
-          entries += alertEntries(query.end, property, 1, query.start,
-                                  query.hideJournalEntry)
-          # Eliminate duplicates due to entries from adopted tasks
-          entries.uniq!
-        end
-
       else
         raise "Unknown jourmal mode: #{query.journalMode}"
       end

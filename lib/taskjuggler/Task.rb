@@ -32,10 +32,6 @@ class TaskJuggler
       @data[scenarioIdx].readyForScheduling?
     end
 
-    def query_journal(query)
-      journalText(query, true, false)
-    end
-
     def query_journal_sub(query)
       journalText(query, true, true)
     end

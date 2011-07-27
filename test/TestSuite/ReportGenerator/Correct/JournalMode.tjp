@@ -1,5 +1,5 @@
-project "Test" 2011-07-26 +1m {
-  now 2011-08-08
+project "Test" 2011-08-01 +1m {
+  now 2011-08-15
   trackingscenario plan
 }
 
@@ -8,6 +8,7 @@ flags foo
 resource r1 "R1"
 resource r2 "R2"
 resource r3 "R3"
+resource r4 "R4"
 
 task t1 "T1" {
   task t2 "T2" {
@@ -23,6 +24,7 @@ task t1 "T1" {
   }
 }
 
+# Timesheets 1st week
 timesheet r1 2011-08-01 +1w {
   task t1.t2 {
     work 3d
@@ -60,25 +62,63 @@ timesheet r3 2011-08-01 +1w {
   }
 }
 
+# Timesheet 2nd week
+timesheet r1 2011-08-01 +1w {
+  task t1.t2 {
+    work 5d
+    remaining 1d
+    status green "All ok"
+  }
+  task t1.t3 {
+    work 0d
+    remaining 2d
+    status red "Fire burning" {
+      details "It's really hot"
+    }
+  }
+}
+
+statussheet r4 2011-08-09 {
+  task t1 {
+    status green "Don't panik!"
+  }
+}
+
+macro columns [
+  columns name,
+          journal {
+            title "journal"
+            celltext 1 "<-query attribute='journal' journalmode='journal'->"
+          },
+          journal {
+            title "journal_sub"
+            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
+          },
+          journal {
+            title "status_up"
+            celltext 1 "<-query attribute='journal' journalmode='status_up'->"
+          },
+          journal {
+            title "status_down"
+            celltext 1 "<-query attribute='journal' journalmode='status_down'->"
+          },
+          journal {
+            title "alerts_down"
+            celltext 1 "<-query attribute='journal' journalmode='alerts_down'->"
+          }
+]
+
 resourcereport "JournalMode-1" {
   formats html, csv
   journalmode journal
   journalattributes *
-  columns name,
-          journal {
-            celltext 1 "<-query attribute='journal' journalmode='journal'->"
-          },
-          journal {
-            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
-          },
-          journal {
-            celltext 1 "<-query attribute='journal' journalmode='status_up'->"
-          },
-          journal {
-            celltext 1 "<-query attribute='journal' journalmode='status_down'->"
-          },
-          journal {
-            celltext 1 "<-query attribute='journal' journalmode='alerts_down'->"
-          }
+  ${columns}
+}
+
+taskreport "JournalMode-2" {
+  formats html, csv
+  journalmode journal
+  journalattributes *
+  ${columns}
 }
 
