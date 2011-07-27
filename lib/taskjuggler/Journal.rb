@@ -81,8 +81,11 @@ class TaskJuggler
       if query.journalAttributes.include?('property') && @property
         if @property.is_a?(Task)
           # Include the alert level, task name and ID.
-          rText += "#{hlMark} #{alertName} <nowiki>#{@property.name}" +
-                   "</nowiki> (ID: #{@property.fullId}) #{hlMark}\n\n"
+          rText += "#{hlMark} #{alertName} <nowiki>#{@property.name}</nowiki>"
+          if query.journalAttributes.include?('propertyid')
+            rText += "(ID: #{@property.fullId})"
+          end
+          rText += " #{hlMark}\n\n"
 
           if query.journalAttributes.include?('timesheet') && @timeSheetRecord
             # Include the reported time sheet data for this task.

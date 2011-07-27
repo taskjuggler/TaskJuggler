@@ -1,5 +1,5 @@
 "Name";"Journal";"Journal";"Journal";"Journal";"Journal"
-"R1";"[Green]T2 (ID: t1.t2)
+"R1";"[Green]T2(ID: t1.t2)
 
 Work: 60% (0%) Remaining: 6.0d (5.0d)
 
@@ -11,7 +11,7 @@ No problems found
 
 Work is progressing well
 
-[Yellow]T3 (ID: t1.t3)
+[Yellow]T3(ID: t1.t3)
 
 Work: 20% (0%) Remaining: 2.0d (0.0d)
 
@@ -70,7 +70,7 @@ Flags: foo
 Had to help out
 
 Unplanned distraction"
-"R2";"[Green]T3 (ID: t1.t3)
+"R2";"[Green]T3(ID: t1.t3)
 
 r1 had to help out
 

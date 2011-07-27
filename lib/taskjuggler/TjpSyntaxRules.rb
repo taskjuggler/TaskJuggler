@@ -1788,8 +1788,11 @@ EOT
                            'flags' => 'Include the flags',
                            'headline' => 'Include the headline',
                            'property' => 'Include the task or resource name',
+                           'propertyid' => 'Include the property ID. ' +
+                                           'Requires \'property\'.',
                            'summary' => 'Include the summary',
-                           'timesheet' => 'Include the timesheet information' })
+                           'timesheet' => 'Include the timesheet information.' +
+                                          ' Requires \'property\'.'})
   end
 
   def rule_journalReportMode

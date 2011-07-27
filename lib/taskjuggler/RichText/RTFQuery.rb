@@ -198,7 +198,8 @@ class TaskJuggler
       if (attrListStr = args['journalattributes'])
         attrs = attrListStr.split(', ').map { |a| a.delete(' ') }
         query.journalAttributes = []
-        validAttrs = %w( author date details flags summary )
+        validAttrs = %w( author date details flags headline property propertyid
+                         summary timesheet )
         attrs.each do |attr|
           if validAttrs.include?(attr)
             query.journalAttributes << attr
