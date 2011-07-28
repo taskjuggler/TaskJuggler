@@ -2413,3 +2413,5 @@ task ${content}${major} "${content_title} ${major}" {
   }
 
 } # Bitter End
+
+tagfile "tags"
