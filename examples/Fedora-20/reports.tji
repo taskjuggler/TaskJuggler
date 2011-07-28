@@ -1,0 +1,410 @@
+# Report definitions for Fedora 20
+#
+# Copyright 2011 John Poelstra <poelstra@fedoraproject.org>
+# Copyright 2011 Robyn Bergeron <rbergero@fedoraproject.org>
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+# This project schedule was derived from the original Fedora 20
+# schedule way before the actual project start. By the time you are
+# looking at this file, the real schedule might have been updated
+# already. This is just an example file with example dates. The real
+# schedule can be found at http://fedoraproject.org/wiki/Schedule
+
+# These macros are set (edited) manually each week to create
+# the individual team schedule reminders, created by running
+# $ make calendar
+# Sunday
+macro weekly_start [2013-05-05]
+# Wednesday falling two weeks after starting Sunday
+macro weekly_end   [2013-05-22]
+
+# Define flags for filtered reporting
+flags ambassadors
+flags bugtriage
+flags blocker # use to proof blocker meeting placement
+flags design
+flags devel
+flags docs
+flags elections
+flags fpl
+flags hidden     # used to hide tasks that we do not displayed in Fedora reports
+flags infrastructure
+flags interface
+flags key      /* use for report of key tasks/high level overview--reflected on Fedora wiki, e.g.
+                 https://fedoraproject.org/wiki/Releases/15/Schedule */
+flags proto     # used for drafting new schedules and shows tasks useful for doing this
+flags pm
+flags pr
+flags marketing
+flags roadmap  # major milestones
+flags translation
+flags quality
+flags releng
+flags spins
+flags web
+
+navigator menu
+
+macro all_navbar [
+  header -8<-
+== [[File:icons/fedoralogo.png|bottom]] ${content_title}-${major} Project Plan ==
+----
+<[navigator id="menu"]>
+----
+->8-
+]
+
+textreport "Public Reports" {
+  formats html
+  ${all_navbar}
+  timeformat "%a %Y-%m-%d"
+  scenarios actual
+
+  taskreport "${content}-${major}-all-tasks" {
+    title "Project Overview"
+    headline "${content_title} ${major} Tasks"
+    columns name, start, end, duration
+    sorttasks tree, actual.start.up, seqno.up
+    hidetask hidden
+  }
+
+  # key tasks
+  # this report mirrors what should be on the wiki
+  # https://fedoraproject.org/wiki/Releases/14/Schedule
+  taskreport "${content}-${major}-key-tasks" {
+    title "Milestones"
+    headline "${content_title} ${major} Key Tasks & Milestones"
+    columns name, start, end, chart
+    sorttasks actual.start.up
+    hidetask ~key
+  }
+
+  textreport "Team Reports" {
+    sorttasks tree, actual.start.up
+    columns no, name, start, end, duration
+    timeformat "%a %Y-%m-%d"
+    scenarios actual
+
+    # Ambassador Team Reports
+    taskreport "${content}-${major}-ambassadors-tasks" {
+      title "Ambassador"
+      headline "${content_title} ${major} Ambassadors Team Tasks"
+      hidetask ~ambassadors
+    }
+
+    # Design Team Reports
+    taskreport "${content}-${major}-design-tasks.html" {
+      title "Design"
+      headline "${content_title} ${major} Design Team Tasks"
+      hidetask ~design
+    }
+
+    # Development Team Reports
+    taskreport "${content}-${major}-devel-tasks" {
+      title "Development"
+      headline "${content_title} ${major} Development Team Tasks"
+      hidetask ~devel
+    }
+
+    # Docs Team Reports
+    taskreport "${content}-${major}-docs-tasks" {
+      title "Docs"
+      headline "${content_title} ${major} Docs Team Tasks"
+      hidetask ~docs
+    }
+    # Marketing Team Reports
+    taskreport "${content}-${major}-marketing-tasks" {
+      title "Marketing"
+      headline "${content_title} ${major} Marketing Team Tasks"
+      hidetask ~marketing
+    }
+
+    # Release Engineering Team Reports
+    taskreport "${content}-${major}-releng-tasks" {
+      title "Release Engineering"
+      headline "${content_title} ${major} Releng Team Tasks"
+      hidetask ~releng
+    }
+
+    # Quality Team Reports
+    taskreport "${content}-${major}-quality-tasks" {
+      title "Quality"
+      headline "${content_title} ${major} Quality Tasks"
+      hidetask ~quality
+    }
+
+    # Spins SIG Reports
+    taskreport "${content}-${major}-spins-tasks" {
+      title "Spins SIG"
+      headline "${content_title} ${major} Spins SIG Tasks"
+      hidetask ~spins
+    }
+
+    # Translation Team Reports
+    taskreport "${content}-${major}-trans-tasks" {
+      title "Translation"
+      headline "${content_title} ${major} Translation Tasks"
+      hidetask ~translation
+    }
+
+    # Web Team Reports
+    taskreport "${content}-${major}-web-tasks" {
+      title "Web"
+      headline "${content_title} ${major} Web Team Tasks"
+      hidetask ~web & ~infrastructure
+    }
+
+    # This report is just a menu entry, not a real report.
+    purge formats
+  }
+
+  textreport "Administrative Items" {
+    sorttasks tree, actual.start.up
+    columns no, name, start, end, duration
+    timeformat "%a %Y-%m-%d"
+    scenarios actual
+
+    # Elections
+    taskreport "${content}-${major}-elections" {
+      title "Elections"
+      headline "${content_title} ${major} Elections "
+      hidetask ~elections
+    }
+
+    # FPL
+    taskreport "${content}-${major}-fpl" {
+      title "FPL"
+      headline "${content_title} ${major} FPL"
+      hidetask ~fpl
+    }
+
+    # PR
+    taskreport "${content}-${major}-pr" {
+      title "PR"
+      headline "${content_title} ${major} Media/PR"
+      hidetask ~pr
+    }
+
+    # Infrastructure
+    taskreport "${content}-${major}-infrastructure" {
+      title "Infrastructure"
+      headline "${content_title} ${major} Infrastructure Freezes"
+      hidetask ~infrastructure
+    }
+
+    purge formats
+  }
+
+  ### Miscelaneous reports ###
+  textreport "Miscellaneous Reports" {
+    sorttasks actual.start.up
+    columns no, name, start, end, duration
+
+    taskreport "${content}-${major}-pm-tasks" {
+      title "PM"
+      headline "${content_title} ${major} Project Management Tasks"
+      hidetask ~pm
+    }
+
+    taskreport "${content}-${major}-blocker-meetings" {
+      title "Blocker"
+      headline "${content_title} ${major} Blocker Meeting"
+      hidetask  ~blocker & ~key
+    }
+
+    taskreport "${content}-${major}-draft-schedule" {
+      title "Primary Tasks"
+      headline "${content_title} ${major} Primary Tasks"
+      sorttasks actual.start.up
+      hidetask ~proto
+    }
+
+    purge formats
+  }
+
+   purge formats
+}
+
+textreport "Weekly CSV Reports" {
+  formats csv
+  start ${weekly_start}
+  end ${weekly_end}
+  sorttasks actual.start.up
+  columns start, end, name
+  timeformat "%a %d-%b"
+  scenarios actual
+
+  # Reports for weekly emails to team lists
+  # These reports are post-processed by 'format-weekly-calendar.py'
+  taskreport "${content}-${major}-ambassadors-weekly" {
+    hidetask ~ambassadors
+  }
+  taskreport "${content}-${major}-design-weekly" {
+    hidetask ~design
+  }
+  taskreport "${content}-${major}-devel-weekly" {
+    hidetask ~devel
+  }
+  taskreport "${content}-${major}-docs-weekly" {
+    hidetask ~docs
+  }
+  taskreport "${content}-${major}-fpl-weekly" {
+    hidetask ~fpl
+  }
+  taskreport "${content}-${major}-infrastructure-weekly" {
+    hidetask ~infrastructure
+  }
+  taskreport "${content}-${major}-marketing-weekly" {
+    hidetask ~marketing
+  }
+  taskreport "${content}-${major}-pm-weekly" {
+    hidetask ~pm
+  }
+  taskreport "${content}-${major}-pr-weekly" {
+    hidetask ~pr
+  }
+  taskreport "${content}-${major}-quality-weekly" {
+    hidetask ~quality
+  }
+  taskreport "${content}-${major}-releng-weekly" {
+    hidetask  ~releng & ~devel
+  }
+  taskreport "${content}-${major}-spins-weekly" {
+    hidetask ~spins
+  }
+  taskreport "${content}-${major}-trans-weekly" {
+    hidetask  ~translation
+  }
+  taskreport "${content}-${major}-web-weekly" {
+    hidetask  ~web
+  }
+
+  purge formats
+}
+
+textreport "Miscellaneous CSV Reports" {
+  formats csv
+  scenarios actual
+
+  # Text export of entire schedule for outside parsing and analysis
+  # This is required for other teams--DO NOT REMOVE
+  taskreport "${content}-${major}" {
+    columns name, id, note, resources, start, end, duration
+    timeformat "%a %Y-%m-%d"
+  }
+  # reports for new schedule prototyping and planning
+  # not used once the release gets rolling
+  taskreport "${content}-${major}-plan" {
+    sorttasks actual.start.up
+    columns start, end, name
+    timeformat "%a %d-%b"
+    hidetask ~releng & ~quality
+  }
+
+  taskreport "${content}-${major}-devel" {
+    sorttasks actual.start.up
+    columns start, end, name
+    timeformat "%a %d-%b"
+    # TODO: tj3 does not yet support the separator attribute
+    #separator "  "
+    hidetask  ~devel
+  }
+
+  purge formats
+}
+
+icalreport "${content}-${major}-all-milestones" {
+  hidetask ~ismilestone(actual)
+  scenario actual
+}
+
+icalreport "${content}-${major}-ambassadors-ics" {
+  hidetask (~ismilestone(actual) | ~ambassadors)
+  scenario actual
+}
+
+icalreport "${content}-${major}-design-ics" {
+  hidetask (~ismilestone(actual) | ~design)
+  scenario actual
+}
+
+icalreport "${content}-${major}-devel-ics" {
+  hidetask (~ismilestone(actual) | ~devel)
+  scenario actual
+}
+
+icalreport "${content}-${major}-docs-ics" {
+  hidetask (~ismilestone(actual) | ~docs)
+  scenario actual
+}
+
+icalreport "${content}-${major}-fpl-ics" {
+  scenario actual
+  hidetask ~fpl
+}
+
+icalreport "${content}-${major}-pr-ics" {
+  hidetask ~pr
+  scenario actual
+}
+
+icalreport "${content}-${major}-key-ics" {
+  hidetask (~ismilestone(actual) | ~key)
+  scenario actual
+}
+
+icalreport "${content}-${major}-marketing-ics" {
+  hidetask (~ismilestone(actual) | ~marketing)
+  scenario actual
+}
+
+icalreport "${content}-${major}-releng-ics" {
+  hidetask (~ismilestone(actual) | ~releng)
+  scenario actual
+}
+
+icalreport "${content}-${major}-quality-ics" {
+  hidetask (~ismilestone(actual) | ~quality)
+  scenario actual
+}
+
+icalreport "${content}-${major}-spins-ics" {
+  hidetask (~ismilestone(actual) | ~spins)
+  scenario actual
+}
+
+icalreport "${content}-${major}-translation-ics" {
+  hidetask (~ismilestone(actual) | ~translation)
+  scenario actual
+}
+
+icalreport "${content}-${major}-web-ics" {
+  hidetask (~ismilestone(actual) | ~web)
+  scenario actual
+}
+
+icalreport "${content}-${major}-pm-ics" {
+  hidetask (~ismilestone(actual) | ~pm)
+  scenario actual
+}
+

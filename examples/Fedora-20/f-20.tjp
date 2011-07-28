@@ -1,0 +1,2415 @@
+# Fedora 20
+#
+# Copyright 2011 John Poelstra <poelstra@fedoraproject.org>
+# Copyright 2011 Robyn Bergeron <rbergero@fedoraproject.org>
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+# Current release version
+macro major         [20]
+# Last release version
+macro previous_major[19]
+# Next release version
+macro next_major    [21]
+# do not change this
+macro content       [f]
+# do not change this
+macro content_title [Fedora]
+# GA date of previous release
+macro start_date    [2013-04-30]
+# set to one day after "start_date"
+macro start_work    [2013-05-01]
+macro end_date      [2014-12-31]
+macro prior_project [f19]
+
+project ${content}${major} "${content_title}" "${major}" ${start_date} - ${end_date} {
+  timeformat "%Y-%b-%d"
+
+  # Based on Eastern time zone in USA
+  timezone "America/New_York"
+
+  # Setup scenarios
+  scenario plan "Original Plan" {
+    scenario actual "Actual"
+  }
+
+  # Limit working days
+  workinghours sat,sun off
+}
+
+include "reports.tji"
+
+# =========  Cornerstones of Fedora Schedules =============
+# This section also serves as a "style guide" for the source file too
+
+/*
+1) EVERY entry should be in the following line order and indented consistently with the rest of the file.  This makes the source file consistent and eaiser to read.
+   a) task name and description
+   b) dependency (if applicable)
+   c) length (not "duration") (if applicable)
+   d) flags (if applicable)
+
+2) Official Release Engineering Composes happen on Thursdays, except for the final release
+
+3) Syncing releases to mirrors ideally happens on Thursdays... end of day on Friday is worst case
+
+4) Most tasks are scheduled with 'length' instead of 'duration' to get a sense of "work days" required--using 'length' one week = 5 days
+--an eternal debate could be held to discuss whether or not schedule calculations
+should include weekends because community members work at all times and not within strict work days.
+
+5) Use "length" everywhere and "duration" only when something must take into account a weekend day
+
+6) All "Blocker Bug Days" should be on Fridays
+
+7) If a task takes one day or less--schedule with no length--this way it showes up as a milestone and gets included in iCalendar (ics) file
+
+8) Because of bugs in the way TaskJuggler ics files get rendered in some calendars (e.g. Zimbra) we only include zero length (milestone) tasks in the ics file.  As a result there are several duplicate tasks with no length that have been added so they appear in the ics file.
+
+9) Use core schedule milestones (flags = key) as anchor points (depends/precedes) for tasks in this schedule file instead of more transient tasks like meetings, compose dates, etc. that may change (or slip) from release to release.  This makes building new release schedules easier and require less maintenance and updating.
+
+10) In ALL but limited cases task beginning and ending should be automatically calculated based on logic in this file.  When using hard coded dates, explicitly call them out with a comment to hightlight their existence.  Hard coded dates are particularly troublesome when slipping a schedule or branching the file to create a new release schedule because they must be adjusted and recalculated manually
+
+11) TaskJuggler does not provide an easy way (that I am aware of) to schedule tasks to happen *before* other tasks.  I've created a hack/methodology I call "shadow" tasks.  These are unreported tasks that go backwards a certain period of time and serve as an anchor or starting point for the actual task to be reported.
+
+12) The "milestone" declaration is NOT used in this source file.  It is redundant and unnecessary.  Do not inlude it.  All tasks without 'length' or 'duration' are automatically considered "milestone" tasks.
+
+*/
+
+task ${content}${major} "${content_title} ${major}" {
+
+  start ${start_work}
+
+  task first_day "First Day of Development" {
+    flags hidden
+  }
+
+  task PlanningPhase "Planning Phase" {
+
+    # add for ical
+    task start_features_cal "Start Feature Submission" {
+      flags key, pm, roadmap
+    }
+
+    task rawhide_spins "Start Nightly Spins Compose Based on Rawhide" {
+      depends !!first_day {gaplength 5d}
+      flags spins
+    }
+
+    # ADJUST FOR NEW RELEASE
+    # HARDCODED date--approximately 2 weeks after GA of previous release
+    task file_ticket "File ticket with RHT Eng-ops for Fedora 17 EOL bugzilla closure" {
+      start 2013-05-15
+      flags pm
+    }
+
+    # ADJUST FOR NEW RELEASE
+    # HARDCODED date--approximately 4 weeks after GA of previous release
+    # this date is approved by FESCo in accordance with https://fedoraproject.org/wiki/LifeCycle
+    # The process behind this task is at: https://fedoraproject.org/wiki/BugZappers/HouseKeeping
+    task fedora17_eol "RHT Eng-Ops Fedora 17 EOL auto closure" {
+      start 2013-05-29
+      flags pm, key
+    }
+
+    task clean_market_wiki "Cleanup Marketing wiki from previous releases" {
+      depends !start_features_cal {gaplength 25d}
+      length 5d
+      flags marketing
+    }
+
+    task cycle_market_wiki "Cycle Marketing wiki pages for current release" {
+      depends !start_features_cal {gaplength 25d}
+      length 5d
+      flags marketing
+    }
+
+    task bug_trackers "Create Tracker Bugs" {
+      flags pm
+      note "See details at https://fedoraproject.org/wiki/BugZappers/HouseKeeping/FirstDayDevel"
+    }
+
+    task design_concept "Conceptual Design Phase" {
+      length 30d
+      flags design
+    }
+
+    # ADJUST FOR NEW RELEASE
+    # a solid start for the wallpaper is the goal for alpha
+    # adjust length so packaging end date lands on Alpha Deadline
+    task wallpaper_design "Wallpaper Design for Alpha" {
+      depends !design_concept
+      length 35d
+      flags design
+    }
+
+  } # E N D  of  PlanningPhase
+
+
+  task supplement_wallpaper "Supplemental Wallpaper Process" {
+    flags design
+
+    # ADJUST FOR NEW RELEASE
+    # adjust length of this task so that 'package_supplemental_wallpaper' ends on Beta Deadline
+    task supplement_wallpaper_submit "Supplemental Wallpaper Submission Period" {
+      length 82d
+    }
+
+    task decide_supplement_wallpaper "Select Official Supplemental Wallpaper" {
+      depends !supplement_wallpaper_submit
+    }
+
+    task supplement_license_review "Verify Supplemental Wallpaper Licenses" {
+      depends !decide_supplement_wallpaper {gaplength 1d}
+      length 10d
+    }
+
+    task package_supplemental_wallpaper "Package Supplemental Wallpaper" {
+      depends !supplement_license_review
+      length 2d
+    }
+
+  } # end supplemental wallpaper
+
+  task DevelopmentPhase "Development Phase" {
+    start ${start_work}
+
+    task devel_start "Start Development" {
+      flags devel
+    }
+
+    # ADJUST FOR NEW RELEASE--IMPORTANT
+    # The length of this task DRIVES THE ENTIRE SCHEDULE
+    # and determines when the testing phases starts.  The testing
+    # phase of the schedule is static (and completely automatically
+    # generated by TaskJuggler) from release to release, but the
+    # number of days of development varies depending when the previous
+    # release ended (GA).  As a result the length of this task also
+    # influences where the GA date lands.
+    # Each "5d" (5 days) is equivalent to one week.
+    task develop "Packaging and Development (precedes Alpha)" {
+      length 70d
+      flags devel, proto
+    }
+
+  }  # E N D  of DevelopmentPhase
+
+  task TestingPhase "Testing Phase" {
+
+    task alpha "Alpha Release" {
+
+      start ${start_work}
+
+      task shadow_alpha_blocker "SHADOW: anchor for first blocker meeting" {
+        precedes !feature_freeze {gaplength 11d}
+        flags hidden
+      }
+
+      task remind_alpha_blocker1 "Reminder: Alpha Blocker Meeting (${content}${major}alpha) #1" {
+        depends !shadow_alpha_blocker {gaplength 3d}
+        flags pm
+      }
+
+      task alpha_blocker1 "Alpha Blocker Meeting (${content}${major}alpha) #1" {
+        depends !shadow_alpha_blocker {gaplength 5d}
+        flags releng, quality, devel, blocker, pm
+      }
+
+      task remind_alpha_blocker2 "Reminder: Alpha Blocker Meeting (${content}${major}alpha) #2" {
+        depends !alpha_blocker1 {gaplength 3d}
+        flags pm
+      }
+
+      task alpha_blocker2 "Alpha Blocker Meeting (${content}${major}alpha) #2" {
+        depends !alpha_blocker1 {gaplength 5d}
+        flags releng, quality, devel, blocker, pm
+      }
+
+      # raise awareness one week before Alpha compose
+      task daily_alpha_blocker "Daily Review & Notification of Open Alpha Blocker Bugs" {
+        depends !alpha_blocker2 {gaplength 1d}
+        length 4d
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_alpha_blocker3 "Reminder: Alpha Blocker Meeting (${content}${major}alpha) #3" {
+        depends !alpha_blocker2 {gaplength 3d}
+        flags pm
+      }
+
+      task alpha_blocker3 "Alpha Blocker Meeting (${content}${major}alpha) #3" {
+        depends !alpha_blocker2 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_alpha_blocker4 "Reminder: Alpha Blocker Meeting (${content}${major}alpha) #4" {
+        depends !alpha_blocker3 {gaplength 3d}
+        flags pm
+      }
+
+      task alpha_blocker4 "Alpha Blocker Meeting (${content}${major}alpha) #4" {
+        depends !alpha_blocker3 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      # placeholder if slip--otherwise comment out
+      /*
+      task alpha_blocker5 "Alpha Blocker Meeting (${content}${major}alpha) #5" {
+         depends !alpha_blocker4 {gaplength 5d}
+         flags releng, quality, devel, pm, blocker
+      }
+      */
+
+      # Feature Freeze is one week before Alpha Change Deadline
+      # Automatically calculated based on Alpha Change Deadline
+      task shadow_feature_freeze "SHADOW: Anchor Feature Freeze" {
+        precedes !alpha_deadline {gaplength 6d}
+        flags hidden
+      }
+
+      task feature_freeze "Feature Freeze (Testable|Complete)" {
+        depends !shadow_feature_freeze
+        flags releng, quality, pm, proto, devel, key, marketing, roadmap, fpl
+      }
+
+      task feature_freeze_deadline_announce "Announce Feature Freeze Reached" {
+        depends !feature_freeze
+        flags pm
+      }
+
+      task alpha_deadline_remind "Remind Alpha Deadline in 1 week" {
+        depends !feature_freeze
+        flags pm
+      }
+
+      task spins_freeze "Spins Freeze--All ${content_title} ${major} Spins Identified" {
+        depends !shadow_feature_freeze
+        flags releng, quality, pm, proto, devel, key, marketing, spins, fpl
+      }
+
+      task talking_points "Create Talking Points" {
+        depends !feature_freeze {gaplength 6d}
+        length 5d
+        flags marketing
+      }
+
+
+      task feature_profiles "Feature Profiles" {
+        depends !talking_points
+        length 20d
+        flags marketing
+      }
+
+      # Branch on the same Tuesday as Feature Freeze
+      task branch_rawhide "Branch Fedora ${major} from Rawhide" {
+        depends !shadow_feature_freeze
+        flags releng, devel, pm, proto, key, roadmap, fpl
+      }
+
+      task bugzilla_descrption "Reflect supported versions in Bugzilla product description" {
+        depends !shadow_feature_freeze
+        flags pm
+      }
+
+      task rawhide_rebase "Rebase Rawhide bugs to Fedora ${major}" {
+        depends !shadow_feature_freeze
+        flags pm
+      }
+
+      # Create anchor for three weeks before for Feature Submission
+      task shadow_feature_submit_remind_3_weeks "SHADOW: Three Weeks Before Feature Submission" {
+        precedes !feature_submission_deadline {gaplength 15d}
+        flags hidden
+      }
+
+      # Three weeks before Feature Submission Deadline
+      task feature_check_remind "Request Feature Status Updates + Remind Submit Deadline" {
+        depends !shadow_feature_submit_remind_3_weeks
+        flags devel, pm
+      }
+
+      task alpha_releng_tickets "File All Release Engineering Tickets for ${content_title} ${major} Alpha" {
+        depends !shadow_feature_submit_remind_3_weeks {gaplength 3d}
+        flags releng
+      }
+
+      task feature_submit_remind_2_weeks "Feature Submission Deadline Two Weeks away" {
+        depends !shadow_feature_submit_remind_3_weeks {gaplength 6d}
+        flags devel, pm
+      }
+
+      #two weeks before spins submission deadilen get wiki pages in order
+      task spins_wiki_update "Update All Spins Wiki Pages From Previous Releases" {
+        depends !shadow_feature_submit_remind_3_weeks
+        flags spins
+      }
+
+      task feature_submit_remind_1_week "Feature Submission Deadline One Week away" {
+        depends !shadow_feature_submit_remind_3_weeks {gaplength 11d}
+        flags devel, pm
+      }
+
+     # One day before compose
+     task alpha_installer_build1 "Submit Installer Build for QA Compose" {
+        depends !feature_submit_remind_1_week {gaplength 1d}
+        flags devel
+      }
+
+      # Thursday before Feature Submission deadline
+      task qa_alpha_compose1 "Create Installable Images for QA testing #1" {
+        depends !feature_submit_remind_1_week {gaplength 2d}
+        flags releng
+      }
+
+      task alpha_rawhide_install1 "Pre-Alpha Rawhide Acceptance Test Plan #1" {
+        depends !qa_alpha_compose1
+        length 6d
+        flags quality
+      }
+
+      # Create anchor for two weeks before Feature Freeze
+      task shadow_feature_submission_deadline "SHADOW: Two weeks before Feature Freeze" {
+        precedes !feature_freeze {gaplength 10d}
+        flags hidden
+      }
+
+      task feature_submission_deadline "Feature Submission Deadline" {
+        depends !shadow_feature_submission_deadline
+        flags releng, quality, pm, proto, devel, key, roadmap, fpl
+      }
+
+      task feature_submission_deadline_announce "Announce Feature Submission Closed" {
+        depends !shadow_feature_submission_deadline
+        flags pm
+      }
+
+      task spins_submission_deadline "Custom Spins Submission Deadline" {
+        depends !shadow_feature_submission_deadline
+        flags pm, proto, key, spins, fpl
+      }
+
+      task warn_rawhide_rebase "Rawhide Rebase Warning to Package Maintainers" {
+        depends !shadow_feature_submission_deadline
+        flags pm
+      }
+
+      task ticket_rawhide_rebase "File Rawhide Rebase ticket with RHT Eng-ops" {
+        depends !shadow_feature_submission_deadline
+        flags pm
+      }
+
+     # One day before compose
+     task alpha_installer_build2 "Submit Installer Build for QA Compose" {
+        depends !feature_submission_deadline {gaplength 2d}
+        flags devel
+      }
+
+      task qa_alpha_compose2 "Create Installable Images for QA testing #2" {
+        depends !feature_submission_deadline {gaplength 3d}
+        flags releng
+      }
+
+      task alpha_rawhide_install2 "Pre-Alpha Rawhide Acceptance Test Plan #2" {
+        depends !qa_alpha_compose2
+        length 5d
+        flags quality
+      }
+
+      # One day before compose
+      task alpha_installer_build3 "Submit Installer Build for QA Compose" {
+        depends !qa_alpha_compose2 {gaplength 4d}
+        flags devel
+      }
+
+      task qa_alpha_compose3 "Create Installable Images for QA testing #3" {
+        depends !alpha_rawhide_install2
+        flags releng
+      }
+
+      task alpha_rawhide_install3 "Pre-Alpha Rawhide Acceptance Test Plan #3" {
+        depends !qa_alpha_compose3
+        length 5d
+        flags quality
+      }
+
+      task feature_incomplete_nag "Remind < 85% complete Feature Owners" {
+        depends !feature_freeze {gaplength 1d}
+        flags pm
+      }
+
+      task feature_incomplete_fesco "Deliver Incomplete Features to FESCo " {
+        depends !feature_freeze {gaplength 6d}
+        flags pm
+      }
+
+      # KEY ADJUSTMENT POINT
+      # Date of Alpha Deadline depends on length of development
+      task alpha_deadline "Alpha Change Deadline" {
+        depends !!!DevelopmentPhase.develop
+        flags releng, quality, pm, devel, key, roadmap, proto, blocker, spins
+      }
+
+      task alpha_deadline_announce "Announce Alpha Change Deadline Reached" {
+        depends !alpha_deadline
+        flags pm
+      }
+
+      # KEY ADJUSTMENT POINT--manually adjust if length of time before Alpha ships changes
+      task alpha_infrastructure_freeze "Alpha Infrastructure Change Freeze" {
+        depends !alpha_deadline
+        length 10d
+        flags infrastructure
+      }
+
+      task alpha_spins_ks "Build spin-kickstarts package from master" {
+        depends !alpha_deadline
+        flags spins
+      }
+
+      # Happens the same day as Feature Freeze
+      task orphan "Orphan Rawhide Packages" {
+        depends !feature_freeze
+        flags releng, devel
+      }
+
+      task finalize_alpha_wallpaper "Finalize Alpha Wallpaper" {
+        depends !!!PlanningPhase.wallpaper_design
+        flags design, pm
+        length 3d
+      }
+
+      task alpha_wallpaper_deadline "Alpha Wallpaper Deadline" {
+        depends !finalize_alpha_wallpaper
+        flags design
+      }
+
+      task blog_alpha_wallpaper "Blog About Alpha Wallpaper" {
+        depends !finalize_alpha_wallpaper
+        flags design
+      }
+
+      # must land a few days before Alpha compose by Releng
+      task package_alpha_wallpaper "Package Alpha Wallpaper" {
+        depends !finalize_alpha_wallpaper
+        length 2d
+        flags design
+      }
+
+      task alpha_wallpaper_feedback "Solicit Feedback on Alpha Wallpaper" {
+        depends !package_alpha_wallpaper
+        length 10d
+        flags design
+      }
+
+      # depends on nearly complete version of the wallpaper, otherwise
+      # you have to create the splashes twice
+      # work on until Beta freeze
+      task start_splash_screens "Create Splash Screens" {
+        depends !alpha_drop
+        length 9d
+        flags design
+      }
+
+      # for ics file
+      task start_splash_screens_cal "Start Splash Screens" {
+        depends !alpha_drop
+        flags design
+      }
+
+      # work on until Beta freeze
+      task finalize_splash_screens "Finalize Splash Screens" {
+        depends !start_splash_screens
+        length 4d
+        flags design
+      }
+
+      # work on until Beta freeze
+      task beta_wallpaper "Prepare wallpaper for Beta" {
+        depends !alpha_drop
+        length 13d
+        flags design
+      }
+
+      # send reminder on Monday before Wednesday meeting
+      task remind_alpha_go_not "Reminder: ${content_title} ${major} Alpha Go/No-Go Meeting" {
+        depends !create_alpha_compose {gaplength 2d}
+        flags pm
+      }
+
+      task alpha_go_not "${content_title} ${major} Alpha Go/No-Go Meeting (17:00 US Eastern)" {
+        depends !create_alpha_compose {gaplength 4d}
+        flags releng, quality, devel, pm, proto, blocker
+      }
+
+      task trans_software_rebuild1 "Remind f-dev-announce to Rebuild All Translated Packages" {
+        depends !feature_freeze {gaplength 5d }
+        flags translation
+      }
+
+      task software_string_freeze "Software String Freeze" {
+        depends !feature_freeze {gaplength 6d }
+        flags devel, translation, pm, proto, releng, key, roadmap
+      }
+
+      task announce_software_string_freeze "Announce Software String Freeze Reached" {
+        depends !feature_freeze {gaplength 6d }
+        flags pm
+      }
+
+      task software_translation "Software Translation"{
+
+        # KEY ADJUSTMENT POINT
+        # if the alpha slips, add additional time to this task (or maybe not - this may be attached to string freeze dates increasing - double check this! -robyn)
+        task trans_software "Software Translation Period" {
+          depends !!software_string_freeze
+          length 25d
+          flags translation
+        }
+
+        # KEY ADJUSTMENT POINT
+        # If the alpha slips, add additional time to 'gaplength' for this task which essentially extends the freeze
+        task remind_build_trans_software "Remind f-dev-announce to build F${major} collection pkgs for trans team" {
+          depends !!software_string_freeze {gaplength 9d}
+          flags translation
+        }
+
+        task request_review_image "Create Rel-Eng ticket for Live Image compose for Software Review UI" {
+          depends !remind_build_trans_software {gaplength 4d}
+          flags translation
+        }
+
+        task build_trans_software "Build F-${major} collection packages for all language translators" {
+          depends !request_review_image
+          flags releng, devel
+        }
+
+        task compose_review_image "Compose of Live Image of Software Review UI for Translation" {
+          depends !build_trans_software
+          flags releng
+        }
+
+        task trans_software_review "Review and correct software translation in built UI" {
+          depends !build_trans_software {gaplength 1d}
+          length 6d
+          flags translation
+        }
+
+        task trans_software_rebuild2 "Remind f-dev-announce to Rebuild All Translated Packages" {
+          depends !trans_software_review
+          flags translation
+        }
+
+        # Should land one week before the "Beta Change Deadline"--affected by "remind_build_trans_software"
+        # Double check after adjusting "trans_software" or length of Alpha tasks for a slip
+        task trans_software_deadline "Software: Translation Deadline (PO Files complete)" {
+          depends !trans_software_review
+          flags translation, roadmap, key
+        }
+
+        # for ical file
+        task start_trans_rebuild "Software: Start Rebuild all translated packages" {
+          depends !trans_software_deadline
+          flags devel
+        }
+
+        task trans_rebuild "Software: Rebuild all translated packages" {
+          depends !trans_software_deadline
+          length 5d
+          flags devel
+        }
+
+      } #end software_translation
+
+      # Send reminder on Monday before Thursday meeting
+      task alpha_meeting_reminder "Reminder: Alpha Release Readiness Meeting" {
+        depends !feature_freeze {gaplength 10d}
+        flags pm
+      }
+
+      task alpha_meeting "${content_title} ${major} Alpha Release Readiness Meeting" {
+        depends !alpha_meeting_reminder {gaplength 3d}
+        flags releng, pm, quality, docs, design, translation, marketing, web
+      }
+
+      # land on a Tuesday
+      task shadow_before_alpha_compose "SHADOW: 1.5 weeks before Alpha Compose" {
+        precedes !create_alpha_compose {gaplength 8d}
+        flags hidden
+      }
+
+      task create_alpha_tc "Create Alpha Test Compose (TC)" {
+        depends !shadow_before_alpha_compose
+        flags releng, proto
+      }
+
+      # test Wed to Wed
+      task test_alpha_tc "Test Alpha 'Test Compose'" {
+        depends !create_alpha_tc {gaplength 1d}
+        length 6d
+        flags quality, proto
+      }
+
+     task alpha_kernel_build "Submit Kernel Build for Alpha RC Compose" {
+        depends !alpha_deadline
+        flags devel
+      }
+
+     task alpha_installer_build "Submit Installer Build for Alpha RC Compose" {
+        depends !alpha_deadline {gaplength 1d}
+        flags devel
+      }
+
+      task create_alpha_compose "Compose Alpha Candidate" {
+        depends !alpha_deadline {gaplength 2d}
+        flags releng, proto
+      }
+
+      task test_alpha_candidate "Test Alpha Candidate" {
+        depends !create_alpha_compose
+        length 5d
+        flags quality, proto
+      }
+
+      # for ical file
+      task start_stage_alpha "Start Stage & Sync Alpha to Mirrors" {
+        depends !test_alpha_candidate
+        flags releng
+      }
+
+      task notify_mirrors_alpha "Notify Mirrors of ${content_title} ${major} Alpha" {
+        depends !start_stage_alpha {gaplength 1d}
+        flags releng
+      }
+
+      task stage_alpha "Stage & Sync Alpha to Mirrors" {
+        depends !test_alpha_candidate
+        length 3d
+        flags releng, proto
+      }
+
+      task alpha_export_control "Alpha Export Control Reporting" {
+        depends !start_stage_alpha {gaplength 1d}
+        flags releng, pm
+      }
+
+      task alpha_announce "Create Alpha Announcement (Marketing & Docs)" {
+        depends !alpha_meeting
+        length 2d
+        flags docs, marketing
+      }
+
+      task alpha_drop "Alpha Public Availability" {
+        depends !stage_alpha
+        flags releng, docs, quality, design, pm, proto, devel, key, marketing, roadmap, spins, blocker, infrastructure, fpl
+      }
+
+      task ambassador_start "FAmSCo heads Ambassador Wide Meetings Preparing For ${content_title} ${major}" {
+        depends !alpha_drop {gaplength 7d}
+        length 5d
+        flags ambassadors
+      }
+
+      task start_swag "FAmSCo and Regional teams call for Preparation of Media/SWAG" {
+        depends !alpha_drop {gaplength 7d}
+        flags ambassadors
+      }
+
+      task swag_poc "Regional Team Meetings and Select POC for Swag/Media production" {
+        depends !alpha_drop {gaplength 8d}
+        length 5d
+        flags ambassadors
+      }
+
+      task swag_funding_request "Regional Teams Submit Funding Request For Swag/Media Production" {
+        depends !alpha_drop {gaplength 8d}
+        length 5d
+        flags ambassadors
+      }
+
+      # this task was proposed by Mike McGrath and to be performed by FES
+      task nvr_testing "NVR Update Check testing" {
+        depends !stage_alpha
+        length 1d
+        flags quality
+      }
+
+      # KEY ADJUSTMENT POINT
+      task alpha_release_notes "Alpha Release Notes" {
+
+        # create for ical
+        task start_alpha_beats "Start Alpha Beat and Feature Page Review" {
+          depends !!feature_freeze {gaplength 6d}
+          flags docs, quality
+        }
+
+        task validate_beat_writers "Validate Former Beat Writers" {
+          depends !!feature_freeze
+          length 5d
+          flags docs
+        }
+
+        task recruite_beat_writers "Recruit New Beat Writers" {
+          depends !validate_beat_writers
+          length 5d
+          flags docs
+        }
+
+        task comb_alpha_beats "Comb Beats and Feature Pages for Alpha" {
+          depends !start_alpha_beats
+          length 2d
+          flags docs, quality
+        }
+
+        task notify_devel_relnotes "Notify Development About Alpha Release Notes" {
+          depends !!alpha_deadline
+          flags docs
+        }
+
+        # KEY ADJUSTMENT POINT
+        # Beta release notes depend on this task
+        # If alpha candidate is not ready on time add extra time for the release notes here
+        task prep_alpha_notes "Prepare Alpha Release Notes (1 page)" {
+          depends !comb_alpha_beats
+          length 6d
+          flags docs, quality
+        }
+
+        task post_notes "Post Alpha Release Notes One-Page" {
+          depends !prep_alpha_notes {gaplength 1d}
+          flags docs
+        }
+
+      } #end alpha_release_notes
+
+
+      #  two days to create web banner
+      #  one day for websites team to add to www.fedoraproject.org
+      #  should be live one day before the release
+      task alpha_banner "Alpha Release Banner" {
+        precedes !alpha_drop {gaplength 3d}
+
+        task alpha_create_banner "Create Alpha Website Banner" {
+          length 2d
+          flags design
+        }
+
+        task alpha_publish_banner "Add Alpha Banner to Website" {
+          length 1d
+          flags web
+        }
+      }
+
+      # KEY ADJUSTMENT POINT
+      # Three weeks for Alpha Testing
+      # IF "Beta Deadline" is missed the length of this task is extended--
+      # in that case corresponding change needs to be made to "software_translation" task
+      task test_alpha "Alpha Testing" {
+        depends !stage_alpha
+        length 15d
+        flags quality, proto
+      }
+
+      task review_bookmarks "Review Firefox Bookmarks For Update" {
+        depends !stage_alpha
+        length 5d
+        flags marketing
+      }
+
+      task update_bookmarks "Update and Package Firefox Bookmarks" {
+        depends !review_bookmarks
+        length 2d
+        flags marketing
+      }
+
+      task tag_bookmarks "Tag Updated Bookmarks Package for ${content_title} ${major}" {
+        depends !update_bookmarks
+        flags marketing
+      }
+
+      # Explicit task to mark end of alpha
+      # Also permits subsequent tasks to cleanly depend on it using "precedes" (because it is zero length)
+      task alpha_end "End of Alpha Testing" {
+        depends !test_alpha
+        flags quality
+      }
+
+      task beta_marketing_notes "Marketing: Beta One Page Release Notes" {
+        depends !alpha_end {gaplength 5d}
+        length 5d
+        flags marketing
+      }
+
+    }
+
+    task beta "Beta Release" {
+
+      # KEY ADJUSTMENT POINT--if the Alpha slips, make sure the blocker meeting
+      # tasks continue to line up correctly
+      # Once the Alpha is staged, start holding Blocker meetings for the Beta
+
+      task remind_beta_blocker1 "Reminder: Beta Blocker Meeting (${content}${major}beta) #1" {
+        depends !!alpha.create_alpha_compose {gaplength 9d }
+        flags pm
+      }
+
+      task beta_blocker1 "Beta Blocker Meeting (${content}${major}beta) #1" {
+        depends !!alpha.stage_alpha {gaplength 3d }
+        flags quality, releng, devel, pm, blocker
+      }
+
+      task beta_releng_tickets "File All Release Engineering Tickets for ${content_title} ${major} Beta" {
+        depends !!alpha.stage_alpha {gaplength 2d }
+        flags releng
+      }
+
+      task remind_beta_blocker2 "Reminder: Beta Blocker Meeting (${content}${major}beta) #2" {
+        depends !beta_blocker1 {gaplength 3d}
+        flags pm
+      }
+
+      task beta_blocker2 "Beta Blocker Meeting (${content}${major}beta) #2" {
+        depends !beta_blocker1 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      # raise awareness one week before Beta compose
+      task daily_beta_blocker "Daily Review & Notification of Open Beta Blocker Bugs" {
+        depends !beta_blocker2 {gaplength 1d}
+        length 4d
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_beta_blocker3 "Reminder: Beta Blocker Meeting (${content}${major}beta) #3" {
+        depends !beta_blocker2 {gaplength 3d}
+        flags pm
+      }
+
+      task beta_blocker3 "Beta Blocker Meeting (${content}${major}beta) #3" {
+        depends !beta_blocker2 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_beta_blocker4 "Reminder: Beta Blocker Meeting (${content}${major}beta) #4" {
+        depends !beta_blocker3 {gaplength 3d}
+        flags pm
+      }
+
+      task beta_blocker4 "Beta Blocker Meeting (${content}${major}beta) #4" {
+        depends !beta_blocker3 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      # Create anchor one week before for Beta Deadline
+      task shadow_beta_deadline "SHADOW: one week before Beta Deadeline" {
+        precedes !beta_deadline {gaplength 6d}
+        flags hidden
+      }
+
+      task remind_beta_deadline "Remind Beta Deadline in 1 week" {
+        depends !shadow_beta_deadline
+        flags pm
+      }
+
+      task remind_final_freatures "Remind Features 100% Complete in 1 week" {
+        depends !shadow_beta_deadline
+        flags pm
+      }
+
+      task beta_spins_ks "Build spin-kickstarts package from master" {
+        depends !shadow_beta_deadline
+        flags spins
+      }
+
+      task coordinate_swag_design "FAmSCo Coordinate Media/Swag/Poster artwork with Design team" {
+        depends !shadow_beta_deadline {gaplength 5d}
+        length 10d
+        flags ambassadors
+      }
+
+      # Two weeks before the public Beta Release
+      task beta_deadline "Beta Change Deadline" {
+        depends !!alpha.test_alpha
+        flags releng, docs, quality, pm, proto, devel, key, marketing, spins, roadmap
+      }
+
+      task feature_complete "Features 100% Complete Deadline" {
+        depends !!alpha.test_alpha
+        flags releng, docs, quality, pm, proto, devel, key, marketing, roadmap, fpl
+      }
+
+      # KEY ADJUSTMENT POINT--manually adjust if length of time before Beta ships changes
+      task beta_infrastructure_freeze "Beta Infrastructure Change Freeze" {
+        depends !!alpha.test_alpha
+        length 10d
+        flags infrastructure, releng
+      }
+
+      task announce_beta_deadline "Announce Beta Deadline & Feature Complete" {
+        depends !!alpha.test_alpha
+        flags pm
+      }
+
+      task final_feature_fesco "Deliver features < 100% to FESCo" {
+        depends !beta_deadline {gaplength 1d}
+        flags pm
+      }
+
+      task brief_ambassadors "Brief Ambassadors on upcoming release" {
+        depends !beta_deadline {gaplength 5d}
+        length 5d
+        flags marketing
+      }
+
+      # The Release Slogan is created by the Marketing team based on
+      # the initial artwork theme. The Design Team needs to know
+      # the slogan to create the release banners
+
+      # prepare 6 weeks before GA (2 weeks of work)
+      # go live 1 month before GA
+      # KEY ADJUSTMENT POINT
+      task create_countdown "Create Count Down Graphic" {
+        depends !beta_deadline
+        length 10d
+        flags design
+      }
+
+      task publish_countdown "Publish Count Down Graphic" {
+        depends !create_countdown
+        length 1d
+        flags web
+      }
+
+      task beta_release_notes "Beta Release Notes" {
+
+        task unclaimed_beats "Write Unclaimed Wiki Beats" {
+          depends !!!alpha.alpha_drop
+          length 6d
+          flags docs
+        }
+
+        task port_wiki_publican "Port Wiki to Publican" {
+          depends !unclaimed_beats {gaplength 1d}
+          length 3d
+          flags docs
+        }
+
+        task remind_trans_beta_notes "Remind Translation: Beta Rel Notes POT Coming" {
+          depends !unclaimed_beats
+          flags docs
+        }
+
+        task start_release_notes_pot1 "Start nightly POT files all fed-rel-notes.rpm content" {
+          depends !port_wiki_publican {gaplength 1d}
+          flags docs
+        }
+
+        task release_notes_pot1 "Generate nightly POT files all fed-rel-notes.rpm content" {
+          depends !port_wiki_publican {gaplength 1d}
+          length 13d
+          flags docs
+        }
+
+        task remind_devel_beta_notes"Remind announce-list & f-devel-announce: Wiki Freeze" {
+          depends !unclaimed_beats {gaplength 1d}
+          flags docs
+        }
+
+        task beta_wiki_freeze "Wiki Freeze: Beta Release Notes" {
+          depends !remind_devel_beta_notes {gaplength 2d}
+          flags docs
+        }
+
+        task trans_release_notes "Translate Beta Release Notes" {
+          depends !port_wiki_publican {gaplength 1d}
+          length 14d
+          flags translation
+        }
+
+        # KEY ADJUSTMENT POINT
+        task build_trans_review "Ongoing build translation review htmls" {
+          depends !beta_wiki_freeze
+          length 5d
+          flags docs
+        }
+
+        # KEY ADJUSTMENT POINT
+        task trans_review_beta "Review and correct Beta Release Notes (daily buids html)" {
+          depends !beta_wiki_freeze
+          length 5d
+          flags translation
+        }
+
+        task trans_release_notes_deadline "Translation Deadline: Beta Release Notes (PO Files complete)" {
+          depends !trans_review_beta
+          flags translation, docs
+        }
+
+        task build_beta_relnotes "Build f-r-n.rpm and Push to updates-candidate" {
+          depends !trans_release_notes_deadline
+          length 2d
+          flags docs, translation
+        }
+
+        task final_release_notes_reminder "Reminder: Send Project Wide-Final Release Notes Deadlines" {
+          depends !!beta_deadline {gaplength 7d}
+          flags docs
+        }
+
+        # one day before release which is 2D after meeting
+        task web_notes "Build and Post Beta release-notes to docs.fedoraproject.org" {
+          depends !!beta_meeting {gaplength 2d}
+          flags docs
+        }
+
+        # one day before release which is 2D after meeting
+        task tech_web_notes "Build and Post Fedora Technical Notes to docs.fedoraproject.org" {
+          depends !!beta_meeting {gaplength 2d}
+          flags docs
+        }
+
+      } # end beta_release_notes
+
+
+      task splash_deadline "Deadline: Beta Splash Screens" {
+        depends !!alpha.finalize_splash_screens
+        flags design
+      }
+
+      task package_final_splash "Package: Beta Splash Screens" {
+        depends !!alpha.finalize_splash_screens
+        length 2d
+        flags design
+      }
+
+      task package_beta_wallpaper "Package: Beta Wallpaper"{
+        depends !!alpha.beta_wallpaper
+        length 2d
+        flags design
+      }
+
+      task package_supplemental_wallpaper "Package: Supplemental Wallpaper"{
+        depends !!alpha.beta_wallpaper
+        flags design
+      }
+
+      task beta_meeting_announce "Announce: Beta Release Readiness Meeting" {
+
+        flags pm
+      }
+
+      # KEY ADJUSTMENT POINT if Beta Deadline changes
+      task beta_meeting_reminder "Reminder: Beta Release Readiness Meeting" {
+        depends !beta_deadline {gaplength 4d}
+        flags pm
+      }
+
+      task beta_meeting "${content_title} ${major} Beta Release Readiness Meeting" {
+        depends !beta_meeting_reminder {gaplength 3d}
+        flags releng, pm, quality, docs, design, translation, marketing, web
+      }
+
+      task beta_announce "Create Beta Announcement (Docs & Marketing)" {
+        depends !beta_meeting
+        length 2d
+        flags docs, marketing
+      }
+
+      # placeholder if slip
+      #       task beta_blocker4 "Beta Blocker Day (${content}${major}beta) #4" {
+      #         depends !!beta_blocker3 {gaplength 5d}
+      #         flags releng, quality, devel, pm, blocker
+      #       }
+
+
+      task shadow_before_beta_compose "SHADOW: 1.5 weeks before Beta Compose" {
+        precedes !create_beta_compose {gaplength 9d} # with 'precedes', gaplength pushes date backwards
+        flags hidden
+      }
+
+     task beta_installer_build1 "Submit Installer Build for Beta TC Compose" {
+        depends !shadow_before_beta_compose
+        flags devel
+      }
+
+      task create_beta_tc "Create Beta Test Compose (TC)" {
+        depends !shadow_before_beta_compose {gaplength 2d}
+        flags releng, proto
+      }
+
+      task test_beta_tc "Test Beta 'Test Compose'" {
+        depends !create_beta_tc
+        length 6d
+        flags quality, proto
+      }
+
+      task beta_rawhide_install "Pre-Beta Acceptance Test Plan" {
+        precedes !create_beta_tc
+        length 5d
+        flags quality
+      }
+
+      task remind_beta_go_not "Reminder: ${content_title} ${major} Beta Go/No-Go Meeting" {
+        depends !create_beta_compose {gaplength 2d}
+        flags pm
+      }
+
+      task beta_go_not "${content_title} ${major} Beta Go/No-Go Meeting (17:00 US Eastern)" {
+        depends !create_beta_compose {gaplength 4d}
+        flags releng, quality, devel, pm, proto, blocker
+      }
+
+     task beta_kernel_build "Submit Kernel Build for Beta RC Compose" {
+        depends !beta_deadline
+        flags devel
+      }
+
+     task beta_installer_build "Submit Installer Build for Beta RC Compose" {
+        depends !beta_deadline {gaplength 1d}
+        flags devel
+      }
+
+      # KEY ADJUSTMENT POINT if Beta release date slips--add more time to this task
+      task create_beta_compose "Compose Beta Candidate" {
+        depends !beta_deadline {gaplength 2d}
+        flags releng, proto
+      }
+
+      task call_for_events "FAmSCo and Regional Teams Call for Release Events" {
+        depends !beta_deadline {gaplength 12d}
+        flags ambassadors
+      }
+
+      task logistics_budget "Regional Teams Plan Regional Logistics for Release Events & File Budget Requests" {
+        depends !call_for_events
+        length 10d
+        flags ambassadors
+      }
+
+      task test_beta2 "Test Beta Candidate" {
+        depends !create_beta_compose
+        length 5d
+        flags quality, proto
+      }
+
+      task start_stage_beta "Start Stage & Sync Beta to Mirrors" {
+        depends !test_beta2
+        flags releng
+      }
+
+      task notify_mirrors_beta "Notify Mirrors of ${content_title} ${major} Beta" {
+        depends !start_stage_beta {gaplength 1d}
+        flags releng
+      }
+
+      task stage_beta "Stage & Sync Beta to Mirrors" {
+        depends !test_beta2
+        length 3d
+        flags releng, proto
+      }
+
+      task beta_export_control "Beta Export Control Reporting" {
+        depends !start_stage_beta {gaplength 1d}
+        flags releng, pm
+      }
+
+
+      # two days to create web banner
+      # one day for websites team to add to www.fedoraproject.org
+      # should be live one day before the release
+      task beta_banner "Beta Release Banner" {
+        precedes !beta_drop {gaplength 3d}
+
+        task beta_create_banner "Create Beta Website Banner" {
+          length 2d
+          flags design
+        }
+
+        task beta_publish_banner "Add Beta Banner to Website" {
+          length 1d
+          flags web
+        }
+      }
+
+    task shadow_before_beta_drop "SHADOW: One Day before Public Beta release" {
+      precedes !beta_drop {gaplength 2d}
+      flags hidden
+    }
+
+      # Five weeks prior to GA
+      task beta_drop "Beta Release Public Availability" {
+        depends !stage_beta
+        flags docs, releng, quality, pm, translation, proto, design, devel, key, marketing, roadmap, blocker, spins, infrastructure, fpl
+      }
+
+      task event_deadline "Release Event Submission Deadline" {
+        depends !logistics_budget {gaplength 1d}
+        flags ambassadors
+      }
+
+      task budget_allocations "FAmSCo Review Budget Allocations" {
+        depends !event_deadline
+        flags ambassadors
+      }
+
+      task irc_sessions "FAmSCo Regional IRC town halls" {
+        depends !beta_drop {gaplength 8d}
+        length 10d
+        flags ambassadors
+      }
+
+      # Three weeks of public testing
+      # Ends on a Monday and is followed by Final Release Deadline
+      task beta_test "Beta Testing" {
+        depends !stage_beta
+        length 14d
+        flags quality, proto
+      }
+
+      task websites_trans_reminder "Reminder to f-websites-list about POT/PO dates in 7 days" {
+        depends !beta_drop
+        flags translation, web
+      }
+
+      # two weeks to create
+      # should be completely done and ready for hand off to Ambassadors two weeks before GA
+      # Ambassadors should have made prior arrangements to flip artwork over to media producer
+      # at this time.
+      task media "Create DVD/CD label and sleeve artwork" {
+        # not a "great" place to anchor to as it could move
+        # needs to start four weeks before GA
+        depends !beta_drop
+        length 10d
+        flags design
+      }
+
+      task rc_rawhide_install "Pre-RC Acceptance Test Plan" {
+        depends !stage_beta {gaplength 7d}
+        length 4d
+        flags quality
+      }
+
+      task testmile "End of Beta Testing" {
+        depends !beta_test
+        flags quality
+      }
+
+    }
+  }  # E N D  of TestingPhase
+
+  task LaunchPhase "Launch Phase" {
+
+    # four weeks before GA, ambassadors create release posters
+    # two weeks before GA to art team does final polish to posters
+    # posters are ready on release day
+    task release_posters "Release Party Posters" {
+      depends !!TestingPhase.beta.beta_drop
+      task create_posters "FAmSCo with Design Team Create Release Party Posters" {
+        length 10d
+        flags ambassadors
+      }
+
+      task polish_poster "Polish/Finalize Release Party Posters" {
+        depends !create_posters
+        length 9d
+        flags design
+      }
+    }
+
+    task screenshots "Update and freeze the screenshots page" {
+      depends !!TestingPhase.beta.stage_beta {gaplength 5d}
+      length 5d
+      flags marketing
+    }
+
+    task final_screenshots "Marketing: Final Screen Shots" {
+      depends !screenshots
+      length 5d
+      flags marketing
+    }
+
+    task final_marketing_notes "Marketing: Final One Page Release Notes" {
+      depends !screenshots
+      length 5d
+      flags marketing
+    }
+
+    task briefings "Brief news distribution network" {
+      depends !screenshots
+      length 5d
+      flags marketing
+    }
+
+    task monitor "Monitor news sites to provide corrections & info" {
+      depends !screenshots
+      length 29d
+      flags marketing
+    }
+
+    task rc "Release Candidate" {
+
+      task final_releng_tickets "File All Release Engineering Tickets for ${content_title} ${major} GA" {
+        depends !!!TestingPhase.beta.stage_beta {gaplength 2d }
+        flags releng
+      }
+
+      task remind_ga_blocker1 "Reminder: Final Blocker Meeting (${content}${major}blocker) #1" {
+        depends !!!TestingPhase.beta.create_beta_compose {gaplength 4d}
+        flags pm
+      }
+
+      task ga_blocker1 "Final Blocker Meeting (${content}${major}blocker) #1" {
+        depends !!!TestingPhase.beta.start_stage_beta {gaplength 1d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_ga_blocker2 "Reminder: Final Blocker Meeting (${content}${major}blocker) #2" {
+        depends !ga_blocker1 {gaplength 3d}
+        flags pm
+      }
+
+      task ga_blocker2 "Final Blocker Meeting (${content}${major}blocker) #2" {
+        depends !ga_blocker1 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task remind_ga_blocker3 "Reminder: Final Blocker Meeting (${content}${major}blocker) #3" {
+        depends !ga_blocker2 {gaplength 3d}
+        flags pm
+      }
+
+      task ga_blocker3 "Final Blocker Meeting (${content}${major}blocker) #3" {
+        depends !ga_blocker2 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      # two days before Final Deadline
+      task shadow_before_final_deadline "SHADOW: one day before Final Deadline" {
+        precedes !final_change_deadline {gaplength 2d}
+        flags hidden
+      }
+
+      task kernel_debug "Disable Kernel debug and submit new Kernel build for RC" {
+        depends !shadow_before_final_deadline
+        flags devel
+      }
+
+      task final_change_deadline "Final Change Deadline" {
+        depends !!!TestingPhase.beta.beta_test
+        flags releng, devel, proto, pm, key, spins
+      }
+
+      task check_swag "FAmSCo and Regional Teams Meet to Address Unresolved Events/Media/Swag Issues" {
+        depends !final_change_deadline {gaplength 1d}
+        flags ambassadors
+      }
+
+      # one day before Final Deadline
+      task final_wallpaper "Package Final Wallpaper" {
+        depends !shadow_before_final_deadline
+        flags design
+      }
+
+      # one day before Final Deadline
+      task final_splash "Package Final Splash Screens" {
+        depends !shadow_before_final_deadline
+        flags design
+      }
+
+      task announce_final_change_deadline "Announce Final Freeze & Implications" {
+        depends !final_change_deadline
+        flags pm
+      }
+
+      # ADJUST FOR NEW RELEASE--EOL Version
+      task eol_warning "File RHT Eng-ops ticket for Fedora 15 EOL Bugzilla warning" {
+        depends !final_change_deadline
+        flags pm
+      }
+
+      # KEY ADJUSTMENT POINT--manually adjust if length of time before Final release ships changes
+      task final_infrastructure_freeze "Final Infrastructure Change Freeze" {
+        depends !!!TestingPhase.beta.beta_test {gaplength 1d}
+        length 10d
+        flags infrastructure, releng
+      }
+
+      task remind_ga_blocker4 "Reminder: Final Blocker Meeting (${content}${major}blocker) #4" {
+        depends !ga_blocker3 {gaplength 3d}
+        flags pm
+      }
+
+      task ga_blocker4 "Final Blocker Meeting (${content}${major}blocker) #4" {
+        depends !ga_blocker3 {gaplength 5d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      # raise awareness one week before final compose
+      task daily_ga_blocker "Daily Review & Notification of Open Final Blocker Bugs" {
+        depends !ga_blocker3 {gaplength 1d}
+        length 4d
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task ga_blocker5 "Final Blocker Meeting (${content}${major}blocker)--Blocks RC Compose" {
+        depends !ga_blocker4 {gaplength 1d}
+        flags releng, quality, devel, pm, blocker
+      }
+
+      task ga_release_notes "Final Release Notes" {
+
+        # One day before public beta release
+        task final_release_note_wiki_reminder "Reminder to Development: Wiki Freeze in 7 days" {
+          depends !!!!TestingPhase.beta.shadow_before_beta_drop
+          flags docs
+        }
+
+        task prep_ga_notes "Prepare GA Release Notes" {
+          depends !!!!TestingPhase.beta.beta_drop
+          flags docs, quality
+        }
+
+        task ga_release_notes_freeze "String Freeze: GA Release Notes" {
+          depends !prep_ga_notes {gaplength 4d}
+          flags docs
+        }
+
+        task wiki_ga_port "Port diff wiki content to Publican" {
+          depends !ga_release_notes_freeze
+          length 5d
+          flags docs
+        }
+
+        task remind_trans_ga_notes "Remind Translation: RPM Freeze (no more POTs) in 5 days" {
+          depends !ga_release_notes_freeze {gaplength 2d}
+          flags docs
+        }
+
+        # KEY ADJUSTMENT POINT--if length of Beta changes this task length needs to change too
+        task ga_pot_trans "Translate Final Release Notes (POT to PO)" {
+          depends !!!!TestingPhase.beta.beta_release_notes.trans_release_notes_deadline {gaplength 1d}
+          length 24d
+          flags translation
+        }
+
+        task ga_release_notes_pot "Generate GA Release Notes POT files for Translation" {
+          depends !wiki_ga_port
+          flags docs
+        }
+
+        task build_trans_review_final "Build GA release note htmls for Translation" {
+          depends !ga_release_notes_pot {gaplength 1d}
+          length 4d
+          flags docs
+        }
+
+        task build_ga_trans_review "Review and correct GA Release Notes (daily builds html)" {
+          depends !ga_release_notes_pot {gaplength 1d}
+          length 4d
+          flags docs, translation
+        }
+
+        task remind_ga_trans_deadline "Remind Translators of GA Release Notes Deadline in 4 days" {
+          depends !ga_release_notes_pot {gaplength 3d}
+          flags docs
+        }
+
+        task ga_release_notes_po "Translation Deadline: GA rel-notes (PO Files complete)" {
+          depends !ga_pot_trans
+          flags translation
+        }
+
+        task ga_release_notes_rpm "Build fedora-release-notes.rpm" {
+          depends !ga_release_notes_po
+          length 2d
+          flags docs
+        }
+
+      } #end final release notes
+
+
+      # Three banners are created for the GA release (based on the Slogan from Marketing)
+      # 1) large banner--fedoraproject.org front page
+      # 2) "the release is out, go get it"--fedoraproject.org front page
+      # 3) release name on start.fedoraproject.org
+      # banners take one week to complete
+      # banners should be completed one week before GA
+      # banners are translated the week up until GA
+      # translated during the week up until GA
+      task ga_create_banners "Create Final Release Banners" {
+        depends !!!TestingPhase.beta.testmile
+        length 9d
+        flags design
+      }
+
+      # Start one day before Final Change Deadline
+      task create_ga_announce "Create GA Announcement (Docs & Marketing)" {
+        depends !!!LaunchPhase.rc.shadow_before_final_deadline
+        length 7d
+        flags docs, marketing
+      }
+
+      task translate_ga_announce "GA Announcement available for translation (optional)" {
+        depends !create_ga_announce
+        length 5d
+        flags translation
+      }
+
+      task ga_publish_banners "Add Final Release Banners to Website" {
+        depends !ga_create_banners
+        length 1d
+        flags web
+      }
+
+      # web propertities need to be updated and translated
+      # Tasks start at time Beta Release goes out
+      # http://fedoraproject.org/en/index
+      # http://fedoraproject.org/en/get-fedora
+      # http://fedoraproject.org/en/join-fedora
+      # http://fedoraproject.org/en/get-help
+      task web_content_update "Update Website Content" {
+        depends !!!TestingPhase.beta.beta_drop
+        length 5d
+        flags web
+      }
+
+      task web_freeze "Website String Freeze" {
+        depends !web_content_update
+        flags web
+      }
+
+      task web_create_pot "Create Website POT Files" {
+        depends !web_freeze
+        length 1d
+        flags web
+      }
+
+      task trans_web "Translation Period for Website (POT to PO)" {
+        depends !web_create_pot
+        length 9d
+        flags translation
+      }
+
+      task review_trans_web "Review and correct Website translations" {
+        depends !trans_web
+        length 4d
+        flags translation, web
+      }
+
+      task finish_trans_web "Translation Deadline: Websites (POs done)" {
+        depends !review_trans_web
+        flags translation
+      }
+
+      task publish_trans_web "Publish Translations on Website (fedoraproject.org)" {
+        depends !review_trans_web
+        length 1d
+        flags web
+      }
+
+      task final_meeting_reminder "Reminder: Final Release Readiness Meeting" {
+        depends !!!TestingPhase.beta.beta_test {gaplength 5d}
+        flags pm
+      }
+
+      task ga_meeting "${content_title} ${major} Final Release Readiness Meeting" {
+        depends !final_meeting_reminder {gaplength 3d}
+        flags releng, pm, quality, docs, design, marketing, translation, web
+      }
+
+      task shadow_before_final_compose "SHADOW: one week before RC Compose" {
+        precedes !start_final_compose {gaplength 8d}
+        flags hidden
+      }
+
+     task final_installer_build1 "Submit Installer Build for Final TC Compose" {
+        depends !shadow_before_final_compose
+        flags devel
+      }
+
+      task create_final_tc "Create 'Final' Test Compose (TC)" {
+        depends !shadow_before_final_compose {gaplength 2d}
+        flags releng, proto
+      }
+
+      task test_final_tc "Test 'Final' Test Compose (TC)" {
+        depends !create_final_tc
+        length 4d
+        flags quality, proto
+      }
+
+     task final_installer_build "Submit Installer Build for Final RC Compose" {
+        depends !final_change_deadline
+        flags devel
+      }
+
+      task start_final_compose "Compose 'Final' RC: DVD, Live, Spins" {
+        depends !final_change_deadline {gaplength 1d}
+        length 1d
+        flags releng, key, roadmap, proto
+      }
+
+      task early_iso "Regional Teams Obtain Final Release ISOs from Release Engineering for duplication" {
+        depends !test_final {gaplength 2d}
+        length 3d
+        flags ambassadors
+      }
+
+      task regional_marketing "Regional Coordination with Marketing for Release Events" {
+        depends !test_final {gaplength 2d}
+        length 5d
+        flags ambassadors
+      }
+
+      task deliver_final "Deliver RC to QA for Testing" {
+        depends !start_final_compose
+        flags releng, proto
+      }
+
+      task test_final "Test 'Final' RC" {
+        depends !deliver_final
+        length 4d
+        flags quality
+      }
+
+      # for ics file
+      task start_stage_final "Start Stage & Sync RC to Mirrors" {
+        depends !test_final {gaplength 2d}
+        flags releng
+      }
+
+      task notify_mirrors_final "Notify Mirrors of ${content_title} ${major} Final" {
+        depends !start_stage_final {gaplength 1d}
+        flags releng
+      }
+
+
+      task stage_final "Stage & Sync RC to Mirrors" {
+        depends !test_final {gaplength 2d}
+        length 3d
+        flags releng, proto
+      }
+
+      task package_spins_ks "Branch spin-kickstarts and build package from new branch" {
+        depends !create_final_tc
+        flags spins
+      }
+
+      task freeze_spins_ks "Spins kickstart package Freeze" {
+        depends !create_final_tc
+        flags spins
+      }
+
+      task enable_updates "Enable ${content_title} ${major} Updates" {
+        depends !!!TestingPhase.beta.beta_test {gaplength 2d}
+        flags releng
+      }
+
+      task remind_final_go_not "Reminder: ${content_title} ${major} Final Go/No-Go Meeting" {
+        depends !start_final_compose {gaplength 1d}
+        flags pm
+      }
+
+      # Hold on Tuesday instead of Wednesday (Alpha and Beta)--this provides a little cushion
+      # if something goes wrong.  Mirrors do not have to start sync until Thursday
+      task final_go_not "${content_title} ${major} Final Go/No-Go Meeting (17:00 US Eeastern)" {
+        depends !start_final_compose {gaplength 4d}
+        flags releng, quality, docs, pm, proto, blocker
+      }
+
+      task final_export_control "Final Export Control Reporting" {
+        depends !start_stage_final {gaplength 1d}
+        flags releng, pm
+      }
+
+      # Zero-day tasks should start two Fridays before GA and finish the day before GA
+      task zero_day_relnotes "Zero Day Release Notes" {
+
+        task shadow_zero_day "SHADOW: Seven work week days before GA" {
+          precedes !!!final {gaplength 7d}
+          flags hidden
+        }
+
+        task zero_day_web "0-Day rel-notes update docs.fp.org" {
+          depends !shadow_zero_day
+          length 6d
+          flags docs
+        }
+
+        task zero_day_rpm "0-Day rel-notes build updated rpm" {
+          depends !shadow_zero_day
+          length 6d
+          flags docs
+        }
+
+        task zero_day_pot "0-Day rel-notes generate POT" {
+          depends !shadow_zero_day
+          length 6d
+          flags docs
+        }
+
+        task zero_day_trans "Translate 0-Day Release Notes" {
+          depends !shadow_zero_day
+          length 6d
+          flags translation
+        }
+
+        task zero_day_deadline "Translation Deadline: 0-Day (PO Files complete)" {
+          depends !zero_day_trans
+          flags translation
+        }
+
+        task web_post "Add translated zero-day updates to docs.fp.org" {
+          depends !zero_day_trans
+          flags docs
+        }
+
+        task post_tech_notes "Update and post Fedora Technical Notes to docs.fedoraproject.org" {
+          depends !!!final
+          flags docs
+        }
+
+        # Monday after Tuesday GA
+        task push_updates_rpm "Push updated rel-notes RPMs to Updates repo" {
+          depends !!!final {gaplength 4d}
+          flags docs
+        }
+
+      } # zero_day_relnotes
+
+    } # end of rc task
+
+    task bugzilla_descrption "Reflect supported versions in Bugzilla product description" {
+      depends !rc.stage_final
+      flags pm
+    }
+
+    task final "Final (GA) Release" {
+      depends !rc.stage_final
+      flags quality, releng, docs, design, pm, translation, proto, devel, key, marketing, roadmap, spins, infrastructure, fpl
+    }
+
+    # ADJUST FOR NEW RELEASE--EOL Version
+    task remind_eol "Send Email Reminder About Fedora 16 EOL Activities" {
+      depends !final {gaplength 2d}
+      flags releng, pm, devel
+    }
+
+    task event_reports "Hold Release Events and Publish Event Reports" {
+      depends !final
+      length 23d
+      flags ambassadors
+    }
+
+    task spins_ga_ks "Build new spin-kickstarts package for updates (if necessary)" {
+      depends !rc.stage_final
+      flags spins
+    }
+
+    task marketing_post "Marketing Retrospective" {
+      depends !final
+      length 10d
+      flags marketing
+    }
+  }
+
+  # Starting in Fedora 13, the docs group wanted the Guides work to span almost
+  # the entire release cycle--they don't fit nicely into different phases.
+  # So we put them all here in their own block.
+
+  # Run from Start until one week before GA
+  task all_guides "${content_title} ${major} Guides" {
+
+    # Run from Start until "Branch Guides"
+    task continue_guides_trans "Continue translation of guides in branch of previous release " {
+      length 70d
+      flags translation
+    }
+
+    task test_branch_guides "Test master branches of guides against Alpha and correct" {
+      depends !!TestingPhase.alpha.stage_alpha
+      length 10d
+      flags docs
+    }
+
+    task branch_guides "Branch Guides" {
+      depends !test_branch_guides
+      flags docs
+    }
+
+    task guides_pot "Create POT files for All Guides" {
+      depends !branch_guides
+      flags docs
+    }
+
+    task notify_trans "Notify trans that new Guide POT files available " {
+      depends !guides_pot
+      flags docs
+    }
+
+    task trans_all_guides "Translate All Guides (POT to PO)" {
+      depends !guides_pot
+      flags docs
+    }
+
+    task publish_draft "Publish draft guides" {
+      depends !branch_guides
+      flags docs
+    }
+
+    task annouce_publish_draft "Notify announce-list and f-devel-list draft guides available" {
+      depends !publish_draft
+      flags docs
+    }
+
+
+    # ADJUST FOR NEW RELEASE--make sure this task lands one day before GA
+    task guides_trans "Translate All Guides (POT to PO)" {
+      depends !guides_pot
+      length 39d
+      flags translation
+    }
+
+    task remind_trans_pot "Reminder to Trans that new POT files are coming for all guides" {
+      depends !!TestingPhase.alpha.stage_alpha {gaplength 8d}
+      flags docs
+    }
+
+    # Wednesday, one week after Beta Change Deadline
+    task srpm_review "Remind new guide owners SRPM package review" {
+      depends !!TestingPhase.beta.beta_deadline {gaplength 6d}
+      flags docs
+    }
+
+    task shadow_before_beta_deadline "SHADOW: for Friday before Beta deadline" {
+      precedes !!TestingPhase.beta.beta_deadline {gaplength 1d}
+      flags hidden
+    }
+
+    # Friday before Final Change Deadline
+    task remind_trans "Reminder to Trans that Final Guides POT files are coming" {
+      depends !shadow_before_beta_deadline
+      flags docs
+    }
+
+    task guides_string_freeze "String Freeze All Guides" {
+      depends !!LaunchPhase.rc.final_change_deadline
+      flags docs
+    }
+
+    task generate_final_pot "Generate final POT files for Guides" {
+      depends !guides_string_freeze
+      flags docs
+    }
+
+    task notify_trans_final "Notify Trans of Final Guides POT availability" {
+      depends !guides_string_freeze
+      flags docs
+    }
+
+    # Monday to Friday, two weeks before GA
+    task build_daily "Daily builds of Final guides for Translation" {
+      length 9d
+      depends !!LaunchPhase.rc.final_change_deadline
+      flags docs
+    }
+
+    # Monday to Friday, two weeks before GA
+    task review_daily "Review and correct Final Translated Guides (daily builds html)" {
+      depends !!LaunchPhase.rc.final_change_deadline
+      length 9d
+      flags translation
+    }
+
+    # Friday before GA
+    task shadow_guides_trans_deadline "SHADOW: Translation Deadline: All Final Guides" {
+      precedes !!LaunchPhase.final {gaplength 2d}
+      flags hidden
+    }
+
+    # zero duration tasks (milestones/deadlines) need a shadow preceds task so they report correctly
+    # Also needed for ICS files which only report milestones
+    task guides_trans_deadline "Translation Deadline: All Final Guides" {
+      depends !shadow_guides_trans_deadline
+      flags translation
+    }
+
+    task test_guides_beta "Test guides against Beta and correct" {
+      depends !!TestingPhase.beta.beta_drop
+      length 4d
+      flags docs
+    }
+
+    task refresh_pot "Refresh POT files for all guides against Beta" {
+      depends !test_guides_beta
+      flags docs
+    }
+
+    task notify_trans_refresh "Notify trans that POT files updated against Beta" {
+      depends !refresh_pot
+      flags docs
+    }
+
+    task republish_draft "Republish draft guides for Beta" {
+      depends !test_guides_beta
+      flags docs
+    }
+
+    task notify_revised_draft "Notify announce-list and f-devel-list revised draft guides available" {
+      depends !republish_draft
+      flags docs
+    }
+
+    # Friday before GA until the day before GA
+    task guides_final_build "Final Build All Guides: All Languages" {
+      depends !srpm_review
+      length 3d
+      flags docs
+    }
+
+    # Day before GA
+    task shadow_publish_guides "SHADOW: Publish all guides to docs.fp.o (html,html-single,pdf)" {
+      precedes !!LaunchPhase.final {gaplength 2d}
+      flags hidden
+    }
+
+    task publish_guides "Publish all guides to docs.fp.o (html,html-single,pdf)" {
+      depends !shadow_publish_guides
+
+      flags docs
+    }
+
+  } # end of "all_guides"
+
+
+  # Elections http://fedoraproject.org/wiki/Elections
+  # Board & FESCo are reelected in every release
+  # FAmSCo Elections are held once a year near the Halloween release
+
+  # ADJUST FOR NEW RELEASE
+  task  elections "${content_title} ${next_major} Election Coordination" {
+
+    # manually set start date that is five weeks before GA date (on a Tuesday)
+    # this is cleaner than using 'precedes'
+    # use 'duration' to make it easier for some tasks to land on weekends
+    start 2013-09-24
+    flags elections, fpl, pm
+
+    # Don't forget to do this! Or else bad things happen.
+    task remind "Remind advisory-board list of upcoming election schedule" {
+    }
+
+    task solicit "Solicit volunteers for questionnaire and town halls" {
+      depends !remind
+      duration 7d
+    }
+
+    task wiki_update "Update wiki page https://fedoraproject.org/wiki/Elections with required information" {
+      depends !solicit
+    }
+
+    task advertise_elections  "Advertise elections schedule and pages" {
+      depends !solicit
+    }
+
+    task announce_nominations "FPL/designee announces opening of nominations" {
+      depends !solicit {gapduration 25d}
+    }
+
+    task open_questions "Questionnaire wrangler announces opening for questions"{
+      depends !announce_nominations
+    }
+
+    task collect_questions "Collect question on the wiki"{
+      depends !announce_nominations
+      duration 8d
+    }
+
+    task collect_answers "Candidates write questionnaire answers" {
+      depends !collect_questions
+      duration 7d
+    }
+
+    task announce_town "Town hall wrangler announces schedule for town hall meetings" {
+      depends !announce_nominations
+    }
+
+    task question_deadline "Questionnaire answers due from candidates" {
+      depends !collect_answers
+    }
+
+    # five days before GA
+    task present_answers "Wrangler presents questionnaire answers" {
+      depends !collect_answers {gapduration 1d}
+      duration 2d
+    }
+
+    task post_questions "All answers posted to questionnaire page, advertise to voters" {
+      depends !present_answers
+    }
+
+    task town_hall "Town hall period" {
+      depends !post_questions {gapduration 1d}
+      duration 6d
+    }
+
+    task voting_application "Finalize Voting Application" {
+      duration 1d
+      depends !town_hall
+    }
+
+    task voting_start "Voting Begins" {
+      depends !voting_application
+    }
+
+    task voting "Voting for general elections" {
+      depends !voting_application
+      duration 6d
+    }
+
+    task voting_end "Voting Ends" {
+      depends !voting
+    }
+
+    task announce_results "Announce Results" {
+      depends !voting_end {gapduration 1d}
+    }
+
+  } # end elections
+
+  # The release naming process for the next release should end three weeks prior
+  # to the end of the current release
+  # It is easiest to start this task by hardcoding the start date to be 6 weeks before GA
+  # 2010-09-14
+  # 1 week -- collect names
+  # 1 week --fedora board reviews names
+  # 2 weeks -- names reviewed by RHT legal
+  # 1 week -- community vote on names
+
+  # ADJUST FOR NEW RELEASE
+  task naming "Name the ${content_title} ${next_major} Release" {
+    start 2013-09-17   # manually set this date
+    flags pm, fpl
+
+    task gather "Collect ${content_title} ${next_major} Names on Wiki" {
+      length 5.5d
+    }
+
+    task board "Board Review of Proposed ${content_title} ${next_major} Names" {
+      depends !gather
+      length 3d
+    }
+
+    task legal "Legal Review" {
+      depends !board
+      length 5d
+    }
+
+    task vote "Voting" {
+      depends !legal
+      length 4d
+    }
+
+    task announce_name "${content_title} ${next_major} Release Name Announced" {
+      depends !vote {gapduration 1d}
+      flags design, pm
+    }
+  } # end release naming
+
+
+  task pr "Public Relations" {
+
+    task video "Creative team videos" {
+      flags fpl, pr
+
+      task video_schedule "Meet w/Creative to schedule videos" {
+        precedes !video1.review_spotlight1_video {gaplength 25d}
+        length 5d
+      }
+
+      task video1 "Make spotlight video #1" {
+        task review_spotlight1_video "Review video #1" {
+          precedes !release_spotlight1_video
+          length 15d
+        }
+
+        task release_spotlight1_video "Publish spotlight video #1" {
+          depends !!!spotlight_feature_blogs.spotlight_feature1.spotlight_feature1_drop
+        }
+      }
+
+      task video2 "Make spotlight video #2" {
+        task review_spotlight2_video "Review video #2" {
+          precedes !release_spotlight2_video
+          length 15d
+        }
+
+        task release_spotlight2_video "Publish spotlight video #2" {
+          depends !!!spotlight_feature_blogs.spotlight_feature3.spotlight_feature3_drop
+        }
+      }
+
+      task release_video "Make release video" {
+        task review_release_video "Review release video" {
+          precedes !release_video
+          length 20d
+        }
+
+        task release_video "Publish release video" {
+          depends !!!!LaunchPhase.final
+        }
+      }
+
+    } #end video
+
+    task beta_release_blog "Beta press blog entry" {
+      flags fpl, pr
+      /**
+      * By building the final task to be a 0-duration event
+      * (milestone), depending on another given task date like a
+      * release date, and having each other task below precede the
+      * one following, these tasks should auto-adjust to fall on a
+      * given date.
+      */
+
+
+      task beta_release_blog_draft "Start drafting Beta blog" {
+        precedes !beta_release_blog_legal
+        length 10d
+      }
+
+      task beta_release_blog_legal "Red Hat PR send Beta blog to Legal" {
+        precedes !beta_release_blog_intl
+        length 5d
+      }
+
+      task beta_release_blog_intl "Red Hat PR send Beta blog to intl-pr list" {
+        precedes !beta_release_blog_drop
+        length 6d
+      }
+
+      task beta_release_blog_drop "Red Hat PR publish and send Beta blog to media contacts" {
+        depends !!!TestingPhase.beta.beta_drop
+      }
+    }
+
+    task spotlight_feature_blogs "Spotlight feature press blogs" {
+      task spotlight_feature1 "Spotlight feature #1" {
+        task spotlight_feature1_draft "Draft spotlight #1 blog entry" {
+          precedes !spotlight_feature1_legal
+          length 5d
+          flags fpl, pr
+        }
+
+        task spotlight_feature1_legal "Red Hat PR send spotlight #1 blog entry draft to legal" {
+          precedes !spotlight_feature1_drop
+          length 5d
+          flags fpl, pr
+        }
+
+        task shadow_spotlight_feature1 "SHADOW: Three weeks until GA" {
+          precedes !!!!LaunchPhase.final { gaplength 16d }
+          length 1d
+          flags hidden
+        }
+
+        task spotlight_feature1_drop "Red Hat PR publish spotlight #1 blog entry" {
+          depends !shadow_spotlight_feature1
+          flags fpl, pr
+        }
+
+      }
+
+      task spotlight_feature2 "Spotlight feature #2" {
+        task spotlight_feature2_draft "Draft spotlight #2 blog entry" {
+          precedes !spotlight_feature2_legal
+          length 5d
+          flags fpl, pr
+        }
+
+        task spotlight_feature2_legal "Red Hat PR send spotlight #2 blog entry draft to legal" {
+          precedes !spotlight_feature2_drop
+          length 5d
+          flags fpl, pr
+        }
+
+        task spotlight_feature2_drop "Red Hat PR publish spotlight #2 blog entry" {
+          depends !shadow_spotlight_feature2
+          flags fpl, pr
+        }
+
+        task shadow_spotlight_feature2 "SHADOW: Two weeks until GA" {
+          precedes !!!!LaunchPhase.final { gaplength 11d }
+          length 1d
+          flags hidden
+        }
+      }
+
+      task spotlight_feature3 "Spotlight feature #3" {
+        task spotlight_feature3_draft "Draft spotlight #3 blog entry" {
+          precedes !spotlight_feature3_legal
+          length 5d
+          flags fpl, pr
+        }
+
+        task spotlight_feature3_legal "Red Hat PR send spotlight #3 blog entry draft to legal" {
+          precedes !spotlight_feature3_drop
+          length 5d
+          flags fpl, pr
+        }
+
+        task spotlight_feature3_drop "Red Hat PR publish spotlight #3 blog entry" {
+          depends !shadow_spotlight_feature3
+          flags fpl, pr
+        }
+
+        task shadow_spotlight_feature3 "SHADOW: One week until GA" {
+          precedes !!!!LaunchPhase.final { gaplength 6d }
+          duration 1d
+          flags hidden
+        }
+      }
+    }
+
+    task usb_keys_prebriefs "USB Keys and media pre-briefs" {
+      flags fpl, pr
+
+      task buy_usb_keys "Purchase USB Keys" {
+        precedes !prepare_usb_keys
+        length 5d
+      }
+
+      task assess_press_kit "Check LiveUSB press review sheet for readiness" {
+        precedes !update_press_one_sheet
+        length 5d
+      }
+
+      task update_press_one_sheet "Update LiveUSB press review sheet" {
+        precedes !send_usb_keys
+        length 5d
+      }
+
+      task prepare_usb_keys "Prep USB keys with pre-release" {
+        precedes !send_usb_keys
+        length 5d
+      }
+
+      task send_usb_keys "Send USB keys to Red Hat PR for distribution" {
+        precedes !media_prebriefs {gaplength 10d}
+        length 3d
+      }
+
+      task distribute_usb_keys "Red Hat PR distribute USB keys to media contacts" {
+        precedes !media_prebriefs {gaplength 7d}
+        length 5d
+      }
+
+      task media_prebriefs "Hold media prebrief interviews" {
+        precedes !!!LaunchPhase.final
+        length 6d
+      }
+    }
+
+    task redhat_com_update "Update Red Hat web site" {
+      flags fpl, pr
+
+      task web_graphics_discuss "Schedule meeting with Red Hat web team to plan launch" {
+        length 5d
+        precedes !web_promo_to_brand
+      }
+
+      task web_promo_to_brand "Send web promo ideas to Brand" {
+        length 5d
+        precedes !web_copy_review
+      }
+
+      task web_copy_review "Review and update www.redhat.com/Fedora copy" {
+        length 5d
+        precedes !web_copy_send_update
+      }
+
+      task web_copy_send_update "Send updated copy to Web team" {
+        precedes !rh_web_goes_live { gaplength 11d }
+        length 5d
+      }
+
+      task rh_web_goes_live "Red Hat website changes go live" {
+        depends !!!LaunchPhase.final
+      }
+    }
+
+    task ga_press_release "GA press release" {
+      flags fpl, pr
+
+      task ga_press_release_draft "Start drafting GA press release" {
+        length 10d
+        precedes !ga_press_release_legal
+      }
+
+      task ga_press_release_legal "Red Hat PR send GA press release to Legal" {
+        length 5d
+        precedes !ga_press_release_intl
+      }
+
+      task ga_press_release_intl "Red Hat PR send GA press release to intl-pr list" {
+        length 6d
+        precedes !ga_press_release_drop
+      }
+
+      task ga_press_release_drop "Red Hat PR publish and send GA press release to media contacts" {
+        depends !!!LaunchPhase.final
+      }
+    }
+
+    task ceo_blog "CEO press blog entry" {
+      flags fpl, pr
+
+      task ceo_prepare_final_rc "Prepare a final RC on USB for CEO" {
+        precedes !ceo_send_final_rc
+        length 2d
+      }
+
+      task ceo_send_final_rc "Send final RC USB key to CEO" {
+        precedes !ceo_solicit_feedback
+        length 2d
+      }
+
+      task ceo_solicit_feedback "Solicit CEO feedback on pre-release" {
+        precedes !ceo_blog_draft
+        length 4d
+      }
+
+      task ceo_blog_draft "Draft CEO blog" {
+        precedes !ceo_blog_legal
+        length 3d
+      }
+
+      task ceo_blog_legal "Red Hat PR send CEO blog to Legal" {
+        precedes !ceo_blog_drop
+        length 3d
+      }
+
+      task ceo_blog_drop "Red Hat PR publish and send CEO blog to media contacts" {
+        depends !!!LaunchPhase.final {gaplength 1d}
+      }
+    }
+  }
+
+} # Bitter End
