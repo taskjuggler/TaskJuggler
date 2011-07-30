@@ -56,8 +56,6 @@ project ${content}${major} "${content_title}" "${major}" ${start_date} - ${end_d
   workinghours sat,sun off
 }
 
-include "reports.tji"
-
 # =========  Cornerstones of Fedora Schedules =============
 # This section also serves as a "style guide" for the source file too
 
@@ -93,6 +91,31 @@ should include weekends because community members work at all times and not with
 12) The "milestone" declaration is NOT used in this source file.  It is redundant and unnecessary.  Do not inlude it.  All tasks without 'length' or 'duration' are automatically considered "milestone" tasks.
 
 */
+
+# Define flags for filtered reporting
+flags ambassadors
+flags bugtriage
+flags blocker # use to proof blocker meeting placement
+flags design
+flags devel
+flags docs
+flags elections
+flags fpl
+flags hidden     # used to hide tasks that we do not displayed in Fedora reports
+flags infrastructure
+flags interface
+flags key      /* use for report of key tasks/high level overview--reflected on Fedora wiki, e.g.
+                 https://fedoraproject.org/wiki/Releases/15/Schedule */
+flags proto     # used for drafting new schedules and shows tasks useful for doing this
+flags pm
+flags pr
+flags marketing
+flags roadmap  # major milestones
+flags translation
+flags quality
+flags releng
+flags spins
+flags web
 
 task ${content}${major} "${content_title} ${major}" {
 
@@ -2413,5 +2436,7 @@ task ${content}${major} "${content_title} ${major}" {
   }
 
 } # Bitter End
+
+include "reports.tji"
 
 tagfile "tags"

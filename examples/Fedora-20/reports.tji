@@ -38,31 +38,6 @@ macro weekly_start [2013-05-05]
 # Wednesday falling two weeks after starting Sunday
 macro weekly_end   [2013-05-22]
 
-# Define flags for filtered reporting
-flags ambassadors
-flags bugtriage
-flags blocker # use to proof blocker meeting placement
-flags design
-flags devel
-flags docs
-flags elections
-flags fpl
-flags hidden     # used to hide tasks that we do not displayed in Fedora reports
-flags infrastructure
-flags interface
-flags key      /* use for report of key tasks/high level overview--reflected on Fedora wiki, e.g.
-                 https://fedoraproject.org/wiki/Releases/15/Schedule */
-flags proto     # used for drafting new schedules and shows tasks useful for doing this
-flags pm
-flags pr
-flags marketing
-flags roadmap  # major milestones
-flags translation
-flags quality
-flags releng
-flags spins
-flags web
-
 navigator menu
 
 macro all_navbar [
@@ -73,6 +48,8 @@ macro all_navbar [
 ----
 ->8-
 ]
+macro FilePrefix [${content}-${major}-]
+macro HLPrefix [${content_title} ${major} ]
 
 textreport "Public Reports" {
   formats html
@@ -80,8 +57,44 @@ textreport "Public Reports" {
   timeformat "%a %Y-%m-%d"
   scenarios actual
 
-  taskreport "${content}-${major}-all-tasks" {
+  taskreport "index" {
     title "Project Overview"
+    headline "${HLPrefix} Task Overview"
+    columns name, start, end, duration, chart { scale month }
+    sorttasks tree, actual.start.up, seqno.up
+    hidetask hidden
+
+    taskreport "${FilePrefix}planning-phase" {
+      title "Planning Phase"
+      headline "${HLPrefix} Planning Phase"
+      taskroot f20.PlanningPhase
+    }
+    taskreport "${FilePrefix}development-phase" {
+      title "Development Phase"
+      headline "${HLPrefix} Development Phase"
+      taskroot f20.DevelopmentPhase
+    }
+    taskreport "${FilePrefix}alpha-phase" {
+      title "Alpha Testing Phase"
+      headline "${HLPrefix} Alpha Testing Phase"
+      taskroot f20.TestingPhase.alpha
+    }
+    taskreport "${FilePrefix}beta-phase" {
+      title "Beta Testing Phase"
+      headline "${HLPrefix} Beta Testing Phase"
+      taskroot f20.TestingPhase.beta
+    }
+    taskreport "${FilePrefix}launch-phase" {
+      title "Launch Phase"
+      headline "${HLPrefix} Launch Phase"
+      taskroot f20.LaunchPhase
+    }
+
+    hidetask hidden | isleaf()
+  }
+
+  taskreport "${content}-${major}-all-tasks" {
+    title "All Tasks"
     headline "${content_title} ${major} Tasks"
     columns name, start, end, duration
     sorttasks tree, actual.start.up, seqno.up
