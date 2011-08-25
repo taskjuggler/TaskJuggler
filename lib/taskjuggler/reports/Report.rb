@@ -273,7 +273,7 @@ EOT
                                   (@name[0] == '/' ? '' : @project.outputDir) +
                                   @name + '.csv').untaint
         CSVFile.new(csv, ';').write(fileName)
-      rescue IOError
+      rescue IOError, SystemCallError
         error('write_csv', "Cannot write to file #{fileName}.\n#{$!}")
       end
     end
@@ -290,7 +290,7 @@ EOT
           fileName.untaint
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
-      rescue IOError
+      rescue IOError, SystemCallError
         error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}")
       end
     end
@@ -309,7 +309,7 @@ EOT
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
                     @name + '.xml').untaint, 'w')
         f.puts "#{@content.to_niku}"
-      rescue IOError
+      rescue IOError, SystemCallError
         error('write_niku', "Cannot write to file #{@name}.\n#{$!}")
       end
     end
@@ -328,7 +328,7 @@ EOT
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
                     @name + '.ical').untaint, 'w')
         f.puts "#{@content.to_iCal}"
-      rescue IOError
+      rescue IOError, SystemCallError
         error('write_ical', "Cannot write to file #{@name}.\n#{$!}")
       end
     end
@@ -347,7 +347,7 @@ EOT
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
                     @name).untaint, 'w')
         f.puts "#{@content.to_ctags}"
-      rescue IOError
+      rescue IOError, SystemCallError
         error('write_ctags', "Cannot write to file #{@name}.\n#{$!}")
       end
     end

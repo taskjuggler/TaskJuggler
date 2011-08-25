@@ -191,7 +191,7 @@ class TaskJuggler::TextParser
       def initialize(buffer, log)
         super(log)
         @stream = StringIO.new(buffer)
-        @log.msg { "Parsing buffer #{buffer[0, 20]} ..." }
+        #@log.msg { "Parsing buffer #{buffer[0, 20]} ..." }
       end
 
     end
@@ -286,7 +286,7 @@ class TaskJuggler::TextParser
         begin
           @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile, @log),
                            nil, nil ] ]
-        rescue IOError
+        rescue IOError, SystemCallError
           error('open_file', "Cannot open file #{@masterFile}: #{$!}")
         end
       end
@@ -384,7 +384,7 @@ class TaskJuggler::TextParser
         # completion. Close it and remove the corresponding entry from the
         # @fileStack.
         @finishLastFile = false
-        @log.msg { "Completed file #{@cf.fileName}" }
+        #@log.msg { "Completed file #{@cf.fileName}" }
 
         # If we have a block to be executed on EOF, we call it now.
         onEof = @fileStack.last[2]
