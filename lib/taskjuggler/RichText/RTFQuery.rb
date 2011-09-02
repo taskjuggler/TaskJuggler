@@ -69,6 +69,8 @@ class TaskJuggler
         raise "No Query has been registered for this RichText yet!"
       end
 
+      query = @query.dup
+
       # Check the user provided arguments. Only the following list is allowed.
       validArgs = %w( attribute currencyformat end family journalattributes
                       journalmode loadunit numberformat property scenario
@@ -92,8 +94,6 @@ class TaskJuggler
               "provide a family type as well.")
       end
 
-      query = @query.dup
-
       # Every provided query parameter will overwrite the corresponding value
       # in the Query that was provided by the ReportContext.  The name of the
       # arguments don't always exactly match the Query variables Let's start
@@ -116,6 +116,7 @@ class TaskJuggler
       if expandedArgs['currencyformat']
         query.currencyFormat = expandedArgs['currencyformat']
       end
+      query.project = @project
 
       # And now the slighly more complicated ones.
       setScenarioIdx(query, expandedArgs)

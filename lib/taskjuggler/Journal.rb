@@ -393,7 +393,7 @@ class TaskJuggler
                                       query.hideJournalEntry)
           end
         else
-          query.project.tasks do |task|
+          query.project.tasks.each do |task|
             # We only care about top-level tasks.
             next if task.parent
 
@@ -412,7 +412,7 @@ class TaskJuggler
                                        query.hideJournalEntry)
           end
         else
-          query.project.tasks do |task|
+          query.project.tasks.each do |task|
             # We only care about top-level tasks.
             next if task.parent
 
@@ -432,7 +432,7 @@ class TaskJuggler
                                     query.hideJournalEntry)
           end
         else
-          query.project.tasks do |task|
+          query.project.tasks.each do |task|
             # We only care about top-level tasks.
             next if task.parent
 

@@ -266,6 +266,9 @@ class TaskJuggler
       @properties.length
     end
 
+    alias length items
+
+
     # Return true if the set is empty.
     def empty?
       @properties.empty?
