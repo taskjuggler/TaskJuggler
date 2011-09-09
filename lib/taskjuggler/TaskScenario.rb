@@ -1338,6 +1338,22 @@ class TaskJuggler
       query.assignList(list)
     end
 
+    def query_maxend(query)
+      queryDateLimit(query, @maxend)
+    end
+
+    def query_minend(query)
+      queryDateLimit(query, @minend)
+    end
+
+    def query_maxstart(query)
+      queryDateLimit(query, @maxstart)
+    end
+
+    def query_minstart(query)
+      queryDateLimit(query, @minstart)
+    end
+
     def query_precursors(query)
       list = []
 
@@ -2364,6 +2380,18 @@ class TaskJuggler
       end
       # Return the bookings of the found scenario.
       @property['booking', @property.project.scenarioIdx(scenario)]
+    end
+
+    # Date limits may be nil and this is not an error. TjTime.to_s() would
+    # report it as such if we don't use this wrapper method.
+    def queryDateLimit(query, date)
+      if date
+        query.sortable = query.numerical = date
+        query.string = date.to_s(query.timeFormat)
+      else
+        query.sortable = query.numerical = nil
+        query.string = ''
+      end
     end
 
     def period_to_s
