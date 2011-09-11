@@ -91,15 +91,17 @@ class TaskJuggler
       begin
         rawMail.each_line do |line|
           unless fromLine
-            matches = line.encode('UTF-8', :invalid => :replace,
-                                            :replace => '?').match('^From: .*')
+            matches = line.encode('UTF-8', :undef => :replace,
+                                           :replace => '<?>').match('^From: .*')
             fromLine = matches[0] if matches
           end
           begin
             # Try the encoding. If it fails, we'll get an exception.
             line.encode!('UTF-8')
           rescue
-            raise "Encoding error in line: #{line.encode('UTF-8', :invalid)}"
+            raise "UTF-8 Encoding error in line: " +
+                  "#{line.encode('UTF-8', :undef => :replace,
+                                 :replace => '<?>')}"
           end
         end
 
