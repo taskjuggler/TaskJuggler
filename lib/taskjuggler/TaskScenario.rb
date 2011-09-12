@@ -2389,7 +2389,7 @@ class TaskJuggler
         query.sortable = query.numerical = date
         query.string = date.to_s(query.timeFormat)
       else
-        query.sortable = query.numerical = nil
+        query.sortable = query.numerical = -1
         query.string = ''
       end
     end
