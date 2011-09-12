@@ -103,14 +103,6 @@ class TaskJuggler::TextParser
           if (@line = @stream.gets)
             # Update activity meter about every 1024 lines.
             @log.activity if (@stream.lineno & 0x3FF) == 0
-            # Check for DOS or Mac end of line signatures.
-            if @line[-1] == ?\r
-              # Mac: Convert CR into LF
-              @line[-1] = ?\n
-            elsif @line[-2] == ?\r
-              # DOS: Convert CR+LF into LF
-              @line = @line.chomp + "\n"
-            end
           else
             # We've reached the end of the current file.
             @scanner = nil
@@ -173,7 +165,12 @@ class TaskJuggler::TextParser
       def initialize(fileName, log)
         super(log)
         @fileName = fileName.dup.untaint
-        @stream = fileName == '.' ? $stdin : File.new(@fileName, 'r')
+        data = (fileName == '.' ? $stdin : File.new(@fileName, 'r')).read
+        begin
+          @stream = StringIO.new(data.forceUTF8Encoding)
+        rescue
+          error('fileEncoding', $!)
+        end
         @log.msg { "Parsing file #{@fileName} ..." }
         @log.startProgressMeter("Reading file #{fileName}")
       end
@@ -190,7 +187,11 @@ class TaskJuggler::TextParser
 
       def initialize(buffer, log)
         super(log)
-        @stream = StringIO.new(buffer)
+        begin
+          @stream = StringIO.new(buffer.forceUTF8Encoding)
+        rescue
+          error('bufferEncoding', $!)
+        end
         #@log.msg { "Parsing buffer #{buffer[0, 20]} ..." }
       end
 

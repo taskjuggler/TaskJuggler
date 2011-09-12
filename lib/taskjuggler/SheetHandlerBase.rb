@@ -85,40 +85,6 @@ class TaskJuggler
       text
     end
 
-    # Convert all CR+LF and CR line breaks in _text_ into LF line breaks. The
-    # clean-up String is returned.
-    def fixLineBreaks(text)
-      fixedBreaks = ''
-      cr = false
-      text.each_utf8_char do |c|
-        if c == "\r"
-          # We don't know yet if it's a CR or CR+LF.
-          cr = true
-        else
-          if cr
-            # If we only found a CR. Replace it with a LF.
-            fixedBreaks << "\n" if c != "\n"
-            cr = false
-          end
-          fixedBreaks << c
-        end
-      end
-
-      out = ''
-      fixedBreaks.each_line do |line|
-        begin
-          # Try the encoding. If it fails, we'll get an exception.
-          out << line.encode!('UTF-8')
-        rescue
-          error("UTF-8 encoding error in line: " +
-                "#{line.encode('UTF-8', :undef => :replace,
-                               :replace => '<?>')}")
-        end
-      end
-
-      out
-    end
-
     def setWorkingDir
       # Make sure the user has provided a properly setup config file.
       error('\'smtpServer\' not configured') unless @smtpServer

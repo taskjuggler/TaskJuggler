@@ -112,4 +112,34 @@ class String
     gsub(/\n/, "\r\n")
   end
 
+  # Ensure the String is really UTF-8 encoded and newlines are only \n. If
+  # that's not possible, an Encoding::UndefinedConversionError is raised.
+  def forceUTF8Encoding
+    if RUBY_VERSION < '1.9.0'
+      # Ruby 1.8 really only support 7 bit ASCII well. Only do the line-end
+      # clean-up.
+      gsub(/\r\n/, "\n")
+    else
+      begin
+        # Ensure that the text has LF line ends and is UTF-8 encoded.
+        encode('UTF-8', :universal_newline => true)
+      rescue
+        # The encoding of the String is broken. Find the first broken line and
+        # report it.
+        lineCtr = 1
+        each_line do |line|
+          begin
+            line.encode('UTF-8')
+          rescue
+           line = line.encode('UTF-8', :invalid => :replace,
+                                       :undef => :replace, :replace => '<?>')
+            raise Encoding::UndefinedConversionError,
+                  "UTF-8 encoding error in line #{lineCtr}: #{line}"
+          end
+          lineCtr += 1
+        end
+      end
+    end
+  end
+
 end

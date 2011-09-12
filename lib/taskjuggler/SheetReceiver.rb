@@ -80,33 +80,27 @@ class TaskJuggler
 
       createDirectories
 
-      # Read the RFC 822 compliant mail from STDIN.
-      rawMail = $stdin.read
-
-      # To get line-accurate error reports for encoding errors, we scan the
-      # email for obvious ecoding errors and try to get a sender fallback
-      # address. This will not find encoding problems inside encoded mime
-      # parts.
-      fromLine = nil
       begin
-        rawMail.each_line do |line|
-          unless fromLine
-            matches = line.encode('UTF-8', :undef => :replace,
-                                           :replace => '<?>').match('^From: .*')
-            fromLine = matches[0] if matches
-          end
-          begin
-            # Try the encoding. If it fails, we'll get an exception.
-            line.encode!('UTF-8')
-          rescue
-            raise "UTF-8 Encoding error in line: " +
-                  "#{line.encode('UTF-8', :undef => :replace,
-                                 :replace => '<?>')}"
-          end
-        end
+        # Read the RFC 822 compliant mail from STDIN.
+        rawMail = $stdin.read
+        rawMail = rawMail.forceUTF8Encoding
 
         mail = Mail.new(rawMail)
       rescue
+        # In certain cases, Mail will fail to create the Mail object. Since we
+        # don't have the email sender yet, we have to try to extract it
+        # ourself.
+        fromLine = nil
+        rawMail.each_line do |line|
+          unless fromLine
+            matches = line.match('^From: .*')
+            if matches
+              fromLine = matches[0]
+              break
+            end
+          end
+        end
+
         # Try to extract the mail sender the dirty way so we can at least send
         # a response to the submitter.
         @submitter = fromLine[6..-1] if fromLine && fromLine.is_a?(String)
@@ -152,8 +146,14 @@ EOT
 
     # Isolate the actual syntax from _sheet_ and process it.
     def processSheet(sheet)
-      @sheet = fixLineBreaks(sheet)
-      @sheet = cutOut(@sheet) unless @sheetWasAttached
+      @sheet = @sheetWasAttached ? cutOut(sheet) : sheet
+
+      begin
+        @sheet = @sheet.forceUTF8Encoding
+      rescue
+        error($!)
+      end
+
       # A valid sheet must have the poper header line.
       if @sheetHeader.match(@sheet)
         checkSignature(@sheet)
