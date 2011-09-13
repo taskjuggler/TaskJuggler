@@ -63,6 +63,8 @@ been tested.
 
 ==== The easy way ====
 
+===== System Wide Installation =====
+
 TaskJuggler is a commandline tool. It does not (yet) have a graphical
 user interface. To use it, you need to know how to open a command
 or terminal window. In this manual, we refer to it as your shell. The
@@ -70,13 +72,47 @@ following paragraphs describe the commands you need to type into your
 [http://en.wikipedia.org/wiki/Shell_(computing) shell].
 
 On systems that already have Ruby and the gem package manager
-installed you can simply type the following command into your shell
-or command window:
+installed you can simply type the following command as root or admin
+user into your shell or command window:
 
   gem install taskjuggler
 
 This will download and install the latest version from the
 [http://rubygems.org/gems/taskjuggler RubyGems.org] site.
+
+===== Installation into a local Directory =====
+
+If you don't want to install TaskJuggler for all users on the system,
+you can also install it into your home or data directory. This does
+not require root or admin permissions.
+
+The following steps are describe the installation on a Linux system
+with the bash shell. You may have to use slightly different commands
+on a different operating system.
+
+Create a new directory ''''taskjuggler'''' in your $HOME directory for
+the installation to go into.
+
+  mkdir taskjuggler
+
+Install the gem and all dependencies.
+
+  gem install --install-dir taskjuggler taskjuggler-X.X.X.gem
+
+Configure your ''''PATH'''' variable to find the taskjuggler programs.
+
+  export PATH="${PATH}:${HOME}/taskjuggler/bin"
+
+Configure gem to find the installed files.
+
+  export GEM_HOME=${HOME}/taskjuggler
+
+The last two settings should also be added to your .profile file to
+make them permanent.
+
+That's it. You now should be run TaskJuggler.
+
+  tj3 --version
 
 ==== The manual way ====
 
@@ -158,11 +194,6 @@ from source put the following code in your ''''.profile'''' file.
 This is for users of the bash shell. Adapt it accordingly if you use
 another shell. 
 
- # To use TaskJuggler directly from the source. This must point to
- # the directory where you have put the TaskJuggler source files.
- TASKJUGGLER_DIR=${HOME}/src/taskjuggler3
- # Make sure Ruby finds the program files
- export RUBYLIB=${TASKJUGGLER_DIR}/lib
  # Make sure the shell finds the TaskJuggler programs
  export PATH=${PATH}:${TASKJUGGLER_DIR}/bin
 
@@ -256,6 +287,14 @@ If you don't want to use TaskJuggler from the git repository, you can
 install the TaskJuggler gem as well.
 
   sudo gem19 install taskjuggler
+
+The TaskJuggler front-end scripts always use the ''''ruby''''
+interpreter that's the first in the PATH. You need to set a link in
+your local ''''bin'''' directory to point to your ''''ruby19''''
+executable as ''''ruby''''. Make sure your ''''${HOME}/bin''''
+directory is the first directory in the ''''PATH''''.
+
+  ln -s /usr/local/bin/ruby19 ${HOME}/bin/ruby
 
 That's it. You now have the latest Ruby installed and are ready to
 use TaskJuggler.
