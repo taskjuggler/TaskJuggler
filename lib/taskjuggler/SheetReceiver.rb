@@ -146,13 +146,15 @@ EOT
 
     # Isolate the actual syntax from _sheet_ and process it.
     def processSheet(sheet)
-      @sheet = @sheetWasAttached ? cutOut(sheet) : sheet
-
       begin
-        @sheet = @sheet.forceUTF8Encoding
+        @sheet = sheet.forceUTF8Encoding
       rescue
         error($!)
       end
+
+      # If the sheet contains special cut markers, we extract only the content
+      # within those markers.
+      @sheet = cutOut(@sheet)
 
       # A valid sheet must have the poper header line.
       if @sheetHeader.match(@sheet)
