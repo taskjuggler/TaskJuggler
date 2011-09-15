@@ -99,6 +99,13 @@ Install the gem and all dependencies.
 
   gem install --install-dir taskjuggler taskjuggler-X.X.X.gem
 
+If you must use a proxy to access the Internet, you need to set a
+shell environment variable so ''''gem'''' can find and use it. The
+setting below needs to be adapted to your local environment. Check
+with your admin or IT department if needed.
+
+  export HTTP_PROXY=http://%USER%:%PASSWORD%@%SERVER%:%PORT%
+
 Configure your ''''PATH'''' variable to find the taskjuggler programs.
 
   export PATH="${PATH}:${HOME}/taskjuggler/bin"
