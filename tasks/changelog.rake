@@ -155,6 +155,7 @@ task :changelog do
     def getReleaseVersions
       # Get list of release tags from Git repository
       releaseVersions = `git tag`.split("\n").map { |r| r.chomp }.
+        delete_if { |r| ! (/release-\d+\.\d+\.\d+/ =~ r) }.
         sort{ |a, b| compareTags(a, b) }
       releaseVersions << 'HEAD'
     end
