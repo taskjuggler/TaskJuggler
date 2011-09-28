@@ -176,20 +176,23 @@ EOT
                                     'name' => prj.name,
                                     'projectID' => prj.id))
         project << (resources = XMLElement.new('Resources'))
-        prj.resources.keys.sort.each do |resourceId|
-          res = prj.resources[resourceId]
+        # We iterate over all resources to ensure that all have an entry in
+        # the Clarity database for all projects. This is done to work around a
+        # limitation of Clarity with respect to filling time sheets with
+        # assigned projects.
+        @resources.keys.sort.each do |clarityRID|
           resources << (resource =
                         XMLElement.new('Resource',
-                                       'resourceID' => res.id,
+                                       'resourceID' => clarityRID,
                                        'defaultAllocation' => '0'))
           resource << (allocCurve = XMLElement.new('AllocCurve'))
+          sum = sum(prj.id, clarityRID)
           allocCurve << (XMLElement.new('Segment',
                                         'start' =>
                                         a('start').to_s(timeFormat),
                                         'finish' =>
                                         (a('end') - 1).to_s(timeFormat),
-                                        'sum' => numberFormat.format(
-                                          sum(prj.id, res.id)).to_s))
+                                        'sum' => numberFormat.format(sum).to_s))
         end
 
         # The custom information section usually contains Clarity installation
