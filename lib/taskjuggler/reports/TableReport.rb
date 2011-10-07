@@ -509,7 +509,7 @@ class TaskJuggler
           end
           column.cell2.text = t.send(name2Func).to_s
           # TODO: The width should be taken from some data structure.
-          column.cell2.width = 20
+          column.cell2.width = 28
           # Off-duty cells will have a different color than working time cells.
           unless @project.hasWorkingTime(iv)
             column.cell2.category = 'tabhead_offduty'
