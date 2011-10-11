@@ -4975,7 +4975,7 @@ EOT
                   LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
-    arg(1, 'file name', <<'EOT'
+    arg(2, 'file name', <<'EOT'
 The name of the tagfile to generate. You can leave it empty and it will
 default to the commonly used name ''''tags''''.
 EOT
