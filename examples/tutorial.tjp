@@ -315,9 +315,7 @@ macro TaskTip [
 textreport frame "" {
   header -8<-
     == Accounting Software Project ==
-    ----
     <[navigator id="navbar"]>
-    ----
   ->8-
   footer "----"
   textreport index "Overview" {

@@ -43,9 +43,7 @@ navigator menu
 macro all_navbar [
   header -8<-
 == [[File:icons/fedoralogo.png|bottom]] ${content_title}-${major} Project Plan ==
-----
 <[navigator id="menu"]>
-----
 ->8-
 ]
 macro FilePrefix [${content}-${major}-]

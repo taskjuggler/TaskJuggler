@@ -446,9 +446,7 @@ textreport frame "" {
 # *** EXAMPLE: overview_report1 -
   header -8<-
     == Accounting Software Project ==
-    ----
     <[navigator id="navbar"]>
-    ----
   ->8-
   footer "----"
 # *** EXAMPLE: overview_report1 +
