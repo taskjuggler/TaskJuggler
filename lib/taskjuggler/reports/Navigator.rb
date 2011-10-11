@@ -30,48 +30,54 @@ class TaskJuggler
       @current = false
     end
 
-    def to_html
+    def to_html(html = nil)
       first = true
-      html = (div = XMLElement.new('div'))
+
+      topLevel = html.nil?
+
+      # If we don't have a container yet, to put all the menus into, create one.
+      html ||= XMLElement.new('div', 'class' => 'navbar_container')
+
+      html << XMLElement.new('hr', 'class' => 'navbar_topruler') if topLevel
+
+      # Create a container for this (sub-)menu.
+      html << (div = XMLElement.new('div', 'class' => 'navbar'))
 
       @elements.each do |element|
-        next unless label
-
+        # Separate the menu entries by vertical bars. Prepend them for all but
+        # the first entry.
         if first
           first = false
         else
           div << XMLText.new('|')
         end
 
-        url = element.url
-        if !url
-          nEl = element
-          while nEl.elements[0]
-            break if nEl.current
-
-            if nEl.elements[0].url
-              url = nEl.elements[0].url
-              break
-            end
-            nEl = nEl.elements[0]
-          end
-        end
-        if url && url != currentUrl
-          div << (span = XMLElement.new('span', 'class' => 'navbar_other'))
-          span << (a = XMLElement.new('a', 'href' => url))
-          a << XMLText.new(element.label)
-        else
+        if element.current
+          # The navbar entry is referencing this page. Highlight is as the
+          # currently selected page.
           div << (span = XMLElement.new('span',
                                         'class' => 'navbar_current'))
           span << XMLText.new(element.label)
+        else
+          # The navbar entry is refencing another page. Show the link to it.
+          div << (span = XMLElement.new('span', 'class' => 'navbar_other'))
+          span << (a = XMLElement.new('a', 'href' => element.url))
+          a << XMLText.new(element.label)
         end
       end
+
+      # Now see if the current menu entry is actually just holding another sub
+      # menu and generate that menue in another line after an HR.
       @elements.each do |element|
         if element.current && !element.elements.empty?
-          html << XMLElement.new('hr', {}, true) unless first
-          html << element.to_html
+          html << XMLElement.new('hr', 'class' => 'navbar_midruler') unless first
+          element.to_html(html)
+          break
         end
       end
+
+      html << XMLElement.new('hr', 'class' => 'navbar_bottomruler') if topLevel
+
       html
     end
 
@@ -85,27 +91,6 @@ class TaskJuggler
       end
     end
 
-    # Store the URL for the current report. Since the URL entry in the root
-    # node of the NavigatorElement tree is never used, we use it to store the
-    # current URL there.
-    def currentUrl=(url)
-      root.url = url
-    end
-
-    # Get the URL of the current report from the root node.
-    def currentUrl
-      root.url
-    end
-
-    # Traverse the tree all the way to the top and return the root element.
-    def root
-      p = self
-      while p.parent
-        p = p.parent
-      end
-      p
-    end
-
   end
 
   # A Navigator is an automatically generated menu to navigate a list of
@@ -115,67 +100,73 @@ class TaskJuggler
   class Navigator
 
     attr_reader :id
-    attr_accessor :hideReport, :reportRoot
+    attr_accessor :hideReport
 
     def initialize(id, project)
       @id = id
       @project = project
       @hideReport = LogicalExpression.new(LogicalOperation.new(0))
-      @reportRoot = nil
       @elements = []
     end
 
     # Generate an output format independant version of the navigator. This is
     # a tree of NavigatorElement objects.
-    def generate(reports, reportRoot, parentElement)
-      reportDef = @project.reportContexts.last.report
-      raise "Report context missing" unless reportDef
-
-      interactive = false
-      reports.each do |report|
-        # The outermost (top-level) report determines whether the report
-        # should be rendered interactive or not.
-        interactive = report.interactive?  unless interactive
-
+    def generate(allReports, currentReports, reportDef, parentElement)
+      element = nextParentElement = nextParentReport = nil
+      currentReports.each do |report|
         hasURL = report.get('formats').include?(:html)
-        # Only generate menu entries for reports that are not the reportRoot,
-        # that are leaf reports and have an HTML output format.
-        next if (report.parent != reportRoot) ||
-                (report.leaf? && !hasURL)
+        # Only generate menu entries for container reports or leaf reports
+        # have a HTML output format.
+        next if (report.leaf? && !hasURL) || !allReports.include?(report)
 
+        # What label should be used for the menu entry? It's either the name
+        # of the report or the user specified title.
         label = report.get('title') || report.name
-        # Determine the URL for this element.
-        if hasURL
-          if interactive
-            url = "/taskjuggler?project=#{report.project['projectid']};" +
-                  "report=#{report.fullId}"
-          else
-            url = report.name + '.html'
-            url = normalizeURL(url, reportDef.name)
-          end
-        end
+
+        url = findReportURL(report, allReports, reportDef)
+
+        # Now we have all data so we can create the actual menu entry.
         parentElement.elements <<
           (element =  NavigatorElement.new(parentElement, label, url))
 
-        if report == reportDef
-          element.currentUrl = url
-          # Mark this element and all its parents as current.
-          nEl = element
-          while nEl
-            nEl.current = true
-            nEl = nEl.parent
-          end
+        # Check if 'report' matches the 'reportDef' report or is a child of
+        # it.
+        if reportDef == report || reportDef.isChildOf?(report)
+          nextParentReport = report
+          nextParentElement = element
+          element.current = true
         end
+      end
 
-        generate(reports, report, element)
+      if nextParentReport && nextParentReport.container?
+        generate(allReports, nextParentReport.kids, reportDef,
+                 nextParentElement)
       end
     end
 
     def to_html
+      # The the Report object that contains this Navigator.
+      reportDef ||= @project.reportContexts.last.report
+      raise "Report context missing" unless reportDef
+
+      # Compile a list of all reports that the user wants to include in the
+      # menu.
       reports = filterReports
       return nil if reports.empty?
 
-      generate(reports, nil, content = NavigatorElement.new(nil))
+      # Make sure the report is actually in the filtered list.
+      raise "Report not in filtered list" unless reports.include?(reportDef)
+
+      # Find the list of reports that become the top-level menu entries.
+      topLevelReports = [ reportDef ]
+      report = reportDef
+      while report.parent
+        report = report.parent
+        topLevelReports = report.kids
+      end
+
+      generate(reports, topLevelReports, reportDef,
+               content = NavigatorElement.new(nil))
       content.to_html
     end
 
@@ -206,6 +197,31 @@ class TaskJuggler
       end
 
       url1
+    end
+
+    # Find the URL to be used for the current Navigator menu entry.
+    def findReportURL(report, allReports, reportDef)
+      return nil unless allReports.include?(report)
+
+      if report.get('formats').include?(:html)
+        # The element references an HTML report. Point to it.
+        if @project.reportContexts.last.report.interactive?
+          url = "/taskjuggler?project=#{report.project['projectid']};" +
+                "report=#{report.fullId}"
+        else
+          url = report.name + '.html'
+          url = normalizeURL(url, reportDef.name)
+        end
+        return url
+      else
+        # The menu element is just a entry for another sub-menu. The the URL
+        # from the first kid of the report that has a URL.
+        report.kids.each do |r|
+          if (url = findReportURL(r, allReports, reportDef))
+            return url
+          end
+        end
+      end
     end
 
   end

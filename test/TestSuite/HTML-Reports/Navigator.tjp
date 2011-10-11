@@ -1,0 +1,34 @@
+project navigator "1.0" 2011-10-10 +1m
+
+task "foo"
+
+navigator menu
+
+textreport "top" {
+  header '<[navigator id="menu"]>'
+
+  textreport "Navigator-1" {
+    title "One"
+    center "one"
+    formats html
+  }
+  textreport "Navigator-2" {
+    title "Two"
+    center "two"
+    formats html
+  }
+  textreport "Navigator-3" {
+    title "Three"
+    textreport "Navigator-4" {
+      title "Four"
+      center "four"
+      formats html
+    }
+    textreport "Navigator-5" {
+      title "Five"
+      center "five"
+      formats html
+    }
+  }
+}
+
