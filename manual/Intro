@@ -5,21 +5,22 @@
 TaskJuggler is a modern and powerful project management tool. Its new
 approach to project planning and tracking is far superior to the
 commonly used Gantt chart editing tools. It has already been
-successfully used in many projects and scales easily to projects with
+successfully used in many projects and scales to projects with
 hundreds of resources and thousands of tasks.
 
 TaskJuggler is an Open Source tool for serious project managers. It
 covers the complete spectrum of project management tasks from the
-first idea to the completion of the project. It assists you during
-project scoping, resource assignment, cost and revenue planning, risk
-and communication management.
+first idea to the completion of the project without enforcing certain
+work flows or methodologies. It assists you during project scoping,
+resource assignment, cost and revenue planning, risk and communication
+management, status tracking and reporting.
 
 TaskJuggler provides an optimizing scheduler that computes your
 project time lines and resource assignments based on the project
 outline and the constrains that you have provided. The built-in
-resource balancer and consistency checker offload you from having to
+resource balancer and constrains checker offload you from having to
 worry about irrelevant details and ring the alarm if the project gets
-out of hand. Its flexible "as many details as necessary"-approach
+out of hand. The flexible "as many details as necessary"-approach
 allows you to still plan your project as you go, making it also ideal
 for new management strategies such as Extreme Programming and Agile
 Project Management.
@@ -28,22 +29,14 @@ If you are about to build a skyscraper or just want to put together
 your colleague's shift plan for the next month, TaskJuggler is the
 right tool for you. If you just want to draw nice looking Gantt
 charts to impress your boss or your investors, TaskJuggler might not
-be right for you. It takes some effort to master its power, but it
-will become a companion you don't want to miss anymore.
-
-=== About TaskJuggler III ===
-
-TaskJuggler III is the completely re-implemented version of the TaskJuggler
-2.x series. We have not yet released a stable version. It already is
-mostly stable and each official release is installed by more than a
-1000 users.  The code base is still in active development and the
-quality and reliability may change daily. You are welcome to try it
-and play with it, but be sure to independently check all results.
+be right for you. It can certainly produce nice looking Gantt charts
+and other reports, but it takes some effort to master its power. For
+those that are willing to invest a few hours to get started with the
+software it will become a companion you don't want to miss anymore.
 
 TaskJuggler is a commandline tool that you use from a
-[http://en.wikipedia.org/wiki/Shell_(computing) shell]. This does not
-mean that you don't get fancy looking Gantt-charts. It just means
-that for entering your project data you will use one of the most
+[http://en.wikipedia.org/wiki/Shell_(computing) shell]. This means
+that to enter your project data you will use one of the most
 versatile and powerful tools there is: your favorite
 [http://en.wikipedia.org/wiki/Text_editor text editor]. To get a
 first impression, you can look at this
@@ -102,6 +95,7 @@ amount of detail to the right audience
 * Project description syntax with macro support
 * Detailed reference manual
 * Support for project management teams and revision control
+* Weekly status reporting and time sheets
 
 === TaskJuggler on the Web ===
 
