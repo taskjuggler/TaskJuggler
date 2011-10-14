@@ -87,7 +87,7 @@ EOT
           begin
             @freezeDate = TjTime.new(arg).align(3600)
           rescue TjException => msg
-            error("Invalid freeze date: #{msg}")
+            error("Invalid freeze date: #{msg.message}")
           end
         end
         @opts.on('--freezebytask',

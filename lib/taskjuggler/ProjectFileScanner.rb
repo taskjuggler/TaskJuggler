@@ -184,7 +184,7 @@ class TaskJuggler
       begin
         [ type, TjTime.new(match) ]
       rescue TjException => msg
-        error('time_error', msg)
+        error('time_error', msg.message)
       end
     end
 

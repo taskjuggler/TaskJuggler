@@ -80,7 +80,7 @@ class TaskJuggler
         files = @opts.parse(argv)
       rescue OptionParser::ParseError => msg
         puts @opts.to_s + "\n"
-        error(msg, 2)
+        error(msg.message, 2)
       end
 
       files
