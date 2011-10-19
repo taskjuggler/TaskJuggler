@@ -351,7 +351,7 @@ class TaskJuggler
         title = ''
       end
       trigger['onclick'] = "TagToTip('ID#{trigger.object_id}', " +
-                           "TITLE, '#{title}')"
+                           "TITLE, '#{title.gsub(/'/, '&apos;')}')"
       trigger['style'] += 'cursor:help; '
       hook = trigger unless hook
       hook << (ltDiv = XMLElement.new('div', 'class' => 'tj_tooltip_box',
