@@ -155,7 +155,13 @@ class TaskJuggler
       return nil if reports.empty?
 
       # Make sure the report is actually in the filtered list.
-      raise "Report not in filtered list" unless reports.include?(reportDef)
+      unless reports.include?(reportDef)
+        @project.warning('nav_in_hidden_rep',
+                         "Navigator requested for a report that is not " +
+                         "included in the navigator list.",
+                         reportDef.sourceFileInfo)
+        return nil
+      end
 
       # Find the list of reports that become the top-level menu entries.
       topLevelReports = [ reportDef ]
