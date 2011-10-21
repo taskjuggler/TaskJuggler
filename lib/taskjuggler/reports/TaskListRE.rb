@@ -38,10 +38,10 @@ class TaskJuggler
       # Prepare the task list.
       taskList = PropertyList.new(@project.tasks)
       taskList.setSorting(@report.get('sortTasks'))
+      taskList.query = @report.project.reportContexts.last.query
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),
                                 @report.get('rollupTask'),
                                 @report.get('openNodes'))
-      taskList.query = @report.project.reportContexts.last.query
       taskList.sort!
 
       # Prepare the resource list. Don't filter it yet! It would break the
