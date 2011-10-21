@@ -136,7 +136,7 @@ class TaskJuggler::TextParser
         end
 
         # The token descriptor tells us where the transition(s) need to go to.
-        tokenType, tokenName = token = @tokens[destIndex]
+        tokenType, tokenName = @tokens[destIndex]
 
         case tokenType
         when :reference

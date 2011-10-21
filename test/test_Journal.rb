@@ -108,17 +108,17 @@ class TestJournal < Test::Unit::TestCase
     assert_equal(a3, ce[1])
 
     # Add old override alert to p1.m1
-    a4 = addAlert('2009-11-29', 0, t = task('p1.m1'))
+    addAlert('2009-11-29', 0, t = task('p1.m1'))
     ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Add new override alert to p1.m1
-    a5 = addAlert('2009-12-01', 0, t = task('p1.m1'))
+    a4 = addAlert('2009-12-01', 0, t = task('p1.m1'))
     ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
     assert_equal(1, ce.count)
-    assert_equal(a5, ce[0])
+    assert_equal(a4, ce[0])
   end
 
   def test_alertSimple
@@ -159,14 +159,14 @@ class TestJournal < Test::Unit::TestCase
   def createTaskTree
     p1 = newTask(nil, 'p1')
     m1 = newTask(p1, 'm1')
-    m2 = newTask(p1, 'm2')
+    newTask(p1, 'm2')
     newTask(m1, 'l1')
     newTask(m1, 'l2')
     newTask(nil, 'p2')
   end
 
   def newTask(parent, id)
-    t = Task.new(@p, id, 'Task #{id}', parent)
+    Task.new(@p, id, 'Task #{id}', parent)
   end
 
   def task(id)

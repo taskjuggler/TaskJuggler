@@ -70,8 +70,6 @@ class TaskJuggler::TextParser
       # Inject the String _text_ into the input stream at the current cursor
       # position.
       def injectText(text, callLength)
-        # Current scanner position in _bytes_ form start
-        pos = @scanner.pos
         # Remove the macro call from the end of the already parsed input.
         preCall = @scanner.pre_match[0..-(callLength + 1)]
         # Store the end position of the inserted macro in bytes.
