@@ -38,7 +38,6 @@ class TaskJuggler
       str = @inputStr.dup
       # Replace all occurences of <-name->.
       str.gsub!(/<-[a-zA-Z][_a-zA-Z]*->/) do |match|
-        len = match.size
         attribute = match[2..-3]
         @query.attributeId = attribute
         @query.process

@@ -112,7 +112,7 @@ private
   end
 
   def unaryOp(op, operator)
-    exp = LogicalOperation.new(LogicalOperation.new(op), operator)
+    LogicalOperation.new(LogicalOperation.new(op), operator)
   end
 
 end

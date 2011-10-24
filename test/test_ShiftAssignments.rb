@@ -38,7 +38,7 @@ class TestPropertySet < Test::Unit::TestCase
     sas1 = TaskJuggler::ShiftAssignments.new
     sas1.project = @p
     assert_equal(0, TaskJuggler::ShiftAssignments.scoreboards.length)
-    sas1.addAssignment(sa1 = TaskJuggler::ShiftAssignment.new(@s1,
+    sas1.addAssignment(TaskJuggler::ShiftAssignment.new(@s1,
       TaskJuggler::TimeInterval.new(TaskJuggler::TjTime.new('2008-08-01'),
                                     TaskJuggler::TjTime.new('2008-08-05'))))
     assert_equal(1, TaskJuggler::ShiftAssignments.scoreboards.length)

@@ -21,7 +21,6 @@ class TestCSVFile < Test::Unit::TestCase
 
   def test_to_s
     csv = TaskJuggler::CSVFile.new([ [ "foo", "bar" ], [ "rab", "oof" ] ])
-    s = csv.to_s
     ref = <<EOT
 "foo";"bar"
 "rab";"oof"

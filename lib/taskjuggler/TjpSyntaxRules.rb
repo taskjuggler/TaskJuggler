@@ -4798,7 +4798,7 @@ EOT
 
   def rule_statusSheetHeader
     pattern(%w( _statussheet !resourceId !valIntervalOrDate ), lambda {
-      unless (scenarioIdx = @project['trackingScenarioIdx'])
+      unless @project['trackingScenarioIdx']
         error('ss_no_tracking_scenario',
               'No trackingscenario defined.')
       end

@@ -178,7 +178,7 @@ class TaskJuggler
       end
 
       html = HTMLDocument.new(:strict)
-      head = html.generateHead("TaskJuggler Report - #{@name}",
+      head = html.generateHead(@project['name'] + " - #{get('title') || @name}",
                                'description' => 'TaskJuggler Report',
                                'keywords' => 'taskjuggler, project, management')
       if a('selfcontained')
