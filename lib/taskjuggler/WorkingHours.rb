@@ -112,9 +112,10 @@ class TaskJuggler
         raise "dayOfWeek out of range: #{dayOfWeek}"
       end
       intervals.each do |iv|
-        if iv[0] < 0 || iv[0] >= 24 * 60 * 60 ||
-           iv[1] < 0 || iv[1] >= 24 * 60 * 60
-          raise "Time interval has illegal values: #{iv[0]} - #{iv[1]}"
+        if iv[0] < 0 || iv[0] > 24 * 60 * 60 ||
+           iv[1] < 0 || iv[1] > 24 * 60 * 60
+          raise "Time interval has illegal values: " +
+                "#{time_to_s(iv[0])} - #{time_to_s(iv[1])}"
         end
         if iv[0] >= iv[1]
           raise "Interval end time must be larger than start time"
@@ -180,9 +181,7 @@ class TaskJuggler
           else
             str += ', '
           end
-          str += "#{iv[0] / 3600}:" +
-                 "#{iv[0] % 3600 == 0 ? '00' : iv[0] % 3600} - " +
-                 "#{iv[1] / 3600}:#{iv[1] % 3600 == 0 ? '00' : iv[1] % 3600}"
+          str += "#{time_to_s(iv[0])} - #{time_to_s(iv[0])}"
         end
         str += "\n" if day < 6
       end
@@ -190,6 +189,10 @@ class TaskJuggler
     end
 
   private
+
+    def time_to_s(t)
+      "#{t / 3600}:#{t % 3600 == 0 ? '00' : t % 3600}"
+    end
 
     def initScoreboard
       # The scoreboard is an Array of True/False values. It spans a certain

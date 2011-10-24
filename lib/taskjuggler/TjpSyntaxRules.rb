@@ -6518,7 +6518,11 @@ EOT
         end
       end
       wh.timezone = @project['timezone']
-      7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+      begin
+        7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+      rescue
+        error('bad_workinghours', $!.message)
+      end
     })
   end
 
