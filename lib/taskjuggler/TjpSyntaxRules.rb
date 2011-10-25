@@ -6198,6 +6198,8 @@ EOT
     doc('status.timesheet', <<'EOT'
 The status attribute can be used to describe the current status of the task or
 resource. The content of the status messages is added to the project journal.
+The status section is optional for tasks that have been worked on less than
+one day during the report interval.
 EOT
        )
     arg(2, 'headline', <<'EOT'
