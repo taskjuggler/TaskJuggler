@@ -3360,7 +3360,13 @@ EOT
          )
 
     singlePattern('_fte')
-    descr('The Full-Time-Equivalent of a resource or group')
+    descr(<<'EOT'
+The Full-Time-Equivalent of a resource or group. This is the ratio of the
+resource working time and the global working time. Working time is defined by
+working hours and vacations. The FTE value can vary over time and is
+calculated for the report interval or the user specified interval.
+EOT
+         )
 
     singlePattern('_headcount')
     descr('The headcount number of the resource or group')

@@ -202,8 +202,6 @@ class TaskJuggler
               false, false,   false,  [] ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
-        [ 'fte',       'FTE',          FloatAttribute,
-              false, false,   true,  1.0 ],
         [ 'headcount', 'Headcount',    FixnumAttribute,
               false, false,   true,  1 ],
         [ 'index',     'Index',        FixnumAttribute,
@@ -954,6 +952,19 @@ class TaskJuggler
       end
       slotsToDays(slots)
     end
+
+    # Return the number of global working slots during the given time interval
+    # specified by _startIdx_ and _endIdx_. This method takes global vacations
+    # into account.
+    def getWorkSlots(startIdx, endIdx)
+      slots = 0
+      startIdx.upto(endIdx) do |idx|
+        slots += 1 unless @scoreboard[idx]
+      end
+
+      slots
+    end
+
 
     # Return true if for the date specified by the global scoreboard index
     # _sbIdx_ there is any resource that is available.

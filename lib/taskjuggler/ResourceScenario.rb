@@ -278,6 +278,27 @@ class TaskJuggler
       query.string = query.scaleLoad(work)
     end
 
+    # The the Full-time equivalent for the resource or group.
+    def query_fte(query)
+      fte = 0.0
+      if @property.container?
+        # Accumulate the FTEs of all sub-resources.
+        @property.kids.each do |resource|
+          resource.query_fte(@scenarioIdx, query)
+          fte += query.to_num
+        end
+      else
+        # TODO: Getting the globalWorkSlots is relatively expensive. We
+        # probably don't need to compute this for every resource.
+        globalWorkSlots = @project.getWorkSlots(query.startIdx, query.endIdx)
+        workSlots = getWorkSlots(query.startIdx, query.endIdx)
+        fte = workSlots.to_f / globalWorkSlots if globalWorkSlots > 0
+      end
+
+      query.sortable = query.numerical = fte
+      query.string = query.numberFormat.format(fte)
+    end
+
     # Get the rate of the resource.
     def query_rate(query)
       query.sortable = query.numerical = r = rate
@@ -555,6 +576,23 @@ class TaskJuggler
       end
 
       bookedSlots
+    end
+
+    # Count the number of slots betweend the _startIdx_ and _endIdx_ that can
+    # be used for work
+    def getWorkSlots(startIdx, endIdx)
+      return 0 if startIdx >= endIdx
+
+      initScoreboard unless @scoreboard
+
+      workSlots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        slot = @scoreboard[idx]
+        # We count free slots and assigned slots.
+        workSlots += 1 if slot.nil? || slot.is_a?(Task)
+      end
+
+      workSlots
     end
 
     # Count the free slots between the start and end index.

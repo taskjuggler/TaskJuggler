@@ -1,0 +1,15 @@
+project "FTE" 2011-10-29 +1y
+
+resource "Team" {
+  resource "A" {
+    workinghours mon - fri 8:00 - 12:00
+  }
+  resource "B"
+}
+
+task "T"
+
+resourcereport "FTE-1" {
+  formats csv
+  columns name, fte
+}
