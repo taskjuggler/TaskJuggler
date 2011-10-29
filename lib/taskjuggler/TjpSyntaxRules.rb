@@ -6204,6 +6204,8 @@ EOT
     doc('status.timesheet', <<'EOT'
 The status attribute can be used to describe the current status of the task or
 resource. The content of the status messages is added to the project journal.
+The status section is optional for tasks that have been worked on less than
+one day during the report interval.
 EOT
        )
     arg(2, 'headline', <<'EOT'
@@ -6524,7 +6526,11 @@ EOT
         end
       end
       wh.timezone = @project['timezone']
-      7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+      begin
+        7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
+      rescue
+        error('bad_workinghours', $!.message)
+      end
     })
   end
 

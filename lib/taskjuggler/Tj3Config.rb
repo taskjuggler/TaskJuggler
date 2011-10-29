@@ -14,7 +14,7 @@
 require 'taskjuggler/UTF8String'
 require 'taskjuggler/AppConfig'
 
-AppConfig.version = '0.2.2'
+AppConfig.version = '3.0.0'
 AppConfig.packageName = 'taskjuggler'
 AppConfig.softwareName = 'TaskJuggler III'
 AppConfig.packageInfo = 'A Project Management Software'

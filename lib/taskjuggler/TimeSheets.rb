@@ -95,7 +95,8 @@ class TaskJuggler
 
       if @work >= @timeSheet.daysToSlots(1) && @status.nil?
         error('ts_no_status_work',
-              "You must specify a status for task #{taskId}.")
+              "You must specify a status for task #{taskId}. It was worked " +
+              "on for a day or more.")
       end
 
       if @status
