@@ -1,0 +1,9 @@
+project "test" 2011-10-29 +1m
+
+task "T"
+
+# MARK: error 6 invalid_file_name
+taskreport "foo\bar" {
+  formats html
+}
+

@@ -44,6 +44,7 @@ class TaskJuggler
     # Create a new report object.
     def initialize(project, id, name, parent)
       super(project.reports, id, name, parent)
+      checkFileName(name)
       project.addReport(self)
 
       # The type specifier must be set for every report. It tells whether this
@@ -404,6 +405,14 @@ tried:
 #{dirs.join("\n")}
 EOT
            )
+    end
+
+    def checkFileName(name)
+      if name =~ /[\\?%*:|"<>]/
+        error('invalid_file_name',
+              'File names may not contain any of the following characters: ' +
+              '\?%*:|\"<>')
+      end
     end
 
   end
