@@ -72,6 +72,11 @@ class TaskJuggler
       @file << "project #{@project['projectid']} \"#{@project['name']}\" " +
                "\"#{@project['version']}\" #{@project['start']} - " +
                "#{@project['end']} {\n"
+      # Add timingresolution attribute if it's not the default value.
+      if @project['scheduleGranularity'] != 3600
+        generateAttributeText("timingresolution " +
+                              "#{@project['scheduleGranularity'] / 60}min", 2)
+      end
       generateAttributeText("timezone \"#{@project['timezone']}\"", 2)
       generateCustomAttributeDeclarations('resource', @project.resources,
                                           a('resourceAttributes'))
