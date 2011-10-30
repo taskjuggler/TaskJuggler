@@ -1,4 +1,5 @@
 project prj "Project" "1.0" 2000-01-01 - 2000-03-01 {
+  timingresolution 15min
   timezone "America/Denver"
 }
 

@@ -1,4 +1,5 @@
 project prj "Project" "1.0" 2000-01-01-00:00-+0000 - 2000-03-01-00:00-+0000 {
+  timingresolution 15min
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
     active yes
@@ -21,7 +22,7 @@ supplement task t {
           2000-01-04-16:00-+0000 + 8.0h,
           2000-01-05-16:00-+0000 + 8.0h,
           2000-01-06-16:00-+0000 + 8.0h,
-          2000-01-07-16:00-+0000 + 7.0h { overtime 2 }
+          2000-01-07-16:00-+0000 + 8.0h { overtime 2 }
   booking tuxus 2000-01-03-16:00-+0000 + 8.0h,
           2000-01-04-16:00-+0000 + 8.0h,
           2000-01-05-16:00-+0000 + 8.0h,

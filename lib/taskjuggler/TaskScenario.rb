@@ -1761,8 +1761,8 @@ class TaskJuggler
         # Prevent overbooking when multiple resources are allocated and
         # available. If the task has allocation limits we need to make sure
         # that none of them is already exceeded.
-        break if @effort > 0 && @doneEffort >= @effort ||
-                 !limitsOk?(@currentSlotIdx, resource)
+        break if (@effort > 0 && r['efficiency', @scenarioIdx] > 0.0 &&
+                  @doneEffort >= @effort) || !limitsOk?(@currentSlotIdx, r)
 
         if r.book(@scenarioIdx, @currentSlotIdx, @property)
           # For effort based task we adjust the the start end (as defined by
