@@ -39,6 +39,10 @@ shift s4 "Part-time schedule 2" {
   workinghours mon, wed, fri off
 }
 
+shift s5 "All-day, all-week shift" {
+  workinghours mon-sun 0:00 - 24:00
+}
+
 # Now determine when these schedules are applicable
 resource r2 "Resource2" {
   # r2 works three days a week from January to June

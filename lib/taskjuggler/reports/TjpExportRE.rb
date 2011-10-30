@@ -26,7 +26,7 @@ class TaskJuggler
       @supportedTaskAttrs = %w( booking complete depends flags maxend
                                 maxstart minend minstart note priority
                                 projectid responsible )
-      @supportedResourceAttrs = %w( booking flags vacation workinghours )
+      @supportedResourceAttrs = %w( booking flags shifts vacation workinghours )
     end
 
     def generateIntermediateFormat
@@ -57,6 +57,9 @@ class TaskJuggler
 
       generateFlagDeclaration if a('definitions').include?('flags')
       generateProjectIDs if a('definitions').include?('projectids')
+
+      generateShiftList if a('definitions').include?('shifts')
+
       generateResourceList if a('definitions').include?('resources')
       generateTaskList if a('definitions').include?('tasks')
 
@@ -149,6 +152,28 @@ class TaskJuggler
       end
 
       @file << "projectids #{projectIDs.join(', ')}\n\n" unless projectIDs.empty?
+    end
+
+    def generateShiftList
+      @project.shifts.each do |shift|
+        generateShift(shift, 0) unless shift.parent
+      end
+    end
+
+    def generateShift(shift, indent)
+      @file << ' ' * indent + "shift #{shift.id} " +
+               "#{quotedString(shift.name)} {\n"
+
+      a('scenarios').each do |scenarioIdx|
+        generateAttribute(shift, 'workinghours', indent + 2, scenarioIdx)
+      end
+
+      # Call this method recursively for all children.
+      shift.children.each do |subshift|
+        generateShift(subshift, indent + 2)
+      end
+
+      @file << ' ' * indent + "}\n"
     end
 
     def generateResourceList

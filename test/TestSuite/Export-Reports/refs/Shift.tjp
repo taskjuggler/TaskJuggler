@@ -7,6 +7,51 @@ project prj "Example" "1.0" 2000-01-01-00:00-+0000 - 2000-03-31-00:00-+0000 {
 
 projectids prj
 
+shift s1 "Shift1" {
+  workinghours sun off
+               workinghours mon 10:00 - 12:00, 13:00 - 15:00
+               workinghours tue 9:00 - 14:00
+               workinghours wed off
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+  shift s2 "Shift2" {
+    workinghours sun off
+                 workinghours mon 10:00 - 17:00
+                 workinghours tue 9:00 - 14:00
+                 workinghours wed off
+                 workinghours thu 9:00 - 17:00
+                 workinghours fri 9:00 - 17:00
+                 workinghours sat off
+  }
+}
+shift s3 "Part-time schedule 1" {
+  workinghours sun off
+               workinghours mon 9:00 - 12:00, 13:00 - 18:00
+               workinghours tue off
+               workinghours wed 9:00 - 12:00
+               workinghours thu off
+               workinghours fri 9:00 - 12:00, 13:00 - 18:00
+               workinghours sat off
+}
+shift s4 "Part-time schedule 2" {
+  workinghours sun off
+               workinghours mon off
+               workinghours tue 9:00 - 12:00, 13:00 - 18:00
+               workinghours wed off
+               workinghours thu 9:00 - 12:00, 13:00 - 18:00
+               workinghours fri off
+               workinghours sat off
+}
+shift s5 "All-day, all-week shift" {
+  workinghours sun 0:00 - 24:00
+               workinghours mon 0:00 - 24:00
+               workinghours tue 0:00 - 24:00
+               workinghours wed 0:00 - 24:00
+               workinghours thu 0:00 - 24:00
+               workinghours fri 0:00 - 24:00
+               workinghours sat 0:00 - 24:00
+}
 resource r1 "Resource1"
 resource r2 "Resource2"
 
@@ -21,6 +66,8 @@ supplement task t1 {
   projectid prj
 }
 supplement resource r1 {
+  shifts s1 2000-01-01-07:00-+0000 - 2000-01-10-07:00-+0000,
+         s2 2000-01-11-07:00-+0000 - 2000-01-20-07:00-+0000
   workinghours sun off
                workinghours mon 9:00 - 17:00
                workinghours tue 9:00 - 17:00
@@ -30,6 +77,8 @@ supplement resource r1 {
                workinghours sat off
 }
 supplement resource r2 {
+  shifts s3 2005-01-01-07:00-+0000 - 2005-01-15-07:00-+0000,
+         s4 2005-01-15-07:00-+0000 - 2006-01-01-07:00-+0000
   workinghours sun off
                workinghours mon 9:00 - 17:00
                workinghours tue 9:00 - 17:00

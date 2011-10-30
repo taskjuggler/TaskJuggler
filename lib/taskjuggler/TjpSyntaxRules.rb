@@ -1767,6 +1767,11 @@ EOT
     listRule('moreIntervals', '!intervalOrDate')
   end
 
+  def rule_intervalOptional
+    optional
+    singlePattern('!interval')
+  end
+
   def rule_intervalsOptional
     optional
     singlePattern('!intervals')
@@ -4437,23 +4442,21 @@ EOT
   end
 
   def rule_shiftAssignment
-    pattern(%w( !shiftId !intervalsOptional ), lambda {
+    pattern(%w( !shiftId !intervalOptional ), lambda {
       # Make sure we have a ShiftAssignment for the property.
       sa = @property['shifts', @scenarioIdx] || ShiftAssignments.new
       sa.project = @project
 
       if @val[1].nil?
-        intervals = [ TimeInterval.new(@project['start'], @project['end']) ]
+        interval = TimeInterval.new(@project['start'], @project['end'])
       else
-        intervals = @val[1]
+        interval = @val[1]
       end
-      intervals.each do |interval|
-        if !sa.addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
-                                                 interval))
-          error('shift_assignment_overlap',
-                'Shifts may not overlap each other.',
-                @sourceFileInfo[0], @property)
-        end
+      if !sa.addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
+                                               interval))
+        error('shift_assignment_overlap',
+              'Shifts may not overlap each other.',
+              @sourceFileInfo[0], @property)
       end
       # Set same value again to set the 'provided' state for the attribute.
       begin

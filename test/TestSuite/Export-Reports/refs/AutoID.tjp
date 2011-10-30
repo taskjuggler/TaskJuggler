@@ -7,6 +7,24 @@ project prj "Simple Project" "1.0" 2009-10-04-00:00-+0000 - 2009-11-03-10:00-+00
 
 projectids prj
 
+shift _Shift_1 "Foo" {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+  shift _Shift_2 "bar" {
+    workinghours sun off
+                 workinghours mon 9:00 - 17:00
+                 workinghours tue 9:00 - 17:00
+                 workinghours wed 9:00 - 17:00
+                 workinghours thu 9:00 - 17:00
+                 workinghours fri 9:00 - 17:00
+                 workinghours sat off
+  }
+}
 resource _Resource_1 "Foo" {
   resource _Resource_2 "Bar"
 }

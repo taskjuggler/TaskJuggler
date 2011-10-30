@@ -191,7 +191,7 @@ class TaskJuggler
   private
 
     def time_to_s(t)
-      "#{t / 3600}:#{t % 3600 == 0 ? '00' : t % 3600}"
+      "#{t >= 24 * 60 * 60 ? '24:00' : "#{t / 3600}:#{t % 3600}"}"
     end
 
     def initScoreboard

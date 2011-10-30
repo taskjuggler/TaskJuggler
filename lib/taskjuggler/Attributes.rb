@@ -547,7 +547,20 @@ class TaskJuggler
     end
 
     def to_tjp
-      'This code is still missing!'
+      v = get
+      first = true
+      str = 'shifts '
+      v.assignments.each do |sa|
+        if first
+          first = false
+        else
+          str += ",\n"
+        end
+
+        str += "#{sa.shiftScenario.property.fullId} #{sa.interval}"
+      end
+
+      str
     end
 
   end
