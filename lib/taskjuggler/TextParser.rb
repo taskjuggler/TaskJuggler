@@ -318,8 +318,6 @@ class TaskJuggler
             # stores the result of the pattern and keeps the State that we
             # need to return to in case we jump to other patterns from this
             # pattern.
-            function = state.index == state.pattern.tokens.length - 1 ?
-                       state.pattern.function : nil
             @stack.push(TextParser::StackElement.new(state.pattern.function,
                                                      state))
           end
