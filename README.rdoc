@@ -33,14 +33,6 @@ sound surprising at first, but this software does not need a graphical user
 interface. A command shell, a plain text editor (no word processor!) and a web
 browser is all you need for your work.
 
-TaskJuggler has not yet been released as a stable version. The primary
-reason is that we don't want to freeze the syntax before it has been used by a
-larger audience. By now, changes should be small, but we cannot yet rule out
-minor compatibility issues when upgrading to a newer version. We also have a
-fairly small test suite. It's quite possible, that you will run into a bug or
-two. Please report it into our {issue
-tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
-
 = Features and Highlights
 
 * Manages tasks, resources and accounts of your project
@@ -50,6 +42,7 @@ tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
 * Time and status sheet reporting infrastructure
 * Unlimited number of scenarios (baselines) of the same project for what-if analysis
 * Projects can be combined to larger projects
+* Project breakdown and management team support
 * Multiple project managers can work on the same project
 * Flexible working hours and vacation handling
 * Support for shift working
@@ -58,15 +51,21 @@ tracker}[https://github.com/taskjuggler/TaskJuggler/issues].
 * Resources may have running costs
 * Support for profit/loss analysis
 * HTML reports for Web publishing
-* CSV data export for data exchange productivity suites
+* CSV data export for exchange with popular office software
 * iCalendar export for data exchange with calendar applications
+* Project description syntax with macro support
 * Built-in web server for dynamic and interactive reports
+* Powerful and flexible filtering functions to provide the right
+amount of detail to the right audience
+* Server based time sheet system for status and actual collection
 * Powerful project description syntax with macro support
 * Support for central resource allocation database
 * Scales well on multi-core or multi-CPU systems
 * Full integration with Vim text editor
 * Runs on all Linux, Unix, Windows, MacOS and several other operating systems
 * Simple installation
+* Detailed reference manual
+* Support for project management teams and revision control
 
 = Installation
 
