@@ -16,7 +16,7 @@ require 'taskjuggler/AppConfig'
 
 AppConfig.version = '3.0.0'
 AppConfig.packageName = 'taskjuggler'
-AppConfig.softwareName = 'TaskJuggler III'
+AppConfig.softwareName = 'TaskJuggler'
 AppConfig.packageInfo = 'A Project Management Software'
 AppConfig.copyright = [ (2006..2011).to_a ]
 AppConfig.authors = [ 'Chris Schlaeger <chris@linux.com>' ]

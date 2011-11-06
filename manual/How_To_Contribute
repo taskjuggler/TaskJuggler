@@ -133,9 +133,9 @@ available in the ''''test'''' directory.
 
 ==== Contributing to the Ruby code ====
 
-For the first stable TaskJuggler III release we should have all 2.x
+For the first stable TaskJuggler release we have most 2.x
 features supported. The few things that break backwards compatibility
-should be documented in the [[TaskJuggler_2x_Migration]] section.
+are documented in the [[TaskJuggler_2x_Migration]] section.
 
 In general, patches are very welcome. Please follow the coding style
 and naming conventions used in the existing code. Larger changes

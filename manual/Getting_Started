@@ -8,7 +8,7 @@ main project may include other files. Such included files must have
 file names with a ''''.tji'''' extension.
 
 The graphical user interface from the 2.x version has not been ported
-to TaskJuggler III yet. So all work with TaskJuggler needs to be done
+to TaskJuggler 3.x yet. So all work with TaskJuggler needs to be done
 in your favorite text editor and in a command shell.
 
 The commandline version of TaskJuggler works like a compiler. You

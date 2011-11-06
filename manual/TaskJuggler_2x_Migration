@@ -51,7 +51,7 @@ scenario.attribute_id notation.
 
 * The format for [[report|reports]] has been changed considerably.
 The old format was not very flexible and had some design flaws.
-TaskJuggler III now supports report nesting and composition. A report
+TaskJuggler 3.x now supports report nesting and composition. A report
 definition can be used to generated multiple output [[formats]]. The
 name of a report must now be specified without the file name
 extension. It will be automatically added depending on the output
