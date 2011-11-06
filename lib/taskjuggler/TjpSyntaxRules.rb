@@ -3021,8 +3021,6 @@ EOT
       @project['revenueAccount'] = @val[0][1]
     })
 
-    pattern(%w( !export ))
-
     pattern(%w( _flags !declareFlagList ), lambda {
       unless @project['flags'].include?(@val[1])
         @project['flags'] += @val[1]
@@ -3033,7 +3031,6 @@ Declare one or more flag for later use. Flags can be used to mark tasks, resourc
 EOT
        )
 
-    pattern(%w( !iCalReport ))
     pattern(%w( !propertiesInclude ))
 
     pattern(%w( !limits ), lambda {
@@ -3047,8 +3044,6 @@ EOT
        )
 
     pattern(%w( !macro ))
-
-    pattern(%w( !nikuReport ))
 
     pattern(%w( !navigator ))
 
@@ -3082,12 +3077,10 @@ Set the default rate for all subsequently defined resources. The rate describes 
 EOT
         )
 
-    pattern(%w( !report ))
+    pattern(%w( !reportProperties ))
     pattern(%w( !resource ))
-    pattern(%w( !tagfile ))
     pattern(%w( !shift ))
     pattern(%w( !statusSheet ))
-    pattern(%w( !statusSheetReport ))
 
     pattern(%w( _supplement !supplement ))
     doc('supplement', <<'EOT'
@@ -3105,7 +3098,6 @@ EOT
 
     pattern(%w( !task ))
     pattern(%w( !timeSheet ))
-    pattern(%w( !timeSheetReport ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       begin
         @project['vacations'] = @project['vacations'] + @val[2]
@@ -3844,6 +3836,28 @@ This property is a shortcut for setting the start and end property at the
 same time.
 EOT
        )
+  end
+
+  def rule_reportProperties
+    pattern(%w( !export ))
+    pattern(%w( !iCalReport ))
+    pattern(%w( !nikuReport ))
+    pattern(%w( !report ))
+    pattern(%w( !tagfile ))
+    pattern(%w( !statusSheetReport ))
+    pattern(%w( !timeSheetReport ))
+  end
+
+  def rule_reportPropertiesBody
+    optional
+    repeatable
+
+    pattern(%w( !macro ))
+    pattern(%w( !reportProperties ))
+  end
+
+  def rule_reportPropertiesFile
+    pattern(%w( !reportPropertiesBody . ))
   end
 
   def rule_reportStart

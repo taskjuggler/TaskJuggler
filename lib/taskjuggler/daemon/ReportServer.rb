@@ -99,7 +99,7 @@ class TaskJuggler
 
     def addFile(file)
       begin
-        @tj.parseFile(file, :properties)
+        @tj.parseFile(file, :reportPropertiesFile)
       rescue TjException
         return false
       end
