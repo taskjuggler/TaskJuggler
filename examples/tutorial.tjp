@@ -371,8 +371,8 @@ taskreport overview "" {
 
     === Original Project Plan ===
   ->8-
-  columns hierarchindex,
-          name, start, end, effort, duration, cost,
+  columns bsi { title 'WBS' },
+          name, start, end, effort, cost,
           revenue, chart { ${TaskTip} }
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
@@ -405,7 +405,7 @@ macro AlertColor [
 ]
 
 taskreport status "" {
-  columns wbs { width 50 }, name { width 150 },
+  columns bsi { width 50 title 'WBS' }, name { width 150 },
           start { width 100 }, end { width 100 },
           effort { width 100 },
           alert { tooltip plan.journal
@@ -444,7 +444,7 @@ taskreport status "" {
 taskreport development "" {
   scenarios delayed
   headline "Development - Resource Allocation Report"
-  columns hierarchindex, name, start, end, effort { title "Work" },
+  columns bsi { title 'WBS' }, name, start, end, effort { title "Work" },
           duration, chart { ${TaskTip} scale day width 500 }
   timeformat "%Y-%m-%d"
   hideresource ~(isleaf() & isleaf_())
@@ -454,7 +454,7 @@ taskreport development "" {
 # A list of all tasks with the percentage completed for each task
 taskreport deliveries "" {
   headline "Project Deliverables"
-  columns hierarchindex, name, start, end, note { width 150 }, complete,
+  columns bsi { title 'WBS' }, name, start, end, note { width 150 }, complete,
           chart { ${TaskTip} }
   taskroot AcSo.deliveries
   hideresource 1
