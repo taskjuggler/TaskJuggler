@@ -55,8 +55,7 @@ browser is all you need for your work.
 * iCalendar export for data exchange with calendar applications
 * Project description syntax with macro support
 * Built-in web server for dynamic and interactive reports
-* Powerful and flexible filtering functions to provide the right
-amount of detail to the right audience
+* Powerful and flexible filtering functions to provide the right amount of detail to the right audience
 * Server based time sheet system for status and actual collection
 * Powerful project description syntax with macro support
 * Support for central resource allocation database

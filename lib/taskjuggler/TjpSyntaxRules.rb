@@ -1461,6 +1461,19 @@ EOT
        )
   end
 
+  def rule_hideaccount
+    pattern(%w( _hideaccount !logicalExpression ), lambda {
+      @property.set('hideAccount', @val[1])
+    })
+    doc('hideaccount', <<'EOT'
+Do not include accounts that match the specified logical expression. If the
+report is sorted in ''''tree'''' mode (default) then enclosing accounts are
+listed even if the expression matches the account.
+EOT
+       )
+    also(%w( sortaccounts ))
+  end
+
   def rule_hidejournalentry
     pattern(%w( _hidejournalentry !flagLogicalExpression ), lambda {
       @property.set('hideJournalEntry', @val[1])
@@ -3218,7 +3231,7 @@ into another report, you need to specify the full report ID. This is composed
 of the report ID, prefixed by a dot-separated list of all parent report IDs.
 EOT
        )
-    also(%w( resourcereport taskreport textreport ))
+    also(%w( accountreport resourcereport taskreport textreport ))
   end
 
 
@@ -3553,6 +3566,21 @@ EOT
     optional
     repeatable
 
+    pattern(%w( _accountroot !accountId), lambda {
+      if @val[1].leaf?
+        error('accountroot_leaf',
+              "#{@val[1].fullId} is not a container account",
+              @sourceFileInfo[1])
+      end
+      @property.set('accountRoot', @val[1])
+    })
+    doc('accountroot', <<'EOT'
+Only accounts below the specified root-level accounts are exported. The exported
+accounts will have the ID of the root-level account stripped from their ID, so that
+the sub-accounts of the root-level account become top-level accounts in the report
+file.
+EOT
+       )
     pattern(%w( !balance ), lambda {
       @property.set('costAccount', @val[0][0])
       @property.set('revenueAccount', @val[0][1])
@@ -3639,6 +3667,7 @@ EOT
 
     pattern(%w( !headline ))
     pattern(%w( !hidejournalentry ))
+    pattern(%w( !hideaccount ))
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
     pattern(%w( !journalReportAttributes ))
@@ -3702,6 +3731,7 @@ span the [[header]] or [[footer]] sections.
 EOT
        )
 
+    pattern(%w( !rollupaccount ))
     pattern(%w( !rollupresource ))
     pattern(%w( !rolluptask ))
 
@@ -3729,6 +3759,7 @@ used.
 EOT
        )
 
+    pattern(%w( !sortAccounts ))
     pattern(%w( !sortJournalEntries ))
     pattern(%w( !sortResources ))
     pattern(%w( !sortTasks ))
@@ -3896,6 +3927,25 @@ EOT
       @property.sourceFileInfo = @sourceFileInfo[0]
       @property.inheritAttributes
       case @val[0]
+      when 'accountreport'
+        @property.typeSpec = :accountreport
+        unless @property.modified?('columns')
+          # Set the default columns for this report.
+          %w( bsi name monthly ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
+        end
+        # Show all accounts, sorted by tree, seqno-up.
+        unless @property.modified?('hideAccount')
+          @property.set('hideAccount',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortAccounts')
+          @property.set('sortAccounts',
+                        [ [ 'tree', true, -1 ],
+                          [ 'seqno', true, -1 ] ])
+        end
       when 'taskreport'
         @property.typeSpec = :taskreport
         unless @property.modified?('columns')
@@ -3910,7 +3960,7 @@ EOT
           @property.set('hideTask',
                         LogicalExpression.new(LogicalOperation.new(0)))
         end
-        unless @property.modified?('softTask')
+        unless @property.modified?('sortTasks')
           @property.set('sortTasks',
                         [ [ 'tree', true, -1 ],
                           [ 'start', true, 0 ],
@@ -3979,6 +4029,17 @@ EOT
   end
 
   def rule_reportType
+    singlePattern('_accountreport')
+    doc('accountreport', <<'EOT'
+The report lists accounts and their respective values in a table. To reduce
+the list of included accounts, you can use the [[hideaccount]],
+[[rollupaccount]] or [[accountroot]] attributes. The order of the task can
+be controlled with [[sortaccounts]]. If the first sorting criteria is tree
+sorting, the parent accounts will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent accounts to be included in the report.
+EOT
+       )
     singlePattern('_resourcereport')
     doc('resourcereport', <<'EOT'
 The report lists resources and their respective values in a table. The task
@@ -4270,6 +4331,18 @@ EOT
 
     pattern(%w( !workinghoursResource ))
     # Other attributes will be added automatically.
+  end
+
+  def rule_rollupaccount
+    pattern(%w( _rollupaccount !logicalExpression ), lambda {
+      @property.set('rollupAccount', @val[1])
+    })
+    doc('rollupaccount', <<'EOT'
+Do not show sub-accounts of accounts that match the specified logical
+expression.
+EOT
+       )
+    example('Rollupaccount')
   end
 
   def rule_rollupresource
@@ -4652,6 +4725,19 @@ the journal entry is associated with
 journal entry is associated with
 EOT
         )
+  end
+
+  def rule_sortAccounts
+    pattern(%w( _sortaccounts !sortCriteria ), lambda {
+      @property.set('sortAccounts', @val[1])
+    })
+    doc('sortaccounts', <<'EOT'
+Determines how the accounts are sorted in the report. Multiple criteria can be
+specified as a comma separated list. If one criteria is not sufficient to sort
+a group of accounts, the next criteria will be used to sort the accounts in
+this group.
+EOT
+       )
   end
 
   def rule_sortResources

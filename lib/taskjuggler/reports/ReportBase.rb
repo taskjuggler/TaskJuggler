@@ -46,6 +46,38 @@ class TaskJuggler
       raise 'This function must be overriden by derived classes.'
     end
 
+    # Take the complete account list and remove all accounts that are matching
+    # the hide expression, the rollup Expression or are not a descendent of
+    # accountRoot. In case resource is not nil, a account is only included if
+    # the resource is allocated to it in any of the reported scenarios.
+    def filterAccountList(list_, resource, hideExpr, rollupExpr, openNodes)
+      list = PropertyList.new(list_)
+      if (accountRoot = a('accountRoot'))
+        # Remove all accounts that are not descendents of the accountRoot.
+        list.delete_if { |account| !account.isChildOf?(accountRoot) }
+      end
+
+      if resource
+        # If we have a resource we need to check that the resource is
+        # allocated to the accounts in any of the reported scenarios within
+        # the report time frame.
+        list.delete_if do |account|
+          delete = true
+          a('scenarios').each do |scenarioIdx|
+            iv = TimeInterval.new(a('start'), a('end'))
+            if account.hasResourceAllocated?(scenarioIdx, iv, resource)
+              delete = false
+              break;
+            end
+          end
+          delete
+        end
+      end
+
+      standardFilterOps(list, hideExpr, rollupExpr, openNodes, resource,
+                        accountRoot)
+    end
+
     # Take the complete task list and remove all tasks that are matching the
     # hide expression, the rollup Expression or are not a descendent of
     # taskRoot. In case resource is not nil, a task is only included if

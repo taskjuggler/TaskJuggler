@@ -324,6 +324,8 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
+        [ 'accountRoot',  'Account Root',    PropertyAttribute,
+              true,  false,   false, nil ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'caption',   'Caption',      RichTextAttribute,
@@ -353,6 +355,8 @@ class TaskJuggler
         [ 'header',    'Header',       RichTextAttribute,
               true,  false,   false, nil ],
         [ 'headline',  'Headline',     RichTextAttribute,
+              true,  false,   false, nil ],
+        [ 'hideAccount', 'Hide Account', LogicalExpressionAttribute,
               true,  false,   false, nil ],
         [ 'hideJournalEntry', 'Hide JournalEntry', LogicalExpressionAttribute,
               true,  false,   false, nil ],
@@ -392,6 +396,8 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'right',     'Right',        RichTextAttribute,
               true,  false,   false, nil ],
+        [ 'rollupAccount', 'Rollup Account', LogicalExpressionAttribute,
+              true,  false,   false, nil ],
         [ 'rollupResource', 'Rollup Resource', LogicalExpressionAttribute,
               true,  false,   false, nil ],
         [ 'rollupTask', 'Rollup Task', LogicalExpressionAttribute,
@@ -404,6 +410,8 @@ class TaskJuggler
               false, false,   false, nil ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
               true,  true,    false, nil ],
+        [ 'sortAccounts', 'Sort Accounts', SortListAttribute,
+              true,  false,   false, [[ 'seqno', true, -1 ]] ],
         [ 'sortJournalEntries', 'Sort Journal Entries', JournalSortListAttribute,
               true,  false,   false, [[ :alert, 1 ], [ :date, 1 ], [ :seqno, 1 ]] ],
         [ 'sortResources', 'Sort Resources', SortListAttribute,

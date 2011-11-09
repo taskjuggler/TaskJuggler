@@ -14,6 +14,7 @@
 require 'fileutils'
 
 require 'taskjuggler/PropertyTreeNode'
+require 'taskjuggler/reports/AccountListRE'
 require 'taskjuggler/reports/TextReport'
 require 'taskjuggler/reports/TaskListRE'
 require 'taskjuggler/reports/ResourceListRE'
@@ -106,6 +107,8 @@ class TaskJuggler
     def generateIntermediateFormat
       @content = nil
       case @typeSpec
+      when :accountreport
+        @content = AccountListRE.new(self)
       when :export
         @content = TjpExportRE.new(self)
       when :iCal
@@ -281,6 +284,13 @@ EOT
 
     # Generate time sheet drafts.
     def generateTJP
+      unless @content.respond_to?('to_tjp')
+        warning('tjp_not_supported',
+                "TJP format is not supported for report #{@id} of " +
+                "type #{@typeSpec}.")
+        return nil
+      end
+
       begin
         fileName = '.'
         if @name == '.'
