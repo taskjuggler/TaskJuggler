@@ -4342,7 +4342,6 @@ Do not show sub-accounts of accounts that match the specified logical
 expression.
 EOT
        )
-    example('Rollupaccount')
   end
 
   def rule_rollupresource
