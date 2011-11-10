@@ -1,0 +1,21 @@
+project "AccountReport" 2011-11-09 +1y
+
+account c "C"
+account r "R"
+
+balance c r
+rate 400
+
+resource r1 "R1"
+
+task t "T" {
+  task s1 "S1" {
+    chargeset c
+    effort 30d
+    allocate r1
+  }
+}
+
+accountreport "AccountReport" {
+  formats html
+}

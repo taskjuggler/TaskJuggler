@@ -297,6 +297,16 @@ p.tj_journal {
   overflow:hidden;
   padding:0px;
 }
+.accountcell1 {
+  background-color:#ebf2ff;
+  white-space:nowrap;
+  padding:0px;
+}
+.accountcell2 {
+  background-color:#d9dfeb;
+  white-space:nowrap;
+  padding:0px;
+}
 .taskcell1 {
   background-color:#ebf2ff;
   white-space:nowrap;

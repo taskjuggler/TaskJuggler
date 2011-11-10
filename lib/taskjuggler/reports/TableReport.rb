@@ -789,8 +789,6 @@ class TaskJuggler
     # start date for the calendar. _sameTimeNextFunc_ is the function that
     # will move the date to the next cell.
     def genCalChartAccountCell(origQuery, line, columnDef, t, sameTimeNextFunc)
-      account = line.property
-
       firstCell = nil
       while t < @end
         # We modify the start and end dates to match the cell boundaries. So
@@ -799,8 +797,7 @@ class TaskJuggler
         query = origQuery.dup
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
-        cellIv = TimeInterval.new(t, nextT)
-        query.attributeId = 'amount'
+        query.attributeId = 'balance'
         query.start = t
         query.end = nextT
         query.process
@@ -808,13 +805,14 @@ class TaskJuggler
         # Create a new cell
         cell = newCell(query, line)
 
-        # To increase readability, we don't show 0.0 values.
-        #cell.text = query.to_s if query.to_num != 0.0
-        cell.text = "0.0"
+        cell.text = query.to_s
 
         cdText = columnDef.cellText.getPattern(query)
         cell.text = cdText if cdText
         cell.showTooltipHint = false
+
+        cell.category = 'accountcell' +
+                        (line.property.get('index') % 2 == 1 ? '1' : '2')
 
         tryCellMerging(cell, line, firstCell)
 
@@ -1042,13 +1040,15 @@ class TaskJuggler
       cell.alignment = alignment(columnDef.id, attributeType)
 
       # Set background color
-      if line.property.is_a?(Task)
-        cell.category = line.property.get('index') % 2 == 1 ?
-          'taskcell1' : 'taskcell2'
-      else
-        cell.category = line.property.get('index') % 2 == 1 ?
-          'resourcecell1' : 'resourcecell2'
+      case line.property
+      when Account
+        cell.category = 'accountcell'
+      when Task
+        cell.category = 'taskcell'
+      when Resource
+        cell.category = 'resourcecell'
       end
+      cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
 
       # Set column width
       cell.width = columnDef.width if columnDef.width

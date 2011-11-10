@@ -22,14 +22,25 @@ class TaskJuggler
       super
     end
 
-    # Compute the turnover for the _period_. Period should be a TimeInterval.
-    def turnover(period)
+    def query_balance(query)
+      startIdx = @project.dateToIdx(@project['start'])
+      endIdx = @project.dateToIdx([@project['start'], query.start].max)
+
+      query.sortable = query.numerical = amount = turnover(startIdx, endIdx)
+      query.string = query.currencyFormat.format(amount)
+    end
+
+    private
+
+    # Compute the turnover for the period between _startIdx_ end _endIdx_.
+    # TODO: This method is horribly inefficient!
+    def turnover(startIdx, endIdx)
       amount = 0.0
-      if container?
+      if @property.container?
         @children.each { |child| amount += child.turnover }
       else
         @project.tasks.each do |task|
-          amount += task.turnover(period, self)
+          amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property)
         end
       end
       amount

@@ -444,7 +444,8 @@ class TaskJuggler
       amount = 0.0
       if @property.container?
         @property.kids.each do |child|
-          amount += child.turnover(@scenarioIdx, startIdx, endIdx, account, task)
+          amount += child.turnover(@scenarioIdx, startIdx, endIdx, account,
+                                   task)
         end
       else
         @duties.each do |duty|

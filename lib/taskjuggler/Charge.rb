@@ -15,7 +15,7 @@ require 'taskjuggler/TjTime'
 
 class TaskJuggler
 
-  # This class describes a one-time or per time charge that can be assiciated
+  # This class describes a one-time or per time charge that can be associated
   # with a Task. The charge can take effect either on starting the task,
   # finishing it, or per time interval.
   class Charge
