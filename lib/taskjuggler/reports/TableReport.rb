@@ -317,11 +317,67 @@ class TaskJuggler
       end
     end
 
+    # Generate a ReportTableLine for each of the accounts in _accountList_. If
+    # _scopeLine_ is defined, the generated account lines will be within the
+    # scope this resource line.
+    def generateAccountList(accountList, scopeLine)
+      queryAttrs = { 'project' => @project,
+                     'scopeProperty' => scopeLine ? scopeLine.property : nil,
+                     'loadUnit' => a('loadUnit'),
+                     'numberFormat' => a('numberFormat'),
+                     'timeFormat' => a('timeFormat'),
+                     'currencyFormat' => a('currencyFormat'),
+                     'start' => @start, 'end' => @end,
+                     'hideJournalEntry' => a('hideJournalEntry'),
+                     'journalMode' => a('journalMode'),
+                     'journalAttributes' => a('journalAttributes'),
+                     'sortJournalEntries' => a('sortJournalEntries'),
+                     'costAccount' => a('costAccount'),
+                     'revenueAccount' => a('revenueAccount') }
+      accountList.query = Query.new(queryAttrs)
+      accountList.sort!
+
+      # The primary line counter. Is not used for enclosed lines.
+      no = 0
+      # The scope line counter. It's reset for each new scope.
+      lineNo = scopeLine ? scopeLine.lineNo : 0
+      # Init the variable to get a larger scope
+      line = nil
+      accountList.each do |account|
+        # Get the current Query from the report context and create a copy. We
+        # are going to modify it.
+        query = @project.reportContexts.last.query.dup
+        query.property = account
+        query.scopeProperty = scopeLine ? scopeLine.property : nil
+
+        no += 1
+        Log.activity if lineNo % 10 == 0
+        lineNo += 1
+        a('scenarios').each do |scenarioIdx|
+          query.scenarioIdx = scenarioIdx
+          # Generate line for each account.
+          line = ReportTableLine.new(@table, account, scopeLine)
+
+          line.no = no unless scopeLine
+          line.lineNo = lineNo
+          line.subLineNo = @table.lines
+          setIndent(line, a('accountRoot'), accountList.treeMode?)
+
+          # Generate a cell for each column in this line.
+          a('columns').each do |columnDef|
+            query.attributeId = columnDef.id
+            next unless generateTableCell(line, account, columnDef, query)
+          end
+        end
+      end
+      lineNo
+    end
+
     # Generate a ReportTableLine for each of the tasks in _taskList_. In case
     # _resourceList_ is not nil, it also generates the nested resource lines for
     # each resource that is assigned to the particular task. If _scopeLine_
-    # is defined, the generated task lines will be within the scope this resource
-    # line.
+    # is defined, the generated task lines will be within the scope this
+    # resource line.
     def generateTaskList(taskList, resourceList, scopeLine)
       queryAttrs = { 'project' => @project,
                      'scopeProperty' => scopeLine ? scopeLine.property : nil,
@@ -600,6 +656,9 @@ class TaskJuggler
       elsif property.is_a?(Resource)
         genCalChartResourceCell(query, tcLine, columnDef, start,
                                 sameTimeNextFunc)
+      elsif property.is_a?(Account)
+        genCalChartAccountCell(query, tcLine, columnDef, start,
+                               sameTimeNextFunc)
       else
         raise "Unknown property type #{property.class}"
       end
@@ -720,6 +779,48 @@ class TaskJuggler
       checkCellText(cell)
 
       true
+    end
+
+    # Generate the cells for the account lines of a calendar column. These
+    # lines do not directly belong to the @table object but to an embedded
+    # ColumnTable object. Therefor a single @table column usually has many
+    # cells on each single line. _scenarioIdx_ is the index of the scenario
+    # that is reported in this line. _line_ is the @table line. _t_ is the
+    # start date for the calendar. _sameTimeNextFunc_ is the function that
+    # will move the date to the next cell.
+    def genCalChartAccountCell(origQuery, line, columnDef, t, sameTimeNextFunc)
+      account = line.property
+
+      firstCell = nil
+      while t < @end
+        # We modify the start and end dates to match the cell boundaries. So
+        # we need to make sure we don't modify the original Query but our own
+        # copies.
+        query = origQuery.dup
+        # call TjTime::sameTimeNext... function
+        nextT = t.send(sameTimeNextFunc)
+        cellIv = TimeInterval.new(t, nextT)
+        query.attributeId = 'amount'
+        query.start = t
+        query.end = nextT
+        query.process
+
+        # Create a new cell
+        cell = newCell(query, line)
+
+        # To increase readability, we don't show 0.0 values.
+        #cell.text = query.to_s if query.to_num != 0.0
+        cell.text = "0.0"
+
+        cdText = columnDef.cellText.getPattern(query)
+        cell.text = cdText if cdText
+        cell.showTooltipHint = false
+
+        tryCellMerging(cell, line, firstCell)
+
+        t = nextT
+        firstCell = cell unless firstCell
+      end
     end
 
     # Generate the cells for the task lines of a calendar column. These lines do
