@@ -4040,6 +4040,8 @@ Tree sorting is the default. You need to change it if you do not want certain
 parent accounts to be included in the report.
 EOT
        )
+    also(%w( report))
+
     singlePattern('_resourcereport')
     doc('resourcereport', <<'EOT'
 The report lists resources and their respective values in a table. The task
@@ -4056,6 +4058,8 @@ The tasks that the resources are allocated to can be included as well. Use the
 attributes and the full syntax for this keyword.
 EOT
        )
+    also(%w( report))
+
     singlePattern('_taskreport')
     doc('taskreport', <<'EOT'
 The report lists tasks and their respective values in a table. To reduce the
@@ -4071,6 +4075,8 @@ The resources that are allocated to each task can be listed as well. Use the
 attributes and the full syntax for this keyword.
 EOT
        )
+    also(%w( report))
+
     singlePattern('_textreport')
     doc('textreport', <<'EOT'
 This report consists of 5 RichText sections, a header, a center section with a
@@ -4078,6 +4084,7 @@ left and right margin and a footer. The sections may contain the output of
 other defined reports. See [[report]] for further details.
 EOT
        )
+    also(%w( report))
   end
 
   def rule_resource
@@ -4342,7 +4349,6 @@ Do not show sub-accounts of accounts that match the specified logical
 expression.
 EOT
        )
-    example('Rollupaccount')
   end
 
   def rule_rollupresource
@@ -4487,7 +4493,7 @@ EOT
   def rule_scenarioIdCol
     pattern(%w( $ID_WITH_COLON ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_id', "Unknown scenario: @val[0]",
+        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}",
               @sourceFileInfo[0])
       end
     })
