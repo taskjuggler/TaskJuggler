@@ -85,9 +85,30 @@ files, you need to register them with your repository.
 If you think you are done, you can commit your changes to your local
 repository.
 
- git commit -a
+ git commit -a -s
 
-And then push it into your forked github repository.
+The -s parameter is very important. We will only accept signed-off patches. By
+signing off on your patches you confirm that you wrote the code and have the
+right to pass it on as a patch. See
+[http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html this
+document] for more information!
+
+Please include a meaningful commit message. The first line (header line) should
+be prefixed by ''''Fix: '''' for bug fixes or ''''New: '''' for new features.
+This is used to automatically generate the change log from one release to
+another. So a bug that has been introduced after the last release and is fixed
+before the next release does not need to be included in the changelog. For
+those cases, don't use any prefix.
+
+After the header line leave a blank line and include one or more paragraphs
+with more detailed information about the patch. This information will also be
+included in the the change log if the header line has a prefix.
+
+If you fix a bug that was reported by somebody else, please also include a reported-by line:
+
+ Reported-by: whoever-reported-the-bug
+
+Then push it into your forked github repository.
 
  git push
 

@@ -4414,7 +4414,7 @@ EOT
   def rule_scenarioIdCol
     pattern(%w( $ID_WITH_COLON ), lambda {
       if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
-        error('unknown_scenario_id', "Unknown scenario: @val[0]",
+        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}",
               @sourceFileInfo[0])
       end
     })
