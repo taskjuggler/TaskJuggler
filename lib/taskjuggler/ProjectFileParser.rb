@@ -394,6 +394,11 @@ class TaskJuggler
       @cr.setLastSyntaxToken(idx)
     end
 
+    # Specify the support level for the current pattern.
+    def level(level)
+      @cr.setSupportLevel(level)
+    end
+
     # Add a reference to another pattern. This information is only used to
     # generate the documentation for the patterns of this rule.
     def also(seeAlso)

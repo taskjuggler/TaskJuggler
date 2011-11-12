@@ -196,15 +196,21 @@ class TaskJuggler
             "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
             "Inherited: #{@inheritedFromParent ? 'Yes' : 'No'}\n\n"
 
-      str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
-                                    textW)}\n\n"
+      if @pattern.supportLevel != :supported
+        str += "Warning:     #{format(tagW, supportLevelMessage, textW)}\n"
+      end
 
+      # Don't show further details if the keyword has been removed.
+      return str if @pattern.supportLevel == :removed
+
+      str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
+                                    textW)}\n"
       if @syntax != '[{ <attributes> }]'
-        str += "Syntax:      #{format(tagW, @syntax, textW)}\n\n"
+        str += "Syntax:      #{format(tagW, @syntax, textW)}\n"
 
         str += "Arguments:   "
         if @args.empty?
-          str += format(tagW, "none\n\n", textW)
+          str += format(tagW, "none\n", textW)
         else
           argStr = ''
           @args.each do |arg|
@@ -242,7 +248,7 @@ class TaskJuggler
         str += format(tagW, cxtStr, textW)
       end
 
-      str += "\n\nAttributes:  "
+      str += "\nAttributes:  "
       if @optionalAttributes.empty?
         str += "none\n\n"
       else
@@ -278,7 +284,7 @@ class TaskJuggler
           end
         end
         if showLegend
-          attrStr += "\n\n[sc] : Attribute is scenario specific" +
+          attrStr += "\n[sc] : Attribute is scenario specific" +
                      "\n[ig] : Attribute is inherited from global attribute" +
                      "\n[ip] : Attribute is inherited from parent property"
         end
@@ -322,6 +328,7 @@ class TaskJuggler
           DIV.new('style' => 'margin-left:5%; margin-right:5%') do
             [
               generateHTMLKeywordBox,
+              generateHTMLSupportLevel,
               generateHTMLDescriptionBox,
               generateHTMLOptionalAttributesBox,
               generateHTMLExampleBox
@@ -406,6 +413,16 @@ class TaskJuggler
       TextFormatter.new(width, indent).format(str)[indent..-1]
     end
 
+    def generateHTMLSupportLevel
+      if @pattern.supportLevel != :supported
+        P.new do
+          newRichText("<fcol:red>#{supportLevelMessage}</fcol>").to_html
+        end
+      else
+        nil
+      end
+    end
+
     def generateHTMLKeywordBox
       # Box with keyword name.
       P.new do
@@ -423,6 +440,8 @@ class TaskJuggler
     end
 
     def generateHTMLDescriptionBox
+      return nil if @pattern.supportLevel == :removed
+
       # Box with purpose, syntax, arguments and context.
       P.new do
         TABLE.new({ 'align' => 'center', 'class' => 'table' }) do
@@ -445,16 +464,22 @@ class TaskJuggler
     end
 
     def generateHTMLPurposeLine
+      return nil if @pattern.supportLevel == :removed
+
       generateHTMLTableLine('Purpose', newRichText(@pattern.doc).to_html)
     end
 
     def generateHTMLSyntaxLine
+      return nil if @pattern.supportLevel == :removed
+
       if @syntax != '[{ <attributes> }]'
         generateHTMLTableLine('Syntax', CODE.new { @syntax })
       end
     end
 
     def generateHTMLArgumentsLine
+      return nil if @pattern.supportLevel == :removed
+
       return nil unless @syntax != '[{ <attributes> }]'
 
       if @args.empty?
@@ -494,6 +519,8 @@ class TaskJuggler
     end
 
     def generateHTMLContextLine
+      return nil if @pattern.supportLevel == :removed
+
       if @contexts.empty?
         descr = A.new('href' =>
                       'Getting_Started.html#Structure_of_a_TJP_File') do
@@ -521,6 +548,8 @@ class TaskJuggler
     end
 
     def generateHTMLTableLine(col1, col2, col3 = nil, col1rows = nil)
+      return nil if @pattern.supportLevel == :removed
+
       TR.new('align' => 'left') do
         columns = []
         attrs = { 'class' => 'tag' }
@@ -535,6 +564,8 @@ class TaskJuggler
     end
 
     def generateHTMLOptionalAttributesBox
+      return nil if @pattern.supportLevel == :removed
+
       # Box with attributes.
       unless @optionalAttributes.empty?
         @optionalAttributes.sort! do |a, b|
@@ -618,6 +649,8 @@ class TaskJuggler
     end
 
     def generateHTMLExampleBox
+      return nil if @pattern.supportLevel == :removed
+
       if @pattern.exampleFile
         exampleDir = AppConfig.dataDirs('test')[0] + "TestSuite/Syntax/Correct/"
         example = TjpExample.new
@@ -631,6 +664,27 @@ class TaskJuggler
         DIV.new('class' => 'codeframe') do
           PRE.new('class' => 'code') { text }
         end
+      end
+    end
+
+    def supportLevelMessage
+      case @pattern.supportLevel
+      when :experimental
+        "This keyword is currently in an experimental state. " +
+        "The implementation is probably still incomplete and " +
+        "use of this keyword may lead to wrong results. Do not " +
+        "use this keyword unless you were specifically directed " +
+        "by the developers to try it."
+      when :beta
+        "This keyword has not yet been fully tested. You are " +
+        "welcome to try it, but this may lead to wrong results. " +
+        "The syntax may still change with future versions. " +
+        "The developers appreciate any feedback on this keyword."
+      when :deprecated
+        "This keyword should no longer be used. It will be " +
+        "in future versions of this software."
+      when :removed
+        "This keyword is no longer supported."
       end
     end
 

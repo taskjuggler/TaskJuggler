@@ -40,8 +40,8 @@ class TaskJuggler::TextParser
   # documentary information about the pattern.
   class Pattern
 
-    attr_reader :keyword, :doc, :seeAlso, :exampleFile, :exampleTag,
-                :tokens, :function
+    attr_reader :keyword, :doc, :supportLevel, :seeAlso, :exampleFile,
+                :exampleTag, :tokens, :function
 
     # Create a new Pattern object. _tokens_ must be an Array of String objects
     # that describe the Pattern. _function_ can be a reference to a method
@@ -54,6 +54,10 @@ class TaskJuggler::TextParser
       # A list of TokenDoc elements that describe the meaning of variable
       # tokens. The order of the tokens and entries in the Array must correlate.
       @args = []
+      # The syntax can evolve over time. The support level specifies which
+      # level of support this pattern hast. Possible values are :experimental,
+      # :beta, :supported, :deprecated, :removed
+      @supportLevel = :supported
       # A list of references to other patterns that are related to this pattern.
       @seeAlso = []
       # A reference to a file under test/TestSuite/Syntax/Correct and a tag
@@ -197,6 +201,15 @@ class TaskJuggler::TextParser
     # Restrict the syntax documentation to the first +idx+ tokens.
     def setLastSyntaxToken(idx)
       @lastSyntaxToken = idx
+    end
+
+    # Specify the support level of this pattern.
+    def setSupportLevel(level)
+      unless [ :experimental, :beta, :supported, :deprecated,
+               :removed ].include?(level)
+        raise "Fatal Error: Unknown support level #{level}"
+      end
+      @supportLevel = level
     end
 
     # Set the references to related patterns.

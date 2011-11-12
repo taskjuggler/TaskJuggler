@@ -129,6 +129,12 @@ class TaskJuggler::TextParser
       @patterns[-1].setLastSyntaxToken(idx)
     end
 
+    # Specify the support level of the current pattern.
+    def setSupportLevel(level)
+      raise 'No pattern defined yet' if @patterns.empty?
+      @patterns[-1].setSupportLevel(level)
+    end
+
     # Add a reference to another rule for documentation purposes.
     def setSeeAlso(also)
       raise 'No pattern defined yet' if @patterns.empty?

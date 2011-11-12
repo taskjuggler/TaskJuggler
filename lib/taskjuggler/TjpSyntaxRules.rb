@@ -192,6 +192,7 @@ EOT
          end
       end
     })
+    level(:removed)
     doc('limits.allocate', 'This keyword is deprecated. Don\'t use it anymore!')
 
     pattern(%w( _select !allocationSelectionMode ), lambda {
@@ -2937,21 +2938,25 @@ EOT
               'The sloppy projection mode has been deprecated. The ' +
               'functionality is no longer supported.')
     })
+    level(:deprecated)
     doc('sloppy.projection', <<'EOT'
 The sloppy projection mode has been deprecated. Please use
 [[trackingscenario]] feature instead.
 EOT
        )
+    also('trackingscenario')
 
     pattern(%w( _strict ), lambda {
       warning('projection_strict',
               'The strict mode is now always used.')
     })
+    level(:deprecated)
     doc('strict.projection', <<'EOT'
 The strict projection mode has been deprecated. Please use
 [[trackingscenario]] feature instead.
 EOT
        )
+    also('trackingscenario')
   end
 
   def rule_projectProlog
@@ -3247,9 +3252,13 @@ EOT
          )
 
     singlePattern('_alertmessages')
+    level(:deprecated)
+    also('journal')
     descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_alertsummaries')
+    level(:deprecated)
+    also('journal')
     descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_alerttrend')
@@ -3287,6 +3296,8 @@ EOT
     pattern([ '_completed' ], lambda {
       'complete'
     })
+    level(:deprecated)
+    also('complete')
     descr('Deprecated alias for complete')
 
     singlePattern('_criticalness')
@@ -3384,6 +3395,8 @@ EOT
     pattern([ '_hierarchindex' ], lambda {
       'bsi'
     })
+    level(:deprecated)
+    also('bsi')
     descr('Deprecated alias for bsi')
 
     singlePattern('_hourly')
@@ -3416,12 +3429,18 @@ EOT
          )
 
     singlePattern('_journal_sub')
+    level(:deprecated)
+    also('journal')
     descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_journalmessages')
+    level(:deprecated)
+    also('journal')
     descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_journalsummaries')
+    level(:deprecated)
+    also('journal')
     descr('Deprecated. Please use ''''journal'''' instead')
 
     singlePattern('_line')
@@ -3549,6 +3568,8 @@ EOT
     pattern([ '_wbs' ], lambda {
       'bsi'
     })
+    level(:deprecated)
+    also('bsi')
     descr('Deprecated alias for bsi.')
 
     singlePattern('_bsi')
@@ -4030,6 +4051,7 @@ EOT
 
   def rule_reportType
     singlePattern('_accountreport')
+    level(:beta)
     doc('accountreport', <<'EOT'
 The report lists accounts and their respective values in a table. To reduce
 the list of included accounts, you can use the [[hideaccount]],
@@ -4041,6 +4063,7 @@ parent accounts to be included in the report.
 EOT
        )
     also(%w( report))
+    example('AccountReport')
 
     singlePattern('_resourcereport')
     doc('resourcereport', <<'EOT'
@@ -4304,6 +4327,8 @@ EOT
        )
 
     pattern(%w( _shift !shiftAssignments ))
+    level(:removed)
+    also('shift.resource')
     doc('shift.resource', <<'EOT'
 This keyword has been deprecated. Please use [[shifts.resource|shifts
 (resource)]] instead.
@@ -4416,6 +4441,8 @@ EOT
     pattern(%w( _disabled ), lambda {
       @property.set('active', false)
     })
+    level(:deprecated)
+    also('active')
     doc('disabled', <<'EOT'
 This attribute is deprecated. Please use [active] instead.
 
@@ -4427,6 +4454,8 @@ EOT
     pattern(%w( _enabled ), lambda {
       @property.set('active', true)
     })
+    level(:deprecated)
+    also('active')
     doc('enabled', <<'EOT'
 This attribute is deprecated. Please use [active] instead.
 
@@ -4440,6 +4469,8 @@ EOT
               'The \'projection\' keyword has been deprecated. Please use ' +
               '[[trackingscenario]] feature instead.')
     })
+    level(:deprecated)
+    also('booking.task')
     doc('projection', <<'EOT'
 This keyword has been deprecated! Don't use it anymore!
 
@@ -5138,6 +5169,7 @@ EOT
         @property.adopt(task)
       end
     })
+    level(:experimental)
     doc('adopt.task', <<'EOT'
 Add a previously defined task to the sub-tasks of this task. This can be used
 to create virtual sub projects that contain of task trees that were defined as
@@ -5147,8 +5179,6 @@ well.
 
 The adopting task and the adopted task must not share a common top-level task.
 Adopted tasks may not have overlaping sub trees.
-
-'''This feature is experimental right now. Don't use it!'''.
 EOT
        )
 
@@ -5396,6 +5426,7 @@ EOT
     pattern(%w( _account $ID ), lambda {
       # TODO
     })
+    level(:removed)
     doc('account.task', <<'EOT'
 This property has been deprecated. Use [[charge]] instead.
 EOT
@@ -5585,12 +5616,13 @@ EOT
         @property['charge', @scenarioIdx] +
         [ Charge.new(@val[1], :onEnd, @property, @scenarioIdx) ]
     })
+    level(:deprecated)
     doc('endcredit', <<'EOT'
 Specifies an amount that is credited to the accounts specified by the
-[[chargeset]] attributes at the moment the tasks ends. This attribute has been
-deprecated and should no longer be used. Use [[charge]] instead.
+[[chargeset]] attributes at the moment the tasks ends.
 EOT
        )
+    also('charge')
     example('Account', '1')
     pattern(%w( !flags ))
     doc('flags.task', <<'EOT'
@@ -5699,12 +5731,13 @@ EOT
       @property['charge', @scenarioIdx] +=
         [ Charge.new(@val[1], :onStart, @property, @scenarioIdx) ]
     })
+    level(:deprecated)
     doc('startcredit', <<'EOT'
 Specifies an amount that is credited to the account specified by the
-[[chargeset]] attributes at the moment the tasks starts. This attribute has
-been deprecated and should no longer be used. Use [[charge]] instead.
+[[chargeset]] attributes at the moment the tasks starts.
 EOT
        )
+    also('charge')
     pattern(%w( !taskPeriod ))
 
     pattern(%w( _precedes !taskPredList ), lambda {
@@ -5851,11 +5884,13 @@ EOT
     pattern(%w( _shift !shiftAssignments ), lambda {
       checkContainer('shift')
     })
+    level(:removed)
     doc('shift.task', <<'EOT'
 This keyword has been deprecated. Please use [[shifts.task|shifts
 (task)]] instead.
 EOT
        )
+    also('shifts.task')
 
     pattern(%w( _shifts !shiftAssignments ), lambda {
       checkContainer('shifts')

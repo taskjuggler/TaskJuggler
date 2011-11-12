@@ -1,13 +1,11 @@
-= Todo list for TaskJuggler III
+= Todo list for TaskJuggler 3.x
 
 This is a possibly still incomplete list of things that still could
-or should be done for TaskJuggler III.
+or should be done for TaskJuggler 3.x.
 
 == Missing features for 2.x compatibility
 
 * Add missing functions for logical expressions.
-
-* Account reports
 
 * Missing reports (calendar)
 
