@@ -231,7 +231,38 @@ So either all mandatory resources can be allocated for the time slot, or no
 resource will be allocated.
 EOT
        )
-    pattern(%w( _shift !allocationShiftAssignment ))
+    pattern(%w( !allocateShiftAssignments !shiftAssignment ), lambda {
+      begin
+        @allocate.shifts = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
+    })
+    level(:deprecated)
+    also('shifts.allocate')
+    doc('shift.allocate', <<'EOT'
+Limits the allocations of resources during the specified interval to the
+specified shift. Multiple shifts can be defined, but shift intervals may not
+overlap. Allocation shifts are an additional restriction to the
+[[shifts.task|task shifts]] and [[shifts.resource|resource shifts]] or
+[[workinghours.resource|resource working hours]]. Allocations will only be
+made for time slots that are specified as duty time in all relevant shifts.
+The restriction to the shift is only active during the specified time
+interval. Outside of this interval, no restrictions apply.
+EOT
+       )
+
+    pattern(%w( !allocateShiftsAssignments !shiftAssignments ), lambda {
+      begin
+        @allocate.shifts = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
+    })
     doc('shifts.allocate', <<'EOT'
 Limits the allocations of resources during the specified interval to the
 specified shift. Multiple shifts can be defined, but shift intervals may not
@@ -281,27 +312,15 @@ EOT
     descr('Pick a random resource from the list.')
   end
 
-  def rule_allocationShiftAssignment
-    pattern(%w( !shiftId !intervalsOptional ), lambda {
-      # Make sure we have a ShiftAssignment for the allocation.
-      if @allocate.shifts.nil?
-        @allocate.shifts = ShiftAssignments.new
-        @allocate.shifts.project = @project
-      end
+  def rule_allocateShiftAssignments
+    pattern(%w( _shift ), lambda {
+      @shiftAssignments = @allocate.shifts
+    })
+  end
 
-      if @val[1].nil?
-        intervals = [ TimeInterval.new(@project['start'], @project['end']) ]
-      else
-        intervals = @val[1]
-      end
-      intervals.each do |interval|
-        if !@allocate.shifts.
-          addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
-                                            interval))
-          error('shift_assignment_overlap',
-                'Shifts may not overlap each other.', @sourceFileInfo[0])
-        end
-      end
+  def rule_allocateShiftsAssignments
+    pattern(%w( _shifts ), lambda {
+      @shiftAssignments = @allocate.shifts
     })
   end
 
@@ -4326,7 +4345,17 @@ The rate specifies the daily cost of the resource.
 EOT
        )
 
-    pattern(%w( _shift !shiftAssignments ))
+    pattern(%w( !resourceShiftAssignments !shiftAssignments ), lambda {
+      checkContainer('shifts')
+      # Set same value again to set the 'provided' state for the attribute.
+      begin
+        @property['shifts', @scenarioIdx] = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
+    })
     level(:removed)
     also('shift.resource')
     doc('shift.resource', <<'EOT'
@@ -4335,7 +4364,17 @@ This keyword has been deprecated. Please use [[shifts.resource|shifts
 EOT
        )
 
-    pattern(%w( _shifts !shiftAssignments ))
+    pattern(%w( !resourceShiftsAssignments !shiftAssignments ), lambda {
+      checkContainer('shifts')
+      # Set same value again to set the 'provided' state for the attribute.
+      begin
+        @property['shifts', @scenarioIdx] = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
+    })
     doc('shifts.resource', <<'EOT'
 Limits the working time of a resource to a defined shift during the specified
 interval. Multiple shifts can be defined, but shift intervals may not overlap.
@@ -4363,6 +4402,18 @@ EOT
 
     pattern(%w( !workinghoursResource ))
     # Other attributes will be added automatically.
+  end
+
+  def rule_resourceShiftAssignments
+    pattern(%w( _shift ), lambda {
+      @shiftAssignments = @property['shifts', @scenarioIdx]
+    })
+  end
+
+  def rule_resourceShiftsAssignments
+    pattern(%w( _shifts ), lambda {
+      @shiftAssignments = @property['shifts', @scenarioIdx]
+    })
   end
 
   def rule_rollupaccount
@@ -4568,27 +4619,23 @@ EOT
   def rule_shiftAssignment
     pattern(%w( !shiftId !intervalOptional ), lambda {
       # Make sure we have a ShiftAssignment for the property.
-      sa = @property['shifts', @scenarioIdx] || ShiftAssignments.new
-      sa.project = @project
+      unless @shiftAssignments
+        @shiftAssignments = ShiftAssignments.new
+        @shiftAssignments.project = @project
+      end
 
       if @val[1].nil?
         interval = TimeInterval.new(@project['start'], @project['end'])
       else
         interval = @val[1]
       end
-      if !sa.addAssignment(ShiftAssignment.new(@val[0].scenario(@scenarioIdx),
-                                               interval))
+      if !@shiftAssignments.addAssignment(
+         ShiftAssignment.new(@val[0].scenario(@scenarioIdx), interval))
         error('shift_assignment_overlap',
               'Shifts may not overlap each other.',
               @sourceFileInfo[0], @property)
       end
-      # Set same value again to set the 'provided' state for the attribute.
-      begin
-        @property['shifts', @scenarioIdx] = sa
-      rescue AttributeOverwrite
-        # Multiple shift assignments are a common idiom, so don't warn about
-        # them.
-      end
+      @shiftAssignments.assignments.last
     })
   end
 
@@ -5879,8 +5926,16 @@ end attribute comes after the start attribute.
 EOT
        )
 
-    pattern(%w( _shift !shiftAssignments ), lambda {
+    pattern(%w( !taskShiftAssignments !shiftAssignments ), lambda {
       checkContainer('shift')
+      # Set same value again to set the 'provided' state for the attribute.
+      begin
+        @property['shifts', @scenarioIdx] = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
     })
     level(:removed)
     doc('shift.task', <<'EOT'
@@ -5890,8 +5945,15 @@ EOT
        )
     also('shifts.task')
 
-    pattern(%w( _shifts !shiftAssignments ), lambda {
+    pattern(%w( !taskShiftsAssignments !shiftAssignments ), lambda {
       checkContainer('shifts')
+      begin
+        @property['shifts', @scenarioIdx] = @shiftAssignments
+      rescue AttributeOverwrite
+        # Multiple shift assignments are a common idiom, so don't warn about
+        # them.
+      end
+      @shiftAssignments = nil
     })
     doc('shifts.task', <<'EOT'
 Limits the working time for this task during the during the specified interval
@@ -5927,6 +5989,18 @@ EOT
     pattern(%w( !warn ))
 
     # Other attributes will be added automatically.
+  end
+
+  def rule_taskShiftAssignments
+    pattern(%w( _shift ), lambda {
+      @shiftAssignments = @property['shifts', @scenarioIdx]
+    })
+  end
+
+  def rule_taskShiftsAssignments
+    pattern(%w( _shifts ), lambda {
+      @shiftAssignments = @property['shifts', @scenarioIdx]
+    })
   end
 
   def rule_timeformat

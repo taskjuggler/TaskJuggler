@@ -693,7 +693,7 @@ class TaskJuggler
         "The syntax may still change with future versions. " +
         "The developers appreciate any feedback on this keyword."
       when :deprecated
-        "This keyword should no longer be used. It will be " +
+        "This keyword should no longer be used. It will be removed " +
         "in future versions of this software."
       when :removed
         "This keyword is no longer supported."
