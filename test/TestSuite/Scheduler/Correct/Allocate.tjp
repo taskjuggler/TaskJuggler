@@ -95,8 +95,8 @@ task inheritedAllocs "Inherited Allocations" {
 
 task allocShift "Allocation Shift" {
   effort 10d
-  allocate r3 { shift mowefr 2007-09-01 +1w },
-           r4 { shift tuthsa 2007-09-01 +1w }
+  allocate r3 { shifts mowefr 2007-09-01 +1w },
+           r4 { shifts tuthsa 2007-09-01 +1w }
   ${Fixend "2007-09-11-14:00"}
 }
 

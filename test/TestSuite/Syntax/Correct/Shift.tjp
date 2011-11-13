@@ -16,8 +16,8 @@ shift s1 "Shift1" {
 }
 
 resource r1 "Resource1" {
-  shift s1 2000-01-01 - 2000-01-10
-  shift s2 2000-01-11 - 2000-01-20
+  shifts s1 2000-01-01 - 2000-01-10,
+         s2 2000-01-11 - 2000-01-20
 }
 
 shift s3 "Part-time schedule 1" {
@@ -46,9 +46,9 @@ shift s5 "All-day, all-week shift" {
 # Now determine when these schedules are applicable
 resource r2 "Resource2" {
   # r2 works three days a week from January to June
-  shift s3 2005-01-01 - 2005-01-15
+  shifts s3 2005-01-01 - 2005-01-15,
   # r2 switches to two days a week
-  shift s4 2005-01-15 - 2006-01-01
+         s4 2005-01-15 - 2006-01-01
 }
 
 task t1 "Task1" {
