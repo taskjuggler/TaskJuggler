@@ -67,6 +67,14 @@ start at the start of the line.
 The monospace format is not part of the original MediaWiki markup, but
 we found it useful to have for this manual.
 
+Text can be colored when enclosed in ''''fcol'''' tags.
+
+ This is a <fcol:green>green</fcol> word.
+
+The following colors are supported: black, maroon, green, olive, navy,
+purple, teal, silver, gray, red, lime, yellow, blue, fuchsia, aqua and
+white.
+
 Links to external documents are possible as well. In the first form,
 the URL will appear in the readable text as well. In the second form,
 the text after the URL will be visible but the link will be available
