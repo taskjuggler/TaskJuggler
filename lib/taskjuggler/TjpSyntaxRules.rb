@@ -5427,10 +5427,8 @@ EOT
       # TODO
     })
     level(:removed)
-    doc('account.task', <<'EOT'
-This property has been deprecated. Use [[charge]] instead.
-EOT
-        )
+    also('chargeset')
+    doc('account.task', '')
 
     pattern(%w( !allocate ))
 

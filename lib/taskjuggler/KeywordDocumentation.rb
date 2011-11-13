@@ -197,7 +197,22 @@ class TaskJuggler
             "Inherited: #{@inheritedFromParent ? 'Yes' : 'No'}\n\n"
 
       if @pattern.supportLevel != :supported
-        str += "Warning:     #{format(tagW, supportLevelMessage, textW)}\n"
+        msg = supportLevelMessage
+
+        if [ :deprecated, :removed ].include?(@pattern.supportLevel) &&
+           @seeAlso.length > 0
+          msg += "\n\nPlease use "
+          alsoStr = ''
+          @seeAlso.each do |also|
+            unless alsoStr.empty?
+              alsoStr += ', '
+            end
+            alsoStr += also.keyword
+          end
+          msg += "#{alsoStr} instead!"
+        end
+
+        str += "Warning:     #{format(tagW, msg, textW)}\n"
       end
 
       # Don't show further details if the keyword has been removed.
@@ -415,9 +430,14 @@ class TaskJuggler
 
     def generateHTMLSupportLevel
       if @pattern.supportLevel != :supported
-        P.new do
-          newRichText("<fcol:red>#{supportLevelMessage}</fcol>").to_html
-        end
+        [
+          P.new do
+            newRichText("<fcol:red>#{supportLevelMessage}</fcol>").to_html
+          end,
+          P.new do
+            useInsteadMessage
+          end
+        ]
       else
         nil
       end
@@ -464,22 +484,16 @@ class TaskJuggler
     end
 
     def generateHTMLPurposeLine
-      return nil if @pattern.supportLevel == :removed
-
       generateHTMLTableLine('Purpose', newRichText(@pattern.doc).to_html)
     end
 
     def generateHTMLSyntaxLine
-      return nil if @pattern.supportLevel == :removed
-
       if @syntax != '[{ <attributes> }]'
         generateHTMLTableLine('Syntax', CODE.new { @syntax })
       end
     end
 
     def generateHTMLArgumentsLine
-      return nil if @pattern.supportLevel == :removed
-
       return nil unless @syntax != '[{ <attributes> }]'
 
       if @args.empty?
@@ -519,8 +533,6 @@ class TaskJuggler
     end
 
     def generateHTMLContextLine
-      return nil if @pattern.supportLevel == :removed
-
       if @contexts.empty?
         descr = A.new('href' =>
                       'Getting_Started.html#Structure_of_a_TJP_File') do
@@ -688,6 +700,16 @@ class TaskJuggler
       end
     end
 
+    def useInsteadMessage
+      return nil if @seeAlso.empty?
+
+      descr = [ 'Use ' ]
+      @seeAlso.each do |a|
+        descr << ', ' unless descr.length <= 1
+        descr << A.new('href' => "#{a.keyword}.html") { a.title }
+      end
+      descr << " instead."
+    end
   end
 
 end
