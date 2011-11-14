@@ -434,9 +434,10 @@ class TaskJuggler
           P.new do
             newRichText("<fcol:red>#{supportLevelMessage}</fcol>").to_html
           end,
-          P.new do
-            useInsteadMessage
-          end
+          [ :deprecated, :removed ].include?(@pattern.supportLevel) ?
+            P.new do
+              useInsteadMessage
+            end : nil
         ]
       else
         nil
