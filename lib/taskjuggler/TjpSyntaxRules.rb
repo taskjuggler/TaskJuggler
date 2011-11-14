@@ -5125,7 +5125,7 @@ EOT
     pattern(%w( _report !reportId ), lambda {
       @property = @val[1]
     })
-    arg(1, 'report ID', 'The ID of an already defined report.')
+    arg(1, 'report ID', 'The absolute ID of an already defined report.')
   end
 
   def rule_supplementResource
@@ -5139,7 +5139,7 @@ EOT
     pattern(%w( _task !taskId ), lambda {
       @property = @val[1]
     })
-    arg(1, 'task ID', 'The ID of an already defined task.')
+    arg(1, 'task ID', 'The absolute ID of an already defined task.')
   end
 
   def rule_tagfile
