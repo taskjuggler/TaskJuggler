@@ -7,7 +7,7 @@ include "project-1.tji"
 taskreport csv "." {
   formats csv
   timezone "Europe/Amsterdam"
-  columns start, wbs, id
+  columns start, bsi, id
   timeformat "%Y-%m-%d-%H:%M:%S-%z"
   sorttasks plan.start.down, id.up
 }

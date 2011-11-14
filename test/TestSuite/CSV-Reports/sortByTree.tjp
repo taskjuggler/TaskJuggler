@@ -6,7 +6,7 @@ include "project-1.tji"
 taskreport cvs "." {
   formats csv
   timezone "Europe/Amsterdam"
-  columns wbs, name, id, duration
+  columns bsi, name, id, duration
   sorttasks tree
 }
 

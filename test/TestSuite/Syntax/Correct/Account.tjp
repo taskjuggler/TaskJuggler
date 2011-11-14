@@ -19,11 +19,11 @@ resource konqui "Konqui" {
 task items "Room decoration" {
   start 2007-01-06
   # The default account for all tasks
-  account project_cost
+  chargeset project_cost
 
   task plan "Plan work and buy material" {
     # Upfront material cost
-    startcredit 500.0
+    charge 500.0 onstart
     length 2d
   }
    task remove "Remove old inventory" {
@@ -40,15 +40,15 @@ task items "Room decoration" {
   task acceptance "Presentation and customer acceptance" {
     duration 5d
     depends !implement
-    account payments
+    chargeset payments
     # Customer pays at end of acceptance
-    endcredit 2000.0
+    charge 2000.0 onend
   }
 }
 # *** EXAMPLE: 1 -
 
-# accountreport pandl "PAndL.html" {
-#   timeformat "%d-%M-%y"
-#   accumulate
-#   columns index, name, weekly
-# }
+accountreport pandl "PAndL.html" {
+  formats html
+  timeformat "%d-%M-%y"
+  columns index, name, weekly
+}

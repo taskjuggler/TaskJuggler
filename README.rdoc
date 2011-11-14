@@ -1,4 +1,4 @@
-= About {TaskJuggler III}[http://www.taskjuggler.org]
+= About {TaskJuggler}[http://www.taskjuggler.org]
 
 TaskJuggler is a modern and powerful, Free and Open Source Software project
 management tool. Its new approach to project planing and tracking is more

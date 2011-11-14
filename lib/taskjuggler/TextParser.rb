@@ -305,16 +305,6 @@ class TaskJuggler
               # for the current StackElement.
               stackElement.state = s
             else
-              if s.pattern.supportLevel == :deprecated
-                warning('deprecated_keyword',
-                        "The keyword '#{token[1]}' has been deprecated! " +
-                        "See the reference manual for details.")
-              end
-              if s.pattern.supportLevel == :removed
-                error('removed_keyword',
-                      "The keyword '#{token[1]}' is no longer supported! " +
-                      "See the reference manual for details.")
-              end
               # For other patterns, we just push a new StackElement onto the
               # @stack.
               @stack.push(TextParser::StackElement.new(nil, s))
@@ -328,6 +318,16 @@ class TaskJuggler
             # stores the result of the pattern and keeps the State that we
             # need to return to in case we jump to other patterns from this
             # pattern.
+            if state.pattern.supportLevel == :deprecated
+              warning('deprecated_keyword',
+                      "The keyword '#{token[1]}' has been deprecated! " +
+                      "See the reference manual for details.")
+            end
+            if state.pattern.supportLevel == :removed
+              error('removed_keyword',
+                    "The keyword '#{token[1]}' is no longer supported! " +
+                    "See the reference manual for details.")
+            end
             @stack.push(TextParser::StackElement.new(state.pattern.function,
                                                      state))
           end

@@ -20,7 +20,7 @@ account a2 "FooAccount 2" {
 }
 
 task t1 "FooTask1" {
-  account a4
+  chargeset a4
   task t1_1 "FooTask1_1" {
     flags flag2
     start 2000-01-01
@@ -35,8 +35,8 @@ task t2 "FooTask2" {
   flags flag1
   start 2000-01-01
   duration 1d
-  startcredit 10000.0
-  account a4
+  chargeset a4
+  charge 10000.0 onstart
 }
 
 task t3 "FooTask3" {
@@ -48,7 +48,7 @@ task t3 "FooTask3" {
 taskreport task "Report_task" {
   formats html
   balance a1 a2
-  columns hierarchindex, name { title "Task Name" }, daily, effort
+  columns bsi, name { title "Task Name" }, daily, effort
   sorttasks tree, plan.start.up, name.up
 }
 

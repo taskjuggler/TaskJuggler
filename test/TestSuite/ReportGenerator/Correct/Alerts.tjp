@@ -24,7 +24,7 @@ task "T3" {
   task "T3.1" {
     task "T3.1.1" {
       journalentry 2010-08-03 "T3.1.1 Not in report"
-      journalentry 2010-08-06 "T3.1.1 Red" { alert red } 
+      journalentry 2010-08-06 "T3.1.1 Red" { alert red }
       journalentry 2010-08-15 "T3.1.1 Green Not in report" { alert green }
     }
     journalentry 2010-08-06 "T3.1 Yellow" { alert yellow }
@@ -33,16 +33,25 @@ task "T3" {
 
 taskreport "Alerts-1" {
   formats html, csv
-  columns name, 
+  columns name,
           journal {
+            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
             title "Journal All"
             period ${projectstart} - ${projectend}
           },
-          journal_sub {
+          journal {
             title "Journal Sub All"
             period ${projectstart} - ${projectend}
           },
-          journal, journal_sub, alert, alertmessages, alertsummaries,
-          journalmessages, journalsummaries
+          journal, journal {
+            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
+          }, alert,
+          journal {
+            celltext 1 "<-query attribute='journal' journalmode='alerts_down'->"
+          }, journal {
+            celltext 1 "<-query attribute='journal' journalmode='status_down'->"
+          }, journal {
+            celltext 1 "<-query attribute='journal' journalmode='status_up'->"
+          }
   period 2010-08-05 - 2010-08-15
 }

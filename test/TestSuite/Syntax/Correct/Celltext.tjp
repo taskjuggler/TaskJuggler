@@ -16,19 +16,19 @@ task t "Task" {
 # Just a very basic report with some standard columns
 taskreport simple "SimpleReport" {
   formats html
-  columns hierarchindex, name, start, end, weekly
+  columns bsi, name, start, end, weekly
 }
 
 # Report with custom colum title
 taskreport custom "CustomTitle" {
   formats html
-  columns hierarchindex, name { title "Work Item" }, effort
+  columns bsi, name { title "Work Item" }, effort
 }
 
 # *** EXAMPLE: 1 +
 # Report with index and task name combined in one single column
 taskreport combined "CombinedColumn" {
   formats html
-  columns name { celltext 1 "<-query attribute='wbs'-> <-query->"},
+  columns name { celltext 1 "<-query attribute='bsi'-> <-query->"},
           start, end, weekly
 }

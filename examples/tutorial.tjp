@@ -260,7 +260,7 @@ task AcSo "Accounting Software" {
 
     task prev "Technology Preview" {
       depends !!software.backend
-      startcredit 31000.0
+      charge 31000.0 onstart
       note "All '''major''' features should be usable."
     }
 
@@ -421,7 +421,9 @@ taskreport status "" {
                         listitem "<-query attribute='name'->"
                         start ${projectstart} end ${projectend} },
             alerttrend { title "Trend" ${AlertColor} width 50 },
-            journalmessages { width 350 ${AlertColor} }
+            journal { width 350 ${AlertColor} }
+    journalmode status_up
+    journalattributes headline, author, date, summary, details
     hidetask ~hasalert(0)
     sorttasks alert.down, delayed.end.up
     period %{${now} - 1w} +1w
