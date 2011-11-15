@@ -101,7 +101,10 @@ class TaskJuggler
             @ical, "#{task['projectid', scenarioIdx]}-#{task.fullId}",
             task.name, task['start', scenarioIdx], task['end', scenarioIdx])
           event.description = note if note
-          event.setOrganizer(organizer.name, organizer.email) if organizer
+          if organizer
+            event.setOrganizer(organizer.name, organizer.get('email'))
+          end
+
           attendees.each do |attendee|
             event.addAttendee(attendee.name, attendee.get('email'))
           end
