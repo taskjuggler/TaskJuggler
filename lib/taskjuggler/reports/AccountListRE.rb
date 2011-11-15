@@ -37,7 +37,7 @@ class TaskJuggler
       accountList = PropertyList.new(@project.accounts)
       accountList.setSorting(@report.get('sortAccounts'))
       accountList.query = @report.project.reportContexts.last.query
-      accountList = filterAccountList(accountList, nil,
+      accountList = filterAccountList(accountList,
                                       @report.get('hideAccount'),
                                       @report.get('rollupAccount'),
                                       @report.get('openNodes'))
