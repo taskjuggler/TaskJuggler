@@ -193,7 +193,7 @@ EOT
       end
     })
     level(:removed)
-    doc('limits.allocate', 'This keyword is deprecated. Don\'t use it anymore!')
+    doc('limits.allocate', '')
 
     pattern(%w( _select !allocationSelectionMode ), lambda {
       @allocate.setSelectionMode(@val[1])
@@ -2952,30 +2952,18 @@ EOT
   def rule_projectionAttributes
     optional
     repeatable
-    pattern(%w( _sloppy ), lambda {
-      warning('projection_sloppy',
-              'The sloppy projection mode has been deprecated. The ' +
-              'functionality is no longer supported.')
-    })
+    pattern(%w( _sloppy ))
     level(:deprecated)
-    doc('sloppy.projection', <<'EOT'
-The sloppy projection mode has been deprecated. Please use
-[[trackingscenario]] feature instead.
-EOT
-       )
     also('trackingscenario')
+    doc('sloppy.projection', '')
 
     pattern(%w( _strict ), lambda {
       warning('projection_strict',
               'The strict mode is now always used.')
     })
     level(:deprecated)
-    doc('strict.projection', <<'EOT'
-The strict projection mode has been deprecated. Please use
-[[trackingscenario]] feature instead.
-EOT
-       )
     also('trackingscenario')
+    doc('strict.projection', '')
   end
 
   def rule_projectProlog
@@ -4356,7 +4344,7 @@ EOT
       end
       @shiftAssignments = nil
     })
-    level(:removed)
+    level(:deprecated)
     also('shift.resource')
     doc('shift.resource', <<'EOT'
 This keyword has been deprecated. Please use [[shifts.resource|shifts
@@ -4515,11 +4503,7 @@ scenario.
 EOT
        )
 
-    pattern(%w( _projection !projection ), lambda {
-      warning('projection',
-              'The \'projection\' keyword has been deprecated. Please use ' +
-              '[[trackingscenario]] feature instead.')
-    })
+    pattern(%w( _projection !projection ))
     level(:deprecated)
     also('booking.task')
     doc('projection', <<'EOT'
@@ -5470,9 +5454,7 @@ EOT
 
   def rule_taskScenarioAttributes
 
-    pattern(%w( _account $ID ), lambda {
-      # TODO
-    })
+    pattern(%w( _account $ID ))
     level(:removed)
     also('chargeset')
     doc('account.task', '')
@@ -5937,7 +5919,7 @@ EOT
       end
       @shiftAssignments = nil
     })
-    level(:removed)
+    level(:deprecated)
     doc('shift.task', <<'EOT'
 This keyword has been deprecated. Please use [[shifts.task|shifts
 (task)]] instead.
