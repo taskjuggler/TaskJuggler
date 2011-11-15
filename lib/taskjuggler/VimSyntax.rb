@@ -21,7 +21,8 @@ class TaskJuggler
 
     # Create a generator object.
     def initialize
-      @reference = SyntaxReference.new
+      # Create a syntax reference for all current keywords.
+      @reference = SyntaxReference.new(nil, true)
 
       @properties = []
       @attributes = []

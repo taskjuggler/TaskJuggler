@@ -33,7 +33,7 @@ class TaskJuggler
     # are then cross referenced to capture their relationships. _manual_ is an
     # optional reference to the  UserManual object that uses this
     # SyntaxReference.
-    def initialize(manual = nil)
+    def initialize(manual = nil, ignoreOld = false)
       @manual = manual
       @messageHandler = MessageHandler.new(true)
       @parser = ProjectFileParser.new(@messageHandler)
@@ -46,6 +46,9 @@ class TaskJuggler
         rule.patterns.each do |pattern|
           #  Only patterns that are documented are of interest.
           next if pattern.doc.nil?
+          # Ignore deprecated and removed keywords if requested
+          next if ignoreOld &&
+                  [ :deprecated, :removed ].include?(pattern.supportLevel)
 
           # Make sure each keyword is unique.
           if @keywords.include?(pattern.keyword)
