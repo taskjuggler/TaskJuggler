@@ -917,7 +917,7 @@ EOT
                   LogicalExpression.new(LogicalOperation.new(0)))
       report.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
-    arg(1, 'file name', <<'EOT'
+    arg(2, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
 extension, or use . to use the standard output channel.
 EOT
