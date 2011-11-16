@@ -124,11 +124,12 @@ class TaskJuggler
 
         # Check if all the attributes are documented. We ignore undocumented
         # keywords that are deprecated or removed.
-        if (kwd = keywords[pattern.keyword]).nil? &&
-           ![ :deprecated, :removed ].include?(pattern.supportLevel)
-          token = pattern.terminalTokens(rules)
-          $stderr.puts "Keyword #{keyword} has undocumented optional " +
-                       "attribute #{token[0]}"
+        if (kwd = keywords[pattern.keyword]).nil?
+          unless [ :deprecated, :removed ].include?(pattern.supportLevel)
+            token = pattern.terminalTokens(rules)
+            $stderr.puts "Keyword #{keyword} has undocumented optional " +
+              "attribute #{token[0]}"
+          end
         else
           @optionalAttributes << kwd
           kwd.contexts << self unless kwd.contexts.include?(self)
