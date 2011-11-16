@@ -33,6 +33,16 @@ options separated by a vertical bar.
 
  keyword ( foo | bar | foobar )
 
+Some keywords take one or more arguments. These are known as list
+attributes. The arguments are comma separated. The tree dots in the
+syntax description mean that the sequence before the dots can be
+repeated if needed. Inheritable list attributes will append the new
+list values to the inherited list. Use can use the [[purge]]
+attribute to clear the list before assigning new values to the list
+attribute.
+
+ keyword arg1 [, arg2 ... ]
+
 Variable arguments are further described in the ''Arguments'' section of
 the keyword syntax table. The name is listed immediately followed by
 the type of the variable argument. The supported types and their

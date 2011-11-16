@@ -3187,10 +3187,14 @@ EOT
     })
     doc('purge', <<'EOT'
 List attributes, like regular attributes, can inherit their values from the
-enclosing property. By defining more values for such a list attribute, the new
-values will be appended to the existing ones. The purge statement clears such
-a list atribute. A subsequent definition for the attribute within the property
-will then add their values to an empty list.
+enclosing property. A list attribute is any attribute that takes a comma
+separated list of values as argument. [[allocate]] and [[flags.task]] are
+good examples of commonly used list attributes. By defining values for
+such a list attribute in a nested property, the new values will be appended to
+the list that was inherited from the enclosing property. The purge
+attribute clears such a list attribute. A subsequent definition for the
+attribute within the property will then add their values to an empty list. The
+value of the enclosing property is not affected by purge.
 EOT
        )
     arg(1, 'attribute', 'Any name of a list attribute')
