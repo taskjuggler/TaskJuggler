@@ -5212,8 +5212,7 @@ sub tasks of other tasks. Adopted tasks don't inherit anything from their step
 parents. However, the adopting task is scheduled to fit all adopted childs as
 well.
 
-The adopting task and the adopted task must not share a common top-level task.
-Adopted tasks may not have overlaping sub trees.
+A top-level tasks must never include the same task more than once.
 EOT
        )
 

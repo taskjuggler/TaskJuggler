@@ -1,0 +1,7 @@
+project "Adopted Tasks" 2011-11-17 +1m
+
+# MARK: error 4 adopt_self
+task t1 "T1" {
+  adopt t1
+}
+

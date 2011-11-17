@@ -408,8 +408,8 @@ class TaskJuggler
         # each task (incl. sub tasks) are included.
         if query.property
           if query.property.is_a?(Task)
-            entries += currentEntriesR(query.end, query.property, 0, query.start,
-                                       query.hideJournalEntry)
+            entries += currentEntriesR(query.end, query.property, 0,
+                                       query.start, query.hideJournalEntry)
           end
         else
           query.project.tasks.each do |task|

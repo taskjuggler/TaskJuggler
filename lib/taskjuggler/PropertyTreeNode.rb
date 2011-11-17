@@ -138,31 +138,18 @@ class TaskJuggler
     # Adopt _property_ as a step child. Also register the new relationship
     # with the child.
     def adopt(property)
-      return if @adoptees.include?(property)
-
-      # The adopted node and the adopting node must not have any common
-      # ancestors.
-      if root == property.root
-        error('adopt_common_root',
-              "The adoptee #{property.fullId} and the parent #{fullId} " +
-              "may not share common ancestors.")
+      # A property cannot adopt itself.
+      if self == property
+        error('adopt_self', 'A property cannot adopt itself')
       end
 
-      # The adopted trees for this node must not overlap.
-      @adoptees.each do |adoptee|
-        # Check if the to be adopted node is an ancestor of an already adopted
-        # node.
-        if adoptee.ancestors.include?(property)
+      # A top level task must never contain the same leaf task more then once!
+      allOfRoot = root.all
+      property.allLeaves.each do |adoptee|
+        if allOfRoot.include?(adoptee)
           error('adopt_duplicate_child',
-                "The child #{adoptee.fullId} of #{property.fullId} " +
-                "has already been adopted by #{fullId}.")
-        end
-        # Check if the already adopted nodes are an ancestor of the to be
-        # adopted node.
-        if property.ancestors.include?(adoptee)
-          error('adopt_duplicate_parent',
-                "The parent #{adoptee.fullId} of #{property.fullId} " +
-                "has already been adopted by #{fullId}.")
+                "The task '#{adoptee.fullId}' has already been adopted by " +
+                "property '#{root.fullId}' or any of its sub-properties.")
         end
       end
 
@@ -177,7 +164,6 @@ class TaskJuggler
       return if @stepParents.include?(property)
 
       @stepParents << property
-      property.adopt(self)
     end
 
     # Return a list of all children including adopted kids.
@@ -258,7 +244,7 @@ class TaskJuggler
     # Returns a list of this node and all transient sub nodes.
     def all
       res = [ self ]
-      @children.each do |c|
+      kids.each do |c|
         res = res.concat(c.all)
       end
       res
@@ -266,11 +252,11 @@ class TaskJuggler
 
     # Return a list of all leaf nodes of this node.
     def allLeaves(withoutSelf = false)
+      res = []
       if leaf?
-        res = withoutSelf ? [] : [ self ]
+        res << self unless withoutSelf
       else
-        res = []
-        @children.each do |c|
+        kids.each do |c|
           res += c.allLeaves
         end
       end
