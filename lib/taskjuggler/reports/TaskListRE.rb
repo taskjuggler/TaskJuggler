@@ -37,6 +37,7 @@ class TaskJuggler
 
       # Prepare the task list.
       taskList = PropertyList.new(@project.tasks)
+      taskList.includeAdopted
       taskList.setSorting(@report.get('sortTasks'))
       taskList.query = @report.project.reportContexts.last.query
       taskList = filterTaskList(taskList, nil, @report.get('hideTask'),

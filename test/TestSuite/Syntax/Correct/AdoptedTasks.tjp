@@ -7,3 +7,7 @@ task t3 "T3" {
   adopt t1, t2
 }
 
+taskreport "AdoptedTasks" {
+  formats html
+  columns no, bsi, index, name
+}

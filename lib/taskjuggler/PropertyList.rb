@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/PTNProxy'
+
 class TaskJuggler
 
   # The PropertyList is a utility class that can be used to hold a list of
@@ -58,6 +60,16 @@ class TaskJuggler
     # All missing methods will be propagated to the @items Array.
     def method_missing(func, *args, &block)
       @items.method(func).call(*args, &block)
+    end
+
+    def includeAdopted
+      adopted = []
+      @items.each do |p|
+        p.adoptees.each do |ap|
+          adopted += includeAdoptedR(ap, p)
+        end
+      end
+      append(adopted)
     end
 
     def to_ary
@@ -165,6 +177,18 @@ class TaskJuggler
 
     private
 
+    def includeAdoptedR(property, parent)
+      # Create a proxy for the current PropertyTreeNode and add it to a list.
+      adopted = [ parentProxy = PTNProxy.new(property, parent) ]
+
+      # Add proxies for all children (adopted or not) and their children.
+      property.kids.each do |p|
+        adopted += includeAdoptedR(p, parentProxy)
+      end
+
+      adopted
+    end
+
     # Append a new sorting level to the existing levels.
     def addSortingCriteria(criteria, up, scIdx)
       unless @propertySet.knownAttribute?(criteria) ||
@@ -214,7 +238,7 @@ class TaskJuggler
       @items.sort! do |a, b|
         res = 0
         @sortingLevels.times do |i|
-          if @query
+          if @query && @sortingCriteria[i] != 'tree'
             # In case we have a Query reference, we get the two values with this
             # query.
             @query.scenarioIdx = @scenarioIdx[i] < 0 ? nil : @scenarioIdx[i]

@@ -1,5 +1,5 @@
-"Name";"Journal All";"Journal Sub All";"Journal";"Journal";"Alert";"Journal";"Journal";"Journal"
-"T1";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+"Name";"Alert";"Journal_sub (full period)";"journal (full period)";"journal";"journal_sub";"alerts_down";"status_down";"status_up"
+"T1";"Green";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
@@ -31,12 +31,12 @@ Reported on 2010-08-05
 
 T1.1.1
 
-Reported on 2010-08-05";"Green";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+Reported on 2010-08-05";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
 Reported on 2010-08-15";""
-"  T1.1";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+"  T1.1";"  Green";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
@@ -76,7 +76,7 @@ Reported on 2010-08-05
 
 T1.1.1
 
-Reported on 2010-08-05";"  Green";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+Reported on 2010-08-05";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
@@ -85,7 +85,7 @@ Reported on 2010-08-15";"[Green]T1.1 (ID: _Task_1._Task_2)
 T1.1
 
 Reported on 2010-08-05"
-"    T1.1.1";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+"    T1.1.1";"    Green";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
@@ -125,7 +125,7 @@ Reported on 2010-08-05";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1
 
-Reported on 2010-08-05";"    Green";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
+Reported on 2010-08-05";"";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 
 T1.1.1 Not in report
 
@@ -134,7 +134,7 @@ Reported on 2010-08-15";"[Green]T1.1.1 (ID: _Task_1._Task_2._Task_3)
 T1.1.1 Not in report
 
 Reported on 2010-08-15"
-"T2";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
+"T2";"Yellow";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 
 T2.1.1
 
@@ -166,7 +166,7 @@ Reported on 2010-08-05
 
 T2.1 Yellow
 
-Reported on 2010-08-05";"Yellow";"[Yellow]T2.1 (ID: _Task_4._Task_5)
+Reported on 2010-08-05";"[Yellow]T2.1 (ID: _Task_4._Task_5)
 
 T2.1 Yellow
 
@@ -175,7 +175,7 @@ Reported on 2010-08-05";"[Yellow]T2.1 (ID: _Task_4._Task_5)
 T2.1 Yellow
 
 Reported on 2010-08-05";""
-"  T2.1";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
+"  T2.1";"  Yellow";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 
 T2.1.1
 
@@ -215,7 +215,7 @@ Reported on 2010-08-05
 
 T2.1 Yellow
 
-Reported on 2010-08-05";"  Yellow";"[Yellow]T2.1 (ID: _Task_4._Task_5)
+Reported on 2010-08-05";"[Yellow]T2.1 (ID: _Task_4._Task_5)
 
 T2.1 Yellow
 
@@ -228,7 +228,7 @@ Reported on 2010-08-05";"[Yellow]T2.1 (ID: _Task_4._Task_5)
 T2.1 Yellow
 
 Reported on 2010-08-05"
-"    T2.1.1";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
+"    T2.1.1";"    Green";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 
 T2.1.1
 
@@ -268,7 +268,7 @@ Reported on 2010-08-05";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 
 T2.1.1
 
-Reported on 2010-08-05";"    Green";"";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
+Reported on 2010-08-05";"";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 
 T2.1.1 Green Not in report
 
@@ -277,7 +277,7 @@ Reported on 2010-08-15";"[Green]T2.1.1 (ID: _Task_4._Task_5._Task_6)
 T2.1.1 Green Not in report
 
 Reported on 2010-08-15"
-"T3";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
+"T3";"Yellow";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
 
 T3.1.1 Not in report
 
@@ -309,7 +309,7 @@ Reported on 2010-08-06
 
 T3.1.1 Red
 
-Reported on 2010-08-06";"Yellow";"[Yellow]T3.1 (ID: _Task_7._Task_8)
+Reported on 2010-08-06";"[Yellow]T3.1 (ID: _Task_7._Task_8)
 
 T3.1 Yellow
 
@@ -318,7 +318,7 @@ Reported on 2010-08-06";"[Yellow]T3.1 (ID: _Task_7._Task_8)
 T3.1 Yellow
 
 Reported on 2010-08-06";""
-"  T3.1";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
+"  T3.1";"  Yellow";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
 
 T3.1.1 Not in report
 
@@ -358,7 +358,7 @@ Reported on 2010-08-06
 
 T3.1.1 Red
 
-Reported on 2010-08-06";"  Yellow";"[Yellow]T3.1 (ID: _Task_7._Task_8)
+Reported on 2010-08-06";"[Yellow]T3.1 (ID: _Task_7._Task_8)
 
 T3.1 Yellow
 
@@ -371,7 +371,7 @@ Reported on 2010-08-06";"[Yellow]T3.1 (ID: _Task_7._Task_8)
 T3.1 Yellow
 
 Reported on 2010-08-06"
-"    T3.1.1";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
+"    T3.1.1";"    Green";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
 
 T3.1.1 Not in report
 
@@ -411,7 +411,7 @@ Reported on 2010-08-06";"[Red]T3.1.1 (ID: _Task_7._Task_8._Task_9)
 
 T3.1.1 Red
 
-Reported on 2010-08-06";"    Green";"";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
+Reported on 2010-08-06";"";"[Green]T3.1.1 (ID: _Task_7._Task_8._Task_9)
 
 T3.1.1 Green Not in report
 

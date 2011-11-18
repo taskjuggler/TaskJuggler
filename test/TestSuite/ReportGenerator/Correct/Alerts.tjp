@@ -33,25 +33,35 @@ task "T3" {
 
 taskreport "Alerts-1" {
   formats html, csv
-  columns name,
+  columns name, alert,
           journal {
             celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
-            title "Journal All"
+            title "Journal_sub (full period)"
             period ${projectstart} - ${projectend}
           },
           journal {
-            title "Journal Sub All"
+            title "journal (full period)"
             period ${projectstart} - ${projectend}
           },
-          journal, journal {
-            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
-          }, alert,
           journal {
+            title "journal"
+          },
+          journal {
+            title "journal_sub"
+            celltext 1 "<-query attribute='journal' journalmode='journal_sub'->"
+          },
+          journal {
+            title "alerts_down"
             celltext 1 "<-query attribute='journal' journalmode='alerts_down'->"
-          }, journal {
+          },
+          journal {
+            title "status_down"
             celltext 1 "<-query attribute='journal' journalmode='status_down'->"
-          }, journal {
+          },
+          journal {
+            title "status_up"
             celltext 1 "<-query attribute='journal' journalmode='status_up'->"
           }
   period 2010-08-05 - 2010-08-15
 }
+

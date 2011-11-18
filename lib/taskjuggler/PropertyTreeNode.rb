@@ -631,8 +631,8 @@ class TaskJuggler
     # provided by the class *Scenario classes. In case we can't find a function
     # called for the base class we try to find it in corresponding *Scenario
     # class.
-    def method_missing(func, scenarioIdx, *args)
-      @data[scenarioIdx].method(func).call(*args)
+    def method_missing(func, scenarioIdx, *args, &block)
+      @data[scenarioIdx].send(func, *args, &block)
     end
 
     def error(id, text)

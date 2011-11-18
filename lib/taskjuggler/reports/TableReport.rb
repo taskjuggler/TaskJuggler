@@ -1040,13 +1040,12 @@ class TaskJuggler
       cell.alignment = alignment(columnDef.id, attributeType)
 
       # Set background color
-      case line.property
-      when Account
-        cell.category = 'accountcell'
-      when Task
+      if line.property.is_a?(Task)
         cell.category = 'taskcell'
-      when Resource
+      elsif line.property.is_a?(Resource)
         cell.category = 'resourcecell'
+      elsif line.property.is_a?(Account)
+        cell.category = 'accountcell'
       end
       cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
 
