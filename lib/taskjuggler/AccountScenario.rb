@@ -30,6 +30,14 @@ class TaskJuggler
       query.string = query.currencyFormat.format(amount)
     end
 
+    def query_turnover(query)
+      startIdx = @project.dateToIdx(query.start)
+      endIdx = @project.dateToIdx(query.end)
+
+      query.sortable = query.numerical = amount = turnover(startIdx, endIdx)
+      query.string = query.currencyFormat.format(amount)
+    end
+
     private
 
     # Compute the turnover for the period between _startIdx_ end _endIdx_.
