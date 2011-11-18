@@ -40,7 +40,8 @@ class TaskJuggler
         @children.each { |child| amount += child.turnover }
       else
         @project.tasks.each do |task|
-          amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property)
+          amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property,
+                                  nil, false)
         end
       end
       amount
