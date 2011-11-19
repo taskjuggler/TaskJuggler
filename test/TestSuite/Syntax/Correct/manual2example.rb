@@ -10,8 +10,8 @@
 # published by the Free Software Foundation.
 #
 
-def removeTags(fileName)
-  oFile = File.open('../../../../examples/' + fileName, 'w')
+def removeTags(fileName, destDir)
+  oFile = File.open("../../../../examples/#{destDir}/#{fileName}", 'w')
   File.open(fileName, 'r') do |iFile|
     while line = iFile.gets
       oFile.puts line unless line =~ /^# \*\*\* EXAMPLE:/
@@ -20,5 +20,6 @@ def removeTags(fileName)
   oFile.close
 end
 
-removeTags('tutorial.tjp')
+removeTags('tutorial.tjp', 'Tutorial')
+removeTags('template.tjp', 'ProjectTemplate')
 
