@@ -20,6 +20,9 @@ class TaskJuggler
 
     def initialize(account, scenarioIdx, attributes)
       super
+      %w( credits ).each do |attr|
+        @property[attr, @scenarioIdx]
+      end
     end
 
     def query_balance(query)
@@ -44,6 +47,15 @@ class TaskJuggler
     # TODO: This method is horribly inefficient!
     def turnover(startIdx, endIdx)
       amount = 0.0
+
+     startDate = @project.idxToDate(startIdx)
+     endDate = @project.idxToDate(endIdx)
+      @credits.each do |credit|
+        if startDate <= credit.date && credit.date < endDate
+          amount += credit.amount
+        end
+      end
+
       if @property.container?
         @children.each { |child| amount += child.turnover }
       else

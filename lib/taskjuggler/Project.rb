@@ -15,6 +15,7 @@ require 'taskjuggler/TjException'
 require 'taskjuggler/MessageHandler'
 require 'taskjuggler/FileList'
 require 'taskjuggler/TjTime'
+require 'taskjuggler/AccountCredit'
 require 'taskjuggler/Booking'
 require 'taskjuggler/PropertySet'
 require 'taskjuggler/Attributes'
@@ -163,6 +164,8 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
+        [ 'credits',   'Credits',      AccountCreditListAttribute,
+              false, false,   true,  [] ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
@@ -633,7 +636,7 @@ class TaskJuggler
     def schedule
       initScoreboards
 
-      [ @shifts, @resources, @tasks ].each do |p|
+      [ @accounts, @shifts, @resources, @tasks ].each do |p|
         # Set all index counters to their proper values.
         p.index
       end

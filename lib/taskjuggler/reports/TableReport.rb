@@ -679,6 +679,8 @@ class TaskJuggler
         propertyList = @project.tasks
       elsif property.is_a?(Resource)
         propertyList = @project.resources
+      elsif property.is_a?(Account)
+        propertyList = @project.accounts
       else
         raise "Unknown property type #{property.class}"
       end

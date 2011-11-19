@@ -2,12 +2,16 @@ project simple "Simple Project" "1.0" 2007-01-01 - 2007-01-30 {
   timezone "America/Denver"
   currency "USD"
 }
-
+flags test
 # *** EXAMPLE: 1 +
 account project_cost "Project Costs"
 account payments "Customer Payments"{
-  credit 2007-01-08 "Customer down payment" 500.0
+  flags test
+  credits 2007-01-01 "Customer down payment" 500.0,
+          2007-01-14 "1st rate" 2000.0
 }
+
+balance project_cost payments
 
 resource tux "Tux" {
   rate 300
@@ -47,8 +51,18 @@ task items "Room decoration" {
 }
 # *** EXAMPLE: 1 -
 
-accountreport pandl "PAndL.html" {
+accountreport "Account-1" {
   formats html
   timeformat "%d-%M-%y"
   columns index, name, weekly
+}
+
+accountreport "Account-2" {
+  formats html
+  timeformat "%d-%M-%y"
+  columns index,
+          name,
+          weekly {
+            celltext 1 "<-query attribute='turnover'->"
+          }
 }

@@ -61,6 +61,18 @@ EOT
     optionsRule('accountAttributes')
   end
 
+  def rule_accountCredit
+    pattern(%w( !valDate $STRING !number ), lambda {
+      AccountCredit.new(@val[0], @val[1], @val[2])
+    })
+    arg(1, 'description', 'Short description of the transaction')
+    arg(2, 'amount', 'Amount to be booked.')
+  end
+
+  def rule_accountCredits
+    listRule('moreAccountCredits', '!accountCredit')
+  end
+
   def rule_accountHeader
     pattern(%w( _account !optionalID $STRING ), lambda {
       if @property.nil? && !@accountprefix.empty?
@@ -92,17 +104,19 @@ EOT
   end
 
   def rule_accountScenarioAttributes
-    pattern(%w( _credit !valDate $STRING !number ), lambda {
-      #@property['credit', @scenarioIdx] +=
-      #  AccountCredit.new(@val[1], @val[2], @val[3])
+    pattern(%w( _credits !accountCredits ), lambda {
+      begin
+        @property['credits', @scenarioIdx] += @val[1]
+      rescue AttributeOverwrite
+        # Adding multiple credits for an account is a pretty common idiom.
+      end
     })
-    doc('credit', <<'EOT'
-Book the specified amount to the account at the specified date.
+    doc('credits', <<'EOT'
+Book the specified amounts to the account at the specified date. The
+desciptions are just used for documentary purposes.
 EOT
        )
     example('Account', '1')
-    arg(2, 'description', 'Short description of the transaction')
-    arg(3, 'amount', 'Amount to be booked.')
 
     pattern(%w( !flags ))
     doc('flags.account', <<'EOT'

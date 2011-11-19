@@ -22,7 +22,7 @@ class TaskJuggler
   class Account < PropertyTreeNode
 
     def initialize(project, id, name, parent)
-      super(project.resources, id, name, parent)
+      super(project.accounts, id, name, parent)
       project.addAccount(self)
 
       @data = Array.new(@project.scenarioCount, nil)

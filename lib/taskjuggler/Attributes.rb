@@ -41,6 +41,19 @@ class TaskJuggler
 
   end
 
+  class AccountCreditListAttribute < ListAttributeBase
+    def initialize(property, type, container)
+      super
+
+      set(Array.new)
+    end
+
+    def AccountCreditListAttribute::tjpId
+      'credits'
+    end
+
+  end
+
   class AllocationAttribute < AttributeBase
     def initialize(property, type, container)
       super
