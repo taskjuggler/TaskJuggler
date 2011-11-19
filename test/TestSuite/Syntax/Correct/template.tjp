@@ -6,7 +6,7 @@
 project your_project_id "Your Project Title"  2011-11-11-0:00--0500 +4m {
   # Set the default time zone for the project. If not specified, UTC
   # is used.
-  timezone "US/Eastern Time"
+  timezone "America/New_York"
   # Hide the clock time. Only show the date.
   timeformat "%Y-%m-%d"
   # Use US format for numbers
