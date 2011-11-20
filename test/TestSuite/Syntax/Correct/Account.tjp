@@ -2,11 +2,10 @@ project simple "Simple Project" "1.0" 2007-01-01 - 2007-01-30 {
   timezone "America/Denver"
   currency "USD"
 }
-flags test
+
 # *** EXAMPLE: 1 +
 account project_cost "Project Costs"
 account payments "Customer Payments"{
-  flags test
   credits 2007-01-01 "Customer down payment" 500.0,
           2007-01-14 "1st rate" 2000.0
 }

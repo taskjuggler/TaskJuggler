@@ -48,8 +48,8 @@ class TaskJuggler
     def turnover(startIdx, endIdx)
       amount = 0.0
 
-     startDate = @project.idxToDate(startIdx)
-     endDate = @project.idxToDate(endIdx)
+      startDate = @project.idxToDate(startIdx)
+      endDate = @project.idxToDate(endIdx)
       @credits.each do |credit|
         if startDate <= credit.date && credit.date < endDate
           amount += credit.amount
@@ -57,7 +57,7 @@ class TaskJuggler
       end
 
       if @property.container?
-        @children.each { |child| amount += child.turnover }
+        @property.children.each { |child| amount += child.turnover }
       else
         @project.tasks.each do |task|
           amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property,
