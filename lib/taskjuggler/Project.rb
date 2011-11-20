@@ -162,6 +162,8 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
+        [ 'aggregate', 'Aggregate',    SymbolAttribute,
+              true,  false,   false, :tasks ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
         [ 'credits',   'Credits',      AccountCreditListAttribute,
@@ -189,6 +191,8 @@ class TaskJuggler
               false, false,   true,  0.0 ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
+        [ 'chargeset', 'Charge Sets',  ChargeSetListAttribute,
+              true,  false,   true,  [] ],
         [ 'criticalness', 'Criticalness', FloatAttribute,
               false, false,   true,  0.0 ],
         [ 'duties',    'Duties',       TaskListAttribute,

@@ -440,15 +440,17 @@ class TaskJuggler
       vacationDays
     end
 
-    def turnover(startIdx, endIdx, account, task = nil)
+    def turnover(startIdx, endIdx, account, task = nil, includeKids = false)
       amount = 0.0
-      if @property.container?
+      if @property.container? && includeKids
         @property.kids.each do |child|
           amount += child.turnover(@scenarioIdx, startIdx, endIdx, account,
                                    task)
         end
       else
         @duties.each do |duty|
+          next if task && duty != task
+
           amount += duty.turnover(@scenarioIdx, startIdx, endIdx, account,
                                   @property)
         end

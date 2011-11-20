@@ -59,9 +59,21 @@ class TaskJuggler
       if @property.container?
         @property.children.each { |child| amount += child.turnover }
       else
-        @project.tasks.each do |task|
-          amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property,
-                                  nil, false)
+        case @property.get('aggregate')
+        when :tasks
+          @project.tasks.each do |task|
+            amount += task.turnover(@scenarioIdx, startIdx, endIdx, @property,
+                                    nil, false)
+          end
+        when :resources
+          @project.resources.each do |resource|
+            next unless resource.leaf?
+
+            amount += resource.turnover(@scenarioIdx, startIdx, endIdx,
+                                        @property, nil, false)
+          end
+        else
+          raise "Unknown aggregation type #{@property.get('aggregate')}"
         end
       end
       amount
