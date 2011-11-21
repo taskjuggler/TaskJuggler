@@ -21,13 +21,13 @@ class TaskJuggler
   # created by an adoption.
   class PTNProxy
 
-    attr_reader :parent
+    attr_reader :parent, :ptn
 
     def initialize(ptn, parent)
       @ptn = ptn
       raise "Adopted classes must have a parent" unless parent
       @parent = parent
-      @indext =  nil
+      @index =  nil
       @tree = nil
       @level = -1
     end

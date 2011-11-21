@@ -48,11 +48,18 @@ class TaskJuggler
     def turnover(startIdx, endIdx)
       amount = 0.0
 
-      startDate = @project.idxToDate(startIdx)
-      endDate = @project.idxToDate(endIdx)
-      @credits.each do |credit|
-        if startDate <= credit.date && credit.date < endDate
-          amount += credit.amount
+      # Accumulate the amounts that were directly credited to the account
+      # during the given interval.
+      unless @credits.empty?
+        # For this, we need the real dates again. Conver the indices back to
+        # dates.
+        startDate = @project.idxToDate(startIdx)
+        endDate = @project.idxToDate(endIdx)
+
+        @credits.each do |credit|
+          if startDate <= credit.date && credit.date < endDate
+            amount += credit.amount
+          end
         end
       end
 

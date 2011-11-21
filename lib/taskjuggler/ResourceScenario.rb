@@ -448,11 +448,23 @@ class TaskJuggler
                                    task)
         end
       else
-        @duties.each do |duty|
-          next if task && duty != task
-
-          amount += duty.turnover(@scenarioIdx, startIdx, endIdx, account,
+        if task
+          # If we have a know task, we only include the amount that is
+          # specific to this resource, this task and the chargeset of the
+          # task.
+          amount += task.turnover(@scenarioIdx, startIdx, endIdx, account,
                                   @property)
+        elsif !@chargeset.empty?
+          # If no tasks was provided, we include the amount of this resource,
+          # weighted by the charset of this resource.
+          totalResourceCost = cost(startIdx, endIdx)
+          @chargeset.each do |set|
+            set.each do |accnt, share|
+              if share > 0.0 && (accnt == account || accnt.isChildOf?(account))
+                amount += totalResourceCost * share
+              end
+            end
+          end
         end
       end
 
