@@ -76,17 +76,6 @@ class TaskJuggler
       @items.dup
     end
 
-    def each
-      @items.each do |item|
-        case item
-        when PTNProxy
-          yield item.ptn
-        else
-          yield item
-        end
-      end
-    end
-
     # Set all sorting levels as Array of triplets.
     def setSorting(modes)
       resetSorting
@@ -123,24 +112,6 @@ class TaskJuggler
     # returns true if the mode is set.
     def treeMode?
       @sortingLevels > 0 && @sortingCriteria[0] == 'tree'
-    end
-
-    # Return the tree level of the provided property.
-    def level(property)
-      # Find the property in the list. If it's there, we can just use the
-      # native level function.
-      if @items.include?(property)
-        return property.level
-      else
-        # If not, we have to find the corresponding PTNProxy object in the
-        # list.
-        @items.each do |p|
-          if p.ptn == p
-            return p.level
-          end
-        end
-        raise "Cannot find property #{property.fullId} in list"
-      end
     end
 
     # Sort the properties according to the currently defined sorting criteria.

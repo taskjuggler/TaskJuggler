@@ -361,7 +361,7 @@ class TaskJuggler
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('accountRoot'), accountList)
+          setIndent(line, a('accountRoot'), accountList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
@@ -419,7 +419,7 @@ class TaskJuggler
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('taskRoot'), taskList)
+          setIndent(line, a('taskRoot'), taskList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
@@ -487,7 +487,7 @@ class TaskJuggler
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('resourceRoot'), resourceList)
+          setIndent(line, a('resourceRoot'), resourceList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |column|
@@ -1107,16 +1107,15 @@ class TaskJuggler
       cell
     end
 
-    # Determine the indentation depth for this line.
-    def setIndent(line, propertyRoot, list)
+    # Determine the indentation for this line.
+    def setIndent(line, propertyRoot, treeMode)
       property = line.property
       scopeLine = line.scopeLine
-      level = list.level(property) - (propertyRoot ?
-                                      list.level(propertyRoot) : 0)
+      level = property.level - (propertyRoot ? propertyRoot.level : 0)
       # We indent at least as much as the scopeline + 1, if we have a scope.
       line.indentation = scopeLine.indentation + 1 if scopeLine
       # In tree mode we indent according to the level.
-      if list.treeMode?
+      if treeMode
         line.indentation += level
         line.bold = true
       end
