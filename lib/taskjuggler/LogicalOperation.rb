@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/TjTime'
+require 'taskjuggler/RichText'
 require 'taskjuggler/TjException'
 
 class TaskJuggler
