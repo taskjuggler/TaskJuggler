@@ -135,6 +135,15 @@ class TaskJuggler
       self
     end
 
+    # We often use PTNProxy objects to represent PropertyTreeNode objects. The
+    # proxy usually does a good job acting like a PropertyTreeNode. But in
+    # some situations, we want to make sure to operate on the PropertyTreeNode
+    # and not the PTNProxy. Both classes provide a ptn() method that always
+    # return the PropertyTreeNode.
+    def ptn
+      self
+    end
+
     # Adopt _property_ as a step child. Also register the new relationship
     # with the child.
     def adopt(property)

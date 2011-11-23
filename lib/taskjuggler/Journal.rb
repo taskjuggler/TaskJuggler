@@ -349,11 +349,19 @@ class TaskJuggler
 
       return if entry.property.nil?
 
-      unless @propertyToEntries.include?(entry.property)
-        @propertyToEntries[entry.property] = JournalEntryList.new
+      # When we store the property into the @propertyToEntries hash, we need
+      # to make sure that we store the PropertyTreeNode object and not a
+      # PTNProxy object.
+      unless @propertyToEntries.include?(entry.property.ptn)
+        @propertyToEntries[entry.property.ptn] = JournalEntryList.new
       end
-      @propertyToEntries[entry.property] << entry
+      @propertyToEntries[entry.property.ptn] << entry
     end
+
+    def getEntries(property)
+      @propertyToEntries[property.ptn]
+    end
+
 
     def to_rti(query)
       entries = JournalEntryList.new
@@ -589,8 +597,8 @@ class TaskJuggler
     # with at least the required alert level _minLevel_ are returned. Messages
     # with alert level _minLevel_ must be newer than _minDate_.
     def currentEntries(date, property, minLevel, minDate, logExp)
-      pEntries = @propertyToEntries[property] ?
-                 @propertyToEntries[property].last(date) : JournalEntryList.new
+      pEntries = getEntries(property) ?  getEntries(property).last(date) :
+                 JournalEntryList.new
       # Remove entries below the minium alert level or before the timeout
       # date.
       pEntries.delete_if do |e|
@@ -602,8 +610,8 @@ class TaskJuggler
         # Check parents for a more important or more up-to-date message.
         p = property.parent
         while p do
-          ppEntries = @propertyToEntries[p] ?
-            @propertyToEntries[p].last(date) : JournalEntryList.new
+          ppEntries = getEntries(p) ?
+                      getEntries(p).last(date) : JournalEntryList.new
 
           # A parent has a more up-to-date message.
           if !ppEntries.empty? && ppEntries.first.date >= pEntries.first.date
@@ -630,8 +638,8 @@ class TaskJuggler
     def currentEntriesR(date, property, minLevel = 0, minDate = nil,
                         logExp = nil)
       # See if this property has any current JournalEntry objects.
-      pEntries = @propertyToEntries[property] ?
-                 @propertyToEntries[property].last(date) : JournalEntryList.new
+      pEntries = getEntries(property) ? getEntries(property).last(date) :
+                 JournalEntryList.new
       # Remove entries below the minium alert level or before the timeout
       # date.
       pEntries.delete_if do |e|

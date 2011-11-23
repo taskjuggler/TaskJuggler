@@ -21,6 +21,20 @@ class TaskJuggler
 
 class TestJournal < Test::Unit::TestCase
 
+  class PTNMockup
+
+    attr_reader :index
+
+    def initialize(index)
+      @index = index
+    end
+
+    def ptn
+      self
+    end
+
+  end
+
   def setup
     @p = TaskJuggler::Project.new('hello', 'Hello World', '1.0',
                                   MessageHandler.new(true))
@@ -34,43 +48,56 @@ class TestJournal < Test::Unit::TestCase
 
   def test_add
     # First some simple add tests.
-    @j.addEntry(e = JournalEntry.new(@j, tm('2009-11-29'), "E1", 1))
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-11-29'), "E1",
+                                     PTNMockup.new(1)))
     assert_equal(1, @j.entries.count)
 
     # Make sure we don't add the same entry twice.
     @j.addEntry(e)
     assert_equal(1, @j.entries.count)
 
-    @j.addEntry(JournalEntry.new(@j, tm('2009-11-30'), "E2", 2))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-01'), "E3", 3))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-11-30'), "E2",
+                                 PTNMockup.new(2)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-01'), "E3",
+                                 PTNMockup.new(3)))
     assert_equal(3, @j.entries.count)
   end
 
   def test_sort
     # Add a bunch of entries and see if the sorting by date works properly.
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-10'), "E4", 4))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-03'), "E2", 2))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-06'), "E3", 3))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-11-29'), "E0", 0))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-01'), "E1", 1))
-    @j.addEntry(JournalEntry.new(@j, tm('2009-12-24'), "E5", 5))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-10'), "E4",
+                                 PTNMockup.new(4)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-03'), "E2",
+                                 PTNMockup.new(2)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-06'), "E3",
+                                 PTNMockup.new(3)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-11-29'), "E0",
+                                 PTNMockup.new(0)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-01'), "E1",
+                                 PTNMockup.new(1)))
+    @j.addEntry(JournalEntry.new(@j, tm('2009-12-24'), "E5",
+                                 PTNMockup.new(5)))
 
     pList = []
     @j.entries.each { |e| pList << e.property }
     pList.each do |i|
-      assert_equal(pList.index(i), i)
+      assert_equal(pList.index(i), i.index)
     end
   end
 
   def test_sortSameDate
     # Add a bunch of entries and see if the sorting by date works properly.
-    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A2", 0))
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A2",
+                                     PTNMockup.new(0)))
     e.alertLevel = 2
-    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A0", 0))
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A0",
+                                     PTNMockup.new(0)))
     e.alertLevel = 0
-    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A1", 0))
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A1",
+                                     PTNMockup.new(0)))
     e.alertLevel = 1
-    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A3", 0))
+    @j.addEntry(e = JournalEntry.new(@j, tm('2009-12-10'), "A3",
+                                     PTNMockup.new(0)))
     e.alertLevel = 3
 
     i = 0
