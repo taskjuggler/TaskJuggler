@@ -19,6 +19,17 @@ require 'taskjuggler/BatchProcessor'
 
 class TestProject < Test::Unit::TestCase
 
+  def setup
+    @t = Thread.new do
+      sleep(15)
+      assert(false, 'Test timed out')
+    end
+  end
+
+  def teardown
+    @t.kill
+  end
+
   def test_simple
     doRun(1, 1) { sleep 0.1 }
     doRun(1, 2) { sleep 0.1 }

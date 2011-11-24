@@ -23,10 +23,15 @@ class TestMacroTable < Test::Unit::TestCase
 
   def setup
     @mt = TaskJuggler::TextParser::MacroTable.new
+    @t = Thread.new do
+      sleep(1)
+      assert('Test timed out')
+    end
   end
 
   def teardown
     @mt.clear
+    @t.kill
   end
 
   def test_addAndClear
