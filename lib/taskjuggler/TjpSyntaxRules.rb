@@ -2343,10 +2343,6 @@ EOT
     commaListRule('!journalSortCriterium')
   end
 
-  def rule_moreLeafResources
-    commaListRule('!resourceLeafList')
-  end
-
   def rule_moreListOfDays
     commaListRule('!weekDayInterval')
   end
@@ -4247,9 +4243,7 @@ EOT
   end
 
   def rule_resourceLeafList
-    pattern(%w( !leafResourceId !moreLeafResources ), lambda {
-      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
-    })
+    listRule('moreResourceLeafList', '!leafResourceId')
   end
 
   def rule_resourceList
