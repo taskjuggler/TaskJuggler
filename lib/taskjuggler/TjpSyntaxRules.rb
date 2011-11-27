@@ -104,6 +104,15 @@ EOT
   end
 
   def rule_accountScenarioAttributes
+    pattern(%w( _aggregate !aggregate ), lambda {
+      @property.set('aggregate', @val[1])
+    })
+    doc('aggregate', <<'EOT'
+Specifies whether the account is used to track task or resource specific
+amounts. The default is to track tasks.
+EOT
+       )
+
     pattern(%w( _credits !accountCredits ), lambda {
       begin
         @property['credits', @scenarioIdx] += @val[1]
@@ -126,6 +135,18 @@ EOT
        )
 
     # Other attributes will be added automatically.
+  end
+
+  def rule_aggregate
+    pattern(%w( _resources ), lambda {
+      :resources
+    })
+    descr('Aggregate resources')
+
+    pattern(%w( _tasks ), lambda {
+      :tasks
+    })
+    descr('Aggregate tasks')
   end
 
   def rule_alertLevel
@@ -496,20 +517,20 @@ EOT
       end
       if masterAccounts.include?(chargeSet.master)
         error('chargeset_master',
-              "All charge sets for this task must have different top-level " +
-              "accounts.", @sourceFileInfo[0], @property)
+              "All charge sets for this property must have different " +
+              "top-level accounts.", @sourceFileInfo[0], @property)
       end
       @property['chargeset', @scenarioIdx] =
         @property['chargeset', @scenarioIdx] + [ chargeSet ]
     })
     doc('chargeset', <<'EOT'
-A chargeset defines how the turnover associated with the task will be charged
-to one or more accounts. A task may have any number of charge sets, but each
-chargeset must deal with a different top-level account. A charge set consists
-of one or more accounts. Each account must be a leaf account. The account ID
-may be followed by a percentage value that determines the share for this
-account. The total percentage of all accounts must be exactly 100%. If some
-accounts don't have a percentage specification, the remainder to 100% is
+A chargeset defines how the turnover associated with the property will be
+charged to one or more accounts. A property may have any number of charge sets,
+but each chargeset must deal with a different top-level account. A charge set
+consists of one or more accounts. Each account must be a leaf account. The
+account ID may be followed by a percentage value that determines the share for
+this account. The total percentage of all accounts must be exactly 100%. If
+some accounts don't have a percentage specification, the remainder to 100% is
 distributed evenly to them.
 EOT
        )
@@ -534,6 +555,20 @@ EOT
 
   def rule_chargeSetItem
     pattern(%w( !accountId !optionalPercent ), lambda {
+      if @property.is_a?(Task)
+        aggregate = :tasks
+      elsif @property.is_a?(Resource)
+        aggregate = :resources
+      else
+        raise "Unknown property type #{@property.class}"
+      end
+
+      if @val[0].get('aggregate') != aggregate
+        error('account_bad_aggregate',
+              "The account #{@val[0].fullId} cannot aggregate amounts " +
+              "related to #{aggregate}.")
+      end
+
       [ @val[0], @val[1] ]
     })
     arg(0, 'account', 'The ID of a previously defined leaf account.')
@@ -3004,15 +3039,13 @@ EOT
     lastSyntaxToken(1)
     doc('include.project', <<'EOT'
 Includes the specified file name as if its contents would be written
-instead of the include property. The only exception is the include
-statement itself. When the included files contains other include
-statements or report definitions, the filenames are relative to file
+instead of the include property. When the included files contains other
+include statements or report definitions, the filenames are relative to file
 where they are defined in.
 
-The included files may only contain content that may be present in a project
-header section.
-
-If the include statement is the last statement in the file it must have the option block. The option block can be empty, but the curly braces must be present.
+This version of the include directive may only be used inside the [[project]]
+header section. The included files must only contain content that may be
+present in a project header section.
 EOT
        )
   end
@@ -3027,7 +3060,8 @@ statement itself. When the included files contains other include
 statements or report definitions, the filenames are relative to file
 where they are defined in.
 
-The included file may only contain macro definitions.
+The included file may only contain macro definitions. This version of the
+include directive can only be used before the [[project]] header.
 EOT
        )
   end
@@ -3156,6 +3190,7 @@ EOT
   def rule_propertiesInclude
     pattern(%w( _include !includeProperties !properties . ), lambda {
     })
+    lastSyntaxToken(1)
     doc('include.properties', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
@@ -4251,6 +4286,8 @@ EOT
   end
 
   def rule_resourceScenarioAttributes
+    pattern(%w( !chargeset ))
+
     pattern(%w( _efficiency !number ), lambda {
       @property['efficiency', @scenarioIdx] = @val[1]
     })
