@@ -76,14 +76,15 @@ To learn more about how to use TaskJuggler please see the {user
 manual}[http://www.taskjuggler.org/tj3/manual/index.html]. It also contains a
 {tutorial}[http://www.taskjuggler.org/tj3/manual/Tutorial.html#The_Tutorial_Your_first_Project]
 to get you started. It will tell you how to generate HTML reports
-like {these}[http://www.taskjuggler.org/tj3/examples/Overview.html]
+like
+{these}[http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html]
 from such a {project
-description}[http://www.taskjuggler.org/tj3/examples/tutorial.tjp].
+description}[http://www.taskjuggler.org/tj3/examples/Tutorial/tutorial.tjp].
 
 = Getting Help and reporting Bugs
 
 There are several mailing list for TaskJuggler users and developers.
-Please see {this page}[http://www.taskjuggler.org/forum.php] for
+Please see {this page}[http://www.taskjuggler.org/contact.html] for
 details. If you have a question about TaskJuggler usage, the user
 list is the best place to go. Please remain subscribed and help other
 users when you get more proficient in TaskJuggler.
