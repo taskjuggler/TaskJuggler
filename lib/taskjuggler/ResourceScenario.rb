@@ -49,7 +49,7 @@ class TaskJuggler
       # Attributed are only really created when they are accessed the first
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
-      %w( alloctdeffort criticalness directreports duties efficiency
+      %w( alloctdeffort chargeset criticalness directreports duties efficiency
           effort limits managers rate reports shifts
           vacations workinghours ).each do |attr|
         @property[attr, @scenarioIdx]
