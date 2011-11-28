@@ -64,7 +64,9 @@ class TaskJuggler
       end
 
       if @property.container?
-        @property.children.each { |child| amount += child.turnover }
+        @property.children.each do |child|
+          amount += child.turnover(@scenarioIdx, startIdx, endIdx)
+        end
       else
         case @property.get('aggregate')
         when :tasks
