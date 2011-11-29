@@ -64,8 +64,18 @@ class TaskJuggler
       end
 
       if @property.container?
-        @property.children.each do |child|
-          amount += child.turnover(@scenarioIdx, startIdx, endIdx)
+        if @property.adoptees.empty?
+          # Normal case. Accumulate turnover of child accounts.
+          @property.children.each do |child|
+            amount += child.turnover(@scenarioIdx, startIdx, endIdx)
+          end
+        else
+          # Special case for meta account that is used to calculate a balance.
+          # The first adoptee is the top-level cost account, the second the
+          # top-level revenue account.
+          amount +=
+            -@property.adoptees[0].turnover(@scenarioIdx, startIdx, endIdx) +
+            @property.adoptees[1].turnover(@scenarioIdx, startIdx, endIdx)
         end
       else
         case @property.get('aggregate')

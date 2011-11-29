@@ -297,6 +297,26 @@ p.tj_journal {
   overflow:hidden;
   padding:0px;
 }
+.costaccountcell1 {
+  background-color:#fff2eb;
+  white-space:nowrap;
+  padding:0px;
+}
+.costaccountcell2 {
+  background-color:#ebdfd9;
+  white-space:nowrap;
+  padding:0px;
+}
+.revenueaccountcell1 {
+  background-color:#cbffcc;
+  white-space:nowrap;
+  padding:0px;
+}
+.revenueaccountcell2 {
+  background-color:#a6d0a6;
+  white-space:nowrap;
+  padding:0px;
+}
 .accountcell1 {
   background-color:#ebf2ff;
   white-space:nowrap;

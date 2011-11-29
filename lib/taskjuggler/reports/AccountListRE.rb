@@ -50,8 +50,64 @@ class TaskJuggler
         generateHeaderCell(columnDescr)
       end
 
-      # Generate the list.
-      generateAccountList(accountList, nil)
+      if (costAccount = @report.get('costAccount')) &&
+         (revenueAccount = @report.get('revenueAccount'))
+        # We are in balance mode. First show the cost and then the revenue
+        # accounts and then the total balance.
+        costAccountList = PropertyList.new(@project.accounts)
+        costAccountList.clear
+        costAccountList.setSorting(@report.get('sortAccounts'))
+        costAccountList.query = @report.project.reportContexts.last.query
+
+        revenueAccountList = PropertyList.new(@project.accounts)
+        revenueAccountList.clear
+        revenueAccountList.setSorting(@report.get('sortAccounts'))
+        revenueAccountList.query = @report.project.reportContexts.last.query
+
+        # Split the account list into a cost and a revenue account list.
+        accountList.each do |account|
+          if account.isChildOf?(costAccount) || account == costAccount
+            costAccountList << account
+          elsif account.isChildOf?(revenueAccount) || account == revenueAccount
+            revenueAccountList << account
+          end
+        end
+
+        # Make sure that the top-level cost and revenue accounts are always
+        # included in the lists.
+        unless costAccountList.include?(costAccount)
+          costAccountList << costAccount
+        end
+        unless revenueAccountList.include?(revenueAccount)
+          revenueAccountList << revenueAccount
+        end
+
+        generateAccountList(costAccountList, 0, nil)
+        generateAccountList(revenueAccountList, costAccountList.length, nil)
+
+        # To generate a total line that reports revenue minus cost, we create
+        # a temporary Account object that adopts the cost and revenue
+        # accounts.
+        totalAccount = Account.new(@report.project, '0', "Total", nil)
+        totalAccount.adopt(costAccount)
+        totalAccount.adopt(revenueAccount)
+
+        totalAccountList = PropertyList.new(@project.accounts)
+        totalAccountList.clear
+        totalAccountList.setSorting(@report.get('sortAccounts'))
+        totalAccountList.query = @report.project.reportContexts.last.query
+        totalAccountList << totalAccount
+
+        generateAccountList(totalAccountList,
+                            costAccountList.length + revenueAccountList.length,
+                            nil)
+        @report.project.removeAccount(totalAccount)
+
+      else
+        # We are not in balance mode. Simply show a list of all reports that
+        # aren't filtered out.
+        generateAccountList(accountList, 0, nil)
+      end
     end
 
   end

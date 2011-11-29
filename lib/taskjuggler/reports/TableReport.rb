@@ -320,9 +320,9 @@ class TaskJuggler
     # Generate a ReportTableLine for each of the accounts in _accountList_. If
     # _scopeLine_ is defined, the generated account lines will be within the
     # scope this resource line.
-    def generateAccountList(accountList, scopeLine)
+    def generateAccountList(accountList, lineOffset, mode)
       queryAttrs = { 'project' => @project,
-                     'scopeProperty' => scopeLine ? scopeLine.property : nil,
+                     'scopeProperty' => nil,
                      'loadUnit' => a('loadUnit'),
                      'numberFormat' => a('numberFormat'),
                      'timeFormat' => a('timeFormat'),
@@ -338,9 +338,9 @@ class TaskJuggler
       accountList.sort!
 
       # The primary line counter. Is not used for enclosed lines.
-      no = 0
+      no = lineOffset
       # The scope line counter. It's reset for each new scope.
-      lineNo = scopeLine ? scopeLine.lineNo : 0
+      lineNo = lineOffset
       # Init the variable to get a larger scope
       line = nil
       accountList.each do |account|
@@ -348,7 +348,6 @@ class TaskJuggler
         # are going to modify it.
         query = @project.reportContexts.last.query.dup
         query.property = account
-        query.scopeProperty = scopeLine ? scopeLine.property : nil
 
         no += 1
         Log.activity if lineNo % 10 == 0
@@ -356,9 +355,9 @@ class TaskJuggler
         a('scenarios').each do |scenarioIdx|
           query.scenarioIdx = scenarioIdx
           # Generate line for each account.
-          line = ReportTableLine.new(@table, account, scopeLine)
+          line = ReportTableLine.new(@table, account, nil)
 
-          line.no = no unless scopeLine
+          line.no = no
           line.lineNo = lineNo
           line.subLineNo = @table.lines
           setIndent(line, a('accountRoot'), accountList.treeMode?)
@@ -366,7 +365,7 @@ class TaskJuggler
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
             query.attributeId = columnDef.id
-            next unless generateTableCell(line, account, columnDef, query)
+            next unless generateTableCell(line, columnDef, query)
           end
         end
       end
@@ -424,7 +423,7 @@ class TaskJuggler
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
             query.attributeId = columnDef.id
-            next unless generateTableCell(line, task, columnDef, query)
+            next unless generateTableCell(line, columnDef, query)
           end
         end
 
@@ -492,7 +491,7 @@ class TaskJuggler
           # Generate a cell for each column in this line.
           a('columns').each do |column|
             query.attributeId = column.id
-            next unless generateTableCell(line, resource, column, query)
+            next unless generateTableCell(line, column, query)
           end
         end
 
@@ -593,7 +592,7 @@ class TaskJuggler
     # columns. In such a case many cells are generated with a single call of
     # this method. The last kind of cell is actually not a cell. It just
     # generates the chart objects that belong to the property in this line.
-    def generateTableCell(line, property, columnDef, query)
+    def generateTableCell(line, columnDef, query)
       if columnDef.start || columnDef.end
         # If the user has specified a new start or end time for this column,
         # we have to duplicate the query before we modify it.
@@ -637,7 +636,7 @@ class TaskJuggler
         sameTimeNextFunc = :sameTimeNextYear
       else
         if calculated?(columnDef.id)
-          return genCalculatedCell(query, line, columnDef, property)
+          return genCalculatedCell(query, line, columnDef)
         else
           return genStandardCell(query, line, columnDef)
         end
@@ -651,16 +650,16 @@ class TaskJuggler
 
       PlaceHolderCell.new(line, tcLine)
       # Depending on the property type we use different generator functions.
-      if property.is_a?(Task)
+      if query.property.is_a?(Task)
         genCalChartTaskCell(query, tcLine, columnDef, start, sameTimeNextFunc)
-      elsif property.is_a?(Resource)
+      elsif query.property.is_a?(Resource)
         genCalChartResourceCell(query, tcLine, columnDef, start,
                                 sameTimeNextFunc)
-      elsif property.is_a?(Account)
+      elsif query.property.is_a?(Account)
         genCalChartAccountCell(query, tcLine, columnDef, start,
                                sameTimeNextFunc)
       else
-        raise "Unknown property type #{property.class}"
+        raise "Unknown property type #{query.property.class}"
       end
       true
     end
@@ -693,7 +692,7 @@ class TaskJuggler
         return false
       end
 
-      setStandardCellAttributes(cell, columnDef,
+      setStandardCellAttributes(query, cell, columnDef,
                                 propertyList.attributeType(columnDef.id), line)
 
       # If the user has requested a custom cell text, this will be used
@@ -714,9 +713,8 @@ class TaskJuggler
     # or other sources of information. It returns true if the cell exists, false
     # for a hidden cell. _query_ is the Query to get the cell value.  _line_
     # is the ReportTableLine of the cell. _columnDef_ is the
-    # TableColumnDefinition of the column. _property_ is the PropertyTreeNode
-    # that is reported in this cell.
-    def genCalculatedCell(query, line, columnDef, property)
+    # TableColumnDefinition of the column.
+    def genCalculatedCell(query, line, columnDef)
       query = query.dup
       query.listType = columnDef.listType
       query.listItem = columnDef.listItem
@@ -729,7 +727,7 @@ class TaskJuggler
         return false
       end
 
-      setStandardCellAttributes(cell, columnDef, nil, line)
+      setStandardCellAttributes(query, cell, columnDef, nil, line)
 
       if query.process
         cell.text = (rti = query.to_rti) ? rti : query.to_s
@@ -747,6 +745,7 @@ class TaskJuggler
       when 'line'
         cell.text = line.lineNo.to_s
       when 'name'
+        property = query.property
         cell.icon =
           if property.is_a?(Task)
             if property.container?
@@ -813,8 +812,7 @@ class TaskJuggler
         cell.text = cdText if cdText
         cell.showTooltipHint = false
 
-        cell.category = 'accountcell' +
-                        (line.property.get('index') % 2 == 1 ? '1' : '2')
+        setAccountCellBgColor(query, line, cell)
 
         tryCellMerging(cell, line, firstCell)
 
@@ -1032,7 +1030,7 @@ class TaskJuggler
 
     # This method takes care of often used cell attributes like indentation,
     # alignment and background color.
-    def setStandardCellAttributes(cell, columnDef, attributeType, line)
+    def setStandardCellAttributes(query, cell, columnDef, attributeType, line)
       # Determine whether it should be indented
       if indent(columnDef.id, attributeType)
         cell.indent = line.indentation
@@ -1044,12 +1042,13 @@ class TaskJuggler
       # Set background color
       if line.property.is_a?(Task)
         cell.category = 'taskcell'
+        cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
       elsif line.property.is_a?(Resource)
         cell.category = 'resourcecell'
+        cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
       elsif line.property.is_a?(Account)
-        cell.category = 'accountcell'
+        setAccountCellBgColor(query, line, cell)
       end
-      cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
 
       # Set column width
       cell.width = columnDef.width if columnDef.width
@@ -1119,6 +1118,23 @@ class TaskJuggler
         line.indentation += level
         line.bold = true
       end
+    end
+
+    def setAccountCellBgColor(query, line, cell)
+      if query.costAccount &&
+         (query.property.isChildOf?(query.costAccount) ||
+          query.costAccount == query.property)
+        prefix = 'cost'
+      elsif query.revenueAccount &&
+            (query.property.isChildOf?(query.revenueAccount) ||
+             query.revenueAccount == query.property)
+        prefix = 'revenue'
+      else
+        prefix = ''
+      end
+
+      cell.category = prefix + 'accountcell' +
+                      (line.property.get('index') % 2 == 1 ? '1' : '2')
     end
 
     # Make sure we have a valid cell text. If not, this is the result of an

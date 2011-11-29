@@ -193,6 +193,12 @@ class TaskJuggler
         property = prop
       end
 
+      # Iterate over all properties and eliminate references to this the
+      # PropertyTreeNode to be removed.
+      @properties.each do |p|
+        p.removeReferences(p)
+      end
+
       # Recursively remove all sub-nodes. The children list is modified during
       # the call, so we can't use an iterator here.
       until property.children.empty? do
@@ -204,6 +210,7 @@ class TaskJuggler
 
       # Remove this node from the child list of the parent node.
       property.parent.children.delete(property) if property.parent
+
 
       property
     end

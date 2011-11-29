@@ -843,6 +843,10 @@ class TaskJuggler
       @reports.addProperty(report)
     end
 
+    def removeAccount(account) # :nodoc:
+      @accounts.removeProperty(account)
+    end
+
     # call-seq:
     #   isWorkingTime(slotIdx) -> true or false
     #   isWorkingTime(slot) -> true or false

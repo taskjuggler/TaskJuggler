@@ -197,6 +197,13 @@ class TaskJuggler
       @attributes, @scenarioAttributes = backup
     end
 
+    # Remove any references in the stored data that references the _property_.
+    def removeReferences(property)
+      @children.delete(property)
+      @adoptees.delete(property)
+      @stepParents.delete(property)
+    end
+
     # Return the index of the child _node_.
     def levelSeqNo(node)
       @children.index(node) + 1

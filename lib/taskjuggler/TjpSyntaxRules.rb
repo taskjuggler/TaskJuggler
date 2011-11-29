@@ -4109,13 +4109,19 @@ EOT
     singlePattern('_accountreport')
     level(:beta)
     doc('accountreport', <<'EOT'
-The report lists accounts and their respective values in a table. To reduce
+The report lists accounts and their respective values in a table. The report can operate in two modes:
+
+# Balance mode: If a [[balance]] has been set, the report will include the
+defined cost and revenue accounts as well as all their sub accounts. To reduce
 the list of included accounts, you can use the [[hideaccount]],
 [[rollupaccount]] or [[accountroot]] attributes. The order of the task can
 be controlled with [[sortaccounts]]. If the first sorting criteria is tree
 sorting, the parent accounts will always be included to form the tree.
 Tree sorting is the default. You need to change it if you do not want certain
-parent accounts to be included in the report.
+parent accounts to be included in the report. Additionally, it will contain a line at the end that lists the balance (revenue - cost).
+
+# Normal mode: All reports are listed in the order and completeness as defined
+by the other report attributes. No balance line will be included.
 EOT
        )
     also(%w( report))
