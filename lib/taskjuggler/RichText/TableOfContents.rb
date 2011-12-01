@@ -38,7 +38,8 @@ class TaskJuggler
     # Return HTML elements that represent the content of the TableOfContents
     # object. The result is a tree of XMLElement objects.
     def to_html
-      div = XMLElement.new('div', 'style' => 'margin-left:15%; margin-right:15%;')
+      div = XMLElement.new('div',
+                           'style' => 'margin-left:15%; margin-right:15%;')
       div << (table = XMLElement.new('table'))
       @entries.each { |e| table << e.to_html }
 

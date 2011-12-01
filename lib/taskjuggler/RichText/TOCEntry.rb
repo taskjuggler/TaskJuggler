@@ -48,13 +48,22 @@ class TaskJuggler
         td << XMLElement.new('div', 'style' => 'height:10px')
       end
 
-      fontSizes = [ 20, 17, 15 ]
+      # Use a different font size depending on the element level.
+      fontSizes = [ 20, 17, 15, 14, 14 ]
+
       tr = XMLElement.new('tr', 'style' => "font-size:#{fontSizes[level]}px;")
-      tr << (td = XMLElement.new('td',
-                                 'style' => "padding-left:#{10 * level}px"))
-      td << XMLText.new(@number)
-      tr << (td = XMLElement.new('td',
-                                 'style' => "padding-left:#{5 + 20 * level}px"))
+      tr << (td = XMLElement.new('td', 'style' => "width:30px;"))
+      # Top-level headings have their number in the left column.
+      td << XMLText.new(@number) if level == 0
+
+      tr << (td = XMLElement.new('td'))
+      if level > 0
+        # Lower level headings have their number in the right column with the
+        # heading text.
+        td << XMLElement.new('span', 'style' => 'padding-right:15px') do
+          XMLText.new(@number)
+        end
+      end
       tag = @tag ? "##{@tag}" : ''
       td << (a = XMLElement.new('a', 'href' => "#{@file}.html#{tag}"))
       a << XMLText.new(@title)
