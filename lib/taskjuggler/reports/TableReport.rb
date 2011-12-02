@@ -155,12 +155,12 @@ class TaskJuggler
     end
 
     # Return the alignment of the column based on the _colId_ or the
-    # _propertyType_.
-    def alignment(colId, propertyType)
+    # _attributeType_.
+    def alignment(colId, attributeType)
       if @@propertiesById.has_key?(colId)
         return @@propertiesById[colId][2]
-      elsif @@propertiesByType.has_key?(propertyType)
-        return @@propertiesByType[propertyType][1]
+      elsif @@propertiesByType.has_key?(attributeType)
+        return @@propertiesByType[attributeType][1]
       else
         :center
       end
@@ -814,6 +814,8 @@ class TaskJuggler
 
         setAccountCellBgColor(query, line, cell)
 
+        setCustomCellAttributes(cell, columnDef, query)
+
         tryCellMerging(cell, line, firstCell)
 
         t = nextT
@@ -881,7 +883,6 @@ class TaskJuggler
         if cellIv.overlaps?(taskIv)
           # The cell is either a container or leaf task
           cell.category = task.container? ? 'calconttask' : 'caltask'
-          setCustomCellAttributes(cell, columnDef, query)
         elsif !@project.isWorkingTime(cellIv)
           # The cell is a vacation cell.
           cell.category = 'offduty'
@@ -891,6 +892,7 @@ class TaskJuggler
         end
         cell.category += line.property.get('index') % 2  == 1 ? '1' : '2'
 
+        setCustomCellAttributes(cell, columnDef, query)
         tryCellMerging(cell, line, firstCell)
 
         t = nextT
@@ -946,6 +948,7 @@ class TaskJuggler
         query.process
         workLoad = query.to_num
         scaledWorkLoad = query.to_s
+
         if task
           # Get work load for the particular task.
           query.scopeProperty = task
@@ -1015,6 +1018,8 @@ class TaskJuggler
                           end
                         end
         cell.category += line.property.get('index') % 2 == 1 ? '1' : '2'
+
+        setCustomCellAttributes(cell, columnDef, query)
 
         tryCellMerging(cell, line, firstCell)
 
