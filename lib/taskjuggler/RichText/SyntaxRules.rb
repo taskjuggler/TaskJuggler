@@ -60,7 +60,6 @@ class TaskJuggler
         RichTextElement.new(@richTextI, :pre, @val[0].join)
       })
       pattern(%w( !bulletList1 ), lambda {
-
         RichTextElement.new(@richTextI, :bulletlist1, @val[0])
       })
       pattern(%w( !numberList1 ), lambda {
@@ -173,7 +172,7 @@ class TaskJuggler
 
     def rule_numberList1
       repeatable
-      pattern(%w( $NUMBER1 !text ), lambda {
+      pattern(%w( $NUMBER1 !text !blankLines ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem1, @val[1])
         @numberListCounter[0] += 1
         el.data = @numberListCounter.dup
@@ -187,7 +186,7 @@ class TaskJuggler
 
     def rule_numberList2
       repeatable
-      pattern(%w( $NUMBER2 !text ), lambda {
+      pattern(%w( $NUMBER2 !text !blankLines ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem2, @val[1])
         @numberListCounter[1] += 1
         el.data = @numberListCounter.dup
@@ -201,7 +200,7 @@ class TaskJuggler
 
     def rule_numberList3
       repeatable
-      pattern(%w( $NUMBER3 !text ), lambda {
+      pattern(%w( $NUMBER3 !text !blankLines ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem3, @val[1])
         @numberListCounter[2] += 1
         el.data = @numberListCounter.dup
@@ -215,7 +214,7 @@ class TaskJuggler
 
     def rule_numberList4
       repeatable
-      pattern(%w( $NUMBER4 !text ), lambda {
+      pattern(%w( $NUMBER4 !text !blankLines ), lambda {
         el = RichTextElement.new(@richTextI, :numberitem4, @val[1])
         @numberListCounter[3] += 1
         el.data = @numberListCounter.dup
