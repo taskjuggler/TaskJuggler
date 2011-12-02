@@ -26,8 +26,11 @@ class TaskJuggler
     end
 
     def query_balance(query)
-      startIdx = @project.dateToIdx(@project['start'])
-      endIdx = @project.dateToIdx([@project['start'], query.start].max)
+      # The account balance is the turnover from project start (index 0) to
+      # the start of the query period. It's the start because that's what the
+      # label in the column header says.
+      startIdx = 0
+      endIdx = @project.dateToIdx(query.start)
 
       query.sortable = query.numerical = amount = turnover(startIdx, endIdx)
       query.string = query.currencyFormat.format(amount)
