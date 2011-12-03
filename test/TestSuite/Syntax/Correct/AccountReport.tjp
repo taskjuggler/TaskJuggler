@@ -1,21 +1,74 @@
-project "AccountReport" 2011-11-09 +1y
+project "AccountReport" 2011-11-09 +1y {
+  currencyformat "(" ")" "," "." 0
+}
 
-account c "C"
-account r "R"
+account resourceCost "Resource Cost" {
+  aggregate resources
+  account teamA "Team A"
+  account teamB "Team B"
+}
+account productCost "Product Cost" {
+  aggregate tasks
+}
+account customerPayments "Customer Payments" {
+  credits 2011-12-01 "First downpayment" 80000,
+          2012-06-01 "Second downpayment" 200000
+}
 
-balance c r
-rate 400
+balance productCost customerPayments
 
-resource r1 "R1"
+resource teamA "Team A" {
+  rate 420
+  chargeset teamA
+  resource "R1"
+  resource "R2"
+}
+resource teamB "Team B" {
+  rate 380
+  chargeset teamB
+  resource "R3"
+  resource "R4"
+}
 
-task t "T" {
-  task s1 "S1" {
-    chargeset c
-    effort 30d
-    allocate r1
+task "Products" {
+  chargeset productCost
+
+  task p1 "Product 1" {
+    effort 20m
+    allocate teamA, teamB
+  }
+  task p2 "Product 2" {
+    effort 18m
+    allocate teamA
+    priority 600
+  }
+  task p3 "Product 3" {
+    effort 6m
+    allocate teamB
+    priority 600
+  }
+  task mf "Manufacturing" {
+    depends !p1, !p2, !p3
+    duration 2w
+    charge 12000 onend
+  }
+  task "Final Payment" {
+    depends !mf
+    purge chargeset
+    chargeset customerPayments
+    charge 170000 onstart
   }
 }
 
-accountreport "AccountReport" {
+accountreport "TeamBudget" {
   formats html
+  accountroot resourceCost
+  balance -
+  columns no, name, quarterly { celltext 1 "<-query attribute='turnover'->" }
 }
+
+accountreport "ProfiAndLoss" {
+  formats html
+  columns no, name, monthly
+}
+

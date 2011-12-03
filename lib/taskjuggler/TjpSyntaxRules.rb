@@ -112,6 +112,7 @@ Specifies whether the account is used to track task or resource specific
 amounts. The default is to track tasks.
 EOT
        )
+    example('AccountReport')
 
     pattern(%w( _credits !accountCredits ), lambda {
       begin
@@ -393,29 +394,38 @@ EOT
   end
 
   def rule_balance
-    pattern(%w( _balance !accountId !accountId ), lambda {
-      if @val[1].parent
-        error('cost_acct_no_top',
-              "The cost account #{@val[1].fullId} is not a top-level account.",
-              @sourceFileInfo[1])
-      end
-      if @val[2].parent
-        error('rev_acct_no_top',
-              "The revenue account #{@val[2].fullId} is not a top-level " +
-              "account.", @sourceFileInfo[2])
-      end
-      if @val[1] == @val[2]
-        error('cost_rev_same',
-              'The cost and revenue accounts may not be the same.',
-              @sourceFileInfo[1])
-      end
-      [ @val[1], @val[2] ]
+    pattern(%w( _balance !balanceAccounts ), lambda {
+      @val[1]
     })
     doc('balance', <<'EOT'
 During report generation, TaskJuggler can consider some accounts to be revenue accounts, while other can be considered cost accounts. By using the balance attribute, two top-level accounts can be designated for a profit-loss-analysis. This analysis includes all sub accounts of these two top-level accounts.
+
+To clear a previously set balance, just use a ''''-''''.
 EOT
        )
-    arg(1, 'cost account', <<'EOT'
+    example('AccountReport')
+  end
+
+  def rule_balanceAccounts
+    pattern(%w( !accountId !accountId ), lambda {
+      if @val[0].parent
+        error('cost_acct_no_top',
+              "The cost account #{@val[0].fullId} is not a top-level account.",
+              @sourceFileInfo[0])
+      end
+      if @val[1].parent
+        error('rev_acct_no_top',
+              "The revenue account #{@val[1].fullId} is not a top-level " +
+              "account.", @sourceFileInfo[1])
+      end
+      if @val[0] == @val[1]
+        error('cost_rev_same',
+              'The cost and revenue accounts may not be the same.',
+              @sourceFileInfo[0])
+      end
+      [ @val[0], @val[1] ]
+    })
+    arg(0, 'cost account', <<'EOT'
 The top-level account that is used for all cost related charges.
 EOT
        )
@@ -423,6 +433,10 @@ EOT
 The top-level account that is used for all revenue related charges.
 EOT
        )
+
+    pattern([ '_-' ], lambda {
+      [ nil, nil ]
+    })
   end
 
   def rule_bookingAttributes

@@ -695,7 +695,9 @@ class TaskJuggler
 
       unless @accounts.empty?
         @reports.each do |report|
-          if report.get('costAccount').nil? || report.get('revenueAccount').nil?
+          if (report.typeSpec != :accountreport) &&
+             (report.get('costAccount').nil? ||
+              report.get('revenueAccount').nil?)
             warning('report_without_balance',
                     "The report #{report.fullId} has no 'balance' defined. " +
                     "No cost or revenue computation will be possible.",
