@@ -159,15 +159,9 @@ EOT
       end
       level
     })
-    doc('alert level', <<'EOT'
-Specify the alert level for this entry. Supported values are green, yellow and
-red. The default value is green. This attribute is inteded to be used for
-status reporting. When used for a journal entry that is associated with a
-property, the value can be reported in the alert column. When multiple entries
-have been specified for the property, the entry with the date closest to the
-report end date will be used. Container properties will inherit the highest
-alert level of all its sub properties unless it has an own journal entry dated
-closer to the report end than all of its sub properties.
+    arg(0, 'alert level', <<'EOT'
+Supported values are ''''green'''', ''''yellow'''' and ''''red''''. The
+default value is ''''green''''.
 EOT
        )
   end
@@ -1965,17 +1959,11 @@ EOT
     optional
     repeatable
 
-    pattern(%w( _alert $ID ), lambda {
-      level = @project.alertLevelIndex(@val[1])
-      unless level
-        error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
-              'green, yellow or red', @sourceFileInfo[0])
-      end
-      @journalEntry.alertLevel = level
+    pattern(%w( _alert !alertLevel ), lambda {
+      @journalEntry.alertLevel = @val[1]
     })
     doc('alert', <<'EOT'
-Specify the alert level for this entry. Supported values are green, yellow and
-red. The default value is green. This attribute is inteded to be used for
+Specify the alert level for this entry. This attribute is inteded to be used for
 status reporting. When used for a journal entry that is associated with a
 property, the value can be reported in the alert column. When multiple entries
 have been specified for the property, the entry with the date closest to the
@@ -3672,6 +3660,8 @@ the sub-accounts of the root-level account become top-level accounts in the repo
 file.
 EOT
        )
+    example('AccountReport')
+
     pattern(%w( !balance ), lambda {
       @property.set('costAccount', @val[0][0])
       @property.set('revenueAccount', @val[0][1])
