@@ -208,8 +208,9 @@ class TaskJuggler
           if property['milestone', @query.scenarioIdx]
             GanttMilestone.new(@height, xStart, @y)
           elsif property.container? &&
-                !@query.project.reportContexts.last.report.get('rollupTask').
-                eval(@query)
+                ((rollupExpr = @query.project.reportContexts.
+                              last.report.get('rollupTask')).nil? ||
+                 !rollupExpr.eval(@query))
             GanttContainer.new(@height, xStart, xEnd, @y)
           else
             GanttTaskBar.new(@query, @height, xStart, xEnd, @y)
