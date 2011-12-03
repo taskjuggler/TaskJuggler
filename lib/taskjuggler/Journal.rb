@@ -243,6 +243,11 @@ class TaskJuggler
       end
     end
 
+    # Like Array::delete
+    def delete(e)
+      @entries.delete(e)
+    end
+
     # Like Array::delete_if
     def delete_if
       @entries.delete_if { |e| yield(e) }
@@ -361,6 +366,16 @@ class TaskJuggler
     def getEntries(property)
       @propertyToEntries[property.ptn]
     end
+
+    # Delete all entries of the Journal for which the block yields true.
+    def delete_if
+      @entries.delete_if do |e|
+        res = yield(e)
+        @propertyToEntries[e.property.ptn].delete(e) if res
+        res
+      end
+    end
+
 
 
     def to_rti(query)

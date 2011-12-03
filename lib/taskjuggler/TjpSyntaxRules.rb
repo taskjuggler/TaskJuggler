@@ -5041,6 +5041,14 @@ EOT
       @sheetAuthor = @val[1]
       @sheetStart = @val[2].start
       @sheetEnd = @val[2].end
+      # Make sure that we don't have any status sheet entries from the same
+      # author for the same report period. There may have been a previous
+      # submission of the same report and this is an update to it. All old
+      # entries must be removed before we process the sheet.
+      @project['journal'].delete_if do |e|
+        e.author == @sheetAuthor &&
+        @sheetStart <= e.date && e.date < @sheetEnd
+      end
     })
     arg(1, 'reporter', <<'EOT'
 The ID of a defined resource. This identifies the status reporter. Unless the
