@@ -178,23 +178,24 @@ class TaskJuggler
     def pusher
       # Run until the terminate flag is set.
       until @terminate
-        if @toRunQueue.empty? || @runningJobs.length >= @maxCpuCores
+        if @toRunQueue.empty? ||
+           @lock.synchronize{ @runningJobs.length >= @maxCpuCores }
           # We have no jobs in the @toRunQueue or all CPU cores in use already.
           sleep(@timeout)
         else
-          # Get a new job from the @toRunQueue
-          job = @toRunQueue.pop
-
-          job.openPipes
-          # Add the receiver end of the pipe to the @pipes Array.
-          @pipes << job.stdoutP
-          # Map the pipe end to this JobInfo object.
-          @pipeToJob[job.stdoutP] = job
-          # Same for $stderr.
-          @pipes << job.stderrP
-          @pipeToJob[job.stderrP] = job
-
           @lock.synchronize do
+            # Get a new job from the @toRunQueue
+            job = @toRunQueue.pop
+
+            job.openPipes
+            # Add the receiver end of the pipe to the @pipes Array.
+            @pipes << job.stdoutP
+            # Map the pipe end to this JobInfo object.
+            @pipeToJob[job.stdoutP] = job
+            # Same for $stderr.
+            @pipes << job.stderrP
+            @pipeToJob[job.stderrP] = job
+
             pid = fork do
               # This is the child process now. Connect $stdout and $stderr to
               # the pipes.

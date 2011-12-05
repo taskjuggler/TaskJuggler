@@ -43,15 +43,15 @@ class TestProject < Test::Unit::TestCase
   end
 
   # This test case triggers a Ruby 1.9.x mutex bug
-  #def test_fileIO
-  #  doRun(3, 200) do
-  #    fname = "test#{$$}.txt"
-  #    f = File.new(fname, 'w')
-  #    0.upto(10000) { |i| f.puts "#{i} Hello, world!" }
-  #    f.close
-  #    File.delete(fname)
-  #  end
-  #end
+  def test_fileIO
+    doRun(3, 80) do
+      fname = "test#{$$}.txt"
+      f = File.new(fname, 'w')
+      0.upto(10000) { |i| f.puts "#{i} Hello, world!" }
+      f.close
+      File.delete(fname)
+    end
+  end
 
   def doRun(maxCPUs, jobs, &block)
     bp = TaskJuggler::BatchProcessor.new(maxCPUs)
