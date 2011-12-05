@@ -5046,8 +5046,9 @@ EOT
       # submission of the same report and this is an update to it. All old
       # entries must be removed before we process the sheet.
       @project['journal'].delete_if do |e|
-        e.author == @sheetAuthor &&
-        @sheetStart <= e.date && e.date < @sheetEnd
+        # Journal entries from status sheets have the sheet end date as entry
+        # date.
+        e.author == @sheetAuthor && e.date == @sheetEnd
       end
     })
     arg(1, 'reporter', <<'EOT'
