@@ -22,7 +22,7 @@ class TaskJuggler
   class JournalEntry
 
     attr_reader :date, :headline, :property, :sourceFileInfo
-    attr_accessor :author, :summary, :details, :alertLevel, :flags,
+    attr_accessor :author, :moderators, :summary, :details, :alertLevel, :flags,
                   :timeSheetRecord
 
     # Create a new JournalEntry object.
@@ -40,6 +40,8 @@ class TaskJuggler
       @sourceFileInfo = sourceFileInfo
       # A reference to a Resource.
       @author = nil
+      # A list of Resource objects that have moderated this entry.
+      @moderators = []
       # An introductory or summarizing RichText paragraph.
       @summary = nil
       # A RichText of arbitrary length.

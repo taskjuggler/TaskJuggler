@@ -4986,7 +4986,7 @@ EOT
                                        @sourceFileInfo[0])
       @journalEntry.alertLevel = @val[1]
       @journalEntry.author = @sheetAuthor
-
+      @journalEntry.moderators << @sheetModerator
     })
   end
 
@@ -5039,6 +5039,7 @@ EOT
               'No trackingscenario defined.')
       end
       @sheetAuthor = @val[1]
+      @sheetModerator = @val[1]
       @sheetStart = @val[2].start
       @sheetEnd = @val[2].end
       # Make sure that we don't have any status sheet entries from the same
@@ -5048,7 +5049,7 @@ EOT
       @project['journal'].delete_if do |e|
         # Journal entries from status sheets have the sheet end date as entry
         # date.
-        e.author == @sheetAuthor && e.date == @sheetEnd
+        e.moderators.include?(@sheetModerator) && e.date == @sheetEnd
       end
     })
     arg(1, 'reporter', <<'EOT'
