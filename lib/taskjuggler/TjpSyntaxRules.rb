@@ -1495,6 +1495,15 @@ EOT
     pattern(['_isresource', '_(', '_)' ])
     doc('isresource', 'The result is true if the property is a resource.')
 
+    pattern(%w( _isresponsibilityof _( $ID _, $ID _) ))
+    doc('isresponsibilityof', <<'EOT'
+Will evaluate to true for tasks that have the specified resource
+assigned as [[responsible]] in the specified scenario.
+EOT
+       )
+    arg(2, 'Resource ID', 'The ID of a defined resource')
+    arg(4, 'Scenario ID', 'A scenario ID')
+
     pattern(['_istask', '_(', '_)' ])
     doc('istask', 'The result is true if the property is a task.')
 

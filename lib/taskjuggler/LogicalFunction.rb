@@ -34,6 +34,7 @@ class TaskJuggler
         'ismilestone' => 1,
         'isongoing' => 1,
         'isresource' => 0,
+        'isresponsibilityof' => 2,
         'istask' => 0,
         'treelevel' => 0
     }
@@ -209,6 +210,19 @@ class TaskJuggler
       property = properties(expr)[0]
       return false unless property
       property.is_a?(Resource)
+    end
+
+    def isresponsibilityof(expr, args)
+      property = properties(expr)[0]
+      # The result can only be true when called for a Task property.
+      return false unless (task = property).is_a?(Task)
+      project = task.project
+      # 1st arg must be a resource ID.
+      return false if (resource = project.resource(args[0])).nil?
+      # 2nd arg must be a scenario index.
+      return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
+
+      task['responsible', scenarioIdx].include?(resource)
     end
 
     def istask(expr, args)
