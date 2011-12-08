@@ -507,10 +507,10 @@ class TaskJuggler
                           logExp = nil, task = nil, alertLevel = nil)
       list = JournalEntryList.new
       @entries.each do |entry|
-        if entry.author == resource &&
+        if entry.author == resource.ptn &&
            (startDate.nil? || entry.date > startDate) &&
            (endDate.nil? || entry.date <= endDate) &&
-           (task.nil? || entry.property == task) &&
+           (task.nil? || entry.property == task.ptn) &&
            (alertLevel.nil? || entry.alertLevel >= alertLevel) &&
            !entry.headline.empty? && !hidden(entry, logExp)
           list << entry
@@ -528,7 +528,7 @@ class TaskJuggler
                       resource = nil, alertLevel = nil)
       list = JournalEntryList.new
       @entries.each do |entry|
-        if entry.property == task &&
+        if entry.property == task.ptn &&
            (startDate.nil? || entry.date >= startDate) &&
            (endDate.nil? || entry.date < endDate) &&
            (resource.nil? || entry.author == resource) &&
@@ -564,8 +564,8 @@ class TaskJuggler
       @entries.each do |entry|
         if (startDate.nil? || startDate <= entry.date) &&
            (endDate.nil? || endDate >= entry.date) &&
-           (property.nil? || property == entry.property ||
-                             entry.property.isChildOf?(property)) &&
+           (property.nil? || property.ptn == entry.property ||
+                             entry.property.isChildOf?(property.ptn)) &&
            (alertLevel.nil? || alertLevel == entry.alertLevel) &&
            !hidden(entry, logExp)
           list << entry
