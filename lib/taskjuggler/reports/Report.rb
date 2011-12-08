@@ -253,7 +253,11 @@ EOT
           ((@name[0] == '/' ? '' : @project.outputDir) +
            @name + '.html').untaint
         end
-      html.write(fileName)
+      begin
+        html.write(fileName)
+      rescue IOError, SystemCallError
+        error('write_html', "Cannot write to file #{fileName}.\n#{$!}")
+      end
     end
 
     # Generate a CSV version of the report.
@@ -385,8 +389,13 @@ EOT
       # Don't copy directory if all files are up-to-date.
       return if directoryUpToDate?(auxSrcDir, auxDstDir + dirName)
 
-      # Recursively copy the directory and all content.
-      FileUtils.cp_r(auxSrcDir, auxDstDir)
+      begin
+        # Recursively copy the directory and all content.
+        FileUtils.cp_r(auxSrcDir, auxDstDir)
+      rescue IOError, SystemCallError
+        error('copy_dir', "Cannot copy directory #{auxSrcDir} to " +
+                          "#{auxDstDir}.\n#{$!}")
+      end
     end
 
     def directoryUpToDate?(auxSrcDir, auxDstDir)

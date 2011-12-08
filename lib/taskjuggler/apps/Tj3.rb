@@ -137,6 +137,9 @@ EOT
         if files.empty?
           error('You must provide at least one .tjp file', 1)
         end
+        if @outputDir != '' && !Dir.exists?(@outputDir)
+          error("Output directory #{@outputDir} does not exist!")
+        end
 
         tj = TaskJuggler.new(true)
         tj.maxCpuCores = @maxCpuCores
