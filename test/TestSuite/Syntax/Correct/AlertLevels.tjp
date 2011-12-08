@@ -1,0 +1,13 @@
+project "Alert Levels" 2011-12-08 +1m {
+  alertlevels green "Low" "#2AA46C",
+              blue "Guarded" "#457CC4",
+              yellow "Elevated" "#F1D821",
+              orange "High" "#F99836",
+              red "Severe" "#E43745"
+}
+
+task "Life" {
+  journalentry 2011-12-25 "Intruder expected" {
+    alert red
+  }
+}

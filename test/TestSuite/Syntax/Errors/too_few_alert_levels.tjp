@@ -1,0 +1,5 @@
+project "Test" 2011-12-08 +1m {
+# MARK: error 3 too_few_alert_levels
+  alertlevels foo "Foo" "#000"
+}
+

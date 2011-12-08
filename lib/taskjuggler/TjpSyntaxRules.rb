@@ -154,16 +154,30 @@ EOT
     pattern(%w( $ID ), lambda {
       level = @project.alertLevelIndex(@val[0])
       unless level
+        levels = @project['alertLevels'].map { |l| l[0] }
         error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
-              'green, yellow or red', @sourceFileInfo[0])
+              "one of #{levels.join(', ')}", @sourceFileInfo[0])
       end
       level
     })
     arg(0, 'alert level', <<'EOT'
-Supported values are ''''green'''', ''''yellow'''' and ''''red''''. The
-default value is ''''green''''.
+By default supported values are ''''green'''', ''''yellow'''' and ''''red''''.
+The default value is ''''green''''. You can define your own levels with
+[[alertlevels]].
 EOT
        )
+  end
+
+  def rule_alertLevelDefinition
+    pattern(%w( $ID $STRING !color ), lambda {
+      [ @val[0], @val[1], @val[2] ]
+    })
+    arg(0, 'ID', "A unique ID for the alert level")
+    arg(1, 'color name', 'A name of the alert level color')
+  end
+
+  def rule_alertLevelDefinitions
+    listRule('moreAlertLevelDefinitions', '!alertLevelDefinition')
   end
 
   def rule_allocate
@@ -2785,6 +2799,53 @@ EOT
   def rule_projectBodyAttributes
     repeatable
     optional
+
+    pattern(%w( _alertlevels !alertLevelDefinitions ), lambda {
+      if @val[1].length < 2
+        error('too_few_alert_levels',
+              'You must specify at least 2 different alert levels.',
+              @sourceFileInfo[1])
+      end
+      ids = {}
+      names = {}
+      colors = {}
+      @val[1].each do |level|
+        if ids[level[0]]
+          error('alert_level_redef',
+                "Alert level '#{level[0]}' has defined multiple times.",
+                @sourceFileInfo[1])
+        end
+        ids[level[0]] = level
+
+        if names[level[1]]
+          error('alert_name_redef',
+                "Alert level name '#{level[1]}' has defined multiple times.",
+                @sourceFileInfo[1])
+        end
+        names[level[1]] = level
+
+        if colors[level[2]]
+          error('alert_color_redef',
+                "Alert level color #{level[2]} has defined multiple times.",
+                @sourceFileInfo[1])
+        end
+        colors[level[2]] = level
+      end
+      @project['alertLevels'] = @val[1]
+    })
+    level(:beta)
+    doc('alertlevels', <<'EOT'
+By default TaskJuggler supports the pre-defined alert levels: green, yellow
+and red. This attribute can be used to replace them with your own set of alert
+levels. You can define any number of levels, but you need to define at least
+two and they must be specified in ascending order from the least severity to
+highest severity. Additionally, you need to provide a 15x15 pixel image file
+with the name ''''flag-X.png'''' for each level where ''''X'''' matches the ID
+of the alert level. These files need to be in the ''''icons'''' directory to
+be found by the browser when showing HTML reports.
+EOT
+       )
+    example('AlertLevels')
 
     pattern(%w( !currencyFormat ), lambda {
       @project['currencyFormat'] = @val[0]
