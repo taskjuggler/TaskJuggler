@@ -1,4 +1,4 @@
-project "Alert Levels" 2011-12-08 +1m {
+project "Alert Levels" 2011-11-24 +2m {
   alertlevels green "Low" "#2AA46C",
               blue "Guarded" "#457CC4",
               yellow "Elevated" "#F1D821",
@@ -6,8 +6,20 @@ project "Alert Levels" 2011-12-08 +1m {
               red "Severe" "#E43745"
 }
 
-task "Life" {
-  journalentry 2011-12-25 "Intruder expected" {
+task "Holiday Season" {
+  journalentry 2011-11-24 "All safe unless you are a turkey" {
+    alert green
+  }
+  journalentry 2011-11-27 "Strange lights appearing everywhere" {
+    alert blue
+  }
+  journalentry 2011-12-01 "Alarm bells heared" {
+    alert yellow
+  }
+  journalentry 2011-12-20 "Everybody has strange packages" {
+    alert orange
+  }
+  journalentry 2011-12-25 "Guy with red coat entered through chimney" {
     alert red
   }
 }

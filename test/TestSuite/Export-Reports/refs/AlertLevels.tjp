@@ -1,0 +1,24 @@
+project prj "Alert Levels" "1.0" 2011-11-24-00:00-+0000 - 2012-01-23-20:00-+0000 {
+  timezone "UTC"
+  alertlevels green 'Low' '#2AA46C',
+              blue 'Guarded' '#457CC4',
+              yellow 'Elevated' '#F1D821',
+              orange 'High' '#F99836',
+              red 'Severe' '#E43745'
+  scenario plan "Plan Scenario" {
+    active yes
+  }
+}
+
+projectids prj
+
+
+task _Task_1 "Holiday Season" {
+  start 2011-11-24-00:00-+0000
+  milestone
+  scheduled
+}
+supplement task _Task_1 {
+  priority 500
+  projectid prj
+}

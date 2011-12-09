@@ -81,6 +81,9 @@ class TaskJuggler
                               "#{@project['scheduleGranularity'] / 60}min", 2)
       end
       generateAttributeText("timezone \"#{@project['timezone']}\"", 2)
+      if @project['alertLevels'].modified?
+        generateAttributeText(@project['alertLevels'].to_tjp, 2)
+      end
       generateCustomAttributeDeclarations('resource', @project.resources,
                                           a('resourceAttributes'))
       generateCustomAttributeDeclarations('task', @project.tasks,

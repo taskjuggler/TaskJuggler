@@ -736,9 +736,9 @@ class TaskJuggler
       # Some columns need some extra care.
       case columnDef.id
       when 'alert'
-        id = @project.alertLevelId(query.to_num)
+        id = @project['alertLevels'][query.to_sort].id
         cell.icon = "flag-#{id}"
-        cell.fontColor = @project.alertLevelColor(query.to_sort)
+        cell.fontColor = @project['alertLevels'][query.to_sort].color
       when 'alerttrend'
         icons = %w( up flat down )
         cell.icon = "trend-#{icons[query.to_sort]}"

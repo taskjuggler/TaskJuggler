@@ -555,7 +555,9 @@ class TaskJuggler
       journal = @project['journal']
       query.sortable = query.numerical = alert =
         journal.alertLevel(query.end, self, query.hideJournalEntry)
-      query.string = colorName = @project.alertLevelName(alert)
+      query.string = colorName = @project['alertLevels'][alert].name
+      # TODO: This won't work for user defined alert levels. We need to add
+      # support for <fcol:#RGB>!
       rText = "<fcol:#{colorName.downcase}>#{colorName}</fcol>"
       unless (rti = RichText.new(rText, RTFHandlers.create(@project),
                                  @project.messageHandler).

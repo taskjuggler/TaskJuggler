@@ -152,10 +152,10 @@ EOT
 
   def rule_alertLevel
     pattern(%w( $ID ), lambda {
-      level = @project.alertLevelIndex(@val[0])
+      level = @project['alertLevels'].indexById(@val[0])
       unless level
-        levels = @project['alertLevels'].map { |l| l[0] }
-        error('bad_alert', "Unknown alert level #{@val[1]}. Must be " +
+        levels = @project['alertLevels'].map { |l| l.id }
+        error('bad_alert', "Unknown alert level #{@val[0]}. Must be " +
               "one of #{levels.join(', ')}", @sourceFileInfo[0])
       end
       level
@@ -2806,32 +2806,28 @@ EOT
               'You must specify at least 2 different alert levels.',
               @sourceFileInfo[1])
       end
-      ids = {}
-      names = {}
-      colors = {}
+      levels = @project['alertLevels']
+      levels.clear
       @val[1].each do |level|
-        if ids[level[0]]
+        if levels.indexById(level[0])
           error('alert_level_redef',
-                "Alert level '#{level[0]}' has defined multiple times.",
+                "Alert level '#{level[0]}' has been defined multiple times.",
                 @sourceFileInfo[1])
         end
-        ids[level[0]] = level
 
-        if names[level[1]]
+        if levels.indexByName(level[1])
           error('alert_name_redef',
-                "Alert level name '#{level[1]}' has defined multiple times.",
-                @sourceFileInfo[1])
+                "Alert level name '#{level[1]}' has been defined multiple " +
+                "times.", @sourceFileInfo[1])
         end
-        names[level[1]] = level
 
-        if colors[level[2]]
+        if levels.indexByColor(level[2])
           error('alert_color_redef',
-                "Alert level color #{level[2]} has defined multiple times.",
+                "Alert level color #{level[2]} has been defined multiple times.",
                 @sourceFileInfo[1])
         end
-        colors[level[2]] = level
+        @project['alertLevels'].add(AlertLevelDefinition.new(*level))
       end
-      @project['alertLevels'] = @val[1]
     })
     level(:beta)
     doc('alertlevels', <<'EOT'
