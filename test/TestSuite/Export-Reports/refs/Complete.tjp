@@ -1,4 +1,4 @@
-project simple "Simple Project" "1.0" 2007-01-01-00:00-+0000 - 2007-01-30-00:00-+0000 {
+project simple "Simple Project" "1.0" 2007-01-01-00:00-+0000 - 2007-03-02-20:00-+0000 {
   timezone "America/Denver"
   scenario plan "Plan Scenario" {
     active yes
@@ -7,35 +7,15 @@ project simple "Simple Project" "1.0" 2007-01-01-00:00-+0000 - 2007-01-30-00:00-
 
 projectids simple
 
-resource tux "Tux"
 
-task t "Task" {
-  start 2007-01-08-16:00-+0000
-  end 2007-01-20-00:00-+0000
+task _Task_1 "Build house" {
+  start 2007-01-06-07:00-+0000
+  end 2007-02-05-07:00-+0000
   scheduling asap
   scheduled
 }
-supplement task t {
-  booking tux 2007-01-08-16:00-+0000 + 8.0h,
-          2007-01-09-16:00-+0000 + 8.0h,
-          2007-01-10-16:00-+0000 + 8.0h,
-          2007-01-11-16:00-+0000 + 8.0h,
-          2007-01-12-16:00-+0000 + 8.0h,
-          2007-01-15-16:00-+0000 + 8.0h,
-          2007-01-16-16:00-+0000 + 8.0h,
-          2007-01-17-16:00-+0000 + 8.0h,
-          2007-01-18-16:00-+0000 + 8.0h,
-          2007-01-19-16:00-+0000 + 8.0h { overtime 2 }
+supplement task _Task_1 {
   complete 20
   priority 500
   projectid simple
-}
-supplement resource tux {
-  workinghours sun off
-               workinghours mon 9:00 - 17:00
-               workinghours tue 9:00 - 17:00
-               workinghours wed 9:00 - 17:00
-               workinghours thu 9:00 - 17:00
-               workinghours fri 9:00 - 17:00
-               workinghours sat off
 }

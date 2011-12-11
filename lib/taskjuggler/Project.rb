@@ -272,6 +272,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'forward',   'Scheduling',   BooleanAttribute,
               true,  false,   true,  true ],
+        [ 'gauge',     'Schedule gauge', StringAttribute,
+              false, false,   true,  nil ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,

@@ -27,7 +27,7 @@ class TaskJuggler
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
       %w( allocate assignedresources booking charge chargeset complete
-          criticalness depends duration effort end forward length
+          criticalness depends duration effort end forward gauge length
           maxend maxstart minend minstart milestone pathcriticalness
           precedes priority scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
@@ -1424,12 +1424,16 @@ class TaskJuggler
 
     def query_status(query)
       # If we haven't calculated the completion yet, calculate it first.
-      if (status = @status).empty?
-        calcStatus
-        status = @status
-      end
+      calcStatus if @status.empty?
 
-      query.string = status
+      query.string = @status
+    end
+
+    def query_gauge(query)
+      # If we haven't calculated the schedule status yet, calculate it first.
+      calcGauge unless @gauge
+
+      query.string = @gauge
     end
 
     def query_inputs(query)
@@ -2152,15 +2156,20 @@ class TaskJuggler
         return nil
       end
 
-      if property.container?
+      @complete = calcTaskCompletion
+    end
+
+    def calcTaskCompletion
+      completion = 0.0
+
+      if @property.container?
         # For container task the completion degree is the average of the
         # sub tasks.
-        completion = 0.0
         @property.kids.each do |child|
           return nil unless (comp = child.calcCompletion(@scenarioIdx))
           completion += comp
         end
-        @complete = completion / @property.children.length
+        completion /= @property.children.length
       else
         # For leaf tasks we first compare the start and end dates against the
         # current date.
@@ -2180,13 +2189,11 @@ class TaskJuggler
           completion = done / total * 100.0
         else
           # Length/duration leaf tasks.
-          completion = ((@project['now'] - @start) /
-                        (@end - @start)) * 100.0
+          completion = ((@project['now'] - @start) / (@end - @start)) * 100.0
         end
-        @complete = completion
       end
 
-      @complete
+      completion
     end
 
     # Calculate the status of the task based on the 'complete' attribute.
@@ -2210,6 +2217,41 @@ class TaskJuggler
         @status = 'unknown'
       end
     end
+
+    def calcGauge
+      # If the completion degree is not yet available, we need to calculate it
+      # first.
+      calcCompletion unless @complete
+
+      return @gauge if @gauge
+
+      if @property.container?
+        states = [ 'on schedule', 'ahead of schedule', 'behind schedule',
+                   'unknown' ]
+
+        gauge = 0
+        @property.kids.each do |child|
+          if (idx = states.index(child.calcGauge(@scenarioIdx))) > gauge
+            gauge = idx
+          end
+        end
+        @gauge = states[gauge]
+      else
+        @gauge =
+          if (calculatedComplete = calcTaskCompletion).nil?
+            # The completion degree could not be calculated due to errors. We
+            # set the state to unknown.
+            'unknown'
+          elsif @complete == calculatedComplete
+            'on schedule'
+          elsif @complete < calculatedComplete
+            'behind schedule'
+          else
+            'ahead of schedule'
+          end
+      end
+    end
+
 
     # Recursively compile a list of Task properties which depend on the
     # current task.

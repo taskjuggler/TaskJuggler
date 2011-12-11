@@ -3513,6 +3513,14 @@ calculated for the report interval or the user specified interval.
 EOT
          )
 
+    singlePattern('_gauge')
+    descr(<<'EOT'
+When [[complete]] values have been provided to capture the actual progress on
+tasks, the gauge column will list whether the task is ahead of, behind or on
+schedule.
+EOT
+         )
+
     singlePattern('_headcount')
     descr('The headcount number of the resource or group')
 
@@ -5679,10 +5687,13 @@ EOT
     })
     doc('complete', <<'EOT'
 Specifies what percentage of the task is already completed. This can be useful
-for project tracking. Reports with calendar elements may show the completed
-part of the task in a different color. The completion percentage has no impact
-on the scheduler. It's meant for documentation purposes only.
-Tasks may not have subtasks if this attribute is used.
+for simple progress tracking like in a TODO list. The provided completion
+degree is used for the ''''complete'''' and ''''gauge'''' columns in reports.
+Reports with calendar elements may show the completed part of the task in a
+different color.
+
+The completion percentage has no impact on the scheduler. It's meant for
+documentation purposes only.
 EOT
         )
     example('Complete', '1')
