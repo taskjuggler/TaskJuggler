@@ -50,9 +50,8 @@ class TaskJuggler
     # Add a new AlertLevelDefinition.
     def add(level)
       raise ArgumentError unless level.is_a?(AlertLevelDefinition)
-      if indexById(level.id) || indexByName(level.name) ||
-         indexByColor(level.color)
-        raise ArgumentError, "ID, name and color must be unique"
+      if indexById(level.id) || indexByName(level.name)
+        raise ArgumentError, "ID and name must be unique"
       end
 
       @levels << level

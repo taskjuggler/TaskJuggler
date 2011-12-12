@@ -221,7 +221,7 @@ EOT
       [ @val[0], @val[1], @val[2] ]
     })
     arg(0, 'ID', "A unique ID for the alert level")
-    arg(1, 'color name', 'A name of the alert level color')
+    arg(1, 'color name', 'A unique name of the alert level color')
   end
 
   def rule_alertLevelDefinitions
@@ -2871,11 +2871,6 @@ EOT
                 "times.", @sourceFileInfo[1])
         end
 
-        if levels.indexByColor(level[2])
-          error('alert_color_redef',
-                "Alert level color #{level[2]} has been defined multiple times.",
-                @sourceFileInfo[1])
-        end
         @project['alertLevels'].add(AlertLevelDefinition.new(*level))
       end
     })
