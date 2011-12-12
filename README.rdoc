@@ -37,6 +37,7 @@ browser is all you need for your work.
 
 * Manages tasks, resources and accounts of your project
 * Automatic resource leveling and tasks conflict resolution
+* Powerful to-do list management
 * Comprehensive and flexible reports so you can find the information you need when you need it
 * Project tracking and status reporting with dashboard support
 * Time and status sheet reporting infrastructure
