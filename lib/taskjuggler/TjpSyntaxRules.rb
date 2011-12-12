@@ -3790,6 +3790,7 @@ be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
     arg(1, 'text', 'The text')
+    example('textreport')
 
     pattern(%w( _columns !columnDef !moreColumnDef ), lambda {
       columns = [ @val[1] ]
@@ -3835,6 +3836,7 @@ Define a text section that is put at the bottom of the report. The
 text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
+    example('textreport')
     also(%w( epilog header prolog ))
 
     pattern(%w( !formats ))
@@ -3847,6 +3849,7 @@ Define a text section that is put at the top of the report. The
 text will be interpreted as [[Rich_Text_Attributes|Rich Text]].
 EOT
        )
+    example('textreport')
     also(%w( epilog footer prolog ))
 
     pattern(%w( !headline ))
@@ -3872,6 +3875,7 @@ will be interpreted as [[Rich_Text_Attributes|Rich Text]]. The margin will not
 span the [[header]] or [[footer]] sections.
 EOT
        )
+    example('textreport')
 
     pattern(%w( _loadunit !loadunit ), lambda {
       @property.set('loadUnit', @val[1])
@@ -3914,6 +3918,7 @@ will be interpreted as [[Rich_Text_Attributes|Rich Text]]. The margin will not
 span the [[header]] or [[footer]] sections.
 EOT
        )
+    example('textreport')
 
     pattern(%w( !rollupaccount ))
     pattern(%w( !rollupresource ))
@@ -6122,6 +6127,7 @@ left and right margin and a footer. The sections may contain the output of
 other defined reports.
 EOT
        )
+    example('textreport')
   end
 
   def rule_textReportHeader

@@ -7,7 +7,15 @@ textreport frame "textreport" {
   taskreport r2 ""
 
   formats html
+  header -8<-
+  This is the header
+  ----
+  ->8-
   left "<[report id='frame.r1']>"
   center "Center"
   right "<[report id='frame.r2']>"
+  footer -8<-
+  ----
+  This is the footer
+  ->8-
 }
