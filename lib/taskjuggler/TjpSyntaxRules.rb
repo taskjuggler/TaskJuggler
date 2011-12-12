@@ -2485,6 +2485,7 @@ Defines a navigator object with the specified ID. This object can be used in
 reports to include a navigation bar with references to other reports.
 EOT
           )
+    example('navigator')
   end
 
   def rule_navigatorAttributes

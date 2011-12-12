@@ -1,0 +1,31 @@
+project "Navigator Example" 2011-12-12 +1m
+
+task foo "Foo" {
+  task "Foo 1"
+  task "Foo 2"
+}
+task bar "Bar" {
+  task "Bar 1"
+  task "Bar 2"
+}
+
+
+navigator navbar
+
+textreport frame "" {
+  header -8<-
+    == My Reports ==
+    <[navigator id="navbar"]>
+  ->8-
+  footer "----"
+
+  taskreport "Foo Reports" {
+    formats html
+    taskroot foo
+  }
+  taskreport "Bar Reports" {
+    formats html
+    taskroot bar
+  }
+}
+
