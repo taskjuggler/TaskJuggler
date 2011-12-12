@@ -79,10 +79,11 @@ class TaskJuggler
     # (task, resources, etc.). A TJP property can be nested.
     def isProperty?
       # I haven't found a good way to automatically detect all the various
-      # report types as properties. The non-nestable ones need to be added
-      # manually here.
-      return true if %w( export nikureport timesheetreport statussheetreport).
-                     include?(keyword)
+      # report types as properties. They don't directly include themselves as
+      # attributes.
+      return true if %w( accountreport export nikureport resourcereport
+                         taskreport textreport timesheetreport
+                         statussheetreport).include?(keyword)
       @optionalAttributes.include?(self)
     end
 
@@ -149,7 +150,9 @@ class TaskJuggler
     def computeInheritance(keywords, rules)
       property = nil
       @contexts.each do |kwd|
-        if %w( task resource account report shift scenario).include?(kwd.keyword)
+        if %w( task resource account shift scenario
+               accountreport resourcereport taskreport textreport ).
+               include?(kwd.keyword)
           property = kwd.keyword
           break
         end
@@ -163,12 +166,12 @@ class TaskJuggler
                         project.resources
                       when 'account'
                         project.accounts
-                      when 'report'
-                        project.reports
                       when 'shift'
                         project.shifts
                       when 'scenario'
                         project.scenarios
+                      else
+                        project.reports
                       end
         keyword = @keyword
         keyword = keyword.split('.')[0] if keyword.include?('.')

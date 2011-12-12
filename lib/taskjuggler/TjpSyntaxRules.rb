@@ -107,6 +107,24 @@ EOT
     pattern(%w( !accountReportHeader !reportBody ), lambda {
       @property = @property.parent
     })
+    level(:beta)
+    doc('accountreport', <<'EOT'
+The report lists accounts and their respective values in a table. The report can operate in two modes:
+
+# Balance mode: If a [[balance]] has been set, the report will include the
+defined cost and revenue accounts as well as all their sub accounts. To reduce
+the list of included accounts, you can use the [[hideaccount]],
+[[rollupaccount]] or [[accountroot]] attributes. The order of the task can
+be controlled with [[sortaccounts]]. If the first sorting criteria is tree
+sorting, the parent accounts will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent accounts to be included in the report. Additionally, it will contain a line at the end that lists the balance (revenue - cost).
+
+# Normal mode: All reports are listed in the order and completeness as defined
+by the other report attributes. No balance line will be included.
+EOT
+       )
+    example('AccountReport')
   end
 
   def rule_accountReportHeader
@@ -131,24 +149,6 @@ EOT
                         [ 'seqno', true, -1 ] ])
       end
     })
-    level(:beta)
-    doc('accountreport', <<'EOT'
-The report lists accounts and their respective values in a table. The report can operate in two modes:
-
-# Balance mode: If a [[balance]] has been set, the report will include the
-defined cost and revenue accounts as well as all their sub accounts. To reduce
-the list of included accounts, you can use the [[hideaccount]],
-[[rollupaccount]] or [[accountroot]] attributes. The order of the task can
-be controlled with [[sortaccounts]]. If the first sorting criteria is tree
-sorting, the parent accounts will always be included to form the tree.
-Tree sorting is the default. You need to change it if you do not want certain
-parent accounts to be included in the report. Additionally, it will contain a line at the end that lists the balance (revenue - cost).
-
-# Normal mode: All reports are listed in the order and completeness as defined
-by the other report attributes. No balance line will be included.
-EOT
-       )
-    example('AccountReport')
   end
 
   def rule_accountScenarioAttributes
@@ -4253,6 +4253,20 @@ EOT
     pattern(%w( !resourceReportHeader !reportBody ), lambda {
       @property = @property.parent
     })
+    doc('resourcereport', <<'EOT'
+The report lists resources and their respective values in a table. The task
+that are the resources are allocated to can be listed as well. To reduce the
+list of included resources, you can use the [[hideresource]],
+[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
+be controlled with [[sortresources]]. If the first sorting criteria is tree
+sorting, the parent resources will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent resources to be included in the report.
+
+The tasks that the resources are allocated to can be included as well. Use the
+[[hidetask]] attribute for this.
+EOT
+       )
   end
 
   def rule_resourceReportHeader
@@ -4287,20 +4301,6 @@ EOT
                         [ 'seqno', true, -1 ] ])
       end
     })
-    doc('resourcereport', <<'EOT'
-The report lists resources and their respective values in a table. The task
-that are the resources are allocated to can be listed as well. To reduce the
-list of included resources, you can use the [[hideresource]],
-[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
-be controlled with [[sortresources]]. If the first sorting criteria is tree
-sorting, the parent resources will always be included to form the tree.
-Tree sorting is the default. You need to change it if you do not want certain
-parent resources to be included in the report.
-
-The tasks that the resources are allocated to can be included as well. Use the
-[[hidetask]] attribute for this.
-EOT
-       )
   end
 
   def rule_resourceScenarioAttributes
@@ -5526,6 +5526,20 @@ EOT
     pattern(%w( !taskReportHeader !reportBody ), lambda {
       @property = @property.parent
     })
+    doc('taskreport', <<'EOT'
+The report lists tasks and their respective values in a table. To reduce the
+list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
+[[taskroot]] attributes. The order of the task can be controlled with
+[[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
+will always be included to form the tree. Tree sorting is the default. You
+need to change it if you do not want certain parent tasks to be included in
+the report.
+
+The resources that are allocated to each task can be listed as well. Use the
+[[hideresource]] attribute for this.
+EOT
+       )
+    example('HtmlTaskReport')
   end
 
   def rule_taskReportHeader
@@ -5559,20 +5573,6 @@ EOT
         @property.set('sortResources', [ [ 'id', true, -1 ] ])
       end
     })
-    doc('taskreport', <<'EOT'
-The report lists tasks and their respective values in a table. To reduce the
-list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
-[[taskroot]] attributes. The order of the task can be controlled with
-[[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
-will always be included to form the tree. Tree sorting is the default. You
-need to change it if you do not want certain parent tasks to be included in
-the report.
-
-The resources that are allocated to each task can be listed as well. Use the
-[[hideresource]] attribute for this.
-EOT
-       )
-    example('HtmlTaskReport')
   end
 
   def rule_taskScenarioAttributes
@@ -6115,18 +6115,18 @@ EOT
     pattern(%w( !textReportHeader !reportBody ), lambda {
       @property = @property.parent
     })
-  end
-
-  def rule_textReportHeader
-    pattern(%w( _textreport !optionalID !reportName ), lambda {
-      newReport(@val[1], @val[2], :textreport, @sourceFileInfo[0])
-    })
     doc('textreport', <<'EOT'
 This report consists of 5 RichText sections, a header, a center section with a
 left and right margin and a footer. The sections may contain the output of
 other defined reports.
 EOT
        )
+  end
+
+  def rule_textReportHeader
+    pattern(%w( _textreport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :textreport, @sourceFileInfo[0])
+    })
   end
 
   def rule_timeformat
