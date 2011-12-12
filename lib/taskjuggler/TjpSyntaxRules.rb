@@ -3546,7 +3546,12 @@ EOT
          )
 
     singlePattern('_headcount')
-    descr('The headcount number of the resource or group')
+    descr(<<'EOT'
+The headcount number of the resource or resource group. For a single resource
+this is the [[efficiency]] rounded to the next integer. For a group it is the
+sum of the sub resources headcount.
+EOT
+         )
 
     pattern([ '_hierarchindex' ], lambda {
       'bsi'

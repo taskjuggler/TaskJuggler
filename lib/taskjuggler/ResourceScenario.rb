@@ -292,11 +292,29 @@ class TaskJuggler
         # probably don't need to compute this for every resource.
         globalWorkSlots = @project.getWorkSlots(query.startIdx, query.endIdx)
         workSlots = getWorkSlots(query.startIdx, query.endIdx)
-        fte = workSlots.to_f / globalWorkSlots if globalWorkSlots > 0
+        if globalWorkSlots > 0
+          fte = (workSlots.to_f / globalWorkSlots) * @efficiency
+        end
       end
 
       query.sortable = query.numerical = fte
       query.string = query.numberFormat.format(fte)
+    end
+
+    # The headcount of the resource or group.
+    def query_headcount(query)
+      headcount = 0
+      if @property.container?
+        @property.kids.each do |resource|
+          resource.query_headcount(@scenarioIdx, query)
+          headcount += query.to_num
+        end
+      else
+        headcount += @efficiency.round
+      end
+
+      query.sortable = query.numerical = headcount
+      query.string = query.numberFormat.format(headcount)
     end
 
     # Get the rate of the resource.

@@ -1,0 +1,20 @@
+project "Efficiency Test" 2011-12-12 +2m
+
+resource "R1" {
+  efficiency 0.7
+}
+resource "T1" {
+  resource "R2" {
+    efficiency 0.0
+  }
+  resource "R3" {
+    efficiency 2.0
+  }
+}
+
+task "Foo"
+
+resourcereport "efficiency" {
+  formats csv
+  columns name, efficiency, fte, headcount
+}
