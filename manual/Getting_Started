@@ -42,8 +42,8 @@ Every project must start with a [[project|project header]]. The
 project header must be in the main project file. All other elements
 may be put into include files. The project header must then be
 followed by any number of project properties such as [[account|
-accounts]], [[resource|resources]], [[task|tasks]] and [[report|
-reports]]. Each project must have at least one task defined and should
+accounts]], [[resource|resources]], [[task|tasks]] and 
+reports. Each project must have at least one task defined and should
 have at least one report.  Properties don't have to be listed in a
 particular order, but may have interdependencies that require such an
 order. If you want to assign a resource to work on a task, this
@@ -57,6 +57,9 @@ define them in the following sequence.
 * [[vacation|vacations]]
 * [[resource|resources]]
 * [[task|tasks]]
-* [[report|reports]]
+* [[accountreport|accountreports]]
+* [[resourcereport|resourcereports]]
+* [[taskreport|taskreports]]
+* [[textreport|textreports]]
 * [[export|exports]]
 

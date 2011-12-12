@@ -103,6 +103,54 @@ EOT
     })
   end
 
+  def rule_accountReport
+    pattern(%w( !accountReportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+  end
+
+  def rule_accountReportHeader
+    pattern(%w( _accountreport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :accountreport, @sourceFileInfo[0])
+
+      unless @property.modified?('columns')
+        # Set the default columns for this report.
+        %w( bsi name monthly ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+      end
+      # Show all accounts, sorted by tree, seqno-up.
+      unless @property.modified?('hideAccount')
+        @property.set('hideAccount',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortAccounts')
+        @property.set('sortAccounts',
+                      [ [ 'tree', true, -1 ],
+                        [ 'seqno', true, -1 ] ])
+      end
+    })
+    level(:beta)
+    doc('accountreport', <<'EOT'
+The report lists accounts and their respective values in a table. The report can operate in two modes:
+
+# Balance mode: If a [[balance]] has been set, the report will include the
+defined cost and revenue accounts as well as all their sub accounts. To reduce
+the list of included accounts, you can use the [[hideaccount]],
+[[rollupaccount]] or [[accountroot]] attributes. The order of the task can
+be controlled with [[sortaccounts]]. If the first sorting criteria is tree
+sorting, the parent accounts will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent accounts to be included in the report. Additionally, it will contain a line at the end that lists the balance (revenue - cost).
+
+# Normal mode: All reports are listed in the order and completeness as defined
+by the other report attributes. No balance line will be included.
+EOT
+       )
+    example('AccountReport')
+  end
+
   def rule_accountScenarioAttributes
     pattern(%w( _aggregate !aggregate ), lambda {
       @property.set('aggregate', @val[1])
@@ -974,19 +1022,20 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
+      newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
+      @property.set('formats', [ :tjp ])
 
       # By default, we export all scenarios.
       scenarios = Array.new(@project.scenarios.items) { |i| i }
       scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
-      report.set('scenarios', scenarios)
+      @property.set('scenarios', scenarios)
       # Show all tasks, sorted by seqno-up.
-      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      report.set('hideResource',
-                  LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
     arg(2, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -1656,21 +1705,21 @@ EOT
 
   def rule_iCalReportHeader
     pattern(%w( _icalreport !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :iCal, @sourceFileInfo[0])
-
+      newReport(@val[1], @val[2], :iCal, @sourceFileInfo[0])
       @property.set('formats', [ :iCal ])
+
       # By default, we export only the first scenario.
-      report.set('scenarios', [ 0 ])
+      @property.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
-      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      report.set('hideResource',
-                  LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
       # Show all journal entries.
-      report.set('hideJournalEntry',
-                 LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('hideJournalEntry',
+                    LogicalExpression.new(LogicalOperation.new(0)))
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate without an extension.  Use . to use
@@ -3336,33 +3385,12 @@ EOT
     })
   end
 
-  def rule_report
-    pattern(%w( !reportHeader !reportBody ), lambda {
-      @property = @property.parent
-    })
-    doc('report', <<'EOT'
-Reports are used to store and vizualize the results of a scheduled project.
-The content, the output format and the appearance of a report can be adjusted
-with report attributes. Reports can be nested to create structured document
-trees. As with other properties, the resource attributes can be inherited from
-the enclosing report or the project.
-
-By default, report definitions do not generate any files. With more complex
-projects, most report definitions will be used to describe elements of
-composed reports. If you want to generate a file from this report, you must
-specify the list of [[formats]] that you want to generate. The report name
-will then be used as a base name to create the file. The suffix will be
-appended based on the generated format.
-
-Reports have a local name space. All IDs must be unique within the reports
-that belong to the same enclosing report. To reference a report for inclusion
-into another report, you need to specify the full report ID. This is composed
-of the report ID, prefixed by a dot-separated list of all parent report IDs.
-EOT
-       )
-    also(%w( accountreport resourcereport taskreport textreport ))
+  def rule_reports
+    pattern(%w( !accountReport ))
+    pattern(%w( !resourceReport ))
+    pattern(%w( !taskReport ))
+    pattern(%w( !textReport ))
   end
-
 
   def rule_reportableAttributes
     singlePattern('_alert')
@@ -3874,7 +3902,7 @@ EOT
     also(%w( epilog footer header ))
 
     pattern(%w( !purge ))
-    pattern(%w( !report ))
+    pattern(%w( !reports ))
 
     pattern(%w( _right $STRING ), lambda {
       @property.set('right', newRichText(@val[1], @sourceFileInfo[1]))
@@ -4012,6 +4040,31 @@ EOT
     singlePattern('$ID')
   end
 
+  def rule_reportName
+    pattern(%w( $STRING ), lambda {
+      @val[0]
+    })
+    arg(0, 'name', <<'EOT'
+The name of the report. This will be the base name for generated output files.
+The suffix will depend on the specified [[formats]]. It will also be used in
+navigation bars.
+
+By default, report definitions do not generate any files. With more complex
+projects, most report definitions will be used to describe elements of
+composed reports. If you want to generate a file from this report, you must
+specify the list of [[formats]] that you want to generate. The report name
+will then be used as a base name to create the file. The suffix will be
+appended based on the generated format.
+
+Reports have a local name space. All IDs and file names must be unique within
+the reports that belong to the same enclosing report. To reference a report
+for inclusion into another report, you need to specify the full report ID.
+This is composed of the report ID, prefixed by a dot-separated list of all
+parent report IDs.
+EOT
+       )
+  end
+
   def rule_reportPeriod
     pattern(%w( _period !interval ), lambda {
       @property.set('start', @val[1].start)
@@ -4028,7 +4081,7 @@ EOT
     pattern(%w( !export ))
     pattern(%w( !iCalReport ))
     pattern(%w( !nikuReport ))
-    pattern(%w( !report ))
+    pattern(%w( !reports ))
     pattern(%w( !tagfile ))
     pattern(%w( !statusSheetReport ))
     pattern(%w( !timeSheetReport ))
@@ -4066,112 +4119,6 @@ EOT
     optionsRule('reportAttributes')
   end
 
-  def rule_reportHeader
-    pattern(%w( !reportType !optionalID $STRING ), lambda {
-      if @property.nil? && !@reportprefix.empty?
-        @property = @project.report(@reportprefix)
-      end
-      if @val[1]
-        id = (@property ? @property.fullId + '.' : '') + @val[1]
-        if @project.report(id)
-          error('report_exists', "report #{id} has already been defined.",
-                @sourceFileInfo[1], @property)
-        end
-      end
-      @property = Report.new(@project, @val[1], @val[2], @property)
-      @property.sourceFileInfo = @sourceFileInfo[0]
-      @property.inheritAttributes
-      case @val[0]
-      when 'accountreport'
-        @property.typeSpec = :accountreport
-        unless @property.modified?('columns')
-          # Set the default columns for this report.
-          %w( bsi name monthly ).each do |col|
-            @property.get('columns') <<
-            TableColumnDefinition.new(col, columnTitle(col))
-          end
-        end
-        # Show all accounts, sorted by tree, seqno-up.
-        unless @property.modified?('hideAccount')
-          @property.set('hideAccount',
-                        LogicalExpression.new(LogicalOperation.new(0)))
-        end
-        unless @property.modified?('sortAccounts')
-          @property.set('sortAccounts',
-                        [ [ 'tree', true, -1 ],
-                          [ 'seqno', true, -1 ] ])
-        end
-      when 'taskreport'
-        @property.typeSpec = :taskreport
-        unless @property.modified?('columns')
-          # Set the default columns for this report.
-          %w( bsi name start end effort chart ).each do |col|
-            @property.get('columns') <<
-            TableColumnDefinition.new(col, columnTitle(col))
-          end
-        end
-        # Show all tasks, sorted by tree, start-up, seqno-up.
-        unless @property.modified?('hideTask')
-          @property.set('hideTask',
-                        LogicalExpression.new(LogicalOperation.new(0)))
-        end
-        unless @property.modified?('sortTasks')
-          @property.set('sortTasks',
-                        [ [ 'tree', true, -1 ],
-                          [ 'start', true, 0 ],
-                          [ 'seqno', true, -1 ] ])
-        end
-        # Show no resources, but set sorting to id-up.
-        unless @property.modified?('hideResource')
-          @property.set('hideResource',
-                        LogicalExpression.new(LogicalOperation.new(1)))
-        end
-        unless @property.modified?('sortResources')
-          @property.set('sortResources', [ [ 'id', true, -1 ] ])
-        end
-      when 'resourcereport'
-        @property.typeSpec = :resourcereport
-        if @property.modified?('columns')
-          # Set the default columns for this report.
-          %w( no name ).each do |col|
-            @property.get('columns') <<
-            TableColumnDefinition.new(col, columnTitle(col))
-          end
-        end
-        # Show all resources, sorted by tree and id-up.
-        unless @property.modified?('hideResource')
-          @property.set('hideResource',
-                        LogicalExpression.new(LogicalOperation.new(0)))
-        end
-        unless @property.modified?('sortResources')
-          @property.set('sortResources', [ [ 'tree', true, -1 ],
-                        [ 'id', true, -1 ] ])
-        end
-        # Hide all resources, but set sorting to tree, start-up, seqno-up.
-        unless @property.modified?('hideTask')
-          @property.set('hideTask',
-                        LogicalExpression.new(LogicalOperation.new(1)))
-        end
-        unless @property.modified?('sortTasks')
-          @property.set('sortTasks',
-                        [ [ 'tree', true, -1 ],
-                          [ 'start', true, 0 ],
-                          [ 'seqno', true, -1 ] ])
-        end
-      when 'textreport'
-        @property.typeSpec = :textreport
-      else
-        raise "Unsupported report type #{@val[0]}"
-      end
-    })
-    arg(2, 'name', <<'EOT'
-The name of the report. This will be the base name for generated output files.
-The suffix will depend on the specified [[formats]].It will also be used in
-navigation bars.
-EOT
-       )
-  end
-
   def rule_reportTitle
     pattern(%w( _title $STRING ), lambda {
       @property.set('title', @val[1])
@@ -4181,73 +4128,6 @@ The title of the report will be used in external references to the report. It
 will not show up in the reports directly. It's used e. g. by [[navigator]].
 EOT
        )
-  end
-
-  def rule_reportType
-    singlePattern('_accountreport')
-    level(:beta)
-    doc('accountreport', <<'EOT'
-The report lists accounts and their respective values in a table. The report can operate in two modes:
-
-# Balance mode: If a [[balance]] has been set, the report will include the
-defined cost and revenue accounts as well as all their sub accounts. To reduce
-the list of included accounts, you can use the [[hideaccount]],
-[[rollupaccount]] or [[accountroot]] attributes. The order of the task can
-be controlled with [[sortaccounts]]. If the first sorting criteria is tree
-sorting, the parent accounts will always be included to form the tree.
-Tree sorting is the default. You need to change it if you do not want certain
-parent accounts to be included in the report. Additionally, it will contain a line at the end that lists the balance (revenue - cost).
-
-# Normal mode: All reports are listed in the order and completeness as defined
-by the other report attributes. No balance line will be included.
-EOT
-       )
-    also(%w( report))
-    example('AccountReport')
-
-    singlePattern('_resourcereport')
-    doc('resourcereport', <<'EOT'
-The report lists resources and their respective values in a table. The task
-that are the resources are allocated to can be listed as well. To reduce the
-list of included resources, you can use the [[hideresource]],
-[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
-be controlled with [[sortresources]]. If the first sorting criteria is tree
-sorting, the parent resources will always be included to form the tree.
-Tree sorting is the default. You need to change it if you do not want certain
-parent resources to be included in the report.
-
-The tasks that the resources are allocated to can be included as well. Use the
-[[hidetask]] attribute for this. See [[report]] for a complete list of
-attributes and the full syntax for this keyword.
-EOT
-       )
-    also(%w( report))
-
-    singlePattern('_taskreport')
-    doc('taskreport', <<'EOT'
-The report lists tasks and their respective values in a table. To reduce the
-list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
-[[taskroot]] attributes. The order of the task can be controlled with
-[[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
-will always be included to form the tree. Tree sorting is the default. You
-need to change it if you do not want certain parent tasks to be included in
-the report.
-
-The resources that are allocated to each task can be listed as well. Use the
-[[hideresource]] attribute for this. See [[report]] for a complete list of
-attributes and the full syntax for this keyword.
-EOT
-       )
-    also(%w( report))
-
-    singlePattern('_textreport')
-    doc('textreport', <<'EOT'
-This report consists of 5 RichText sections, a header, a center section with a
-left and right margin and a footer. The sections may contain the output of
-other defined reports. See [[report]] for further details.
-EOT
-       )
-    also(%w( report))
   end
 
   def rule_resource
@@ -4367,6 +4247,60 @@ EOT
 
   def rule_resourceList
     listRule('moreResources', '!resourceId')
+  end
+
+  def rule_resourceReport
+    pattern(%w( !resourceReportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+  end
+
+  def rule_resourceReportHeader
+    pattern(%w( _resourcereport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :resourcereport, @sourceFileInfo[0])
+
+      if @property.modified?('columns')
+        # Set the default columns for this report.
+        %w( no name ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+      end
+      # Show all resources, sorted by tree and id-up.
+      unless @property.modified?('hideResource')
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortResources')
+        @property.set('sortResources', [ [ 'tree', true, -1 ],
+                      [ 'id', true, -1 ] ])
+      end
+      # Hide all resources, but set sorting to tree, start-up, seqno-up.
+      unless @property.modified?('hideTask')
+        @property.set('hideTask',
+                      LogicalExpression.new(LogicalOperation.new(1)))
+      end
+      unless @property.modified?('sortTasks')
+        @property.set('sortTasks',
+                      [ [ 'tree', true, -1 ],
+                        [ 'start', true, 0 ],
+                        [ 'seqno', true, -1 ] ])
+      end
+    })
+    doc('resourcereport', <<'EOT'
+The report lists resources and their respective values in a table. The task
+that are the resources are allocated to can be listed as well. To reduce the
+list of included resources, you can use the [[hideresource]],
+[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
+be controlled with [[sortresources]]. If the first sorting criteria is tree
+sorting, the parent resources will always be included to form the tree.
+Tree sorting is the default. You need to change it if you do not want certain
+parent resources to be included in the report.
+
+The tasks that the resources are allocated to can be included as well. Use the
+[[hidetask]] attribute for this.
+EOT
+       )
   end
 
   def rule_resourceScenarioAttributes
@@ -4981,27 +4915,21 @@ EOT
   end
   def rule_ssReportHeader
     pattern(%w( _statussheetreport !optionalID $STRING ), lambda {
-      if (fileName = @val[2]) != '.'
-        if @project.reports[fileName]
-          error('report_redefinition',
-                "A report with the name '#{fileName}' has already been " +
-                "defined.", @sourceFileInfo[2])
-        end
-      else
-        fileName = "statusSheet#{@project.reports.length + 1}"
-      end
-      report = newReport(@val[1], fileName, :statusSheet, @sourceFileInfo[0])
-      report.set('scenarios', [ 0 ])
+      newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0])
+      @property.set('formats', [ :tjp ])
+
+      @property.set('scenarios', [ 0 ])
       # Show all tasks, sorted by id-up.
-      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortTasks', [ [ 'id', true, -1 ] ])
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'id', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
-      report.set('loadUnit', :hours)
-      report.set('definitions', [])
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      @property.set('loadUnit', :hours)
+      @property.set('definitions', [])
     })
-    arg(1, 'file name', <<'EOT'
+    arg(2, 'file name', <<'EOT'
 The name of the status sheet report file to generate. It must end with a .tji
 extension, or use . to use the standard output channel.
 EOT
@@ -5284,16 +5212,16 @@ EOT
 
   def rule_tagfileHeader
     pattern(%w( _tagfile !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :tagfile, @sourceFileInfo[0])
-
+      newReport(@val[1], @val[2], :tagfile, @sourceFileInfo[0])
       @property.set('formats', [ :ctags ])
+
       # Include all tasks.
-      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Include all resources.
-      report.set('hideResource',
-                  LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
     arg(2, 'file name', <<'EOT'
 The name of the tagfile to generate. You can leave it empty and it will
@@ -5592,6 +5520,59 @@ EOT
     pattern(%w( !taskPred !morePredTasks ), lambda {
       [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
     })
+  end
+
+  def rule_taskReport
+    pattern(%w( !taskReportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+  end
+
+  def rule_taskReportHeader
+    pattern(%w( _taskreport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :taskreport, @sourceFileInfo[0])
+
+      unless @property.modified?('columns')
+        # Set the default columns for this report.
+        %w( bsi name start end effort chart ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+      end
+      # Show all tasks, sorted by tree, start-up, seqno-up.
+      unless @property.modified?('hideTask')
+        @property.set('hideTask',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortTasks')
+        @property.set('sortTasks',
+                      [ [ 'tree', true, -1 ],
+                        [ 'start', true, 0 ],
+                        [ 'seqno', true, -1 ] ])
+      end
+      # Show no resources, but set sorting to id-up.
+      unless @property.modified?('hideResource')
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(1)))
+      end
+      unless @property.modified?('sortResources')
+        @property.set('sortResources', [ [ 'id', true, -1 ] ])
+      end
+    })
+    doc('taskreport', <<'EOT'
+The report lists tasks and their respective values in a table. To reduce the
+list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
+[[taskroot]] attributes. The order of the task can be controlled with
+[[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
+will always be included to form the tree. Tree sorting is the default. You
+need to change it if you do not want certain parent tasks to be included in
+the report.
+
+The resources that are allocated to each task can be listed as well. Use the
+[[hideresource]] attribute for this.
+EOT
+       )
+    example('HtmlTaskReport')
   end
 
   def rule_taskScenarioAttributes
@@ -6130,6 +6111,24 @@ EOT
     })
   end
 
+  def rule_textReport
+    pattern(%w( !textReportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+  end
+
+  def rule_textReportHeader
+    pattern(%w( _textreport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :textreport, @sourceFileInfo[0])
+    })
+    doc('textreport', <<'EOT'
+This report consists of 5 RichText sections, a header, a center section with a
+left and right margin and a footer. The sections may contain the output of
+other defined reports.
+EOT
+       )
+  end
+
   def rule_timeformat
     pattern(%w( _timeformat $STRING ), lambda {
       @val[1]
@@ -6458,19 +6457,21 @@ EOT
   end
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
-      report = newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
+      newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
+      @property.set('formats', [ :tjp ])
 
-      report.set('scenarios', [ 0 ])
+      @property.set('scenarios', [ 0 ])
       # Show all tasks, sorted by seqno-up.
-      report.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
       # Show all resources, sorted by seqno-up.
-      report.set('hideResource', LogicalExpression.new(LogicalOperation.new(0)))
-      report.set('sortResources', [ [ 'seqno', true, -1 ] ])
-      report.set('loadUnit', :hours)
-      report.set('definitions', [])
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      @property.set('loadUnit', :hours)
+      @property.set('definitions', [])
     })
-    arg(1, 'file name', <<'EOT'
+    arg(2, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
 extension, or use . to use the standard output channel.
 EOT

@@ -59,6 +59,8 @@ class TaskJuggler
     private
 
     def header
+      # Generate the header section. Mostly consists of comments and a check
+      # if we have source the syntax file already.
       @file.write <<"EOT"
 " Vim syntax file
 " Language:     TaskJuggler
@@ -82,7 +84,7 @@ setlocal softtabstop=2
 setlocal cindent shiftwidth=2
 setlocal tabstop=2
 setlocal expandtab
-setlocal cinoptions=g0,t0,+0,(0,c0,C1
+setlocal cinoptions=g0,t0,+0,(0,c0,C1,n-2
 EOT
       @file.write "setlocal cinwords=#{cinwords.join(',')}\n"
       @file.write <<'EOT'
@@ -101,7 +103,7 @@ EOT
           tag = name == 'supplement' ?
                         kw.keyword.gsub(/\./, ' ') : name
           @file.write "syn region tjpblk_#{normalizedName}" +
-                      " start=/^\\s*#{tag}\\s.*{/ end=/^\\s*}/ transparent"
+                      " start=/^\\s*#{tag}\\s.*{\\s*$/ end=/^\\s*}\\s*$/ transparent"
           # We allow properties and special attributes to be folded.
           foldable = %w( task.timesheet project )
           @file.write " fold" if @properties.include?(kw) ||
@@ -132,7 +134,7 @@ EOT
 syn region tjpblk_macro start=/macro\s\+\h\w*\s*\[/ end=/\]$/ transparent fold contains=ALL
 syn region tjpstring start=/"/ skip=/\\"/ end=/"/
 syn region tjpstring start=/'/ skip=/\\'/ end=/'/
-syn region tjpstring start=/\s-8<-$/ end=/^\s*->8-/
+syn region tjpstring start=/\s-8<-$/ end=/^\s*->8-/ fold
 syn region tjpmlcomment start=+/\*+ end=+\*/+
 
 syn sync fromstart

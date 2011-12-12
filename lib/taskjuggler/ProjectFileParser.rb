@@ -237,20 +237,37 @@ class TaskJuggler
     # type. +sourceFileInfo+ is a SourceFileInfo of the report definition. The
     # method returns the newly created Report.
     def newReport(id, name, type, sourceFileInfo)
+      # If there is no parent property and the report prefix is not empty, the
+      # reportprefix defines the parent property.
+      if @property.nil? && !@reportprefix.empty?
+        @property = @project.report(@reportprefix)
+      end
+
+      # Report IDs must be unique. If an ID was provided, check if it exists
+      # already.
+      if id
+        # If we have a scope property, we need to prepend the ID of the scope
+        # property to the provided ID.
+        id = (@property ? @property.fullId + '.' : '') + @val[1]
+
+        if @project.report(id)
+          error('report_exists', "report #{id} has already been defined.",
+                sourceFileInfo, @property)
+        end
+      end
+
       @reportCounter += 1
-      if name != '.'
+      if name != '.' && name != ''
         if @project.reportByName(name)
           error('report_redefinition',
                 "A report with the name #{name} has already been defined.")
         end
       end
       @property = Report.new(@project, id || "report#{@reportCounter}",
-                             name, nil)
+                             name, @property)
       @property.typeSpec = type
       @property.sourceFileInfo = sourceFileInfo
-      @property.set('formats', [ :tjp ])
       @property.inheritAttributes
-      @property
     end
 
     # If the @limitResources list is not empty, we have to create a Limits

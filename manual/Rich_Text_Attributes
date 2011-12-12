@@ -153,7 +153,7 @@ The navigator generator inserts the referenced navigator.
 
 Paramters:
 
-* ''''id'''' : ID of a defined [[report]]
+* ''''id'''' : ID of a defined report
 
 The report generator inserts the referenced report as a new block
 of this text. The referenced report inherits some context such as the
@@ -163,10 +163,10 @@ report period and the property set from the referencing report.
 
 Paramters:
 
-* ''''id'''' : ID of a defined [[report]]
+* ''''id'''' : ID of a defined report
 
 * ''''attributes'''': A set of attributes that override the original
-attributes of the referenced report. All [[report|report attributes]]
+attributes of the referenced report. All report attributes
 are supported. Since the value of attributes already must be enclosed
 by single or double quotes, all single or double quotes contained in
 the string must be escaped with backslashes. This feature enables

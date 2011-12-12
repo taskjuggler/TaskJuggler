@@ -1,0 +1,13 @@
+project "Test" 2011-12-11 +1m
+
+task "Foo"
+
+textreport frame "textreport" {
+  taskreport r1 ""
+  taskreport r2 ""
+
+  formats html
+  left "<[report id='frame.r1']>"
+  center "Center"
+  right "<[report id='frame.r2']>"
+}
