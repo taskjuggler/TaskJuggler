@@ -59,6 +59,7 @@ class TaskJuggler
       @opts.on('--silent',
                format("Don't show program and progress information")) do
         @silent = true
+        TaskJuggler::Log.silent = true
       end
       @opts.on('--debug', format('Enable Ruby debug mode')) do
         $DEBUG = true
