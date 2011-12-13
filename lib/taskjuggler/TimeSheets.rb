@@ -292,8 +292,8 @@ class TaskJuggler
 
       if @resource['efficiency', scenarioIdx] > 0.0
         targetSlots = totalNetWorkingSlots
-        # This is acceptable rounding error when checking the total reported
-        # work.
+        # This is the acceptable rounding error when checking the total
+        # reported work.
         delta = 1
         if totalSlots < (targetSlots - delta)
           error('ts_work_too_low',
@@ -329,12 +329,10 @@ class TaskJuggler
     # report period. This value is not resource specific.
     def totalGrossWorkingSlots
       project = @resource.project
-      # Calculate the average working days per week (usually 5)
-      weeklyWorkingDays = project['yearlyworkingdays'] / 52.1428
       # Calculate the number of weeks in the report
       weeksToReport = (@interval.end - @interval.start) / (60 * 60 * 24 * 7)
 
-      daysToSlots(weeklyWorkingDays * weeksToReport)
+      daysToSlots(project.weeklyWorkingDays * weeksToReport)
     end
 
     # Compute the total number of actual working time slots of the

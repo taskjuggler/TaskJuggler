@@ -163,6 +163,17 @@ class TaskJuggler
       true
     end
 
+    # Return the number of working hours per week.
+    def weeklyWorkingHours
+      seconds = 0
+      @days.each do |day|
+        day.each do |from, to|
+           seconds += (to - from)
+        end
+      end
+      seconds / (60 * 60)
+    end
+
     # Returns the time interval settings for each day in a human readable form.
     def to_s
       dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )

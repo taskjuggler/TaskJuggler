@@ -519,6 +519,11 @@ class TaskJuggler
       @attributes['yearlyworkingdays'] / 52.1429
     end
 
+    def weeklyWorkingDays
+      @attributes['workinghours'].weeklyWorkingHours /
+        @attributes['dailyworkinghours']
+    end
+
     # Return the average number of working days per month.
     def monthlyWorkingDays
       @attributes['yearlyworkingdays'] / 12.0
