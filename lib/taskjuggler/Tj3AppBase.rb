@@ -17,6 +17,7 @@ require 'taskjuggler/Tj3Config'
 require 'taskjuggler/RuntimeConfig'
 require 'taskjuggler/TjTime'
 require 'taskjuggler/TextFormatter'
+require 'taskjuggler/Log'
 
 class TaskJuggler
 
