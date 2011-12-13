@@ -14,7 +14,7 @@ resource "T1" {
 
 task "Foo"
 
-resourcereport "efficiency" {
+resourcereport "." {
   formats csv
   columns name, efficiency, fte, headcount
 }

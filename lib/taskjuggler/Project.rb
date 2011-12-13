@@ -207,8 +207,6 @@ class TaskJuggler
               false, false,   false,  [] ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
-        [ 'headcount', 'Headcount',    FixnumAttribute,
-              false, false,   true,  1 ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
         [ 'limits',    'Limits',       LimitsAttribute,

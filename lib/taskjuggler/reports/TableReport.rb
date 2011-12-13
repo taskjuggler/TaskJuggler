@@ -41,6 +41,8 @@ class TaskJuggler
       'freetime'         => [ 'Free Time',         true,   :right, true ],
       'freework'         => [ 'Free Work',         true,   :right, true ],
       'followers'        => [ 'Followers',         false,  :left,  true ],
+      'fte'              => [ 'FTE',               true,   :right, true ],
+      'headcount'        => [ 'Headcount',         true,   :right, true ],
       'id'               => [ 'Id',                false,  :left,  false ],
       'inputs'           => [ 'Inputs',            false,  :left,  true ],
       'journal'          => [ 'Journal',           false,  :left,  false ],
