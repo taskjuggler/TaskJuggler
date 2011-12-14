@@ -1337,6 +1337,19 @@ class TaskJuggler
       query.assignList(list)
     end
 
+    # The number of different resources assigned to the task during the query
+    # interval. Each resource is counted based on their mathematically rounded
+    # efficiency.
+    def query_headcount(query)
+      headcount = 0
+      assignedResources(Interval.new(query.start, query.end)).each do |res|
+        headcount += res[efficiency, @scenarioIdx].round
+      end
+
+      query.sortable = query.numerical = headcount
+      query.string = query.numberFormat.format(headcount)
+    end
+
     def query_maxend(query)
       queryDateLimit(query, @maxend)
     end
@@ -1385,10 +1398,8 @@ class TaskJuggler
     # A list of the resources that have been allocated to work on the task in
     # the report time frame.
     def query_resources(query)
-      return '' unless @property.leaf?
-
       list = []
-      @assignedresources.each do |resource|
+      assignedResources.each do |resource|
         if resource.allocated?(@scenarioIdx,
                                TimeInterval.new(query.start, query.end),
                                @property)
@@ -2218,6 +2229,8 @@ class TaskJuggler
       end
     end
 
+    # The gauge shows if a task is ahead, behind or on schedule. The measure
+    # is based on the provided 'complete' value and the current date.
     def calcGauge
       # If the completion degree is not yet available, we need to calculate it
       # first.
@@ -2252,6 +2265,26 @@ class TaskJuggler
       end
     end
 
+    # Gather a list of Resource objects that have been assigned to the task
+    # (including sub tasks) for the given Interval _interval_.
+    def assignedResources(interval)
+      list = []
+
+      if @property.container?
+        @property.kids.each do |task|
+          list << task.assignedResources(@scenarioIdx)
+        end
+        list.unique!
+      else
+        @assignedresources.each do |resource|
+          if resource.allocated?(@scenarioIdx, interval, @property)
+            list << resource
+          end
+        end
+      end
+
+      list
+    end
 
     # Recursively compile a list of Task properties which depend on the
     # current task.

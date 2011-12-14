@@ -3547,9 +3547,12 @@ EOT
 
     singlePattern('_headcount')
     descr(<<'EOT'
-The headcount number of the resource or resource group. For a single resource
-this is the [[efficiency]] rounded to the next integer. For a group it is the
-sum of the sub resources headcount.
+For resources this is the headcount number of the resource or resource group.
+For a single resource this is the [[efficiency]] rounded to the next integer.
+For a group it is the sum of the sub resources headcount.
+
+For tasks it's the number of different resources allocated to the task during
+the report interval. Resources are weighted with their rounded efficiencies.
 EOT
          )
 
