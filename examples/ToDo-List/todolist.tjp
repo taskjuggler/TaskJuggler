@@ -5,16 +5,19 @@ project "My TODO List" 2011-01-01 +5y {
 }
 
 task "Arrents" {
+  priority 5
+
   task "By some milk" {
     end 2011-12-13
     complete 100
+    priority 7
   }
-  task "Pickup Jacket from cleaner" {
+  task "Pickup Jacket from dry cleaner" {
     end 2011-12-18
     complete 0
     note "Smith Dry Cleaners"
   }
-  task "Present for wife" {
+  task "Buy present for wife" {
     end 2011-12-23
     note "Have a good idea first"
     journalentry 2011-12-10 "Maybe a ring?"
@@ -22,55 +25,60 @@ task "Arrents" {
   }
 }
 task "Long term projects" {
+  priority 3
+
   task "Buy new car" {
     end 2011-05-11
     complete 100
-    priority 600
+    priority 6
   }
   task "Build boat" {
     end 2013-04-01
     complete 42
-    priority 300
   }
 }
 
 macro cellcol [
   cellcolor (plan.end < ${now}) & (plan.gauge = "behind schedule") "#FF0000"
   cellcolor plan.gauge = "behind schedule" "#FFFF00"
-  cellcolor 1 "#FFFFFF"
 ]
 
 navigator navbar
 
 textreport frame "" {
+  formats html
   header -8<-
     == My ToDo List for ${today} ==
     <[navigator id="navbar"]>
   ->8-
   footer "----"
 
-  taskreport "Current TODOs" {
-    formats html
+  columns name,
+          end { title "Due Date" ${cellcol} },
+          complete,
+          priority,
+          note,
+          journal { celltext 1 ""
+                    tooltip 1 "<-query attribute='journal'->"
+                    width 70 }
+
+  taskreport "TODOs due today" {
+    hidetask (plan.complete >= 100) | (plan.end > %{${now} +1d})
+    journalattributes date, headline, summary, details
+  }
+  taskreport "TODOs due within a week" {
+    hidetask (plan.complete >= 100) | (plan.end > %{${now} +1w})
+    journalattributes date, headline, summary, details
+  }
+  taskreport "All open TODOs" {
     hidetask plan.complete >= 100
     journalattributes date, headline, summary, details
-    columns name { ${cellcol} },
-            end { title "Due Date" ${cellcol} },
-            complete { ${cellcol} },
-            priority { ${cellcol} },
-            note { ${cellcol} },
-            journal { celltext 1 ""
-                      tooltip 1 "<-query attribute='journal'->"
-                      width 70 ${cellcol} }
   }
 
   taskreport "Completed TODOs" {
-    formats html
     hidetask plan.complete < 100
-    columns name { ${cellcol} },
-            end { title "Due Date" ${cellcol} },
-            complete { ${cellcol} },
-            note { ${cellcol} }
   }
 
+  purge formats
 }
 
