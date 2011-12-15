@@ -1343,7 +1343,7 @@ class TaskJuggler
     def query_headcount(query)
       headcount = 0
       assignedResources(Interval.new(query.start, query.end)).each do |res|
-        headcount += res[efficiency, @scenarioIdx].round
+        headcount += res['efficiency', @scenarioIdx].round
       end
 
       query.sortable = query.numerical = headcount

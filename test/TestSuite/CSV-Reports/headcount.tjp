@@ -1,0 +1,31 @@
+project "Headcount Test" 2011-12-12 +2m
+
+resource r1 "R1" {
+  efficiency 0.7
+}
+resource "T1" {
+  resource r2 "R2" {
+    efficiency 0.0
+  }
+  resource r3 "R3" {
+    efficiency 2.0
+    vacation 2012-01-01 +10d
+  }
+}
+
+task "Project" {
+  task "Foo" {
+    effort 40d
+    allocate r1, r2, r3
+  }
+  task "Bar" {
+    effort 40d
+    allocate r3, r1
+  }
+}
+
+taskreport "." {
+  formats csv
+  columns name, efficiency, headcount,
+          weekly { celltext 1 "<-query attribute='headcount'->" }
+}
