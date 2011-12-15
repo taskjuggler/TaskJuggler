@@ -6829,7 +6829,7 @@ EOT
                       60 * 60, # hours
                       60 * 60 * @project['dailyworkinghours'], # days
                       60 * 60 * @project['dailyworkinghours'] *
-                      (@project['yearlyworkingdays'] / 52.1429), # weeks
+                      (@project.weeklyWorkingDays), # weeks
                       60 * 60 * @project['dailyworkinghours'] *
                       (@project['yearlyworkingdays'] / 12), # months
                       60 * 60 * @project['dailyworkinghours'] *

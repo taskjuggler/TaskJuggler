@@ -217,7 +217,7 @@ EOT
         records << (resourceRecord = TSResourceRecord.new(resource))
 
         # Calculate the average working days per week (usually 5)
-        weeklyWorkingDays = @project['yearlyworkingdays'] / 52.1428
+        weeklyWorkingDays = @project.weeklyWorkingDays
         # Calculate the number of weeks in the report
         weeksToReport = (to - from) / (60 * 60 * 24 * 7)
 
