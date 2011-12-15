@@ -1399,10 +1399,9 @@ class TaskJuggler
     # the report time frame.
     def query_resources(query)
       list = []
-      assignedResources.each do |resource|
-        if resource.allocated?(@scenarioIdx,
-                               TimeInterval.new(query.start, query.end),
-                               @property)
+      iv = TimeInterval.new(query.start, query.end)
+      assignedResources(iv).each do |resource|
+        if resource.allocated?(@scenarioIdx, iv, @property)
           if query.listItem
             rti = RichText.new(query.listItem, RTFHandlers.create(@project),
                                @project.messageHandler).
@@ -1623,6 +1622,27 @@ class TaskJuggler
         end
       end
       false
+    end
+
+    # Gather a list of Resource objects that have been assigned to the task
+    # (including sub tasks) for the given Interval _interval_.
+    def assignedResources(interval)
+      list = []
+
+      if @property.container?
+        @property.kids.each do |task|
+          list += task.assignedResources(@scenarioIdx, interval)
+        end
+        list.uniq!
+      else
+        @assignedresources.each do |resource|
+          if resource.allocated?(@scenarioIdx, interval, @property)
+            list << resource
+          end
+        end
+      end
+
+      list
     end
 
   private
@@ -2263,27 +2283,6 @@ class TaskJuggler
             'ahead of schedule'
           end
       end
-    end
-
-    # Gather a list of Resource objects that have been assigned to the task
-    # (including sub tasks) for the given Interval _interval_.
-    def assignedResources(interval)
-      list = []
-
-      if @property.container?
-        @property.kids.each do |task|
-          list << task.assignedResources(@scenarioIdx)
-        end
-        list.unique!
-      else
-        @assignedresources.each do |resource|
-          if resource.allocated?(@scenarioIdx, interval, @property)
-            list << resource
-          end
-        end
-      end
-
-      list
     end
 
     # Recursively compile a list of Task properties which depend on the
