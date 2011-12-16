@@ -65,7 +65,8 @@ class TaskJuggler
       if query.journalAttributes.include?('alert')
         levelRecord = query.project['alertLevels'][alertLevel]
         if query.selfContained
-          alertName = "<nowiki>[#{levelRecord.name}]</nowiki> "
+          alertName = "<nowiki>[</nowiki><fcol:#{levelRecord.color}><nowiki>" +
+                      "#{levelRecord.name}</nowiki></fcol><nowiki>]</nowiki>"
         else
           alertName = "[[File:icons/flag-#{levelRecord.id}.png|" +
           "alt=[#{levelRecord.name}]|text-bottom]] "

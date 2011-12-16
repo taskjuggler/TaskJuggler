@@ -557,7 +557,8 @@ class TaskJuggler
         journal.alertLevel(query.end, self, query.hideJournalEntry)
       alertLevel = @project['alertLevels'][alert]
       query.string = alertLevel.name
-      rText = "<fcol:#{alertLevel.color}>#{alertLevel.name}</fcol>"
+      rText = "<fcol:#{alertLevel.color}><nowiki>#{alertLevel.name}" +
+              "</nowiki></fcol>"
       unless (rti = RichText.new(rText, RTFHandlers.create(@project),
                                  @project.messageHandler).
                                  generateIntermediateFormat)
