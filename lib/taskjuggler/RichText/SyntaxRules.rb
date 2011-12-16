@@ -274,13 +274,6 @@ class TaskJuggler
       })
       pattern(%w( $FCOLSTART !space !plainTextWithLinks $FCOLEND !space ),
               lambda {
-        validColors = %w( black maroon green olive navy purple teal silver
-                          gray red lime yellow blue fuchsia aqua white )
-        unless validColors.include?(@val[0])
-          error('bad_color_name',
-                "#{@val[0]} is not a supported color. Use one of " +
-                "#{validColors.join(', ')}.")
-        end
         el = RichTextElement.new(@richTextI, :fontCol, @val[2])
         el.data = @val[0]
         el.appendSpace = !@val[4].nil?

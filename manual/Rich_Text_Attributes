@@ -75,6 +75,11 @@ The following colors are supported: black, maroon, green, olive, navy,
 purple, teal, silver, gray, red, lime, yellow, blue, fuchsia, aqua and
 white.
 
+Alternatively, a hash sign followed by a 3 or 6 digit hexadecimal
+number can be used as well. The hexadecimal number specifies the
+values for the red, green and blue component of the color (i. e.,
+#FFF for white).
+
 Links to external documents are possible as well. In the first form,
 the URL will appear in the readable text as well. In the second form,
 the text after the URL will be visible but the link will be available

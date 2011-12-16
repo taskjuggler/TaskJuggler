@@ -56,7 +56,8 @@ class TaskJuggler
         # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
-        [ :FCOLSTART, /<fcol:[a-z]+>/, [ :bop, :bol, :inline ],
+        [ :FCOLSTART, /<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>/, [ :bop, :bol,
+          :inline ],
           method('fontColorStart') ],
         [ :FCOLEND, /<\/fcol>/, [ :bop, :bol, :inline ],
           method('fontColorEnd') ],
@@ -139,7 +140,20 @@ class TaskJuggler
 
     def fontColorStart(type, match)
       # Extract color name from <fcol:colname>
-      [ type, match[6..-2] ]
+      colName = match[6..-2]
+      if colName =~ /#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})/
+        # We've got a valid hex number.
+      else
+        validColors = %w( black maroon green olive navy purple teal silver
+                          gray red lime yellow blue fuchsia aqua white )
+        unless validColors.include?(colName)
+          error('bad_color_name',
+                "#{colName} is not a supported color. Use one of " +
+                "#{validColors.join(', ')} or #RGB where 'R', 'G' and 'B' " +
+                "are one or two digit hexadecimal numbers.")
+        end
+      end
+      [ type, colName ]
     end
 
     def fontColorEnd(type, match)

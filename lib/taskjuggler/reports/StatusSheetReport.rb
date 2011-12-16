@@ -164,7 +164,7 @@ class TaskJuggler
             responsibility.journalEntries.each do |entry|
               task = entry.property
               @file << "  task #{task.fullId} {\n"
-              alertLevel = @project['alertLevels'][entry.alertLevel][0]
+              alertLevel = @project['alertLevels'][entry.alertLevel].id
               @file << "    # status #{alertLevel} \"#{entry.headline}\" {\n"
               @file << "    #   # Date: #{entry.date}\n"
               if (tsRecord = entry.timeSheetRecord)
