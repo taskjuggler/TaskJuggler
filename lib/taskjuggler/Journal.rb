@@ -671,9 +671,13 @@ class TaskJuggler
         maxPAlertLevel = e.alertLevel if e.alertLevel > maxPAlertLevel
       end
 
-      entries = JournalEntryList.new
+      cEntries = JournalEntryList.new
       latestDate = nil
       maxAlertLevel = 0
+      # If we have an entry from this property, we only care about child
+      # entries that are from a later date.
+      minDate = pEntries.first.date + 1 unless pEntries.empty?
+
       # Now gather all current entries of the child properties and find the
       # date that is closest to and right before the given _date_.
       property.kids.each do |p|
@@ -682,30 +686,20 @@ class TaskJuggler
           latestDate = e.date if latestDate.nil? || e.date > latestDate
           # Find the highest alert level.
           maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
-          entries << e
+          cEntries << e
         end
       end
-      # If no child property has a more current JournalEntry or one with a
-      # higher alert level than this property and this property has
-      # JournalEntry objects, than those are taken.
+
       if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
                               latestDate.nil? ||
                               pEntries.first.date >= latestDate)
-
-        # Remove all entries that are filtered by logExp.
-        if logExp
-          pEntries.delete_if { |e| hidden(e, logExp) }
-        end
-
-        return pEntries
-      end
-
-      # Remove all child entries that are older than the current parent
-      # entries (if we have parent entries).
-      unless pEntries.empty?
-        entries.delete_if do |e|
-          e.date <= pEntries.first.date
-        end
+        # If no child property has a more current JournalEntry or one with a
+        # higher alert level than this property and this property has
+        # JournalEntry objects, than those are taken.
+        entries = pEntries
+      else
+        # Otherwise we take the entries from the kids.
+        entries = cEntries
       end
 
       # Remove all entries that are filtered by logExp.
