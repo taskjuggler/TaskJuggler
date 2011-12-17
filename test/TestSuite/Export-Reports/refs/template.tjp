@@ -1,0 +1,142 @@
+project your_project_id "Your Project Title" "1.0" 2011-11-11-05:00-+0000 - 2012-03-11-21:00-+0000 {
+  timezone "America/New_York"
+  scenario plan "Plan Scenario" {
+    active yes
+  }
+}
+
+projectids your_project_id
+
+resource r1 "Resource 1"
+resource t1 "Team 1" {
+  resource r2 "Resource 2"
+  resource r3 "Resource 3"
+}
+resource s1 "System 1"
+
+task project "Project" {
+  task wp1 "Workpackage 1" {
+    task t1 "Task 1" {
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+    task t2 "Task 2" {
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+  }
+  task wp2 "Work package 2" {
+    depends project.wp1
+    task t1 "Task 1" {
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+    task t2 "Task 2" {
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+  }
+  task deliveries "Deliveries" {
+    task _Task_9 "Item 1" {
+      depends project.wp1
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+    task _Task_10 "Item 2" {
+      depends project.wp2
+      start 2011-11-11-05:00-+0000
+      milestone
+      scheduled
+    }
+  }
+}
+supplement task project {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp1 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp1.t1 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp1.t2 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp2 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp2.t1 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.wp2.t2 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.deliveries {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.deliveries._Task_9 {
+  priority 500
+  projectid your_project_id
+}
+supplement task project.deliveries._Task_10 {
+  priority 500
+  projectid your_project_id
+}
+supplement resource r1 {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+}
+supplement resource t1 {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+}
+supplement resource r2 {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+}
+supplement resource r3 {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+}
+supplement resource s1 {
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
+}

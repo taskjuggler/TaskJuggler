@@ -1,0 +1,58 @@
+project prj "Navigator Example" "1.0" 2011-12-12-00:00-+0000 - 2012-01-11-10:00-+0000 {
+  timezone "UTC"
+  scenario plan "Plan Scenario" {
+    active yes
+  }
+}
+
+projectids prj
+
+
+task foo "Foo" {
+  task _Task_2 "Foo 1" {
+    start 2011-12-12-00:00-+0000
+    milestone
+    scheduled
+  }
+  task _Task_3 "Foo 2" {
+    start 2011-12-12-00:00-+0000
+    milestone
+    scheduled
+  }
+}
+task bar "Bar" {
+  task _Task_5 "Bar 1" {
+    start 2011-12-12-00:00-+0000
+    milestone
+    scheduled
+  }
+  task _Task_6 "Bar 2" {
+    start 2011-12-12-00:00-+0000
+    milestone
+    scheduled
+  }
+}
+supplement task foo {
+  priority 500
+  projectid prj
+}
+supplement task foo._Task_2 {
+  priority 500
+  projectid prj
+}
+supplement task foo._Task_3 {
+  priority 500
+  projectid prj
+}
+supplement task bar {
+  priority 500
+  projectid prj
+}
+supplement task bar._Task_5 {
+  priority 500
+  projectid prj
+}
+supplement task bar._Task_6 {
+  priority 500
+  projectid prj
+}
