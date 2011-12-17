@@ -13,6 +13,7 @@
 
 require 'rubygems'
 require 'optparse'
+require 'term/ansicolor'
 require 'taskjuggler/Tj3Config'
 require 'taskjuggler/RuntimeConfig'
 require 'taskjuggler/TjTime'
@@ -36,6 +37,11 @@ class TaskJuggler
       @configFile = nil
       @mandatoryArgs = ''
       @mininumRubyVersion = '1.9.2'
+
+      # If stdout is not a tty, we don't use ANSI escape sequences to color
+      # the terminal output. Additionally, we have the --no-color option to
+      # force colors off in case this does not work properly.
+      Term::ANSIColor.coloring = STDOUT.tty?
     end
 
     def processArguments(argv)
@@ -61,6 +67,15 @@ class TaskJuggler
                format("Don't show program and progress information")) do
         @silent = true
         TaskJuggler::Log.silent = true
+      end
+      @opts.on('--no-color',
+               format(<<'EOT'
+Don't use ANSI contol sequences to color the terminal output. Colors should
+only be used when spooling to an ANSI terminal. In case the detection fails,
+you can this option to force colors to be off.
+EOT
+                     )) do
+        Term::ANSIColor::coloring = false
       end
       @opts.on('--debug', format('Enable Ruby debug mode')) do
         $DEBUG = true

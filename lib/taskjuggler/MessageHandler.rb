@@ -11,6 +11,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'term/ansicolor'
 require 'taskjuggler/TextParser/SourceFileInfo'
 
 class TaskJuggler
@@ -18,6 +19,8 @@ class TaskJuggler
   # The Message object can store several classes of messages that the
   # application can send out.
   class Message
+
+    include Term::ANSIColor
 
     attr_reader :type, :id, :message, :sourceFileInfo, :line
 
@@ -69,11 +72,13 @@ class TaskJuggler
         str += "#{@sourceFileInfo.fileName}:#{sourceFileInfo.lineNo}: "
       end
       if @scenario
-        str += "#{@type.to_s.capitalize} in scenario #{@scenario.id}: "
+        tag = "#{@type.to_s.capitalize} in scenario #{@scenario.id}: "
       else
-        str += "#{@type.to_s.capitalize}: "
+        tag = "#{@type.to_s.capitalize}: "
       end
-      str += @message
+      colors = { :fatal => red, :error => red, :warning => magenta,
+                 :info => blue, :debug => green }
+      str += colors[@type] + tag + @message + reset
       str += "\n" + @line if @line
       str
     end

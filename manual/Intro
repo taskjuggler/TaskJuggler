@@ -75,6 +75,14 @@ The HTML reports use Java Script code from
 is licensed under the [http://www.fsf.org/licenses/lgpl.html GNU
 Lesser General Public License].
 
+TaskJuggler does require other software components to operate. These
+components include the Ruby runtime system, operating system libraries
+and other components installed as Ruby gems. We have used great care
+to ensure that all dependencies are compatible with the TaskJuggler
+license and are being used as required by those licenses. But use
+cases may vary and you should check those licenses yourself to ensure
+that you use those components in accordance with their licenses.
+
 === Features and Highlights ===
 
 * Manages tasks, resources and accounts of your project

@@ -13,6 +13,7 @@
 
 require 'singleton'
 require 'monitor'
+require 'term/ansicolor'
 
 class TaskJuggler
 
@@ -133,7 +134,8 @@ class TaskJuggler
     def Log.stopProgressMeter
       return if @@silent
 
-      $stdout.print("#{@@progressMeter} [      Done      ]\n")
+      $stdout.print("#{@@progressMeter} [      " +
+                    Term::ANSIColor.green("Done") + "      ]\n")
     end
 
     # This function may only be called when Log#startProgressMeter has been
@@ -162,7 +164,8 @@ class TaskJuggler
       bar = '=' * full + ' ' * (length - full)
       label = (percent * 100.0).to_i.to_s + '%'
       bar[length / 2 - label.length / 2, label.length] = label
-      $stdout.print("#{@@progressMeter} [#{bar}]\r")
+      $stdout.print("#{@@progressMeter} [" +
+                    Term::ANSIColor.green("#{bar}") + "]\r")
     end
 
   end

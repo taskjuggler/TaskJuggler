@@ -64,6 +64,7 @@ EOT
   s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
 
   s.add_dependency('mail', '>= 2.2.15')
+  s.add_dependency('term-ansicolor', '>= 1.0.7')
   s.add_development_dependency('rspec', '>= 2.5.0')
   s.platform = Gem::Platform::RUBY
   s.required_ruby_version  = '>= 1.8.7'

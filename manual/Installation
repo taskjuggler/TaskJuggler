@@ -49,7 +49,10 @@ version in parallel with your distribution Ruby.
 
 * '''RubyGems:''' If it did not come with your OS or the Ruby
 installation, see [http://docs.rubygems.org here] how to get and
-install it.
+install it. RubyGems is a cross-platform package manager. It will
+download and install all other required software packages
+automatically when you install TaskJuggler. These packages are called
+Ruby gems.
 
 Other versions of Ruby (Rubinius, JRuby, etc.) may work but have not
 been tested.
@@ -281,9 +284,10 @@ will be installed into ''''/usr/local/bin''''.
 
   sudo make install
 
-As a final step, you need to install the ''''mail'''' gem.
+As a final step, you need to install the ''''mail'''' and
+''''term-ansicolor'''' gems.
 
-  sudo gem19 install mail
+  sudo gem19 install mail term-ansicolor
 
 If you don't want to use TaskJuggler from the git repository, you can
 install the TaskJuggler gem as well.
