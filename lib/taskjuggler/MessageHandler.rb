@@ -11,6 +11,10 @@
 # published by the Free Software Foundation.
 #
 
+if RUBY_VERSION < "1.9.0"
+  require 'rubygems'
+end
+
 require 'term/ansicolor'
 require 'taskjuggler/TextParser/SourceFileInfo'
 

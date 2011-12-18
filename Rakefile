@@ -1,7 +1,3 @@
-if RUBY_VERSION < '1.9.0'
-  require 'rubygems'
-end
-
 $:.unshift File.join(File.dirname(__FILE__))
 
 # Add the lib directory to the search path if it isn't included already
