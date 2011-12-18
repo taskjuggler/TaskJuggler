@@ -224,7 +224,7 @@ EOT
         # Get the vacation days for the resource for this period.
         queryAttrs['property'] = resource
         query = Query.new(queryAttrs)
-        query.attributeId = 'vacationdays'
+        query.attributeId = 'timeoffdays'
         query.start = from
         query.end = to
         query.process

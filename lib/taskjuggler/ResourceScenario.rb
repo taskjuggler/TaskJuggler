@@ -26,8 +26,13 @@ class TaskJuggler
       # Bit 0:      Reserved
       # Bit 1:      0: Work time
       #             1: Off time
-      # Bit 2 - 5:  0: No vacation or leave time
-      #             1: Regular vacation
+      # Bit 2 - 5:  0: No holiday or leave time
+      #             1: Public holiday (holiday)
+      #             2: Annual leave
+      #             3: Special leave
+      #             4: Sick leave
+      #             5: unpaid leave
+      #             6: blocked for other projects
       #             2 - 15: Reserved
       # Bit 6:      Reserved
       # Bit 7:      0: No global override
@@ -339,9 +344,9 @@ class TaskJuggler
 
     # The work time of the Resource that was blocked by a vacation during the
     # specified TimeInterval. The result is in working days (effort).
-    def query_vacationdays(query)
+    def query_timeoffdays(query)
       query.sortable = query.numerical = time =
-        getVacationDays(query.startIdx, query.endIdx)
+        getTimeOffDays(query.startIdx, query.endIdx)
       query.string = query.scaleLoad(time)
     end
 
@@ -437,7 +442,7 @@ class TaskJuggler
     end
 
     # Return the number of working days that are blocked by vacations.
-    def getVacationDays(startIdx, endIdx)
+    def getTimeOffDays(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
       startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
       endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
@@ -445,14 +450,12 @@ class TaskJuggler
       vacationDays = 0.0
       if @property.container?
         @property.kids.each do |resource|
-          vacationDays += resource.getVacationDays(@scenarioIdx,
-                                                   startIdx, endIdx)
+          vacationDays += resource.getTimeOffDays(@scenarioIdx,
+                                                  startIdx, endIdx)
         end
       else
-        initScoreboard if @scoreboard.nil?
-
         vacationDays = @project.convertToDailyLoad(
-          getVacationSlots(startIdx, endIdx) *
+          getTimeOffSlots(startIdx, endIdx) *
           @project['scheduleGranularity']) * @efficiency
       end
       vacationDays
@@ -644,7 +647,7 @@ class TaskJuggler
 
     # Count the regular work time slots between the start and end index that
     # have been blocked by a vacation.
-    def getVacationSlots(startIdx, endIdx)
+    def getTimeOffSlots(startIdx, endIdx)
       return 0 if startIdx >= endIdx
 
       initScoreboard unless @scoreboard
@@ -665,10 +668,6 @@ class TaskJuggler
       # Create scoreboard and mark all slots as unavailable
       @scoreboard = Scoreboard.new(@project['start'], @project['end'],
                                    @project['scheduleGranularity'], 2)
-
-      # We'll need this frequently and can savely cache it here.
-      @shifts = @shifts
-      @workinghours = @workinghours
 
       # Change all work time slots to nil (available) again.
       @project.scoreboardSize.times do |i|
