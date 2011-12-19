@@ -2131,25 +2131,31 @@ EOT
     pattern(%w( $STRING ), lambda {
       @val[0]
     })
-    arg(0, 'name', 'An optional name for the vacation')
+    arg(0, 'name', 'An optional name or reason for the leave')
   end
 
   def rule_leaves
     pattern(%w( _leaves !leaveList ), lambda {
       LeaveList.new(@val[1])
     })
-    doc('leave', <<'EOT'
+    doc('leaves', <<'EOT'
 Describe a list of leave periods. A leave can be due to a public holiday,
 personal or sick leave. At global scope, the leaves determine which day is
 considered a working day. Subsequent resource definitions will inherit the
 leave list.
+
+Leaves can be defined at global level, at resource level and at shift level
+and intervals may overlap. The leave types have different priorities. A higher
+priority leave type can overwrite a lower priority type. This means that
+resource level leaves can overwrite global leaves when they have a higher
+priority. A sub resource can overwrite a leave of a enclosing resource.
 EOT
        )
   end
 
   def rule_leaveType
-    singlePattern('_holiday')
-    descr('Public or bank holiday')
+    singlePattern('_project')
+    descr('Assignment to another project (lowest priority)')
 
     singlePattern('_annual')
     descr('Personal leave based on annual allowance')
@@ -2163,8 +2169,8 @@ EOT
     singlePattern('_unpaid')
     descr('Unpaid leave')
 
-    singlePattern('_project')
-    descr('Assignment to another project')
+    singlePattern('_holiday')
+    descr('Public or bank holiday (highest priority)')
   end
 
   def rule_limitAttributes
@@ -4821,7 +4827,11 @@ EOT
       @property['replace', @scenarioIdx] = true
     })
     doc('replace', <<'EOT'
-Use this attribute if the vacation definition for the shift should replace the vacation settings of a resource. This is only effective for shifts that are assigned to resources directly. It is not effective for shifts that are assigned to tasks or allocations.
+This replace mode is only effective for shifts that are assigned to resources
+directly. When replace mode is activated the leave definitions of the shift
+will replace all the leave definitions of the resource for the given period.
+
+The mode is not effective for shifts that are assigned to tasks or allocations.
 EOT
        )
 
@@ -6748,7 +6758,7 @@ EOT
   def rule_vacationName
     optional
     pattern(%w( $STRING )) # We just throw the name away
-    arg(0, 'name', 'An optional name for the vacation')
+    arg(0, 'name', 'An optional name or reason for the leave')
   end
 
   def rule_valDate

@@ -24,8 +24,8 @@ class TaskJuggler
       # nil:        Value has not been determined yet.
       # Task:       A reference to a Task object
       # Bit 0:      Reserved
-      # Bit 1:      0: Work time
-      #             1: Off time
+      # Bit 1:      0: Work time (as defined by working hours)
+      #             1: No work time (as defined by working hours)
       # Bit 2 - 5:  0: No holiday or leave time
       #             1: Public holiday (holiday)
       #             2: Annual leave
@@ -34,8 +34,8 @@ class TaskJuggler
       #             5: unpaid leave
       #             6: blocked for other projects
       #             7 - 15: Reserved
-      # Bit 6:      Reserved
-      # Bit 7:      0: No global override
+      # Bit 6 - 7:  Reserved
+      # Bit 8:      0: No global override
       #             1: Override global setting
       # The scoreboard is only created when needed to save memory for projects
       # which read-in the coporate employee database but only need a small
@@ -665,7 +665,7 @@ class TaskJuggler
   private
 
     def initScoreboard
-      # Create scoreboard and mark all slots as unavailable
+      # Create scoreboard and mark all slots as non-working-time.
       @scoreboard = Scoreboard.new(@project['start'], @project['end'],
                                    @project['scheduleGranularity'], 2)
 
@@ -674,25 +674,33 @@ class TaskJuggler
         @scoreboard[i] = nil if onShift?(i)
       end
 
-      # Mark all resource specific leave slots as such
-      @leaves.each do |leave|
-        startIdx = @scoreboard.dateToIdx(leave.interval.start)
-        endIdx = @scoreboard.dateToIdx(leave.interval.end)
-        startIdx.upto(endIdx - 1) do |i|
-          # If the slot is nil, we don't set the time-off bit.
-          @scoreboard[i] = (@scoreboard[i].nil? ? 0 : 2) | (leave.typeIdx << 2)
-        end
-      end
-
       # Mark all global leave slots as such
       @project['leaves'].each do |leave|
         startIdx = @scoreboard.dateToIdx(leave.interval.start)
         endIdx = @scoreboard.dateToIdx(leave.interval.end)
         startIdx.upto(endIdx - 1) do |i|
-          # If the slot is nil or set to 4 then don't set the time-off bit.
           sb = @scoreboard[i]
-          @scoreboard[i] = ((sb.nil? || (sb & 0x3C)) ? 0 : 2) |
-                           (leave.typeIdx << 2)
+          # We preseve the work-time bit (#1).
+          @scoreboard[i] = (sb.nil? ? 0 : 2) | (leave.typeIdx << 2)
+        end
+      end
+
+      # Mark all resource specific leave slots as such
+      @leaves.each do |leave|
+        startIdx = @scoreboard.dateToIdx(leave.interval.start)
+        endIdx = @scoreboard.dateToIdx(leave.interval.end)
+        startIdx.upto(endIdx - 1) do |i|
+          if (sb = @scoreboard[i])
+            # The slot is already marked as non-working slot. We override the
+            # leave type if the new type is larger than the old one.
+            leaveIdx = (sb & 0x3C) >> 2
+            if leave.typeIdx > leaveIdx
+              # The work-time bit (#1) is preserved.
+              @scoreboard[i] = (sb & 0x2) | (leave.typeIdx << 2)
+            end
+          else
+            @scoreboard[i] = leave.typeIdx << 2
+          end
         end
       end
 
@@ -700,15 +708,18 @@ class TaskJuggler
         # Mark the leaves from all the shifts the resource is assigned to.
         @project.scoreboardSize.times do |i|
           v = @shifts.getSbSlot(i)
-          # Check if the leave replacement bit is set. In that case we copy
-          # the whole interval over to the resource scoreboard overriding any
-          # global leaves.
+          # Make sure a shift is actually assigned.
+          next unless v
+
           if (v & (1 << 8)) != 0
+            # Check if the leave replacement bit (#8) is set. In that case we
+            # copy the whole interval over to the resource scoreboard
+            # overriding any global leaves.
             @scoreboard[i] = (v & 0x3E == 0) ? nil : (v & 0x3D)
-          elsif ((sbV = @scoreboard[i]).nil? || (sbV & 0x3C) == 0) &&
+          elsif ((sb = @scoreboard[i]).nil? || ((sb & 0x3C) < (v & 0x3C))) &&
                 (v & 0x3C) != 0
-            # We only add the shift leaves but don't turn global leave
-            # slots into working slots again.
+            # In merge mode, we only add the shift leaves with higher type
+            # index or unassigned slots.
             @scoreboard[i] = v & 0x3E
           end
         end

@@ -83,8 +83,8 @@ class TaskJuggler
   # nil: Value has not been determined yet.
   # Bit 0:      0: No assignment
   #             1: Has assignement
-  # Bit 1:      0: Work time
-  #             1: Off time
+  # Bit 1:      0: Work time (as defined by working hours)
+  #             1: No work time (as defined by working hours)
   # Bit 2 - 5:  0: No holiday or leave time
   #             1: Public holiday (holiday)
   #             2: Annual leave
@@ -93,8 +93,8 @@ class TaskJuggler
   #             5: unpaid leave
   #             6: blocked for other projects
   #             7 - 15: Reserved
-  # Bit 6:      Reserved
-  # Bit 7:      0: No global override
+  # Bit 6 - 7:  Reserved
+  # Bit 8:      0: No global override
   #             1: Override global setting
   class ShiftAssignments < Monitor
 

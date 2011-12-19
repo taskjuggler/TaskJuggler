@@ -19,12 +19,12 @@ class TaskJuggler
     attr_reader :interval, :type, :reason
 
     @@types = {
-      :holiday => 1,
+      :project => 1,
       :annual => 2,
       :special => 3,
-      :unpaid => 4,
-      :sick => 5,
-      :project => 6
+      :sick => 4,
+      :unpaid => 5,
+      :holiday => 6
     }
 
     # Create a new Leave object. _interval_ should be an Interval describing
