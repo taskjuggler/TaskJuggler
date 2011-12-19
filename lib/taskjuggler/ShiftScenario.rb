@@ -32,9 +32,9 @@ class TaskJuggler
     end
 
     # Returns true if the shift has a vacation defined for the _date_.
-    def onVacation?(date)
-      a('vacations').each do |vacationIv|
-        if vacationIv.contains?(date)
+    def onLeave?(date)
+      a('leaves').each do |leave|
+        if leave.interval.contains?(date)
           return true
         end
       end

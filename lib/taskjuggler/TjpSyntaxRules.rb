@@ -508,7 +508,7 @@ EOT
       @booking.overtime = @val[1]
     })
     doc('overtime.booking', <<'EOT'
-This attribute enables bookings during off-hours and vacations. It implicitly
+This attribute enables bookings during off-hours and leaves. It implicitly
 sets the [[sloppy.booking|sloppy]] attribute accordingly.
 EOT
        )
@@ -531,7 +531,7 @@ EOT
     })
     doc('sloppy.booking', <<'EOT'
 Controls how strict TaskJuggler checks booking intervals for conflicts with
-working periods and vacations. This attribute only affects the check for
+working periods and leaves. This attribute only affects the check for
 conflicts. No assignments will be made unless the [[overtime.booking|
 overtime]] attribute is set accordingly.
 EOT
@@ -1080,7 +1080,7 @@ EOT
        )
     allOrNothingListRule('exportableResourceAttributes',
                          { 'booking' => 'Include bookings',
-                           'vacation' => 'Include vacations',
+                           'leaves' => 'Include leaves',
                            'workinghours' => 'Include working hours' })
 
     pattern(%w( !rollupresource ))
@@ -2116,6 +2116,57 @@ EOT
     arg(0, 'resource', 'The ID of a leaf resource')
   end
 
+  def rule_leave
+    pattern(%w( !leaveType !vacationName !intervalOrDate ), lambda {
+      Leave.new(@val[0].intern, @val[2], @val[1])
+    })
+  end
+
+  def rule_leaveList
+    listRule('moreLeaveList', '!leave')
+  end
+
+  def rule_leaveName
+    optional
+    pattern(%w( $STRING ), lambda {
+      @val[0]
+    })
+    arg(0, 'name', 'An optional name for the vacation')
+  end
+
+  def rule_leaves
+    pattern(%w( _leaves !leaveList ), lambda {
+      LeaveList.new(@val[1])
+    })
+    doc('leave', <<'EOT'
+Describe a list of leave periods. A leave can be due to a public holiday,
+personal or sick leave. At global scope, the leaves determine which day is
+considered a working day. Subsequent resource definitions will inherit the
+leave list.
+EOT
+       )
+  end
+
+  def rule_leaveType
+    singlePattern('_holiday')
+    descr('Public or bank holiday')
+
+    singlePattern('_annual')
+    descr('Personal leave based on annual allowance')
+
+    singlePattern('_special')
+    descr('Personal leave based on a special occasion')
+
+    singlePattern('_sick')
+    descr('Sick leave')
+
+    singlePattern('_unpaid')
+    descr('Unpaid leave')
+
+    singlePattern('_project')
+    descr('Assignment to another project')
+  end
+
   def rule_limitAttributes
     optionsRule('limitAttributesBody')
   end
@@ -3051,7 +3102,7 @@ to the specified workinghours and vacation. It affects the conversion of
 working hours, working days, working weeks, working months and working years
 into each other.
 
-When public holidays and vacations are disregarded, this value should be equal
+When public holidays and leaves are disregarded, this value should be equal
 to the number of working days per week times 52.1428 (the average number of
 weeks per year). E. g. for a culture with 5 working days it is 260.714 (the
 default), for 6 working days it is 312.8568 and for 7 working days it is
@@ -3215,6 +3266,10 @@ EOT
 
     pattern(%w( !propertiesInclude ))
 
+    pattern(%w( !leaves ), lambda {
+      @project['leaves'] += @val[0]
+    })
+
     pattern(%w( !limits ), lambda {
       @project['limits'] = @val[0]
     })
@@ -3282,7 +3337,9 @@ EOT
     pattern(%w( !timeSheet ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       begin
-        @project['vacations'] = @project['vacations'] + @val[2]
+        @val[2].each do |interval|
+          @project['leaves'] << Leave.new(:holiday, interval)
+        end
       rescue AttributeOverwrite
       end
     })
@@ -3532,7 +3589,7 @@ EOT
     descr(<<'EOT'
 The Full-Time-Equivalent of a resource or group. This is the ratio of the
 resource working time and the global working time. Working time is defined by
-working hours and vacations. The FTE value can vary over time and is
+working hours and leaves. The FTE value can vary over time and is
 calculated for the report interval or the user specified interval.
 EOT
          )
@@ -4372,6 +4429,13 @@ EOT
 
     pattern(%w( !fail ))
 
+    pattern(%w( !leaves ), lambda {
+      begin
+        @property['leaves', @scenarioIdx] += @val[0]
+      rescue AttributeOverwrite
+      end
+    })
+
     pattern(%w( !limits ), lambda {
       @property['limits', @scenarioIdx] = @val[0]
     })
@@ -4449,8 +4513,10 @@ EOT
 
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       begin
-        @property['vacations', @scenarioIdx] =
-          @property['vacations', @scenarioIdx ] + @val[2]
+        @val[2].each do |interval|
+          # We map the old 'vacation' attribute to public holidays.
+          @property['leaves', @scenarioIdx] << Leave.new(:holiday, interval)
+        end
       rescue AttributeOverwrite
       end
     })
@@ -4667,7 +4733,7 @@ EOT
     doc('shift', <<'EOT'
 A shift combines several workhours related settings in a reusable entity.
 Besides the weekly working hours it can also hold information such as
-vacations and a time zone.
+leaves and a time zone.
 
 Shifts have a global name space. All IDs must be unique within the shifts of
 the project.
@@ -4744,6 +4810,13 @@ EOT
   end
 
   def rule_shiftScenarioAttributes
+    pattern(%w( !leaves ), lambda {
+      begin
+        @property['leaves', @scenarioIdx] += @val[0]
+      rescue AttributeOverwrite
+      end
+    })
+
     pattern(%w( _replace ), lambda {
       @property['replace', @scenarioIdx] = true
     })
@@ -4775,8 +4848,13 @@ EOT
        )
 
     pattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
-      @property['vacations', @scenarioIdx] =
-        @property['vacations', @scenarioIdx ] + @val[2]
+      begin
+        @val[2].each do |interval|
+          # We map the old 'vacation' attribute to public holidays.
+          @property['leaves', @scenarioIdx] << Leave.new(:holiday, interval)
+        end
+      rescue AttributeOverwrite
+      end
     })
     doc('vacation.shift', <<'EOT'
 Specify a vacation period associated with this shift.
@@ -5381,7 +5459,7 @@ Specifies the minimum required gap between the end of a preceding task and the
 start of this task, or the start of a following task and the end of this task.
 This is working time, not calendar time. 7d means 7 working days, not one
 week. Whether a day is considered a working day or not depends on the defined
-working hours and global vacations.
+working hours and global leaves.
 EOT
        )
 
@@ -5811,7 +5889,7 @@ is available is still considered working time, if there is no global vacation
 and global working hours are defined accordingly.
 
 For the length calculation, only the global working hours and the global
-vacations matter. If a resource has additinal working hours defined, it's
+leaves matter. If a resource has additinal working hours defined, it's
 quite possible that a task with a length of 5d will have an allocated effort
 larger than 40 hours. Resource working hours only have an impact on whether an
 allocation is made or not for a particular time slot. They don't effect the
@@ -6358,7 +6436,7 @@ EOT
     doc('shift.timesheet', <<'EOT'
 Specifies an alternative [[shift]] for the time sheet period. This shift will
 override any existing working hour definitions for the resource. It will not
-override already declared [[vacation|vacations]] though.
+override already declared [[leaves]] though.
 
 The primary use of this feature is to let the resources report different total
 work time for the report period.

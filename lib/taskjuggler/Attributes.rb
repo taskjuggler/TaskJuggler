@@ -319,18 +319,18 @@ class TaskJuggler
     end
 
   end
+
   class JournalSortListAttribute < ListAttributeBase
 
     def initialize(property, type, container)
       super
     end
 
-    def JournalSortListAttribute ::tjpId
+    def JournalSortListAttribute::tjpId
       'journalsorting'
     end
 
   end
-
 
   class TimeIntervalListAttribute < ListAttributeBase
     def initialize(property, type, container)
@@ -351,6 +351,22 @@ class TaskJuggler
       out = []
       get.each { |i| out << i.to_s }
       @type.id + " " + out.join(', ')
+    end
+
+  end
+
+  class LeaveListAttribute < ListAttributeBase
+
+    def initialize(property, type, container)
+      super
+    end
+
+    def LeaveListAttribute::tjpId
+      'leave'
+    end
+
+    def to_tjp
+      "leaves #{get.join(",\n")}"
     end
 
   end

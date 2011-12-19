@@ -112,9 +112,9 @@ EOF
           error("Resource '#{id}' must have a valid email address")
         end
 
-        # Ignore resources that are on vacation for the whole period.
+        # Ignore resources that are on leave for the whole period.
         if effort == 0.0 && free == 0.0 && efficiency != 0.0
-          info("Resource '#{id}' was on vacation the whole period")
+          info("Resource '#{id}' was on leave the whole period")
           next
         end
 

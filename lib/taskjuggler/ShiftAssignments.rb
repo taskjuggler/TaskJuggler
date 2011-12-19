@@ -43,7 +43,7 @@ class TaskJuggler
     end
 
     # Returns true if the shift is active and requests to replace global
-    # vacation settings.
+    # leave settings.
     def replace?(date)
       @interval.start <= date && date < @interval.end && @shiftScenario.replace?
     end
@@ -58,9 +58,9 @@ class TaskJuggler
       @shiftScenario.onShift?(date)
     end
 
-    # Returns true if the shift has a vacation defined for the _date_.
-    def onVacation?(date)
-      @shiftScenario.onVacation?(date)
+    # Returns true if the shift has a leave defined for the _date_.
+    def onLeave?(date)
+      @shiftScenario.onLeave?(date)
     end
 
     # Primarily used for debugging
@@ -72,7 +72,7 @@ class TaskJuggler
   # This class manages a list of ShiftAssignment elements. The intervals of the
   # assignments must not overlap.
   #
-  # Since it is fairly costly to determine the onShift and onVacation values
+  # Since it is fairly costly to determine the onShift and onLeave values
   # for a given date we use a scoreboard to cache all computed values.
   # Changes to the assigment set invalidate the cache again.
   #
@@ -85,9 +85,14 @@ class TaskJuggler
   #             1: Has assignement
   # Bit 1:      0: Work time
   #             1: Off time
-  # Bit 2 - 5:  0: No vacation or leave time
-  #             1: Regular vacation
-  #             2 - 15: Reserved
+  # Bit 2 - 5:  0: No holiday or leave time
+  #             1: Public holiday (holiday)
+  #             2: Annual leave
+  #             3: Special leave
+  #             4: Sick leave
+  #             5: unpaid leave
+  #             6: blocked for other projects
+  #             7 - 15: Reserved
   # Bit 6:      Reserved
   # Bit 7:      0: No global override
   #             1: Override global setting
@@ -160,10 +165,10 @@ class TaskJuggler
         # Set bit 1 if the shift is not active
         @scoreboard[idx] |= 1 << 1 unless sa.onShift?(date)
 
-        # Set bits 2 - 5 to 1 if it's a vacation slot.
-        @scoreboard[idx] |= 1 << 3 if sa.onVacation?(date)
+        # Set bits 2 - 5 to 1 if it's a leave slot.
+        @scoreboard[idx] |= 1 << 3 if sa.onLeave?(date)
 
-        # Set the 8th bit if the shift replaces global vacations.
+        # Set the 8th bit if the shift replaces global leaves.
         @scoreboard[idx] |= 1 << 8 if sa.replace?(date)
 
         return @scoreboard[idx]
@@ -187,16 +192,16 @@ class TaskJuggler
     end
 
     # Returns true if any of the defined shift periods contains the date
-    # specified by the scoreboard index _idx_ and the shift has a vacation
+    # specified by the scoreboard index _idx_ and the shift has a leave
     # defined or all off hours defined for that date.
     def timeOff?(idx)
       (getSbSlot(idx) & 0x3E) != 0
     end
 
     # Returns true if any of the defined shift periods contains the date
-    # specified by the scoreboard index _idx_ and if the shift has a vacation
+    # specified by the scoreboard index _idx_ and if the shift has a leave
     # defined for the date.
-    def onVacation?(idx)
+    def onLeave?(idx)
       (getSbSlot(idx) & 0x3C) != 0
     end
 

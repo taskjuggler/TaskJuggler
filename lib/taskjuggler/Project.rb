@@ -18,6 +18,7 @@ require 'taskjuggler/TjTime'
 require 'taskjuggler/AlertLevelDefinitions'
 require 'taskjuggler/AccountCredit'
 require 'taskjuggler/Booking'
+require 'taskjuggler/LeaveList'
 require 'taskjuggler/PropertySet'
 require 'taskjuggler/Attributes'
 require 'taskjuggler/RealFormat'
@@ -79,6 +80,7 @@ class TaskJuggler
         'flags' => [],
         'journal' => Journal.new,
         'limits' => nil,
+        'leaves' => LeaveList.new,
         'loadUnit' => :days,
         'name' => name,
         'navigators' => {},
@@ -95,7 +97,6 @@ class TaskJuggler
         'timeFormat' => "%Y-%m-%d",
         'timezone' => TjTime.timeZone,
         'trackingScenarioIdx' => nil,
-        'vacations' => [],
         'version' => version || "1.0",
         'weekStartsMonday' => true,
         'workinghours' => nil,
@@ -133,24 +134,24 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
-        [ 'bsi',      'BSI',          StringAttribute,
+        [ 'bsi',      'BSI',           StringAttribute,
               false, false,   false, "" ],
-        [ 'id',       'ID',         StringAttribute,
+        [ 'id',       'ID',            StringAttribute,
               false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
-        [ 'name',     'Name',       StringAttribute,
+        [ 'leaves',    'Leaves',       LeaveListAttribute,
+              true,  true,    true,  LeaveList.new ],
+        [ 'name',     'Name',          StringAttribute,
               false, false,   false, nil ],
         [ 'replace',   'Replace',      BooleanAttribute,
               true,  false,   true,  false ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',            FixnumAttribute,
               false, false,   false, nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
               true,  true,    true,  TjTime.timeZone ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'vacations', 'Vacations',    TimeIntervalListAttribute,
-              true,  true,    true,  [] ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
               true,  true,    true,  nil ]
       ]
@@ -209,6 +210,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
+        [ 'leaves',    'Leaves',       LeaveListAttribute,
+              true,  true,    true,  LeaveList.new ],
         [ 'limits',    'Limits',       LimitsAttribute,
               true,  true,    true,  nil ],
         [ 'managers', 'Managers',      ResourceListAttribute,
@@ -223,8 +226,6 @@ class TaskJuggler
               true, false,    true,  nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'vacations',  'Vacations',   TimeIntervalListAttribute,
-              true,  true,    true,  [] ],
         [ 'warn',      'Warning Condition', LogicalExpressionListAttribute,
               false, false,   false, [] ],
         [ 'workinghours', 'Working Hours', WorkingHoursAttribute,
@@ -453,10 +454,10 @@ class TaskJuggler
 
       @timeSheets = TimeSheets.new
 
-      # A scoreboard that reflects the global working hours and vacations.
+      # A scoreboard that reflects the global working hours and leaves.
       @scoreboard = nil
-      # A scoreboard that reflects the global working hours but no vacations.
-      @scoreboardNoVacations = nil
+      # A scoreboard that reflects the global working hours but no leaves.
+      @scoreboardNoLeaves = nil
 
       # The ReportContext provides additional settings to the report that can
       # complement or replace the report attributes. Reports can include other
@@ -823,7 +824,7 @@ class TaskJuggler
     # Return true if the slot or interval is withing globally defined working
     # time or false if not. If the argument is a TimeInterval, all slots of
     # the interval must be working time to return true as result. Global work
-    # time means, no global vacation defined and the slot lies within a
+    # time means, no global leaves defined and the slot lies within a
     # defined global working time period.
     def isWorkingTime(*args)
       # Normalize argument(s) to TimeInterval
@@ -855,7 +856,7 @@ class TaskJuggler
     #   hasWorkingTime(interval) -> true or false
     #
     # Return true if the interval overlaps with a globally defined working
-    # time or false if not. Global work time means, no global vacation defined
+    # time or false if not. Global work time means, no global leaves defined
     # and the slot lies within a defined global working time period.
     def hasWorkingTime(*args)
       # Normalize argument(s) to TimeInterval
@@ -927,20 +928,20 @@ class TaskJuggler
       end
     end
 
-    # Return the number of working days (ignoring global vacations) during the
+    # Return the number of working days (ignoring global leaves) during the
     # given _interval_.
     def workingDays(interval)
       startIdx = dateToIdx(interval.start)
       endIdx = dateToIdx(interval.end)
       slots = 0
       startIdx.upto(endIdx) do |idx|
-        slots += 1 unless @scoreboardNoVacations[idx]
+        slots += 1 unless @scoreboardNoLeaves[idx]
       end
       slotsToDays(slots)
     end
 
     # Return the number of global working slots during the given time interval
-    # specified by _startIdx_ and _endIdx_. This method takes global vacations
+    # specified by _startIdx_ and _endIdx_. This method takes global leaves
     # into account.
     def getWorkSlots(startIdx, endIdx)
       slots = 0
@@ -1230,7 +1231,7 @@ class TaskJuggler
       @scoreboard = Scoreboard.new(@attributes['start'], @attributes['end'],
                                    @attributes['scheduleGranularity'], 2)
       # And the same for another scoreboard.
-      @scoreboardNoVacations =
+      @scoreboardNoLeaves =
         Scoreboard.new(@attributes['start'], @attributes['end'],
                        @attributes['scheduleGranularity'], 2)
 
@@ -1242,15 +1243,15 @@ class TaskJuggler
       scoreboardSize.times do |i|
         if workinghours.onShift?(date)
           @scoreboard[i] = nil
-          @scoreboardNoVacations[i] = nil
+          @scoreboardNoLeaves[i] = nil
         end
         date += delta
       end
 
-      # Mark all global vacation slots as such
-      @attributes['vacations'].each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start)
-        endIdx = @scoreboard.dateToIdx(vacation.end)
+      # Mark all global leave slots as such
+      @attributes['leaves'].each do |leave|
+        startIdx = @scoreboard.dateToIdx(leave.interval.start)
+        endIdx = @scoreboard.dateToIdx(leave.interval.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil or set to 4 then don't set the time-off bit.
           sb = @scoreboard[i]

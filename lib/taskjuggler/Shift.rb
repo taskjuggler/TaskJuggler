@@ -17,7 +17,7 @@ require 'taskjuggler/ShiftScenario'
 class TaskJuggler
 
   # A shift is a definition of working hours for each day of the week. It may
-  # also contain a list of intervals that define off-duty periods or vacations.
+  # also contain a list of intervals that define off-duty periods or leaves.
   class Shift < PropertyTreeNode
 
     def initialize(project, id, name, parent)

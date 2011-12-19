@@ -33,7 +33,7 @@ class TaskJuggler
       #             4: Sick leave
       #             5: unpaid leave
       #             6: blocked for other projects
-      #             2 - 15: Reserved
+      #             7 - 15: Reserved
       # Bit 6:      Reserved
       # Bit 7:      0: No global override
       #             1: Override global setting
@@ -56,7 +56,7 @@ class TaskJuggler
       # have to check for existance each time we access them.
       %w( alloctdeffort chargeset criticalness directreports duties efficiency
           effort limits managers rate reports shifts
-          vacations workinghours ).each do |attr|
+          leaves workinghours ).each do |attr|
         @property[attr, @scenarioIdx]
       end
 
@@ -342,7 +342,7 @@ class TaskJuggler
       end
     end
 
-    # The work time of the Resource that was blocked by a vacation during the
+    # The work time of the Resource that was blocked by leaves during the
     # specified TimeInterval. The result is in working days (effort).
     def query_timeoffdays(query)
       query.sortable = query.numerical = time =
@@ -441,24 +441,24 @@ class TaskJuggler
       work
     end
 
-    # Return the number of working days that are blocked by vacations.
+    # Return the number of working days that are blocked by leaves.
     def getTimeOffDays(startIdx, endIdx)
       # Convert the interval dates to indexes if needed.
       startIdx = @project.dateToIdx(startIdx) if startIdx.is_a?(TjTime)
       endIdx = @project.dateToIdx(endIdx) if endIdx.is_a?(TjTime)
 
-      vacationDays = 0.0
+      timeOffDays = 0.0
       if @property.container?
         @property.kids.each do |resource|
-          vacationDays += resource.getTimeOffDays(@scenarioIdx,
+          timeOffDays += resource.getTimeOffDays(@scenarioIdx,
                                                   startIdx, endIdx)
         end
       else
-        vacationDays = @project.convertToDailyLoad(
+        timeOffDays = @project.convertToDailyLoad(
           getTimeOffSlots(startIdx, endIdx) *
           @project['scheduleGranularity']) * @efficiency
       end
-      vacationDays
+      timeOffDays
     end
 
     def turnover(startIdx, endIdx, account, task = nil, includeKids = false)
@@ -581,7 +581,7 @@ class TaskJuggler
     end
 
     # Return a list of scoreboard intervals that are at least _minDuration_ long
-    # and contain only off-duty and vacation slots. The result is an Array of
+    # and contain only off-duty and leave slots. The result is an Array of
     # [ start, end ] TjTime values.
     def collectTimeOffIntervals(iv, minDuration)
       # Time-off intervals are only useful for leaf resources. Group resources
@@ -646,20 +646,20 @@ class TaskJuggler
     end
 
     # Count the regular work time slots between the start and end index that
-    # have been blocked by a vacation.
+    # have been blocked by leaves.
     def getTimeOffSlots(startIdx, endIdx)
       return 0 if startIdx >= endIdx
 
       initScoreboard unless @scoreboard
 
-      vacationSlots = 0
+      timeOffSlots = 0
       startIdx.upto(endIdx - 1) do |idx|
         val = @scoreboard[idx]
-        # Bit 1 needs to be unset and the vacation bits must not be 0.
-        vacationSlots += 1 if val.is_a?(Fixnum) && (val & 0x2) == 0 &&
-                                                   (val & 0x3C) != 0
+        # Bit 1 needs to be unset and the leave bits must not be 0.
+        timeOffSlots += 1 if val.is_a?(Fixnum) && (val & 0x2) == 0 &&
+                                                  (val & 0x3C) != 0
       end
-      vacationSlots
+      timeOffSlots
     end
 
   private
@@ -674,39 +674,40 @@ class TaskJuggler
         @scoreboard[i] = nil if onShift?(i)
       end
 
-      # Mark all resource specific vacation slots as such
-      @vacations.each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start)
-        endIdx = @scoreboard.dateToIdx(vacation.end)
+      # Mark all resource specific leave slots as such
+      @leaves.each do |leave|
+        startIdx = @scoreboard.dateToIdx(leave.interval.start)
+        endIdx = @scoreboard.dateToIdx(leave.interval.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil, we don't set the time-off bit.
-          @scoreboard[i] = (@scoreboard[i].nil? ? 0 : 2) | (1 << 2)
+          @scoreboard[i] = (@scoreboard[i].nil? ? 0 : 2) | (leave.typeIdx << 2)
         end
       end
 
-      # Mark all global vacation slots as such
-      @project['vacations'].each do |vacation|
-        startIdx = @scoreboard.dateToIdx(vacation.start)
-        endIdx = @scoreboard.dateToIdx(vacation.end)
+      # Mark all global leave slots as such
+      @project['leaves'].each do |leave|
+        startIdx = @scoreboard.dateToIdx(leave.interval.start)
+        endIdx = @scoreboard.dateToIdx(leave.interval.end)
         startIdx.upto(endIdx - 1) do |i|
           # If the slot is nil or set to 4 then don't set the time-off bit.
           sb = @scoreboard[i]
-          @scoreboard[i] = ((sb.nil? || sb == 4) ? 0 : 2) | (1 << 2)
+          @scoreboard[i] = ((sb.nil? || (sb & 0x3C)) ? 0 : 2) |
+                           (leave.typeIdx << 2)
         end
       end
 
       unless @shifts.nil?
-        # Mark the vacations from all the shifts the resource is assigned to.
+        # Mark the leaves from all the shifts the resource is assigned to.
         @project.scoreboardSize.times do |i|
           v = @shifts.getSbSlot(i)
-          # Check if the vacation replacement bit is set. In that case we copy
+          # Check if the leave replacement bit is set. In that case we copy
           # the whole interval over to the resource scoreboard overriding any
-          # global vacations.
+          # global leaves.
           if (v & (1 << 8)) != 0
             @scoreboard[i] = (v & 0x3E == 0) ? nil : (v & 0x3D)
           elsif ((sbV = @scoreboard[i]).nil? || (sbV & 0x3C) == 0) &&
                 (v & 0x3C) != 0
-            # We only add the shift vacations but don't turn global vacation
+            # We only add the shift leaves but don't turn global leave
             # slots into working slots again.
             @scoreboard[i] = v & 0x3E
           end
