@@ -217,6 +217,9 @@ class TaskJuggler
         end
       end
 
+      # Don't do anything if no start and end dates have been found.
+      return unless @start && @end
+
       # We want to add at least 5% on both ends.
       margin = 0
       minWidth = @end - @start + 1
