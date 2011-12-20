@@ -1,4 +1,6 @@
-project "Annual Leave" 2011-12-19 +1m
+project "Annual Leave" 2011-12-19 +1y {
+  now 2012-07-01
+}
 
 leaves holiday "Christmas" 2011-12-24 +3d,
        holiday "New Year" 2011-12-31 +3d
@@ -9,6 +11,7 @@ shift s1 "Shift 1" {
 }
 
 resource team "Team" {
+  leaveallowances annual 2011-01-01 20d
   leaves holiday 2012-01-06
 
   resource r1 "R1" {
@@ -16,6 +19,7 @@ resource team "Team" {
            special 2012-01-12 +1d
   }
   resource r2 "R2" {
+    leaveallowances annual 2012-06-01 -10d
     leaves sick 2012-01-04 +2d,
            unpaid 2012-01-10 +3d
   }
@@ -29,5 +33,5 @@ task "foo"
 
 resourcereport "." {
   formats csv
-  columns name, annualleave, sickleave, specialleave, unpaidleave
+  columns name, annualleave, annualleavebalance, sickleave, specialleave, unpaidleave
 }

@@ -2134,6 +2134,39 @@ EOT
     arg(0, 'name', 'An optional name or reason for the leave')
   end
 
+  def rule_leaveAllowance
+    pattern(%w( _annual $DATE !leaveAllowanceNumber ), lambda {
+      LeaveAllowance.new(:annual, @val[1], @val[2])
+    })
+    arg(1, 'date', 'The date when the allowance was granted or expired.')
+  end
+
+  def rule_leaveAllowanceList
+    listRule('moreLeaveAllowanceList', '!leaveAllowance')
+  end
+
+  def rule_leaveAllowanceNumber
+    pattern(%w( !workingDuration ), lambda {
+      @val[0]
+    })
+    pattern(%w(_- !workingDuration ), lambda {
+      -@val[1]
+    })
+  end
+
+  def rule_leaveAllowances
+    pattern(%w( _leaveallowances !leaveAllowanceList ), lambda {
+      appendScListAttribute('leaveallowances', @val[1])
+    })
+    doc('leaveallowance', <<'EOT'
+Add or subtract leave allowances. Currently, only allowances for the annual
+leaves are supported. Allowances can be negative to deal with expired
+allowances.
+EOT
+      )
+    level(:beta)
+  end
+
   def rule_leaves
     pattern(%w( _leaves !leaveList ), lambda {
       LeaveList.new(@val[1])
@@ -3274,7 +3307,9 @@ EOT
     pattern(%w( !propertiesInclude ))
 
     pattern(%w( !leaves ), lambda {
-      @project['leaves'] += @val[0]
+      @val[0].each do |v|
+        @project['leaves'] << v
+      end
     })
 
     pattern(%w( !limits ), lambda {
@@ -3396,11 +3431,6 @@ EOT
       else
         attr = @property.get(@val[1])
       end
-      unless attr.is_a?(Array)
-        error('purge_no_list',
-              "#{@val[1]} is not a list attribute. Only those can be purged.",
-              @sourceFileInfo[1])
-      end
       if @property.attributeDefinition(@val[1]).scenarioSpecific
         @property.getAttribute(@val[1], @scenarioIdx).reset
       else
@@ -3408,15 +3438,16 @@ EOT
       end
     })
     doc('purge', <<'EOT'
-List attributes, like regular attributes, can inherit their values from the
-enclosing property. A list attribute is any attribute that takes a comma
-separated list of values as argument. [[allocate]] and [[flags.task]] are
+Many attributes inherit their values from the enclosing property or the global
+scope. In certain circumstances, this is not desirable, e. g. for list
+attributes. A list attribute is any attribute that takes a comma separated
+list of values as argument. [[allocate]] and [[flags.task]] are
 good examples of commonly used list attributes. By defining values for
 such a list attribute in a nested property, the new values will be appended to
 the list that was inherited from the enclosing property. The purge
-attribute clears such a list attribute. A subsequent definition for the
-attribute within the property will then add their values to an empty list. The
-value of the enclosing property is not affected by purge.
+attribute resets any attribute to its default value. A subsequent definition
+for the attribute within the property will then add their values to an empty
+list. The value of the enclosing property is not affected by purge.
 EOT
        )
     arg(1, 'attribute', 'Any name of a list attribute')
@@ -3445,6 +3476,7 @@ EOT
     })
   end
 
+
   def rule_reports
     pattern(%w( !accountReport ))
     pattern(%w( !resourceReport ))
@@ -3456,7 +3488,14 @@ EOT
     singlePattern('_annualleave')
     descr(<<'EOT'
 The number of annual leave units within the reported time period. The unit
-can be adjusted with [[loadunits]].
+can be adjusted with [[loadunit]].
+EOT
+         )
+
+    singlePattern('_annualleavebalance')
+    descr(<<'EOT'
+The current balance of the annual leave. The unit can be adjusted with
+[[loadunit]].
 EOT
          )
 
@@ -3786,14 +3825,14 @@ EOT
     singlePattern('_sickleave')
     descr(<<'EOT'
 The number of sick leave units within the reported time period. The unit can
-be adjusted with [[loadunits]].
+be adjusted with [[loadunit]].
 EOT
          )
 
     singlePattern('_specialleave')
     descr(<<'EOT'
 The number of special leave units within the reported time period. The unit
-can be adjusted with [[loadunits]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
@@ -3827,7 +3866,7 @@ EOT
     singlePattern('_unpaidleave')
     descr(<<'EOT'
 The number of unpaid leave units within the reported time period. The unit
-can be adjusted with [[loadunits]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
@@ -4463,6 +4502,8 @@ EOT
     example('Booking')
 
     pattern(%w( !fail ))
+
+    pattern(%w( !leaveAllowances ))
 
     pattern(%w( !leaves ), lambda {
       begin

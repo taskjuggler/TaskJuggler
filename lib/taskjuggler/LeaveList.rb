@@ -18,6 +18,10 @@ class TaskJuggler
 
     attr_reader :interval, :type, :reason
 
+    # This Hash defines the supported leave types. It maps the symbol to its
+    # index. The index sequence is important when multiple leaves are defined
+    # for the same time slot. A subsequent definition with a type with a
+    # larger index will override the old leave type.
     Types = {
       :project => 1,
       :annual => 2,
@@ -55,6 +59,41 @@ class TaskJuggler
 
     def initialize(*args)
       super(*args)
+    end
+
+  end
+
+  class LeaveAllowance < Struct.new(:type, :date, :slots)
+
+    def initialize(type, date, slots)
+      unless Leave::Types[type]
+        raise ArgumentError, "Unsupported leave type #{type}"
+      end
+      super
+    end
+
+  end
+
+  # The LeaveAllowanceList can store lists of LeaveAllowance objects.
+  # Allowances are counted in time slots and can be negative to substract
+  # expired allowances.
+  class LeaveAllowanceList < Array
+
+    # Create a new empty LeaveAllowanceList.
+    def initialize(*args)
+      super(*args)
+    end
+
+    def balance(type, date)
+      unless Leave::Types[type]
+        raise ArgumentError, "Unsupported leave type #{type}"
+      end
+
+      balance = 0.0
+      each do |al|
+        balance += al.slots if al.type == type && al.date <= date
+      end
+      balance
     end
 
   end
