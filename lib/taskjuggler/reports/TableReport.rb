@@ -28,10 +28,12 @@ class TaskJuggler
 
     @@propertiesById = {
       # ID                  Header                 Indent  Align   Scen Spec.
+      'annualleave'      => [ 'Annual Leave',      true,   :right, true ],
       'alert'            => [ 'Alert',             true,   :left,  false ],
       'alertmessages'    => [ 'Alert Messages',    false,  :left,  false ],
       'alertsummaries'   => [ 'Alert Summaries',   false,  :left,  false ],
       'alerttrend'       => [ 'Alert Trend',       false,  :left,  false ],
+      'bsi'              => [ 'BSI',               false,  :left,  false ],
       'complete'         => [ 'Completion',        false,  :right, true ],
       'cost'             => [ 'Cost',              true,   :right, true ],
       'duration'         => [ 'Duration',          true,   :right, true ],
@@ -58,9 +60,11 @@ class TaskJuggler
       'responsible'      => [ 'Responsible',       false,  :left,  true ],
       'revenue'          => [ 'Revenue',           true,   :right, true ],
       'scenario'         => [ 'Scenario',          false,  :left,  true ],
+      'sickleave'        => [ 'Sick Leave',        true,   :right, true ],
+      'specialleave'     => [ 'Special Leave',     true,   :right, true ],
       'status'           => [ 'Status',            false,  :left,  true ],
       'targets'          => [ 'Targets',           false,  :left,  true ],
-      'bsi'              => [ 'BSI',               false,  :left,  false ]
+      'unpaidleave'      => [ 'Unpaid Leave',      true,   :right, true ]
     }
     @@propertiesByType = {
       # Type                     Indent  Align

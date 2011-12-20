@@ -18,7 +18,7 @@ class TaskJuggler
 
     attr_reader :interval, :type, :reason
 
-    @@types = {
+    Types = {
       :project => 1,
       :annual => 2,
       :special => 3,
@@ -32,7 +32,7 @@ class TaskJuggler
     # (:holiday, :annual, :special, :unpaid, :sick and :project ). The
     # _reason_ is an optional String that describes the leave reason.
     def initialize(type, interval, reason = nil)
-      unless @@types[type]
+      unless Types[type]
         raise ArgumentError, "Unsupported leave type #{type}"
       end
       @type = type
@@ -41,7 +41,7 @@ class TaskJuggler
     end
 
     def typeIdx
-      @@types[@type]
+      Types[@type]
     end
 
     def to_s

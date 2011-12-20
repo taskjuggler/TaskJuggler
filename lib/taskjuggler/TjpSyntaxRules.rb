@@ -2151,6 +2151,7 @@ resource level leaves can overwrite global leaves when they have a higher
 priority. A sub resource can overwrite a leave of a enclosing resource.
 EOT
        )
+    level(:beta)
   end
 
   def rule_leaveType
@@ -3452,6 +3453,13 @@ EOT
   end
 
   def rule_reportableAttributes
+    singlePattern('_annualleave')
+    descr(<<'EOT'
+The number of annual leave units within the reported time period. The unit
+can be adjusted with [[loadunits]].
+EOT
+         )
+
     singlePattern('_alert')
     descr(<<'EOT'
 The alert level of the property that was reported with the date closest to the
@@ -3479,6 +3487,9 @@ alert level at the begining of the report period. Possible values are up, down
 or flat.
 EOT
          )
+
+    singlePattern('_bsi')
+    descr('The hierarchical or work breakdown structure index (i. e. 1.2.3)')
 
     singlePattern('_chart')
     descr(<<'EOT'
@@ -3772,6 +3783,20 @@ EOT
     singlePattern('_seqno')
     descr('The index of the item based on the declaration order')
 
+    singlePattern('_sickleave')
+    descr(<<'EOT'
+The number of sick leave units within the reported time period. The unit can
+be adjusted with [[loadunits]].
+EOT
+         )
+
+    singlePattern('_specialleave')
+    descr(<<'EOT'
+The number of special leave units within the reported time period. The unit
+can be adjusted with [[loadunits]].
+EOT
+         )
+
     singlePattern('_start')
     descr('The start date of the task')
 
@@ -3799,8 +3824,12 @@ EOT
     also('bsi')
     descr('Deprecated alias for bsi.')
 
-    singlePattern('_bsi')
-    descr('The hierarchical or work breakdown structure index')
+    singlePattern('_unpaidleave')
+    descr(<<'EOT'
+The number of unpaid leave units within the reported time period. The unit
+can be adjusted with [[loadunits]].
+EOT
+         )
 
     singlePattern('_weekly')
     descr('A group of columns with one column for each week')
