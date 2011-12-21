@@ -93,7 +93,7 @@ class TaskJuggler::TextParser
       @transitions = {}
     end
 
-    # Completed the StateTransition list. We can only call this function after
+    # Complete the StateTransition list. We can only call this function after
     # all State objects for the syntax have been created. So we can't make
     # this part of the constructor.
     def addTransitions(states, rules)
