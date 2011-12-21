@@ -11,6 +11,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'term/ansicolor'
 require 'taskjuggler/HTMLDocument'
 require 'taskjuggler/RichText'
 require 'taskjuggler/TjpExample'
@@ -32,6 +33,7 @@ class TaskJuggler
   class KeywordDocumentation
 
     include HTMLElements
+    include Term::ANSIColor
 
     attr_reader :keyword, :names, :pattern, :references, :optionalAttributes
     attr_accessor :contexts, :scenarioSpecific, :inheritedFromProject,
@@ -40,7 +42,7 @@ class TaskJuggler
     # Construct a new KeywordDocumentation object. _rule_ is the
     # TextParser::Rule and _pattern_ is the corresponding TextParser::Pattern.
     # _syntax_ is an expanded syntax representation of the _pattern_. _args_
-    # is a Array of ParserTokenDoc that describe the arguments of the
+    # is an Array of TextParser::TokenDoc that describe the arguments of the
     # _pattern_.  _optAttrPatterns_ is an Array with references to
     # TextParser::Patterns that are optional attributes to this keyword.
     def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
@@ -199,9 +201,7 @@ class TaskJuggler
       textW = 79
 
       # Top line with multiple elements
-      str = "Keyword:     #{@keyword}     " +
-            "Scenario Specific: #{@scenarioSpecific ? 'Yes' : 'No'}    " +
-            "Inherited: #{@inheritedFromParent ? 'Yes' : 'No'}\n\n"
+      str = "#{blue('Keyword:')}     #{bold(@keyword)}\n\n"
 
       if @pattern.supportLevel != :supported
         msg = supportLevelMessage
@@ -219,18 +219,19 @@ class TaskJuggler
           msg += "#{alsoStr} instead!"
         end
 
-        str += "Warning:     #{format(tagW, msg, textW)}\n"
+        str += red("Warning:     #{format(tagW, msg, textW)}\n")
       end
 
       # Don't show further details if the keyword has been removed.
       return str if @pattern.supportLevel == :removed
 
-      str += "Purpose:     #{format(tagW, newRichText(@pattern.doc).to_s,
+      str += blue('Purpose:') +
+             "     #{format(tagW, newRichText(@pattern.doc).to_s,
                                     textW)}\n"
       if @syntax != '[{ <attributes> }]'
-        str += "Syntax:      #{format(tagW, @syntax, textW)}\n"
+        str += blue('Syntax:') + "      #{format(tagW, @syntax, textW)}\n"
 
-        str += "Arguments:   "
+        str += blue('Arguments:') + "   "
         if @args.empty?
           str += format(tagW, "none\n", textW)
         else
@@ -256,7 +257,7 @@ class TaskJuggler
         str += "\n"
       end
 
-      str += 'Context:     '
+      str += blue('Context:') + '     '
       if @contexts.empty?
         str += format(tagW, 'Global scope', textW)
       else
@@ -270,7 +271,7 @@ class TaskJuggler
         str += format(tagW, cxtStr, textW)
       end
 
-      str += "\nAttributes:  "
+      str += "\n#{blue('Attributes:')}  "
       if @optionalAttributes.empty?
         str += "none\n\n"
       else
@@ -288,34 +289,37 @@ class TaskJuggler
              attr.inheritedFromParent
             first = true
             showLegend = true
-            attrStr += '['
+            tag = '['
             if attr.scenarioSpecific
-              attrStr += 'sc'
+              tag += 'sc'
               first = false
             end
             if attr.inheritedFromProject
-              attrStr += ':' unless first
-              attrStr += 'ig'
+              tag += ':' unless first
+              tag += 'ig'
               first = false
             end
             if attr.inheritedFromParent
-              attrStr += ':' unless first
-              attrStr += 'ip'
+              tag += ':' unless first
+              tag += 'ip'
             end
-            attrStr += ']'
+            tag += ']'
+            attrStr += cyan(tag)
           end
         end
         if showLegend
-          attrStr += "\n[sc] : Attribute is scenario specific" +
-                     "\n[ig] : Attribute is inherited from global attribute" +
-                     "\n[ip] : Attribute is inherited from parent property"
+          attrStr += "\n\n#{cyan('[sc]')} : Attribute is scenario specific" +
+                     "\r#{cyan('[ig]')} : " +
+                     "Value can be inherited from global setting" +
+                     "\r#{cyan('[ip]')} : " +
+                     "Value can be inherited from parent property"
         end
         str += format(tagW, attrStr, textW)
         str += "\n"
       end
 
       unless @seeAlso.empty?
-        str += "See also:    "
+        str += blue('See also:') + "    "
         alsoStr = ''
         @seeAlso.each do |also|
           unless alsoStr.empty?

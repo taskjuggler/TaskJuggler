@@ -50,7 +50,7 @@ class TaskJuggler
           # The indent buffer for the next line.
           indentBuf = "\n" + ' ' * @indentation
         else
-          # If we still have a indent buffer, we need to insert it first.
+          # If we still have an indent buffer, we need to insert it first.
           if indentBuf
             out += indentBuf
             linePos = indentBuf.delete("\n").length
@@ -103,6 +103,13 @@ class TaskJuggler
             # The word has ended.
             appendWord
             state = c == ' ' ? :betweenWords : :betweenWordsOrLines
+          elsif c == "\r"
+            # CR is used to start a new line but without starting a new
+            # paragraph.
+            appendWord
+            @indentBuf = "\n" + ' ' * @firstLineIndent
+            @beginOfLine = true
+            state = :betweenWords
           else
             # Add the character to the word buffer.
             @wordBuf << c
