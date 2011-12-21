@@ -2151,10 +2151,12 @@ EOT
     doc('leaveallowance', <<'EOT'
 Add or subtract leave allowances. Currently, only allowances for the annual
 leaves are supported. Allowances can be negative to deal with expired
-allowances.
+allowances. The ''''leaveallowancebalance'''' report [[columns|column]] can be
+used to report the current annual leave balance.
 EOT
       )
     level(:beta)
+    example('Leave')
   end
 
   def rule_leaves
@@ -2175,6 +2177,7 @@ priority. A sub resource can overwrite a leave of a enclosing resource.
 EOT
        )
     level(:beta)
+    example('Leave')
   end
 
   def rule_leaveType

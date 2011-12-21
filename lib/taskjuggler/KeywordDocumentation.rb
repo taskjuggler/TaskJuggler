@@ -700,8 +700,8 @@ class TaskJuggler
         "use this keyword unless you were specifically directed " +
         "by the developers to try it."
       when :beta
-        "This keyword has not yet been fully tested. You are " +
-        "welcome to try it, but this may lead to wrong results. " +
+        "This keyword has not yet been fully tested yet. You are " +
+        "welcome to try it, but it may lead to wrong results. " +
         "The syntax may still change with future versions. " +
         "The developers appreciate any feedback on this keyword."
       when :deprecated
