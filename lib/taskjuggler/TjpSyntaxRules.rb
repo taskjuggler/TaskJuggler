@@ -2135,23 +2135,13 @@ EOT
   end
 
   def rule_leaveAllowance
-    pattern(%w( _annual $DATE !leaveAllowanceNumber ), lambda {
-      LeaveAllowance.new(:annual, @val[1], @val[2])
+    pattern(%w( _annual $DATE !optionalMinus !workingDuration ), lambda {
+      LeaveAllowance.new(:annual, @val[1], (@val[2] ? -1 : 1) * @val[3])
     })
-    arg(1, 'date', 'The date when the allowance was granted or expired.')
   end
 
   def rule_leaveAllowanceList
     listRule('moreLeaveAllowanceList', '!leaveAllowance')
-  end
-
-  def rule_leaveAllowanceNumber
-    pattern(%w( !workingDuration ), lambda {
-      @val[0]
-    })
-    pattern(%w(_- !workingDuration ), lambda {
-      -@val[1]
-    })
   end
 
   def rule_leaveAllowances
@@ -2871,6 +2861,13 @@ These IDs may become visible in reports, but may change at any time. You may
 never rely on automatically generated IDs.
 EOT
        )
+  end
+
+  def rule_optionalMinus
+    optional
+    pattern(%w( _- ), lambda {
+      true
+    })
   end
 
   def rule_optionalPercent
