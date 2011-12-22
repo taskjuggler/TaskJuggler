@@ -1,4 +1,4 @@
-=== Reporting Bugs and Sending Feedback ===
+=== Reporting Bugs and Feature Requests ===
 
 All official releases of TaskJuggler are meant to be stable releases
 unless explicitly noted differently. But our test suite is still very
@@ -10,7 +10,7 @@ find a bug, please follow this procedure:
 feature.
 
 * Check the [http://www.taskjuggler.org TaskJuggler web page] and the
-[http://www.taskjuggler.org/forum.php discussion groups]. You should
+[http://www.taskjuggler.org/contact.html discussion groups]. You should
 also search the [https://github.com/taskjuggler/TaskJuggler/issues
 issue tracker] if the problem has been reported before. If so, it's
 quite likely that there is already a workaround or fix available. 
@@ -25,11 +25,21 @@ following command to store the messages into a file.
 
  tj3 yourproject.tjp 2> error_message
 
-* Enter a detailed description of the problem into the issue tracker
-and don't forget to attach your test project.
+* Enter a detailed description of the problem into the
+[https://github.com/taskjuggler/TaskJuggler/issues?state=open issue
+tracker] and don't forget to attach your test project and the error
+log. You can paste that into the input field.
 
-* Not attaching a test case will severely limit our abilities to help
-you. Please make sure you provide meaningful descriptions and a small
-but complete test project.  Not providing this information usually
-triggers requests or leads to bug reports being ignored.
+* Not attaching a test project will severely limit our abilities to help
+you. In 95% of the reported bugs we need a test case to find and fix
+the problem. Please make sure you provide meaningful descriptions and a small
+but complete test project.  Not providing this information with the
+first bug report means we have to follow up with you or the bug report
+is being ignored.
 
+* Please open a new issue for each bug. Don't include multiple
+problems in one bug report. This usually leads to one bug being fixed
+and the rest of the problems to be ignored.
+
+* If you have a feature request, please open a new issue and set the
+* "Feature" label.
