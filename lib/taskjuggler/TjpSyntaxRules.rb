@@ -1692,8 +1692,9 @@ EOT
       unless @project.scenario(sc).get('active')
         warning('ical_sc_disabled',
                 "Scenario #{sc} has been disabled")
+      else
+        @property.set('scenarios', [ @val[1] ])
       end
-      @property.set('scenarios', [ @val[1] ])
     })
     doc('scenario.ical', <<'EOT'
 Id of the scenario that should be included in the report. By default, the
@@ -1709,7 +1710,9 @@ EOT
       @property.set('formats', [ :iCal ])
 
       # By default, we export only the first scenario.
-      @property.set('scenarios', [ 0 ])
+      unless @project.scenario(0).get('active')
+        @property.set('scenarios', [ 0 ])
+      end
       # Show all tasks, sorted by seqno-up.
       @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
@@ -5085,7 +5088,9 @@ EOT
       newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0])
       @property.set('formats', [ :tjp ])
 
-      @property.set('scenarios', [ 0 ])
+      unless @project.scenario(0).get('active')
+        @property.set('scenarios', [ 0 ])
+      end
       # Show all tasks, sorted by id-up.
       @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @property.set('sortTasks', [ [ 'id', true, -1 ] ])
@@ -6628,7 +6633,9 @@ EOT
       newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
       @property.set('formats', [ :tjp ])
 
-      @property.set('scenarios', [ 0 ])
+      unless @project.scenario(0).get('active')
+        @property.set('scenarios', [ 0 ])
+      end
       # Show all tasks, sorted by seqno-up.
       @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])

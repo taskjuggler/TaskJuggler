@@ -205,7 +205,9 @@ class TaskJuggler
     # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
     # list of scenario indexes.
     def adjustReportPeriod(tasks, scenarios, columns)
-      return if tasks.empty? ||
+      # If the task list is empty or the user has provided a custom start or
+      # end date, we don't touch the report period.
+      return if tasks.empty? || scenarios.empty? ||
         a('start') != @project['start'] || a('end') != @project['end']
 
       @start = @end = nil
@@ -217,9 +219,6 @@ class TaskJuggler
           @end = date if @end.nil? || date > @end
         end
       end
-
-      # Don't do anything if no start and end dates have been found.
-      return unless @start && @end
 
       # We want to add at least 5% on both ends.
       margin = 0
