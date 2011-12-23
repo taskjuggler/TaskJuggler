@@ -1406,6 +1406,11 @@ class TaskJuggler
             rti = RichText.new(query.listItem, RTFHandlers.create(@project),
                                @project.messageHandler).
                                generateIntermediateFormat
+            unless rti
+              error('bad_resource_ts_query',
+                    "Syntax error in query statement for task attribute " +
+                    "'resources'.")
+            end
             q = query.dup
             q.property = resource
             rti.setQuery(q)
