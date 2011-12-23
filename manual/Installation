@@ -159,12 +159,21 @@ For downloaded or self-built packages use the following command:
  gem update pkg/taskjuggler-X.X.X.gem
 
 
-=== Installation Steps for Developers ===
+=== Installing TaskJuggler from the Git Repository ===
 
-The following description is for users that want to learn more about
-TaskJuggler or want to make improvements. TaskJuggler is
-[http://en.wikipedia.org/wiki/Open_source Open Source] software and
+The following description is for developers and users that want to
+learn more about TaskJuggler or want to make improvements. TaskJuggler
+is [http://en.wikipedia.org/wiki/Open_source Open Source] software and
 you are encouraged to read and modify the source code.
+
+Before you download the source code, make sure you have all the
+necessary dependencies installed. You should have Ruby 1.9.2 or later
+and you need to have the following gems installed
+
+ gem install rake mail rspec term-ansicolor rcov
+
+rcov is optional, but you must have the other gems and their
+dependencies installed.
 
 To get the source code, the recommended way it to check out the
 latest code from the developer repository. To do this, you need to
