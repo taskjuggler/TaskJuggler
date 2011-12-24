@@ -2752,6 +2752,7 @@ EOT
         error('operand_unkn_scen', "Unknown scenario ID #{scenario}",
               @sourceFileInfo[0])
       end
+      # TODO: Do at least some basic sanity checks of the attribute is valid.
       LogicalAttribute.new(attribute, @project.scenario(scenarioIdx))
     })
     pattern(%w( !date ), lambda {
