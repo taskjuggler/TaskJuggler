@@ -565,8 +565,11 @@ class TaskJuggler
             column.cell1.hidden = true
           end
           column.cell2.text = t.send(name2Func).to_s
-          # TODO: The width should be taken from some data structure.
-          column.cell2.width = 28
+          # We assume an average of 7 pixel per character
+          width = 8 + 7 * column.cell2.text.length
+          # Ensure a minimum with of 28 to have good looking tables even with
+          # small column headers (like day of months numbers).
+          column.cell2.width = width <= 28 ? 28 : width
           # Off-duty cells will have a different color than working time cells.
           unless @project.hasWorkingTime(iv)
             column.cell2.category = 'tabhead_offduty'
