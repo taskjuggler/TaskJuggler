@@ -105,6 +105,12 @@ class TaskJuggler
     # Generate an output format agnostic version that can later be turned into
     # the respective output formats.
     def generateIntermediateFormat
+      if get('scenarios').empty?
+        warning('all_scenarios_disabled',
+                "The report #{fullId} has only disabled scenarios. The " +
+                "report will possibly be empty.")
+      end
+
       @content = nil
       case @typeSpec
       when :accountreport

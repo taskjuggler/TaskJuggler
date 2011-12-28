@@ -27,40 +27,45 @@ class TaskJuggler
     attr_reader :legend
 
     @@propertiesById = {
-      # ID                  Header                 Indent  Align   Scen Spec.
-      'alert'            => [ 'Alert',             true,   :left,  false ],
-      'alertmessages'    => [ 'Alert Messages',    false,  :left,  false ],
-      'alertsummaries'   => [ 'Alert Summaries',   false,  :left,  false ],
-      'alerttrend'       => [ 'Alert Trend',       false,  :left,  false ],
-      'complete'         => [ 'Completion',        false,  :right, true ],
-      'cost'             => [ 'Cost',              true,   :right, true ],
-      'duration'         => [ 'Duration',          true,   :right, true ],
-      'effort'           => [ 'Effort',            true,   :right, true ],
-      'effortdone'       => [ 'Effort Done',       true,   :right, true ],
-      'effortleft'       => [ 'Effort Left',       true,   :right, true ],
-      'freetime'         => [ 'Free Time',         true,   :right, true ],
-      'freework'         => [ 'Free Work',         true,   :right, true ],
-      'followers'        => [ 'Followers',         false,  :left,  true ],
-      'fte'              => [ 'FTE',               true,   :right, true ],
-      'headcount'        => [ 'Headcount',         true,   :right, true ],
-      'id'               => [ 'Id',                false,  :left,  false ],
-      'inputs'           => [ 'Inputs',            false,  :left,  true ],
-      'journal'          => [ 'Journal',           false,  :left,  false ],
-      'journal_sub'      => [ 'Journal',           false,  :left,  false ],
-      'journalmessages'  => [ 'Journal Messages',  false,  :left,  false ],
-      'journalsummaries' => [ 'Journal Summaries', false,  :left,  false ],
-      'line'             => [ 'Line No.',          false,  :right, false ],
-      'name'             => [ 'Name',              true,   :left,  false ],
-      'no'               => [ 'No.',               false,  :right, false ],
-      'precursors'       => [ 'Precursors',        false,  :left,  true ],
-      'rate'             => [ 'Rate',              true,   :right, true ],
-      'resources'        => [ 'Resources',         false,  :left,  true ],
-      'responsible'      => [ 'Responsible',       false,  :left,  true ],
-      'revenue'          => [ 'Revenue',           true,   :right, true ],
-      'scenario'         => [ 'Scenario',          false,  :left,  true ],
-      'status'           => [ 'Status',            false,  :left,  true ],
-      'targets'          => [ 'Targets',           false,  :left,  true ],
-      'bsi'              => [ 'BSI',               false,  :left,  false ]
+      # ID                   Header                   Indent  Align   Scen Spec.
+      'annualleave'       => [ 'Annual Leave',         true,   :right, true ],
+      'annualleavebalance'=> [ 'Annual Leave Balance', true, :right, true ],
+      'alert'             => [ 'Alert',                true,   :left,  false ],
+      'alertmessages'     => [ 'Alert Messages',       false,  :left,  false ],
+      'alertsummaries'    => [ 'Alert Summaries',      false,  :left,  false ],
+      'alerttrend'        => [ 'Alert Trend',          false,  :left,  false ],
+      'bsi'               => [ 'BSI',                  false,  :left,  false ],
+      'complete'          => [ 'Completion',           false,  :right, true ],
+      'cost'              => [ 'Cost',                 true,   :right, true ],
+      'duration'          => [ 'Duration',             true,   :right, true ],
+      'effort'            => [ 'Effort',               true,   :right, true ],
+      'effortdone'        => [ 'Effort Done',          true,   :right, true ],
+      'effortleft'        => [ 'Effort Left',          true,   :right, true ],
+      'freetime'          => [ 'Free Time',            true,   :right, true ],
+      'freework'          => [ 'Free Work',            true,   :right, true ],
+      'followers'         => [ 'Followers',            false,  :left,  true ],
+      'fte'               => [ 'FTE',                  true,   :right, true ],
+      'headcount'         => [ 'Headcount',            true,   :right, true ],
+      'id'                => [ 'Id',                   false,  :left,  false ],
+      'inputs'            => [ 'Inputs',               false,  :left,  true ],
+      'journal'           => [ 'Journal',              false,  :left,  false ],
+      'journal_sub'       => [ 'Journal',              false,  :left,  false ],
+      'journalmessages'   => [ 'Journal Messages',     false,  :left,  false ],
+      'journalsummaries'  => [ 'Journal Summaries',    false,  :left,  false ],
+      'line'              => [ 'Line No.',             false,  :right, false ],
+      'name'              => [ 'Name',                 true,   :left,  false ],
+      'no'                => [ 'No.',                  false,  :right, false ],
+      'precursors'        => [ 'Precursors',           false,  :left,  true ],
+      'rate'              => [ 'Rate',                 true,   :right, true ],
+      'resources'         => [ 'Resources',            false,  :left,  true ],
+      'responsible'       => [ 'Responsible',          false,  :left,  true ],
+      'revenue'           => [ 'Revenue',              true,   :right, true ],
+      'scenario'          => [ 'Scenario',             false,  :left,  true ],
+      'sickleave'         => [ 'Sick Leave',           true,   :right, true ],
+      'specialleave'      => [ 'Special Leave',        true,   :right, true ],
+      'status'            => [ 'Status',               false,  :left,  true ],
+      'targets'           => [ 'Targets',              false,  :left,  true ],
+      'unpaidleave'       => [ 'Unpaid Leave',         true,   :right, true ]
     }
     @@propertiesByType = {
       # Type                     Indent  Align
@@ -200,7 +205,9 @@ class TaskJuggler
     # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
     # list of scenario indexes.
     def adjustReportPeriod(tasks, scenarios, columns)
-      return if tasks.empty? ||
+      # If the task list is empty or the user has provided a custom start or
+      # end date, we don't touch the report period.
+      return if tasks.empty? || scenarios.empty? ||
         a('start') != @project['start'] || a('end') != @project['end']
 
       @start = @end = nil

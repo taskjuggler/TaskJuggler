@@ -173,14 +173,15 @@ class TaskJuggler
               endDate = taskEnd
               w = @chart.dateToX(endDate) - x
             end
+            startIdx = project.dateToIdx(startDate)
+            endIdx = project.dateToIdx(endDate)
 
             overallWork = scopeProperty.getEffectiveWork(@query.scenarioIdx,
-                                                         startDate, endDate) +
+                                                         startIdx, endIdx) +
                           scopeProperty.getEffectiveFreeWork(@query.scenarioIdx,
-                                                             startDate,
-                                                             endDate)
+                                                             startIdx, endIdx)
             workThisTask = property.getEffectiveWork(@query.scenarioIdx,
-                                                      startDate, endDate,
+                                                      startIdx, endIdx,
                                                       scopeProperty)
             # If all values are 0 we make sure we show an empty frame.
             if overallWork == 0 && workThisTask == 0
@@ -235,6 +236,7 @@ class TaskJuggler
       x = nil
       startDate = endDate = nil
 
+      project = @query.project
       property = @query.property
       scopeProperty = @query.scopeProperty
 
@@ -245,7 +247,6 @@ class TaskJuggler
       if scopeProperty
         categories = [ 'assigned', 'busy', 'free' ]
 
-        project = @query.project
         taskStart = scopeProperty['start', @query.scenarioIdx] ||
                     project['start']
         taskEnd = scopeProperty['end', @query.scenarioIdx] ||
@@ -293,20 +294,27 @@ class TaskJuggler
             # of the scope task.
             endDate = taskEnd
           end
+
+          startIdx = project.dateToIdx(startDate)
+          endIdx = project.dateToIdx(endDate)
+
           taskWork = property.getEffectiveWork(@query.scenarioIdx,
-                                               startDate, endDate,
+                                               startIdx, endIdx,
                                                scopeProperty)
           overallWork = property.getEffectiveWork(@query.scenarioIdx,
-                                                  startDate, endDate)
+                                                  startIdx, endIdx)
           freeWork = property.getEffectiveFreeWork(@query.scenarioIdx,
-                                                   startDate, endDate)
+                                                   startIdx, endIdx)
           values = [ taskWork, overallWork - taskWork, freeWork ]
         else
+          startIdx = project.dateToIdx(startDate)
+          endIdx = project.dateToIdx(endDate)
+
           values = []
           values << property.getEffectiveWork(@query.scenarioIdx,
-                                              startDate, endDate)
+                                              startIdx, endIdx)
           values << property.getEffectiveFreeWork(@query.scenarioIdx,
-                                                  startDate, endDate)
+                                                  startIdx, endIdx)
         end
 
         x = @chart.dateToX(startDate)

@@ -178,7 +178,7 @@ class TaskJuggler
       @states = {}
       # Generate the parser states for all patterns of all rules.
       @rules.each_value do |rule|
-        rule.generateStates.each do |s|
+        rule.generateStates(@rules).each do |s|
           @states[[ s.rule, s.pattern, s.index ]] = s
         end
         checkRule(rule)
@@ -466,7 +466,7 @@ class TaskJuggler
 
     def getNextToken
       token = nextToken
-      #Log << "Token: [#{token[0]}][#{token[1]}]"
+      # puts "Token: [#{token[0]}][#{token[1]}]"
       if @blockedVariables[token[0]]
         error('unsupported_token',
               "The token #{token[1]} is not supported in this context.",

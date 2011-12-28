@@ -102,9 +102,31 @@ class TaskJuggler::TextParser
     # Generate the state machine states for the pattern. _rule_ is the Rule
     # that the pattern belongs to. A list of generated State objects will be
     # returned.
-    def generateStates(rule)
+    def generateStates(rule, rules)
+      # The last token of a pattern must always trigger a reduce operation.
+      # But the the last tokens of a pattern describe fully optional syntax,
+      # the last non-optional token and all following optional tokens must
+      # trigger a reduce operation. Here we find the index of the first token
+      # that must trigger a reduce operation.
+      firstReduceableToken = @tokens.length - 1
+      (@tokens.length - 2).downto(0).each do |i|
+        if optionalToken(i + 1, rules)
+          # If token i + 1 is optional, assume token i is the first one to
+          # trigger a reduce.
+          firstReduceableToken = i
+        else
+          # token i + 1 is not optional, we found the first token to trigger
+          # the reduce.
+          break
+        end
+      end
+
       states = []
-      @tokens.length.times { |i| states << State.new(rule, self, i) }
+      @tokens.length.times do |i|
+        states << (state = State.new(rule, self, i))
+        # Mark all states that are allowed to trigger a reduce operation.
+        state.noReduce = false if i >= firstReduceableToken
+      end
       states
     end
 
@@ -122,9 +144,6 @@ class TaskJuggler::TextParser
       # the next token of the pattern as well.
       loop do
         if destIndex >= @tokens.length
-          # Have we reached the end of the pattern? Such state always trigger
-          # a reduce operation.
-          sourceState.noReduce = false
           if sourceState.rule == destRule
             if destRule.repeatable
               # The transition leads us back to the start of the Rule. This
@@ -396,6 +415,18 @@ class TaskJuggler::TextParser
         return if ad.name == argDoc.name
       end
       argDocs << argDoc
+    end
+
+    # Check if token with _index_ describes fully optional syntax elements.
+    def optionalToken(index, rules)
+      # If the token is a reference to another rule, we need to check if it's
+      # optional.
+      if @tokens[index][0] == :reference
+        return rules[@tokens[index][1]].optional?(rules)
+      end
+
+      # All other token types are never optional.
+      false
     end
 
   end

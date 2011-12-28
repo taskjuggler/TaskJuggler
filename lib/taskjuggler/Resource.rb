@@ -37,8 +37,8 @@ class TaskJuggler
     # provided by the class ResourceScenario. In case we can't find a
     # function called for the Resource class we try to find it in
     # ResourceScenario.
-    def method_missing(func, scenarioIdx, *args)
-      @data[scenarioIdx].method(func).call(*args)
+    def method_missing(func, scenarioIdx, *args, &block)
+      @data[scenarioIdx].method(func).call(*args, &block)
     end
 
     def query_dashboard(query)

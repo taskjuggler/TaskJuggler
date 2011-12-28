@@ -355,6 +355,14 @@ class TaskJuggler
 
   end
 
+  class LeaveAllowanceListAttribute < ListAttributeBase
+
+    def initialize(property, type, container)
+      super
+    end
+
+  end
+
   class LeaveListAttribute < ListAttributeBase
 
     def initialize(property, type, container)

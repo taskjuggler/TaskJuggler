@@ -476,6 +476,18 @@ class TaskJuggler
       @property = nil
     end
 
+    # This method most be used instead of the += operator for all list
+    # attributes. += will always return an Array object. This will cause
+    # trouble with the list attributes that are not plain Arrays.
+    def appendScListAttribute(attrId, list)
+      list.each do |v|
+        @property[attrId, @scenarioIdx] << v
+      end
+      # The << operator does not set the 'provided' flag. Just do a self
+      # assignment to trigget the flag to get set.
+      @property[attrId, @scenarioIdx] = @property[attrId, @scenarioIdx]
+    end
+
   end
 
 end

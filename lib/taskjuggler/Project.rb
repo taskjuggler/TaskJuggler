@@ -210,6 +210,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'index',     'Index',        FixnumAttribute,
               false, false,   false, -1 ],
+        [ 'leaveallowances', 'Leave Allowances', LeaveAllowanceListAttribute,
+              true,  false,   true,  LeaveAllowanceList.new ],
         [ 'leaves',    'Leaves',       LeaveListAttribute,
               true,  true,    true,  LeaveList.new ],
         [ 'limits',    'Limits',       LimitsAttribute,

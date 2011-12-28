@@ -115,7 +115,7 @@ class TaskJuggler
       end
 
       query = expr.query
-      property.getAllocatedTime(scenarioIdx, query.start, query.end,
+      property.getAllocatedTime(scenarioIdx, query.startIdx, query.endIdx,
                                 scopeProperty) > 0.0
     end
 
