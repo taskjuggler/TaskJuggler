@@ -63,8 +63,10 @@ class TaskJuggler
         intNumber = '0' * (@fractionDigits - intNumber.length + 1) + intNumber
       end
       intPart = intNumber[0..-(@fractionDigits + 1)]
+      # Determinate the fractional part
       fracPart =
-        @fractionDigits > 0 ? '.' + intNumber[-(@fractionDigits)..-1] : ''
+        @fractionDigits > 0 ? @fractionSeparator +
+                              intNumber[-(@fractionDigits)..-1] : ''
 
       if @thousandsSeparator.empty?
         out = intPart
