@@ -32,10 +32,6 @@ class TaskJuggler
       @data[scenarioIdx].readyForScheduling?
     end
 
-    def query_journal_sub(query)
-      journalText(query, true, true)
-    end
-
     private
 
     # Create a blog-style list of all alert messages that match the Query.

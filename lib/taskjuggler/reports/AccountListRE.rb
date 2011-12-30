@@ -43,10 +43,9 @@ class TaskJuggler
                                       @report.get('openNodes'))
       accountList.sort!
 
-      setReportPeriod
-
       # Generate the table header.
       @report.get('columns').each do |columnDescr|
+        adjustColumnPeriod(columnDescr)
         generateHeaderCell(columnDescr)
       end
 

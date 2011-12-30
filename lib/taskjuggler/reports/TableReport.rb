@@ -15,6 +15,7 @@ require 'taskjuggler/reports/ReportBase'
 require 'taskjuggler/reports/GanttChart'
 require 'taskjuggler/reports/ReportTableLegend'
 require 'taskjuggler/reports/ColumnTable'
+require 'taskjuggler/reports/TableReportColumn'
 require 'taskjuggler/Query'
 
 class TaskJuggler
@@ -29,7 +30,7 @@ class TaskJuggler
     @@propertiesById = {
       # ID                   Header                   Indent  Align   Scen Spec.
       'annualleave'       => [ 'Annual Leave',         true,   :right, true ],
-      'annualleavebalance'=> [ 'Annual Leave Balance', true, :right, true ],
+      'annualleavebalance'=> [ 'Annual Leave Balance', true,   :right, true ],
       'alert'             => [ 'Alert',                true,   :left,  false ],
       'alertmessages'     => [ 'Alert Messages',       false,  :left,  false ],
       'alertsummaries'    => [ 'Alert Summaries',      false,  :left,  false ],
@@ -83,7 +84,10 @@ class TaskJuggler
 
       # Reference to the intermediate representation.
       @table = nil
-      @start = @end = nil
+      # The table is generated row after row. We need to hold some computed
+      # values that are specific to certain columns. For that we use a Hash of
+      # ReportTableColumn objects.
+      @columns = { }
 
       @legend = ReportTableLegend.new
 
@@ -194,89 +198,119 @@ class TaskJuggler
 
   protected
 
-    # These can't be determined during initialization as they have have been
-    # changed afterwards.
-    def setReportPeriod
-      @start = a('start')
-      @end = a('end')
-    end
-
     # In case the user has not specified the report period, we try to fit all
-    # the _tasks_ in and add an extra 5% time at both ends. _scenarios_ is a
-    # list of scenario indexes.
-    def adjustReportPeriod(tasks, scenarios, columns)
+    # the _tasks_ in and add an extra 5% time at both ends for some specific
+    # type of columns. _scenarios_ is a list of scenario indexes. _columnDef_
+    # is a reference to the TableColumnDefinition object describing the
+    # current column.
+    def adjustColumnPeriod(columnDef, tasks = [], scenarios = [])
+      # If we have user specified dates for the report period or the column
+      # period, we don't adjust the period. This flag is used to mark if we
+      # have user-provided values.
+      doNotAdjust = false
+
+      # Determine the start date for the column.
+      if columnDef.start
+        # We have a user-specified, column specific start date.
+        rStart = columnDef.start
+        doNotAdjust = true
+      else
+        # Use the report start date.
+        rStart = a('start')
+        doNotAdjust = true if rStart != @project['start']
+      end
+
+      if columnDef.end
+        rEnd = columnDef.end
+        doNotAdjust = true
+      else
+        rEnd = a('end')
+        doNotAdjust = true if rEnd != @project['end']
+      end
+
+      # Save the unadjusted dates to the columns Hash.
+      @columns[columnDef] = TableReportColumn.new(rStart, rEnd)
+
       # If the task list is empty or the user has provided a custom start or
       # end date, we don't touch the report period.
-      return if tasks.empty? || scenarios.empty? ||
-        a('start') != @project['start'] || a('end') != @project['end']
+      return if tasks.empty? || scenarios.empty? || doNotAdjust
 
-      @start = @end = nil
+      # Find the start date of the earliest tasks included in the report and
+      # the end date of the last included tasks.
+      rStart = rEnd = nil
       scenarios.each do |scenarioIdx|
         tasks.each do |task|
           date = task['start', scenarioIdx] || @project['start']
-          @start = date if @start.nil? || date < @start
+          rStart = date if rStart.nil? || date < rStart
           date = task['end', scenarioIdx] || @project['end']
-          @end = date if @end.nil? || date > @end
+          rEnd = date if rEnd.nil? || date > rEnd
         end
       end
 
       # We want to add at least 5% on both ends.
       margin = 0
-      minWidth = @end - @start + 1
-      columns.each do |column|
-        case column.id
-        when 'chart'
-          # In case we have a 'chart' column, we enforce certain minimum width
-          # The following table contains an entry for each scale. The entry
-          # consists of the triple 'seconds per unit', 'minimum width units'
-          # and 'margin units'. The minimum with does not include the margins
-          # since they are always added.
-          mwMap = {
-            'hour' =>    [ 60 * 60,            18, 2 ],
-            'day' =>     [ 60 * 60 * 24,       18, 2 ],
-            'week' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
-            'month' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
-            'quarter' => [ 60 * 60 * 24 * 90,   6, 1 ],
-            'year' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
-          }
-          entry = mwMap[column.scale]
-          raise "Unknown scale #{column.scale}" unless entry
-          margin = entry[0] * entry[2]
-          # If the with determined by start and end dates of the task is below
-          # the minimum width, we increase the width to the value provided by
-          # the table.
-          minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
-          break
-        when 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
-          # For the calendar columns we use a similar approach as we use for
-          # the 'chart' column.
-          mwMap = {
-            'hourly' =>    [ 60 * 60,            18, 2 ],
-            'daily' =>     [ 60 * 60 * 24,       18, 2 ],
-            'weekly' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
-            'monthly' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
-            'quarterly' => [ 60 * 60 * 24 * 90,   6, 1 ],
-            'yearly' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
-          }
-          entry = mwMap[column.id]
-          raise "Unknown scale #{column.id}" unless entry
-          margin = entry[0] * entry[2]
-          minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
-          break
-        end
+      minWidth = rEnd - rStart + 1
+      case columnDef.id
+      when 'chart'
+        # In case we have a 'chart' column, we enforce certain minimum width
+        # The following table contains an entry for each scale. The entry
+        # consists of the triple 'seconds per unit', 'minimum width units'
+        # and 'margin units'. The minimum with does not include the margins
+        # since they are always added.
+        mwMap = {
+          'hour' =>    [ 60 * 60,            18, 2 ],
+          'day' =>     [ 60 * 60 * 24,       18, 2 ],
+          'week' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
+          'month' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
+          'quarter' => [ 60 * 60 * 24 * 90,   6, 1 ],
+          'year' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
+        }
+        entry = mwMap[columnDef.scale]
+        raise "Unknown scale #{columnDef.scale}" unless entry
+        margin = entry[0] * entry[2]
+        # If the with determined by start and end dates of the task is below
+        # the minimum width, we increase the width to the value provided by
+        # the table.
+        minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
+      when 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+        # For the calendar columns we use a similar approach as we use for
+        # the 'chart' column.
+        mwMap = {
+          'hourly' =>    [ 60 * 60,            18, 2 ],
+          'daily' =>     [ 60 * 60 * 24,       18, 2 ],
+          'weekly' =>    [ 60 * 60 * 24 * 7,    6, 1 ],
+          'monthly' =>   [ 60 * 60 * 24 * 31,  10, 1 ],
+          'quarterly' => [ 60 * 60 * 24 * 90,   6, 1 ],
+          'yearly' =>    [ 60 * 60 * 24 * 365,  4, 1 ]
+        }
+        entry = mwMap[columnDef.id]
+        raise "Unknown scale #{columnDef.id}" unless entry
+        margin = entry[0] * entry[2]
+        minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
+      else
+        doNotAdjust = true
       end
 
-      if minWidth > (@end - @start + 1)
-        margin += (minWidth - (@end - @start + 1)) / 2
+      unless doNotAdjust
+        if minWidth > (rEnd - rStart + 1)
+          margin += (minWidth - (rEnd - rStart + 1)) / 2
+        end
+
+        rStart -= margin
+        rEnd += margin
+
+        # Save the adjusted dates to the columns Hash.
+        @columns[columnDef] = TableReportColumn.new(rStart, rEnd)
       end
-      @start -= margin
-      @end += margin
     end
 
     # Generates cells for the table header. _columnDef_ is the
     # TableColumnDefinition object that describes the column. Based on the id of
     # the column different actions need to be taken to generate the header text.
     def generateHeaderCell(columnDef)
+      rStart = @columns[columnDef].start
+      rEnd = @columns[columnDef].end
+
       case columnDef.id
       when 'chart'
         # For the 'chart' column we generate a GanttChart object. The sizes are
@@ -284,7 +318,7 @@ class TaskJuggler
         # table.
         gantt = GanttChart.new(a('now'),
                                a('weekStartsMonday'), self)
-        gantt.generateByScale(@start, @end, columnDef.scale)
+        gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
         gantt.header.height = @table.headerLineHeight * 2 + 1
         # The maximum width of the chart. In case it needs more space, a
@@ -297,23 +331,23 @@ class TaskJuggler
         column.scrollbar = gantt.hasScrollbar?
         @table.equiLines = true
       when 'hourly'
-        genCalChartHeader(columnDef, @start.midnight, :sameTimeNextHour,
+        genCalChartHeader(columnDef, rStart.midnight, rEnd, :sameTimeNextHour,
                           :weekdayAndDate, :hour)
       when 'daily'
-        genCalChartHeader(columnDef, @start.midnight, :sameTimeNextDay,
+        genCalChartHeader(columnDef, rStart.midnight, rEnd, :sameTimeNextDay,
                           :monthAndYear, :day)
       when 'weekly'
         genCalChartHeader(columnDef,
-                          @start.beginOfWeek(a('weekStartsMonday')),
+                          rStart.beginOfWeek(a('weekStartsMonday')), rEnd,
                           :sameTimeNextWeek, :monthAndYear, :day)
       when 'monthly'
-        genCalChartHeader(columnDef, @start.beginOfMonth, :sameTimeNextMonth,
-                          :year, :shortMonthName)
+        genCalChartHeader(columnDef, rStart.beginOfMonth, rEnd,
+                          :sameTimeNextMonth, :year, :shortMonthName)
       when 'quarterly'
-        genCalChartHeader(columnDef, @start.beginOfQuarter,
+        genCalChartHeader(columnDef, rStart.beginOfQuarter, rEnd,
                           :sameTimeNextQuarter, :year, :quarterName)
       when 'yearly'
-        genCalChartHeader(columnDef, @start.beginOfYear, :sameTimeNextYear,
+        genCalChartHeader(columnDef, rStart.beginOfYear, rEnd, :sameTimeNextYear,
                           nil, :year)
       else
         # This is the most common case. It does not need any special treatment.
@@ -336,7 +370,7 @@ class TaskJuggler
                      'numberFormat' => a('numberFormat'),
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
-                     'start' => @start, 'end' => @end,
+                     'start' => a('start'), 'end' => a('end'),
                      'hideJournalEntry' => a('hideJournalEntry'),
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
@@ -393,7 +427,7 @@ class TaskJuggler
                      'numberFormat' => a('numberFormat'),
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
-                     'start' => @start, 'end' => @end,
+                     'start' => a('start'), 'end' => a('end'),
                      'hideJournalEntry' => a('hideJournalEntry'),
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
@@ -461,7 +495,7 @@ class TaskJuggler
                      'numberFormat' => a('numberFormat'),
                      'timeFormat' => a('timeFormat'),
                      'currencyFormat' => a('currencyFormat'),
-                     'start' => @start, 'end' => @end,
+                     'start' => a('start'), 'end' => a('end'),
                      'hideJournalEntry' => a('hideJournalEntry'),
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
@@ -527,7 +561,8 @@ class TaskJuggler
     # that is called to advance _t_ to the next table column interval.
     # _name1Func_ and _name2Func_ are functions that return the upper and lower
     # title of the particular column.
-    def genCalChartHeader(columnDef, t, sameTimeNextFunc, name1Func, name2Func)
+    def genCalChartHeader(columnDef, t, rEnd, sameTimeNextFunc,
+                          name1Func, name2Func)
       tableColumn = ReportTableColumn.new(@table, columnDef, '')
 
       # Calendar chars only work when all lines have same height.
@@ -547,14 +582,14 @@ class TaskJuggler
       # iteration is done with 2 nested loops. The outer loops generates the
       # intervals for the upper (larger) scale. The inner loop generates the
       # lower (smaller) scale.
-      while t < @end
+      while t < rEnd
         cellsInInterval = 0
         # Label for upper scale. The yearly calendar only has a lower scale.
         currentInterval = t.send(name1Func) if name1Func
         firstColumn = nil
         # The innter loops terminates when the label for the upper scale has
         # changed to the next scale cell.
-        while t < @end && (name1Func.nil? ||
+        while t < rEnd && (name1Func.nil? ||
                            t.send(name1Func) == currentInterval)
           # call TjTime::sameTimeNext... function to get the end of the column.
           nextT = t.send(sameTimeNextFunc)
@@ -605,13 +640,10 @@ class TaskJuggler
     # this method. The last kind of cell is actually not a cell. It just
     # generates the chart objects that belong to the property in this line.
     def generateTableCell(line, columnDef, query)
-      if columnDef.start || columnDef.end
-        # If the user has specified a new start or end time for this column,
-        # we have to duplicate the query before we modify it.
-        query = query.dup
-        query.start = columnDef.start if columnDef.start
-        query.end = columnDef.end if columnDef.end
-      end
+      # Adjust the Query to use the period for this column.
+      query = query.dup
+      query.start = @columns[columnDef].start
+      query.end = @columns[columnDef].end
 
       case columnDef.id
       when 'chart'
@@ -629,22 +661,22 @@ class TaskJuggler
       # The calendar cells can be all generated by the same function. But we
       # need to use different parameters.
       when 'hourly'
-        start = @start.midnight
+        start = query.start.midnight
         sameTimeNextFunc = :sameTimeNextHour
       when 'daily'
-        start = @start.midnight
+        start = query.start.midnight
         sameTimeNextFunc = :sameTimeNextDay
       when 'weekly'
-        start = @start.beginOfWeek(a('weekStartsMonday'))
+        start = query.start.beginOfWeek(a('weekStartsMonday'))
         sameTimeNextFunc = :sameTimeNextWeek
       when 'monthly'
-        start = @start.beginOfMonth
+        start = query.start.beginOfMonth
         sameTimeNextFunc = :sameTimeNextMonth
       when 'quarterly'
-        start = @start.beginOfQuarter
+        start = query.start.beginOfQuarter
         sameTimeNextFunc = :sameTimeNextQuarter
       when 'yearly'
-        start = @start.beginOfYear
+        start = query.start.beginOfYear
         sameTimeNextFunc = :sameTimeNextYear
       else
         if calculated?(columnDef.id)
@@ -668,8 +700,7 @@ class TaskJuggler
         genCalChartResourceCell(query, tcLine, columnDef, start,
                                 sameTimeNextFunc)
       elsif query.property.is_a?(Account)
-        genCalChartAccountCell(query, tcLine, columnDef, start,
-                               sameTimeNextFunc)
+        genCalChartAccountCell(query, tcLine, columnDef, start, sameTimeNextFunc)
       else
         raise "Unknown property type #{query.property.class}"
       end
@@ -803,7 +834,7 @@ class TaskJuggler
     # will move the date to the next cell.
     def genCalChartAccountCell(origQuery, line, columnDef, t, sameTimeNextFunc)
       firstCell = nil
-      while t < @end
+      while t < origQuery.end
         # We modify the start and end dates to match the cell boundaries. So
         # we need to make sure we don't modify the original Query but our own
         # copies.
@@ -859,7 +890,7 @@ class TaskJuggler
                                 taskEnd.nil? ?  @project['end'] : taskEnd)
 
       firstCell = nil
-      while t < @end
+      while t < origQuery.end
         # We modify the start and end dates to match the cell boundaries. So
         # we need to make sure we don't modify the original Query but our own
         # copies.
@@ -940,7 +971,7 @@ class TaskJuggler
       end
 
       firstCell = nil
-      while t < @end
+      while t < origQuery.end
         # We modify the start and end dates to match the cell boundaries. So
         # we need to make sure we don't modify the original Query but our own
         # copies.

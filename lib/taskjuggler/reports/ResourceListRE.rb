@@ -33,8 +33,6 @@ class TaskJuggler
     def generateIntermediateFormat
       super
 
-      setReportPeriod
-
       # Prepare the resource list.
       resourceList = PropertyList.new(@project.resources)
       resourceList.setSorting(@report.get('sortResources'))
@@ -61,11 +59,11 @@ class TaskJuggler
         assignedTaskList.uniq!
       end
 
-      adjustReportPeriod(assignedTaskList, @report.get('scenarios'),
-                         @report.get('columns'))
 
       # Generate the table header.
       @report.get('columns').each do |columnDescr|
+        adjustColumnPeriod(columnDescr, assignedTaskList,
+                           @report.get('scenarios'))
         generateHeaderCell(columnDescr)
       end
 
