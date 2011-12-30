@@ -272,7 +272,7 @@ class TaskJuggler
       if query.costAccount
         query.sortable = query.numerical = cost =
           turnover(query.startIdx, query.endIdx, query.costAccount,
-                   query.scopeProperty)
+                   query.scopeProperty, true)
         query.string = query.currencyFormat.format(cost)
       else
         query.string = 'No \'balance\' defined!'
