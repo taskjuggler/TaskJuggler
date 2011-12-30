@@ -2120,7 +2120,7 @@ EOT
   end
 
   def rule_leave
-    pattern(%w( !leaveType !vacationName !intervalOrDate ), lambda {
+    pattern(%w( !leaveType !vacationName !valIntervalOrDate ), lambda {
       Leave.new(@val[0].intern, @val[2], @val[1])
     })
   end
