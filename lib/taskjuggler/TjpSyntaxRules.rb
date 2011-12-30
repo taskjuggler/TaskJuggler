@@ -3531,6 +3531,9 @@ or flat.
 EOT
          )
 
+    singlePattern('_balance')
+    descr('The account balance at the beginning of the reported period.')
+
     singlePattern('_bsi')
     descr('The hierarchical or work breakdown structure index (i. e. 1.2.3)')
 

@@ -35,6 +35,7 @@ class TaskJuggler
       'alertmessages'     => [ 'Alert Messages',       false,  :left,  false ],
       'alertsummaries'    => [ 'Alert Summaries',      false,  :left,  false ],
       'alerttrend'        => [ 'Alert Trend',          false,  :left,  false ],
+      'balance'           => [ 'Balance',              true,   :right, true ],
       'bsi'               => [ 'BSI',                  false,  :left,  false ],
       'complete'          => [ 'Completion',           false,  :right, true ],
       'cost'              => [ 'Cost',                 true,   :right, true ],
