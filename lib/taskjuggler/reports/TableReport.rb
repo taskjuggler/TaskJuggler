@@ -365,20 +365,9 @@ class TaskJuggler
     # _scopeLine_ is defined, the generated account lines will be within the
     # scope this resource line.
     def generateAccountList(accountList, lineOffset, mode)
-      queryAttrs = { 'project' => @project,
-                     'scopeProperty' => nil,
-                     'loadUnit' => a('loadUnit'),
-                     'numberFormat' => a('numberFormat'),
-                     'timeFormat' => a('timeFormat'),
-                     'currencyFormat' => a('currencyFormat'),
-                     'start' => a('start'), 'end' => a('end'),
-                     'hideJournalEntry' => a('hideJournalEntry'),
-                     'journalMode' => a('journalMode'),
-                     'journalAttributes' => a('journalAttributes'),
-                     'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
-      accountList.query = Query.new(queryAttrs)
+      # Get the current Query from the report context and create a copy. We
+      # are going to modify it.
+      accountList.query = query = @project.reportContexts.last.query.dup
       accountList.sort!
 
       # The primary line counter. Is not used for enclosed lines.
@@ -388,9 +377,6 @@ class TaskJuggler
       # Init the variable to get a larger scope
       line = nil
       accountList.each do |account|
-        # Get the current Query from the report context and create a copy. We
-        # are going to modify it.
-        query = @project.reportContexts.last.query.dup
         query.property = account
 
         no += 1
@@ -422,20 +408,10 @@ class TaskJuggler
     # is defined, the generated task lines will be within the scope this
     # resource line.
     def generateTaskList(taskList, resourceList, scopeLine)
-      queryAttrs = { 'project' => @project,
-                     'scopeProperty' => scopeLine ? scopeLine.property : nil,
-                     'loadUnit' => a('loadUnit'),
-                     'numberFormat' => a('numberFormat'),
-                     'timeFormat' => a('timeFormat'),
-                     'currencyFormat' => a('currencyFormat'),
-                     'start' => a('start'), 'end' => a('end'),
-                     'hideJournalEntry' => a('hideJournalEntry'),
-                     'journalMode' => a('journalMode'),
-                     'journalAttributes' => a('journalAttributes'),
-                     'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
-      taskList.query = Query.new(queryAttrs)
+      # Get the current Query from the report context and create a copy. We
+      # are going to modify it.
+      taskList.query = query = @project.reportContexts.last.query.dup
+      query.scopeProperty = scopeLine ? scopeLine.property : nil
       taskList.sort!
 
       # The primary line counter. Is not used for enclosed lines.
@@ -447,7 +423,6 @@ class TaskJuggler
       taskList.each do |task|
         # Get the current Query from the report context and create a copy. We
         # are going to modify it.
-        query = @project.reportContexts.last.query.dup
         query.property = task
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 
@@ -490,20 +465,10 @@ class TaskJuggler
     # each task that the resource is assigned to. If _scopeLine_ is defined, the
     # generated resource lines will be within the scope this task line.
     def generateResourceList(resourceList, taskList, scopeLine)
-      queryAttrs = { 'project' => @project,
-                     'scopeProperty' => scopeLine ? scopeLine.property : nil,
-                     'loadUnit' => a('loadUnit'),
-                     'numberFormat' => a('numberFormat'),
-                     'timeFormat' => a('timeFormat'),
-                     'currencyFormat' => a('currencyFormat'),
-                     'start' => a('start'), 'end' => a('end'),
-                     'hideJournalEntry' => a('hideJournalEntry'),
-                     'journalMode' => a('journalMode'),
-                     'journalAttributes' => a('journalAttributes'),
-                     'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
-      resourceList.query = Query.new(queryAttrs)
+      # Get the current Query from the report context and create a copy. We
+      # are going to modify it.
+      resourceList.query = query = @project.reportContexts.last.query.dup
+      query.scopeProperty = scopeLine ? scopeLine.property : nil
       resourceList.sort!
 
       # The primary line counter. Is not used for enclosed lines.
@@ -515,7 +480,6 @@ class TaskJuggler
       resourceList.each do |resource|
         # Get the current Query from the report context and create a copy. We
         # are going to modify it.
-        query = @project.reportContexts.last.query.dup
         query.property = resource
         query.scopeProperty = scopeLine ? scopeLine.property : nil
 
@@ -641,10 +605,14 @@ class TaskJuggler
     # this method. The last kind of cell is actually not a cell. It just
     # generates the chart objects that belong to the property in this line.
     def generateTableCell(line, columnDef, query)
-      # Adjust the Query to use the period for this column.
+      # Adjust the Query to use column specific settings. We create a copy of
+      # the Query to avoid spoiling the original query with column specific
+      # settings.
       query = query.dup
       query.start = @columns[columnDef].start
       query.end = @columns[columnDef].end
+      query.listType = columnDef.listType
+      query.listItem = columnDef.listItem
 
       case columnDef.id
       when 'chart'
@@ -712,10 +680,6 @@ class TaskJuggler
     # property that line is for. It returns true if the cell exists, false for a
     # hidden cell.
     def genStandardCell(query, line, columnDef)
-      query = query.dup
-      query.listType = columnDef.listType
-      query.listItem = columnDef.listItem
-
       # Find out, what type of PropertyTreeNode we are dealing with.
       property = line.property
       if property.is_a?(Task)
@@ -759,10 +723,6 @@ class TaskJuggler
     # is the ReportTableLine of the cell. _columnDef_ is the
     # TableColumnDefinition of the column.
     def genCalculatedCell(query, line, columnDef)
-      query = query.dup
-      query.listType = columnDef.listType
-      query.listItem = columnDef.listItem
-
       # Create a new cell
       cell = newCell(query, line)
 
@@ -833,13 +793,15 @@ class TaskJuggler
     # that is reported in this line. _line_ is the @table line. _t_ is the
     # start date for the calendar. _sameTimeNextFunc_ is the function that
     # will move the date to the next cell.
-    def genCalChartAccountCell(origQuery, line, columnDef, t, sameTimeNextFunc)
+    def genCalChartAccountCell(query, line, columnDef, t, sameTimeNextFunc)
+      # We modify the start and end dates to match the cell boundaries. So
+      # we need to make sure we don't modify the original Query but our own
+      # copies.
+      query = query.dup
+
       firstCell = nil
-      while t < origQuery.end
-        # We modify the start and end dates to match the cell boundaries. So
-        # we need to make sure we don't modify the original Query but our own
-        # copies.
-        query = origQuery.dup
+      endDate = query.end
+      while t < endDate
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
         query.attributeId = 'balance'
@@ -874,7 +836,7 @@ class TaskJuggler
     # in this line. _line_ is the @table line. _t_ is the start date for the
     # calendar. _sameTimeNextFunc_ is the function that will move the date to
     # the next cell.
-    def genCalChartTaskCell(origQuery, line, columnDef, t, sameTimeNextFunc)
+    def genCalChartTaskCell(query, line, columnDef, t, sameTimeNextFunc)
       task = line.property
       # Find out if we have an enclosing resource scope.
       if line.scopeLine && line.scopeLine.property.is_a?(Resource)
@@ -885,17 +847,19 @@ class TaskJuggler
 
       # Get the interval of the task. In case a date is invalid due to a
       # scheduling problem, we use the full project interval.
-      taskStart = task['start', origQuery.scenarioIdx]
-      taskEnd = task['end', origQuery.scenarioIdx]
+      taskStart = task['start', query.scenarioIdx]
+      taskEnd = task['end', query.scenarioIdx]
       taskIv = TimeInterval.new(taskStart.nil? ?  @project['start'] : taskStart,
                                 taskEnd.nil? ?  @project['end'] : taskEnd)
 
+      # We modify the start and end dates to match the cell boundaries. So
+      # we need to make sure we don't modify the original Query but our own
+      # copies.
+      query = query.dup
+
       firstCell = nil
-      while t < origQuery.end
-        # We modify the start and end dates to match the cell boundaries. So
-        # we need to make sure we don't modify the original Query but our own
-        # copies.
-        query = origQuery.dup
+      endDate = query.end
+      while t < endDate
         # call TjTime::sameTimeNext... function
         nextT = t.send(sameTimeNextFunc)
         cellIv = TimeInterval.new(t, nextT)
@@ -913,7 +877,7 @@ class TaskJuggler
           # Create a new cell
           cell = newCell(query, line)
 
-          # To increase readability, we don't show 0.0 values.
+          # To increase readability show empty cells instead of 0.0 values.
           cell.text = query.to_s if query.to_num != 0.0
         else
           raise "Unknown column content #{column.content}"
@@ -955,15 +919,15 @@ class TaskJuggler
     # reported in this line. _line_ is the @table line. _t_ is the start date
     # for the calendar. _sameTimeNextFunc_ is the function that will move the
     # date to the next cell.
-    def genCalChartResourceCell(origQuery, line, columnDef, t,
+    def genCalChartResourceCell(query, line, columnDef, t,
                                 sameTimeNextFunc)
       # Find out if we have an enclosing task scope.
       if line.scopeLine && line.scopeLine.property.is_a?(Task)
         task = line.scopeLine.property
         # Get the interval of the task. In case a date is invalid due to a
         # scheduling problem, we use the full project interval.
-        taskStart = task['start', origQuery.scenarioIdx]
-        taskEnd = task['end', origQuery.scenarioIdx]
+        taskStart = task['start', query.scenarioIdx]
+        taskEnd = task['end', query.scenarioIdx]
         taskIv = TimeInterval.new(taskStart.nil? ? @project['start'] :
                                                    taskStart,
                                   taskEnd.nil? ?  @project['end'] : taskEnd)
@@ -971,13 +935,14 @@ class TaskJuggler
         task = nil
       end
 
-      firstCell = nil
-      while t < origQuery.end
-        # We modify the start and end dates to match the cell boundaries. So
-        # we need to make sure we don't modify the original Query but our own
-        # copies.
-        query = origQuery.dup
+      # We modify the start and end dates to match the cell boundaries. So
+      # we need to make sure we don't modify the original Query but our own
+      # copies.
+      query = query.dup
 
+      firstCell = nil
+      endDate = query.end
+      while t < endDate
         # Create a new cell
         cell = newCell(query, line)
 
