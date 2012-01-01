@@ -215,7 +215,7 @@ let b:current_syntax = "tjp"
 
 " Support running tj3 from within vim. Just type ':make your_project.tjp' to
 " activate it.
-set makeprg=tj3
+set makeprg=tj3\ --silent
 
 " Support browsing the man page by typing Shift-k while having the cursor over
 " any syntax keyword
