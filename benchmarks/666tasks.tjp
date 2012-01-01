@@ -103,9 +103,6 @@ task g1 "Group 1" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -131,8 +128,8 @@ task g1 "Group 1" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
+      duration 15d
+      allocate a { alternative b, c, d, e, f, g }
       priority 200
     }
     task t4 "Task 4" {
@@ -155,9 +152,6 @@ task g1 "Group 1" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -237,8 +231,6 @@ task g1 "Group 1" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -258,7 +250,7 @@ task g1 "Group 1" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
+      effort 5d
       depends !t1
       allocate e
       priority 900
@@ -342,8 +334,6 @@ task g1 "Group 1" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -416,9 +406,9 @@ task g1 "Group 1" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
+      duration 15d
       depends !t1
-      allocate e
+      allocate e, f, g, h
       priority 900
       shift parttime
     }
@@ -446,8 +436,8 @@ task g1 "Group 1" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
+      duration 20d
+      allocate a { alternative b, c, d, e, g, h }
       priority 200
     }
     task t4 "Task 4" {
@@ -468,9 +458,9 @@ task g1 "Group 1" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
+      effort 5d
       depends !t1
-      allocate e
+      allocate e, f, g, h
       priority 900
       shift parttime
     }
@@ -555,8 +545,6 @@ task g2 "Group 2" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -631,9 +619,6 @@ task g2 "Group 2" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -660,8 +645,6 @@ task g2 "Group 2" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -712,9 +695,9 @@ task g2 "Group 2" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
-      priority 200
+      duration 20d
+      allocate a { alternative b, c, d, f, g, h }
+      priority 400
     }
     task t4 "Task 4" {
       depends !t1
@@ -764,8 +747,8 @@ task g2 "Group 2" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
+      duration 15d
+      allocate a { alternative b, c, d, e, f, g }
       priority 200
     }
     task t4 "Task 4" {
@@ -788,9 +771,6 @@ task g2 "Group 2" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -870,8 +850,6 @@ task g2 "Group 2" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -944,9 +922,9 @@ task g2 "Group 2" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
+      duration 25d
       depends !t1
-      allocate e
+      allocate e, a, b, c, d, f
       priority 900
       shift parttime
     }
@@ -974,9 +952,9 @@ task g2 "Group 2" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
-      priority 200
+      duration 20d
+      allocate a { alternative b, c, d, f, h }
+      priority 500
     }
     task t4 "Task 4" {
       depends !t1
@@ -998,7 +976,7 @@ task g2 "Group 2" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
+      allocate e, a, b, c, d
       priority 900
       shift parttime
     }
@@ -1082,8 +1060,6 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1187,8 +1163,6 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1209,10 +1183,6 @@ task g3 "Group 3" {
     }
     task t7 "Task 7" {
       duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1239,8 +1209,8 @@ task g3 "Group 3" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
+      duration 10d
+      allocate a { alternative b, c, d, e, g }
       priority 200
     }
     task t4 "Task 4" {
@@ -1262,10 +1232,6 @@ task g3 "Group 3" {
     }
     task t7 "Task 7" {
       duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1292,8 +1258,6 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1345,13 +1309,11 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
       length 5d
-      allocate c
+      allocate c, d, f, g, h
       priority 800
       limits { dailymax 2h }
     }
@@ -1366,9 +1328,9 @@ task g3 "Group 3" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
+      duration 15d
       depends !t1
-      allocate e
+      allocate e, f, g, h
       priority 900
       shift parttime
     }
@@ -1397,8 +1359,6 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1419,10 +1379,6 @@ task g3 "Group 3" {
     }
     task t7 "Task 7" {
       duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1502,8 +1458,6 @@ task g3 "Group 3" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1523,11 +1477,6 @@ task g3 "Group 3" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1609,8 +1558,8 @@ task g4 "Group 4" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
+      duration 10d
+      allocate a { alternative b, c, d, e, f }
       priority 200
     }
     task t4 "Task 4" {
@@ -1714,9 +1663,7 @@ task g4 "Group 4" {
       depends !t1
     }
     task t3 "Task 3" {
-      duration 4d
-      allocate a { alternative b }
-      priority 200
+      duration 9d
     }
     task t4 "Task 4" {
       depends !t1
@@ -1737,10 +1684,6 @@ task g4 "Group 4" {
     }
     task t7 "Task 7" {
       duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1768,8 +1711,6 @@ task g4 "Group 4" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1820,8 +1761,6 @@ task g4 "Group 4" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -1925,8 +1864,6 @@ task g4 "Group 4" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2031,7 +1968,7 @@ task g4 "Group 4" {
     task t3 "Task 3" {
       duration 4d
       allocate a { alternative b }
-      priority 200
+      priority 800
     }
     task t4 "Task 4" {
       depends !t1
@@ -2053,9 +1990,6 @@ task g4 "Group 4" {
     task t7 "Task 7" {
       duration 5d
       depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2243,8 +2177,6 @@ task g5 "Group 5" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2348,8 +2280,6 @@ task g5 "Group 5" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2369,11 +2299,6 @@ task g5 "Group 5" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2453,8 +2378,6 @@ task g5 "Group 5" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2558,7 +2481,7 @@ task g5 "Group 5" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
+      allocate a { alternative b, g, f, h }
       priority 200
     }
     task t4 "Task 4" {
@@ -2579,11 +2502,6 @@ task g5 "Group 5" {
       allocate f { alternative g }
     }
     task t7 "Task 7" {
-      duration 5d
-      depends !t1
-      allocate e
-      priority 900
-      shift parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2771,8 +2689,6 @@ task g6 "Group 6" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2876,8 +2792,6 @@ task g6 "Group 6" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -2981,8 +2895,6 @@ task g6 "Group 6" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
@@ -3086,8 +2998,6 @@ task g6 "Group 6" {
     }
     task t3 "Task 3" {
       duration 4d
-      allocate a { alternative b }
-      priority 200
     }
     task t4 "Task 4" {
       depends !t1
