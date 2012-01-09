@@ -85,40 +85,53 @@ that you use those components in accordance with their licenses.
 
 === Features and Highlights ===
 
+==== Basic Properties ====
+
 * Manages tasks, resources and accounts of your project
-* Automatic resource leveling and tasks conflict resolution
 * Powerful to-do list management
+* Detailed reference manual
+* Simple installation
+* Runs on all Linux, Unix, Windows, MacOS and several other operating systems
+* Full integration with Vim text editor
+
+==== Advanced Scheduling ====
+
+* Automatic resource leveling and tasks conflict resolution
+* Unlimited number of scenarios (baselines) of the same project for what-if analysis
+* Flexible working hours and leave management
+* Support for shift working
+* Multiple time zone support
+
+==== Accounting ====
+
+* Tasks may have initial costs, finishing costs
+* Resources may have usage based costs
+* Task and/or resource base cost models
+* Support for profit/loss analysis
+
+==== Reporting ====
+
+* HTML reports for Web publishing
+* CSV data export for exchange with popular office software
+* Powerful and flexible filtering functions to provide the right amount of detail to the right audience
 * Comprehensive and flexible reports so you can find the information you need when you need it
 * Project tracking and status reporting with dashboard support
 * Time and status sheet reporting infrastructure
-* Unlimited number of scenarios (baselines) of the same project for what-if analysis
+
+==== Scaling and Enterprise Features ====
+
 * Projects can be combined to larger projects
-* Project breakdown and management team support
-* Multiple project managers can work on the same project
-* Flexible working hours and vacation handling
-* Support for shift working
-* Multiple time zone support
-* Tasks may have initial costs, finishing costs
-* Resources may have running costs
-* Unlimited number of scenarios (baselines) of same project for what-if
-analysis
-* Support for profit/loss analysis
-* HTML reports for Web publishing
-* CSV data export for exchange with popular office software
-* iCalendar export for data exchange with calendar applications
-* Project description syntax with macro support
-* Built-in web server for dynamic and interactive reports
-* Powerful and flexible filtering functions to provide the right
-amount of detail to the right audience
-* Server based time sheet system for status and actual collection
-* Powerful project description syntax with macro support
 * Support for central resource allocation database
+* Manages roles and complex reporting lines
+* Powerful project description language with macro support
 * Scales well on multi-core or multi-CPU systems
-* Full integration with Vim text editor
-* Runs on all Linux, Unix, Windows, MacOS and several other operating systems
-* Simple installation
-* Detailed reference manual
-* Support for project management teams and revision control
+* Support for project management teams and revision control systems
+
+==== Web Publishing and Groupware Functions ====
+
+* Built-in web server for dynamic and interactive reports
+* Server based time sheet system for status and actual work reporting
+* iCalendar export for data exchange with calendar and productivity applications
 
 === TaskJuggler on the Web ===
 
