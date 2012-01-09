@@ -2120,7 +2120,7 @@ EOT
   end
 
   def rule_leave
-    pattern(%w( !leaveType !vacationName !valIntervalOrDate ), lambda {
+    pattern(%w( !leaveType !vacationName !intervalOrDate ), lambda {
       Leave.new(@val[0].intern, @val[2], @val[1])
     })
   end
@@ -2138,7 +2138,7 @@ EOT
   end
 
   def rule_leaveAllowance
-    pattern(%w( _annual $DATE !optionalMinus !workingDuration ), lambda {
+    pattern(%w( _annual !valDate !optionalMinus !workingDuration ), lambda {
       LeaveAllowance.new(:annual, @val[1], (@val[2] ? -1 : 1) * @val[3])
     })
   end
@@ -2156,6 +2156,10 @@ Add or subtract leave allowances. Currently, only allowances for the annual
 leaves are supported. Allowances can be negative to deal with expired
 allowances. The ''''leaveallowancebalance'''' report [[columns|column]] can be
 used to report the current annual leave balance.
+
+Leaves outside of the project period are silently ignored and will not be
+considered in the leave balance calculation. Therefor, leave allowances are
+only allowed within the project period.
 EOT
       )
     level(:beta)
@@ -2177,6 +2181,10 @@ and intervals may overlap. The leave types have different priorities. A higher
 priority leave type can overwrite a lower priority type. This means that
 resource level leaves can overwrite global leaves when they have a higher
 priority. A sub resource can overwrite a leave of a enclosing resource.
+
+Leave periods outside of the project interval are silently ignored. For leave
+periods that are partially outside of the project period only the part inside
+the project period will be considered.
 EOT
        )
     level(:beta)
