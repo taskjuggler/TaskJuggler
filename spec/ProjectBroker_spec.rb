@@ -13,11 +13,7 @@
 
 require 'taskjuggler/daemon/ProjectBroker'
 
-RSpec.configure do |c|
-  c.filter_run_excluding :ruby => lambda {|version|
-    !(RUBY_VERSION.to_s =~ /^#{version.to_s}/)
-  }
-end
+require 'support/spec_helper'
 
 class TaskJuggler
 

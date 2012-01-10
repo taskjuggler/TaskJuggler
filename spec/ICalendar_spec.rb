@@ -15,6 +15,8 @@ require 'rubygems'
 
 require 'taskjuggler/ICalendar'
 
+require 'support/spec_helper.rb'
+
 class TaskJuggler
 
   describe ICalendar do
