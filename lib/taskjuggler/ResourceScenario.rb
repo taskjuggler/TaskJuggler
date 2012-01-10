@@ -257,7 +257,8 @@ class TaskJuggler
     def query_annualleavebalance(query)
       if @property.leaf?
         leave = getLeave(query.startIdx, query.endIdx, :annual)
-        allowanceSlots = @leaveallowances.balance(:annual, @project['now'])
+        allowanceSlots = @leaveallowances.balance(:annual, query.start,
+                                                  query.end)
         allowance = @project.slotsToDays(allowanceSlots)
         query.sortable = query.numerical = val = allowance - leave
         query.string = query.scaleLoad(val)

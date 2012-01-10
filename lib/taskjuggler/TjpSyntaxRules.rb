@@ -3506,8 +3506,8 @@ EOT
 
     singlePattern('_annualleavebalance')
     descr(<<'EOT'
-The current balance of the annual leave. The unit can be adjusted with
-[[loadunit]].
+The balance of the annual leave at the end of the reporting interval. The unit
+can be adjusted with [[loadunit]].
 EOT
          )
 

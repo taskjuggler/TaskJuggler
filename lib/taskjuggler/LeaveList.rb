@@ -84,14 +84,15 @@ class TaskJuggler
       super(*args)
     end
 
-    def balance(type, date)
+    def balance(type, startDate, endDate)
       unless Leave::Types[type]
         raise ArgumentError, "Unsupported leave type #{type}"
       end
 
       balance = 0.0
       each do |al|
-        balance += al.slots if al.type == type && al.date <= date
+        balance += al.slots if al.type == type && al.date >= startDate &&
+                               al.date < endDate
       end
       balance
     end

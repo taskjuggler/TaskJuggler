@@ -30,7 +30,7 @@ class TaskJuggler
     @@propertiesById = {
       # ID                   Header                   Indent  Align   Scen Spec.
       'annualleave'       => [ 'Annual Leave',         true,   :right, true ],
-      'annualleavebalance'=> [ 'Annual Leave Balance', true,   :right, true ],
+      'annualleavebalance'=> [ 'Annual Leave Balance', false,   :right, true ],
       'alert'             => [ 'Alert',                true,   :left,  false ],
       'alertmessages'     => [ 'Alert Messages',       false,  :left,  false ],
       'alertsummaries'    => [ 'Alert Summaries',      false,  :left,  false ],
