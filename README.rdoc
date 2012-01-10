@@ -61,12 +61,10 @@ browser is all you need for your work.
 
 == Reporting
 
-* HTML reports for Web publishing
-* CSV data export for exchange with popular office software
-* Powerful and flexible filtering functions to provide the right amount of detail to the right audience
 * Comprehensive and flexible reports so you can find the information you need when you need it
-* Project tracking and status reporting with dashboard support
+* Powerful filtering functions to provide the right amount of detail to the right audience
 * Time and status sheet reporting infrastructure
+* Project tracking and status reporting with dashboard support
 
 == Scaling and Enterprise Features
 
@@ -79,9 +77,11 @@ browser is all you need for your work.
 
 == Web Publishing and Groupware Functions
 
+* HTML reports for web publishing
+* CSV data export for exchange with popular office software
+* iCalendar export for data exchange with calendar and productivity applications
 * Built-in web server for dynamic and interactive reports
 * Server based time sheet system for status and actual work reporting
-* iCalendar export for data exchange with calendar and productivity applications
 
 = Installation
 
