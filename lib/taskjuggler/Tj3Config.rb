@@ -14,11 +14,11 @@
 require 'taskjuggler/UTF8String'
 require 'taskjuggler/AppConfig'
 
-AppConfig.version = '3.0.0'
+AppConfig.version = '3.1.0'
 AppConfig.packageName = 'taskjuggler'
 AppConfig.softwareName = 'TaskJuggler'
 AppConfig.packageInfo = 'A Project Management Software'
-AppConfig.copyright = [ (2006..2011).to_a ]
+AppConfig.copyright = [ (2006..2012).to_a ]
 AppConfig.authors = [ 'Chris Schlaeger <chris@linux.com>' ]
 AppConfig.contact = 'http://www.taskjuggler.org'
 AppConfig.license = <<'EOT'
