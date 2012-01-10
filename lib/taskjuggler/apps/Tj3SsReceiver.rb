@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby -w
 # encoding: UTF-8
 #
-# = Tj3SsReiver.rb -- The TaskJuggler III Project Management Software
+# = Tj3SsReceiver.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
 #               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify

@@ -1,4 +1,7 @@
-files="*.rb reports/*.rb daemon/*.rb TextParser/*.rb ../test/*.rb ../spec/*.rb"
+files="*.rb taskjuggler/*.rb taskjuggler/apps/*.rb
+taskjuggler/daemon/*.rb taskjuggler/reports/*.rb
+taskjuggler/RichText/*.rb taskjuggler/TextParser/*.rb ../test/*.rb
+../spec/*.rb ../spec/support/*.rb" 
 
 for f in $files; do
   basename=`basename $f`
