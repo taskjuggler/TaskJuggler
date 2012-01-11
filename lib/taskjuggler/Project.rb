@@ -18,6 +18,7 @@ require 'taskjuggler/TjTime'
 require 'taskjuggler/AlertLevelDefinitions'
 require 'taskjuggler/AccountCredit'
 require 'taskjuggler/Booking'
+require 'taskjuggler/DataCache'
 require 'taskjuggler/LeaveList'
 require 'taskjuggler/PropertySet'
 require 'taskjuggler/Attributes'
@@ -723,6 +724,7 @@ class TaskJuggler
           Log.stopProgressMeter
         end
       end
+      DataCache.instance.flush
     end
 
     def generateReport(reportId, regExpMode, formats = nil,
