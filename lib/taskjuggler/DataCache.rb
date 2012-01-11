@@ -20,11 +20,14 @@ class TaskJuggler
   # counter. The counter can be read and written externally.
   class DataCacheEntry
 
+    attr_reader :unhashedKey
     attr_accessor :hits
 
-    # Create a new DataCacheEntry for the _value_. The access counter is set
-    # to 1 to increase the chance that it is not flushed immedidate.
-    def initialize(value)
+    # Create a new DataCacheEntry for the _value_. We also store the unhashed
+    # key to be able to detect hash collisions. The access counter is set to 1
+    # to increase the chance that it is not flushed immedidate.
+    def initialize(unhashedKey, value)
+      @unhashedKey = unhashedKey
       @value = value
       @hits = 1
     end
@@ -60,6 +63,8 @@ class TaskJuggler
       @hits = 0
       # Counter for the number of not found values.
       @misses = 0
+      # Counter for hash collisions
+      @collisions = 0
     end
 
     # For now, we use this randomly determined size.
@@ -90,17 +95,24 @@ class TaskJuggler
 
     # _args_ is a set of arguments that unambigously identify the data entry.
     # It's converted into a hash to store or recover a previously stored
-    # entry. If we have a value for the key, return the value. Otherwise call the
-    # block to compute the value, store it and return it.
+    # entry. If we have a value for the key, return the value. Otherwise call
+    # the block to compute the value, store it and return it.
     def cached(*args)
       key = args.hash
       if @entries.has_key?(key)
         e = @entries[key]
-        @hits += 1
-        e.value
+        if e.unhashedKey != args
+          # Two different args produce the same hash key. This should be a
+          # very rare event!
+          @collisions += 1
+          yield
+        else
+          @hits += 1
+          e.value
+        end
       else
         @misses += 1
-        store(yield, key)
+        store(yield, args, key)
       end
     end
 
@@ -108,7 +120,7 @@ class TaskJuggler
 
     def to_s
       <<"EOT"
-Entries: #{@entries.size}   Stores: #{@stores}
+Entries: #{@entries.size}   Stores: #{@stores}   Collisions: #{@collisions}
 Hits: #{@hits}   Misses: #{@misses}
 Hit Rate: #{@hits * 100.0 / (@hits + @misses)}%
 EOT
@@ -119,7 +131,7 @@ EOT
     # Store _value_ into the cache using _key_ to tag it. _key_ must be unique
     # and must be used to load the value from the cache again. You cannot
     # store nil values!
-    def store(value, key)
+    def store(value, unhashedKey, key)
       @stores += 1
 
       if @entries.size > @highWaterMark
@@ -133,7 +145,7 @@ EOT
         end
       end
 
-      @entries[key] = DataCacheEntry.new(value)
+      @entries[key] = DataCacheEntry.new(unhashedKey, value)
 
       value
     end
