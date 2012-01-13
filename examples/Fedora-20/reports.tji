@@ -262,7 +262,7 @@ textreport "Weekly CSV Reports" {
   end ${weekly_end}
   sorttasks actual.start.up
   columns start, end, name
-  timeformat "%a %d-%b"
+  timeformat "%m/%d/%Y"
   scenarios actual
 
   # Reports for weekly emails to team lists
@@ -316,26 +316,24 @@ textreport "Weekly CSV Reports" {
 textreport "Miscellaneous CSV Reports" {
   formats csv
   scenarios actual
+  timeformat "%m/%d/%Y"
 
   # Text export of entire schedule for outside parsing and analysis
   # This is required for other teams--DO NOT REMOVE
   taskreport "${content}-${major}" {
     columns name, id, note, resources, start, end, duration
-    timeformat "%a %Y-%m-%d"
   }
   # reports for new schedule prototyping and planning
   # not used once the release gets rolling
   taskreport "${content}-${major}-plan" {
     sorttasks actual.start.up
     columns start, end, name
-    timeformat "%a %d-%b"
     hidetask ~releng & ~quality
   }
 
   taskreport "${content}-${major}-devel" {
     sorttasks actual.start.up
     columns start, end, name
-    timeformat "%a %d-%b"
     # TODO: tj3 does not yet support the separator attribute
     #separator "  "
     hidetask  ~devel
