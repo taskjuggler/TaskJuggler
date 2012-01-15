@@ -109,7 +109,8 @@ EOT
     })
     level(:beta)
     doc('accountreport', <<'EOT'
-The report lists accounts and their respective values in a table. The report can operate in two modes:
+The report lists accounts and their respective values in a table. The report
+can operate in two modes:
 
 # Balance mode: If a [[balance]] has been set, the report will include the
 defined cost and revenue accounts as well as all their sub accounts. To reduce
@@ -3494,6 +3495,7 @@ EOT
     pattern(%w( !resourceReport ))
     pattern(%w( !taskReport ))
     pattern(%w( !textReport ))
+    pattern(%w( !traceReport ))
   end
 
   def rule_reportableAttributes
@@ -6630,6 +6632,83 @@ letter acronyms. See
 possible values.
 EOT
        )
+  end
+
+  def rule_traceReport
+    pattern(%w( !traceReportHeader !reportBody ), lambda {
+      @property = @property.parent
+    })
+    doc('tracereport', <<'EOT'
+The trace report works noticeably different than all other TaskJuggler
+reports. The report is only generated when the ''''--add-trace'''' option is
+passed to ''''tj3''''. Another difference is that this report is
+accumulative. Every report run adds another data set to the report.
+
+The report is a table. The first line contains the column headers which must
+all be unique. The first column always contains the current date when that
+table row was added. All subsequent columns can be defined by the user with
+the [[columns]] attribute. This column set is then repeated for all properties
+that are not hidden by [[hideaccount]], [[hideresource]] and [[hidetask]]. By
+default, all properties are excluded. You must provide at least one of the
+''''hide...'''' attributes to select the properties you want to have included
+in the report. Please be aware that total number of columns is the product of
+attributes defined with [[columns]] times the number of included properties.
+Select you values carefully or you will end up with very large reports.
+
+The column headers can be customized by using the [[title.column|title]]
+attribute.  When you include multiple properties, these headers are not unique
+unless you include mini-queries to modify them based on the property they
+colum is represeting.  You can use the queries
+''''<nowiki><-id-></nowiki>'''', ''''<nowiki><-name-></nowiki>'''',
+''''<nowiki><-scenario-></nowiki>'''' and
+''''<nowiki><-attribute-></nowiki>''''. ''''<nowiki><-id-></nowiki>'''' is
+replaced with the ID of the property, ''''<nowiki><-name-></nowiki>'''' with
+the name and so on.
+EOT
+       )
+    example('TraceReport')
+  end
+
+  def rule_traceReportHeader
+    pattern(%w( _tracereport !optionalID !reportName ), lambda {
+      newReport(@val[1], @val[2], :tracereport, @sourceFileInfo[0])
+      @property.set('formats', [ :csv ])
+
+      # The top-level always inherits the global timeFormat setting. This is
+      # not desireable in this case, so we ignore this.
+      if (@property.level == 0 && !@property.provided('timeFormat')) ||
+         (@property.level > 0 && !@property.modified?('timeFormat'))
+        # CSV readers such of Libre-/OpenOffice can't deal with time zones. We
+        # probably also don't need seconds.
+        @property.set('timeFormat', '%Y-%m-%d-%H:%M')
+      end
+      unless @property.modified?('columns')
+        # Set the default columns for this report.
+        %w( end ).each do |col|
+          @property.get('columns') <<
+          TableColumnDefinition.new(col, columnTitle(col))
+        end
+      end
+      # Show all tasks, sorted by tree, start-up, seqno-up.
+      unless @property.modified?('hideTask')
+        @property.set('hideTask',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortTasks')
+        @property.set('sortTasks',
+                      [ [ 'tree', true, -1 ],
+                        [ 'start', true, 0 ],
+                        [ 'seqno', true, -1 ] ])
+      end
+      # Show no resources, but set sorting to id-up.
+      unless @property.modified?('hideResource')
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(1)))
+      end
+      unless @property.modified?('sortResources')
+        @property.set('sortResources', [ [ 'id', true, -1 ] ])
+      end
+    })
   end
 
   def rule_tsNewTaskHeader

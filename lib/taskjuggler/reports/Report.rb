@@ -18,6 +18,7 @@ require 'taskjuggler/reports/AccountListRE'
 require 'taskjuggler/reports/TextReport'
 require 'taskjuggler/reports/TaskListRE'
 require 'taskjuggler/reports/ResourceListRE'
+require 'taskjuggler/reports/TraceReport'
 require 'taskjuggler/reports/TagFile'
 require 'taskjuggler/reports/TjpExportRE'
 require 'taskjuggler/reports/StatusSheetReport'
@@ -129,6 +130,8 @@ class TaskJuggler
         @content = TextReport.new(self)
       when :taskreport
         @content = TaskListRE.new(self)
+      when :tracereport
+        @content = TraceReport.new(self)
       when :statusSheet
         @content = StatusSheetReport.new(self)
       when :timeSheet

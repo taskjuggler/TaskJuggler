@@ -35,6 +35,8 @@ class TaskJuggler
       @checkSyntax = false
       # Don't generate reports when previous errors have been found.
       @forceReports = false
+      # Don't generate trace reports by default
+      @generateTraces = false
       # Should a booking file be generated?
       @freeze = false
       # The cut-off date for the freeze
@@ -117,6 +119,10 @@ EOT
                        'reports.')) do
          @noReports = true
         end
+        @opts.on('--add-trace',
+                 format('Append a current data set to all trace reports.')) do
+          @generateTraces = true
+        end
         @opts.on('--abort-on-warnings',
                  format('Abort program on warnings like we do on errors.')) do
           @abortOnWarning = true
@@ -144,6 +150,7 @@ EOT
         tj = TaskJuggler.new(true)
         tj.maxCpuCores = @maxCpuCores
         tj.warnTsDeltas = @warnTsDeltas
+        tj.generateTraces = @generateTraces
         tj.messageHandler.abortOnWarning = @abortOnWarning
         keepParser = !@timeSheets.empty? || !@statusSheets.empty?
         return 1 unless tj.parse(files, keepParser)

@@ -686,11 +686,15 @@ class TaskJuggler
 
     # Call this function to generate the reports based on the scheduling result.
     # This function may only be called after Project#schedule has been called.
-    def generateReports(maxCpuCores)
+    def generateReports(maxCpuCores, generateTraces = false)
       @reports.index
       if maxCpuCores == 1
         @reports.each do |report|
-          next if report.get('formats').empty?
+          # Skip reports that don't have any format specified or trace reports
+          # when generateTraces is false.
+          next if report.get('formats').empty? ||
+                  (report.typeSpec == :tracereport && !generateTraces)
+
           Log.startProgressMeter("Report #{report.name}")
           @reportContexts.push(ReportContext.new(self, report))
           report.generate
@@ -702,7 +706,11 @@ class TaskJuggler
         # BatchProcessor queue.
         bp = BatchProcessor.new(maxCpuCores)
         @reports.each do |report|
-          next if report.get('formats').empty?
+          # Skip reports that don't have any format specified or trace reports
+          # when generateTraces is false.
+          next if report.get('formats').empty? ||
+                  (report.typeSpec == :trace && !generateTraces)
+
           bp.queue(report) {
             @reportContexts.push(ReportContext.new(self, report))
             res = report.generate

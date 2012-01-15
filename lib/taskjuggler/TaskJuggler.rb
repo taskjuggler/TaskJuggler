@@ -24,7 +24,7 @@ require 'taskjuggler/Log'
 class TaskJuggler
 
   attr_reader :project, :messageHandler
-  attr_accessor :maxCpuCores, :warnTsDeltas
+  attr_accessor :maxCpuCores, :warnTsDeltas, :generateTraces
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
   # whether or not messsages can be written to $stderr.
@@ -34,6 +34,7 @@ class TaskJuggler
     @messageHandler = MessageHandler.new(console)
     @maxCpuCores = 1
     @warnTsDeltas = false
+    @generateTraces = false
     TjTime.setTimeZone('UTC')
   end
 
@@ -145,7 +146,7 @@ class TaskJuggler
 
     begin
       #RubyProf.start
-      @project.generateReports(@maxCpuCores)
+      @project.generateReports(@maxCpuCores, @generateTraces)
       #profile = RubyProf.stop
       #printer = RubyProf::GraphHtmlPrinter.new(profile)
       #File.open("profile.html", "w") do |file|

@@ -33,7 +33,7 @@ class TaskJuggler
     def generateIntermediateFormat
       super
 
-      # Prepare the task list.
+      # Prepare the account list.
       accountList = PropertyList.new(@project.accounts)
       accountList.setSorting(@report.get('sortAccounts'))
       accountList.query = @report.project.reportContexts.last.query
