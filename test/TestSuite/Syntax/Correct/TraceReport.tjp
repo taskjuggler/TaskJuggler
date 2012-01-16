@@ -1,0 +1,10 @@
+project "Trace Reports" 2012-01-14 +2m
+
+task "Foo"
+task "Bar"
+task "FooBar"
+
+tracereport "TraceReport" {
+  columns end { title "<-name->" }
+  hidetask 0
+}
