@@ -6689,6 +6689,16 @@ EOT
           TableColumnDefinition.new(col, columnTitle(col))
         end
       end
+      # Hide all accounts.
+      unless @property.modified?('hideAccount')
+        @property.set('hideAccount',
+                      LogicalExpression.new(LogicalOperation.new(1)))
+      end
+      unless @property.modified?('sortAccounts')
+        @property.set('sortAccounts',
+                      [ [ 'tree', true, -1 ],
+                        [ 'seqno', true, -1 ] ])
+      end
       # Show all tasks, sorted by tree, start-up, seqno-up.
       unless @property.modified?('hideTask')
         @property.set('hideTask',
