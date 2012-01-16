@@ -23,12 +23,17 @@ class TaskJuggler
     def initialize(name, attributes = {}, selfClosing = false, &block)
       if (name.nil? && attributes.length > 0) ||
          (!name.nil? && !name.is_a?(String))
-        raise "Name must be nil or a String "
+        raise ArgumentError, "Name must be nil or a String "
       end
       @name = name
       attributes.each do |n, v|
         if n.nil? || v.nil?
-          raise "Attribute name (#{n}) or value (#{v}) may not be nil"
+          raise ArgumentError,
+            "Attribute name (#{n}) or value (#{v}) may not be nil"
+        end
+        unless v.is_a?(String)
+          raise ArgumentError,
+            "Attribute value of #{n} must be a String"
         end
       end
       @attributes = attributes
@@ -91,6 +96,8 @@ class TaskJuggler
 
     # Add or change _attribute_ to _value_.
     def []=(attribute, value)
+      raise ArgumentError,
+        "Attribute value #{value} is not a String" unless value.is_a?(String)
       @attributes[attribute] = value
     end
 
