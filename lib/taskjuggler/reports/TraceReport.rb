@@ -13,6 +13,7 @@
 
 require 'taskjuggler/reports/ReportBase'
 require 'taskjuggler/reports/CSVFile'
+require 'taskjuggler/TableColumnSorter'
 
 class TaskJuggler
 
@@ -79,13 +80,17 @@ class TaskJuggler
                 generatePropertyListHeader(resourceList) +
                 generatePropertyListHeader(taskList)
 
+      discontinuedColumns = 0
       if File.exists?(@fileName)
         @table = CSVFile.new.read(@fileName)
 
         if @table[0] != headers
-          @report.error('trace_header_changed',
-                        "The header of the existing trace file does not " +
-                        "match the specified columns.")
+          # Some columns have changed. We move all discontinued columns to the
+          # first columns and rearrange the others according to the new
+          # headers. New columns will be filled with nil in previous rows.
+          sorter = TableColumnSorter.new(@table)
+          @table = sorter.sort(headers)
+          discontinuedColumns = sorter.discontinuedColumns
         end
       else
         @table = [ headers ]
@@ -97,10 +102,10 @@ class TaskJuggler
       if @table[-1][0] == dateTag
         # We already have an entry for the current date. All values of this
         # line will be overwritten with the current values.
-        @table[-1] = []
+        @table[-1] = Array.new(discontinuedColumns, nil)
       else
         # Append a new line of values to the table.
-        @table << []
+        @table << Array.new(discontinuedColumns, nil)
       end
       # The first entry is always the current date.
       @table[-1] << dateTag
