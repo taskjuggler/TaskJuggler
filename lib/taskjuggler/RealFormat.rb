@@ -27,6 +27,9 @@ class TaskJuggler
   # fractionDigits: Number of fractional digits to show. (Fixnum)
   class RealFormat
 
+    attr_reader :signPrefix, :signSuffix, :thousandsSeparator,
+                :fractionSeparator, :fractionDigits
+
     # Create a new RealFormat object and define the formating rules.
     def initialize(args)
       iVars = %w( @signPrefix @signSuffix @thousandsSeparator

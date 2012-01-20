@@ -325,15 +325,19 @@ class TaskJuggler
         # should not exceed. nil means no limit. Never use quarters since it's
         # pretty uncommon to use.
         max = [ 60, 48, nil, 8, 24, 0, nil ]
+        stdFormat = RealFormat.new([ '-', '', '', '.',
+                                     @numberFormat.fractionDigits ])
 
         i = 0
+        fSep = @numberFormat.fractionSeparator
         factors.each do |factor|
           scaledValue = value * factor
           str = @numberFormat.format(scaledValue)
-          delta[i] = ((scaledValue - str.to_f).abs * 1000).to_i
+          stdStr = stdFormat.format(scaledValue)
+          delta[i] = (scaledValue - stdStr.to_f).abs
           # We ignore results that are 0 or exceed the maximum. To ensure that
           # we have at least one result the unscaled value is always taken.
-          if (factor != 1.0 && /^[0.]*$/ =~ str) ||
+          if (factor != 1.0 && /^[0.]*$/ =~ stdStr) ||
              (max[i] && scaledValue > max[i])
             options << nil
           else
@@ -346,13 +350,12 @@ class TaskJuggler
         # the default if all values have the same length.
         shortest = 2
         delta.length.times do |j|
-          shortest = j if options[j] && options[j][0, 2] != '0.' &&
-                          delta[j] <= delta[shortest]
+          shortest = j if options[j] && delta[j] < delta[shortest]
         end
 
         # Find the shortest option.
         6.times do |j|
-          shortest = j if options[j] && options[j][0, 2] != '0.' &&
+          shortest = j if options[j] && options[j][0, 2] != '0' + fSep &&
                           options[j].length < options[shortest].length
         end
 
