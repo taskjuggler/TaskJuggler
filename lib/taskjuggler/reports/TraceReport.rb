@@ -13,6 +13,7 @@
 
 require 'taskjuggler/reports/ReportBase'
 require 'taskjuggler/reports/CSVFile'
+require 'taskjuggler/reports/ChartPlotter'
 require 'taskjuggler/TableColumnSorter'
 
 class TaskJuggler
@@ -115,6 +116,12 @@ class TaskJuggler
       generatePropertyListValues(taskList, query)
     end
 
+    def to_html
+      plotter = ChartPlotter.new(640, 480, @table)
+      plotter.generate
+      plotter.to_svg
+    end
+
     def to_csv
       @table
     end
@@ -161,19 +168,14 @@ class TaskJuggler
     end
 
     def columnTitle(property, scenarioIdx, columnDescr)
-      if columnDescr.title
-        title = columnDescr.title.dup
-        # The title can be parameterized by including mini-queries for the ID
-        # or the name of the property, the scenario id or the attribute ID.
-        title.gsub!(/<-id->/, property.fullId)
-        title.gsub!(/<-scenario->/, @project.scenario(scenarioIdx).id)
-        title.gsub!(/<-name->/, property.name)
-        title.gsub!(/<-attribute->/, columnDescr.id)
-        title
-      else
-        property.fullId + ':' +
-          @project.scenario(scenarioIdx).id + '.' + columnDescr.id
-      end
+      title = columnDescr.title.dup
+      # The title can be parameterized by including mini-queries for the ID
+      # or the name of the property, the scenario id or the attribute ID.
+      title.gsub!(/<-id->/, property.fullId)
+      title.gsub!(/<-scenario->/, @project.scenario(scenarioIdx).id)
+      title.gsub!(/<-name->/, property.name)
+      title.gsub!(/<-attribute->/, columnDescr.id)
+      title
     end
 
   end

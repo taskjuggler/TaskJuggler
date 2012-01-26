@@ -131,6 +131,8 @@ class TaskJuggler
       return false
     end
 
+    @project.enableTraceReports(@generateTraces)
+
     Log.exit('scheduler')
     res
   end
@@ -146,7 +148,7 @@ class TaskJuggler
 
     begin
       #RubyProf.start
-      @project.generateReports(@maxCpuCores, @generateTraces)
+      @project.generateReports(@maxCpuCores)
       #profile = RubyProf.stop
       #printer = RubyProf::GraphHtmlPrinter.new(profile)
       #File.open("profile.html", "w") do |file|

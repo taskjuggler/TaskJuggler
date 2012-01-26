@@ -653,6 +653,22 @@ class TaskJuggler
       true
     end
 
+    # Add the CSV output format to all reports of type 'tracereport' if
+    # _enable_ is true. Otherwise remove all CSV output formats.
+    def enableTraceReports(enable)
+      @reports.each do |report|
+         next unless report.typeSpec == :tracereport
+
+         if enable
+           report.get('formats').delete(:csv)
+         else
+           unless report.get('formats').include?(:csv)
+             report.get('formats') << :csv
+           end
+         end
+      end
+    end
+
     # Make sure that we have a least one report defined that has an output
     # format.
     def checkReports
@@ -686,14 +702,13 @@ class TaskJuggler
 
     # Call this function to generate the reports based on the scheduling result.
     # This function may only be called after Project#schedule has been called.
-    def generateReports(maxCpuCores, generateTraces = false)
+    def generateReports(maxCpuCores)
       @reports.index
       if maxCpuCores == 1
         @reports.each do |report|
           # Skip reports that don't have any format specified or trace reports
           # when generateTraces is false.
-          next if report.get('formats').empty? ||
-                  (report.typeSpec == :tracereport && !generateTraces)
+          next if report.get('formats').empty?
 
           Log.startProgressMeter("Report #{report.name}")
           @reportContexts.push(ReportContext.new(self, report))

@@ -145,6 +145,9 @@ class TaskJuggler
 
       updateState(:loading, dirAndFiles, false)
       @tj = TaskJuggler.new(true)
+      # Make sure that trace reports get CSV formats included so there reports
+      # can be generated on request.
+      @tj.generateTraces = true
 
       # Parse all project files
       unless @tj.parse(args, true)

@@ -11,11 +11,11 @@
 # published by the Free Software Foundation.
 #
 
-require 'XMLElement'
-require 'Painter/Primitives'
-require 'Painter/Group'
-require 'Painter/BasicShapes'
-require 'Painter/Text'
+require 'taskjuggler/XMLElement'
+require 'taskjuggler/Painter/Primitives'
+require 'taskjuggler/Painter/Group'
+require 'taskjuggler/Painter/BasicShapes'
+require 'taskjuggler/Painter/Text'
 
 class TaskJuggler
 
@@ -27,13 +27,37 @@ class TaskJuggler
     include Primitives
 
     # Create a canvas of dimension _width_ times _height_. The block can be
-    # used to add elements to the drawing.
+    # used to add elements to the drawing. If the block has an argument, the
+    # block content is evaluated within the current context. If no argument is
+    # provided, the newly created object will be the evaluation context of the
+    # block. This will make instance variables of the caller inaccessible.
+    # Methods of the caller will still be available.
     def initialize(width, height, &block)
       @width = width
       @height = height
 
       @elements = []
-      instance_eval(&block) if block
+      if block
+        if block.arity == 1
+          # This is the traditional case where self is passed to the block.
+          # All Primitives methods now must be prefixed with the block
+          # variable to call them.
+          yield self
+        else
+          # In order to have the primitives easily available in the block, we
+          # use instance_eval to switch self to this object. But this makes the
+          # methods of the original self no longer accessible. We work around
+          # this by saving the original self and using method_missing to
+          # delegate the method call to the original self.
+          @originalSelf = eval('self', block.binding)
+          instance_eval(&block)
+        end
+      end
+    end
+
+    # Delegator to @originalSelf.
+    def method_missing(method, *args, &block)
+      @originalSelf.send(method, *args, &block)
     end
 
     # Render the canvas as SVG output (tree of XMLElement objects).

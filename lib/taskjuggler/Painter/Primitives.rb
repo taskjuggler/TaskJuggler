@@ -24,10 +24,12 @@ class TaskJuggler
     # 'new' methods of each Element.
     module Primitives
 
-      StrokeAttrs = [ :stroke, :stroke_opacity, :stroke_width ]
-      FillAttrs = [ :fill, :fill_opacity ]
-      FillAndStrokeAttrs = StrokeAttrs + FillAttrs
-      TextAttrs = FillAndStrokeAttrs + [ :font_family, :font_size ]
+      unless defined?(StrokeAttrs)
+        StrokeAttrs = [ :stroke, :stroke_opacity, :stroke_width ]
+        FillAttrs = [ :fill, :fill_opacity ]
+        FillAndStrokeAttrs = StrokeAttrs + FillAttrs
+        TextAttrs = FillAndStrokeAttrs + [ :font_family, :font_size ]
+      end
 
       def color(*args)
         Color.new(*args)
@@ -69,7 +71,7 @@ class TaskJuggler
       end
 
       def polyline(points, attrs = {})
-        attrs[:points] = points
+        attrs[:points] = points.is_a?(Array) ? Points.new(points) : points
         @elements << (l = PolyLine.new(attrs))
         l
       end

@@ -432,8 +432,12 @@ class TaskJuggler
     # Determine the title of the column with the ID _colId_. The title may be
     # from the static set or be from a user defined attribute.
     def columnTitle(colId)
-      TableReport.defaultColumnTitle(colId) ||
-        @project.attributeName(colId)
+      if @property.typeSpec == :tracereport
+        "<-id->:<-scenario->.#{colId}"
+      else
+        TableReport.defaultColumnTitle(colId) ||
+          @project.attributeName(colId)
+      end
     end
 
 

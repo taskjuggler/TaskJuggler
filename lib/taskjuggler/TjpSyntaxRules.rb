@@ -696,9 +696,7 @@ EOT
 
   def rule_columnId
     pattern(%w( !reportableAttributes ), lambda {
-      title = TableReport.defaultColumnTitle(@val[0]) ||
-              @project.attributeName(@val[0])
-      @column = TableColumnDefinition.new(@val[0], title)
+      @column = TableColumnDefinition.new(@val[0], columnTitle(@val[0]))
     })
     doc('columnid', <<'EOT'
 This is a comprehensive list of all pre-defined [[columns]]. In addition to
@@ -6672,7 +6670,6 @@ EOT
   def rule_traceReportHeader
     pattern(%w( _tracereport !optionalID !reportName ), lambda {
       newReport(@val[1], @val[2], :tracereport, @sourceFileInfo[0])
-      @property.set('formats', [ :csv ])
 
       # The top-level always inherits the global timeFormat setting. This is
       # not desireable in this case, so we ignore this.
