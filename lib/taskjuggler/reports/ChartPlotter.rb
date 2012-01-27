@@ -41,11 +41,12 @@ class TaskJuggler
           p.line(x2c(0), y2c(0), x2c(@width - 2 * @edge), y2c(0))
           p.line(x2c(0), y2c(0), x2c(0), y2c(@height - 2 * @edge))
         end
-        p.group(:stroke => p.color(:red)) do |p|
-          1.upto(@columns.length - 1) do |ci|
-            col = @columns[ci]
-            lastX = lastY = nil
-            col.length.times do |i|
+        1.upto(@columns.length - 1) do |ci|
+          col = @columns[ci]
+          lastX = lastY = nil
+          col.length.times do |i|
+            color = Painter::Color.new(i / 6, 255 - (i / 6), 230)
+            p.group(:stroke => color, :fill => color) do |p|
               if col[i]
                 yDate = col[i]
                 xc = xDate2c(@columns[0][i])

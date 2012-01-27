@@ -179,20 +179,90 @@ class TaskJuggler
           @r, @g, @b = NamedColors[args[0]]
         elsif args.length == 3
           args.each do |v|
-            unless v > 0 && v < 256
-              raise ArgumentError, "RGB values must be between 0 and 255."
+            unless v >= 0 && v < 256
+              raise ArgumentError, "RGB values (#{args.join(', ')}) must " +
+                                   "be between 0 and 255."
             end
           end
 
           @r, @g, @b = args
+        elsif args.length == 4
+          unless args[0] >= 0 && args[0] < 360
+            raise ArgumentError, "Hue value must be between 0 and 360"
+          end
+          unless args[1] >= 0 && args[1] <= 255
+            raise ArgumentError, "Saturation value (#{args[1]}) must be " +
+                                 "between 0 and 255"
+          end
+          unless args[2] >= 0 && args[2] <= 255
+            raise ArgumentError, "Color value (#{args[2]}) must be " +
+                                 "between 0 and 255"
+          end
+          @r, @g, @b = hsvToRgb(*args[0..2])
         else
           raise ArgumentError
         end
       end
 
+      def to_rgb
+        [ @r, @g, @b ]
+      end
+
+      def to_hsv
+        rgbToHsv(@r, @g, @b)
+      end
+
       # Convert the RGB value into a String format that is used in HTML.
       def to_s
         format("#%02x%02x%02x", @r, @g, @b)
+      end
+
+      private
+
+      def hsvToRgb(h, s, v)
+        hi = (h / 60.0).floor % 6
+        f = (h / 60.0) - (h / 60.0).floor
+        p = (v * (1.0 - s / 255.0)).to_i
+        q = (v * (1.0 - (f * s / 255.0))).to_i
+        t = (v * (1.0 - ((1.0 - f) * s / 255.0))).to_i
+        [ [ v, t, p ],
+          [ q, v, p ],
+          [ p, v, t ],
+          [ p, q, v ],
+          [ t, p, v ],
+          [ v, p, q ] ][hi]
+      end
+
+      def rgbToHsv(*rgb)
+        max = rgb.max
+        min = rgb.min
+        chroma = (max - min).to_f
+        v = max
+
+        if (max != 0.0)
+            s = chroma / max * 255.0
+        else
+            s = 0.0
+        end
+
+        r, g, b = rgb
+        if (s == 0.0)
+          h = 0.0
+        else
+          if (r == max)
+            h = (g - b) / chroma
+          elsif (g == max)
+            h = 2.0 + (b - r) / chroma
+          elsif (b == max)
+            h = 4.0 + (r - g) / chroma
+          end
+
+          h *= 60.0
+
+          h += 360.0 if h < 0.0
+        end
+
+        [ h.to_i, s.to_i, v.to_i ]
       end
 
     end
