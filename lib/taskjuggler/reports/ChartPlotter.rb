@@ -18,16 +18,47 @@ class TaskJuggler
   class ChartPlotter
 
     def initialize(width, height, data)
+      # +------------------------------------------------
+      # |             ^
+      # |   topMargin |             legendGap
+      # |             v             <->
+      # |              |               -x- foo
+      # |<-leftMargin->|               -x- bar
+      # |              |               <-legend
+      # |              |                 Width---->
+      # |              +------------
+      # |             ^             <-rightMargin->
+      # | bottomMargin|
+      # |             v
+      # +------------------------------------------------
+      # <-----------------canvasWidth-------------------->
+      # The width of the canvas area
       @width = width
+      # The height of the canvas area
       @height = height
+      # The raw data to plot as loaded from the CSV file.
       @data = data
 
-      @edge = 30
-      @x0 = @edge
-      @y0 = @height - @edge
+      # The margins between the graph plotting area and the canvas borders.
+      @topMargin = 30
+      @bottomMargin = 30
+      @leftMargin = 40
+      @rightMargin = 150
 
-      @headers = []
-      @columns = []
+      @legendGap = 20
+      @markerWidth = 20
+      @markerX = @width - @rightMargin + @legendGap
+      @markerGap = 5
+      @labelX = @markerX + @markerWidth + @markerGap
+      @labelHeight = 20
+
+      # The location of the 0/0 point of the graph plotter.
+      @x0 = @leftMargin
+      @y0 = @height - @bottomMargin
+
+      @labels = []
+      @yData = []
+      @xData = nil
       @xMinDate = nil
       @xMaxDate = nil
       @yMinDate = nil
@@ -37,19 +68,34 @@ class TaskJuggler
     def generate
       analyzeData
       @painter = Painter.new(@width, @height) do |p|
-        p.group(:stroke => p.color(:black)) do |p|
-          p.line(x2c(0), y2c(0), x2c(@width - 2 * @edge), y2c(0))
-          p.line(x2c(0), y2c(0), x2c(0), y2c(@height - 2 * @edge))
+        p.group(:stroke => p.color(:black), :font_size => 11) do |p|
+          p.line(x2c(0), y2c(0),
+                 x2c(@width - (@leftMargin + @rightMargin)), y2c(0))
+          p.line(x2c(0), y2c(0),
+                 x2c(0), y2c(@height - (@topMargin + @bottomMargin)))
         end
-        1.upto(@columns.length - 1) do |ci|
-          col = @columns[ci]
-          lastX = lastY = nil
-          col.length.times do |i|
-            color = Painter::Color.new(i / 6, 255 - (i / 6), 230)
-            p.group(:stroke => color, :fill => color) do |p|
-              if col[i]
-                yDate = col[i]
-                xc = xDate2c(@columns[0][i])
+        0.upto(@yData.length - 1) do |ci|
+          # Compute a unique and distinguishable color for each data set. We
+          # primarily use the hue value of the HSV color space for this. It
+          # has 6 main colors each 60 degrees apart from each other. After the
+          # first 360 round, we shift the angle by 60 / round so we get a
+          # different color set than in the previous round. Additionally, the
+          # saturation is decreased with each data set.
+          color = Painter::Color.new(
+            (60 * (ci % 6) + (60 / (1 + ci / 6))) % 360,
+            255 - (ci / 8), 230, :hsv)
+
+          values = @yData[ci]
+          p.group(:stroke_width => 3, :stroke => color, :fill => color,
+                  :font_size => 11) do |p|
+            lastX = lastY = nil
+            # Plot markers for each x/y data pair of the set and connect the
+            # dots with lines. If a y value is nil, the line will be
+            # interrupted.
+            values.length.times do |i|
+              if values[i]
+                yDate = values[i]
+                xc = xDate2c(@xData[i])
                 yc = yDate2c(yDate)
                 p.line(lastX, lastY, xc, yc) if lastY
                 setMarker(p, ci, xc, yc)
@@ -59,6 +105,15 @@ class TaskJuggler
                 lastY = lastX = nil
               end
             end
+
+            # Add the marker to the legend
+            labelY = @topMargin + @labelHeight / 2 + ci * @labelHeight
+            markerY = labelY + @labelHeight / 2
+            setMarker(p, ci, @markerX + @markerWidth / 2, markerY)
+            p.line(@markerX, markerY, @markerX + @markerWidth, markerY)
+            p.text(@labelX, labelY + @labelHeight - 5, @labels[ci],
+                   :stroke => p.color(:black), :stroke_width => 0,
+                   :fill => p.color(:black))
           end
         end
       end
@@ -68,9 +123,7 @@ class TaskJuggler
       @painter.to_svg
     end
 
-    def xyToCanvas(point)
-      [ x2c(point[0]), y2c(point[1]) ]
-    end
+    private
 
     def x2c(x)
       @x0 + x
@@ -81,19 +134,18 @@ class TaskJuggler
     end
 
     def xDate2c(date)
-      x2c(((date - @xMinDate) * (@width - 2 * @edge)) / (@xMaxDate - @xMinDate))
+      x2c(((date - @xMinDate) * (@width - (@leftMargin + @rightMargin))) /
+           (@xMaxDate - @xMinDate))
     end
 
     def yDate2c(date)
-      y2c(((date - @yMinDate) * (@height - 2 * @edge)) /
+      y2c(((date - @yMinDate) * (@height - 2 * (@topMargin + @bottomMargin))) /
           (@yMaxDate - @yMinDate))
     end
 
-    private
-
     def setMarker(p, type, x, y)
       r = 4
-      case type % 5
+      case (type / 5) % 5
       when 0
         # Diamond
         points = [ [ x - r, y ],
@@ -125,7 +177,8 @@ class TaskJuggler
     end
 
     def analyzeData
-      # Convert the @data from a line-based list into a column-based list.
+      # Convert the @data from a line list into a column list. Each element of
+      # the list is an Array for the other dimension.
       columns = []
       ri = 0
       @data.each do |row|
@@ -164,8 +217,8 @@ class TaskJuggler
           @xMaxDate = date if @xMaxDate.nil? || date > @xMaxDate
         end
       end
-      @headers << columns[0][0]
-      @columns << columns[0][1..-1]
+      # And the xData values.
+      @xData = columns[0][1..-1]
 
       unless @xMinDate && @xMaxDate
         error("First column does not contain valid dates.")
@@ -185,7 +238,10 @@ class TaskJuggler
           @yMinDate = cell if @yMinDate.nil? || cell < @yMinDate
           @yMaxDate = cell if @yMaxDate.nil? || cell > @yMaxDate
         end
-        @columns << col[1..-1] unless badCol
+        # Store the header of the column. It will be used as label.
+        @labels << col[0]
+        # Add the column values as another entry into the yData list.
+        @yData << col[1..-1] unless badCol
       end
 
       unless @yMinDate && @yMaxDate
