@@ -64,7 +64,6 @@ class TaskJuggler
     def to_svg
       XMLElement.new('svg', 'width' => "#{@width}px",
                             'height' => "#{@height}px",
-                            'xmlns' => 'http://www.w3.org/2000/svg',
                             'version' => '1.1') do
         @elements.map { |el| el.to_svg }
       end
