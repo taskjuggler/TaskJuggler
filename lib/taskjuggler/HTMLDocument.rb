@@ -66,6 +66,8 @@ class TaskJuggler
           TITLE.new { title },
           META.new({ 'http-equiv' => 'Content-Type',
                      'content' => 'text/html; charset=utf-8' }),
+          # Ugly hack to force IE into IE-9 mode.
+          META.new({ 'http-equiv' => 'Content-Type', 'content' => 'IE=9' })
         ]
         # Include optional meta tags.
         metaTags.each do |name, content|
