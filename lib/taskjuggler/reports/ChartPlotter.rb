@@ -46,7 +46,7 @@ class TaskJuggler
       @topMargin = 30
       @bottomMargin = 30
       @leftMargin = 40
-      @rightMargin = 150
+      @rightMargin = (@width * 0.382).to_i
 
       @legendGap = 20
       @markerWidth = 20
@@ -169,7 +169,8 @@ class TaskJuggler
         p.polyline(points)
       when 1
         # Square
-        p.rect(x - r, y - r, 2 * r, 2 * r)
+        rr = (r / Math.sqrt(2.0)).to_i
+        p.rect(x - rr, y - rr, 2 * rr, 2 * rr)
       when 2
         # Triangle Down
         points = [ [ x - r, y - r ],
