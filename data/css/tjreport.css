@@ -107,7 +107,7 @@ p.tj_journal {
 
 /* The cells of the table header. */
 .tj_table_header_cell {
-  padding:0px 3px 0px 3px;
+  padding:1px 3px 1px 3px;
   white-space:nowrap;
   border-spacing:0px;
   color:#ffffff;
@@ -119,7 +119,7 @@ p.tj_journal {
 .tj_table_cell {
   font-size:13px;
   vertical-align:top;
-  padding:0px 4px 0px 2px;
+  padding:1px 3px 1px 3px;
   margin:0px;
   width:100%;
   border-spacing:0px;
