@@ -117,9 +117,13 @@ class TaskJuggler
     end
 
     def to_html
-      plotter = ChartPlotter.new(640, 480, @table)
-      plotter.generate
-      plotter.to_svg
+      begin
+        plotter = ChartPlotter.new(640, 480, @table)
+        plotter.generate
+        plotter.to_svg
+      rescue ChartPlotterError => exception
+        @project.messageHandler.warning('chartPlotterError', exception.message)
+      end
     end
 
     def to_csv

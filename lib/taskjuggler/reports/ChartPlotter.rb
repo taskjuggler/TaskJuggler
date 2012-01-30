@@ -15,6 +15,9 @@ require 'taskjuggler/Painter'
 
 class TaskJuggler
 
+  class ChartPlotterError < RuntimeError
+  end
+
   class ChartPlotter
 
     def initialize(width, height, data)
@@ -63,14 +66,16 @@ class TaskJuggler
       @xMaxDate = nil
       @yMinDate = nil
       @yMaxDate = nil
+      @yMinVal = nil
+      @yMaxVal = nil
     end
 
     def generate
       analyzeData
-      @painter = Painter.new(@width, @height) do |p|
-        p.group(:stroke => p.color(:black), :font_size => 11) do |p|
+      @painter = Painter.new(@width, @height) do |pa|
+        pa.group(:stroke => pa.color(:black), :font_size => 11) do |p|
           p.line(x2c(0), y2c(0),
-                 x2c(@width - (@leftMargin + @rightMargin)), y2c(0))
+                  x2c(@width - (@leftMargin + @rightMargin)), y2c(0))
           p.line(x2c(0), y2c(0),
                  x2c(0), y2c(@height - (@topMargin + @bottomMargin)))
         end
@@ -86,7 +91,7 @@ class TaskJuggler
             255 - (ci / 8), 230, :hsv)
 
           values = @yData[ci]
-          p.group(:stroke_width => 3, :stroke => color, :fill => color,
+          pa.group(:stroke_width => 3, :stroke => color, :fill => color,
                   :font_size => 11) do |p|
             lastX = lastY = nil
             # Plot markers for each x/y data pair of the set and connect the
@@ -94,9 +99,12 @@ class TaskJuggler
             # interrupted.
             values.length.times do |i|
               if values[i]
-                yDate = values[i]
                 xc = xDate2c(@xData[i])
-                yc = yDate2c(yDate)
+                if values[i].is_a?(TjTime)
+                  yc = yDate2c(values[i])
+                else
+                  yc = yNum2c(values[i])
+                end
                 p.line(lastX, lastY, xc, yc) if lastY
                 setMarker(p, ci, xc, yc)
                 lastX = xc
@@ -143,6 +151,11 @@ class TaskJuggler
           (@yMaxDate - @yMinDate))
     end
 
+    def yNum2c(number)
+      y2c(((number - @yMinVal) * (@height - 2 * (@topMargin + @bottomMargin))) /
+          (@yMaxVal - @yMinVal))
+    end
+
     def setMarker(p, type, x, y)
       r = 4
       case (type / 5) % 5
@@ -185,6 +198,11 @@ class TaskJuggler
         ci = 0
         row.each do |col|
           columns << [] if ri == 0
+
+          if ci >= columns.length
+            error("Row #{ri} contains more elements than the header row")
+          end
+
           if col.nil?
             columns[ci][ri] = nil
           else
@@ -193,8 +211,14 @@ class TaskJuggler
               # use this instead of the original String or Number.
               columns[ci][ri] = TjTime.new(col)
             rescue
-              # If not, we keep the original value.
-              columns[ci][ri] = col.empty? ? nil : col
+              columns[ci][ri] =
+                if col.empty?
+                  nil
+                elsif /[0-9]+(\.[0-9]*)*%/ =~ col
+                  col.to_f
+                else
+                  col
+                end
             end
           end
           ci += 1
@@ -228,15 +252,21 @@ class TaskJuggler
       columns[1..-1].each do |col|
         badCol = false
         col[1..-1].each do |cell|
-          if cell && !cell.is_a?(TjTime)
-            badCol = true
-            break
+          if cell
+            if cell.is_a?(TjTime)
+              @yMinDate = cell if @yMinDate.nil? || cell < @yMinDate
+              @yMaxDate = cell if @yMaxDate.nil? || cell > @yMaxDate
+            elsif cell.is_a?(Fixnum) || cell.is_a?(Float)
+              @yMinVal = cell if @yMinVal.nil? || cell < @yMinVal
+              @yMaxVal = cell if @yMaxVal.nil? || cell > @yMaxVal
+            else
+              badCol = true
+              break
+            end
+          else
+            # Ignore missing values
+            next unless cell
           end
-          # Ignore missing values
-          next unless cell
-
-          @yMinDate = cell if @yMinDate.nil? || cell < @yMinDate
-          @yMaxDate = cell if @yMaxDate.nil? || cell > @yMaxDate
         end
         # Store the header of the column. It will be used as label.
         @labels << col[0]
@@ -244,13 +274,13 @@ class TaskJuggler
         @yData << col[1..-1] unless badCol
       end
 
-      unless @yMinDate && @yMaxDate
+      if @yData.empty?
         error("Columns don't contain any valid dates.")
       end
     end
 
     def error(msg)
-      raise RuntimeError, msg
+      raise ChartPlotterError, msg
     end
 
   end
