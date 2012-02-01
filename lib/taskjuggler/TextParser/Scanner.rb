@@ -51,8 +51,9 @@ class TaskJuggler::TextParser
 
       attr_reader :fileName, :macroStack
 
-      def initialize(log)
+      def initialize(log, textScanner)
         @log = log
+        @textScanner = textScanner
         @fileName = nil
         @stream = nil
         @line = nil
@@ -61,6 +62,10 @@ class TaskJuggler::TextParser
         @wrapped = false
         @macroStack = []
         @nextMacroEnd = nil
+      end
+
+      def error(id, message)
+        @textScanner.error(id, message)
       end
 
       def close
@@ -160,8 +165,8 @@ class TaskJuggler::TextParser
 
       attr_reader :fileName
 
-      def initialize(fileName, log)
-        super(log)
+      def initialize(fileName, log, textScanner)
+        super(log, textScanner)
         @fileName = fileName.dup.untaint
         data = (fileName == '.' ? $stdin : File.new(@fileName, 'r')).read
         begin
@@ -183,8 +188,8 @@ class TaskJuggler::TextParser
     # Specialized version of StreamHandle for operations on Strings.
     class BufferStreamHandle < StreamHandle
 
-      def initialize(buffer, log)
-        super(log)
+      def initialize(buffer, log, textScanner)
+        super(log, textScanner)
         begin
           @stream = StringIO.new(buffer.forceUTF8Encoding)
         rescue
@@ -279,11 +284,11 @@ class TaskJuggler::TextParser
     def open(fileNameIsBuffer = false)
       @fileNameIsBuffer = fileNameIsBuffer
       if fileNameIsBuffer
-        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile, @log),
+        @fileStack = [ [ @cf = BufferStreamHandle.new(@masterFile, @log, self),
                          nil, nil ] ]
       else
         begin
-          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile, @log),
+          @fileStack = [ [ @cf = FileStreamHandle.new(@masterFile, @log, self),
                            nil, nil ] ]
         rescue IOError, SystemCallError
           error('open_file', "Cannot open file #{@masterFile}: #{$!}")
@@ -332,8 +337,8 @@ class TaskJuggler::TextParser
 
       # Open the new file and push the handle on the @fileStack.
       begin
-        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName, @log)),
-                        nil, block ]
+        @fileStack << [ (@cf = FileStreamHandle.new(includeFileName, @log,
+                                                    self)), nil, block ]
         @log.msg { "Parsing file #{includeFileName}" }
       rescue StandardError
         error('bad_include', "Cannot open include file #{includeFileName}", sfi)
