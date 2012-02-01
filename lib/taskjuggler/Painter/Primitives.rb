@@ -49,7 +49,7 @@ class TaskJuggler
         attrs[:cy] = cy
         attrs[:r] = r
         @elements << (c = Circle.new(attrs))
-        r
+        c
       end
 
       def ellipse(cx, cy, rx, ry, attrs = {})

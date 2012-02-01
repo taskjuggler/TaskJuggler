@@ -8,11 +8,16 @@ body {
   font-size:15px;
 }
 h1, h2, table, tr, td, div, span {
-  font-family: Bitstream Vera Sans, Tahoma, sans-serif;
 }
 table {
 }
-td, div { padding:0px; margin:0px; }
+p {
+  font-size:15px;
+}
+td, div {
+  padding:0px;
+  margin:0px;
+}
 h1 { font-size:22px; }
 h2 { font-size:18px; }
 h3 { font-size:16px; }
@@ -102,17 +107,19 @@ p.tj_journal {
 
 /* The cells of the table header. */
 .tj_table_header_cell {
-  padding:0px 3px 0px 3px;
+  padding:1px 3px 1px 3px;
   white-space:nowrap;
   border-spacing:0px;
+  color:#ffffff;
   overflow:hidden;
 }
 
 /* A regular table cell. It usually contains the cell icon, the text
  * label and a tooltip trigger. */
 .tj_table_cell {
+  font-size:13px;
   vertical-align:top;
-  padding:0px 4px 0px 2px;
+  padding:1px 3px 1px 3px;
   margin:0px;
   width:100%;
   border-spacing:0px;
@@ -131,6 +138,7 @@ p.tj_journal {
 
 /* This is the text label of a cell. */
 .tj_table_cell_label {
+  font-size:13px;
   vertical-align:top;
   padding-top:1px;
 }
@@ -139,6 +147,7 @@ p.tj_journal {
  * optional and triggers the tooltip with the full text of the cell in
  * case the cell is not large enough to show everything. */
 .tj_table_cell_tooltip {
+  font-size:13px;
   vertical-align:top;
   padding:2px 0px 0px 3px;
 }

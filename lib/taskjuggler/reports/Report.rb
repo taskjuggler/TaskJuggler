@@ -190,7 +190,7 @@ class TaskJuggler
         return nil
       end
 
-      html = HTMLDocument.new(:strict)
+      html = HTMLDocument.new
       head = html.generateHead(@project['name'] + " - #{get('title') || @name}",
                                'description' => 'TaskJuggler Report',
                                'keywords' => 'taskjuggler, project, management')

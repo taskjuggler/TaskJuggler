@@ -660,11 +660,13 @@ class TaskJuggler
          next unless report.typeSpec == :tracereport
 
          if enable
-           report.get('formats').delete(:csv)
-         else
+           # Enable the CSV format for the tracereport
            unless report.get('formats').include?(:csv)
              report.get('formats') << :csv
            end
+         else
+           # Disabe CSV format for the tracereport
+           report.get('formats').delete(:csv)
          end
       end
     end

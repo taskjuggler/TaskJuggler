@@ -339,7 +339,7 @@ class TaskJuggler
     # Return a String that represents the keyword documentation in an XML
     # formatted form.
     def generateHTML(directory)
-      html = HTMLDocument.new(:strict)
+      html = HTMLDocument.new
       head = html.generateHead(keyword,
                                { 'description' => 'The TaskJuggler Manual',
                                  'keywords' =>

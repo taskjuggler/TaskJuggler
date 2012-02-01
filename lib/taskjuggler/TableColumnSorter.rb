@@ -65,12 +65,12 @@ class TaskJuggler
         # table.
         dcl.times do |colIdx|
           newTable[lineIdx][colIdx] =
-            @oldTable[lineIdx][discontinuedColumns[colIdx]]
+            oldLine[discontinuedColumns[colIdx]]
         end
 
         # Copy the old column to the new position.
         columnIdxMap.each do |oldColIdx, newColIdx|
-          newTable[lineIdx][newColIdx + dcl] = @oldTable[lineIdx][oldColIdx]
+          newTable[lineIdx][newColIdx + dcl] = oldLine[oldColIdx]
         end
       end
 
