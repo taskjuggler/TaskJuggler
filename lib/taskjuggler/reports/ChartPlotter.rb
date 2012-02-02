@@ -133,26 +133,31 @@ class TaskJuggler
 
     private
 
+    # Convert a chart X coordinate to a canvas X coordinate.
     def x2c(x)
       @x0 + x
     end
 
+    # Convert a chart Y coordinate to a canvas Y coordinate.
     def y2c(y)
       @y0 - y
     end
 
+    # Convert a date to a chart X coordinate.
     def xDate2c(date)
       x2c(((date - @xMinDate) * (@width - (@leftMargin + @rightMargin))) /
            (@xMaxDate - @xMinDate))
     end
 
+    # Convert a Y data date to a chart Y coordinate.
     def yDate2c(date)
-      y2c(((date - @yMinDate) * (@height - 2 * (@topMargin + @bottomMargin))) /
+      y2c(((date - @yMinDate) * (@height - (@topMargin + @bottomMargin))) /
           (@yMaxDate - @yMinDate))
     end
 
+    # Convert a Y data value to a chart Y coordinate.
     def yNum2c(number)
-      y2c(((number - @yMinVal) * (@height - 2 * (@topMargin + @bottomMargin))) /
+      y2c(((number - @yMinVal) * (@height - (@topMargin + @bottomMargin))) /
           (@yMaxVal - @yMinVal))
     end
 
