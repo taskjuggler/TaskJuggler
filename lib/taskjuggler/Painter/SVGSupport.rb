@@ -21,8 +21,9 @@ class TaskJuggler
       def valuesToSVG
         values = {}
         @values.each do |k, v|
+          unit = k == :font_size ? 'pt' : ''
           # Convert the underscores to dashes and the symbols to Strings.
-          values[k.to_s.gsub(/[_]/, '-')] = v.to_s
+          values[k.to_s.gsub(/[_]/, '-')] = v.to_s + unit
         end
         values
       end

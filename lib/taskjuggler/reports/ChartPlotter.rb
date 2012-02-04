@@ -45,7 +45,7 @@ class TaskJuggler
       # The margins between the graph plotting area and the canvas borders.
       @topMargin = 30
       @bottomMargin = 30
-      @leftMargin = 40
+      @leftMargin = 70
       @rightMargin = (@width * 0.382).to_i
 
       @legendGap = 20
@@ -78,6 +78,8 @@ class TaskJuggler
                   x2c(@width - (@leftMargin + @rightMargin)), y2c(0))
           p.line(x2c(0), y2c(0),
                  x2c(0), y2c(@height - (@topMargin + @bottomMargin)))
+          yLabels(p)
+          xLabels(p)
         end
         0.upto(@yData.length - 1) do |ci|
           # Compute a unique and distinguishable color for each data set. We
@@ -132,6 +134,61 @@ class TaskJuggler
     end
 
     private
+
+    def xLabels(p)
+      xInterval = @xMaxDate - @xMinDate
+      xAxisPixels = @width - (@rightMargin + @leftMargin)
+      fm = Painter::FontMetrics.new
+      labelWidth = fm.width('LiberationSans', 10.0, '2000-01-01')
+      labelHeight = fm.height('LiberationSans', 10.0)
+      labelPadding = 10
+      noLabels = (xAxisPixels / (labelWidth + labelPadding)).floor
+
+      labelInterval = xInterval / noLabels
+      date = @xMinDate + labelInterval / 2
+      p.group(:font_family => 'LiberationSans, Arial', :font_size => 10.0,
+              :stroke => p.color(:black), :stroke_width => 1,
+              :fill => p.color(:black)) do |gp|
+        noLabels.times do |i|
+          x = xDate2c(date)
+          gp.text(x - labelWidth / 2, y2c(-5 - labelHeight),
+                  date.to_s('%Y-%m-%d'), :stroke_width => 0)
+          #gp.rect(x - labelWidth / 2, y2c(-5 - labelHeight),
+          #        labelWidth, labelHeight, :fill => gp.color(:white))
+          gp.line(x, y2c(0), x, y2c(-4))
+          date += labelInterval
+        end
+      end
+    end
+
+    def yLabels(p)
+      return unless @yMinDate && @yMaxDate
+
+      yInterval = @yMaxDate - @yMinDate
+      yAxisPixels = @height - (@topMargin + @bottomMargin)
+      fm = Painter::FontMetrics.new
+      labelWidth = fm.width('LiberationSans', 10.0, '2000-01-01')
+      labelHeight = fm.height('LiberationSans', 10.0)
+      labelPadding = 10
+      noLabels = (yAxisPixels / (labelHeight + labelPadding)).floor
+      noLabels = 10 if noLabels > 10
+
+      labelInterval = yInterval / noLabels
+      date = @yMinDate + labelInterval / 2
+      p.group(:font_family => 'LiberationSans, Arial', :font_size => 10.0,
+              :stroke => p.color(:black), :stroke_width => 1,
+              :fill => p.color(:black)) do |gp|
+        noLabels.times do |i|
+          y = yDate2c(date)
+          gp.text(0, y + labelHeight / 2 - 2,
+                  date.to_s('%Y-%m-%d'), :stroke_width => 0)
+          #gp.rect(0, y + labelHeight / 2,
+          #        labelWidth, labelHeight, :fill => gp.color(:white))
+          gp.line(x2c(-4), y, @width - @rightMargin, y)
+          date += labelInterval
+        end
+      end
+    end
 
     # Convert a chart X coordinate to a canvas X coordinate.
     def x2c(x)

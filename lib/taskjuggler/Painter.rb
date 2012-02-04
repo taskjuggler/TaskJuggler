@@ -16,6 +16,7 @@ require 'taskjuggler/Painter/Primitives'
 require 'taskjuggler/Painter/Group'
 require 'taskjuggler/Painter/BasicShapes'
 require 'taskjuggler/Painter/Text'
+require 'taskjuggler/Painter/FontMetrics'
 
 class TaskJuggler
 
