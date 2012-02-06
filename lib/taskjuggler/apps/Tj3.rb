@@ -143,9 +143,9 @@ EOT
         if files.empty?
           error('You must provide at least one .tjp file', 1)
         end
-        if @outputDir != '' && !(File.exists?(@outputDir) &&
-                                 File.ftype(@outputDir) == 'directory')
-          error("Output directory #{@outputDir} does not exist!")
+        if @outputDir != '' && !File.directory?(@outputDir)
+          error("Output directory #{@outputDir} does not exist or is not " +
+                "a directory!")
         end
 
         tj = TaskJuggler.new(true)
