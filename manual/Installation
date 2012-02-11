@@ -364,11 +364,11 @@ should have the following features available:
   must be the first non-blank character of the last line of the
   block. See the '''':help fold'''' Vim help command for details how
   to open and close folds.
-* Tag navigation. If you include a [tagfile] report in your project,
+* Tag navigation. If you include a [[tagfile]] report in your project,
   Vim will know all property IDs and can jump to them. If you have a
   task with the ID ''''foo.bar'''', the command '''':ta foo.bar''''
   will put the cursor right where task ''''foo.bar'''' was declared.
-* ID completion. If you include a [tagfile] report in your project,
+* ID completion. If you include a [[tagfile]] report in your project,
   Vim can tell you the full hierarchical ID of a property. Just move
   the cursor to the first line of the property definition and press
   ''''Ctrl-]''''.

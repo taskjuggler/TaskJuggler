@@ -2808,10 +2808,12 @@ EOT
     arg(0, 'operand', <<'EOT'
 An operand can consist of a date, a text string, a [[functions|function]], a
 property attribute or a numerical value. It can also be the name of a declared
-flag. Use the ''''scenario_id.attribute'''' notation to use an attribute of the
-currently evaluated property. The scenario ID always has to be specified, also
-for non-scenario specific attributes. This is necessary to distinguish them
-from flags.
+flag. Use the ''''scenario_id.attribute'''' notation to use an attribute of
+the currently evaluated property. The scenario ID always has to be specified,
+also for non-scenario specific attributes. This is necessary to distinguish
+them from flags. See [[columnid]] for a list of available attributes. The use
+of list attributes is not recommended. User defined attributes are available
+as well.
 
 An operand can be a negated operand by prefixing a ~ charater or it can be
 another logical expression enclosed in braces.
