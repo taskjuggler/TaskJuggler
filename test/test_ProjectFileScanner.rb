@@ -177,7 +177,9 @@ EOT
   end
 
   def check(text, ref, macros = [])
-    s = TaskJuggler::ProjectFileScanner.new(text, MessageHandler.new(true))
+    mh = MessageHandler.instance
+    mh.console = true
+    s = TaskJuggler::ProjectFileScanner.new(text, mh)
     s.open(true)
 
     macros.each do |macro|

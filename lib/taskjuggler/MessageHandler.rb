@@ -15,6 +15,7 @@ if RUBY_VERSION < "1.9.0"
   require 'rubygems'
 end
 
+require 'singleton'
 require 'term/ansicolor'
 require 'taskjuggler/TextParser/SourceFileInfo'
 
@@ -26,7 +27,8 @@ class TaskJuggler
 
     include Term::ANSIColor
 
-    attr_reader :type, :id, :message, :sourceFileInfo, :line
+    attr_reader :type, :id, :message, :line
+    attr_accessor :sourceFileInfo
 
     # Create a new Message object.  The _type_ specifies what tpye of message
     # this is. The following types are supported: fatal, error, warning, info
@@ -95,18 +97,30 @@ class TaskJuggler
   # continue the program flow.
   class MessageHandler
 
-    attr_reader :messages, :errors
-    attr_accessor :scenario, :abortOnWarning
+    include Singleton
 
-    # Initialize the MessageHandler. _console_ specifies if the messages
-    # should be printed to $stderr.
-    def initialize(console = false)
-      @messages = []
-      @console = console
-      # We count the errors.
+    attr_reader :messages, :errors
+    attr_accessor :console, :abortOnWarning, :baselineSFI
+
+    # Initialize the MessageHandler.
+    def initialize
+      reset
+    end
+
+    # Reset the MessageHandler to the initial state. All messages will be
+    # purged and the error counter set to 0.
+    def reset
+      # Set to true if messages should be sent to $stderr.
+      @console = false
+      # A counter for messages of type error.
       @errors = 0
       # Set to true if program should be exited on warnings.
       @abortOnWarning = false
+      # A SourceFileInfo object that will be used to baseline the provided
+      # source file infos of the messages.
+      @baselineSFI = nil
+      # A list of all generated messages.
+      @messages = []
     end
 
     # Generate a fatal message that will abort the application.
@@ -145,9 +159,27 @@ class TaskJuggler
       addMessage(:info, id, message, sourceFileInfo, line, data, scenario)
     end
 
+    # Convert all messages into a single String.
+    def to_s
+      text = ''
+      @messages.each { |msg| text += msg.to_s }
+      text
+    end
+
+    private
+
     # Generate a message by specifying the _type_.
     def addMessage(type, id, message, sourceFileInfo = nil, line = nil,
                    data = nil, scenario = nil)
+      # If we have a SourceFileInfo and a baseline SFI, we correct the
+      # sourceFileInfo accordingly.
+      if sourceFileInfo && @baselineSFI
+        sourceFileInfo = TextParser::SourceFileInfo.new(
+          @baselineSFI.fileName,
+          sourceFileInfo.lineNo + @baselineSFI.lineNo - 1,
+          sourceFileInfo.columnNo)
+      end
+
       # Treat criticals like errors but without generating another
       # exception.
       msg = Message.new(type == :critical ? :error : type, id, message,
@@ -165,17 +197,13 @@ class TaskJuggler
       when :error
         # Increase the error counter.
         @errors += 1
+        # Raise a TjException with an empty message. This signals the receiver
+        # that the message was already displayed and the program should be
+        # aborted ASAP.
         raise TjException.new, ''
       when :fatal
         raise RuntimeError
       end
-    end
-
-    # Convert all messages into a single String.
-    def to_s
-      text = ''
-      @messages.each { |msg| text += msg.to_s }
-      text
     end
 
   end

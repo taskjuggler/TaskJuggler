@@ -40,8 +40,9 @@ class TaskJuggler
       File.open(fileName) do |file|
         file.each_line { |line| text += line }
       end
-      rText = RichText.new(text, @document.functionHandlers,
-                           MessageHandler.new(true))
+      messageHandler = MessageHandler.instance
+      messageHandler.console = true
+      rText = RichText.new(text, @document.functionHandlers, messageHandler)
       unless (@richText = rText.generateIntermediateFormat(sectionCounter))
         exit
       end

@@ -87,7 +87,7 @@ class TaskJuggler
       # Keep a copy of the original text.
       @inputText = text
       @functionHandlers = functionHandlers
-      @messageHandler = messageHandler || MessageHandler.new
+      @messageHandler = MessageHandler.instance
     end
 
     # Convert the @inputText into an abstract syntax tree that can then be

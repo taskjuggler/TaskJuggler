@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/MessageHandler'
+
 module MessageChecker
 
   # Check that all messages that were generated during the TaskJuggler run

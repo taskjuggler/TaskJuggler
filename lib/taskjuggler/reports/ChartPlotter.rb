@@ -153,8 +153,6 @@ class TaskJuggler
           x = xDate2c(date)
           gp.text(x - labelWidth / 2, y2c(-5 - labelHeight),
                   date.to_s('%Y-%m-%d'), :stroke_width => 0)
-          #gp.rect(x - labelWidth / 2, y2c(-5 - labelHeight),
-          #        labelWidth, labelHeight, :fill => gp.color(:white))
           gp.line(x, y2c(0), x, y2c(-4))
           date += labelInterval
         end
@@ -167,7 +165,6 @@ class TaskJuggler
       yInterval = @yMaxDate - @yMinDate
       yAxisPixels = @height - (@topMargin + @bottomMargin)
       fm = Painter::FontMetrics.new
-      labelWidth = fm.width('LiberationSans', 10.0, '2000-01-01')
       labelHeight = fm.height('LiberationSans', 10.0)
       labelPadding = 10
       noLabels = (yAxisPixels / (labelHeight + labelPadding)).floor
@@ -182,8 +179,6 @@ class TaskJuggler
           y = yDate2c(date)
           gp.text(0, y + labelHeight / 2 - 2,
                   date.to_s('%Y-%m-%d'), :stroke_width => 0)
-          #gp.rect(0, y + labelHeight / 2,
-          #        labelWidth, labelHeight, :fill => gp.color(:white))
           gp.line(x2c(-4), y, @width - @rightMargin, y)
           date += labelInterval
         end

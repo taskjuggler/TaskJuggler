@@ -90,6 +90,7 @@ class TestScheduler < Test::Unit::TestCase
     # they need to be in the ./refs/ directory relative to the project file.
     refFile = baseDir + "/refs/#{baseName}.csv"
 
+    TaskJuggler::MessageHandler.instance.reset
     tj = TaskJuggler.new(true)
     assert(tj.parse([ projectFile ]), "Parser failed for #{projectFile}")
     assert(tj.schedule, "Scheduler failed for #{projectFile}")
