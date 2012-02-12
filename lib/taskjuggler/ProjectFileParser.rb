@@ -216,18 +216,15 @@ class TaskJuggler
     # variable tokens, a subset can be provided by _tokenSet_.
     def newRichText(text, sfi, tokenSet = nil)
       rText = RichText.new(text, RTFHandlers.create(@project, sfi))
-      unless (rti = rText.generateIntermediateFormat( [ 0, 0, 0], tokenSet))
-        rText.messageHandler.messages.each do |msg|
-          # Map the SourceFileInfo of the RichText back to the original
-          # location in the input file.
-          sfi = TextParser::SourceFileInfo.new(
-            sfi.fileName, sfi.lineNo + msg.sourceFileInfo.lineNo - 1, 0)
-          # Then replay the error message.
-          @messageHandler.addMessage(msg.type, msg.id, msg.message, sfi,
-                                     msg.line)
-        end
-      end
-      rti.sectionNumbers = false
+      # The RichText is processed by a separate parser. Messages will not have
+      # the proper source file info unless we baseline them with the original
+      # source file info.
+      mh = MessageHandler.instance
+      mh.baselineSFI = sfi
+      rti = rText.generateIntermediateFormat( [ 0, 0, 0 ], tokenSet)
+      # Reset the baseline again.
+      mh.baselineSFI = nil
+      rti.sectionNumbers = false if rti
       rti
     end
 

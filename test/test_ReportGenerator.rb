@@ -41,6 +41,7 @@ class TestReportGenerator < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/ReportGenerator/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
+      TaskJuggler::MessageHandler.instance.reset
       tj = TaskJuggler.new(false)
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")

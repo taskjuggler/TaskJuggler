@@ -28,7 +28,9 @@ class TestPropertySet < Test::Unit::TestCase
   end
 
   def test_index
-    p = TaskJuggler::Project.new('p', 'Project', '1.0', MessageHandler.new(true))
+    mh = MessageHandler.instance
+    mh.console = true
+    p = TaskJuggler::Project.new('p', 'Project', '1.0', mh)
     p['start'] = TjTime.new('2008-07-29')
     p['end'] = TjTime.new('2008-08-31')
 

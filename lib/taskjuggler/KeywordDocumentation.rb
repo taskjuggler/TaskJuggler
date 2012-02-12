@@ -46,7 +46,8 @@ class TaskJuggler
     # _pattern_.  _optAttrPatterns_ is an Array with references to
     # TextParser::Patterns that are optional attributes to this keyword.
     def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
-      @messageHandler = MessageHandler.new(true)
+      @messageHandler = MessageHandler.instance
+      @messageHandler.console = true
       @rule = rule
       @pattern = pattern
       # The unique identifier. Usually the attribute or property name. To

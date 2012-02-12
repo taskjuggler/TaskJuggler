@@ -31,7 +31,8 @@ class TaskJuggler
   def initialize(console)
     @project = nil
     @parser = nil
-    @messageHandler = MessageHandler.new(console)
+    @messageHandler = MessageHandler.instance
+    @messageHandler.console = console
     @maxCpuCores = 1
     @warnTsDeltas = false
     @generateTraces = false

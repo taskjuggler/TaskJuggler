@@ -28,8 +28,9 @@ class TestProject < Test::Unit::TestCase
   end
 
   def test_helloWorld
-    p = TaskJuggler::Project.new('hello', 'Hello World', '1.0',
-                                 MessageHandler.new(true))
+    mh = MessageHandler.instance
+    mh.console = true
+    p = TaskJuggler::Project.new('hello', 'Hello World', '1.0', mh)
     p['start'] = TjTime.new('2008-07-24')
     p['end'] = TjTime.new('2008-08-31')
 

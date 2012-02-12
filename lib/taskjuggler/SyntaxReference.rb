@@ -35,7 +35,8 @@ class TaskJuggler
     # SyntaxReference.
     def initialize(manual = nil, ignoreOld = false)
       @manual = manual
-      @messageHandler = MessageHandler.new(true)
+      @messageHandler = MessageHandler.instance
+      @messageHandler.console = true
       @parser = ProjectFileParser.new(@messageHandler)
       @parser.updateParserTables
 

@@ -100,6 +100,118 @@ class TaskJuggler
 
     private
 
+    def xLabels(p)
+      xInterval = @xMaxDate - @xMinDate
+      xAxisPixels = @width - (@rightMargin + @leftMargin)
+      fm = Painter::FontMetrics.new
+      labelWidth = fm.width('LiberationSans', 10.0, '2000-01-01')
+      labelHeight = fm.height('LiberationSans', 10.0)
+      labelPadding = 10
+      noLabels = (xAxisPixels / (labelWidth + labelPadding)).floor
+
+      labelInterval = xInterval / noLabels
+      date = @xMinDate + labelInterval / 2
+      p.group(:font_family => 'LiberationSans, Arial', :font_size => 10.0,
+              :stroke => p.color(:black), :stroke_width => 1,
+              :fill => p.color(:black)) do |gp|
+        noLabels.times do |i|
+          x = xDate2c(date)
+          gp.text(x - labelWidth / 2, y2c(-5 - labelHeight),
+                  date.to_s('%Y-%m-%d'), :stroke_width => 0)
+          gp.line(x, y2c(0), x, y2c(-4))
+          date += labelInterval
+        end
+      end
+    end
+
+    def yLabels(p)
+      return unless @yMinDate && @yMaxDate
+
+      yInterval = @yMaxDate - @yMinDate
+      yAxisPixels = @height - (@topMargin + @bottomMargin)
+      fm = Painter::FontMetrics.new
+      labelHeight = fm.height('LiberationSans', 10.0)
+      labelPadding = 10
+      noLabels = (yAxisPixels / (labelHeight + labelPadding)).floor
+      noLabels = 10 if noLabels > 10
+
+      labelInterval = yInterval / noLabels
+      date = @yMinDate + labelInterval / 2
+      p.group(:font_family => 'LiberationSans, Arial', :font_size => 10.0,
+              :stroke => p.color(:black), :stroke_width => 1,
+              :fill => p.color(:black)) do |gp|
+        noLabels.times do |i|
+          y = yDate2c(date)
+          gp.text(0, y + labelHeight / 2 - 2,
+                  date.to_s('%Y-%m-%d'), :stroke_width => 0)
+          gp.line(x2c(-4), y, @width - @rightMargin, y)
+          date += labelInterval
+        end
+      end
+    end
+
+    # Convert a chart X coordinate to a canvas X coordinate.
+    def x2c(x)
+      @x0 + x
+    end
+
+    # Convert a chart Y coordinate to a canvas Y coordinate.
+    def y2c(y)
+      @y0 - y
+    end
+
+    # Convert a date to a chart X coordinate.
+    def xDate2c(date)
+      x2c(((date - @xMinDate) * (@width - (@leftMargin + @rightMargin))) /
+           (@xMaxDate - @xMinDate))
+    end
+
+    # Convert a Y data date to a chart Y coordinate.
+    def yDate2c(date)
+      y2c(((date - @yMinDate) * (@height - (@topMargin + @bottomMargin))) /
+          (@yMaxDate - @yMinDate))
+    end
+
+    # Convert a Y data value to a chart Y coordinate.
+    def yNum2c(number)
+      y2c(((number - @yMinVal) * (@height - (@topMargin + @bottomMargin))) /
+          (@yMaxVal - @yMinVal))
+    end
+
+    def setMarker(p, type, x, y)
+      r = 4
+      case (type / 5) % 5
+      when 0
+        # Diamond
+        points = [ [ x - r, y ],
+                   [ x, y + r ],
+                   [ x + r, y ],
+                   [ x, y - r ],
+                   [ x - r, y ] ]
+        p.polyline(points)
+      when 1
+        # Square
+        rr = (r / Math.sqrt(2.0)).to_i
+        p.rect(x - rr, y - rr, 2 * rr, 2 * rr)
+      when 2
+        # Triangle Down
+        points = [ [ x - r, y - r ],
+                   [ x, y + r ],
+                   [ x + r, y - r ],
+                   [ x - r, y - r ] ]
+        p.polyline(points)
+      when 3
+        # Triangle Up
+        points = [ [ x - r, y + r ],
+                   [ x, y - r ],
+                   [ x + r, y + r ],
+                   [ x - r, y + r ] ]
+        p.polyline(points)
+      else
+        p.circle(x, y, r)
+      end
+    end
+
     def analyzeData
       # Convert the @data from a line list into a column list. Each element of
       # the list is an Array for the other dimension.
