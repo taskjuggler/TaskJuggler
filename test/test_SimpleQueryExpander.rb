@@ -48,8 +48,7 @@ class TestSimpleQueryExpander < Test::Unit::TestCase
 
   def test_expand
     exp = TaskJuggler::SimpleQueryExpander.new('foo <-bar-> foo',
-                                               Query.new,
-                                               nil, nil)
+                                               Query.new, nil)
     assert_equal('foo XXX foo', exp.expand)
   end
 

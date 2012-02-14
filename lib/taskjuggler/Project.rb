@@ -54,16 +54,15 @@ class TaskJuggler
   # the list of known Attributes.
   class Project
 
+    include MessageHandler
+
     attr_reader :accounts, :shifts, :tasks, :resources, :scenarios,
-                :timeSheets, :reports, :messageHandler, :inputFiles
+                :timeSheets, :reports, :inputFiles
     attr_accessor :reportContexts, :outputDir, :warnTsDeltas
 
     # Create a project with the specified +id+, +name+ and +version+.
-    # +messageHandler+ is a MessageHandler reference that is used to handle
-    # all error and warning messages that might occur during processing. The
-    # constructor will set default values for all project attributes.
-    def initialize(id, name, version, messageHandler)
-      @messageHandler = messageHandler
+    # The constructor will set default values for all project attributes.
+    def initialize(id, name, version)
       AttributeBase.setMode(0)
       @attributes = {
         # This nested Array defines the supported alert levels. The lowest
@@ -776,7 +775,7 @@ class TaskJuggler
         if dynamicAttributes
           unless dynamicAttributes.empty?
             context.attributeBackup = report.backupAttributes
-            parser = ProjectFileParser.new(@messageHandler)
+            parser = ProjectFileParser.new
             parser.parseReportAttributes(report, dynamicAttributes)
           end
           report.set('interactive', true)
@@ -1037,17 +1036,6 @@ class TaskJuggler
       end
       str
     end
-
-    # Generate an error message via the message handler.
-    def error(id, text, sourceFileInfo = nil)
-      @messageHandler.error(id, text, sourceFileInfo)
-    end
-
-    # Generate a warning message via the message handle.
-    def warning(id, text, sourceFileInfo = nil)
-      @messageHandler.warning(id, text, sourceFileInfo)
-    end
-
 
   protected
 

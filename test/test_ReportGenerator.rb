@@ -41,8 +41,9 @@ class TestReportGenerator < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/ReportGenerator/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      TaskJuggler::MessageHandler.instance.reset
-      tj = TaskJuggler.new(false)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
       tj.warnTsDeltas = true
@@ -55,11 +56,13 @@ class TestReportGenerator < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/ReportGenerator/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      tj = TaskJuggler.new(true)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
       assert(tj.generateReports(@tmpDir), "Report generator failed for #{f}")
-      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+      assert(mh.messages.empty?, "Unexpected error in #{f}")
 
       checkReports(f)
     end

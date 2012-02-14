@@ -36,8 +36,7 @@ class TestJournal < Test::Unit::TestCase
   end
 
   def setup
-    @p = TaskJuggler::Project.new('hello', 'Hello World', '1.0',
-                                  MessageHandler.instance)
+    @p = TaskJuggler::Project.new('hello', 'Hello World', '1.0')
     @p['start'] = tm('2009-11-01')
     @p['end'] = tm('2009-12-31')
     @j = @p['journal']

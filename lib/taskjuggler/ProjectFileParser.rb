@@ -31,12 +31,9 @@ class TaskJuggler
 
     include TjpSyntaxRules
 
-    # Create the parser object. _messageHandler_ is a TjMessageHandler that is
-    # used for error reporting.
-    def initialize(messageHandler)
+    # Create the parser object.
+    def initialize
       super
-
-      @tjMessageHandler = messageHandler
 
       # Define the token types that the ProjectFileScanner may return for
       # variable elements.
@@ -52,7 +49,7 @@ class TaskJuggler
     # Call this function with the master file to start processing a TJP file or
     # a set of TJP files.
     def open(file, master, fileNameIsBuffer = false)
-      @scanner = ProjectFileScanner.new(file, @messageHandler)
+      @scanner = ProjectFileScanner.new(file)
       # We need the ProjectFileScanner object for error reporting.
       if master && !fileNameIsBuffer && file != '.' && file[-4, 4] != '.tjp'
         error('illegal_extension', "Project file name must end with " +
@@ -219,7 +216,7 @@ class TaskJuggler
       # The RichText is processed by a separate parser. Messages will not have
       # the proper source file info unless we baseline them with the original
       # source file info.
-      mh = MessageHandler.instance
+      mh = MessageHandlerInstance.instance
       mh.baselineSFI = sfi
       rti = rText.generateIntermediateFormat( [ 0, 0, 0 ], tokenSet)
       # Reset the baseline again.
@@ -228,7 +225,7 @@ class TaskJuggler
       rti
     end
 
-    # This method is a convenience wrapper around Project.new. It checks if
+    # This method is a convenience wrapper around Report.new. It checks if
     # the report name already exists. It also triggers the attribute
     # inheritance. +name+ is the name of the report, +type+ is the report
     # type. +sourceFileInfo+ is a SourceFileInfo of the report definition. The

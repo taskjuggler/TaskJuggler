@@ -49,7 +49,7 @@ class TaskJuggler
     end
 
     def to_s
-      "#{@type} #{@description ? "\"#{@description}\"" : ""} #{@interval}"
+      "#{@type} #{@reason ? "\"#{@reason}\"" : ""} #{@interval}"
     end
 
   end

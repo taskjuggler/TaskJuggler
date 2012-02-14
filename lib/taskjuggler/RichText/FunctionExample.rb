@@ -23,7 +23,7 @@ class TaskJuggler
   class RichTextFunctionExample < RichTextFunctionHandler
 
     def initialize
-      super(nil, 'example')
+      super('example')
       @blockFunction = true
     end
 

@@ -24,7 +24,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo = nil)
       @project = project
-      super(project.messageHandler, 'reportlink', sourceFileInfo)
+      super('reportlink', sourceFileInfo)
       @blockFunction = false
       @query = nil
     end
@@ -54,7 +54,6 @@ class TaskJuggler
 
         if args['attributes']
           qEx = SimpleQueryExpander.new(args['attributes'], @query,
-                                        @project.messageHandler,
                                         @sourceFileInfo)
           url += ";attributes=" + URLParameter.encode(qEx.expand)
         end

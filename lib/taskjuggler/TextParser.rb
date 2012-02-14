@@ -50,6 +50,8 @@ class TaskJuggler
   # with the name of the start rule.
   class TextParser
 
+    include MessageHandler
+
     # Utility class so that we can distinguish Array results from the Array
     # containing the results of a repeatable rule. We define some merging
     # method with a slightly different behaviour.
@@ -72,12 +74,10 @@ class TaskJuggler
       end
     end
 
-    attr_reader :rules, :messageHandler
+    attr_reader :rules
 
     # Create a new TextParser object.
-    def initialize(messageHandler)
-      # The message handler will collect all error messages.
-      @messageHandler = messageHandler
+    def initialize
       # This Hash will store the ruleset that the parser is operating on.
       @rules = { }
       # Array to hold the token types that the scanner can return.
@@ -201,7 +201,7 @@ class TaskJuggler
         result = parseFSM(@rules[ruleName])
       rescue TjException => msg
         if msg.message && !msg.message.empty?
-          @messageHandler.critical('parse', msg.message)
+          critical('parse', msg.message)
         end
         return false
       end
@@ -224,7 +224,7 @@ class TaskJuggler
         # on to the TextScanner.
         @scanner.error(id, text, sfi, data)
       else
-        @messageHandler.error(id, text, sfi, data)
+        error(id, text, sfi, data)
       end
     end
 
@@ -235,7 +235,7 @@ class TaskJuggler
         # warning on to the TextScanner.
         @scanner.warning(id, text, sfi, data)
       else
-        @messageHandler.warning(id, text, sfi, data)
+        warning(id, text, sfi, data)
       end
     end
 

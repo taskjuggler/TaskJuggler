@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/MessageHandler'
+
 class TaskJuggler
 
   # This class is the base object for all Project properties. A Project property
@@ -26,6 +28,8 @@ class TaskJuggler
   # 'start' and 'end' date. The user can extend tasks with a user defined
   # attribute like an URL that contains more details about the task.
   class PropertyTreeNode
+
+    include MessageHandler
 
     attr_reader :propertySet, :id, :subId, :parent, :project, :sequenceNo,
                 :children, :adoptees
@@ -559,11 +563,9 @@ class TaskJuggler
       query.string = alertLevel.name
       rText = "<fcol:#{alertLevel.color}><nowiki>#{alertLevel.name}" +
               "</nowiki></fcol>"
-      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
-                                 @project.messageHandler).
-                                 generateIntermediateFormat)
-        @project.messageHandler.warning('ptn_journal',
-                                        "Syntax error in journal message")
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project)).
+              generateIntermediateFormat)
+        warning('ptn_journal', "Syntax error in journal message")
         return nil
       end
       rti.blockMode = false
@@ -653,19 +655,6 @@ class TaskJuggler
       @data[scenarioIdx].send(func, *args, &block)
     end
 
-    def error(id, text)
-      @project.messageHandler.error(id, text, @sourceFileInfo, nil, self, nil)
-    end
-
-    def warning(id, text)
-      @project.messageHandler.warning(id, text, @sourceFileInfo, nil, self, nil)
-    end
-
-    def info(id, text)
-      @project.messageHandler.info(id, text, @sourceFileInfo, nil, self, nil)
-    end
-
-
   private
 
     # Create a blog-style list of all alert messages that match the Query.
@@ -693,11 +682,9 @@ class TaskJuggler
       end
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
-                                 @project.messageHandler).
-                                 generateIntermediateFormat)
-        @project.messageHandler.warning('ptn_journal',
-                                        "Syntax error in journal message")
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project)).
+              generateIntermediateFormat)
+        warning('ptn_journal', "Syntax error in journal message")
         return nil
       end
       # No section numbers, please!

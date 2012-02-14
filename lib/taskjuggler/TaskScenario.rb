@@ -1403,9 +1403,8 @@ class TaskJuggler
       assignedResources(iv).each do |resource|
         if resource.allocated?(@scenarioIdx, iv, @property)
           if query.listItem
-            rti = RichText.new(query.listItem, RTFHandlers.create(@project),
-                               @project.messageHandler).
-                               generateIntermediateFormat
+            rti = RichText.new(query.listItem, RTFHandlers.create(@project)).
+              generateIntermediateFormat
             unless rti
               error('bad_resource_ts_query',
                     "Syntax error in query statement for task attribute " +
@@ -2416,8 +2415,8 @@ class TaskJuggler
 
     def generateDepencyListItem(query, task, dep, date)
       if query.listItem
-        rti = RichText.new(query.listItem, RTFHandlers.create(@project),
-                           @project.messageHandler).generateIntermediateFormat
+        rti = RichText.new(query.listItem, RTFHandlers.create(@project)).
+          generateIntermediateFormat
         q = query.dup
         q.property = task
         q.setCustomData('dependency', { :string => dep })
@@ -2435,8 +2434,8 @@ class TaskJuggler
         date = task['start', @scenarioIdx].
                to_s(@property.project['timeFormat'])
         if query.listItem
-          rti = RichText.new(query.listItem, RTFHandlers.create(@project),
-                             @project.messageHandler).generateIntermediateFormat
+          rti = RichText.new(query.listItem, RTFHandlers.create(@project)).
+            generateIntermediateFormat
           q = query.dup
           q.property = task
           q.setCustomData('date', { :string => date })

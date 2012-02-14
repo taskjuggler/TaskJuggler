@@ -29,9 +29,8 @@ class TaskJuggler
 
     # Create the parser and initialize the rule set. _rt_ is the RichText object
     # the resulting tree of RichTextElement objects should belong to.
-    def initialize(messageHandler, rti, sectionCounter = [ 0, 0, 0, 0 ],
-                   tokenSet = nil)
-      super(messageHandler)
+    def initialize(rti, sectionCounter = [ 0, 0, 0, 0 ], tokenSet = nil)
+      super()
       @richTextI = rti
       # These are the tokens that can be returned by the RichTextScanner.
       @variables = [ :LINEBREAK, :SPACE, :WORD,
@@ -56,12 +55,11 @@ class TaskJuggler
       @numberListCounter = [ 0, 0, 0, 0 ]
     end
 
-    def reuse(messageHandler, rti, sectionCounter = [ 0, 0, 0, 0],
+    def reuse(rti, sectionCounter = [ 0, 0, 0, 0],
               tokenSet = nil)
       @blockedVariables = {}
       @stack = nil
       @richTextI = rti
-      @messageHandler = messageHandler
       @sectionCounter = sectionCounter
       limitTokenSet(tokenSet)
     end
@@ -70,7 +68,7 @@ class TaskJuggler
     def open(text)
       # Make sure that the last line is properly terminated with a newline.
       # Multiple newlines at the end are simply ignored.
-      @scanner = RichTextScanner.new(text + "\n\n", @messageHandler, Log)
+      @scanner = RichTextScanner.new(text + "\n\n", Log)
       @scanner.open(true)
     end
 

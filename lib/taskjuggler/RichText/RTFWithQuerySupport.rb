@@ -17,7 +17,7 @@ class TaskJuggler
 
   class RTFWithQuerySupport < RichTextFunctionHandler
 
-    def initialize(messageHandler, type, sourceFileInfo = nil)
+    def initialize(type, sourceFileInfo = nil)
       super
       @query = nil
     end

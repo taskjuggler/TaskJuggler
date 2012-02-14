@@ -23,8 +23,7 @@ class TaskJuggler
 class TestQuery < Test::Unit::TestCase
 
   def setup
-    @mh = MessageHandler.instance
-    @p = TaskJuggler::Project.new('id', 'name', 'ver', @mh)
+    @p = TaskJuggler::Project.new('id', 'name', 'ver')
     @p['start'] = TjTime.new('2010-09-25')
     @p['end'] = TjTime.new('2010-09-25')
   end

@@ -95,7 +95,7 @@ class TaskJuggler
   # on the type of the message, a TjExeption can be raised (:error), or the
   # program can be immedidately aborted (:fatal). Other types will just
   # continue the program flow.
-  class MessageHandler
+  class MessageHandlerInstance
 
     include Singleton
 
@@ -111,7 +111,7 @@ class TaskJuggler
     # purged and the error counter set to 0.
     def reset
       # Set to true if messages should be sent to $stderr.
-      @console = false
+      @console = true
       # A counter for messages of type error.
       @errors = 0
       # Set to true if program should be exited on warnings.
@@ -204,6 +204,52 @@ class TaskJuggler
       when :fatal
         raise RuntimeError
       end
+    end
+
+  end
+
+  module MessageHandler
+
+    # Generate a fatal message that will abort the application.
+    def fatal(id, message, sourceFileInfo = nil, line = nil, data = nil,
+              scenario = nil)
+      MessageHandlerInstance.instace.fatal(id, message, sourceFileInfo, line,
+                                           data, scenario)
+    end
+
+    # Generate an error message.
+    def error(id, message, sourceFileInfo = nil, line = nil, data = nil,
+              scenario = nil)
+      MessageHandlerInstance.instance.error(id, message, sourceFileInfo, line,
+                                            data, scenario)
+    end
+
+    # Generate an critical message.
+    def critical(id, message, sourceFileInfo = nil, line = nil, data = nil,
+                 scenario = nil)
+      MessageHandlerInstance.instance.critical(id, message, sourceFileInfo,
+                                               line, data, scenario)
+    end
+
+    # Generate a warning.
+    def warning(id, message, sourceFileInfo = nil, line = nil, data = nil,
+                scenario = nil)
+      MessageHandlerInstance.instance.warning(id, message, sourceFileInfo,
+                                              line, data, scenario)
+    end
+
+    # Generate an info message.
+    def info(id, message, sourceFileInfo = nil, line = nil, data = nil,
+             scenario = nil)
+      MessageHandlerInstance.instance.info(id, message, sourceFileInfo, line,
+                                           data, scenario)
+    end
+
+    # Generate a debug message.
+    def debug(id, message, sourceFileInfo = nil, line = nil, data = nil,
+              scenario = nil)
+      MessageHandlerInstance.instance.info(id, message, sourceFileInfo, line,
+                                           data, scenario)
     end
 
   end

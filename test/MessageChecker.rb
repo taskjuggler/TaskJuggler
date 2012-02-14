@@ -19,7 +19,7 @@ module MessageChecker
   # match the references specified in the test file.
   def checkMessages(tj, file)
     refMessages = collectMessages(file)
-    tj.messageHandler.messages.each do |message|
+    TaskJuggler::MessageHandlerInstance.instance.messages.each do |message|
       assert(ref = refMessages.pop, "Unexpected #{message.type.to_s} #{message.id}: #{message}")
       assert_equal(ref[0], message.type.to_s,
           "Error in #{file}: Got #{message.type.to_s} instead of #{ref[0]}")

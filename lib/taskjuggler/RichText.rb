@@ -72,7 +72,7 @@ class TaskJuggler
   #
   class RichText
 
-    attr_reader :inputText, :messageHandler
+    attr_reader :inputText
 
     # The Parser uses complex to setup data structures that are identical for
     # all RichText instances. So, we'll share them across the instances.
@@ -83,11 +83,10 @@ class TaskJuggler
     # case an error occurs, an exception of type TjException will be raised.
     # _functionHandlers_ is a Hash that maps RichTextFunctionHandler objects
     # by their function name.
-    def initialize(text, functionHandlers = [], messageHandler = nil)
+    def initialize(text, functionHandlers = [])
       # Keep a copy of the original text.
       @inputText = text
       @functionHandlers = functionHandlers
-      @messageHandler = MessageHandler.instance
     end
 
     # Convert the @inputText into an abstract syntax tree that can then be
@@ -103,11 +102,10 @@ class TaskJuggler
       # We'll setup the RichTextParser once and share it across all instances.
       if @@parser
         # We already have a RichTextParser that we can reuse.
-        @@parser.reuse(@messageHandler, rti, sectionCounter, tokenSet)
+        @@parser.reuse(rti, sectionCounter, tokenSet)
       else
         # There is no RichTextParser yet, create one.
-        @@parser = RichTextParser.new(@messageHandler, rti, sectionCounter,
-                                      tokenSet)
+        @@parser = RichTextParser.new(rti, sectionCounter, tokenSet)
       end
 
       @@parser.open(@inputText)

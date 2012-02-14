@@ -499,9 +499,8 @@ class TaskJuggler
       if query
         get.each do |r|
           if query.listItem
-            rti = RichText.new(query.listItem, RTFHandlers.create(r.project),
-                               r.project.messageHandler).
-                               generateIntermediateFormat
+            rti = RichText.new(query.listItem, RTFHandlers.create(r.project)).
+              generateIntermediateFormat
             q = query.dup
             q.property = r
             rti.setQuery(q)

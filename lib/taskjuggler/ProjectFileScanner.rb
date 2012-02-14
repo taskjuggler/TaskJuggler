@@ -19,7 +19,7 @@ class TaskJuggler
   # of the TJP syntax.
   class ProjectFileScanner < TextParser::Scanner
 
-    def initialize(masterFile, messageHandler)
+    def initialize(masterFile)
       tokenPatterns = [
         # Any white spaces
         [ nil, /\s+/, :tjp, method('newPos') ],
@@ -150,7 +150,7 @@ class TaskJuggler
         [ :LITERAL, /./ ]
       ]
 
-      super(masterFile, messageHandler, Log, tokenPatterns, :tjp)
+      super(masterFile, Log, tokenPatterns, :tjp)
     end
 
     private

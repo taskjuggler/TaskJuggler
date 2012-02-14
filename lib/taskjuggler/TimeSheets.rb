@@ -20,6 +20,8 @@ class TaskJuggler
   # work during the reporting time frame.
   class TimeSheetRecord
 
+    include MessageHandler
+
     attr_reader :task, :work
     attr_accessor :sourceFileInfo, :remaining, :expectedEnd, :status,
                    :priority, :name
@@ -233,14 +235,6 @@ class TaskJuggler
 
     private
 
-    def error(id, text)
-      @timeSheet.error(id, text, @sourceFileInfo)
-    end
-
-    def warning(id, text)
-      @timeSheet.warning(id, text, @sourceFileInfo)
-    end
-
   end
 
   # The TimeSheet class stores the work related bits of a time sheet. For each
@@ -264,6 +258,7 @@ class TaskJuggler
       @percentageUsed = false
       # The TimeSheetRecord list.
       @records = []
+      @messageHandler = MessageHandlerInstance.instance
     end
 
     # Add a new TimeSheetRecord to the list.
@@ -368,13 +363,12 @@ class TaskJuggler
     end
 
     def error(id, text, sourceFileInfo = nil)
-      @resource.project.messageHandler.error(
-        id, text, sourceFileInfo || @sourceFileInfo, nil, @resource)
+      @messageHandler.error(id, text, sourceFileInfo || @sourceFileInfo,
+                            nil, @resource)
     end
 
     def warning(id, text, sourceFileInfo = nil)
-      @resource.project.messageHandler.warning(id, text, sourceFileInfo, nil,
-                                               @resource)
+      @messageHandler.warning(id, text, sourceFileInfo, nil, @resource)
     end
 
     private

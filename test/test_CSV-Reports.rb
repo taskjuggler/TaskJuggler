@@ -90,8 +90,8 @@ class TestScheduler < Test::Unit::TestCase
     # they need to be in the ./refs/ directory relative to the project file.
     refFile = baseDir + "/refs/#{baseName}.csv"
 
-    TaskJuggler::MessageHandler.instance.reset
-    tj = TaskJuggler.new(true)
+    (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+    tj = TaskJuggler.new
     assert(tj.parse([ projectFile ]), "Parser failed for #{projectFile}")
     assert(tj.schedule, "Scheduler failed for #{projectFile}")
     if File.file?(refFile)
@@ -110,8 +110,7 @@ class TestScheduler < Test::Unit::TestCase
                "Reference file generation failed for #{projectFile}")
       end
     end
-    assert(tj.messageHandler.messages.empty?,
-           "Unexpected error in #{projectFile}")
+    assert(mh.messages.empty?, "Unexpected error in #{projectFile}")
   end
 
   def test_CSV_Reports

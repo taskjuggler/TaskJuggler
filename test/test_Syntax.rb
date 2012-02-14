@@ -30,10 +30,11 @@ class TestSyntax < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Syntax/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      TaskJuggler::MessageHandler.instance.reset
-      tj = TaskJuggler.new(false)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
-      assert(tj.messageHandler.messages.empty?, "Unexpected error in #{f}")
+      assert(mh.messages.empty?, "Unexpected error in #{f}")
     end
   end
 
@@ -41,8 +42,9 @@ class TestSyntax < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Syntax/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      TaskJuggler::MessageHandler.instance.reset
-      tj = TaskJuggler.new(false)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(!tj.parse([ f ]), "Parser succedded for #{f}")
       checkMessages(tj, f)
     end

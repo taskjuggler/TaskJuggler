@@ -48,7 +48,7 @@ class TaskJuggler
       deleteOldReports(tjpFile[0..-5])
 
       puts "Generating references for #{tjpFile}"
-      tj = TaskJuggler.new(true)
+      tj = TaskJuggler.new
       tj.parse([ tjpFile ]) || error("Parser failed for ${tjpFile}")
       tj.schedule || error("Scheduler failed for #{tjpFile}")
       tj.generateReports(outputDir) ||

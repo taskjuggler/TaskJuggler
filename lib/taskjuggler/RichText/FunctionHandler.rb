@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/MessageHandler'
+
 class TaskJuggler
 
   # This class is the abstract base class for all RichText function handlers.
@@ -24,17 +26,14 @@ class TaskJuggler
   # second is the argument Array.
   class RichTextFunctionHandler
 
+    include MessageHandler
+
     attr_reader :function, :blockFunction
 
-    def initialize(messageHandler, function, sourceFileInfo = nil)
-      @messageHandler = messageHandler
+    def initialize(function, sourceFileInfo = nil)
       @function = function
       @blockFunction = false
       @sourceFileInfo = sourceFileInfo
-    end
-
-    def error(id, text)
-      @messageHandler.error(id, text, @sourceFileInfo) if @messageHandler
     end
 
   end

@@ -144,7 +144,7 @@ class TaskJuggler
       @modifiedCheck = TjTime.new
 
       updateState(:loading, dirAndFiles, false)
-      @tj = TaskJuggler.new(true)
+      @tj = TaskJuggler.new
       # Make sure that trace reports get CSV formats included so there reports
       # can be generated on request.
       @tj.generateTraces = true

@@ -24,7 +24,7 @@ class TaskJuggler
 class TestLimits < Test::Unit::TestCase
 
   def setup
-    @p = Project.new('p1', 'p 1', '1.0', MessageHandler.instance)
+    @p = Project.new('p1', 'p 1', '1.0')
     @p['start'] = TjTime.new('2009-01-21')
     @p['end'] = TjTime.new('2009-03-01')
   end

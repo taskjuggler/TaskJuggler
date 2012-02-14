@@ -3189,7 +3189,7 @@ EOT
 
   def rule_projectHeader
     pattern(%w( _project !optionalID $STRING !optionalVersion !interval ), lambda {
-      @project = Project.new(@val[1], @val[2], @val[3], @messageHandler)
+      @project = Project.new(@val[1], @val[2], @val[3])
       @project['start'] = @val[4].start
       @project['end'] = @val[4].end
       @projectId = @val[1]

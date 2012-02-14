@@ -100,40 +100,6 @@ class TaskJuggler
 
     private
 
-    def setMarker(p, type, x, y)
-      r = 4
-      case (type / 5) % 5
-      when 0
-        # Diamond
-        points = [ [ x - r, y ],
-                   [ x, y + r ],
-                   [ x + r, y ],
-                   [ x, y - r ],
-                   [ x - r, y ] ]
-        p.polyline(points)
-      when 1
-        # Square
-        rr = (r / Math.sqrt(2.0)).to_i
-        p.rect(x - rr, y - rr, 2 * rr, 2 * rr)
-      when 2
-        # Triangle Down
-        points = [ [ x - r, y - r ],
-                   [ x, y + r ],
-                   [ x + r, y - r ],
-                   [ x - r, y - r ] ]
-        p.polyline(points)
-      when 3
-        # Triangle Up
-        points = [ [ x - r, y + r ],
-                   [ x, y - r ],
-                   [ x + r, y + r ],
-                   [ x - r, y + r ] ]
-        p.polyline(points)
-      else
-        p.circle(x, y, r)
-      end
-    end
-
     def analyzeData
       # Convert the @data from a line list into a column list. Each element of
       # the list is an Array for the other dimension.

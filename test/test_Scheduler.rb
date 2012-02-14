@@ -27,8 +27,9 @@ class TestScheduler < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      TaskJuggler::MessageHandler.instance.reset
-      tj = TaskJuggler.new(false)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       tj.warnTsDeltas = true
       tj.schedule
@@ -40,8 +41,9 @@ class TestScheduler < Test::Unit::TestCase
     path = File.dirname(__FILE__) + '/'
     Dir.glob(path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
-      TaskJuggler::MessageHandler.instance.reset
-      tj = TaskJuggler.new(false)
+      (mh = TaskJuggler::MessageHandlerInstance.instance).reset
+      mh.console = false
+      tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")
       checkMessages(tj, f)

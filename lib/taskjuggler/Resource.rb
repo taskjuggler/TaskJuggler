@@ -85,11 +85,9 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
-                                 @project.messageHandler).
-                                 generateIntermediateFormat)
-        @project.messageHandler.warning(
-          'res_dashboard', 'Syntax error in dashboard text')
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project)).
+              generateIntermediateFormat)
+        warning('res_dashboard', 'Syntax error in dashboard text')
         return nil
       end
       # No section numbers, please!

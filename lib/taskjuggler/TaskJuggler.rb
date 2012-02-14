@@ -23,16 +23,16 @@ require 'taskjuggler/Log'
 # files, schedule them and generate the reports.
 class TaskJuggler
 
-  attr_reader :project, :messageHandler
+  include MessageHandler
+
+  attr_reader :project
   attr_accessor :maxCpuCores, :warnTsDeltas, :generateTraces
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
   # whether or not messsages can be written to $stderr.
-  def initialize(console)
+  def initialize
     @project = nil
     @parser = nil
-    @messageHandler = MessageHandler.instance
-    @messageHandler.console = console
     @maxCpuCores = 1
     @warnTsDeltas = false
     @generateTraces = false
@@ -48,13 +48,13 @@ class TaskJuggler
     @project = nil
 
     #RubyProf.start
-    @parser = ProjectFileParser.new(@messageHandler)
+    @parser = ProjectFileParser.new
     files.each do |file|
       begin
         @parser.open(file, master)
       rescue TjException => msg
         if msg.message && !msg.message.empty?
-          @messageHandler.critical('parse', msg.message)
+          critical('parse', msg.message)
         end
         Log.exit('parser')
         return false
@@ -93,7 +93,7 @@ class TaskJuggler
     @parser = nil unless keepParser
 
     Log.exit('parser')
-    @messageHandler.errors == 0
+    MessageHandlerInstance.instance.errors == 0
   end
 
   # Parse a file and add the content to the existing project. _fileName_ is
@@ -104,7 +104,7 @@ class TaskJuggler
       @project.inputFiles << fileName
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('parse_file', msg.message)
+        critical('parse_file', msg.message)
       end
       return nil
     end
@@ -127,7 +127,7 @@ class TaskJuggler
       res = @project.schedule
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('scheduling_error', msg.message)
+        critical('scheduling_error', msg.message)
       end
       return false
     end
@@ -161,7 +161,7 @@ class TaskJuggler
       #end
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('generate_reports', msg.message)
+        critical('generate_reports', msg.message)
       end
       return false
     end
@@ -183,7 +183,7 @@ class TaskJuggler
       @project.generateReport(reportId, regExpMode, formats, dynamicAttributes)
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('generate_report', msg.message)
+        critical('generate_report', msg.message)
       end
       Log.exit('generateReport')
       return false
@@ -200,7 +200,7 @@ class TaskJuggler
       @project.listReports(reportId, regExpMode)
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('list_reports', msg.message)
+        critical('list_reports', msg.message)
       end
       Log.exit('listReports')
       return false
@@ -214,9 +214,9 @@ class TaskJuggler
     begin
       # Check the master file is really a file and not stdin.
       unless (masterFile = @project.inputFiles.masterFile)
-        @messageHandler.error('cannot_freeze_stdin',
-                              "The project freeze feature only when the " +
-                              "master file is a real file, not standard input.")
+        error('cannot_freeze_stdin',
+              "The project freeze feature only when the " +
+              "master file is a real file, not standard input.")
       end
 
       # Derive the file names for the header and bookings file from the base
@@ -227,10 +227,10 @@ class TaskJuggler
       bookingsFile = bookingsFileBase + '.tji'
 
       if !File.exists?(bookingsFile) || !File.exists?(headerFile)
-        @messageHandler.info('incl_freeze_files',
-                             "Please make sure you include #{headerFile} at " +
-                             "the end of the project header and " +
-                             "#{bookingsFile} at the end of #{masterFile}.")
+        info('incl_freeze_files',
+             "Please make sure you include #{headerFile} at " +
+             "the end of the project header and " +
+             "#{bookingsFile} at the end of #{masterFile}.")
       end
 
       # Generate the project header include file with the new 'now' date.
@@ -239,9 +239,9 @@ class TaskJuggler
           f.puts("now #{freezeDate}")
         end
       rescue
-        @messageHandler.error('write_header_incl',
-                              "Cannote write header include file " +
-                              "#{headerFile}")
+        error('write_header_incl',
+              "Cannote write header include file " +
+              "#{headerFile}")
       end
 
       # Generate an export report for the bookings.
@@ -252,8 +252,7 @@ class TaskJuggler
 
       # We export only the tracking scenario.
       unless (trackingScenarioIdx = @project['trackingScenarioIdx'])
-        @messageHandler.error('no_tracking_scen',
-                              'No trackingscenario defined')
+        error('no_tracking_scen', 'No trackingscenario defined')
       end
       report.set('scenarios', [ trackingScenarioIdx ])
 
@@ -317,7 +316,7 @@ class TaskJuggler
       puts ts.resource.query_journal(query).richText.inputText
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('check_time_sheet', msg.message)
+        critical('check_time_sheet', msg.message)
       end
       Log.exit('checkTimeSheet')
       return false
@@ -353,7 +352,7 @@ class TaskJuggler
       puts ss[0].query_dashboard(query).richText.inputText
     rescue TjException => msg
       if msg.message && !msg.message.empty?
-        @messageHandler.critical('check_status_sheet', msg.message)
+        critical('check_status_sheet', msg.message)
       end
       Log.exit('checkStatusSheet')
       return false
@@ -376,7 +375,7 @@ class TaskJuggler
 
   # Return the number of errors that had been reported during processing.
   def errors
-    @project.messageHandler.errors
+    MessageHandlerInstance.instance.errors
   end
 
 end

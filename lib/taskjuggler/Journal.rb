@@ -11,6 +11,8 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/MessageHandler'
+
 class TaskJuggler
 
   # A JournalEntry stores some RichText strings to describe a status or a
@@ -342,6 +344,8 @@ class TaskJuggler
   # information.
   class Journal
 
+    include MessageHandler
+
     # Create a new Journal object.
     def initialize
       # This list holds all entries.
@@ -485,11 +489,9 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      unless (rti = RichText.new(rText, RTFHandlers.create(query.project),
-                                 query.project.messageHandler).
+      unless (rti = RichText.new(rText, RTFHandlers.create(query.project)).
                                  generateIntermediateFormat)
-        query.project.warning('ptn_journal',
-                              "Syntax error in journal: #{rText}")
+        warning('ptn_journal', "Syntax error in journal: #{rText}")
         return nil
       end
       # No section numbers, please!

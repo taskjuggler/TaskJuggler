@@ -23,7 +23,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo = nil)
       @project = project
-      super(project.messageHandler, 'query', sourceFileInfo)
+      super('query', sourceFileInfo)
       @blockMode = false
     end
 
@@ -83,8 +83,7 @@ class TaskJuggler
           return nil
         end
         expandedArgs[arg] =
-          SimpleQueryExpander.new(value, @query, @messageHandler,
-                                  @sourceFileInfo).expand
+          SimpleQueryExpander.new(value, @query, @sourceFileInfo).expand
       end
 
       if (expandedArgs['property'] || expandedArgs['scopeproperty']) &&

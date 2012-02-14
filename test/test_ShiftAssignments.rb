@@ -21,10 +21,8 @@ class TestPropertySet < Test::Unit::TestCase
 
   def setup
     TaskJuggler::ShiftAssignments.sbClear
-    mh = TaskJuggler::MessageHandler.instance
-    mh.reset
-    mh.console = true
-    @p = TaskJuggler::Project.new('p', 'Project', '1.0', mh)
+    TaskJuggler::MessageHandlerInstance.instance.reset
+    @p = TaskJuggler::Project.new('p', 'Project', '1.0')
     @p['start'] = TaskJuggler::TjTime.new('2008-07-29')
     @p['end'] = TaskJuggler::TjTime.new('2008-08-31')
     @s1 = TaskJuggler::Shift.new(@p, 's1', "Shift2", nil).scenario(0)

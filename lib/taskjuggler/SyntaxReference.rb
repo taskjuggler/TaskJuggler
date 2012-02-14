@@ -35,9 +35,7 @@ class TaskJuggler
     # SyntaxReference.
     def initialize(manual = nil, ignoreOld = false)
       @manual = manual
-      @messageHandler = MessageHandler.instance
-      @messageHandler.console = true
-      @parser = ProjectFileParser.new(@messageHandler)
+      @parser = ProjectFileParser.new
       @parser.updateParserTables
 
       # This hash stores all documented keywords using the keyword as

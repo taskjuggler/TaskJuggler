@@ -30,7 +30,7 @@ class TaskJuggler
   # :func :    inside of a block <[ .. ]> or inline <- .. -> function
   class RichTextScanner < TextParser::Scanner
 
-    def initialize(masterFile, messageHandler, log)
+    def initialize(masterFile, log)
       tokenPatterns = [
         # :bol mode rules
         [ :LINEBREAK, /\s*\n/, :bol, method('linebreak') ],
@@ -94,7 +94,7 @@ class TaskJuggler
         [ nil, /[ \t\n]+/, :func ],
         [ :LITERAL, /./, :func ]
       ]
-      super(masterFile, messageHandler, log, tokenPatterns, :bop)
+      super(masterFile, log, tokenPatterns, :bop)
     end
 
     private

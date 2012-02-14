@@ -22,7 +22,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo = nil)
       @project = project
-      super(project.messageHandler, 'report', sourceFileInfo)
+      super('report', sourceFileInfo)
       @blockFunction = true
     end
 

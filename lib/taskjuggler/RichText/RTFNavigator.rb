@@ -24,7 +24,7 @@ class TaskJuggler
 
     def initialize(project, sourceFileInfo = nil)
       @project = project
-      super(project.messageHandler, 'navigator', sourceFileInfo)
+      super('navigator', sourceFileInfo)
       @blockFunction = true
     end
 

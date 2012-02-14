@@ -12,6 +12,7 @@
 #
 
 require 'term/ansicolor'
+require 'taskjuggler/MessageHandler'
 require 'taskjuggler/HTMLDocument'
 require 'taskjuggler/RichText'
 require 'taskjuggler/TjpExample'
@@ -34,6 +35,7 @@ class TaskJuggler
 
     include HTMLElements
     include Term::ANSIColor
+    include MessageHandler
 
     attr_reader :keyword, :names, :pattern, :references, :optionalAttributes
     attr_accessor :contexts, :scenarioSpecific, :inheritedFromProject,
@@ -46,8 +48,6 @@ class TaskJuggler
     # _pattern_.  _optAttrPatterns_ is an Array with references to
     # TextParser::Patterns that are optional attributes to this keyword.
     def initialize(rule, pattern, syntax, args, optAttrPatterns, manual)
-      @messageHandler = MessageHandler.instance
-      @messageHandler.console = true
       @rule = rule
       @pattern = pattern
       # The unique identifier. Usually the attribute or property name. To
@@ -161,7 +161,7 @@ class TaskJuggler
         end
       end
       if property
-        project = Project.new('id', 'dummy', '1.0', nil)
+        project = Project.new('id', 'dummy', '1.0')
         propertySet = case property
                       when 'task'
                         project.tasks
@@ -407,10 +407,9 @@ class TaskJuggler
     # catches all RichTextScanner processing problems and converts the exception
     # data into an error message.
     def newRichText(text)
-      rText = RichText.new(text, [], @messageHandler)
+      rText = RichText.new(text, [])
       unless (rti = rText.generateIntermediateFormat)
-        @messageHandler.error('rich_text',
-                              "Error in RichText of rule #{@keyword}")
+        error('rich_text', "Error in RichText of rule #{@keyword}")
       end
       @references += rti.internalReferences
       rti

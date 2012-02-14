@@ -12,6 +12,7 @@
 #
 
 require 'strscan'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
@@ -22,14 +23,15 @@ class TaskJuggler
   # context of the query.
   class SimpleQueryExpander
 
+    include MessageHandler
+
     # _inputStr_ is the String with the embedded queries. _query_ is the Query
     # with that provides the evaluation context. _messageHandle_ is a
     # MessageHandler that will be used for error reporting. _sourceFileInfo_
     # is a SourceFileInfo reference used for error reporting.
-    def initialize(inputStr, query, messageHandler, sourceFileInfo)
+    def initialize(inputStr, query, sourceFileInfo)
       @inputStr = inputStr
       @query = query.dup
-      @messageHandler = messageHandler
       @sourceFileInfo = sourceFileInfo
     end
 
@@ -45,9 +47,8 @@ class TaskJuggler
           @query.to_s
         else
           # The query failed. We report an error.
-          @messageHandler.error('sqe_expand_failed',
-                                "Unknown attribute #{attribute}",
-                                @sourceFileInfo)
+          error('sqe_expand_failed', "Unknown attribute #{attribute}",
+                @sourceFileInfo)
         end
       end
       str

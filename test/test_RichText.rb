@@ -22,7 +22,7 @@ require 'taskjuggler/MessageHandler'
   class RTFDummy < TaskJuggler::RichTextFunctionHandler
 
     def initialize()
-      super(nil, 'dummy')
+      super('dummy')
       @blockFunction = true
     end
 
@@ -936,9 +936,9 @@ EOT
 
 
   def newRichText(text)
-    mh = TaskJuggler::MessageHandler.instance
-    mh.console = true
-    rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ], mh)
+    mh = TaskJuggler::MessageHandlerInstance.instance
+    mh.console = false
+    rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ])
     assert(rti = rText.generateIntermediateFormat, mh.to_s)
     rti.linkTarget = '_blank'
     rti

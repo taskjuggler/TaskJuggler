@@ -25,6 +25,7 @@ class TaskJuggler
       @project = property.project
       @scenarioIdx = idx
       @attributes = attributes
+      @messageHandler = MessageHandlerInstance.instance
 
       # Register the scenario with the Task.
       @property.data[idx] = self
@@ -42,21 +43,21 @@ class TaskJuggler
     end
 
     def error(id, text, sourceFileInfo = nil, property = nil)
-      @project.messageHandler.error(
+      @messageHandler.error(
         id, text, sourceFileInfo || @property.sourceFileInfo, nil,
         property || @property,
         @project.scenario(@scenarioIdx))
     end
 
     def warning(id, text, sourceFileInfo = nil, property = nil)
-      @project.messageHandler.warning(
+      @messageHandler.warning(
         id, text, sourceFileInfo || @property.sourceFileInfo, nil,
         property || @property,
         @project.scenario(@scenarioIdx))
     end
 
     def info(id, text, sourceFileInfo = nil, property = nil)
-      @project.messageHandler.info(
+      @messageHandler.info(
         id, text, sourceFileInfo || @property.sourceFileInfo, nil,
         property || @property,
         @project.scenario(@scenarioIdx))

@@ -148,11 +148,11 @@ EOT
                 "a directory!")
         end
 
-        tj = TaskJuggler.new(true)
+        tj = TaskJuggler.new
         tj.maxCpuCores = @maxCpuCores
         tj.warnTsDeltas = @warnTsDeltas
         tj.generateTraces = @generateTraces
-        tj.messageHandler.abortOnWarning = @abortOnWarning
+        MessageHandlerInstance.instance.abortOnWarning = @abortOnWarning
         keepParser = !@timeSheets.empty? || !@statusSheets.empty?
         return 1 unless tj.parse(files, keepParser)
 

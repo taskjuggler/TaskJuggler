@@ -204,9 +204,9 @@ class TaskJuggler::TextParser
     # either contains the name of the file to start with or the text itself.
     # _messageHandler_ is a MessageHandler that is used for error messages.
     # _log_ is a Log to report progress and status.
-    def initialize(masterFile, messageHandler, log, tokenPatterns, defaultMode)
+    def initialize(masterFile, log, tokenPatterns, defaultMode)
       @masterFile = masterFile
-      @messageHandler = messageHandler
+      @messageHandler = TaskJuggler::MessageHandlerInstance.instance
       @log = log
       # This table contains all macros that may be expanded when found in the
       # text.

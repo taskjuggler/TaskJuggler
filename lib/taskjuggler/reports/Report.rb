@@ -46,6 +46,7 @@ class TaskJuggler
     # Create a new report object.
     def initialize(project, id, name, parent)
       super(project.reports, id, name, parent)
+      @messageHandler = MessageHandlerInstance.instance
       checkFileName(name)
       project.addReport(self)
 
@@ -159,7 +160,7 @@ class TaskJuggler
 
     def error(id, message)
       if message && !message.empty?
-        @project.messageHandler.error(id, message, @sourceFileInfo)
+        @messageHandler.error(id, message, @sourceFileInfo)
       else
         # We have no message, so the error has already been reported to the
         # MessageHandler. Just trigger another exception to signal the error.
@@ -169,7 +170,7 @@ class TaskJuggler
 
     def warning(id, message)
       if message && !message.empty?
-        @project.messageHandler.warning(id, message, @sourceFileInfo)
+        @messageHandler.warning(id, message, @sourceFileInfo)
       end
     end
 

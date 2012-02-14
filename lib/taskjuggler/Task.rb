@@ -96,9 +96,8 @@ class TaskJuggler
 
       # Now convert the RichText markup String into RichTextIntermediate
       # format.
-      unless (rti = RichText.new(rText, RTFHandlers.create(@project),
-                                 @project.messageHandler).
-                                 generateIntermediateFormat)
+      unless (rti = RichText.new(rText, RTFHandlers.create(@project)).
+              generateIntermediateFormat)
         @project.messageHandler.warning(
           'task_journal_text', 'Syntax error in journal text')
         return nil
