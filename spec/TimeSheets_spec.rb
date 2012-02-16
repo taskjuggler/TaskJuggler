@@ -86,6 +86,9 @@ EOT
       res = stdIoWrapper do
         Tj3TsSender.new.main(%w( --dryrun --silent -e 2011-03-21 ))
       end
+      if res.stdErr != ''
+        raise "Tj3TsSender failed: #{res.stdErr}"
+      end
       @tss_mails = collectMails(res.stdOut)
       raise "Timesheet generation failed" unless res.returnValue == 0
 

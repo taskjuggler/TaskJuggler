@@ -18,14 +18,14 @@ require 'taskjuggler/Tj3Config'
 require 'taskjuggler/RuntimeConfig'
 require 'taskjuggler/TjTime'
 require 'taskjuggler/TextFormatter'
+require 'taskjuggler/MessageHandler'
 require 'taskjuggler/Log'
 
 class TaskJuggler
 
-  class TjRuntimeError < RuntimeError
-  end
-
   class Tj3AppBase
+
+    include MessageHandler
 
     def initialize
       # Indent and width of options. The deriving class may has to change
@@ -42,6 +42,9 @@ class TaskJuggler
       # the terminal output. Additionally, we have the --no-color option to
       # force colors off in case this does not work properly.
       Term::ANSIColor.coloring = STDOUT.tty?
+
+      # Make sure the MessageHandler is set to default values.
+      MessageHandlerInstance.instance.reset
     end
 
     def processArguments(argv)
@@ -66,6 +69,7 @@ class TaskJuggler
       @opts.on('--silent',
                format("Don't show program and progress information")) do
         @silent = true
+        MessageHandlerInstance.instance.outputLevel = :warning
         TaskJuggler::Log.silent = true
       end
       @opts.on('--no-color',
@@ -97,7 +101,7 @@ EOT
         files = @opts.parse(argv)
       rescue OptionParser::ParseError => msg
         puts @opts.to_s + "\n"
-        error(msg.message, 2)
+        error('tj3app_bad_cmd_options', msg.message)
       end
 
       files
@@ -106,15 +110,17 @@ EOT
     def main(argv = ARGV)
       if Gem::Version.new(RUBY_VERSION.dup) <
          Gem::Version.new(@mininumRubyVersion)
-        error('This program requires at least Ruby version ' +
+        error('tj3app_ruby_version',
+              'This program requires at least Ruby version ' +
               "#{@mininumRubyVersion}!")
       end
 
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
-        error("Aborting on user request!")
+        error('tj3app_user_abort', "Aborting on user request!")
       end
 
+      retVal = 0
       begin
         args = processArguments(argv)
 
@@ -132,31 +138,37 @@ EOT
 
         @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
 
-        appMain(args)
+        begin
+          retVal = appMain(args)
+        rescue TjRuntimeError
+          # We have hit a sitatuation that we can't recover from. A message
+          # was severed via the MessageHandler to inform the user and we now
+          # abort the program.
+          return 1
+        end
+
       rescue Exception => e
         if e.is_a?(SystemExit) || e.is_a?(Interrupt)
           # Don't show backtrace on user interrupt unless we are in debug mode.
           $stderr.puts e.backtrace.join("\n") if $DEBUG
           1
         else
-          error("Ups, you have triggered a bug in " +
+          fatal('tj3app_crash', "Ups, you have triggered a bug in " +
                 "#{AppConfig.softwareName}!\n" +
                 "#{e}\n" +
                 e.backtrace.join("\n") +
                 "Please see the user manual on how to get this bug fixed!")
         end
       end
+
+      # Exit value in case everything was fine.
+      retVal
     end
 
     private
 
     def quit
       exit 0
-    end
-
-    def error(message, exitVal = 1)
-      $stderr.puts "\nERROR: #{message}"
-      exit exitVal
     end
 
     def format(str, indent = nil)

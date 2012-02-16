@@ -15,12 +15,15 @@ require 'taskjuggler/reports/ReportBase'
 require 'taskjuggler/reports/CSVFile'
 require 'taskjuggler/reports/ChartPlotter'
 require 'taskjuggler/TableColumnSorter'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
   # The trace report is used to periodically snapshot a specific list of
   # property attributes and add them to a CSV file.
   class TraceReport < ReportBase
+
+    include MessageHandler
 
     # Create a new object and set some default values.
     def initialize(report)
@@ -122,7 +125,7 @@ class TaskJuggler
         plotter.generate
         plotter.to_svg
       rescue ChartPlotterError => exception
-        @project.messageHandler.warning('chartPlotterError', exception.message)
+        warning('chartPlotterError', exception.message)
       end
     end
 

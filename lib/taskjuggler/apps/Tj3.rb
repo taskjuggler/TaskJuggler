@@ -89,7 +89,8 @@ EOT
           begin
             @freezeDate = TjTime.new(arg).align(3600)
           rescue TjException => msg
-            error("Invalid freeze date: #{msg.message}")
+            error('tj3_ivld_freeze_date',
+                  "Invalid freeze date: #{msg.message}")
           end
         end
         @opts.on('--freezebytask',
@@ -139,51 +140,48 @@ EOT
     end
 
     def appMain(files)
-      begin
-        if files.empty?
-          error('You must provide at least one .tjp file', 1)
-        end
-        if @outputDir != '' && !File.directory?(@outputDir)
-          error("Output directory #{@outputDir} does not exist or is not " +
-                "a directory!")
-        end
-
-        tj = TaskJuggler.new
-        tj.maxCpuCores = @maxCpuCores
-        tj.warnTsDeltas = @warnTsDeltas
-        tj.generateTraces = @generateTraces
-        MessageHandlerInstance.instance.abortOnWarning = @abortOnWarning
-        keepParser = !@timeSheets.empty? || !@statusSheets.empty?
-        return 1 unless tj.parse(files, keepParser)
-
-        return 0 if @checkSyntax
-
-        if !tj.schedule
-          return 1 unless @forceReports
-        end
-
-        # The checks of time and status sheets is probably only used for
-        # debugging.  Normally, this function is provided by tj3client.
-        @timeSheets.each do |ts|
-          return 1 if !tj.checkTimeSheet(ts) || tj.errors > 0
-        end
-        @statusSheets.each do |ss|
-          return 1 if !tj.checkStatusSheet(ss) || tj.errors > 0
-        end
-
-        # Check for freeze mode and generate the booking file if requested.
-        if @freeze
-          return 1 unless tj.freeze(@freezeDate, @freezeByTask) &&
-                          tj.errors == 0
-        end
-
-        return 0 if @noReports
-
-        return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
-
-      rescue TjRuntimeError
-        return 1
+      if files.empty?
+        error('tj3_tjp_file_missing',
+              'You must provide at least one .tjp file', 1)
       end
+      if @outputDir != '' && !File.directory?(@outputDir)
+        error('tj3_outdir_missing',
+              "Output directory #{@outputDir} does not exist or is not " +
+              "a directory!")
+      end
+
+      tj = TaskJuggler.new
+      tj.maxCpuCores = @maxCpuCores
+      tj.warnTsDeltas = @warnTsDeltas
+      tj.generateTraces = @generateTraces
+      MessageHandlerInstance.instance.abortOnWarning = @abortOnWarning
+      keepParser = !@timeSheets.empty? || !@statusSheets.empty?
+      return 1 unless tj.parse(files, keepParser)
+
+      return 0 if @checkSyntax
+
+      if !tj.schedule
+        return 1 unless @forceReports
+      end
+
+      # The checks of time and status sheets is probably only used for
+      # debugging.  Normally, this function is provided by tj3client.
+      @timeSheets.each do |ts|
+        return 1 if !tj.checkTimeSheet(ts) || tj.errors > 0
+      end
+      @statusSheets.each do |ss|
+        return 1 if !tj.checkStatusSheet(ss) || tj.errors > 0
+      end
+
+      # Check for freeze mode and generate the booking file if requested.
+      if @freeze
+        return 1 unless tj.freeze(@freezeDate, @freezeByTask) &&
+                        tj.errors == 0
+      end
+
+      return 0 if @noReports
+
+      return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
 
       0
     end

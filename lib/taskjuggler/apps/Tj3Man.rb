@@ -71,17 +71,17 @@ EOT
       else
         requestedKeywords.each do |keyword|
           if (kws = @keywords[keyword, true]).nil?
-            $stderr.puts "No matches found for '#{keyword}'"
-            exit 1
+            error('tj3man_no_matches', "No matches found for '#{keyword}'")
           elsif kws.length == 1 || kws.include?(keyword)
             showManual(keyword)
           else
-            $stderr.puts "Multiple matches found for '#{keyword}':\n" +
-                         "#{kws.join(', ')}"
-            return 1
+            warning('tj3man_multi_match',
+                    "Multiple matches found for '#{keyword}':\n" +
+                    "#{kws.join(', ')}")
           end
         end
       end
+
       0
     end
 

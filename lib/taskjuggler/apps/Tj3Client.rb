@@ -15,6 +15,7 @@ require 'drb'
 require 'drb/acl'
 require 'taskjuggler/Tj3AppBase'
 require 'taskjuggler/LogFile'
+require 'taskjuggler/MessageHandler'
 
 # Name of the application
 AppConfig.appName = 'tj3client'
@@ -136,8 +137,8 @@ EOT
           @uriFile = arg
         end
         @opts.on('-r', '--regexp',
-                 format('The report IDs are not fixed but regular expressions ' +
-                        'that match a set of reports')) do |arg|
+                 format('The report IDs are not fixed but regular ' +
+                        'expressions that match a set of reports')) do |arg|
           @regExpMode = true
         end
         @opts.on('--unsafe',
@@ -151,8 +152,8 @@ EOT
                  format('Request the report to be generated in the specified' +
                         'format. Use multiple options to request multiple ' +
                         'formats. Supported formats are csv, html, niku and ' +
-                        'tjp. By default, the formats specified in the report ' +
-                        'definition are used.')) do |arg|
+                        'tjp. By default, the formats specified in the ' +
+                        'report definition are used.')) do |arg|
           @formats = [] unless @formats
           @formats << arg
         end
@@ -160,21 +161,17 @@ EOT
     end
 
     def appMain(args)
-      begin
-        # Run a first check of the non-optional command line arguments.
-        checkCommand(args)
-        # Read some configuration variables. Except for the authKey, they are
-        # all optional.
-        @rc.configure(self, 'global')
+      # Run a first check of the non-optional command line arguments.
+      checkCommand(args)
+      # Read some configuration variables. Except for the authKey, they are
+      # all optional.
+      @rc.configure(self, 'global')
 
-        connectDaemon
-        retVal = executeCommand(args[0], args[1..-1])
-        disconnectDaemon
+      connectDaemon
+      retVal = executeCommand(args[0], args[1..-1])
+      disconnectDaemon
 
-        return retVal
-      rescue TjRuntimeError
-        return 1
-      end
+      retVal
     end
 
     private
@@ -205,7 +202,7 @@ EOT
         end
       end
 
-      error(errorMessage)
+      error('tjc_cmd_error', errorMessage)
     end
 
     def connectDaemon
@@ -228,7 +225,7 @@ EOT
         begin
           uri = File.read(@uriFile).chomp
         rescue
-          error('The server port is configured to be 0, but no ' +
+          error('tjc_port_0', 'The server port is configured to be 0, but no ' +
                 ".tj3d.uri file can be found: #{$!}")
         end
       end
@@ -247,14 +244,17 @@ EOT
         # Client and server should always come from the same Gem. Since we
         # restict communication to localhost, that's probably not a problem.
         if (check = @broker.apiVersion(@authKey, 1)) < 0
-          error('This client is too old for the server. Please ' +
+          error('tjc_too_old',
+                'This client is too old for the server. Please ' +
                 'upgrade to a more recent version of the software.')
         elsif check == 0
-          error('Authentication failed. Please check your authentication ' +
+          error('tjc_auth_fail',
+                'Authentication failed. Please check your authentication ' +
                 'key to match the server key.')
         end
       rescue
-        error("TaskJuggler server on host '#{@host}' port " +
+        error('tjc_srv_not_responding',
+              "TaskJuggler server on host '#{@host}' port " +
               "#{@port} is not responding")
       end
     end
@@ -271,22 +271,22 @@ EOT
         $stdout.puts callDaemon(:status, [])
       when 'terminate'
         callDaemon(:stop, [])
-        info('Daemon terminated')
+        info('tjc_daemon_term', 'Daemon terminated')
       when 'add'
         res = callDaemon(:addProject, [ Dir.getwd, args,
                                         $stdout, $stderr, $stdin, @silent ])
-        info("Project(s) #{args.join(', ')} added")
+        info('tjc_proj_added', "Project(s) #{args.join(', ')} added")
         return res ? 0 : 1
       when 'remove'
         args.each do |arg|
           unless callDaemon(:removeProject, arg)
-            error("Project '#{arg}' not found in list")
+            error('tjc_prj_not_found', "Project '#{arg}' not found in list")
           end
         end
-        info('Project removed')
+        info('tjc_prj_removed', 'Project removed')
       when 'update'
         callDaemon(:update, [])
-        info('Reload requested')
+        info('tjc_reload_req', 'Reload requested')
       when 'report'
         # The first value of args is the project ID. The following values
         # could be either report IDs or TJI file # names ('.' or '*.tji').
@@ -298,7 +298,7 @@ EOT
         reportIds, tjiFiles = splitIdsAndFiles(args)
         if reportIds.empty?
           disconnectReportServer
-          error('You must provide at least one report ID')
+          error('tjc_no_rep_id', 'You must provide at least one report ID')
         end
         # Send the provided .tji files to the ReportServer.
         failed = !addFiles(tjiFiles)
@@ -348,7 +348,7 @@ EOT
         begin
           res = @reportServer.checkTimeSheet(@rs_authKey, args[1])
         rescue
-          error("Time sheet check failed: #{$!}")
+          error('tjc_tschck_failed', "Time sheet check failed: #{$!}")
         end
         disconnectReportServer
         return res ? 0 : 1
@@ -357,7 +357,7 @@ EOT
         begin
           res = @reportServer.checkStatusSheet(@rs_authKey, args[1])
         rescue
-          error("Status sheet check failed: #{$!}")
+          error('tjc_sschck_failed', "Status sheet check failed: #{$!}")
         end
         disconnectReportServer
         return res ? 0 : 1
@@ -370,19 +370,19 @@ EOT
     def connectToReportServer(projectId)
       @ps_uri, @ps_authKey = callDaemon(:getProject, projectId)
       if @ps_uri.nil?
-        error("No project with ID #{projectId} loaded")
+        error('tjc_prj_id_not_loaded', "No project with ID #{projectId} loaded")
       end
       begin
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
         @reportServer = DRbObject.new(nil, @rs_uri)
       rescue
-        error("Cannot get report server")
+        error('tjc_no_rep_srv', "Cannot get report server")
       end
       begin
         @reportServer.connect(@rs_authKey, $stdout, $stderr, $stdin, @silent)
       rescue
-        error("Can't connect IO: #{$!}")
+        error('tjc_no_io_connect', "Can't connect IO: #{$!}")
       end
     end
 
@@ -390,12 +390,12 @@ EOT
       begin
         @reportServer.disconnect(@rs_authKey)
       rescue
-        error("Can't disconnect IO: #{$!}")
+        error('tjc_no_io_disconnect', "Can't disconnect IO: #{$!}")
       end
       begin
         @reportServer.terminate(@rs_authKey)
       rescue
-        error("Report server termination failed: #{$!}")
+        error('tjc_srv_term_failed', "Report server termination failed: #{$!}")
       end
       @reportServer = nil
       @rs_uri = nil
@@ -411,7 +411,8 @@ EOT
       begin
         return @broker.command(@authKey, command, args)
       rescue
-        error("Call to TaskJuggler server on host '#{@host}' " +
+        error('tjc_call_srv_failed',
+              "Call to TaskJuggler server on host '#{@host}' " +
               "port #{@port} failed: #{$!}")
       end
     end
@@ -445,21 +446,11 @@ EOT
             return false
           end
         rescue
-          error("Cannot add file #{file} to ReportServer")
+          error('tjc_canont_add_file',
+                "Cannot add file #{file} to ReportServer")
         end
       end
       true
-    end
-
-    def info(message)
-      return if @silent
-      $stdout.puts "#{message}"
-    end
-
-    def error(message, exitVal = 1)
-      $stderr.puts "ERROR: #{message}"
-      # Don't call exit in unsafe mode. Raise a StandardError instead.
-      raise TjRuntimeError
     end
 
   end

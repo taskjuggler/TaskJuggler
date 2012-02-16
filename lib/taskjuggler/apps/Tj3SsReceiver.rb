@@ -38,19 +38,16 @@ EOT
     end
 
     def appMain(argv)
-      begin
-        ts = TaskJuggler::StatusSheetReceiver.new('tj3ss_receiver')
-        @rc.configure(ts, 'global')
-        @rc.configure(ts, 'statussheets')
-        @rc.configure(ts, 'statussheets.receiver')
-        ts.workingDir = @workingDir if @workingDir
-        ts.dryRun = @dryRun
+      ts = TaskJuggler::StatusSheetReceiver.new('tj3ss_receiver')
+      @rc.configure(ts, 'global')
+      @rc.configure(ts, 'statussheets')
+      @rc.configure(ts, 'statussheets.receiver')
+      ts.workingDir = @workingDir if @workingDir
+      ts.dryRun = @dryRun
 
-        ts.processEmail
-        return 0
-      rescue TjRuntimeError
-        return 1
-      end
+      ts.processEmail
+
+      0
     end
 
   end

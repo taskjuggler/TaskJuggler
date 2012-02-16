@@ -98,8 +98,7 @@ class TaskJuggler
       # format.
       unless (rti = RichText.new(rText, RTFHandlers.create(@project)).
               generateIntermediateFormat)
-        @project.messageHandler.warning(
-          'task_journal_text', 'Syntax error in journal text')
+        warning('task_journal_text', 'Syntax error in journal text')
         return nil
       end
 

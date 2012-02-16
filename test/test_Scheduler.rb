@@ -28,11 +28,14 @@ class TestScheduler < Test::Unit::TestCase
     Dir.glob(path + 'TestSuite/Scheduler/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
-      mh.console = false
-      tj = TaskJuggler.new
-      assert(tj.parse([ f ]), "Parser failed for #{f}")
-      tj.warnTsDeltas = true
-      tj.schedule
+      mh.outputLevel = :none
+      begin
+        tj = TaskJuggler.new
+        assert(tj.parse([ f ]), "Parser failed for #{f}")
+        tj.warnTsDeltas = true
+        tj.schedule
+      rescue TaskJuggler::TjRuntimeError
+      end
       checkMessages(tj, f)
     end
   end
@@ -42,10 +45,13 @@ class TestScheduler < Test::Unit::TestCase
     Dir.glob(path + 'TestSuite/Scheduler/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
-      mh.console = false
-      tj = TaskJuggler.new
-      assert(tj.parse([ f ]), "Parser failed for #{f}")
-      assert(tj.schedule, "Scheduler failed for #{f}")
+      mh.outputLevel = :none
+      begin
+        tj = TaskJuggler.new
+        assert(tj.parse([ f ]), "Parser failed for #{f}")
+        assert(tj.schedule, "Scheduler failed for #{f}")
+      rescue TaskJuggler::TjRuntimeError
+      end
       checkMessages(tj, f)
     end
   end

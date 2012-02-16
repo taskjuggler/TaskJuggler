@@ -56,22 +56,22 @@ EOT
     end
 
     def appMain(argv)
-      begin
-        ts = TimeSheetSender.new('tj3ts_sender')
-        @rc.configure(ts, 'global')
-        @rc.configure(ts, 'timesheets')
-        @rc.configure(ts, 'timesheets.sender')
-        ts.workingDir = @workingDir if @workingDir
-        ts.dryRun = @dryRun
-        ts.force = @force
-        ts.intervalDuration = @intervalDuration if @intervalDuration
-        ts.date = @date if @date
+      puts "Ok 1"
+      ts = TimeSheetSender.new('tj3ts_sender')
+      @rc.configure(ts, 'global')
+      @rc.configure(ts, 'timesheets')
+      @rc.configure(ts, 'timesheets.sender')
+      ts.workingDir = @workingDir if @workingDir
+      ts.dryRun = @dryRun
+      ts.force = @force
+      ts.intervalDuration = @intervalDuration if @intervalDuration
+      ts.date = @date if @date
 
-        ts.sendTemplates(@resourceList)
-        return 0
-      rescue
-        return 1
-      end
+      puts "Ok 2"
+      ts.sendTemplates(@resourceList)
+
+      puts "Ok 3"
+      0
     end
 
   end

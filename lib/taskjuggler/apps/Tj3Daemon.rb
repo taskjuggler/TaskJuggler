@@ -73,29 +73,26 @@ EOT
     end
 
     def appMain(files)
-      begin
-        broker = ProjectBroker.new
-        @rc.configure(self, 'global')
-        @rc.configure(@log, 'global.log')
-        @rc.configure(broker, 'global')
-        @rc.configure(broker, 'daemon')
+      broker = ProjectBroker.new
+      @rc.configure(self, 'global')
+      @rc.configure(@log, 'global.log')
+      @rc.configure(broker, 'global')
+      @rc.configure(broker, 'daemon')
 
-        # Set some config variables if corresponding data was provided via the
-        # command line.
-        broker.port = @port if @port
-        broker.uriFile = @uriFile.untaint
-        broker.enableWebServer = @webServer
-        broker.webServerPort = @webServerPort if @webServerPort
-        broker.projectFiles = sortInputFiles(files) unless files.empty?
-        broker.daemonize = @daemonize
-        # Create log files for standard IO for each child process if the daemon
-        # is not disconnected from the terminal.
-        broker.logStdIO = !@daemonize
+      # Set some config variables if corresponding data was provided via the
+      # command line.
+      broker.port = @port if @port
+      broker.uriFile = @uriFile.untaint
+      broker.enableWebServer = @webServer
+      broker.webServerPort = @webServerPort if @webServerPort
+      broker.projectFiles = sortInputFiles(files) unless files.empty?
+      broker.daemonize = @daemonize
+      # Create log files for standard IO for each child process if the daemon
+      # is not disconnected from the terminal.
+      broker.logStdIO = !@daemonize
 
-        return broker.start
-      rescue TjRuntimeError
-        return 1
-      end
+      broker.start
+      0
     end
 
     private
@@ -128,11 +125,13 @@ EOT
           # .tji files are optional. But if they are specified, they must
           # always follow the master file in the list.
           if project.nil?
-            error("You must specify a '.tjp' file before the '.tji' files")
+            error('tj3d_tji_before_tjp',
+                  "You must specify a '.tjp' file before the '.tji' files")
           end
           project << file
         else
-          error("Project files must have a '.tjp' or '.tji' extension")
+          error('tj3d_no_file_Ext',
+                "Project files must have a '.tjp' or '.tji' extension")
         end
       end
 

@@ -937,7 +937,7 @@ EOT
 
   def newRichText(text)
     mh = TaskJuggler::MessageHandlerInstance.instance
-    mh.console = false
+    mh.outputLevel = :none
     rText = TaskJuggler::RichText.new(text, [ RTFDummy.new ])
     assert(rti = rText.generateIntermediateFormat, mh.to_s)
     rti.linkTarget = '_blank'

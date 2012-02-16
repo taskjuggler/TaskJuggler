@@ -42,12 +42,15 @@ class TestReportGenerator < Test::Unit::TestCase
     Dir.glob(path + 'TestSuite/ReportGenerator/Errors/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
-      mh.console = false
-      tj = TaskJuggler.new
-      assert(tj.parse([ f ]), "Parser failed for #{f}")
-      assert(tj.schedule, "Scheduler failed for #{f}")
-      tj.warnTsDeltas = true
-      tj.generateReports(@tmpDir)
+      mh.outputLevel = :none
+      begin
+        tj = TaskJuggler.new
+        assert(tj.parse([ f ]), "Parser failed for #{f}")
+        assert(tj.schedule, "Scheduler failed for #{f}")
+        tj.warnTsDeltas = true
+        tj.generateReports(@tmpDir)
+      rescue TaskJuggler::TjRuntimeError
+      end
       checkMessages(tj, f)
     end
   end
@@ -57,7 +60,7 @@ class TestReportGenerator < Test::Unit::TestCase
     Dir.glob(path + 'TestSuite/ReportGenerator/Correct/*.tjp').each do |f|
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
-      mh.console = false
+      mh.outputLevel = :none
       tj = TaskJuggler.new
       assert(tj.parse([ f ]), "Parser failed for #{f}")
       assert(tj.schedule, "Scheduler failed for #{f}")

@@ -6758,9 +6758,12 @@ EOT
     repeatable
 
     pattern(%w( !hideresource ))
+    pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
     pattern(%w( !reportStart ))
+    pattern(%w( !sortResources ))
+    pattern(%w( !sortTasks ))
   end
 
   def rule_tsReportBody

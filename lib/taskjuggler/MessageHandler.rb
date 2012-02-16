@@ -21,6 +21,9 @@ require 'taskjuggler/TextParser/SourceFileInfo'
 
 class TaskJuggler
 
+  class TjRuntimeError < RuntimeError
+  end
+
   # The Message object can store several classes of messages that the
   # application can send out.
   class Message
@@ -100,7 +103,10 @@ class TaskJuggler
     include Singleton
 
     attr_reader :messages, :errors
-    attr_accessor :console, :abortOnWarning, :baselineSFI
+    attr_accessor :abortOnWarning, :baselineSFI
+
+    LogLevels = { :none => 0, :fatal => 1, :error => 2,
+                  :warning => 3, :info => 4, :debug => 5 }
 
     # Initialize the MessageHandler.
     def initialize
@@ -110,8 +116,9 @@ class TaskJuggler
     # Reset the MessageHandler to the initial state. All messages will be
     # purged and the error counter set to 0.
     def reset
-      # Set to true if messages should be sent to $stderr.
-      @console = true
+      # This setting controls what type of messages will be written to the
+      # console.
+      @outputLevel = :info
       # A counter for messages of type error.
       @errors = 0
       # Set to true if program should be exited on warnings.
@@ -121,6 +128,14 @@ class TaskJuggler
       @baselineSFI = nil
       # A list of all generated messages.
       @messages = []
+    end
+
+    # Set the console output level.
+    def outputLevel=(level)
+      unless LogLevels.include?(level)
+        raise ArgumentError, "Unsupported output level #{level}"
+      end
+      @outputLevel = level
     end
 
     # Generate a fatal message that will abort the application.
@@ -186,7 +201,7 @@ class TaskJuggler
                         sourceFileInfo, line, data, scenario)
       @messages << msg
       # Print the message to $stderr if requested by the user.
-      $stderr.puts msg.to_s if @console
+      $stderr.puts msg.to_s if LogLevels[@outputLevel] >= LogLevels[type]
 
       case type
       when :warning
@@ -197,10 +212,7 @@ class TaskJuggler
       when :error
         # Increase the error counter.
         @errors += 1
-        # Raise a TjException with an empty message. This signals the receiver
-        # that the message was already displayed and the program should be
-        # aborted ASAP.
-        raise TjException.new, ''
+        raise TjRuntimeError
       when :fatal
         raise RuntimeError
       end
@@ -213,8 +225,8 @@ class TaskJuggler
     # Generate a fatal message that will abort the application.
     def fatal(id, message, sourceFileInfo = nil, line = nil, data = nil,
               scenario = nil)
-      MessageHandlerInstance.instace.fatal(id, message, sourceFileInfo, line,
-                                           data, scenario)
+      MessageHandlerInstance.instance.fatal(id, message, sourceFileInfo, line,
+                                            data, scenario)
     end
 
     # Generate an error message.
