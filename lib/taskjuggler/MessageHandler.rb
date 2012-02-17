@@ -73,7 +73,7 @@ class TaskJuggler
       @scenario = scenario
     end
 
-    # Convert the Message into a String.
+    # Convert the Message into a String that can be printed to the console.
     def to_s
       str = ""
       # The SourceFileInfo is printed as <fileName>:line:
@@ -89,6 +89,18 @@ class TaskJuggler
                  :info => blue, :debug => green }
       str += colors[@type] + tag + @message + reset
       str += "\n" + @line if @line
+      str
+    end
+
+    # Convert the Message into a String that can be stored in a log file.
+    def to_log
+      str = ""
+      # The SourceFileInfo is printed as <fileName>:line:
+      if @sourceFileInfo
+        str += "#{@sourceFileInfo.fileName}:#{sourceFileInfo.lineNo}: "
+      end
+      str += "Scenario #{@scenario.id}: " if @scenario
+      str += @message
       str
     end
 
@@ -119,6 +131,13 @@ class TaskJuggler
       # This setting controls what type of messages will be written to the
       # console.
       @outputLevel = :info
+      # This setting controls what type of messages will be written to the log
+      # file.
+      @logLevel = :warning
+      # The full file name of the log file.
+      @logFile = nil
+      # The name of the current application
+      @appName = 'unknown'
       # A counter for messages of type error.
       @errors = 0
       # Set to true if program should be exited on warnings.
@@ -132,10 +151,14 @@ class TaskJuggler
 
     # Set the console output level.
     def outputLevel=(level)
-      unless LogLevels.include?(level)
-        raise ArgumentError, "Unsupported output level #{level}"
-      end
+      checkLevel(level)
       @outputLevel = level
+    end
+
+    # Set the log output level.
+    def logLevel=(level)
+      checkLevel(level)
+      @logLevel = level
     end
 
     # Generate a fatal message that will abort the application.
@@ -183,6 +206,27 @@ class TaskJuggler
 
     private
 
+    def checkLevel(level)
+      unless LogLevels.include?(level)
+        raise ArgumentError, "Unsupported output level #{level}"
+      end
+    end
+
+    def log(type, message)
+      return unless @logFile
+
+      timeStamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
+      begin
+        @logFile.untaint
+        File.open(@logFile, 'a') do |f|
+          f.write("#{timeStamp} #{type} #{@appName}[#{Process.pid}]: " +
+                  "#{message}\n")
+        end
+      rescue
+        $stderr.puts "Cannot write to log file #{@logFile}: #{$!}"
+      end
+    end
+
     # Generate a message by specifying the _type_.
     def addMessage(type, id, message, sourceFileInfo = nil, line = nil,
                    data = nil, scenario = nil)
@@ -200,6 +244,10 @@ class TaskJuggler
       msg = Message.new(type == :critical ? :error : type, id, message,
                         sourceFileInfo, line, data, scenario)
       @messages << msg
+
+      # Append the message to the log file if requested by the user.
+      log(type, msg.to_log) if LogLevels[@logLevel] >= LogLevels[type]
+
       # Print the message to $stderr if requested by the user.
       $stderr.puts msg.to_s if LogLevels[@outputLevel] >= LogLevels[type]
 
