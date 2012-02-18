@@ -23,8 +23,9 @@ class TaskJuggler
     pb.logStdIO = false
     pb.port = 0
     # Don't generate any debug or info messages
-    pb.log.outputLevel = 1
-    pb.log.logLevel = 1
+    mh = MessageHandlerInstance.instance
+    mh.outputLevel = 1
+    mh.logLevel = 1
     t = Thread.new { pb.start }
     yield
     pb.stop

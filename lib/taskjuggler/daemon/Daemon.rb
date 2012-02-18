@@ -11,7 +11,7 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/LogFile'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
@@ -20,15 +20,15 @@ class TaskJuggler
   # this class and call the start() method.
   class Daemon
 
+    include MessageHandler
+
     attr_accessor :daemonize
-    attr_reader :log
 
     def initialize
       # You can set this flag to false to prevent the program from
       # disconnecting from the current terminal. This is useful for debugging
       # purposes.
       @daemonize = true
-      @log = LogFile.instance
     end
 
     # Call this method to turn the process into a background process.
@@ -37,10 +37,10 @@ class TaskJuggler
 
       # Fork and have the parent exit
       if (pid = fork) == -1
-        @log.fatal('First fork failed')
+        fatal('first_fork_failed', 'First fork failed')
       elsif !pid.nil?
         # This is the parent. We can exit now.
-        @log.debug("Forked a child process with PID #{pid}")
+        debug('', "Forked a child process with PID #{pid}")
         exit! 0
       end
 
@@ -48,10 +48,10 @@ class TaskJuggler
       Process.setsid
       # Fork again to make sure we lose the controlling terminal
       if (pid = fork) == -1
-        @log.fatal('Second fork failed')
+        fatal('second_fork_failed', 'Second fork failed')
       elsif !pid.nil?
         # This is the parent. We can exit now.
-        @log.debug("Forked a child process with PID #{pid}")
+        debug('', "Forked a child process with PID #{pid}")
         exit! 0
       end
 
@@ -67,7 +67,8 @@ class TaskJuggler
       $stdout.reopen('/dev/null', 'a')
       $stderr.reopen($stdout)
 
-      @log.info("The process is running as daemon now with PID #{@pid}")
+      info('daemon_pid',
+           "The process is running as daemon now with PID #{@pid}")
       0
     end
 

@@ -16,7 +16,7 @@ require 'drb/acl'
 require 'monitor'
 require 'taskjuggler/daemon/ProcessIntercom'
 require 'taskjuggler/daemon/ReportServer'
-require 'taskjuggler/LogFile'
+require 'taskjuggler/MessageHandler'
 require 'taskjuggler/TaskJuggler'
 require 'taskjuggler/Log'
 require 'taskjuggler/TjTime'
@@ -79,7 +79,7 @@ class TaskJuggler
       rd, wr = IO.pipe
 
       if (@pid = fork) == -1
-        @log.fatal('ProjectServer fork failed')
+        fatal('ps_fork_failed', 'ProjectServer fork failed')
       elsif @pid.nil?
         # This is the child
         if @logConsole
@@ -95,9 +95,9 @@ class TaskJuggler
           iFace = ProjectServerIface.new(self)
           begin
             @uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
-            @log.debug("Project server is listening on #{@uri}")
+            debug('', "Project server is listening on #{@uri}")
           rescue
-            @log.fatal("ProjectServer can't start DRb: #{$!}")
+            error('ps_cannot_start_drb', "ProjectServer can't start DRb: #{$!}")
           end
 
           # Send the URI of the newly started DRb server to the parent process.
@@ -114,12 +114,12 @@ class TaskJuggler
 
           # Cleanup the DRb threads
           DRb.thread.join
-          @log.debug('Project server terminated')
+          debug('', 'Project server terminated')
           exit 0
         rescue
           $stderr.print $!.to_s
           $stderr.print $!.backtrace.join("\n")
-          @log.fatal("ProjectServer can't start DRb: #{$!}")
+          error('ps_cannot_start_drb', "ProjectServer can't start DRb: #{$!}")
         end
       else
         # This is the parent
@@ -151,7 +151,7 @@ class TaskJuggler
 
       # Parse all project files
       unless @tj.parse(args, true)
-        @log.error("Parsing of #{args.join(' ')} failed")
+        warning('parse_failed', "Parsing of #{args.join(' ')} failed")
         updateState(:failed, nil, false)
         @terminate = true
         return false
@@ -159,7 +159,8 @@ class TaskJuggler
 
       # Then schedule the project
       unless @tj.schedule
-        @log.error("Scheduling of project #{@tj.projectId} failed")
+        warning('schedule_failed',
+                "Scheduling of project #{@tj.projectId} failed")
         updateState(:failed, @tj.projectId, false)
         Log.exit('scheduler')
         @terminate = true
@@ -168,7 +169,7 @@ class TaskJuggler
 
       # Great, everything went fine. We've got a project to work with.
       updateState(:ready, @tj.projectId, false)
-      @log.info("Project #{@tj.projectId} loaded")
+      info('project_loaded', "Project #{@tj.projectId} loaded")
       restartTimer
       true
     end
@@ -204,7 +205,7 @@ class TaskJuggler
       # find it in the @reportServers list, we create a unique tag to identify
       # it.
       tag = rand(99999999999999)
-      @log.debug("Pushing #{tag} onto report server request queue")
+      debug('', "Pushing #{tag} onto report server request queue")
       @reportServerRequests.push(tag)
 
       # Now wait until the new ReportServer shows up in the list.
@@ -219,8 +220,8 @@ class TaskJuggler
         sleep 0.1 if reportServer.nil?
       end
 
-      @log.debug("Got report server with URI #{reportServer.uri} for " +
-                 "tag #{tag}")
+      debug('', "Got report server with URI #{reportServer.uri} for " +
+            "tag #{tag}")
       restartTimer
       [ reportServer.uri, reportServer.authKey ]
     end
@@ -252,9 +253,11 @@ class TaskJuggler
     def updateState(state, filesOrId, modified)
       begin
         @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
-        @daemon.updateState(@daemonAuthKey, @authKey, filesOrId, state, modified)
+        @daemon.updateState(@daemonAuthKey, @authKey, filesOrId, state,
+                            modified)
       rescue
-        @log.fatal("Can't update state with daemon: #{$!}")
+        error('cannot_update_daemon_state',
+              "Can't update state with daemon: #{$!}")
       end
       @stateLock.synchronize do
         @state = state
@@ -283,7 +286,8 @@ class TaskJuggler
               @stateLock.synchronize { @modifiedCheck = TjTime.new }
 
               if @tj.project.inputFiles.modified?
-                @log.info("Project #{@tj.projectId} has been modified")
+                info('prj_modified',
+                     "Project #{@tj.projectId} has been modified")
                 updateState(:ready, @tj.projectId, true)
               end
             end
@@ -291,17 +295,17 @@ class TaskJuggler
             # Check for pending requests for new ReportServers.
             unless @reportServerRequests.empty?
               tag = @reportServerRequests.pop
-              @log.debug("Popped #{tag}")
+              debug('', "Popped #{tag}")
               # Create an new entry for the @reportServers list.
               rsr = ReportServerRecord.new(tag)
-              @log.debug("RSR created")
+              debug('', "RSR created")
               # Create a new ReportServer object that runs as a separate
               # process. The constructor will tell us the URI and authentication
               # key of the new ReportServer.
               rs = ReportServer.new(@tj, @logConsole)
               rsr.uri = rs.uri
               rsr.authKey = rs.authKey
-              @log.debug("Adding ReportServer with URI #{rsr.uri} to list")
+              debug('', "Adding ReportServer with URI #{rsr.uri} to list")
               # Add the new ReportServer to our list.
               @reportServers.synchronize do
                 @reportServers << rsr
@@ -316,21 +320,22 @@ class TaskJuggler
                          :ready => 0 }
             if timeouts[@state] > 0 &&
                TjTime.new - @stateUpdated > timeouts[@state]
-              @log.fatal("Reached timeout for state #{@state}. Terminating.")
+              error('state_timeout',
+                    "Reached timeout for state #{@state}. Terminating.")
             end
 
             # If we have not received a ping from the ProjectBroker for 2
             # minutes, we assume it has died and terminate as well.
             if TjTime.new - @lastPing > 180
-              @log.fatal('Heartbeat from daemon lost. Terminating.')
+              error('daemon_heartbeat_lost',
+                    'Heartbeat from daemon lost. Terminating.')
             end
             sleep 1
           end
         rescue
           # Make sure we get a backtrace for this thread.
-          $stderr.print $!.to_s
-          $stderr.print $!.backtrace.join("\n")
-          @log.fatal("ProjectServer housekeeping error: #{$!}")
+          fatal('ps_housekeeping_error',
+                "ProjectServer housekeeping error: #{$!}")
         end
       end
     end
@@ -384,6 +389,8 @@ class TaskJuggler
   # the ProjectServer.
   class ReportServerRecord
 
+    include MessageHandler
+
     attr_reader :tag
     attr_accessor :uri, :authKey
 
@@ -396,7 +403,6 @@ class TaskJuggler
       @authKey = nil
       # The DRbObject of the ReportServer.
       @reportServer = nil
-      @log = LogFile.instance
     end
 
     # Send a ping to the ReportServer process to check that it is still
@@ -405,14 +411,14 @@ class TaskJuggler
     def ping
       return true unless @uri
 
-      @log.debug("Sending ping to ReportServer #{@uri}")
+      debug('', "Sending ping to ReportServer #{@uri}")
       begin
         @reportServer = DRbObject.new(nil, @uri) unless @reportServer
         @reportServer.ping(@authKey)
       rescue
         # ReportServer processes terminate on request of their clients. Not
         # responding to a ping is a normal event.
-        @log.debug("ReportServer (#{@uri}) has terminated")
+        debug('', "ReportServer (#{@uri}) has terminated")
         return false
       end
       true

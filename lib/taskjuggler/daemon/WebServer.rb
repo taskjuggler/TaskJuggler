@@ -17,6 +17,7 @@ require 'stringio'
 
 require 'taskjuggler/AppConfig'
 require 'taskjuggler/RichText'
+require 'taskjuggler/MessageHandler'
 require 'taskjuggler/daemon/WelcomePage'
 require 'taskjuggler/daemon/ReportServlet'
 
@@ -26,11 +27,12 @@ class TaskJuggler
   # HTML versions of Report objects that are generated on the fly.
   class WebServer
 
+    include MessageHandler
+
     attr_reader :broker
 
     # Create a web server object that runs in a separate thread.
     def initialize(broker, port)
-      @log = LogFile.instance
       @broker = broker
 
       config = { :Port => port }
@@ -41,7 +43,7 @@ class TaskJuggler
       # Serve some directories via the FileHandler servlet.
       %w( css icons scripts ).each do |dir|
         unless (fullDir = AppConfig.dataDirs("data/#{dir}")[0])
-          @log.fatal(<<"EOT"
+          error('dir_not_found', <<"EOT"
 Cannot find the #{dir} directory. This is usually the result of an
 improper TaskJuggler installation. If you know the directory, you can use the
 TASKJUGGLER_DATA_PATH environment variable to specify the location. The
@@ -58,9 +60,7 @@ EOT
         begin
           @server.start
         rescue
-          $stderr.print $!.to_s
-          $stderr.print $!.backtrace.join("\n")
-          @log.fatal("Web server error: #{$!}")
+          fatal('web_server_error', "Web server error: #{$!}")
         end
       end
     end

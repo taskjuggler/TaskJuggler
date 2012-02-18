@@ -19,6 +19,7 @@ require 'taskjuggler/daemon/Daemon'
 require 'taskjuggler/daemon/ProjectServer'
 require 'taskjuggler/daemon/WebServer'
 require 'taskjuggler/TjTime'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
@@ -36,6 +37,8 @@ class TaskJuggler
   # Currently only tj3client can be used to communicate with the TaskJuggler
   # daemon.
   class ProjectBroker < Daemon
+
+    include MessageHandler
 
     attr_accessor :authKey, :port, :uriFile, :enableWebServer, :webServerPort,
                   :projectFiles, :logStdIO
@@ -83,7 +86,7 @@ class TaskJuggler
       # To ensure a certain level of security, the user must provide an
       # authentication key to authenticate the client to this server.
       unless @authKey
-        @log.fatal(<<'EOT'
+        error('pb_no_auth_key', <<'EOT'
 You must set an authentication key in the configuration file. Create a file
 named .taskjugglerrc or taskjuggler.rc that contains at least the following
 lines. Replace 'your_secret_key' with some random character sequence.
@@ -96,16 +99,17 @@ EOT
 
       # In daemon mode, we fork twice and only the 2nd child continues here.
       super()
-      @log.debug("Starting project broker")
+      debug('', "Starting project broker")
 
       if @enableWebServer
         begin
           # The web server must be started before we turn SAFE mode on.
           @webServer = WebServer.new(self, @webServerPort)
-          @log.info("TaskJuggler web server is listening on port " +
-                    "#{@webServerPort}")
+          info('web_server_port',
+               "TaskJuggler web server is listening on port " +
+               "#{@webServerPort}")
         rescue
-          @log.fatal("Cannot start web server: #{$!}")
+          error('cannot_start_web_server', "Cannot start web server: #{$!}")
         end
       end
 
@@ -116,9 +120,9 @@ EOT
         DRb.install_acl(ACL.new(%w[ deny all
                                     allow 127.0.0.1 ]))
         @uri = DRb.start_service("druby://127.0.0.1:#{@port}", brokerIface).uri
-        @log.info("TaskJuggler daemon is listening on #{@uri}")
+        info('daemon_uri', "TaskJuggler daemon is listening on #{@uri}")
       rescue
-        @log.fatal("Cannot listen on port #{@port}: #{$!}")
+        error('port_in_use', "Cannot listen on port #{@port}: #{$!}")
       end
 
       if @port == 0 && @uriFile
@@ -127,7 +131,7 @@ EOT
         begin
           File.open(@uriFile, 'w') { |f| f.write @uri }
         rescue
-          @log.fatal("Cannot write URI file #{@uriFile}: #{$!}")
+          error('cannot_write_uri', "Cannot write URI file #{@uriFile}: #{$!}")
         end
       end
 
@@ -149,11 +153,11 @@ EOT
         begin
           File.delete(@uriFile)
         rescue
-          @log.fatal("Cannot delete URI file .tj3d.uri: #{$!}")
+          error('cannot_delete_uri', "Cannot delete URI file .tj3d.uri: #{$!}")
         end
       end
 
-      @log.info('TaskJuggler daemon terminated')
+      info('daemon_terminated', 'TaskJuggler daemon terminated')
     end
 
     # All remote commands must provide the proper authentication key. Usually
@@ -161,10 +165,11 @@ EOT
     # configuration file.
     def checkKey(authKey, command)
       if authKey == @authKey
-        @log.debug("Accepted authentication key for command '#{command}'")
+        debug('', "Accepted authentication key for command '#{command}'")
       else
-        @log.warning("Rejected wrong authentication key '#{authKey}' " +
-                     "for command '#{command}'")
+        warning('wrong_auth_key',
+                "Rejected wrong authentication key '#{authKey}' " +
+                "for command '#{command}'")
         return false
       end
       true
@@ -172,7 +177,7 @@ EOT
 
     # This command will initiate the termination of the daemon.
     def stop
-      @log.debug('Terminating on client request')
+      debug('', 'Terminating on client request')
 
       # Shut down the web server if we've started one.
       if @webServer
@@ -216,7 +221,7 @@ EOT
       # associated to. Just use a large enough random number.
       tag = rand(9999999999999)
 
-      @log.debug("Pushing #{tag} to load Queue")
+      debug('', "Pushing #{tag} to load Queue")
       @projectsToLoad.push(tag)
 
       # Now we have to wait until the project shows up in the @projects
@@ -236,8 +241,8 @@ EOT
         sleep 0.1 unless pr
       end
 
-      @log.debug("Found tag #{tag} in list of loaded projects with URI " +
-                 "#{pr.uri}")
+      debug('', "Found tag #{tag} in list of loaded projects with URI " +
+            "#{pr.uri}")
       # Return the URI and the authentication key of the new ProjectServer.
       [ pr.uri, pr.authKey ]
 
@@ -315,7 +320,7 @@ EOT
       end
 
       if project.nil?
-        @log.debug("No project with ID #{projectId} found")
+        debug('', "No project with ID #{projectId} found")
         return [ nil, nil ]
       end
       [ project.uri, project.authKey ]
@@ -371,7 +376,7 @@ EOT
           # Don't accept updates for already obsolete entries.
           next if project.state == :obsolete
 
-          @log.debug("Updating state for #{id} to #{state}")
+          debug('', "Updating state for #{id} to #{state}")
           # Only update the record that has the matching key
           if project.authKey == projectKey
             project.id = id if id
@@ -385,7 +390,7 @@ EOT
               @projects.each do |p|
                 if p != project && p.id == id
                   p.state = :obsolete
-                  @log.debug("Marking entry with ID #{id} as obsolete")
+                  debug('', "Marking entry with ID #{id} as obsolete")
                 end
               end
               project.readySince = TjTime.new
@@ -416,7 +421,7 @@ EOT
             if @terminate
               # Give the caller a chance to properly terminate the connection.
               sleep 0.5
-              @log.debug('Shutting down DRb server')
+              debug('', 'Shutting down DRb server')
               DRb.stop_service
               break
             elsif !@projectsToLoad.empty?
@@ -465,7 +470,8 @@ EOT
         rescue
           $stderr.print $!.to_s
           $stderr.print $!.backtrace.join("\n")
-          @log.fatal("ProjectBroker housekeeping error: #{$!}")
+          fatal('pb_housekeeping_error',
+                "ProjectBroker housekeeping error: #{$!}")
         end
       end
     end
@@ -475,11 +481,11 @@ EOT
         tag = rand(9999999999999)
         project = tagOrProject
         # The 2nd element of the Array is the *.tjp file name.
-        @log.debug("Loading project #{tagOrProject[1]} with tag #{tag}")
+        debug('', "Loading project #{tagOrProject[1]} with tag #{tag}")
       else
         tag = tagOrProject
         project = nil
-        @log.debug("Loading project for tag #{tag}")
+        debug('', "Loading project for tag #{tag}")
       end
       pr = ProjectRecord.new(tag)
       ps = ProjectServer.new(@authKey, project, @logStdIO)
@@ -500,6 +506,8 @@ EOT
   # these methods for remote access.
   class ProjectBrokerIface
 
+    include MessageHandler
+
     def initialize(broker)
       @broker = broker
     end
@@ -517,13 +525,9 @@ EOT
 
     # This function catches all unhandled exceptions in the passed block.
     def trap
-      log = LogFile.instance
-
       begin
         yield
       rescue
-        $stderr.print $!.to_s
-        $stderr.print $!.backtrace.join("\n")
         log.debug($!.backtrace.join("\n"))
         log.fatal("Unexpected exception: #{$!}")
       end
@@ -549,7 +553,7 @@ EOT
         when :update
           @broker.update
         else
-          LogFile.instance.fatal('Unknown command #{cmd} called')
+          fatal('unknown_command', 'Unknown command #{cmd} called')
         end
       end
     end
@@ -565,6 +569,8 @@ EOT
   # The ProjectRecord objects are used to manage the loaded projects. There is
   # one entry for each project in the @projects list.
   class ProjectRecord < Monitor
+
+    include MessageHandler
 
     attr_accessor :authKey, :uri, :files, :id, :state, :readySince, :modified,
                   :reloading
@@ -592,19 +598,21 @@ EOT
       # True if the reload has already been triggered.
       @reloading = false
 
-      @log = LogFile.instance
       @projectServer = nil
     end
 
     def ping
       return true unless @uri
 
-      @log.debug("Sending ping to ProjectServer #{@uri}")
+      debug('', "Sending ping to ProjectServer #{@uri}")
       begin
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.ping(@authKey)
       rescue
-        @log.error("Ping failed: #{$!}")
+        begin
+          error('ping_failed', "Ping failed: #{$!}")
+        rescue TjRuntimeError
+        end
         return false
       end
       true
@@ -615,11 +623,15 @@ EOT
       return unless @uri
 
       begin
-        @log.debug("Sending termination request to ProjectServer #{@uri}")
+        debug('', "Sending termination request to ProjectServer #{@uri}")
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.terminate(@authKey)
       rescue
-        @log.error("Termination of ProjectServer failed: #{$!}")
+        begin
+          error('proj_serv_term_failed',
+                "Termination of ProjectServer failed: #{$!}")
+        rescue TjRuntimeError
+        end
       end
       @uri = nil
     end

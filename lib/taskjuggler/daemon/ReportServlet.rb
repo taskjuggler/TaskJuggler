@@ -57,7 +57,7 @@ class TaskJuggler
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
         @reportServer = DRbObject.new(nil, @rs_uri)
       rescue
-        error("Cannot get report server")
+        error("Cannot get report server: #{$!}")
       end
       # Create two StringIO buffers that will receive the $stdout and $stderr
       # text from the report server. This buffer will contain the generated

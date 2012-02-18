@@ -115,7 +115,7 @@ class TaskJuggler
     include Singleton
 
     attr_reader :messages, :errors
-    attr_accessor :abortOnWarning, :baselineSFI
+    attr_accessor :logFile, :appName, :abortOnWarning, :baselineSFI
 
     LogLevels = { :none => 0, :fatal => 1, :error => 2,
                   :warning => 3, :info => 4, :debug => 5 }
@@ -130,10 +130,10 @@ class TaskJuggler
     def reset
       # This setting controls what type of messages will be written to the
       # console.
-      @outputLevel = :info
+      @outputLevel = 4
       # This setting controls what type of messages will be written to the log
       # file.
-      @logLevel = :warning
+      @logLevel = 3
       # The full file name of the log file.
       @logFile = nil
       # The name of the current application
@@ -151,14 +151,12 @@ class TaskJuggler
 
     # Set the console output level.
     def outputLevel=(level)
-      checkLevel(level)
-      @outputLevel = level
+      @outputLevel = checkLevel(level)
     end
 
     # Set the log output level.
     def logLevel=(level)
-      checkLevel(level)
-      @logLevel = level
+      @logLevel = checkLevel(level)
     end
 
     # Generate a fatal message that will abort the application.
@@ -207,9 +205,17 @@ class TaskJuggler
     private
 
     def checkLevel(level)
-      unless LogLevels.include?(level)
-        raise ArgumentError, "Unsupported output level #{level}"
+      if level.is_a?(Fixnum)
+        if level < 0 || level > 5
+          raise ArgumentError, "Unsupported level #{level}"
+        end
+      else
+        unless (level = LogLevels[level])
+          raise ArgumentError, "Unsupported level #{level}"
+        end
       end
+
+      level
     end
 
     def log(type, message)
@@ -246,10 +252,10 @@ class TaskJuggler
       @messages << msg
 
       # Append the message to the log file if requested by the user.
-      log(type, msg.to_log) if LogLevels[@logLevel] >= LogLevels[type]
+      log(type, msg.to_log) if @logLevel >= LogLevels[type]
 
       # Print the message to $stderr if requested by the user.
-      $stderr.puts msg.to_s if LogLevels[@outputLevel] >= LogLevels[type]
+      $stderr.puts msg.to_s if @outputLevel >= LogLevels[type]
 
       case type
       when :warning

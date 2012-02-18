@@ -14,8 +14,6 @@
 require 'drb'
 require 'drb/acl'
 require 'taskjuggler/Tj3AppBase'
-require 'taskjuggler/LogFile'
-require 'taskjuggler/MessageHandler'
 
 # Name of the application
 AppConfig.appName = 'tj3client'
@@ -225,7 +223,8 @@ EOT
         begin
           uri = File.read(@uriFile).chomp
         rescue
-          error('tjc_port_0', 'The server port is configured to be 0, but no ' +
+          error('tjc_port_0',
+                'The server port is configured to be 0, but no ' +
                 ".tj3d.uri file can be found: #{$!}")
         end
       end
@@ -243,19 +242,20 @@ EOT
         @broker = DRbObject.new(nil, uri)
         # Client and server should always come from the same Gem. Since we
         # restict communication to localhost, that's probably not a problem.
-        if (check = @broker.apiVersion(@authKey, 1)) < 0
-          error('tjc_too_old',
-                'This client is too old for the server. Please ' +
-                'upgrade to a more recent version of the software.')
-        elsif check == 0
-          error('tjc_auth_fail',
-                'Authentication failed. Please check your authentication ' +
-                'key to match the server key.')
-        end
       rescue
         error('tjc_srv_not_responding',
               "TaskJuggler server on host '#{@host}' port " +
               "#{@port} is not responding")
+      end
+
+      if (check = @broker.apiVersion(@authKey, 1)) < 0
+        error('tjc_too_old',
+              'This client is too old for the server. Please ' +
+              'upgrade to a more recent version of the software.')
+      elsif check == 0
+        error('tjc_auth_fail',
+              'Authentication failed. Please check your authentication ' +
+              'key to match the server key.')
       end
     end
 
@@ -375,9 +375,10 @@ EOT
       begin
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
+        $stderr.puts "rs_uri: [[#{@rs_uri}]] auth_key: [[#{@rs_authKey}]]"
         @reportServer = DRbObject.new(nil, @rs_uri)
       rescue
-        error('tjc_no_rep_srv', "Cannot get report server")
+        error('tjc_no_rep_srv', "Cannot get report server: #{$!}")
       end
       begin
         @reportServer.connect(@rs_authKey, $stdout, $stderr, $stdin, @silent)

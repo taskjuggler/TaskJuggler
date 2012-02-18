@@ -122,9 +122,9 @@ timesheet r2 2011-03-14-00:00-+0000 - 2011-03-21-00:00-+0000 {
 }
 EOT
       res = stdIoWrapper(prj) do
-        Tj3Client.new.main(%w( --unsafe --silent add . ))
+        Tj3Client.new.main(%w( --unsafe add . ))
       end
-      unless res.stdErr =~ /Project sstest loaded/
+      unless res.stdErr.include?("Info: Project(s) . added")
         raise "Project not loaded: #{res.stdErr}"
       end
       raise "Can't load project: #{res.stdErr}" unless res.returnValue == 0

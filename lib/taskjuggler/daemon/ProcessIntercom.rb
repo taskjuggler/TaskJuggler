@@ -12,23 +12,21 @@
 #
 
 require 'taskjuggler/Log'
-require 'taskjuggler/LogFile'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
   module ProcessIntercomIface
 
+    include MessageHandler
+
     # This function catches all unhandled exceptions in the passed block.
     def trap
-      log = LogFile.instance
-
       begin
         yield
       rescue
-        $stderr.print $!.to_s
-        $stderr.print $!.backtrace.join("\n")
-        log.debug($!.backtrace.join("\n"))
-        log.fatal("Unexpected exception: #{$!}")
+        debug('', $!.backtrace.join("\n"))
+        fatal('proc_intercom_ifc_unexp_excp', "Unexpected exception: #{$!}")
       end
     end
 
@@ -54,12 +52,13 @@ class TaskJuggler
 
   module ProcessIntercom
 
+    include MessageHandler
+
     def initIntercom
       # This is the authentication key that clients will need to provide to
       # execute DRb methods.
       @authKey = generateAuthKey
 
-      @log = LogFile.instance
       # This flag will be set to true by DRb method calls to terminate the
       # process.
       @terminate = false
@@ -73,14 +72,14 @@ class TaskJuggler
     end
 
     def terminate
-      @log.debug('Terminating on external request')
+      debug('', 'Terminating on external request')
       @terminate = true
     end
 
     def connect(stdout, stderr, stdin, silent)
       # Set the client lock.
       @clientConnection.lock
-      @log.debug('Rerouting ProjectServer standard IO to client')
+      debug('', 'Rerouting ProjectServer standard IO to client')
       # Make sure that all output to STDOUT and STDERR is sent to the client.
       # Input is read from the client STDIN.  We save a copy of the old file
       # handles so we can restore then later again.
@@ -90,18 +89,18 @@ class TaskJuggler
       $stdout = stdout if stdout
       $stderr = stderr if stdout
       $stdin = stdin if stdin
-      @log.debug('IO is now routed to the client')
+      debug('', 'IO is now routed to the client')
       Log.silent = silent
       true
     end
 
     def disconnect
-      @log.debug('Restoring IO')
+      debug('', 'Restoring IO')
       Log.silent = true
       $stdout = @stdout if @stdout
       $stderr = @stderr if @stderr
       $stdin = @stdin if @stdin
-      @log.debug('Standard IO has been restored')
+      debug('', 'Standard IO has been restored')
       # Release the client lock
       @clientConnection.unlock
       true
@@ -113,10 +112,11 @@ class TaskJuggler
 
     def checkKey(authKey, command)
       if authKey == @authKey
-        @log.debug("Accepted authentication key for command '#{command}'")
+        debug('', "Accepted authentication key for command '#{command}'")
       else
-        @log.warning("Rejected wrong authentication key #{authKey}" +
-                     "for command '#{command}'")
+        warning('auth_key_rejected',
+                "Rejected wrong authentication key #{authKey}" +
+                "for command '#{command}'")
         return false
       end
       true
@@ -126,7 +126,7 @@ class TaskJuggler
     # client connection timer.
     def restartTimer
       @timeLock.synchronize do
-        @log.debug('Reseting client connection timer')
+        debug('', 'Reseting client connection timer')
         @timerStart = Time.new
       end
     end
@@ -156,9 +156,10 @@ class TaskJuggler
               sleep 1
             end
             if timerExpired?
-              @log.warning('Shutting down DRb server due to timeout')
+              warning('drb_timeout_shutdown',
+                      'Shutting down DRb server due to timeout')
             else
-              @log.debug('Shutting down DRb server')
+              debug('', 'Shutting down DRb server')
             end
             DRb.stop_service
             break

@@ -42,10 +42,10 @@ class TaskJuggler
     it 'should be able to load a project' do
       prj = 'project foo "Foo" 2011-03-14 +1d task "Foo"'
       res = stdIoWrapper(prj) do
-        Tj3Client.new.main(%w( --unsafe --silent add . ))
+        Tj3Client.new.main(%w( --unsafe add . ))
       end
       res.returnValue.should == 0
-      res.stdErr.should match /Project foo loaded/
+      res.stdErr.should match /Project\(s\) \. added/
     end
 
   end

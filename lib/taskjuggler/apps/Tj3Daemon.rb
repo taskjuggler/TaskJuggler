@@ -13,7 +13,7 @@
 
 require 'drb'
 require 'taskjuggler/Tj3AppBase'
-require 'taskjuggler/LogFile'
+require 'taskjuggler/MessageHandler'
 require 'taskjuggler/daemon/ProjectBroker'
 
 # Name of the application
@@ -27,9 +27,9 @@ class TaskJuggler
       super
       @mandatoryArgs = '[<tjp file> [<tji file> ...] ...]'
 
-      @log = LogFile.instance
-      @log.logFile = File.join(Dir.getwd, "/#{AppConfig.appName}.log")
-      @log.appName = AppConfig.appName
+      @mhi = MessageHandlerInstance.instance
+      @mhi.logFile = File.join(Dir.getwd, "/#{AppConfig.appName}.log")
+      @mhi.appName = AppConfig.appName
       @daemonize = true
       @uriFile = File.join(Dir.getwd, '.tj3d.uri')
       @port = nil
@@ -75,7 +75,7 @@ EOT
     def appMain(files)
       broker = ProjectBroker.new
       @rc.configure(self, 'global')
-      @rc.configure(@log, 'global.log')
+      @rc.configure(@mhi, 'global.log')
       @rc.configure(broker, 'global')
       @rc.configure(broker, 'daemon')
 

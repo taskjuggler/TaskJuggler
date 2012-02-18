@@ -43,7 +43,7 @@ class TaskJuggler
       rd, wr = IO.pipe
 
       if (@pid = fork) == -1
-        @log.fatal('ReportServer fork failed')
+        fatal('rs_fork_failed', 'ReportServer fork failed')
       elsif @pid.nil?
         if logConsole
           # If the Broker wasn't daemonized, log stdout and stderr to PID
@@ -60,9 +60,10 @@ class TaskJuggler
           iFace = ReportServerIface.new(self)
           begin
             uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
-            @log.debug("Report server is listening on #{uri}")
+            debug('', "Report server is listening on #{uri}")
           rescue
-            @log.fatal("ReportServer can't start DRb: #{$!}")
+            error('rs_cannot_start_drb',
+                  "ReportServer can't start DRb: #{$!}")
           end
 
           # Send the URI of the newly started DRb server to the parent process.
@@ -77,12 +78,11 @@ class TaskJuggler
 
           # Cleanup the DRb threads
           DRb.thread.join
-          @log.debug('Report server terminated')
+          debug('', 'Report server terminated')
           exit 0
         rescue
-          $stderr.print $!.to_s
-          $stderr.print $!.backtrace.join("\n")
-          @log.fatal("ReportServer caught unexpected exception: #{$!}")
+          fatal('rs_unexp_excp',
+                "ReportServer caught unexpected exception: #{$!}")
         end
       else
         Process.detach(@pid)
@@ -108,40 +108,42 @@ class TaskJuggler
     end
 
     def generateReport(id, regExpMode, formats, dynamicAttributes)
-      @log.info("Generating report #{id}")
+      info('generating_report', "Generating report #{id}")
       startTime = Time.now
       if (ok = @tj.generateReport(id, regExpMode, formats, dynamicAttributes))
-        @log.info("Report #{id} generated in #{Time.now - startTime} seconds")
+        info('report_id_generated',
+             "Report #{id} generated in #{Time.now - startTime} seconds")
       else
-        @log.error("Report generation of #{id} failed")
+        error('report_generation_failed', "Report generation of #{id} failed")
       end
       restartTimer
       ok
     end
 
     def listReports(id, regExpMode)
-      @log.info("Listing report #{id}")
+      info('listing_report_id', "Listing report #{id}")
       if (ok = @tj.listReports(id, regExpMode))
-        @log.debug("Report list for #{id} generated")
+        debug('', "Report list for #{id} generated")
       else
-        @log.error("Report list compilation of #{id} failed")
+        error('repor_list_comp_failed',
+              "Report list compilation of #{id} failed")
       end
       restartTimer
       ok
     end
 
     def checkTimeSheet(sheet)
-      @log.info("Checking time sheet #{sheet}")
+      info('check_time_sheet', "Checking time sheet #{sheet}")
       ok = @tj.checkTimeSheet(sheet)
-      @log.debug("Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      debug('', "Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
       restartTimer
       ok
     end
 
     def checkStatusSheet(sheet)
-      @log.info("Checking status sheet #{sheet}")
+      info('check_status_sheet', "Checking status sheet #{sheet}")
       ok = @tj.checkStatusSheet(sheet)
-      @log.debug("Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      debug('', "Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
       restartTimer
       ok
     end
@@ -152,7 +154,8 @@ class TaskJuggler
       Thread.new do
         loop do
           if TjTime.new - @lastPing > 120
-            @log.fatal('Heartbeat from ProjectServer lost. Terminating.')
+            error('ps_heartbeat_lost',
+                  'Heartbeat from ProjectServer lost. Terminating.')
           end
           sleep 30
         end

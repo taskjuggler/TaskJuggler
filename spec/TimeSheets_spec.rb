@@ -76,9 +76,9 @@ task t3 "T3" {
 }
 EOT
       res = stdIoWrapper(prj) do
-        Tj3Client.new.main(%w( --unsafe --silent add . ))
+        Tj3Client.new.main(%w( --unsafe add . ))
       end
-      unless res.stdErr =~ /Project tstest loaded/
+      unless res.stdErr.include?("Info: Project(s) . added")
         raise "Project not loaded: #{res.stdErr}"
       end
       raise "Can't load project" unless res.returnValue == 0

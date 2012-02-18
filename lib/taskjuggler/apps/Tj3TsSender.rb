@@ -56,7 +56,6 @@ EOT
     end
 
     def appMain(argv)
-      puts "Ok 1"
       ts = TimeSheetSender.new('tj3ts_sender')
       @rc.configure(ts, 'global')
       @rc.configure(ts, 'timesheets')
@@ -67,10 +66,8 @@ EOT
       ts.intervalDuration = @intervalDuration if @intervalDuration
       ts.date = @date if @date
 
-      puts "Ok 2"
       ts.sendTemplates(@resourceList)
 
-      puts "Ok 3"
       0
     end
 
