@@ -102,7 +102,7 @@ class TestLimits < Test::Unit::TestCase
     assert(l.ok?)
     l.inc(dateToIdx('2009-02-01-13:00'))
     assert(!l.ok?)
-    assert(l.ok?(nil, true, r))
+    assert(!l.ok?(nil, true, r))
   end
 
   def test_with_resource_2
@@ -154,7 +154,7 @@ class TestLimits < Test::Unit::TestCase
     assert(!l.ok?)
     l.inc(dateToIdx('2009-02-01-12:00'), r)
     assert(!l.ok?)
-    assert(l.ok?(nil, true, r))
+    assert(!l.ok?(nil, true, r))
     l.inc(dateToIdx('2009-02-01-13:00'), r)
     assert(!l.ok?)
     assert(!l.ok?(nil, true, r))

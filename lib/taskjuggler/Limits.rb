@@ -94,9 +94,7 @@ class TaskJuggler
       def ok?(index, upper, resource)
         # if @upper does not match or the provided resource does not match,
         # we can ignore this limit.
-        return true if @upper != upper ||
-                       (!@resource.nil? ^ !resource.nil?) ||
-                       (@resource && resource && @resource != resource)
+        return true if @upper != upper || (@resource && @resource != resource)
 
         if index.nil?
           # No index given. We need to check all counters.
@@ -109,8 +107,8 @@ class TaskJuggler
           # anything. Everything is ok.
           return true if !@interval.contains?(index)
 
-          return @upper ? @scoreboard[idxToSbIdx(index)] < @value :
-                          @scoreboard[idxToSbIdx(index)] >= @value
+          sbVal = @scoreboard[idxToSbIdx(index)]
+          return @upper ? (sbVal < @value) : (sbVal >= @value)
         end
       end
 
