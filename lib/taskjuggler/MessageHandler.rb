@@ -192,7 +192,7 @@ class TaskJuggler
     # Generate a debug message.
     def debug(id, message, sourceFileInfo = nil, line = nil, data = nil,
               scenario = nil)
-      addMessage(:info, id, message, sourceFileInfo, line, data, scenario)
+      addMessage(:debug, id, message, sourceFileInfo, line, data, scenario)
     end
 
     # Convert all messages into a single String.
@@ -314,8 +314,8 @@ class TaskJuggler
     # Generate a debug message.
     def debug(id, message, sourceFileInfo = nil, line = nil, data = nil,
               scenario = nil)
-      MessageHandlerInstance.instance.info(id, message, sourceFileInfo, line,
-                                           data, scenario)
+      MessageHandlerInstance.instance.debug(id, message, sourceFileInfo, line,
+                                            data, scenario)
     end
 
   end

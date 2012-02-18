@@ -242,21 +242,26 @@ EOT
         @broker = DRbObject.new(nil, uri)
         # Client and server should always come from the same Gem. Since we
         # restict communication to localhost, that's probably not a problem.
-      rescue
+        if (check = @broker.apiVersion(@authKey, 1)) < 0
+          error('tjc_too_old',
+                'This client is too old for the server. Please ' +
+                'upgrade to a more recent version of the software.')
+        elsif check == 0
+          error('tjc_auth_fail',
+                'Authentication failed. Please check your authentication ' +
+                'key to match the server key.')
+        end
+      rescue => exception
+        # If we ended up here due to a previously reported TjRuntimeError, we
+        # just pass it through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
         error('tjc_srv_not_responding',
               "TaskJuggler server on host '#{@host}' port " +
               "#{@port} is not responding")
       end
 
-      if (check = @broker.apiVersion(@authKey, 1)) < 0
-        error('tjc_too_old',
-              'This client is too old for the server. Please ' +
-              'upgrade to a more recent version of the software.')
-      elsif check == 0
-        error('tjc_auth_fail',
-              'Authentication failed. Please check your authentication ' +
-              'key to match the server key.')
-      end
     end
 
     def disconnectDaemon
