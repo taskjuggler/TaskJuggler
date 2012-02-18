@@ -380,7 +380,6 @@ EOT
       begin
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
-        $stderr.puts "rs_uri: [[#{@rs_uri}]] auth_key: [[#{@rs_authKey}]]"
         @reportServer = DRbObject.new(nil, @rs_uri)
       rescue
         error('tjc_no_rep_srv', "Cannot get report server: #{$!}")

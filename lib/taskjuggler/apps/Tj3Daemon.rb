@@ -30,6 +30,8 @@ class TaskJuggler
       @mhi = MessageHandlerInstance.instance
       @mhi.logFile = File.join(Dir.getwd, "/#{AppConfig.appName}.log")
       @mhi.appName = AppConfig.appName
+      # By default show only warnings and more serious messages.
+      @mhi.outputLevel = :warning
       @daemonize = true
       @uriFile = File.join(Dir.getwd, '.tj3d.uri')
       @port = nil

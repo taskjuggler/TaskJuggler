@@ -169,7 +169,7 @@ class TaskJuggler
 
       # Great, everything went fine. We've got a project to work with.
       updateState(:ready, @tj.projectId, false)
-      info('project_loaded', "Project #{@tj.projectId} loaded")
+      debug('', "Project #{@tj.projectId} loaded")
       restartTimer
       true
     end
@@ -286,8 +286,7 @@ class TaskJuggler
               @stateLock.synchronize { @modifiedCheck = TjTime.new }
 
               if @tj.project.inputFiles.modified?
-                info('prj_modified',
-                     "Project #{@tj.projectId} has been modified")
+                debug('', "Project #{@tj.projectId} has been modified")
                 updateState(:ready, @tj.projectId, true)
               end
             end
