@@ -18,7 +18,6 @@ require 'taskjuggler/daemon/ProcessIntercom'
 require 'taskjuggler/daemon/ReportServer'
 require 'taskjuggler/MessageHandler'
 require 'taskjuggler/TaskJuggler'
-require 'taskjuggler/Log'
 require 'taskjuggler/TjTime'
 
 class TaskJuggler
@@ -147,25 +146,30 @@ class TaskJuggler
       @modifiedCheck = TjTime.new
 
       updateState(:loading, dirAndFiles, false)
-      @tj = TaskJuggler.new
-      # Make sure that trace reports get CSV formats included so there reports
-      # can be generated on request.
-      @tj.generateTraces = true
+      begin
+        @tj = TaskJuggler.new
+        # Make sure that trace reports get CSV formats included so there
+        # reports can be generated on request.
+        @tj.generateTraces = true
 
-      # Parse all project files
-      unless @tj.parse(args, true)
-        warning('parse_failed', "Parsing of #{args.join(' ')} failed")
+        # Parse all project files
+        unless @tj.parse(args, true)
+          warning('parse_failed', "Parsing of #{args.join(' ')} failed")
+          updateState(:failed, nil, false)
+          @terminate = true
+          return false
+        end
+
+        # Then schedule the project
+        unless @tj.schedule
+          warning('schedule_failed',
+                  "Scheduling of project #{@tj.projectId} failed")
+          updateState(:failed, @tj.projectId, false)
+          @terminate = true
+          return false
+        end
+      rescue TjRuntimeError
         updateState(:failed, nil, false)
-        @terminate = true
-        return false
-      end
-
-      # Then schedule the project
-      unless @tj.schedule
-        warning('schedule_failed',
-                "Scheduling of project #{@tj.projectId} failed")
-        updateState(:failed, @tj.projectId, false)
-        Log.exit('scheduler')
         @terminate = true
         return false
       end

@@ -105,7 +105,7 @@ class TaskJuggler
     def addFile(file)
       begin
         @tj.parseFile(file, :reportPropertiesFile)
-      rescue TjException
+      rescue TjRuntimeError
         return false
       end
       restartTimer
@@ -115,11 +115,15 @@ class TaskJuggler
     def generateReport(id, regExpMode, formats, dynamicAttributes)
       info('generating_report', "Generating report #{id}")
       startTime = Time.now
-      if (ok = @tj.generateReport(id, regExpMode, formats, dynamicAttributes))
-        info('report_id_generated',
-             "Report #{id} generated in #{Time.now - startTime} seconds")
-      else
-        error('report_generation_failed', "Report generation of #{id} failed")
+      begin
+        if (ok = @tj.generateReport(id, regExpMode, formats, dynamicAttributes))
+          info('report_id_generated',
+               "Report #{id} generated in #{Time.now - startTime} seconds")
+        else
+          error('report_generation_failed', "Report generation of #{id} failed")
+        end
+      rescue TjRuntimeError
+        return false
       end
       restartTimer
       ok
@@ -127,11 +131,15 @@ class TaskJuggler
 
     def listReports(id, regExpMode)
       info('listing_report_id', "Listing report #{id}")
-      if (ok = @tj.listReports(id, regExpMode))
-        debug('', "Report list for #{id} generated")
-      else
-        error('repor_list_comp_failed',
-              "Report list compilation of #{id} failed")
+      begin
+        if (ok = @tj.listReports(id, regExpMode))
+          debug('', "Report list for #{id} generated")
+        else
+          error('repor_list_comp_failed',
+                "Report list compilation of #{id} failed")
+        end
+      rescue TjRuntimeError
+        return false
       end
       restartTimer
       ok
@@ -139,16 +147,24 @@ class TaskJuggler
 
     def checkTimeSheet(sheet)
       info('check_time_sheet', "Checking time sheet #{sheet}")
-      ok = @tj.checkTimeSheet(sheet)
-      debug('', "Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      begin
+        ok = @tj.checkTimeSheet(sheet)
+        debug('', "Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      rescue TjRuntimeError
+        return false
+      end
       restartTimer
       ok
     end
 
     def checkStatusSheet(sheet)
       info('check_status_sheet', "Checking status sheet #{sheet}")
-      ok = @tj.checkStatusSheet(sheet)
-      debug('', "Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      begin
+        ok = @tj.checkStatusSheet(sheet)
+        debug('', "Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
+      rescue TjRuntimeError
+        return false
+      end
       restartTimer
       ok
     end
