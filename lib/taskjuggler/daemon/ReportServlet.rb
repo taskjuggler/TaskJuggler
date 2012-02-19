@@ -56,7 +56,11 @@ class TaskJuggler
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
         @reportServer = DRbObject.new(nil, @rs_uri)
-      rescue
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
         error("Cannot get report server: #{$!}")
       end
       # Create two StringIO buffers that will receive the $stdout and $stderr
@@ -70,7 +74,12 @@ class TaskJuggler
 
       begin
         @reportServer.connect(@rs_authKey, stdOut, stdErr, $stdin, true)
-      rescue
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
         error("Can't connect IO: #{$!}")
       end
 

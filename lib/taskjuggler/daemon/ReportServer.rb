@@ -80,8 +80,13 @@ class TaskJuggler
           DRb.thread.join
           debug('', 'Report server terminated')
           exit 0
-        rescue
-          fatal('rs_unexp_excp',
+        rescue => exception
+          # TjRuntimeError exceptions are simply passed through.
+          if exception.is_a?(TjRuntimeError)
+            raise TjRuntimeError, $!
+          end
+
+          error('rs_unexp_excp',
                 "ReportServer caught unexpected exception: #{$!}")
         end
       else

@@ -467,9 +467,12 @@ EOT
               end
             end
           end
-        rescue
-          $stderr.print $!.to_s
-          $stderr.print $!.backtrace.join("\n")
+        rescue => exception
+          # TjRuntimeError exceptions are simply passed through.
+          if exception.is_a?(TjRuntimeError)
+            raise TjRuntimeError, $!
+          end
+
           fatal('pb_housekeeping_error',
                 "ProjectBroker housekeeping error: #{$!}")
         end
@@ -527,9 +530,14 @@ EOT
     def trap
       begin
         yield
-      rescue
-        log.debug($!.backtrace.join("\n"))
-        log.fatal("Unexpected exception: #{$!}")
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
+        debug('', $!.backtrace.join("\n"))
+        fatal('pb_unexp_excep', "Unexpected exception: #{$!}")
       end
     end
 
@@ -609,11 +617,7 @@ EOT
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.ping(@authKey)
       rescue
-        begin
-          error('ping_failed', "Ping failed: #{$!}")
-        rescue TjRuntimeError
-        end
-        return false
+        error('ping_failed', "Ping failed: #{$!}")
       end
       true
     end
@@ -627,11 +631,8 @@ EOT
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.terminate(@authKey)
       rescue
-        begin
-          error('proj_serv_term_failed',
-                "Termination of ProjectServer failed: #{$!}")
-        rescue TjRuntimeError
-        end
+        error('proj_serv_term_failed',
+              "Termination of ProjectServer failed: #{$!}")
       end
       @uri = nil
     end

@@ -24,7 +24,12 @@ class TaskJuggler
     def trap
       begin
         yield
-      rescue
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
         debug('', $!.backtrace.join("\n"))
         fatal('proc_intercom_ifc_unexp_excp', "Unexpected exception: #{$!}")
       end

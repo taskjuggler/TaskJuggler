@@ -116,9 +116,12 @@ class TaskJuggler
           DRb.thread.join
           debug('', 'Project server terminated')
           exit 0
-        rescue
-          $stderr.print $!.to_s
-          $stderr.print $!.backtrace.join("\n")
+        rescue => exception
+          # TjRuntimeError exceptions are simply passed through.
+          if exception.is_a?(TjRuntimeError)
+            raise TjRuntimeError, $!
+          end
+
           error('ps_cannot_start_drb', "ProjectServer can't start DRb: #{$!}")
         end
       else
@@ -255,7 +258,12 @@ class TaskJuggler
         @daemon = DRbObject.new(nil, @daemonURI) unless @daemon
         @daemon.updateState(@daemonAuthKey, @authKey, filesOrId, state,
                             modified)
-      rescue
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
         error('cannot_update_daemon_state',
               "Can't update state with daemon: #{$!}")
       end
@@ -331,7 +339,12 @@ class TaskJuggler
             end
             sleep 1
           end
-        rescue
+        rescue => exception
+          # TjRuntimeError exceptions are simply passed through.
+          if exception.is_a?(TjRuntimeError)
+            raise TjRuntimeError, $!
+          end
+
           # Make sure we get a backtrace for this thread.
           fatal('ps_housekeeping_error',
                 "ProjectServer housekeeping error: #{$!}")
@@ -414,7 +427,12 @@ class TaskJuggler
       begin
         @reportServer = DRbObject.new(nil, @uri) unless @reportServer
         @reportServer.ping(@authKey)
-      rescue
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
         # ReportServer processes terminate on request of their clients. Not
         # responding to a ping is a normal event.
         debug('', "ReportServer (#{@uri}) has terminated")
