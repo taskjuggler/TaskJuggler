@@ -144,10 +144,10 @@ class TaskJuggler
             header = columnTitle(property, scenarioIdx, columnDescr)
 
             if headers.include?(header)
-              @report.error('trace_columns_not_uniq',
-                            "The column title '#{header}' is already used " +
-                            "by a previous column. Column titles must be " +
-                            "unique!")
+              error('trace_columns_not_uniq',
+                    "The column title '#{header}' is already used " +
+                    "by a previous column. Column titles must be " +
+                    "unique!")
             end
 
             headers << header

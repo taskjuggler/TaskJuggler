@@ -280,8 +280,14 @@ EOT
       when 'add'
         res = callDaemon(:addProject, [ Dir.getwd, args,
                                         $stdout, $stderr, $stdin, @silent ])
-        info('tjc_proj_added', "Project(s) #{args.join(', ')} added")
-        return res ? 0 : 1
+        if res
+          info('tjc_proj_added', "Project(s) #{args.join(', ')} added")
+          return 0
+        else
+          warning('tjc_proj_adding_failed',
+                  "Projects(s) #{args.join(', ')} could not be added")
+          return 1
+        end
       when 'remove'
         args.each do |arg|
           unless callDaemon(:removeProject, arg)

@@ -189,7 +189,8 @@ class TaskJuggler
       trap { @server.addFile(file) }
     end
 
-    def generateReport(authKey, reportId, regExpMode, formats, dynamicAttributes)
+    def generateReport(authKey, reportId, regExpMode, formats,
+                       dynamicAttributes)
       return false unless @server.checkKey(authKey, 'generateReport')
 
       trap do

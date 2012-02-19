@@ -153,11 +153,11 @@ EOT
           $stderr.puts e.backtrace.join("\n") if $DEBUG
           1
         else
-          fatal('tj3app_crash', "Ups, you have triggered a bug in " +
-                "#{AppConfig.softwareName}!\n" +
-                "#{e}\n" +
-                e.backtrace.join("\n") +
-                "Please see the user manual on how to get this bug fixed!")
+          fatal('crash_trap', "#{e}\n#{e.backtrace.join("\n")}\n\n" +
+                "#{'*' * 79}\nYou have triggered a bug in " +
+                "#{AppConfig.softwareName} version #{AppConfig.version}!\n" +
+                "Please see the user manual on how to get this bug fixed!\n" +
+                "#{'*' * 79}\n")
         end
       end
 

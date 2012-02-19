@@ -11,6 +11,7 @@
 # published by the Free Software Foundation.
 #
 
+require 'taskjuggler/AppConfig'
 require 'taskjuggler/Log'
 require 'taskjuggler/MessageHandler'
 
@@ -24,14 +25,19 @@ class TaskJuggler
     def trap
       begin
         yield
-      rescue => exception
-        # TjRuntimeError exceptions are simply passed through.
-        if exception.is_a?(TjRuntimeError)
-          raise TjRuntimeError, $!
+      rescue => e
+        # Any exception here is a fata error. We try hard to terminate the DRb
+        # thread and then exit the program.
+        begin
+          fatal('pi_crash_trap', "#{e}\n#{e.backtrace.join("\n")}\n\n" +
+                "#{'*' * 79}\nYou have triggered a bug in " +
+                "#{AppConfig.softwareName} version #{AppConfig.version}!\n" +
+                "Please see the user manual on how to get this bug fixed!\n" +
+                "#{'*' * 79}\n")
+        rescue RuntimeError
+          @server.terminate
+          return false
         end
-
-        debug('', $!.backtrace.join("\n"))
-        fatal('proc_intercom_ifc_unexp_excp', "Unexpected exception: #{$!}")
       end
     end
 

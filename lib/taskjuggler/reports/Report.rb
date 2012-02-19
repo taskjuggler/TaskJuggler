@@ -158,22 +158,6 @@ class TaskJuggler
       @project.reportContexts.first.report.get('interactive')
     end
 
-    def error(id, message)
-      if message && !message.empty?
-        @messageHandler.error(id, message, @sourceFileInfo)
-      else
-        # We have no message, so the error has already been reported to the
-        # MessageHandler. Just trigger another exception to signal the error.
-        raise TjException
-      end
-    end
-
-    def warning(id, message)
-      if message && !message.empty?
-        @messageHandler.warning(id, message, @sourceFileInfo)
-      end
-    end
-
   private
     # Convenience function to access a report attribute
     def a(attribute)

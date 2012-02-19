@@ -243,21 +243,21 @@ EOT
 
       debug('', "Found tag #{tag} in list of loaded projects with URI " +
             "#{pr.uri}")
-      # Return the URI and the authentication key of the new ProjectServer.
-      [ pr.uri, pr.authKey ]
+
+      res = false
 
       # Open a DRb connection to the ProjectServer process
       begin
         projectServer = DRbObject.new(nil, pr.uri)
       rescue
-        stdErr.puts "Can't get ProjectServer object: #{$!}"
+        warning('pb_cannot_get_ps', "Can't get ProjectServer object: #{$!}")
         return false
       end
       begin
         # Hook up IO from requestor to the ProjectServer process.
         projectServer.connect(pr.authKey, stdOut, stdErr, stdIn, silent)
       rescue
-        stdErr.puts "Can't connect IO: #{$!}"
+        warning('pb_cannot_connect_io', "Can't connect IO: #{$!}")
         return false
       end
 
@@ -266,7 +266,7 @@ EOT
       begin
         res = projectServer.loadProject(pr.authKey, [ cwd, *args ])
       rescue
-        stdErr.puts "Loading of project failed: #{$!}"
+        warning('pb_load_failed', "Loading of project failed: #{$!}")
         return false
       end
 
@@ -274,7 +274,7 @@ EOT
       begin
         projectServer.disconnect(pr.authKey)
       rescue
-        stdErr.puts "Can't disconnect IO: #{$!}"
+        warning('pb_cannot_disconnect_io', "Can't disconnect IO: #{$!}")
         return false
       end
 
@@ -283,7 +283,8 @@ EOT
 
     def removeProject(indexOrId)
       @projects.synchronize do
-        # Find all projects with the IDs in indexOrId and mark them as :obsolete.
+        # Find all projects with the IDs in indexOrId and mark them as
+        # :obsolete.
         if /^[0-9]$/.match(indexOrId)
           index = indexOrId.to_i - 1
           if index >= 0 && index < @projects.length
@@ -530,14 +531,23 @@ EOT
     def trap
       begin
         yield
-      rescue => exception
+      rescue => e
         # TjRuntimeError exceptions are simply passed through.
-        if exception.is_a?(TjRuntimeError)
+        if e.is_a?(TjRuntimeError)
           raise TjRuntimeError, $!
         end
 
-        debug('', $!.backtrace.join("\n"))
-        fatal('pb_unexp_excep', "Unexpected exception: #{$!}")
+        # Any exception here is a fata error. We try hard to terminate the DRb
+        # thread and then exit the program.
+        begin
+          fatal('pb_crash_trap', "#{e}\n#{e.backtrace.join("\n")}\n\n" +
+                "#{'*' * 79}\nYou have triggered a bug in " +
+                "#{AppConfig.softwareName} version #{AppConfig.version}!\n" +
+                "Please see the user manual on how to get this bug fixed!\n" +
+                "#{'*' * 79}\n")
+        rescue RuntimeError
+          @broker.stop
+        end
       end
     end
 
@@ -617,7 +627,8 @@ EOT
         @projectServer = DRbObject.new(nil, @uri) unless @projectServer
         @projectServer.ping(@authKey)
       rescue
-        error('ping_failed', "Ping failed: #{$!}")
+        warning('ping_failed', "Ping failed: #{$!}")
+        return false
       end
       true
     end
