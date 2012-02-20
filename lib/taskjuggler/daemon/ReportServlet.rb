@@ -12,29 +12,45 @@
 #
 
 require 'webrick'
+require 'taskjuggler/MessageHandler'
+require 'taskjuggler/RichText'
+require 'taskjuggler/HTMLDocument'
+require 'taskjuggler/daemon/DaemonConnector'
 
 class TaskJuggler
 
   class ReportServlet < WEBrick::HTTPServlet::AbstractServlet
 
-    def initialize(config, *options)
+    def initialize(config, options)
       super
-      @broker = options[0]
+      @authKey = options[0]
+      @host = options[1]
+      @port = options[2]
+      @uri = options[3]
+
+      @broker = DaemonConnector.new(*options)
     end
 
     def self.get_instance(config, options)
-      self.new(config, *options)
+      self.new(config, options)
     end
 
     def do_GET(req, res)
+      debug('', "Serving URL #{req}")
       @req = req
       @res = res
       begin
-        projectId = req.query['project']
-        reportId = req.query['report']
+        # WEBrick is returning the query elements as FormData objects. We must
+        # use to_s to explicitely convert them to String objects.
+        projectId = req.query['project'].to_s
+        debug('', "Project ID: #{projectId}")
+        reportId = req.query['report'].to_s
+        debug('', "Report ID: #{reportId}")
         if projectId.nil? || reportId.nil?
+          debug('', "Project welcome page requested")
           generateWelcomePage(projectId)
         else
+          debug('', "Report #{reportId} of project #{projectId} requested")
           attributes = req.query['attributes'] || ''
           attributes = URLParameter.decode(attributes) unless attributes.empty?
           generateReport(projectId, reportId, attributes)
@@ -47,21 +63,24 @@ class TaskJuggler
 
     def generateReport(projectId, reportId, attributes)
       # Request the Project credentials from the ProbjectBroker.
-      @ps_uri, @ps_authKey = @broker.getProject(projectId)
+      begin
+        @ps_uri, @ps_authKey = @broker.getProject(projectId)
+      rescue
+        error('cannot_get_project_server',
+              "Cannot get project server for ID #{projectId}: #{$!}")
+      end
+
       if @ps_uri.nil?
-        error("No project with ID #{projectId} loaded")
+        error('ps_uri_nil', "No project with ID #{projectId} loaded")
       end
       # Get the responsible ReportServer that can generate the report.
       begin
         @projectServer = DRbObject.new(nil, @ps_uri)
         @rs_uri, @rs_authKey = @projectServer.getReportServer(@ps_authKey)
         @reportServer = DRbObject.new(nil, @rs_uri)
-      rescue => exception
-        # TjRuntimeError exceptions are simply passed through.
-        if exception.is_a?(TjRuntimeError)
-          raise TjRuntimeError, $!
-        end
-        error("Cannot get report server: #{$!}")
+      rescue
+        error('cannot_get_report_server',
+              "Cannot get report server: #{$!}")
       end
       # Create two StringIO buffers that will receive the $stdout and $stderr
       # text from the report server. This buffer will contain the generated
@@ -80,7 +99,7 @@ class TaskJuggler
           raise TjRuntimeError, $!
         end
 
-        error("Can't connect IO: #{$!}")
+        error('rs_io_connect_failed', "Can't connect IO: #{$!}")
       end
 
       # Ask the ReportServer to generate the reports with the provided ID.
@@ -90,19 +109,21 @@ class TaskJuggler
       rescue
         stdOut.rewind
         stdErr.rewind
-        error("Report server crashed: #{$!}\n#{stdErr.read}\n#{stdOut.read}")
+        error('rs_generate_report_failed',
+              "Report server crashed: #{$!}\n#{stdErr.read}\n#{stdOut.read}")
       end
       # Disconnect the ReportServer
       begin
         @reportServer.disconnect(@rs_authKey)
       rescue
-        error("Can't disconnect IO: #{$!}")
+        error('rs_io_disconnect_failed', "Can't disconnect IO: #{$!}")
       end
       # And send a termination request.
       begin
         @reportServer.terminate(@rs_authKey)
       rescue
-        error("Report server termination failed: #{$!}")
+        error('report_server_term_failed',
+              "Report server termination failed: #{$!}")
       end
       @reportServer = nil
 
@@ -116,7 +137,12 @@ class TaskJuggler
     end
 
     def generateWelcomePage(projectId)
-      projects = @broker.getProjectList
+      begin
+        projects = @broker.getProjectList
+      rescue
+        error('cannot_get_project_list',
+              "Cannot get project list from daemon: #{$!}")
+      end
 
       text = "== Welcome to the TaskJuggler Project Server ==\n----\n"
       projects.each do |id|
@@ -163,11 +189,15 @@ class TaskJuggler
       projectServer.getReportList(authKey)
     end
 
-    def error(message)
+    def error(id, message)
       @res.status = 412
       @res.body = "ERROR: #{message}"
       @res['content-type'] = 'text/plain'
-      raise "Error: #{message}"
+      MessageHandlerInstance.instance.error(id, message)
+    end
+
+    def debug(id, message)
+      MessageHandlerInstance.instance.debug(id, message)
     end
 
   end

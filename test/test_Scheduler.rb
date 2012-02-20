@@ -29,6 +29,7 @@ class TestScheduler < Test::Unit::TestCase
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
       mh.outputLevel = :none
+      mh.trapSetup = true
       begin
         tj = TaskJuggler.new
         assert(tj.parse([ f ]), "Parser failed for #{f}")
@@ -46,6 +47,7 @@ class TestScheduler < Test::Unit::TestCase
       ENV['TZ'] = 'Europe/Berlin'
       (mh = TaskJuggler::MessageHandlerInstance.instance).reset
       mh.outputLevel = :none
+      mh.trapSetup = true
       begin
         tj = TaskJuggler.new
         assert(tj.parse([ f ]), "Parser failed for #{f}")

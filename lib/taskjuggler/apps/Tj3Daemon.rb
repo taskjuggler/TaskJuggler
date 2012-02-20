@@ -35,8 +35,6 @@ class TaskJuggler
       @daemonize = true
       @uriFile = File.join(Dir.getwd, '.tj3d.uri')
       @port = nil
-      @webServer = false
-      @webServerPort = nil
     end
 
     def processArguments(argv)
@@ -61,16 +59,6 @@ EOT
                         'of the server.')) do |arg|
           @uriFile = arg
         end
-        @opts.on('-w', '--webserver',
-                 format('Start a web server that serves the reports of ' +
-                        'the loaded projects.')) do
-          @webServer = true
-        end
-        @opts.on('--webserver-port <NUMBER>', Integer,
-                 format('Use the specified TCP/IP port to serve web browser ' +
-                        'requests (Default: 8080).')) do |arg|
-          @webServerPort = arg
-        end
       end
     end
 
@@ -85,8 +73,6 @@ EOT
       # command line.
       broker.port = @port if @port
       broker.uriFile = @uriFile.untaint
-      broker.enableWebServer = @webServer
-      broker.webServerPort = @webServerPort if @webServerPort
       broker.projectFiles = sortInputFiles(files) unless files.empty?
       broker.daemonize = @daemonize
       # Create log files for standard IO for each child process if the daemon

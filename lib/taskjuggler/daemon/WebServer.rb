@@ -11,13 +11,10 @@
 # published by the Free Software Foundation.
 #
 
-require 'drb'
 require 'webrick'
-require 'stringio'
 
 require 'taskjuggler/AppConfig'
-require 'taskjuggler/RichText'
-require 'taskjuggler/MessageHandler'
+require 'taskjuggler/daemon/Daemon'
 require 'taskjuggler/daemon/WelcomePage'
 require 'taskjuggler/daemon/ReportServlet'
 
@@ -25,20 +22,62 @@ class TaskJuggler
 
   # The WebServer class provides a self-contained HTTP server that can serve
   # HTML versions of Report objects that are generated on the fly.
-  class WebServer
+  class WebServer < Daemon
 
-    include MessageHandler
+    include DaemonConnectorMixin
 
-    attr_reader :broker
+    attr_accessor :authKey, :port, :uriFile, :webServerPort
 
     # Create a web server object that runs in a separate thread.
-    def initialize(broker, port)
-      @broker = broker
+    def initialize
+      super
+      # For security reasons, this will probably not change. All DRb
+      # operations are limited to localhost only. The client and the sever
+      # must have access to the identical file system.
+      @host = '127.0.0.1'
+      # The default TCP/IP port. ASCII code decimals for 'T' and 'J'.
+      @port = 8474
+      # The file with the server URI in case port is 0.
+      @uriFile = File.join(Dir.getwd, '.tj3d.uri')
+      # We don't have a default key. The user must provice a key in the config
+      # file. Otherwise the daemon will not start.
+      @authKey = nil
 
-      config = { :Port => port }
-      @server = WEBrick::HTTPServer.new(config)
-      @server.mount('/', WelcomePage, nil)
-      @server.mount('/taskjuggler', ReportServlet, @broker)
+      # Reference to WEBrick object.
+      @webServer = nil
+
+      # Port used by the web server
+      @webServerPort = 8080
+    end
+
+    def start
+      # In daemon mode, we fork twice and only the 2nd child continues here.
+      super()
+
+      debug('', "Starting web server")
+      config = { :Port => @webServerPort }
+      begin
+        @server = WEBrick::HTTPServer.new(config)
+        info('webserver_port',
+             "Web server is listening on port #{@webServerPort}")
+      rescue
+        fatal('webrick_start_failed', "Cannot start WEBrick: #{$!}")
+      end
+
+      begin
+        @server.mount('/', WelcomePage, nil)
+      rescue
+        fatal('welcome_page_mount_failed',
+              "Cannot mount WEBrick welcome page: #{$!}")
+      end
+
+      begin
+        @server.mount('/taskjuggler', ReportServlet,
+                      [ @authKey, @host, @port, @uri ])
+      rescue
+        fatal('broker_page_mount_failed',
+              "Cannot mount WEBrick broker page: #{$!}")
+      end
 
       # Serve some directories via the FileHandler servlet.
       %w( css icons scripts ).each do |dir|
@@ -52,16 +91,24 @@ directories must be separated by colons.
 EOT
                     )
         end
-        @server.mount("/#{dir}", WEBrick::HTTPServlet::FileHandler, fullDir)
+
+        begin
+          @server.mount("/#{dir}", WEBrick::HTTPServlet::FileHandler, fullDir)
+        rescue
+          fatal('dir_mount_failed',
+                "Cannot mount directory #{dir} in WEBrick: #{$!}")
+        end
       end
 
-      # Start the web server in a new thread so we don't block this thread.
-      @thread = Thread.new do
-        begin
-          @server.start
-        rescue
-          fatal('web_server_error', "Web server error: #{$!}")
-        end
+      # Install signal handler to exit gracefully on CTRL-C.
+      intHandler = Kernel.trap('INT') do
+        stop
+      end
+
+      begin
+        @server.start
+      rescue
+        fatal('web_server_error', "Web server error: #{$!}")
       end
     end
 
@@ -70,7 +117,6 @@ EOT
       if @server
         @server.shutdown
         @server = nil
-        @thread.join
       end
     end
 

@@ -115,7 +115,7 @@ class TaskJuggler
     include Singleton
 
     attr_reader :messages, :errors
-    attr_accessor :logFile, :appName, :abortOnWarning, :baselineSFI
+    attr_accessor :logFile, :appName, :abortOnWarning, :trapSetup, :baselineSFI
 
     LogLevels = { :none => 0, :fatal => 1, :error => 2,
                   :warning => 3, :info => 4, :debug => 5 }
@@ -147,6 +147,10 @@ class TaskJuggler
       @baselineSFI = nil
       # A list of all generated messages.
       @messages = []
+
+      # If this is set the true, we only throw a TjRuntimeError instead of
+      # using exit().
+      @trapSetup = false
     end
 
     # Set the console output level.
@@ -266,7 +270,11 @@ class TaskJuggler
       when :error
         # Increase the error counter.
         @errors += 1
-        raise TjRuntimeError
+        if @trapSetup
+          raise TjRuntimeError
+        else
+          exit 1
+        end
       when :fatal
         raise RuntimeError
       end

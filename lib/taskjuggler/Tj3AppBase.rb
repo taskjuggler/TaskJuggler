@@ -117,7 +117,11 @@ EOT
 
       # Install signal handler to exit gracefully on CTRL-C.
       intHandler = Kernel.trap('INT') do
-        error('tj3app_user_abort', "Aborting on user request!")
+        begin
+          fatal('tj3app_user_abort', "Aborting on user request!")
+        rescue RuntimeError
+          exit 1
+        end
       end
 
       retVal = 0
@@ -139,7 +143,9 @@ EOT
         @rc = RuntimeConfig.new(AppConfig.packageName, @configFile)
 
         begin
+          MessageHandlerInstance.instance.trapSetup = true
           retVal = appMain(args)
+          MessageHandlerInstance.instance.trapSetup = false
         rescue TjRuntimeError
           # We have hit a sitatuation that we can't recover from. A message
           # was severed via the MessageHandler to inform the user and we now

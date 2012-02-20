@@ -14,6 +14,7 @@
 require 'webrick'
 
 require 'taskjuggler/Tj3Config'
+require 'taskjuggler/HTMLDocument'
 
 class TaskJuggler
 

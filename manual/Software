@@ -91,9 +91,8 @@ get this user manual (browser).
 
 ''''tj3d'''' is the TaskJuggler daemon. It is a program that runs
 in the background, disconnected from your shell to provide certain
-services. It can generate reports on demand and serves them as web
-pages to a web browser. It's also used to process incoming time
-sheets.
+services. It can generate reports on demand and processes incoming
+time sheets or status reports.
 
 Depending on the size of your project the scheduling time can take
 several minutes or more. Since all operations need to be done on the
@@ -157,22 +156,6 @@ the ''''-c'''' option. See
 
 for details.
 
-The daemon can also be turned into a web server that serves the HTML
-reports of one or more projects. To enable the web server, start the
-daemon with the ''''-w'''' option. By default, the web server is
-listening on port 8080. This can be changed in the ''''_global''''
-section of the config file.
-
- _global:
-   authKey: topsecret
-   webServerPort: 8080
-
-To access the HTML reports point your web browser to
-''''http://localhost:8080/taskjuggler''''. This assumes that the
-server is running on your local machine. You will then see a list of
-all loaded projects. Click on the project name to get a list of all
-reports for this project.
-
 So far, the daemon has not received any kind of security review. We
 strongly advise you to only use the daemon in a trusted environment
 with only trusted users!
@@ -213,5 +196,28 @@ A server that is running can be terminated with the following command.
 
  tj3client terminate
 
+=== ''''tj3webd'''' ===
 
+This is a web server to serve the HTML reports of a project to any
+web browser. The HTML reports are generated on the fly when accessed.
+''''tj3webd'''' requires that ''''tj3d'''' is already running on the
+same machine.
+
+By default, the web server is listening on port 8080. This can be
+changed in the ''''_global'''' section of the config file.
+
+ _global:
+   authKey: topsecret
+   webServerPort: 8080
+
+To access the HTML reports point your web browser to
+''''http://localhost:8080/taskjuggler''''. This assumes that the
+server is running on your local machine. You will then see a list of
+all loaded projects. Click on the project name to get a list of all
+reports for this project.
+
+''WARNING: Please be aware that the web server when you have started
+it can be accessed by anybody on your local machine and by anybody
+that can reach your machine over the network! It will serve all
+reports of all projects that are hosted by the TaskJuggler daemon.''
 

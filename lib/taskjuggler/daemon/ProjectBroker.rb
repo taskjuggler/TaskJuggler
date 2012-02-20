@@ -17,7 +17,6 @@ require 'drb'
 require 'drb/acl'
 require 'taskjuggler/daemon/Daemon'
 require 'taskjuggler/daemon/ProjectServer'
-require 'taskjuggler/daemon/WebServer'
 require 'taskjuggler/TjTime'
 require 'taskjuggler/MessageHandler'
 
@@ -40,8 +39,7 @@ class TaskJuggler
 
     include MessageHandler
 
-    attr_accessor :authKey, :port, :uriFile, :enableWebServer, :webServerPort,
-                  :projectFiles, :logStdIO
+    attr_accessor :authKey, :port, :uriFile, :projectFiles, :logStdIO
 
     def initialize
       super
@@ -69,15 +67,6 @@ class TaskJuggler
       # will be seperate set of files for each process.
       @logStdIO = !@daemonize
 
-      # Reference to WEBrick object.
-      @webServer = nil
-
-      # Port used by the web server
-      @webServerPort = 8080
-
-      # True if web server should be activated
-      @enableWebServer = false
-
       # This flag will be set to true to terminate the daemon.
       @terminate = false
     end
@@ -100,18 +89,6 @@ EOT
       # In daemon mode, we fork twice and only the 2nd child continues here.
       super()
       debug('', "Starting project broker")
-
-      if @enableWebServer
-        begin
-          # The web server must be started before we turn SAFE mode on.
-          @webServer = WebServer.new(self, @webServerPort)
-          info('web_server_port',
-               "TaskJuggler web server is listening on port " +
-               "#{@webServerPort}")
-        rescue
-          error('cannot_start_web_server', "Cannot start web server: #{$!}")
-        end
-      end
 
       # Setup a DRb server to handle the incomming requests from the clients.
       brokerIface = ProjectBrokerIface.new(self)
@@ -574,6 +551,19 @@ EOT
           fatal('unknown_command', 'Unknown command #{cmd} called')
         end
       end
+    end
+
+    def getProjectList(authKey)
+      return false unless @broker.checkKey(authKey, 'getProjectList')
+
+      trap { @broker.getProjectList }
+    end
+
+    def getProject(authKey, id)
+      return false unless @broker.checkKey(authKey, 'getProject')
+
+      debug('', "PID: #{id} Class: #{id.class}")
+      trap { @broker.getProject(id) }
     end
 
     def updateState(authKey, projectKey, id, status, modified)
