@@ -25,7 +25,6 @@ class TaskJuggler
 
     def initialize
       super
-      @mandatoryArgs = '[<tjp file> [<tji file> ...] ...]'
 
       @mhi = MessageHandlerInstance.instance
       @mhi.logFile = File.join(Dir.getwd, "/#{AppConfig.appName}.log")

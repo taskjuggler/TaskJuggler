@@ -46,7 +46,7 @@ class TaskJuggler
         debug('', "Project ID: #{projectId}")
         reportId = req.query['report'].to_s
         debug('', "Report ID: #{reportId}")
-        if projectId.nil? || reportId.nil?
+        if projectId.empty? || reportId.empty?
           debug('', "Project welcome page requested")
           generateWelcomePage(projectId)
         else
