@@ -6640,12 +6640,14 @@ EOT
     })
     doc('tracereport', <<'EOT'
 The trace report works noticeably different than all other TaskJuggler
-reports. The report is only generated when the ''''--add-trace'''' option is
-passed to ''''tj3''''. Another difference is that this report is
-accumulative. Every report run adds another data set to the report.
+reports. It uses a CSV file to track the values of the selected attributes.
+Each time ''''tj3'''' is run with the ''''--add-trace'''' option, a new set of
+values is appended to the CSV file. The first column of the CSV file holds the
+date when the snapshot was taken. This is either the current date or the
+''''now'''' date if provided. There is no need to specify CSV as output format
+for the report. You can either use these tracked values directly by specifying other report formats or by importing the CSV file into another program.
 
-The report is a table. The first line contains the column headers which must
-all be unique. The first column always contains the current date when that
+The first column always contains the current date when that
 table row was added. All subsequent columns can be defined by the user with
 the [[columns]] attribute. This column set is then repeated for all properties
 that are not hidden by [[hideaccount]], [[hideresource]] and [[hidetask]]. By
@@ -6664,6 +6666,15 @@ colum is represeting.  You can use the queries
 ''''<nowiki><-attribute-></nowiki>''''. ''''<nowiki><-id-></nowiki>'''' is
 replaced with the ID of the property, ''''<nowiki><-name-></nowiki>'''' with
 the name and so on.
+
+You can change the set of tracked values over time. Old values will be
+preserved and the corresponding columns will be the last ones in the CSV file.
+
+When other formats are requested, the CSV file is read in and a report that
+shows the tracked values over time will be generated. The HTML version
+generates SVG graphs that are embedded in the HTML page. These graphs are only
+visble if the web browser supports HTML5. This is true for the latest
+generation of browsers, but older browsers may not support this format.
 EOT
        )
     example('TraceReport')

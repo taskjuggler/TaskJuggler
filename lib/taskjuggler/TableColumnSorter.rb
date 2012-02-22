@@ -30,27 +30,25 @@ class TaskJuggler
     # Rearrange the registered table. The old table won't be modified. The
     # method returns a new table (Array of Arrays). _newHeaders_ is an Array
     # that represents the new column headers. The columns that are not in the
-    # new header will be the first columns of the new table.
+    # new header will be the last columns of the new table.
     def sort(newHeaders)
-      # Maps old index to new index. Since we put the discontinued columns all
-      # in the first columns of the new table, the new table index needs to be
-      # corrected later by adding the number of discontinued columns.
+      # Maps old index to new index.
       columnIdxMap = {}
-      # A list of the column indicies of the columns not contained in
-      # newHeaders.
-      discontinuedColumns = []
+      newHeaderIndex = newHeaders.length
       oldHeaders = @oldTable[0]
+      discontinuedHeaders = []
       oldHeaders.length.times do |i|
         if (ni = newHeaders.index(oldHeaders[i]))
-          # The old columns is still in the new header
+          # This old column is still in the new header
           columnIdxMap[i] = ni
         else
-          # The new header does not contain this old column.
-          discontinuedColumns << i if ni.nil?
+          # This old column is no longer contained in the new header. We
+          # append it at the end.
+          columnIdxMap[i] = newHeaderIndex
+          discontinuedHeaders << oldHeaders[i]
+          newHeaderIndex += 1
         end
       end
-      # The number of discontinued columns.
-      dcl = discontinuedColumns.length
 
       # We construct a new table from scratch. All values from the old table
       # are copied over. columns in the new table that were not contained in
@@ -58,31 +56,25 @@ class TaskJuggler
       newTable = []
       @oldTable.length.times do |lineIdx|
         oldLine = @oldTable[lineIdx]
-        # Add a line of nils to the new table.
-        newTable[lineIdx] = Array.new(dcl + newHeaders.length, nil)
-
-        # The discontinued columns are put in the first columns of the new
-        # table.
-        dcl.times do |colIdx|
-          newTable[lineIdx][colIdx] =
-            oldLine[discontinuedColumns[colIdx]]
+        if lineIdx == 0
+          # Insert the new headers. The discontinued ones will be added below.
+          newTable[0] = newHeaders
+        else
+          # Add a line of nils to the new table.
+          newTable[lineIdx] = Array.new(newHeaderIndex, nil)
         end
 
         # Copy the old column to the new position.
         columnIdxMap.each do |oldColIdx, newColIdx|
-          newTable[lineIdx][newColIdx + dcl] = oldLine[oldColIdx]
+          newTable[lineIdx][newColIdx] = oldLine[oldColIdx]
         end
       end
 
       # Now we need to add the new column headers that were not in the old
       # headers.
-      newHeaders.length.times do |colIdx|
-        unless oldHeaders.index(newHeaders[colIdx])
-          newTable[0][dcl + colIdx] = newHeaders[colIdx]
-        end
-      end
+      #newTable[0] += discontinuedHeaders
 
-      @discontinuedColumns = dcl
+      @discontinuedColumns = discontinuedHeaders.length
       newTable
     end
 

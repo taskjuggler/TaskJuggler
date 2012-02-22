@@ -36,15 +36,15 @@ class TaskJuggler
       @sorter.discontinuedColumns.should == 3
     end
 
-    it "should move Two to front" do
+    it "should move Two to back" do
       t = @sorter.sort(%w( One Three ))
-      t.should == [ %w( Two One Three ), [ 2, 1, 3 ] ]
+      t.should == [ %w( One Three Two ), [ 1, 3, 2 ] ]
       @sorter.discontinuedColumns.should == 1
     end
 
-    it "should move Three to front" do
+    it "should not change when last columns is missing" do
       t = @sorter.sort(%w( One Two ))
-      t.should == [ %w( Three One Two ), [ 3, 1, 2 ] ]
+      t.should == @table
       @sorter.discontinuedColumns.should == 1
     end
 
@@ -60,10 +60,16 @@ class TaskJuggler
       @sorter.discontinuedColumns.should == 0
     end
 
-    it "should insert Four at end and more Three to front" do
+    it "should insert Four at end and move Three to back" do
       t = @sorter.sort(%w( One Two Four ))
-      t.should == [ %w( Three One Two Four ), [ 3, 1, 2, nil ] ]
+      t.should == [ %w( One Two Four Three ), [ 1, 2, nil, 3 ] ]
       @sorter.discontinuedColumns.should == 1
+    end
+
+    it "should keep first columns and insert new directly after" do
+      t = @sorter.sort(%w( One Four Five ))
+      t.should == [ %w( One Four Five Two Three), [ 1, nil, nil, 2, 3 ] ]
+      @sorter.discontinuedColumns.should == 2
     end
 
   end

@@ -106,10 +106,10 @@ class TaskJuggler
       if @table[-1][0] == dateTag
         # We already have an entry for the current date. All values of this
         # line will be overwritten with the current values.
-        @table[-1] = Array.new(discontinuedColumns, nil)
+        @table[-1] = []
       else
         # Append a new line of values to the table.
-        @table << Array.new(discontinuedColumns, nil)
+        @table << []
       end
       # The first entry is always the current date.
       @table[-1] << dateTag
@@ -117,6 +117,8 @@ class TaskJuggler
       generatePropertyListValues(accountList, query)
       generatePropertyListValues(resourceList, query)
       generatePropertyListValues(taskList, query)
+
+      @table[-1] += Array.new(discontinuedColumns, nil)
     end
 
     def to_html

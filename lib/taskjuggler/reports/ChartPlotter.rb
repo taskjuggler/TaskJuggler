@@ -138,6 +138,7 @@ class TaskJuggler
       end
 
       header = true
+      line = 1
       columns[0].each do |date|
         if header
           unless date == "Date"
@@ -146,11 +147,12 @@ class TaskJuggler
           header = false
         else
           unless date.is_a?(TjTime)
-            error("First column must be all dates")
+            error("First colum (#{date}) of line #{line} must be all dates")
           end
           @xMinDate = date if @xMinDate.nil? || date < @xMinDate
           @xMaxDate = date if @xMaxDate.nil? || date > @xMaxDate
         end
+        line += 1
       end
 
       unless @xMinDate && @xMaxDate
