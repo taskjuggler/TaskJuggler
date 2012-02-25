@@ -108,6 +108,11 @@ EOT
       @broker = connectDaemon
     end
 
+    def disconnect
+      disconnectDaemon
+      @broker = nil
+    end
+
     def getProject(projectId)
       @broker.getProject(@authKey, projectId)
     end

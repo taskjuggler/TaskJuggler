@@ -48,6 +48,12 @@ class TaskJuggler
 
       # Port used by the web server
       @webServerPort = 8080
+
+      Kernel.trap('TERM') do
+        debug('webserver_term_signal', 'TERM signal received. Exiting...')
+        # When the OS sends us a TERM signal, we try to exit gracefully.
+        stop
+      end
     end
 
     def start
@@ -118,6 +124,7 @@ EOT
         @server.shutdown
         @server = nil
       end
+      super
     end
 
    end

@@ -6671,10 +6671,14 @@ You can change the set of tracked values over time. Old values will be
 preserved and the corresponding columns will be the last ones in the CSV file.
 
 When other formats are requested, the CSV file is read in and a report that
-shows the tracked values over time will be generated. The HTML version
-generates SVG graphs that are embedded in the HTML page. These graphs are only
-visble if the web browser supports HTML5. This is true for the latest
-generation of browsers, but older browsers may not support this format.
+shows the tracked values over time will be generated. The CSV file may contain
+all kinds of values that are being tracked. Report formats that don't support
+a mix of different values will just show the values of the second column.
+
+The HTML version generates SVG graphs that are embedded in the HTML page.
+These graphs are only visble if the web browser supports HTML5. This is true
+for the latest generation of browsers, but older browsers may not support this
+format.
 EOT
        )
     example('TraceReport')

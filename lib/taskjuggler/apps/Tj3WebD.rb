@@ -35,6 +35,7 @@ class TaskJuggler
       @uriFile = File.join(Dir.getwd, '.tj3d.uri')
       @port = nil
       @webServerPort = nil
+      @pidFile = nil
     end
 
     def processArguments(argv)
@@ -53,6 +54,11 @@ EOT
                  format('Use the specified TCP/IP port to connect to the ' +
                         'TaskJuggler daemon (Default: 8474).')) do |arg|
           @port = arg
+        end
+        @opts.on('--pidfile <FILE NAME>', String,
+                 format('Write the process ID of the daemon to the ' +
+                        'specified file.')) do |arg|
+          @pidFile = arg
         end
         @opts.on('--urifile', String,
                  format('If the port is 0, use this file to read the URI ' +
@@ -79,8 +85,9 @@ EOT
       webServer.port = @port if @port
       webServer.uriFile = @uriFile.untaint
       webServer.webServerPort = @webServerPort if @webServerPort
-      webServer.projectFiles = sortInputFiles(files) unless files.empty?
       webServer.daemonize = @daemonize
+      webServer.pidFile = @pidFile
+      debug('', "pidFile 1: #{@pidFile}")
 
       webServer.start
       0

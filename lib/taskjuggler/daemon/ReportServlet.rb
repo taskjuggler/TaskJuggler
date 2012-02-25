@@ -27,8 +27,6 @@ class TaskJuggler
       @host = options[1]
       @port = options[2]
       @uri = options[3]
-
-      @broker = DaemonConnector.new(*options)
     end
 
     def self.get_instance(config, options)
@@ -61,10 +59,25 @@ class TaskJuggler
 
     private
 
+    def connectToBroker
+      begin
+        broker = DaemonConnector.new(@authKey, @host, @port, @uri)
+      rescue
+        error('cannot_connect_broker',
+              "Cannot connect to the TaskJuggler daemon: #{$!}\n" +
+              "Please make sure you have tj3d running and listening " +
+              "on port #{@port} or URI '#{@uri}'.")
+      end
+
+      broker
+    end
+
     def generateReport(projectId, reportId, attributes)
+      broker = connectToBroker
+
       # Request the Project credentials from the ProbjectBroker.
       begin
-        @ps_uri, @ps_authKey = @broker.getProject(projectId)
+        @ps_uri, @ps_authKey = broker.getProject(projectId)
       rescue
         error('cannot_get_project_server',
               "Cannot get project server for ID #{projectId}: #{$!}")
@@ -126,6 +139,7 @@ class TaskJuggler
               "Report server termination failed: #{$!}")
       end
       @reportServer = nil
+      broker.disconnect
 
       @res['content-type'] = 'text/html'
       stdErr.rewind
@@ -137,8 +151,10 @@ class TaskJuggler
     end
 
     def generateWelcomePage(projectId)
+      broker = connectToBroker
+
       begin
-        projects = @broker.getProjectList
+        projects = broker.getProjectList
       rescue
         error('cannot_get_project_list',
               "Cannot get project list from daemon: #{$!}")
@@ -163,6 +179,10 @@ class TaskJuggler
           text << "* [/taskjuggler?project=#{id} #{getProjectName(id)}]\n"
         end
       end
+
+      # We no longer need the broker.
+      broker.disconnect
+
       rt = RichText.new(text)
       rti = rt.generateIntermediateFormat
       rti.sectionNumbers = false
@@ -174,19 +194,31 @@ class TaskJuggler
     end
 
     def getProjectName(id)
-      uri, authKey = @broker.getProject(id)
+      broker = connectToBroker
+
+      uri, authKey = broker.getProject(id)
       return nil unless uri
       projectServer = DRbObject.new(nil, uri)
       return nil unless projectServer
-      projectServer.getProjectName(authKey)
+      res = projectServer.getProjectName(authKey)
+
+      broker.disconnect
+
+      res
     end
 
     def getReportList(id)
-      uri, authKey = @broker.getProject(id)
+      broker = connectToBroker
+
+      uri, authKey = broker.getProject(id)
       return [] unless uri
       projectServer = DRbObject.new(nil, uri)
       return [] unless projectServer
-      projectServer.getReportList(authKey)
+      res = projectServer.getReportList(authKey)
+
+      broker.disconnect
+
+      res
     end
 
     def error(id, message)
