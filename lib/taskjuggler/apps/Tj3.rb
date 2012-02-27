@@ -142,7 +142,7 @@ EOT
     def appMain(files)
       if files.empty?
         error('tj3_tjp_file_missing',
-              'You must provide at least one .tjp file', 1)
+              'You must provide at least one .tjp file')
       end
       if @outputDir != '' && !File.directory?(@outputDir)
         error('tj3_outdir_missing',
