@@ -55,7 +55,7 @@ EOT
       $SAFE = 1 unless @unsafeMode
       DRb.install_acl(ACL.new(%w[ deny all
                                   allow 127.0.0.1 ]))
-      DRb.start_service
+      DRb.start_service('druby://127.0.0.1:0')
       debug('', 'DRb service started')
 
       broker = nil
