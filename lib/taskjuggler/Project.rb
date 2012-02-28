@@ -372,6 +372,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'hideTask',  'Hide Task',    LogicalExpressionAttribute,
               true,  false,   false, nil ],
+        [ 'height',    'Height',       FixnumAttribute,
+              false,  false,   false, 480 ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
         [ 'index',     'Index',        FixnumAttribute,
@@ -445,7 +447,9 @@ class TaskJuggler
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
-              true,  true,    false, false ]
+              true,  true,    false, false ],
+        [ 'width',     'Width',        FixnumAttribute,
+              false,  false,   false, 640 ]
       ]
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 

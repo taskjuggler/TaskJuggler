@@ -123,7 +123,7 @@ class TaskJuggler
 
     def to_html
       begin
-        plotter = ChartPlotter.new(640, 480, @table)
+        plotter = ChartPlotter.new(a('width'), a('height'), @table)
         plotter.generate
         plotter.to_svg
       rescue ChartPlotterError => exception

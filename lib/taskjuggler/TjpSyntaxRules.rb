@@ -4008,6 +4008,24 @@ EOT
     pattern(%w( !hideaccount ))
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
+
+    pattern(%w( _height $INTEGER ), lambda {
+      if @val[1] < 200
+        error('min_report_height',
+              "The report must have a minimum height of 200 pixels.")
+      end
+      @property.set('height', @val[1])
+    })
+    doc('height', <<'EOT'
+Set the height of the report in pixels. This attribute is only used for
+reports that cannot determine the height based on the content. Such report can
+be freely resized to fit in. The vast majority of reports can determine their
+height based on the provided content. These reports will simply ignore this
+setting.
+EOT
+       )
+    also('width')
+
     pattern(%w( !journalReportAttributes ))
     pattern(%w( _journalmode !journalReportMode ), lambda {
       @property.set('journalMode', @val[1])
@@ -4156,6 +4174,23 @@ EOT
        )
 
     pattern(%w( !reportTitle ))
+
+    pattern(%w( _width $INTEGER ), lambda {
+      if @val[1] < 400
+        error('min_report_width',
+              "The report must have a minimum width of 400 pixels.")
+      end
+      @property.set('width', @val[1])
+    })
+    doc('width', <<'EOT'
+Set the width of the report in pixels. This attribute is only used for
+reports that cannot determine the width based on the content. Such report can
+be freely resized to fit in. The vast majority of reports can determine their
+width based on the provided content. These reports will simply ignore this
+setting.
+EOT
+       )
+    also('height')
   end
 
   def rule_reportEnd
