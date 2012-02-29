@@ -275,12 +275,18 @@ downloaded.
   tar -Zxvf ruby-X.X.X-*.tar.gz
 
 This will create a directory with the same name as the archive, but
-without the ''''.tar.gz'''' extension. Now change into this directory
-and configure the source code for your specific OS and compile it.
-For this to work, you need to have the GNU C compiler and related
-utilities installed. We configure Ruby to append ''''19'''' to all
-executable names. This way, you can easily choose if you want to run
-the old or the new Ruby. ''''ruby'''' runs your distribution Ruby,
+without the ''''.tar.gz'''' extension. 
+
+Before you continue, make sure you have all the necessary packages
+installed to compile ruby. That would be everything you need to
+compile C programs. That includes gcc, make, zlib and libyaml. If
+something is missing, you will run into problems in the next 2 steps.
+It's sometimes not obvious which package to install to fix the issue.
+
+Now change into this directory and configure the source code for your
+specific OS and compile it. We configure Ruby to append ''''19'''' to
+all executable names. This way, you can easily choose if you want to
+run the old or the new Ruby. ''''ruby'''' runs your distribution Ruby,
 ''''ruby19'''' runs your new ruby.
 
   cd ruby-X.X.X-*
@@ -293,6 +299,30 @@ will be installed into ''''/usr/local/bin''''.
 
   sudo make install
 
+The TaskJuggler front-end scripts always use the ''''ruby''''
+interpreter that's the first in the PATH. You need to set a link in
+your local ''''bin'''' directory to point to your ''''ruby19''''
+executable as ''''ruby''''. 
+
+  ln -s /usr/local/bin/ruby19 ${HOME}/bin/ruby
+
+Make sure your ''''${HOME}/bin'''' directory is the first directory in
+the ''''PATH''''. This step varies a lot depending on the login
+shell. E. g. for ''''bash'''' put the following at the end in your
+''''.profile'''' shell config file. Please make sure that
+''''/usr/local/bin'''' is also in the PATH so that the ruby
+executables (all having a ''''19'''' suffix) will be found as well.
+
+  export PATH=${HOME}/bin:${PATH}
+
+Log out and back in again. Now
+
+  which ruby
+
+should show return the path to the link to your
+''''${HOME}/bin/ruby''''. You now have the latest Ruby installed and
+are ready to use TaskJuggler.
+
 As a final step, you need to install the ''''mail'''' and
 ''''term-ansicolor'''' gems.
 
@@ -302,17 +332,6 @@ If you don't want to use TaskJuggler from the git repository, you can
 install the TaskJuggler gem as well.
 
   sudo gem19 install taskjuggler
-
-The TaskJuggler front-end scripts always use the ''''ruby''''
-interpreter that's the first in the PATH. You need to set a link in
-your local ''''bin'''' directory to point to your ''''ruby19''''
-executable as ''''ruby''''. Make sure your ''''${HOME}/bin''''
-directory is the first directory in the ''''PATH''''.
-
-  ln -s /usr/local/bin/ruby19 ${HOME}/bin/ruby
-
-That's it. You now have the latest Ruby installed and are ready to
-use TaskJuggler.
 
 === Installing the Vim Support ===
 
