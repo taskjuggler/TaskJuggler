@@ -1241,6 +1241,22 @@ class TaskJuggler
       @booking << booking
     end
 
+    def query_activetasks(query)
+      count = activeTasks(query)
+
+      query.sortable = query.numerical = count
+      # For the string output, we only use integer numbers.
+      query.string = "#{count.to_i}"
+    end
+
+    def query_closedtasks(query)
+      count = closedTasks(query)
+
+      query.sortable = query.numerical = count
+      # For the string output, we only use integer numbers.
+      query.string = "#{count.to_i}"
+    end
+
     def query_complete(query)
       # If we haven't calculated the value yet, calculate it first.
       unless @complete
@@ -1337,6 +1353,13 @@ class TaskJuggler
       query.assignList(list)
     end
 
+    def query_gauge(query)
+      # If we haven't calculated the schedule status yet, calculate it first.
+      calcGauge unless @gauge
+
+      query.string = @gauge
+    end
+
     # The number of different resources assigned to the task during the query
     # interval. Each resource is counted based on their mathematically rounded
     # efficiency.
@@ -1350,20 +1373,39 @@ class TaskJuggler
       query.string = query.numberFormat.format(headcount)
     end
 
-    def query_maxend(query)
-      queryDateLimit(query, @maxend)
+    def query_inputs(query)
+      inputList = PropertyList.new(@project.tasks, false)
+      inputs(inputList, true)
+      inputList.delete(@property)
+      inputList.setSorting([['start', true, @scenarioIdx],
+                            ['seqno', true, -1 ]])
+      inputList.sort!
+
+      query.assignList(generateTaskList(inputList, query))
     end
 
-    def query_minend(query)
-      queryDateLimit(query, @minend)
+    def query_maxend(query)
+      queryDateLimit(query, @maxend)
     end
 
     def query_maxstart(query)
       queryDateLimit(query, @maxstart)
     end
 
+    def query_minend(query)
+      queryDateLimit(query, @minend)
+    end
+
     def query_minstart(query)
       queryDateLimit(query, @minstart)
+    end
+
+    def query_opentasks(query)
+      count = openTasks(query)
+
+      query.sortable = query.numerical = count
+      # For the string output, we only use integer numbers.
+      query.string = "#{count.to_i}"
     end
 
     def query_precursors(query)
@@ -1441,24 +1483,6 @@ class TaskJuggler
       calcStatus if @status.empty?
 
       query.string = @status
-    end
-
-    def query_gauge(query)
-      # If we haven't calculated the schedule status yet, calculate it first.
-      calcGauge unless @gauge
-
-      query.string = @gauge
-    end
-
-    def query_inputs(query)
-      inputList = PropertyList.new(@project.tasks, false)
-      inputs(inputList, true)
-      inputList.delete(@property)
-      inputList.setSorting([['start', true, @scenarioIdx],
-                            ['seqno', true, -1 ]])
-      inputList.sort!
-
-      query.assignList(generateTaskList(inputList, query))
     end
 
     def query_targets(query)
@@ -2288,6 +2312,52 @@ class TaskJuggler
           else
             'ahead of schedule'
           end
+      end
+    end
+
+    def activeTasks(query)
+      return 0 unless TimeInterval.new(@start, @end).
+        overlaps?(TimeInterval.new(query.start, query.end))
+
+      if @property.leaf?
+        now = @project['now']
+        return @start <= now && now < @end ? 1 : 0
+      else
+        cnt = 0
+        @property.kids.each do |task|
+          cnt += task.closedTasks(@scenarioIdx, query)
+        end
+        return cnt
+      end
+    end
+
+    def closedTasks(query)
+      return 0 unless TimeInterval.new(@start, @end).
+        overlaps?(TimeInterval.new(query.start, query.end))
+
+      if @property.leaf?
+        return @end <= @project['now'] ? 1 : 0
+      else
+        cnt = 0
+        @property.kids.each do |task|
+          cnt += task.closedTasks(@scenarioIdx, query)
+        end
+        return cnt
+      end
+    end
+
+    def openTasks(query)
+      return 0 unless TimeInterval.new(@start, @end).
+        overlaps?(TimeInterval.new(query.start, query.end))
+
+      if @property.leaf?
+        return @end > @project['now'] ? 1 : 0
+      else
+        cnt = 0
+        @property.kids.each do |task|
+          cnt += task.openTasks(@scenarioIdx, query)
+        end
+        return cnt
       end
     end
 

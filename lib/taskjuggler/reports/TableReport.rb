@@ -29,6 +29,7 @@ class TaskJuggler
 
     @@propertiesById = {
       # ID                   Header                   Indent  Align   Scen Spec.
+      'activetasks'       => [ 'Active Tasks',         true,   :right, true ],
       'annualleave'       => [ 'Annual Leave',         true,   :right, true ],
       'annualleavebalance'=> [ 'Annual Leave Balance', false,  :right, true ],
       'alert'             => [ 'Alert',                true,   :left,  false ],
@@ -37,6 +38,7 @@ class TaskJuggler
       'alerttrend'        => [ 'Alert Trend',          false,  :left,  false ],
       'balance'           => [ 'Balance',              true,   :right, true ],
       'bsi'               => [ 'BSI',                  false,  :left,  false ],
+      'closedtasks'       => [ 'Closed Tasks',         true,   :right, true ],
       'complete'          => [ 'Completion',           false,  :right, true ],
       'cost'              => [ 'Cost',                 true,   :right, true ],
       'duration'          => [ 'Duration',             true,   :right, true ],
@@ -57,6 +59,7 @@ class TaskJuggler
       'line'              => [ 'Line No.',             false,  :right, false ],
       'name'              => [ 'Name',                 true,   :left,  false ],
       'no'                => [ 'No.',                  false,  :right, false ],
+      'opentasks'         => [ 'Open Tasks',           true,   :right, true ],
       'precursors'        => [ 'Precursors',           false,  :left,  true ],
       'rate'              => [ 'Rate',                 true,   :right, true ],
       'resources'         => [ 'Resources',            false,  :left,  true ],

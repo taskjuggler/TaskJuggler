@@ -1,0 +1,9 @@
+"Id";"Active Tasks";"Open Tasks";"Closed Tasks"
+"_Task_1";2;3;2
+"_Task_1._Task_2";0;0;1
+"_Task_1._Task_4";1;2;1
+"_Task_1._Task_4._Task_5";0;0;1
+"_Task_1._Task_4._Task_6";1;1;0
+"_Task_1._Task_4._Task_7";1;1;0
+"_Task_1._Task_3";1;1;0
+"_Task_8";1;1;0

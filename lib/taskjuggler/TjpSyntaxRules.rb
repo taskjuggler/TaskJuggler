@@ -3499,6 +3499,14 @@ EOT
   end
 
   def rule_reportableAttributes
+    singlePattern('_activetasks')
+    descr(<<'EOT'
+The number of sub-tasks (including the current task) that are active in the
+reported time period. Active means that they are ongoing at the current time
+or [[now]] date.
+EOT
+         )
+
     singlePattern('_annualleave')
     descr(<<'EOT'
 The number of annual leave units within the reported time period. The unit
@@ -3554,6 +3562,14 @@ height. This does not work well with rich text columns in some browsers. Some
 show a scrollbar for the compressed table cells, others don't. It is
 recommended, that you don't use rich text columns in conjuction with the chart
 column.
+EOT
+         )
+
+    singlePattern('_closedtasks')
+    descr(<<'EOT'
+The number of sub-tasks (including the current task) that have been closed
+during the reported time period.  Closed means that they have and end date
+before the current time or [[now]] date.
 EOT
          )
 
@@ -3771,6 +3787,14 @@ EOT
 
     singlePattern('_note')
     descr('The note attached to a task')
+
+    singlePattern('_opentasks')
+    descr(<<'EOT'
+The number of sub-tasks (including the current task) that have not yet been
+closed during the reported time period. Closed means that they have and end
+date before the current time or [[now]] date.
+EOT
+         )
 
     singlePattern('_pathcriticalness')
     descr('The criticalness of the task with respect to all the paths that ' +
