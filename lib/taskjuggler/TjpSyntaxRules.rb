@@ -4664,7 +4664,6 @@ EOT
       @val[2].each do |interval|
         begin
           # We map the old 'vacation' attribute to public holidays.
-          puts "Setting scenario #{@scenarioIdx}"
           @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
         rescue AttributeOverwrite
         end
