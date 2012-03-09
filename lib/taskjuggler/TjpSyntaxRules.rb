@@ -3391,11 +3391,8 @@ EOT
     pattern(%w( !task ))
     pattern(%w( !timeSheet ))
     pattern(%w( _vacation !vacationName !intervals ), lambda {
-      begin
-        @val[2].each do |interval|
-          @project['leaves'] << Leave.new(:holiday, interval)
-        end
-      rescue AttributeOverwrite
+      @val[2].each do |interval|
+        @project['leaves'] << Leave.new(:holiday, interval)
       end
     })
     doc('vacation', <<'EOT'
@@ -4664,12 +4661,12 @@ EOT
         )
 
     pattern(%w( _vacation !vacationName !intervals ), lambda {
-      begin
-        @val[2].each do |interval|
+      @val[2].each do |interval|
+        begin
           # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] << Leave.new(:holiday, interval)
+          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
+        rescue AttributeOverwrite
         end
-      rescue AttributeOverwrite
       end
     })
     doc('vacation.resource', <<'EOT'
@@ -5004,12 +5001,12 @@ EOT
        )
 
     pattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
-      begin
-        @val[2].each do |interval|
+      @val[2].each do |interval|
+        begin
           # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] << Leave.new(:holiday, interval)
+          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
+        rescue AttributeOverwrite
         end
-      rescue AttributeOverwrite
       end
     })
     doc('vacation.shift', <<'EOT'

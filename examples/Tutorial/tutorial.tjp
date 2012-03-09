@@ -42,7 +42,7 @@ copyright "© 2002 Crappy Software, Inc."
 rate 390.0
 
 # Register Good Friday as a global holiday for all resources.
-vacation "Good Friday" 2002-03-29
+leaves holiday "Good Friday" 2002-03-29
 flags team
 
 # This is one way to form teams
@@ -83,7 +83,7 @@ resource dev "Developers" {
   resource dev3 "Klaus Müller" {
     email "Klaus.Mueller@crappysoftware.com"
     Phone "x490"
-    vacation 2002-02-01 - 2002-02-05
+    leaves annual 2002-02-01 - 2002-02-05
   }
   flags team
 }
@@ -99,7 +99,7 @@ resource misc "The Others" {
     email "sung@crappysoftware.com"
     Phone "x482"
     rate 300.0
-    vacation 2002-03-11 - 2002-03-16
+    leaves annual 2002-03-11 - 2002-03-16
   }
 
   flags team

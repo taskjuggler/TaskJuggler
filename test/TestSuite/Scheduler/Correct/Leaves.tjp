@@ -1,0 +1,25 @@
+project "Leaves" 2012-03-12 +6m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+  }
+}
+
+vacation "Goof-out day" 2012-03-14
+
+resource r1 "R1" {
+  vacation 2012-03-19 +1w
+}
+
+task "T1" {
+  effort 20d
+  allocate r1
+  fail s1.end != 2012-04-16-17:00
+  fail s2.end != 2012-04-16-17:00
+}
+
+taskreport "Leaves" {
+  formats html
+  columns no, name, start, end, daily
+  scenarios s1, s2
+  hideresource 0
+}

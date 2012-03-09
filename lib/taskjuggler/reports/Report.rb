@@ -335,7 +335,7 @@ EOT
       begin
         f = @name == '.' ? $stdout :
           File.new(((@name[0] == '/' ? '' : @project.outputDir) +
-                    @name + '.ical').untaint, 'w')
+                    @name + '.ics').untaint, 'w')
         f.puts "#{@content.to_iCal}"
       rescue IOError, SystemCallError
         error('write_ical', "Cannot write to file #{@name}.\n#{$!}")
