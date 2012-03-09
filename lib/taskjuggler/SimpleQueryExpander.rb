@@ -38,6 +38,14 @@ class TaskJuggler
     def expand
       # Create a copy of the input string since we will modify it.
       str = @inputStr.dup
+
+      # The scenario name is not an attribute that can be queried. We need to
+      # handle this separately
+      if @query.scenarioIdx
+        str.gsub!(/<-scenario->/,
+                  @query.project.scenario(@query.scenarioIdx).id)
+      end
+
       # Replace all occurences of <-name->.
       str.gsub!(/<-[a-zA-Z][_a-zA-Z]*->/) do |match|
         attribute = match[2..-3]

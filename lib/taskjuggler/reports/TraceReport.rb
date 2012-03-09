@@ -80,9 +80,9 @@ class TaskJuggler
 
       # Generate the table header.
       headers = [ 'Date' ] +
-                generatePropertyListHeader(accountList) +
-                generatePropertyListHeader(resourceList) +
-                generatePropertyListHeader(taskList)
+                generatePropertyListHeader(accountList, query) +
+                generatePropertyListHeader(resourceList, query) +
+                generatePropertyListHeader(taskList, query)
 
       discontinuedColumns = 0
       if File.exists?(@fileName)
@@ -137,13 +137,19 @@ class TaskJuggler
 
     private
 
-    def generatePropertyListHeader(propertyList)
+    def generatePropertyListHeader(propertyList, query)
       headers = []
+      query = query.dup
       a('columns').each do |columnDescr|
+        query.attributeId = columnDescr.id
         a('scenarios').each do |scenarioIdx|
+          query.scenarioIdx = scenarioIdx
           propertyList.each do |property|
+            query.property = property
+
             #adjustColumnPeriod(columnDescr, propertyList, a.get('scenarios'))
-            header = columnTitle(property, scenarioIdx, columnDescr)
+            header = SimpleQueryExpander.new(columnDescr.title, query,
+                                             @report.sourceFileInfo).expand
 
             if headers.include?(header)
               error('trace_columns_not_uniq',

@@ -20,12 +20,39 @@ require 'taskjuggler/MessageHandler'
 
 class TestSimpleQueryExpander < Test::Unit::TestCase
 
+  class Scenario
+
+    def id
+      'scId'
+    end
+
+  end
+
+  class Project
+
+    def initialize
+    end
+
+    def scenario(foo)
+      Scenario.new
+    end
+
+  end
+
   class Query
 
     def initialize
     end
 
     def process
+    end
+
+    def project
+      Project.new
+    end
+
+    def scenarioIdx
+      0
     end
 
     def attributeId=(value)
@@ -38,6 +65,7 @@ class TestSimpleQueryExpander < Test::Unit::TestCase
     def to_s
       'XXX'
     end
+
   end
 
   def setup
