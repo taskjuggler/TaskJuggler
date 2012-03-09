@@ -170,6 +170,12 @@ class TaskJuggler
       intervals
     end
 
+    def inspect
+      0.upto(@sb.length - 1) do |i|
+        puts "#{idxToDate(i)}: #{@sb[i]}"
+      end
+    end
+
   end
 
 end
