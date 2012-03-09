@@ -956,7 +956,7 @@ class TaskJuggler
         query.scopeProperty = nil
         query.attributeId = 'effort'
         query.startIdx = @project.dateToIdx(t)
-        query.endIdx = @project.dateToIdx(nextT) - 1
+        query.endIdx = @project.dateToIdx(nextT)
         query.process
         workLoad = query.to_num
         scaledWorkLoad = query.to_s
