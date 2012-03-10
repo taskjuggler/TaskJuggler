@@ -53,7 +53,7 @@ class TaskJuggler
       @markerX = @width - @rightMargin + @legendGap
       @markerGap = 5
       @labelX = @markerX + @markerWidth + @markerGap
-      @labelHeight = 20
+      @labelHeight = 24
 
       # The location of the 0/0 point of the graph plotter.
       @x0 = @leftMargin
@@ -396,11 +396,11 @@ class TaskJuggler
       painter.group(:stroke_width => 3, :stroke => color, :fill => color,
                     :font_size => 11) do |p|
         # Add the marker to the legend
-        labelY = @topMargin + @labelHeight / 2 + ci * @labelHeight
-        markerY = labelY + @labelHeight / 2
+        labelY = @topMargin + @labelHeight / 2 + ci * (@labelHeight + 4)
+        markerY = labelY + (@labelHeight + 4) / 2
         setMarker(p, ci, @markerX + @markerWidth / 2, markerY)
         p.line(@markerX, markerY, @markerX + @markerWidth, markerY)
-        p.text(@labelX, labelY + @labelHeight - 5, @labels[ci],
+        p.text(@labelX, labelY + @labelHeight, @labels[ci],
                :stroke => p.color(:black), :stroke_width => 0,
                :fill => p.color(:black))
       end
