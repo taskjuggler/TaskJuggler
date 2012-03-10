@@ -39,7 +39,8 @@ class TaskJuggler
                      'scopeProperty' => nil,
                      'loadUnit' => a('loadUnit'),
                      'numberFormat' => a('numberFormat'),
-                     'timeFormat' => a('timeFormat'),
+                     # We use a hardcoded %Y-%m-%d format for tracereports.
+                     'timeFormat' => "%Y-%m-%d",
                      'currencyFormat' => a('currencyFormat'),
                      'start' => a('start'), 'end' => a('end'),
                      'hideJournalEntry' => a('hideJournalEntry'),
@@ -90,7 +91,7 @@ class TaskJuggler
 
         if @table[0] != headers
           # Some columns have changed. We move all discontinued columns to the
-          # first columns and rearrange the others according to the new
+          # last columns and rearrange the others according to the new
           # headers. New columns will be filled with nil in previous rows.
           sorter = TableColumnSorter.new(@table)
           @table = sorter.sort(headers)
@@ -127,7 +128,7 @@ class TaskJuggler
         plotter.generate
         plotter.to_svg
       rescue ChartPlotterError => exception
-        warning('chartPlotterError', exception.message)
+        warning('chartPlotterError', exception.message, @report.sourceFileInfo)
       end
     end
 
@@ -176,7 +177,7 @@ class TaskJuggler
             query.property = property
 
             query.process
-            @table[-1] << query.to_s
+            @table[-1] << query.result
           end
         end
       end

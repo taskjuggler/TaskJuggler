@@ -117,19 +117,13 @@ class TaskJuggler
           if col.nil?
             columns[ci][ri] = nil
           else
-            begin
-              # Check if we can convert the cell into a TjTime object. If so we
-              # use this instead of the original String or Number.
+            # Check if we can convert the cell into a TjTime object. If so we
+            # use this instead of the original String or Number. This assumes
+            # that all dates in the CSV file only use the %Y-%m-%d format.
+            if col.is_a?(String) && /\d{4}-\d{2}-\d{2}/ =~ col
               columns[ci][ri] = TjTime.new(col)
-            rescue
-              columns[ci][ri] =
-                if col.empty?
-                  nil
-                elsif /[0-9]+(\.[0-9]*)*%/ =~ col
-                  col.to_f
-                else
-                  col
-                end
+            else
+              columns[ci][ri] = col
             end
           end
           ci += 1
@@ -163,12 +157,15 @@ class TaskJuggler
       @xData = columns[0][1..-1]
 
       # Now eleminate columns that contain invalid data.
-      columns[1..-1].each do |col|
+      1.upto(columns.length - 1) do |colIdx|
+        col = columns[colIdx]
         badCol = false
         col[1..-1].each do |cell|
           if cell
             if cell.is_a?(TjTime)
               if @dataType && @dataType != :date
+                error("Column #{colIdx} contains non-date (#{cell}). " +
+                      "The columns will be ignored.")
                 badCol = true
                 break
               else
@@ -179,6 +176,8 @@ class TaskJuggler
               @yMaxDate = cell if @yMaxDate.nil? || cell > @yMaxDate
             elsif cell.is_a?(Fixnum) || cell.is_a?(Float)
               if @dataType && @dataType != :number
+                error("Column #{colIdx} contains non-number (#{cell}). " +
+                      "The columns will be ignored.")
                 badCol = true
                 break
               else
@@ -188,6 +187,8 @@ class TaskJuggler
               @yMinVal = cell if @yMinVal.nil? || cell < @yMinVal
               @yMaxVal = cell if @yMaxVal.nil? || cell > @yMaxVal
             else
+              error("Column #{colIdx} contains invalid data (#{cell}). " +
+                    "The columns will be ignored.")
               badCol = true
               break
             end
@@ -385,8 +386,6 @@ class TaskJuggler
             setMarker(p, ci, xc, yc)
             lastX = xc
             lastY = yc
-          else
-            lastY = lastX = nil
           end
         end
       end
