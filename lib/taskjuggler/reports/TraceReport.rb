@@ -104,22 +104,37 @@ class TaskJuggler
       query = @project.reportContexts.last.query.dup
       dateTag = @project['now'].to_s(query.timeFormat)
 
-      if @table[-1][0] == dateTag
-        # We already have an entry for the current date. All values of this
-        # line will be overwritten with the current values.
-        @table[-1] = []
+      idx = @table.index { |line| line[0] == dateTag }
+      discColumnValues = discontinuedColumns > 0 ?
+                         Array.new(discontinuedColumns, nil) : []
+      if idx
+        # We already have an entry for the current date. All old values of
+        # this line will be overwritten with the current values. The old
+        # values in the discontinued columns will be kept.
+        if discontinuedColumns > 0
+          discColumnValues = @table[idx][headers.length..-1]
+        end
+        @table[idx] = []
       else
         # Append a new line of values to the table.
         @table << []
+        idx = -1
       end
       # The first entry is always the current date.
-      @table[-1] << dateTag
+      @table[idx] << dateTag
 
+      # Now add the new values to the line
       generatePropertyListValues(accountList, query)
       generatePropertyListValues(resourceList, query)
       generatePropertyListValues(taskList, query)
 
-      @table[-1] += Array.new(discontinuedColumns, nil)
+      # Fill the discontinued columns with old values or nil.
+      @table[idx] += discColumnValues
+
+      # Sort the table by ascending first column dates. We need to ensure that
+      # the header remains the first line in the table.
+      @table.sort! { |l1, l2| l1[0].is_a?(String) ? -1 :
+                              (l2[0].is_a?(String) ? 1 : l1[0] <=> l2[0]) }
     end
 
     def to_html
@@ -133,6 +148,18 @@ class TaskJuggler
     end
 
     def to_csv
+      # Convert all TjTime values into String with format %Y-%m-%d and nil
+      # objects into empty Strings.
+      @table.each do |line|
+        line.length.times do |i|
+          if line[i].nil?
+            line[i] = ''
+          elsif line[i].is_a?(TjTime)
+            line[i] = line[i].to_s('%Y-%m-%d')
+          end
+        end
+      end
+
       @table
     end
 
