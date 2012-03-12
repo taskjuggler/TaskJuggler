@@ -114,18 +114,7 @@ class TaskJuggler
             error("Row #{ri} contains more elements than the header row")
           end
 
-          if col.nil?
-            columns[ci][ri] = nil
-          else
-            # Check if we can convert the cell into a TjTime object. If so we
-            # use this instead of the original String or Number. This assumes
-            # that all dates in the CSV file only use the %Y-%m-%d format.
-            if col.is_a?(String) && /\d{4}-\d{2}-\d{2}/ =~ col
-              columns[ci][ri] = TjTime.new(col)
-            else
-              columns[ci][ri] = col
-            end
-          end
+          columns[ci][ri] = col
           ci += 1
         end
         ri += 1

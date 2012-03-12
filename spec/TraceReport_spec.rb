@@ -59,7 +59,7 @@ EOT
       tj3
       ref = <<'EOT'
 "Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"
-"2012-03-11-00:00";70.0;0.0;0.0
+"2012-03-11";70.0;0.0;0.0
 EOT
      File.read(@tf).should == ref
     end
@@ -76,8 +76,8 @@ EOT
       tj3
       ref = <<'EOT'
 "Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"
-"2012-03-11-00:00";70.0;0.0;0.0
-"2012-03-18-00:00";100.0;65.83333333333333;0.0
+"2012-03-11";70.0;0.0;0.0
+"2012-03-18";100.0;65.83333333333333;0.0
 EOT
      File.read(@tf).should == ref
     end

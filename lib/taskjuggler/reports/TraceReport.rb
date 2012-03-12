@@ -101,8 +101,20 @@ class TaskJuggler
         @table = [ headers ]
       end
 
+      # Convert empty strings into nil objects and dates in %Y-%m-%d format
+      # into TjTime objects.
+      @table.each do |line|
+        line.length.times do |i|
+          if line[i] == ''
+            line[i] = nil
+          elsif line[i].is_a?(String) && /\d{4}-\d{2}-\d{2}/ =~ line[i]
+            line[i] = TjTime.new(line[i])
+          end
+        end
+      end
+
       query = @project.reportContexts.last.query.dup
-      dateTag = @project['now'].to_s(query.timeFormat)
+      dateTag = @project['now'].midnight
 
       idx = @table.index { |line| line[0] == dateTag }
       discColumnValues = discontinuedColumns > 0 ?
@@ -124,9 +136,9 @@ class TaskJuggler
       @table[idx] << dateTag
 
       # Now add the new values to the line
-      generatePropertyListValues(accountList, query)
-      generatePropertyListValues(resourceList, query)
-      generatePropertyListValues(taskList, query)
+      generatePropertyListValues(idx, accountList, query)
+      generatePropertyListValues(idx, resourceList, query)
+      generatePropertyListValues(idx, taskList, query)
 
       # Fill the discontinued columns with old values or nil.
       @table[idx] += discColumnValues
@@ -193,7 +205,7 @@ class TaskJuggler
       headers
     end
 
-    def generatePropertyListValues(propertyList, query)
+    def generatePropertyListValues(idx, propertyList, query)
       @report.get('columns').each do |columnDescr|
         query.attributeId = columnDescr.id
 
@@ -204,7 +216,7 @@ class TaskJuggler
             query.property = property
 
             query.process
-            @table[-1] << query.result
+            @table[idx] << query.result
           end
         end
       end
