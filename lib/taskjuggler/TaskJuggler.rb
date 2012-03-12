@@ -307,8 +307,9 @@ class TaskJuggler
                      'start' => ts.interval.start,
                      'end' => ts.interval.end,
                      'journalMode' => :journal,
-                     'journalAttributes' => %w( alert property headline flags
-                                                timesheet summary details ),
+                     'journalAttributes' => %w( alert property propertyid
+                                                headline flags timesheet
+                                                summary details ),
                      'sortJournalEntries' => [ [ :seqno, 1 ] ],
                      'timeFormat' => '%Y-%m-%d',
                      'selfContained' => true }
