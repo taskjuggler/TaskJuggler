@@ -110,7 +110,6 @@ class TaskJuggler
             # We've found an empty field
             field = nil
             state = :fieldEnd
-            line += 1 if c == "\n"
             redo
           else
             # We've found the first character of an unquoted field
@@ -125,6 +124,7 @@ class TaskJuggler
           else
             # We've found a normal character of the quoted field
             field << c
+            line += 1 if c == "\n"
           end
         when :quoteInQuotedField
           # We are processing a quoted quote or the end of a quoted field
@@ -134,17 +134,15 @@ class TaskJuggler
             state = :inQuotedField
           elsif c == @separator || c == "\n"
             state = :fieldEnd
-            line += 1 if c == "\n"
             redo
           else
-            raise "Line #{line}: Unexpected character #{c} in CSV"
+            raise "Line #{line}: Unexpected character #{c} in cell: #{field}"
           end
         when :inUnquotedField
           # We are processing an unquoted field
           if c == @separator || c == "\n"
             # We've found the end of a unquoted field
             state = :fieldEnd
-            line += 1 if c == "\n"
             redo
           else
             # A normal character of an unquoted field
@@ -158,7 +156,6 @@ class TaskJuggler
           if c == "\n"
             # The field end is an end of a record as well.
             state = :recordEnd
-            line += 1
             redo
           else
             # Get the next field.
@@ -170,13 +167,18 @@ class TaskJuggler
           @data << fields
           # Look for a new record.
           state = :startOfRecord
+          line += 1
         else
           raise "Unknown state #{state}"
         end
       end
 
       unless state == :startOfRecord
-        raise "CSV state machine error in state #{state}"
+        if state == :inQuotedField
+          raise "Line #{line}: Unterminated quoted cell: #{field}"
+        else
+          raise "Line #{line}: CSV error in state #{state}: #{field}"
+        end
       end
 
       @data
