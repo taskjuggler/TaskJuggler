@@ -87,7 +87,12 @@ class TaskJuggler
 
       discontinuedColumns = 0
       if File.exists?(@fileName)
-        @table = CSVFile.new.read(@fileName)
+        begin
+          @table = CSVFile.new.read(@fileName)
+        rescue
+          error('tr_cannot_read_csv',
+                "Cannot read CSV file #{@fileName}: #{$!}")
+        end
 
         if @table[0] != headers
           # Some columns have changed. We move all discontinued columns to the

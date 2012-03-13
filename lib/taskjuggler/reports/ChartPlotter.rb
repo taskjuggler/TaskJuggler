@@ -290,19 +290,34 @@ class TaskJuggler
       when :number
         return unless @yMinVal && @yMaxVal
 
-        yInterval = @yMaxVal - @yMinVal
+        yInterval = (@yMaxVal - @yMinVal).to_f
 
         fm = Painter::FontMetrics.new
 
-        # The time difference between two labels.
+        # The value difference between two labels.
         labelInterval = yInterval / @noYLabels
-        val = @yMinVal + labelInterval / 2
+
+        # We'd like to have the labels to only show number starting with
+        # single most significant digit that read 1, 2 or 5. If necessary, we
+        # increase the labelInterval to the next matching number and reduce
+        # the number of y labels accordingly.
+        factor = 10 ** Math.log10(labelInterval).floor
+        msd = (labelInterval / factor).ceil
+        if msd == 3 || msd == 4
+          msd = 5
+        elsif msd > 5
+          msd = 10
+        end
+        labelInterval = msd * factor
+        @noYLabels = ((@yMaxVal - @yMinVal) / labelInterval).floor
+
+        val = @yMinVal + labelInterval
         p.group(:font_family => 'LiberationSans, Arial', :font_size => 10.0,
                 :stroke => p.color(:black), :stroke_width => 1,
                 :fill => p.color(:black)) do |gp|
           @noYLabels.times do |i|
             y = yNum2c(val)
-            labelText = "%.0f" % val
+            labelText = val.to_s
             labelWidth = fm.width('LiberationSans', 10.0, labelText)
             gp.text(@leftMargin - 7 - labelWidth, y + @labelHeight / 2 - 3,
                     labelText, :stroke_width => 0)

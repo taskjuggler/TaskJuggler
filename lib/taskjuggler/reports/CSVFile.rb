@@ -90,6 +90,7 @@ class TaskJuggler
       # Make sure the input is terminated with a record end.
       str += "\n" unless str[-1] == ?\n
 
+      line = 1
       str.each_utf8_char do |c|
         #puts "c: #{c}  State: #{state}"
         case state
@@ -109,6 +110,7 @@ class TaskJuggler
             # We've found an empty field
             field = nil
             state = :fieldEnd
+            line += 1 if c == "\n"
             redo
           else
             # We've found the first character of an unquoted field
@@ -132,15 +134,17 @@ class TaskJuggler
             state = :inQuotedField
           elsif c == @separator || c == "\n"
             state = :fieldEnd
+            line += 1 if c == "\n"
             redo
           else
-            raise "Unexpected character #{c} in CSV"
+            raise "Line #{line}: Unexpected character #{c} in CSV"
           end
         when :inUnquotedField
           # We are processing an unquoted field
           if c == @separator || c == "\n"
             # We've found the end of a unquoted field
             state = :fieldEnd
+            line += 1 if c == "\n"
             redo
           else
             # A normal character of an unquoted field
@@ -154,6 +158,7 @@ class TaskJuggler
           if c == "\n"
             # The field end is an end of a record as well.
             state = :recordEnd
+            line += 1
             redo
           else
             # Get the next field.
