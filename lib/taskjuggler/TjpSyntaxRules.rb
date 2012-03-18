@@ -895,7 +895,9 @@ EOT
       @val[0]
     })
     doc('date', <<'EOT'
-A DATE is an ISO-compliant date in the format
+A DATE is date and time specification similar to the ISO 8601 date format.
+Instead of the hard to read ISO notation with a ''''T'''' between the date and
+time sections, we simply use the more intuitive and easier to read dash:
 ''''<nowiki>YYYY-MM-DD[-hh:mm[:ss]][-TIMEZONE]</nowiki>''''. Hour, minutes,
 seconds, and the ''''TIMEZONE'''' are optional. If not specified, the values
 are set to 0.  ''''TIMEZONE'''' must be an offset to GMT or UTC, specified as
@@ -907,7 +909,10 @@ given interval from a fixed date.
 
  %{2009-11-01 + 8m}
 
-This will result in an actual date of around 2009-07-01. Keep in mind that due to the varying lengths of months TaskJuggler cannot add exactly 8 calendar months. The date calculation functionality makes most sense when used with macros.
+This will result in an actual date of around 2009-07-01. Keep in mind that due
+to the varying lengths of months TaskJuggler cannot add exactly 8 calendar
+months. The date calculation functionality makes most sense when used with
+macros.
 
  %{${now} - 2w}
 

@@ -70,7 +70,7 @@ Because each culture has its own way of specifying dates and numbers,
 the format for these are configurable.  Use the [[timeformat]]
 attribute to specify the default format for dates. This format is used
 for reports, it does not affect the way you specify dates in the
-project files. Here you always need to use the [[date|ISO standardized
+project files. Here you always need to use the [[date|TaskJuggler date
 notation]].
 
 <[example file="tutorial" tag="formats"]>
