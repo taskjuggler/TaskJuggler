@@ -56,41 +56,59 @@ EOT
 
     it 'should generate a trace report' do
       File.delete(@tf) if File.exists?(@tf)
-      tj3
+      tj3(@prj)
       ref = <<'EOT'
 "Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"
 "2012-03-11";70.0;0.0;0.0
 EOT
-     File.read(@tf).should == ref
+     checkCSV(@tf, ref)
     end
 
     it 'should replace the existing line' do
       before = File.read(@tf)
-      tj3
+      tj3(@prj)
       after = File.read(@tf)
       before.should == after
     end
 
     it 'should add a new line for another day' do
-      @prj.gsub!(/now 2012-03-11/, 'now 2012-03-18')
-      tj3
+      prj = @prj.gsub(/now 2012-03-11/, 'now 2012-03-18')
+      tj3(prj)
       ref = <<'EOT'
 "Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"
 "2012-03-11";70.0;0.0;0.0
 "2012-03-18";100.0;65.83333333333333;0.0
 EOT
-     File.read(@tf).should == ref
+     checkCSV(@tf, ref)
+    end
+
+    it 'should add to a file without data columns' do
+      File.write(@tf, <<'EOT'
+"Date"
+"2012-03-11"
+EOT
+                )
+      tj3(@prj)
+      ref = <<'EOT'
+"Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"
+"2012-03-11";70.0;0.0;0.0
+EOT
+     checkCSV(@tf, ref)
     end
 
     private
 
-    def tj3
-      res = stdIoWrapper(@prj) do
+    def tj3(prj)
+      res = stdIoWrapper(prj) do
         Tj3.new.main(%w( --silent --add-trace . ))
       end
       res.stdOut.should == ''
       res.stdErr.should == ''
       res.returnValue.should == 0
+    end
+
+    def checkCSV(file, ref)
+     File.read(file).should == ref
     end
 
   end

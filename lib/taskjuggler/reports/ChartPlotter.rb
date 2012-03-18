@@ -192,7 +192,7 @@ class TaskJuggler
         @yData << col[1..-1] unless badCol
       end
 
-      if @yData.empty?
+      if @dataType.nil? || @yData.empty?
         error("Columns don't contain any valid dates.")
       end
     end
