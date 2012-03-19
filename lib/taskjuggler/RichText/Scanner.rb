@@ -49,8 +49,8 @@ class TaskJuggler
         [ :BLOCKFUNCSTART, /<\[/, [ :bop, :bol ], method('functionStart') ],
         [ ':TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
         [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
-        [ 'BULLET*', /\*{1,4} /, [ :bop, :bol ], method('bullet') ],
-        [ 'NUMBER*', /\#{1,4} /, [ :bop, :bol ], method('number') ],
+        [ 'BULLET*', /\*{1,4}[ \t]+/, [ :bop, :bol ], method('bullet') ],
+        [ 'NUMBER*', /\#{1,4}[ \t]+/, [ :bop, :bol ], method('number') ],
         [ :HLINE, /----/, [ :bop, :bol ], method('inlineMode') ],
 
         # :bop, :bol and :inline mode rules
@@ -130,12 +130,12 @@ class TaskJuggler
 
     def bullet(type, match)
       self.mode = :inline
-      [ "BULLET#{match.length - 1}".intern, match ]
+      [ "BULLET#{match.count('*')}".intern, match ]
     end
 
     def number(type, match)
       self.mode = :inline
-      [ "NUMBER#{match.length - 1}".intern, match ]
+      [ "NUMBER#{match.count('#')}".intern, match ]
     end
 
     def fontColorStart(type, match)
