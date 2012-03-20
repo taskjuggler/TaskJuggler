@@ -558,7 +558,7 @@ class TaskJuggler
               "end date.")
       end
 
-      if @effort == 0 && !@milestone && !@allocate.empty? &&
+      if @property.leaf? && @effort == 0 && !@milestone && !@allocate.empty? &&
          @assignedresources.empty?
         # The user used an 'allocate' for the task, but did not specify any
         # 'effort'. Actual allocations will only happen when resources are
