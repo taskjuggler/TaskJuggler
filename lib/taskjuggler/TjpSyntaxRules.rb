@@ -3308,8 +3308,8 @@ EOT
     example('Caption', '2')
 
     pattern(%w( !balance ), lambda {
-      @project['costAccount'] = @val[0][0]
-      @project['revenueAccount'] = @val[0][1]
+      @project['costaccount'] = @val[0][0]
+      @project['revenueaccount'] = @val[0][1]
     })
 
     pattern(%w( _flags !declareFlagList ), lambda {
@@ -3931,7 +3931,7 @@ EOT
               "#{@val[1].fullId} is not a container account",
               @sourceFileInfo[1])
       end
-      @property.set('accountRoot', @val[1])
+      @property.set('accountroot', @val[1])
     })
     doc('accountroot', <<'EOT'
 Only accounts below the specified root-level accounts are exported. The exported
@@ -3943,8 +3943,8 @@ EOT
     example('AccountReport')
 
     pattern(%w( !balance ), lambda {
-      @property.set('costAccount', @val[0][0])
-      @property.set('revenueAccount', @val[0][1])
+      @property.set('costaccount', @val[0][0])
+      @property.set('revenueaccount', @val[0][1])
     })
 
     pattern(%w( _caption $STRING ), lambda {
@@ -4156,7 +4156,7 @@ EOT
               "#{@val[1].fullId} is not a group resource",
               @sourceFileInfo[1])
       end
-      @property.set('resourceRoot', @val[1])
+      @property.set('resourceroot', @val[1])
     })
     doc('resourceroot', <<'EOT'
 Only resources below the specified root-level resources are exported. The
@@ -4173,7 +4173,7 @@ EOT
               "#{@val[1].fullId} is not a container task",
               @sourceFileInfo[1])
       end
-      @property.set('taskRoot', @val[1])
+      @property.set('taskroot', @val[1])
     })
     doc('taskroot', <<'EOT'
 Only tasks below the specified root-level tasks are exported. The exported

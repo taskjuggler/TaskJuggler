@@ -48,25 +48,25 @@ class TaskJuggler
 
     # Take the complete account list and remove all accounts that are matching
     # the hide expression, the rollup Expression or are not a descendent of
-    # accountRoot.
+    # accountroot.
     def filterAccountList(list_, hideExpr, rollupExpr, openNodes)
       list = PropertyList.new(list_)
-      if (accountRoot = a('accountRoot'))
-        # Remove all accounts that are not descendents of the accountRoot.
-        list.delete_if { |account| !account.isChildOf?(accountRoot) }
+      if (accountroot = a('accountroot'))
+        # Remove all accounts that are not descendents of the accountroot.
+        list.delete_if { |account| !account.isChildOf?(accountroot) }
       end
 
       standardFilterOps(list, hideExpr, rollupExpr, openNodes, nil,
-                        accountRoot)
+                        accountroot)
     end
 
     # Take the complete task list and remove all tasks that are matching the
     # hide expression, the rollup Expression or are not a descendent of
-    # taskRoot. In case resource is not nil, a task is only included if
+    # taskroot. In case resource is not nil, a task is only included if
     # the resource is allocated to it in any of the reported scenarios.
     def filterTaskList(list_, resource, hideExpr, rollupExpr, openNodes)
       list = PropertyList.new(list_)
-      if (taskRoot = a('taskRoot'))
+      if (taskRoot = a('taskroot'))
         # Remove all tasks that are not descendents of the taskRoot.
         list.delete_if { |task| !task.isChildOf?(taskRoot) }
       end
@@ -94,11 +94,11 @@ class TaskJuggler
 
     # Take the complete resource list and remove all resources that are matching
     # the hide expression, the rollup Expression or are not a descendent of
-    # resourceRoot. In case task is not nil, a resource is only included if
+    # resourceroot. In case task is not nil, a resource is only included if
     # it is assigned to the task in any of the reported scenarios.
     def filterResourceList(list_, task, hideExpr, rollupExpr, openNodes)
       list = PropertyList.new(list_)
-      if (resourceRoot = a('resourceRoot'))
+      if (resourceRoot = a('resourceroot'))
         # Remove all resources that are not descendents of the resourceRoot.
         list.delete_if { |resource| !resource.isChildOf?(resourceRoot) }
       end

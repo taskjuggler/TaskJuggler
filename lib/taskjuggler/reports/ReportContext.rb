@@ -38,8 +38,8 @@ class TaskJuggler
         'journalMode' => @report.get('journalMode'),
         'journalAttributes' => @report.get('journalAttributes'),
         'sortJournalEntries' => @report.get('sortJournalEntries'),
-        'costAccount' => @report.get('costAccount'),
-        'revenueAccount' => @report.get('revenueAccount')
+        'costAccount' => @report.get('costaccount'),
+        'revenueAccount' => @report.get('revenueaccount')
       }
       @query = Query.new(queryAttrs)
       if (@parent = @project.reportContexts.last)

@@ -72,7 +72,7 @@ class TaskJuggler
         # associated color as RGB byte array.
         'alertLevels' => AlertLevelDefinitions.new,
         'copyright' => nil,
-        'costAccount' => nil,
+        'costaccount' => nil,
         'currency' => "EUR",
         'currencyFormat' => RealFormat.new([ '-', '', '', ',', 2 ]),
         'dailyworkinghours' => 8.0,
@@ -90,7 +90,7 @@ class TaskJuggler
         'projectid' => id || "prj",
         'projectids' => [ id ],
         'rate' => 0.0,
-        'revenueAccount' => nil,
+        'revenueaccount' => nil,
         'scheduleGranularity' => Project.maxScheduleGranularity,
         'shortTimeFormat' => "%H:%M",
         'start' => nil,
@@ -332,7 +332,7 @@ class TaskJuggler
       attrs = [
         # ID           Name            Type
         #     Inh.   Inh.Prj  Scen.  Default
-        [ 'accountRoot',  'Account Root',    PropertyAttribute,
+        [ 'accountroot',  'Account Root',    PropertyAttribute,
               true,  false,   false, nil ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, "" ],
@@ -342,7 +342,7 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'columns',   'Columns',      ColumnListAttribute,
               true,  false,   false, [] ],
-        [ 'costAccount', 'Cost Account', AccountAttribute,
+        [ 'costaccount', 'Cost Account', AccountAttribute,
               true,  true,    false, nil ],
         [ 'currencyFormat', 'Currency Format', RealFormatAttribute,
               true,  true,    false, nil ],
@@ -400,9 +400,9 @@ class TaskJuggler
               true, false,   false, nil],
         [ 'resourceAttributes', 'Resource Attributes', FormatListAttribute,
               true,  false,   false, KeywordArray.new([ '*' ]) ],
-        [ 'resourceRoot',  'resource Root', PropertyAttribute,
+        [ 'resourceroot',  'resource Root', PropertyAttribute,
               true,  false,   false, nil ],
-        [ 'revenueAccount', 'Revenue Account', AccountAttribute,
+        [ 'revenueaccount', 'Revenue Account', AccountAttribute,
               true,  true,    false, nil ],
         [ 'right',     'Right',        RichTextAttribute,
               true,  false,   false, nil ],
@@ -432,7 +432,7 @@ class TaskJuggler
               true,  true,    false, nil ],
         [ 'taskAttributes', 'Task Attributes', FormatListAttribute,
               true,  false,   false, KeywordArray.new([ '*' ]) ],
-        [ 'taskRoot',  'Task Root',    PropertyAttribute,
+        [ 'taskroot',  'Task Root',    PropertyAttribute,
               true,  false,   false, nil ],
         [ 'timeFormat', 'Time Format', StringAttribute,
               true,  true,    false, nil ],
@@ -686,8 +686,8 @@ class TaskJuggler
       unless @accounts.empty?
         @reports.each do |report|
           if (report.typeSpec != :accountreport) &&
-             (report.get('costAccount').nil? ||
-              report.get('revenueAccount').nil?)
+             (report.get('costaccount').nil? ||
+              report.get('revenueaccount').nil?)
             warning('report_without_balance',
                     "The report #{report.fullId} has no 'balance' defined. " +
                     "No cost or revenue computation will be possible.",

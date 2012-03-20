@@ -47,8 +47,8 @@ class TaskJuggler
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
                      'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
+                     'costAccount' => a('costaccount'),
+                     'revenueAccount' => a('revenueaccount') }
       query = Query.new(queryAttrs)
 
       # Prepare the account list.

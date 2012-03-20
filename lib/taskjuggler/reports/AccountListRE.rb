@@ -49,8 +49,8 @@ class TaskJuggler
         generateHeaderCell(columnDescr)
       end
 
-      if (costAccount = @report.get('costAccount')) &&
-         (revenueAccount = @report.get('revenueAccount'))
+      if (costAccount = @report.get('costaccount')) &&
+         (revenueAccount = @report.get('revenueaccount'))
         # We are in balance mode. First show the cost and then the revenue
         # accounts and then the total balance.
         costAccountList = PropertyList.new(@project.accounts)

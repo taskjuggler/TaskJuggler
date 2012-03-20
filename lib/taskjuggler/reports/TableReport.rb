@@ -393,7 +393,7 @@ class TaskJuggler
           line.no = no
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('accountRoot'), accountList.treeMode?)
+          setIndent(line, a('accountroot'), accountList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
@@ -440,7 +440,7 @@ class TaskJuggler
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('taskRoot'), taskList.treeMode?)
+          setIndent(line, a('taskroot'), taskList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
@@ -497,7 +497,7 @@ class TaskJuggler
           line.no = no unless scopeLine
           line.lineNo = lineNo
           line.subLineNo = @table.lines
-          setIndent(line, a('resourceRoot'), resourceList.treeMode?)
+          setIndent(line, a('resourceroot'), resourceList.treeMode?)
 
           # Generate a cell for each column in this line.
           a('columns').each do |column|

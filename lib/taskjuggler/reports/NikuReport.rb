@@ -306,8 +306,8 @@ EOT
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
                      'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
+                     'costAccount' => a('costaccount'),
+                     'revenueAccount' => a('revenueaccount') }
       query = Query.new(queryAttrs)
 
       # Calculate the number of working days in the report interval.
@@ -440,8 +440,8 @@ EOT
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
                      'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
+                     'costAccount' => a('costaccount'),
+                     'revenueAccount' => a('revenueaccount') }
       query = Query.new(queryAttrs)
 
       timeOffId = @report.get('timeOffId')

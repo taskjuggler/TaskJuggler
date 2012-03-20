@@ -91,8 +91,8 @@ class TaskJuggler
                      'journalMode' => a('journalMode'),
                      'journalAttributes' => a('journalAttributes'),
                      'sortJournalEntries' => a('sortJournalEntries'),
-                     'costAccount' => a('costAccount'),
-                     'revenueAccount' => a('revenueAccount') }
+                     'costAccount' => a('costaccount'),
+                     'revenueAccount' => a('revenueaccount') }
       resourceList.query = Query.new(queryAttrs)
       resourceList.sort!
 
