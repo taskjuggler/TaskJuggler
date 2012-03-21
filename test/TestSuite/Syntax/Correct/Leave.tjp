@@ -25,7 +25,7 @@ resource team "Team" {
   }
 }
 resource r3 "R3" {
-  shift s1 2011-12-19 +3w
+  shifts s1 2011-12-19 +3w
   leaves sick 2012-01-04 +2d
 }
 

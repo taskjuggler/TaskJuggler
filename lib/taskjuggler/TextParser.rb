@@ -298,6 +298,7 @@ class TaskJuggler
           stackElement = @stack.last
           first = true
           transition.stateStack.each do |s|
+            checkForOldSyntax(s, token)
             if first && s.pattern == stackElement.state.pattern
               # The first state in the list may just be another state of the
               # current pattern. In this case, we already have the
@@ -318,16 +319,7 @@ class TaskJuggler
             # stores the result of the pattern and keeps the State that we
             # need to return to in case we jump to other patterns from this
             # pattern.
-            if state.pattern.supportLevel == :deprecated
-              warning('deprecated_keyword',
-                      "The keyword '#{token[1]}' has been deprecated! " +
-                      "See the reference manual for details.")
-            end
-            if state.pattern.supportLevel == :removed
-              error('removed_keyword',
-                    "The keyword '#{token[1]}' is no longer supported! " +
-                    "See the reference manual for details.")
-            end
+            checkForOldSyntax(state, token)
             @stack.push(TextParser::StackElement.new(state.pattern.function,
                                                      state))
           end
@@ -438,6 +430,21 @@ class TaskJuggler
         end
         print " -> #{sl.state ? sl.state.to_s(true) : 'nil'} #{sl.function.nil? ? '' : '(Called)'}"
         puts ""
+      end
+    end
+
+    # Check if the current token matches a deprecated or removed syntax
+    # element.
+    def checkForOldSyntax(state, token)
+      if state.pattern.supportLevel == :deprecated
+        warning('deprecated_keyword',
+                "The keyword '#{token[1]}' has been deprecated! " +
+                "See the reference manual for details.")
+      end
+      if state.pattern.supportLevel == :removed
+        error('removed_keyword',
+              "The keyword '#{token[1]}' is no longer supported! " +
+              "See the reference manual for details.")
       end
     end
 
