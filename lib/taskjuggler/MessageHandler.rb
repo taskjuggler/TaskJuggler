@@ -117,7 +117,7 @@ class TaskJuggler
     attr_reader :messages, :errors
     attr_accessor :logFile, :appName, :abortOnWarning, :trapSetup, :baselineSFI
 
-    LogLevels = { :none => 0, :fatal => 1, :error => 2,
+    LogLevels = { :none => 0, :fatal => 1, :error => 2, :critical => 2,
                   :warning => 3, :info => 4, :debug => 5 }
 
     # Initialize the MessageHandler.

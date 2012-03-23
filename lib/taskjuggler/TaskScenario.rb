@@ -367,11 +367,11 @@ class TaskJuggler
         task.finishScheduling(@scenarioIdx)
       end
 
-      if (parent = @property.parent)
-        # Add the assigned resources to the parent task list.
+      @property.parents.each do |pTask|
+        # Add the assigned resources to the parent task's list.
         @assignedresources.each do |resource|
-          unless parent['assignedresources', @scenarioIdx].include?(resource)
-            parent['assignedresources', @scenarioIdx] << resource
+          unless pTask['assignedresources', @scenarioIdx].include?(resource)
+            pTask['assignedresources', @scenarioIdx] << resource
           end
         end
       end
@@ -1530,6 +1530,8 @@ class TaskJuggler
     # interval specified by _startIdx_ and _endIdx_. The effective work is the
     # actual work multiplied by the efficiency of the resource.
     def getEffectiveWork(startIdx, endIdx, resource = nil)
+      # Make sure we have the real Resource and not a proxy.
+      resource = resource.ptn if resource
       return 0.0 if @milestone || startIdx >= endIdx ||
                     (resource && !@assignedresources.include?(resource))
 

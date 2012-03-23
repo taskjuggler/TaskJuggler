@@ -367,11 +367,18 @@ class TaskJuggler
     end
 
     # Return a list with all parent nodes of this node.
-    def ancestors
+    def ancestors(includeStepParents = false)
       nodes = []
-      n = self
-      while n.parent
-        nodes << (n = n.parent)
+      if includeStepParents
+        parents.each do |parent|
+          nodes << parent
+          nodes += parent.ancestors(true)
+        end
+      else
+        n = self
+        while n.parent
+          nodes << (n = n.parent)
+        end
       end
       nodes
     end

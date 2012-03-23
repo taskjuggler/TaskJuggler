@@ -136,11 +136,18 @@ class TaskJuggler
         resource.finishScheduling(@scenarioIdx)
       end
 
-      if (parent = @property.parent)
-        # Add the assigned task to the parent duties list.
+      # Add the parent tasks of each task to the duties list.
+      @duties.each do |task|
+        task.ancestors(true).each do |pTask|
+          @duties << pTask unless @duties.include?(pTask)
+        end
+      end
+
+      # Add the assigned task to the parent(s) resource duties list.
+      @property.parents.each do |pResource|
         @duties.each do |task|
-          unless parent['duties', @scenarioIdx].include?(task)
-            parent['duties', @scenarioIdx] << task
+          unless pResource['duties', @scenarioIdx].include?(task)
+            pResource['duties', @scenarioIdx] << task
           end
         end
       end
@@ -434,8 +441,11 @@ class TaskJuggler
 
 
     # Returns the work of the resource (and its children) weighted by their
-    # efficiency.
+    # efficiency. If _task_ is provided, only the work for this task and all
+    # its sub tasks are being counted.
     def getEffectiveWork(startIdx, endIdx, task = nil)
+      # Make sure we have the real Task and not a proxy.
+      task = task.ptn if task
       # There can't be any effective work if the start is after the end or the
       # todo list doesn't contain the specified task.
       return 0.0 if startIdx >= endIdx || (task && !@duties.include?(task))
@@ -632,7 +642,8 @@ class TaskJuggler
     end
 
     # Count the booked slots between the start and end index. If _task_ is not
-    # nil count only those slots that are assigned to this particular task.
+    # nil count only those slots that are assigned to this particular task or
+    # any of its sub tasks.
     def getAllocatedSlots(startIdx, endIdx, task)
       # If there is no scoreboard, we don't have any allocations.
       return 0 unless @scoreboard
@@ -641,8 +652,9 @@ class TaskJuggler
       return 0 if startIdx >= endIdx
 
       bookedSlots = 0
+      taskList = task ? task.all : []
       @scoreboard.each(startIdx, endIdx) do |slot|
-        if (task.nil? && slot.is_a?(Task)) || (task && slot == task)
+        if slot.is_a?(Task) && (task.nil? || taskList.include?(slot))
           bookedSlots += 1
         end
       end
