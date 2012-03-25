@@ -7220,7 +7220,6 @@ EOT
         unless (wh = @property['workinghours', @scenarioIdx])
           # The property does not have it's own WorkingHours yet.
           wh = WorkingHours.new(@project['workinghours'])
-          @property['workinghours', @scenarioIdx] = wh
         end
       end
       wh.timezone = @project['timezone']
@@ -7228,6 +7227,16 @@ EOT
         7.times { |i| wh.setWorkingHours(i, @val[2]) if @val[1][i] }
       rescue
         error('bad_workinghours', $!.message)
+      end
+
+      if @property
+        # Make sure we actually assign something so the attribute is marked as
+        # set by the user.
+        begin
+          @property['workinghours', @scenarioIdx] = wh
+        rescue AttributeOverwrite
+          # Working hours can be set multiple times.
+        end
       end
     })
   end
