@@ -31,6 +31,7 @@ class TaskJuggler
 
       cleanup
       startDaemon(<<'EOT'
+  emailDeliveryMethod: smtp
   smtpServer: foobar.com
 _timesheets:
   projectId: tstest

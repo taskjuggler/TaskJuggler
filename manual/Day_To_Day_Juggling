@@ -315,6 +315,7 @@ data for ''''tj3ts_sender'''' to your TaskJuggler configuration file.
 The time sheet related settings have their own top-level section:
 
  _global:
+   emailDeliveryMethod: smtp
    smtpServer: smtp.your_company.com
    authKey: topsecret
    scmCommand: "svn add %f ; svn commit -m '%m' %f"
@@ -329,10 +330,15 @@ The time sheet related settings have their own top-level section:
      digestRecipients:
        - managers@your_company.com
 
+The ''''emailDeliveryMethod'''' defines how emails should be sent.
+Use ''''smtp'''' to directly send the emails to an SMTP server.
 The ''''smtpServer'''' defines which host will handle your emails. Replace the
-host name with your local SMTP server. The 'scmCommand' setting contains the
-command to add and commit new and old files to the source code management
-system. The command in this example works for Subversion.
+host name with your local SMTP server. Alternatively, you can use the
+method ''''sendmail'''' on UNIX-like systems to pass the email to the
+sendmail tool. In this case, the ''''smtpServer'''' line can be
+omitted. The 'scmCommand' setting contains the command to add and
+commit new and old files to the source code management system. The
+command in this example works for Subversion.
 
 The TaskJuggler server may serve multiple projects. With the
 ''''projectId'''' option you have to specify which project you would
@@ -545,6 +551,7 @@ used. Before you can use it, you need to add a few settings to the
 TaskJuggler configuration file.
 
  _global:
+   emailDeliveryMethod: smtp
    smtpServer: smtp.your_company.com
    authKey: topsecret
    projectId: prj

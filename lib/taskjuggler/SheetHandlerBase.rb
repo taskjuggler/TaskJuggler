@@ -25,7 +25,8 @@ class TaskJuggler
     def initialize(appName)
       @appName = appName
       # User specific settings
-      @smtpServer= nil
+      @emailDeliveryMethod = 'smtp'
+      @smtpServer = nil
       @senderEmail = nil
       @workingDir = nil
       @scmCommand = nil
@@ -87,7 +88,14 @@ class TaskJuggler
 
     def setWorkingDir
       # Make sure the user has provided a properly setup config file.
-      error('\'smtpServer\' not configured') unless @smtpServer
+      case @emailDeliveryMethod
+      when 'smtp'
+        error('\'smtpServer\' not configured') unless @smtpServer
+      when 'sendmail'
+        # nothing to check
+      else
+        error("Unknown emailDeliveryMethod #{@emailDeliveryMethod}")
+      end
       error('\'senderEmail\' not configured') unless @senderEmail
 
       # Change into the specified working directory
@@ -156,11 +164,20 @@ class TaskJuggler
 
     def sendEmail(to, subject, message, attachment = nil, from = nil,
                   inReplyTo = nil)
-      Mail.defaults do
-        delivery_method :smtp, {
-          :address => @smtpServer,
-          :port => 25
-        }
+      case @emailDeliveryMethod
+      when 'smtp'
+        Mail.defaults do
+          delivery_method :smtp, {
+            :address => @smtpServer,
+            :port => 25
+          }
+        end
+      when 'sendmail'
+        Mail.defaults do
+          delivery_method :sendmail
+        end
+      else
+        raise "Unknown email delivery method: #{@emailDeliveryMethod}"
       end
 
       begin
@@ -202,7 +219,7 @@ class TaskJuggler
         puts "-- Email Start #{'-' * 60}\n#{mail.to_s}-- Email End #{'-' * 62}"
         log('INFO', "Show email '#{subject}' to #{to}")
       else
-        # Actually send out the email via SMTP.
+        # Actually send out the email.
         begin
           mail.deliver
         rescue
