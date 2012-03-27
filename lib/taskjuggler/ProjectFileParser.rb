@@ -483,7 +483,11 @@ class TaskJuggler
       end
       # The << operator does not set the 'provided' flag. Just do a self
       # assignment to trigget the flag to get set.
-      @property[attrId, @scenarioIdx] = @property[attrId, @scenarioIdx]
+      begin
+        @property[attrId, @scenarioIdx] = @property[attrId, @scenarioIdx]
+      rescue AttributeOverwrite
+        # Overwrites are ok here.
+      end
     end
 
   end
