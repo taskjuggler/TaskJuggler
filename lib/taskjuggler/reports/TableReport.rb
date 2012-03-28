@@ -211,33 +211,37 @@ class TaskJuggler
       # If we have user specified dates for the report period or the column
       # period, we don't adjust the period. This flag is used to mark if we
       # have user-provided values.
-      doNotAdjust = false
+      doNotAdjustStart = false
+      doNotAdjustEnd = false
 
       # Determine the start date for the column.
       if columnDef.start
         # We have a user-specified, column specific start date.
         rStart = columnDef.start
-        doNotAdjust = true
+        doNotAdjustStart = true
       else
         # Use the report start date.
         rStart = a('start')
-        doNotAdjust = true if rStart != @project['start']
+        doNotAdjustStart = true if rStart != @project['start']
       end
 
       if columnDef.end
         rEnd = columnDef.end
-        doNotAdjust = true
+        doNotAdjustEnd = true
       else
         rEnd = a('end')
-        doNotAdjust = true if rEnd != @project['end']
+        doNotAdjustEnd = true if rEnd != @project['end']
       end
+      origStart = rStart
+      origEnd = rEnd
 
       # Save the unadjusted dates to the columns Hash.
       @columns[columnDef] = TableReportColumn.new(rStart, rEnd)
 
       # If the task list is empty or the user has provided a custom start or
       # end date, we don't touch the report period.
-      return if tasks.empty? || scenarios.empty? || doNotAdjust
+      return if tasks.empty? || scenarios.empty? ||
+                (doNotAdjustStart && doNotAdjustEnd)
 
       # Find the start date of the earliest tasks included in the report and
       # the end date of the last included tasks.
@@ -292,19 +296,21 @@ class TaskJuggler
         margin = entry[0] * entry[2]
         minWidth = entry[0] * entry[1] if minWidth < entry[0] * entry[1]
       else
-        doNotAdjust = true
+        doNotAdjustStart = doNotAdjustEnd = true
       end
 
-      unless doNotAdjust
+      unless doNotAdjustStart && doNotAdjustEnd
         if minWidth > (rEnd - rStart + 1)
-          margin += (minWidth - (rEnd - rStart + 1)) / 2
+          margin = (minWidth - (rEnd - rStart + 1)) / 2
         end
 
         rStart -= margin
         rEnd += margin
 
         # Save the adjusted dates to the columns Hash.
-        @columns[columnDef] = TableReportColumn.new(rStart, rEnd)
+        @columns[columnDef] = TableReportColumn.new(
+          doNotAdjustStart ? origStart : rStart,
+          doNotAdjustEnd ? origEnd : rEnd)
       end
     end
 
