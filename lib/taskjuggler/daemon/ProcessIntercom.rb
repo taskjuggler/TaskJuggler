@@ -24,7 +24,10 @@ class TaskJuggler
     # This function catches all unhandled exceptions in the passed block.
     def trap
       begin
-        yield
+        MessageHandlerInstance.instance.trapSetup = true
+        res = yield
+        MessageHandlerInstance.instance.trapSetup = false
+        res
       rescue => e
         # Any exception here is a fata error. We try hard to terminate the DRb
         # thread and then exit the program.
@@ -170,7 +173,7 @@ class TaskJuggler
               warning('drb_timeout_shutdown',
                       'Shutting down DRb server due to timeout')
             else
-              debug('', 'Shutting down DRb server')
+              debug('', 'Shutting down the DRb server')
             end
             DRb.stop_service
             break

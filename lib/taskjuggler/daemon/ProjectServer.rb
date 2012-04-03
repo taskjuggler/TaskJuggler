@@ -90,7 +90,6 @@ class TaskJuggler
         begin
           $SAFE = 1
           DRb.install_acl(ACL.new(%w[ deny all allow 127.0.0.1 ]))
-          DRb.start_service
           iFace = ProjectServerIface.new(self)
           begin
             @uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri
@@ -283,6 +282,9 @@ class TaskJuggler
       Thread.new do
         begin
           loop do
+            # Exit this thread if the @terminate flag is set.
+            break if @terminate
+
             # Was the project data provided during object creation?
             # Then we load the data here.
             if @projectData
@@ -327,7 +329,7 @@ class TaskJuggler
             # can die during the transaction, the server might hang in some
             # states. Here we define timeout for each state. If the timeout is
             # not 0 and exceeded, we immediately terminate the process.
-            timeouts = { :new => 10, :loading => 15 * 60, :failed => 60,
+            timeouts = { :new => 30, :loading => 15 * 60, :failed => 60,
                          :ready => 0 }
             if timeouts[@state] > 0 &&
                TjTime.new - @stateUpdated > timeouts[@state]

@@ -122,8 +122,8 @@ EOT
       # some other work asynchronously.
       startHousekeeping
 
-      # Cleanup the DRb threads
-      DRb.thread.join
+      debug('', 'Shutting down ProjectBroker DRb server')
+      DRb.stop_service
 
       # If we have created a URI file, we need to delete it again.
       if @port == 0 && @uriFile
@@ -392,68 +392,64 @@ EOT
     private
 
     def startHousekeeping
-      Thread.new do
-        begin
-          cntr = 0
-          loop do
-            if @terminate
-              # Give the caller a chance to properly terminate the connection.
-              sleep 0.5
-              debug('', 'Shutting down DRb server')
-              DRb.stop_service
-              break
-            elsif !@projectsToLoad.empty?
-              loadProject(@projectsToLoad.pop)
-            else
-              # Send termination command to all obsolute ProjectServer
-              # objects.  To minimize the locking of @projects we collect the
-              # obsolete items first.
-              termList = []
-              @projects.synchronize do
-                @projects.each do |p|
-                  if p.state == :obsolete
-                    termList << p
-                  elsif p.state == :failed
-                    # Start removal of entries that didn't parse.
-                    p.state = :obsolete
-                  end
+      begin
+        cntr = 0
+        loop do
+          if @terminate
+            # Give the caller a chance to properly terminate the connection.
+            sleep 0.5
+            break
+          elsif !@projectsToLoad.empty?
+            loadProject(@projectsToLoad.pop)
+          else
+            # Send termination command to all obsolute ProjectServer
+            # objects.  To minimize the locking of @projects we collect the
+            # obsolete items first.
+            termList = []
+            @projects.synchronize do
+              @projects.each do |p|
+                if p.state == :obsolete
+                  termList << p
+                elsif p.state == :failed
+                  # Start removal of entries that didn't parse.
+                  p.state = :obsolete
                 end
-              end
-              # And then send them a termination command.
-              termList.each { |p| p.terminateServer }
-
-              # Check every 10 seconds that the ProjectServer processes are
-              # still alive. If not, remove them from the list.
-              if (cntr += 1) > 10
-                @projects.synchronize do
-                  @projects.each do |p|
-                    unless p.ping
-                      termList << p unless termList.include?(p)
-                    end
-                  end
-                end
-                cntr = 0
-              end
-
-              # The housekeeping thread rarely needs to so something. Make
-              # sure it's sleeping most of the time.
-              sleep 1
-
-              # Remove the obsolete records from the @projects list.
-              @projects.synchronize do
-                @projects.delete_if { |p| termList.include?(p) }
               end
             end
-          end
-        rescue => exception
-          # TjRuntimeError exceptions are simply passed through.
-          if exception.is_a?(TjRuntimeError)
-            raise TjRuntimeError, $!
-          end
+            # And then send them a termination command.
+            termList.each { |p| p.terminateServer }
 
-          fatal('pb_housekeeping_error',
-                "ProjectBroker housekeeping error: #{$!}")
+            # Check every 10 seconds that the ProjectServer processes are
+            # still alive. If not, remove them from the list.
+            if (cntr += 1) > 10
+              @projects.synchronize do
+                @projects.each do |p|
+                  unless p.ping
+                    termList << p unless termList.include?(p)
+                  end
+                end
+              end
+              cntr = 0
+            end
+
+            # The housekeeping thread rarely needs to so something. Make
+            # sure it's sleeping most of the time.
+            sleep 1
+
+            # Remove the obsolete records from the @projects list.
+            @projects.synchronize do
+              @projects.delete_if { |p| termList.include?(p) }
+            end
+          end
         end
+      rescue => exception
+        # TjRuntimeError exceptions are simply passed through.
+        if exception.is_a?(TjRuntimeError)
+          raise TjRuntimeError, $!
+        end
+
+        fatal('pb_housekeeping_error',
+              "ProjectBroker housekeeping error: #{$!}")
       end
     end
 

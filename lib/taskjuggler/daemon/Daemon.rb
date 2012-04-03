@@ -35,7 +35,7 @@ class TaskJuggler
 
     # Call this method to turn the process into a background process.
     def start
-      return unless @daemonize
+      return 0 unless @daemonize
 
       # Fork and have the parent exit
       if (pid = fork) == -1

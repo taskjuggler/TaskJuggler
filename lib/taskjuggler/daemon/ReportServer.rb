@@ -56,7 +56,6 @@ class TaskJuggler
           $SAFE = 1
           DRb.install_acl(ACL.new(%w[ deny all
                                       allow 127.0.0.1 ]))
-          DRb.start_service
           iFace = ReportServerIface.new(self)
           begin
             uri = DRb.start_service('druby://127.0.0.1:0', iFace).uri

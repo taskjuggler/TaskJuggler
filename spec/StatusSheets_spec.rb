@@ -26,7 +26,6 @@ class TaskJuggler
     include DaemonControl
 
     before(:all) do
-      @beforeExecuted = true
       # Make sure we run in the same directory as the spec file.
       @pwd = pwd
       cd(File.dirname(__FILE__))
@@ -132,8 +131,10 @@ EOT
       res = stdIoWrapper do
         Tj3SsSender.new.main(%w( --dryrun --silent -e 2011-03-23 ))
       end
+      unless res.returnValue == 0
+        raise " Status sheet template generation failed: #{res.stdErr}"
+      end
       @sss_mails = collectMails(res.stdOut)
-      raise " Status sheet generation failed" unless res.returnValue == 0
 
       @sheet = <<'EOT'
 # --------8<--------8<--------
