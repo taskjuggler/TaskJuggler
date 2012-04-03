@@ -29,8 +29,7 @@ class RuntimeConfig
     if configFile
       # Read user specified config file.
       unless loadConfigFile(configFile)
-        $stderr.puts "Config file #{configFile} not found!"
-        exit 1
+        error("Config file #{configFile} not found!")
       end
     else
       # Search config files in certain directories.
@@ -71,14 +70,13 @@ class RuntimeConfig
 
   def loadConfigFile(fileName)
     if File.exist?(fileName)
+      debug("Loading #{fileName}")
       begin
-        debug("Loading #{fileName}")
         @config = YAML::load(File.read(fileName))
-        debug(@config.to_s)
       rescue
-        $stderr.puts "Error in config file #{fileName}: #{$!}"
-        exit 1
+        error("Error in config file #{fileName}: #{$!}")
       end
+      debug(@config.to_s)
       return true
     end
     false
@@ -88,6 +86,11 @@ class RuntimeConfig
     return unless @debugMode
 
     puts message
+  end
+
+  def error(message)
+    $stderr.puts message
+    exit 1
   end
 
 end
