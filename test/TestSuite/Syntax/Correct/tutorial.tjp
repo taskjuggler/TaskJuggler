@@ -415,7 +415,7 @@ task AcSo "Accounting Software" {
 
 # *** EXAMPLE: navigator +
 navigator navbar {
-  hidereport 0
+  hidereport @none
 }
 # *** EXAMPLE: navigator -
 
@@ -525,7 +525,7 @@ taskreport overview "" {
   timeformat "%a %Y-%m-%d"
   loadunit days
 # *** EXAMPLE: overview3 -
-  hideresource 1
+  hideresource @all
 # *** EXAMPLE: overview2 +
   balance cost rev
 # *** EXAMPLE: overview2 -
@@ -613,7 +613,7 @@ taskreport deliveries "" {
   columns bsi { title 'WBS' }, name, start, end, note { width 150 }, complete,
           chart { ${TaskTip} }
   taskroot AcSo.deliveries
-  hideresource 1
+  hideresource @all
   scenarios plan, delayed
 }
 # A list of all employees with their contact details.
@@ -627,7 +627,7 @@ resourcereport contactList "" {
           chart { scale day }
   hideresource ~isleaf()
   sortresources name.up
-  hidetask 1
+  hidetask @all
 }
 
 # A graph showing resource allocation. It identifies whether each

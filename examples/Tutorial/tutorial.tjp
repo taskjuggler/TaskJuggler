@@ -290,7 +290,7 @@ task AcSo "Accounting Software" {
 # results.
 
 navigator navbar {
-  hidereport 0
+  hidereport @none
 }
 
 macro TaskTip [
@@ -378,7 +378,7 @@ taskreport overview "" {
   # of the date. %a is the tag for this.
   timeformat "%a %Y-%m-%d"
   loadunit days
-  hideresource 1
+  hideresource @all
   balance cost rev
   caption 'All effort values are in man days.'
 
@@ -459,7 +459,7 @@ taskreport deliveries "" {
   columns bsi { title 'WBS' }, name, start, end, note { width 150 }, complete,
           chart { ${TaskTip} }
   taskroot AcSo.deliveries
-  hideresource 1
+  hideresource @all
   scenarios plan, delayed
 }
 # A list of all employees with their contact details.
@@ -473,7 +473,7 @@ resourcereport contactList "" {
           chart { scale day }
   hideresource ~isleaf()
   sortresources name.up
-  hidetask 1
+  hidetask @all
 }
 
 # A graph showing resource allocation. It identifies whether each

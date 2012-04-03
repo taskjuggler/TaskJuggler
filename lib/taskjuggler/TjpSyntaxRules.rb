@@ -417,6 +417,15 @@ EOT
     })
   end
 
+  def rule_allOrNone
+    pattern(%w( _all ), lambda {
+      1
+    })
+    pattern(%w( _none ), lambda {
+      0
+    })
+  end
+
   def rule_argument
     singlePattern('$ABSOLUTE_ID')
     singlePattern('!date')
@@ -2786,6 +2795,9 @@ EOT
         func
       end
     })
+    pattern(%w( _@ !allOrNone ), lambda {
+      LogicalOperation.new(@val[1])
+    })
     pattern(%w( $INTEGER ), lambda {
       LogicalOperation.new(@val[0])
     })
@@ -2812,13 +2824,14 @@ EOT
     })
     arg(0, 'operand', <<'EOT'
 An operand can consist of a date, a text string, a [[functions|function]], a
-property attribute or a numerical value. It can also be the name of a declared
-flag. Use the ''''scenario_id.attribute'''' notation to use an attribute of
-the currently evaluated property. The scenario ID always has to be specified,
-also for non-scenario specific attributes. This is necessary to distinguish
-them from flags. See [[columnid]] for a list of available attributes. The use
-of list attributes is not recommended. User defined attributes are available
-as well.
+property attribute or a numerical value. You can also use the special terms
+''''@all'''' and ''''@none''''. It can also be the name of a declared flag.
+Use the ''''scenario_id.attribute'''' notation to use an attribute of the
+currently evaluated property. The scenario ID always has to be specified, also
+for non-scenario specific attributes. This is necessary to distinguish them
+from flags. See [[columnid]] for a list of available attributes. The use of
+list attributes is not recommended. User defined attributes are available as
+well.
 
 An operand can be a negated operand by prefixing a ~ charater or it can be
 another logical expression enclosed in braces.
@@ -4481,8 +4494,9 @@ sorting, the parent resources will always be included to form the tree.
 Tree sorting is the default. You need to change it if you do not want certain
 parent resources to be included in the report.
 
-The tasks that the resources are allocated to can be included as well. Use the
-[[hidetask]] attribute for this.
+By default, all the tasks that the resources are allocated to are hidden, but
+they can be listed as well. Use the [[hidetask]] attribute to select which
+tasks should be included.
 EOT
        )
   end
@@ -5782,8 +5796,9 @@ will always be included to form the tree. Tree sorting is the default. You
 need to change it if you do not want certain parent tasks to be included in
 the report.
 
-The resources that are allocated to each task can be listed as well. Use the
-[[hideresource]] attribute for this.
+By default, all the resources that are allocated to each task are hidden, but
+they can be listed as well. Use the [[hideresource]] attribute to select which
+resources should be included.
 EOT
        )
     example('HtmlTaskReport')

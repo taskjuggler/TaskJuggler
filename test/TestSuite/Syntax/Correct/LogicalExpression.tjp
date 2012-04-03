@@ -2,7 +2,11 @@ project "LogExp" 2009-10-19 +2m {
   timezone "America/Denver"
 }
 
-task "T"
+resource r "R"
+task "T" {
+  allocate r
+  effort 1d
+}
 
 macro rep [
 taskreport  "LogExp${1}" {
@@ -17,3 +21,7 @@ ${rep "4" ">="}
 ${rep "5" "!="}
 ${rep "6" "="}
 
+taskreport "LogExp7" {
+  hidetask @none
+  hideresource @all
+}
