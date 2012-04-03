@@ -43,6 +43,9 @@ class TaskJuggler
   # construct a Project object. In case of success true is returned.
   # Otherwise false.
   def parse(files, keepParser = false)
+    # Reset the MessageHandler to clear all errors.
+    MessageHandlerInstance.instance.clear
+
     Log.enter('parser', 'Parsing files ...')
     master = true
     @project = nil
