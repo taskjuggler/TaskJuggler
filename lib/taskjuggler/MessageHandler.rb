@@ -138,20 +138,26 @@ class TaskJuggler
       @logFile = nil
       # The name of the current application
       @appName = 'unknown'
-      # A counter for messages of type error.
-      @errors = 0
       # Set to true if program should be exited on warnings.
       @abortOnWarning = false
       # A SourceFileInfo object that will be used to baseline the provided
       # source file infos of the messages.
       @baselineSFI = nil
-      # A list of all generated messages.
-      @messages = []
-
       # If this is set the true, we only throw a TjRuntimeError instead of
       # using exit().
       @trapSetup = false
+
+      clear
     end
+
+    # Clear the error log.
+    def clear
+      # A counter for messages of type error.
+      @errors = 0
+      # A list of all generated messages.
+      @messages = []
+    end
+
 
     # Set the console output level.
     def outputLevel=(level)
