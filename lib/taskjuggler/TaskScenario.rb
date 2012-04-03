@@ -57,6 +57,7 @@ class TaskJuggler
       @doneEffort = 0.0
 
       @projectionMode = @project.scenario(@scenarioIdx).get('projection')
+      @nowIdx = @project.dateToIdx(@project['now'])
 
       @startIsDetermed = nil
       @endIsDetermed = nil
@@ -1753,7 +1754,9 @@ class TaskJuggler
 
     def bookResources
       # First check if there is any resource at all for this slot.
-      return true unless @project.anyResourceAvailable?(@currentSlotIdx)
+      return if !@project.anyResourceAvailable?(@currentSlotIdx) ||
+                (@projectionMode && (@nowIdx > @currentSlotIdx))
+
 
       # If the task has resource independent allocation limits we need to make
       # sure that none of them is already exceeded.
