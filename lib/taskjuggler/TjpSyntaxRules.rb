@@ -2454,6 +2454,9 @@ EOT
     pattern(%w( !operation ), lambda {
       LogicalExpression.new(@val[0], sourceFileInfo)
     })
+    pattern(%w( _@ !allOrNone ), lambda {
+      LogicalOperation.new(@val[1])
+    })
     doc('logicalexpression', <<'EOT'
 A logical expression is a combination of operands and mathematical operations.
 The final result of a logical expression is always true or false. Logical
@@ -2473,7 +2476,7 @@ concept of operator precedence or right-left associativity. This may change in
 the future.
 
 An operand can also be just a number. 0 evaluates to false, all other numbers
-to true.
+to true. The logical expression can also be the special constants ''''@all'''' or ''''@none''''. The first always evaluates to true, the latter to false.
 EOT
        )
     also(%w( functions ))
@@ -2795,9 +2798,6 @@ EOT
         func
       end
     })
-    pattern(%w( _@ !allOrNone ), lambda {
-      LogicalOperation.new(@val[1])
-    })
     pattern(%w( $INTEGER ), lambda {
       LogicalOperation.new(@val[0])
     })
@@ -2824,14 +2824,13 @@ EOT
     })
     arg(0, 'operand', <<'EOT'
 An operand can consist of a date, a text string, a [[functions|function]], a
-property attribute or a numerical value. You can also use the special terms
-''''@all'''' and ''''@none''''. It can also be the name of a declared flag.
-Use the ''''scenario_id.attribute'''' notation to use an attribute of the
-currently evaluated property. The scenario ID always has to be specified, also
-for non-scenario specific attributes. This is necessary to distinguish them
-from flags. See [[columnid]] for a list of available attributes. The use of
-list attributes is not recommended. User defined attributes are available as
-well.
+property attribute or a numerical value. It can also be the name of a declared
+flag.  Use the ''''scenario_id.attribute'''' notation to use an attribute of
+the currently evaluated property. The scenario ID always has to be specified,
+also for non-scenario specific attributes. This is necessary to distinguish
+them from flags. See [[columnid]] for a list of available attributes. The use
+of list attributes is not recommended. User defined attributes are available
+as well.
 
 An operand can be a negated operand by prefixing a ~ charater or it can be
 another logical expression enclosed in braces.
