@@ -155,13 +155,20 @@ class TaskJuggler
     end
 
     def to_html
+      html = []
+      html << rt_to_html('header')
+
       begin
         plotter = ChartPlotter.new(a('width'), a('height'), @table)
         plotter.generate
-        plotter.to_svg
+        html << plotter.to_svg
       rescue ChartPlotterError => exception
         warning('chartPlotterError', exception.message, @report.sourceFileInfo)
       end
+
+      html << rt_to_html('footer')
+
+      html
     end
 
     def to_csv
