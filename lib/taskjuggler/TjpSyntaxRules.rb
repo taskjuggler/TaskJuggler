@@ -4504,7 +4504,7 @@ EOT
     pattern(%w( _resourcereport !optionalID !reportName ), lambda {
       newReport(@val[1], @val[2], :resourcereport, @sourceFileInfo[0])
 
-      if @property.modified?('columns')
+      unless @property.modified?('columns')
         # Set the default columns for this report.
         %w( no name ).each do |col|
           @property.get('columns') <<
