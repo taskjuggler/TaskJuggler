@@ -545,17 +545,18 @@ class TaskJuggler
     end
 
     def generateHTMLContextLine
-      if @contexts.empty?
+      descr = []
+      @contexts.each do |c|
+        next if [ :deprecated, :removed ].include?(c.pattern.supportLevel)
+
+        descr << ', ' unless descr.empty?
+        descr << A.new('href' => "#{c.keyword}.html") { c.title }
+      end
+      if descr.empty?
         descr = A.new('href' =>
                       'Getting_Started.html#Structure_of_a_TJP_File') do
                         'Global scope'
                       end
-      else
-        descr = []
-        @contexts.each do |c|
-          descr << ', ' unless descr.empty?
-          descr << A.new('href' => "#{c.keyword}.html") { c.title }
-        end
       end
       generateHTMLTableLine('Context', descr)
     end
@@ -564,6 +565,8 @@ class TaskJuggler
       unless @seeAlso.empty?
         descr = []
         @seeAlso.each do |a|
+          next if [ :deprecated, :removed ].include?(a.pattern.supportLevel)
+
           descr << ', ' unless descr.empty?
           descr << A.new('href' => "#{a.keyword}.html") { a.title }
         end
@@ -629,6 +632,10 @@ class TaskJuggler
               end
 
               @optionalAttributes.each do |attr|
+                if [ :deprecated, :removed ].include?(attr.pattern.supportLevel)
+                  next
+                end
+
                 rows << TR.new('align' => 'left') do
                   [
                     TD.new('align' => 'left', 'class' => 'descr') do
@@ -657,6 +664,11 @@ class TaskJuggler
                   TD.new('class' => 'descr', 'style' => 'width:84%') do
                     list = []
                     @optionalAttributes.each do |attr|
+                      if [ :deprecated, :removed ].
+                         include?(attr.pattern.supportLevel)
+                        next
+                      end
+
                       list << ', ' unless list.empty?
                       list << A.new('href' => "#{attr.keyword}.html") do
                         attr.title
