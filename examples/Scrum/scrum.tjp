@@ -1,0 +1,141 @@
+project "Scrum Example Project" 2012-02-01 +4m {
+  now 2012-03-07
+}
+
+resource r1 "R1"
+resource r2 "R2"
+resource r3 "R3"
+
+# This example uses a very simple WBS that groups tasks by sprint. For
+# larger projects, a classical WBS that breaks tasks into smaller
+# tasks and so on is probably more appropriate. The reports can then
+# select the sprint context by date.
+task product "Product" {
+  task s1 "Sprint 1" {
+    task t1 "T1" {
+      effort 5d
+      allocate r1
+    }
+    task t2 "T2" {
+      effort 3d
+      allocate r1
+      depends !t1
+    }
+    task t3 "T3" {
+      effort 7d
+      allocate r1
+    }
+    task t4 "T4" {
+      effort 4d
+      allocate r2
+      depends !t2
+    }
+  }
+  task s2 "Sprint 2" {
+    depends !s1
+    task t1 "T1" {
+      effort 3d
+      allocate r2
+    }
+    task t2 "T2" {
+      effort 4d
+      allocate r3
+      depends !t1
+    }
+    task t3 "T3" {
+      effort 6d
+      allocate r1
+    }
+    task t4 "T4" {
+      effort 5d
+      allocate r3
+      depends !t3
+    }
+    task t5 "T5" {
+      effort 3d
+      allocate r2
+      depends !t1
+    }
+  }
+  task s3 "Sprint 3" {
+    depends !s2
+    task t1 "T1" {
+      effort 6d
+      allocate r1
+      depends product.s1.t2
+    }
+    task t2 "T2" {
+      effort 4d
+      allocate r3
+      depends !t1
+    }
+    task t3 "T3" {
+      effort 4d
+      allocate r1
+      depends product.s2.t4
+    }
+    task t4 "T4" {
+      effort 7d
+      allocate r2
+      depends !t3
+    }
+    task t5 "T5" {
+      effort 5d
+      allocate r2
+      depends !t1
+    }
+  }
+}
+
+navigator menu
+
+textreport "" {
+  header -8<-
+    == Scrum Example Project ==
+    <[navigator id='menu']>
+    ->8-
+  formats html
+
+  textreport "" {
+    columns name, status, effort, resources
+
+    taskreport "Product Backlog" {
+    }
+    taskreport "Sprint 1 Backlog" {
+      taskroot product.s1
+    }
+    taskreport "Sprint 2 Backlog" {
+      taskroot product.s2
+    }
+    taskreport "Sprint 3 Backlog" {
+      taskroot product.s3
+    }
+    title "Backlogs"
+    purge formats
+  }
+
+  textreport "" {
+    sorttasks id.up
+    width 800
+    tracereport "Product Burndown" {
+      columns opentasks
+      hidetask plan.id != "product"
+    }
+    tracereport "Sprint 1 Burndown" {
+      columns opentasks
+      hidetask plan.id != "product.s1"
+    }
+    tracereport "Sprint 2 Burndown" {
+      columns opentasks
+      hidetask plan.id != "product.s2"
+    }
+    tracereport "Sprint 3 Burndown" {
+      columns opentasks
+      hidetask plan.id != "product.s3"
+    }
+    title "Burndown Charts"
+    purge formats
+  }
+
+  purge formats
+}

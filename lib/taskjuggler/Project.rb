@@ -449,7 +449,7 @@ class TaskJuggler
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
               true,  true,    false, false ],
         [ 'width',     'Width',        FixnumAttribute,
-              false,  false,   false, 640 ]
+              true,  false,   false, 640 ]
       ]
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 
