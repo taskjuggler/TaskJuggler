@@ -1,50 +1,54 @@
 == The Tutorial: Your first Project ==
 
 We have mentioned already that TaskJuggler uses plain text files that
-describe the project to schedule it. As you will see now, the syntax
+capture the known parts of the project. As you will see now, the syntax
 of these files is easy to understand and very intuitive. This chapter
 will walk you step by step through your first project. You create the
 project plan for a made-up accounting software project. This project
-demonstrates some of the commonly used features of TaskJuggler. The
-complete example can be downloaded
-[http://www.taskjuggler.org/tj3/examples/Tutorial/tutorial.tjp here]. The
+demonstrates most of the commonly used features of TaskJuggler. It
+also includes some of the more advanced concepts that you may or may
+not need for your projects. Don't get scared by them. You can use
+them once you are more familiar with TaskJuggler and your projects
+grow larger. The complete tutorial example can be downloaded
+[http://www.taskjuggler.org/tj3/examples/Tutorial/tutorial.tjp here].
+You can use any plain text editor to view and modify it.  The
 resulting reports can be found
-[http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html
-here].
+[http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html here].
 
 === Starting the project ===
 
-To start a TaskJuggler project file you need to use the [[project]]
+Every TaskJuggler project file must start with the [[project]]
 property. It tells TaskJuggler the name of your project and a start
 and end date. The start and end dates don't need to be exact, but must
-fit all tasks of the project.  It is the time interval the TaskJuggler
+fit all tasks of the project. It is the time interval the TaskJuggler
 scheduler will use to fit the tasks in. So, make it large enough for
 all your tasks to fit in. But don't make it too large, because this
 will result in longer scheduling times and higher memory consumption.
 
 <[example file="tutorial" tag="header1"]>
 
-All TaskJuggler properties have two required attributes, a unique ID
-and a name, and a set of optional attributes. The name must always be
-specified. The ID can be omitted if you never have to reference the
-property from another context. If you omit the ID, TaskJuggler will
-automatically generate a unique ID. The other optional attributes are
-always enclosed in curly braces. If no optional attributes are
-specified, the braces can be omitted as well. In this example we will
-introduce a number of there attributes that may or may not matter to
-you. If you don't see an immediate need for a specific attribute, feel
-free to ignore it for now. You can always come back to them later. A
-full list of the supported attributes can be found in the
-''attributes'' section of the [[project]] property documentation.
+All TaskJuggler properties have a unique ID ,a name, and a set of
+optional attributes. The name must always be specified. The ID can be
+omitted if you never have to reference the property from another
+context. If you omit the ID, TaskJuggler will automatically generate a
+unique ID. The optional attributes are always enclosed in curly
+braces. If no optional attributes are specified, the braces can be
+omitted as well. In this example we will introduce a number of the
+attributes that may or may not matter for your specific projects. If
+you don't see an immediate need for a specific attribute, feel free to
+ignore it for now. You can always come back to them later. A full list
+of the supported project attributes can be found in the ''attributes''
+section of the [[project]] property documentation.
 
-Attributes always start with a keyword that is unique in the context.
-A context is delimited by a set of curly braces that enclose optional
-attributes of a property. The area between properties is called the
-global scope.  Usually, attributes have one or more arguments. These
-arguments can be dates, character strings, numbers or symbols. Strings
-must be enclosed in single or double quotes. The argument types and
-meaning is explained for each keyword in the syntax reference section
-of this manual.
+Attributes always start with a keyword that identifies them.  The
+meaning and parameters of attributes depends on the property context
+that they are used in. A context is delimited by a set of curly
+braces that enclose optional attributes of a property. The area
+outside of any property is called the global scope.  Usually,
+attributes have one or more arguments. These arguments can be dates,
+character strings, numbers or symbols. Strings must be enclosed in
+single or double quotes. The argument types and meaning is explained
+for each keyword in the syntax reference section of this manual.
 
 TaskJuggler manages all events with an accuracy of up to 15 minutes.
 In many cases, you don't care about this level of accuracy.
@@ -62,7 +66,7 @@ See [[interval2]] for details.
 
  project acso "Accounting Software"  2002-01-16-0:00-+0100
 
-The [[currency]] attribute specifies the unit of currency values.
+The [[currency]] attribute specifies the unit of all currency values.
 
 <[example file="tutorial" tag="currency"]>
 
@@ -79,9 +83,9 @@ We also can specify the way numbers or currency values are shown in
 the reports. Use the [[numberformat]] and [[currencyformat]]
 attributes for this.
 
-The optional attribute [[now]] is used to set the current day for the
+The attribute [[now]] is used to set the current day for the
 scheduler to another value than to the moment your invoke TaskJuggler.
-When this attribute is not present, TaskJuggler will use the current
+If this attribute is not present, TaskJuggler will use the current
 moment of time to determine where you are with your tasks. To get a
 defined result for the reports in this example we've picked a specific
 date that fits our purpose here. In your projects, you would use
@@ -92,16 +96,17 @@ date that fits our purpose here. In your projects, you would use
 In this tutorial we would like to compare two scenarios of the
 project. The first scenario is the one that we have planned. The
 second scenario is how it really happened. The two scenarios have the
-same task structure, but the start and end dates of the task may vary.
-In reality we assume that the project got delayed, so we call the
-second scenario "Delayed". The scenario property is used to specify
-the scenarios. The delayed scenario is nested into the plan scenario.
-This tells TaskJuggler to use all values from the plan scenario also
-for the second scenario unless the second scenario has it's own
-values. This is a very easy but also powerful way to analyze the
-impact of certain changes to the plan of record.  We'll see further
-below, how to specify values for a scenario and how to compare the
-results.
+same task structure, but the start and end dates and other attributes
+of the task that are scenario specific may vary. In this example we
+assume that the project got delayed and use a second scenario that we
+name "Delayed" to describe the actual project. The scenario property
+is used to specify the scenarios. The delayed scenario is nested into
+the plan scenario.  This tells TaskJuggler to use all values from the
+plan scenario also for the second scenario unless the second scenario
+has it's own values. This is a very easy but also powerful way to
+analyze the impact of certain changes to the plan of record.  We'll
+see further below, how to specify values for a scenario and how to
+compare the results.
 
 <[example file="tutorial" tag="scenario"]>
 
@@ -120,36 +125,34 @@ daily costs of an employee. This can be changed for certain employees
 later, but it illustrates an important concept of TaskJuggler –
 inheritance of attributes. In order to reduce the size of the
 TaskJuggler project file to a readable minimum, properties inherit
-many optional attributes from their enclosing scopes. We'll see
-further below, what this actually means. Right after the project
-property we are at top-level scope, so this is the default for all
-following properties.
+many attributes from their enclosing scopes. We'll see further below,
+what this actually means. Right after the project property we are at
+top-level scope, so this is the default for all following properties.
 
 <[example file="tutorial" tag="rate"]>
 
 The [[rate]] attribute can be used to specify the daily costs of
-resources. All subsequent resources will get this rate. But it can be
-changed to a different rate at group or individual resource level.
+resources. All subsequently declared resources will get this rate. But
+it can certainly be changed to a different rate at group or individual
+resource level.
 
 You may also want to tell TaskJuggler about holidays that affect
-all resources. Global vacations are time periods where TaskJuggler
+all resources. Global holidays are time periods where TaskJuggler
 does not do any resource assignments to tasks.
 
 <[example file="tutorial" tag="vacation"]>
 
-Use the [[vacation]] attribute to define a global vacation. Global
-vacations must have a name and a date or date range. This is slightly
-different from vacations of individual resources. They are defined
-with the [[vacation.resource|vacation attribute for resources]] where
-the name is optional. The vacation name is purely for documentation
-purposes.
+Use the [[leaves]] attribute to define a global holiday. Global
+holidays may have a name and must have a date or date range. Other leaves for
+individual resources or groups of resources can be defines similarly.
 
 === Macros ===
 
-Macros are another TaskJuggler feature to keep project files small.
-Macros are text patterns that can be defined once and inserted
-multiple times in the project file. A [[macro]] always has a name and the
-text pattern is enclosed by square brackets. 
+Macros are another TaskJuggler feature to save you typing work and to
+keep project files small and maintainable. Macros are text patterns
+that can be defined once and inserted multiple times in the project
+file. A [[macro]] always has a name and the text pattern is enclosed
+by square brackets. 
 
 <[example file="tutorial" tag="macro"]>
 
@@ -162,22 +165,22 @@ pattern.
 === Declaring Flags ===
 
 A TaskJuggler feature that you will probably make heavy use of is
-flags. Once declared you can attach them to many properties. When you
+flags. Once declared you can attach them to any property. When you
 generate reports of the TaskJuggler results, you can use the flags to
-filter out information and limit the report to exactly those details
-that you want to have included.
+filter out unwanted properties and limit the report to exactly those
+details that you want to have included.
 
 <[example file="tutorial" tag="flags"]>
 
-This is flag declaration. All [[flags]] need to be declared, before they
-can be used to avoid hard to find errors due to misspelled flag
-names. The flags should be declared shortly below the project header.
-We will see further down, how we can make use of these flags.
+This is a [[flags]] declaration. All flags need to be declared before
+they can be used to avoid hard to find errors due to misspelled flag
+names. The flags should be declared before any property at global
+scope. We will see further down, how we can make use of these flags.
 
 === Declaring Accounts ===
 
-The use of our resources will create costs. For a profit and loss
-analysis, we need to balance the costs against the customer payments.
+The use of our resources will generate costs. For a profit and loss
+analysis, we need to balance the cost against the customer payments.
 In order not to get lost with all the various amounts, we declare 3
 [[account|accounts]] to credit the amounts to. We create one account
 for the development costs, one for the documentation costs, and one
@@ -185,14 +188,12 @@ for the customer payments.
 
 <[example file="tutorial" tag="accounts"]>
 
-Like all TaskJuggler properties, the account needs an ID and a name.
-IDs may only consist of the characters a to z, A to Z and the
-underscore. All but the first character may also be digits 0 to 9.
-All global TaskJuggler properties have IDs. The ID is necessary so
-that we can reference the property again later without having to write
-the potentially much longer name. The name may contain space
-characters and therefore has to be enclosed with single or double
-quotes.
+The account needs an ID and a name.  IDs may only consist of the
+characters a to z, A to Z and the underscore. All but the first
+character may also be digits 0 to 9. The ID is necessary so that we
+can reference the property again later without having to write the
+potentially much longer name. The name may contain space characters
+and therefore has to be enclosed with single or double quotes.
 
 Accounts can be grouped by nesting them. You can use this feature to
 create sets of accounts. Such sets can then be balanced against each
@@ -211,11 +212,11 @@ project.
 <[example file="tutorial" tag="resources"]>
 
 This snippet of the example shows the use of the [[resource|
-resource property]]. Just like accounts, resources always have an ID
-and a Name. These IDs also need to be unique within their property
-class.  Names are strings and as such enclosed in double quotes. As
-you can see, resource properties can be nested: ''''dev'''' is a group
-or container resource, a team that consists of three other resources.
+resource property]]. Just like accounts, resources should have an ID
+and must have a name. Resource IDs, like account IDs must also be
+unique within their property class. As you can see, resource
+properties can be nested: ''''dev'''' is a group or container
+resource, a team that consists of three other resources.
 
 ''''dev1'''', alias Paul Smith, costs more than the normal employee.
 So the declaration of ''''dev1'''' overwrites the inherited default
@@ -224,11 +225,14 @@ rate with a higher value.
 The default value has been inherited from the enclosing scope,
 resource ''''dev'''', which in turn has inherited it from the global
 scope.  The declaration of the resource Klaus Müller uses another
-optional attribute. With vacation you can specify a certain time
-interval where the resource is not available. Vacations are list
-attributes. They accumulate the declarations. If you want to get rid
-of inherited values, you can use the [[purge]] attribute to clear the
-list.
+optional attribute. Attributes are only inherited from the parent
+property if the attribute was declared in the parent property before
+the child property declaration was started.
+
+With [[leaves]] you can specify a certain time interval where the
+resource is not available. Leaves are list attributes. They accumulate
+the declarations. If you want to get rid of inherited values, you can
+use the [[purge]] attribute to clear the list.
 
 It is important that you understand how TaskJuggler handles time
 intervals.  Internally, TaskJuggler uses the number of seconds after
@@ -240,7 +244,8 @@ with sensible defaults, TaskJuggler adds the time 0:00:00 if nothing
 else has been specified. So the vacation ends on midnight February
 5th, 2002. Well, almost. Every time you specify a time interval, the
 end date is not included in the interval. So Klaus Müller's vacation
-ends exactly at 0:00:00 on February 4th, 2002.
+ends exactly at 0:00:00 on February 5th, 2002. Febrary 5 is not part
+of the leave!
 
 Peter Murphy only works 6.4 hours a day. So we use the
 [[limits.resource|limits]] attribute to limit his daily working hours.
