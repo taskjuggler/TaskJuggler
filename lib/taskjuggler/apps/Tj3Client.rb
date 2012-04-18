@@ -253,10 +253,15 @@ EOT
         # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
-            unless @reportServer.generateReport(@rs_authKey, reportId,
-                                                @regExpMode, @formats, nil)
-              failed = true
-              break
+            begin
+              unless @reportServer.generateReport(@rs_authKey, reportId,
+                                                  @regExpMode, @formats, nil)
+                failed = true
+                break
+              end
+            rescue
+              error('tjc_gen_rep_failed',
+                    "Could not generate report #{reportId}: #{$!}")
             end
           end
         end
@@ -282,9 +287,15 @@ EOT
         # Ask the ReportServer to generate the reports with the provided IDs.
         unless failed
           reportIds.each do |reportId|
-            unless @reportServer.listReports(@rs_authKey, reportId, @regExpMode)
-              failed = true
-              break
+            begin
+              unless @reportServer.listReports(@rs_authKey, reportId,
+                                               @regExpMode)
+                failed = true
+                break
+              end
+            rescue
+              error('tjc_report_list_failed',
+                    "Getting report list failed: #{$!}")
             end
           end
         end
