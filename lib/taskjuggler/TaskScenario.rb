@@ -2378,25 +2378,26 @@ class TaskJuggler
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
-    def inputs(list, includeChildren)
-      # Ignore tasks that we have already included in the list.
-      return if list.include?(@property)
+    def inputs(foundInputs, includeChildren, checkedTasks = [])
+      # Ignore tasks that we have already included in the checked tasks list.
+      return if checkedTasks.include?(@property)
+      checkedTasks << @property
 
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
       # targets.
       if @property.leaf? && !hasPredecessors && @milestone
-        list << @property
+        foundInputs << @property
         return
       end
 
       @startpreds.each do |t, onEnd|
-        t.inputs(@scenarioIdx, list, false)
+        t.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
       end
 
       # Check for indirect predecessors.
       if @property.parent
-        @property.parent.inputs(@scenarioIdx, list, false)
+        @property.parent.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
       end
 
       # Also include targets of child tasks. The recursive iteration of child
@@ -2404,32 +2405,33 @@ class TaskJuggler
       # iterated.
       if includeChildren
         @property.kids.each do |child|
-          child.inputs(@scenarioIdx, list, true)
+          child.inputs(@scenarioIdx, foundInputs, true, checkedTasks)
         end
       end
     end
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
-    def targets(list, includeChildren)
-      # Ignore tasks that we have already included in the list.
-      return if list.include?(@property)
+    def targets(foundTargets, includeChildren, checkedTasks = [])
+      # Ignore tasks that we have already included in the checked tasks list.
+      return if checkedTasks.include?(@property)
+      checkedTasks << @property
 
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
       # targets.
       if @property.leaf? && !hasSuccessors && @milestone
-        list << @property
+        foundTargets << @property
         return
       end
 
       @endsuccs.each do |t, onEnd|
-        t.targets(@scenarioIdx, list, false)
+        t.targets(@scenarioIdx, foundTargets, false, checkedTasks)
       end
 
       # Check for indirect followers.
       if @property.parent
-        @property.parent.targets(@scenarioIdx, list, false)
+        @property.parent.targets(@scenarioIdx, foundTargets, false, checkedTasks)
       end
 
       # Also include targets of child tasks. The recursive iteration of child
@@ -2437,7 +2439,7 @@ class TaskJuggler
       # iterated.
       if includeChildren
         @property.kids.each do |child|
-          child.targets(@scenarioIdx, list, true)
+          child.targets(@scenarioIdx, foundTargets, true, checkedTasks)
         end
       end
     end
