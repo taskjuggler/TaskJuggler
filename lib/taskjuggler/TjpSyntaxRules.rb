@@ -1965,7 +1965,8 @@ the journal report.
 EOT
        )
     allOrNothingListRule('journalReportAttributesList',
-                         { 'author' => 'Include the author if known',
+                         { 'alert' => 'Include the alert status',
+                           'author' => 'Include the author if known',
                            'date' => 'Include the date',
                            'details' => 'Include the details',
                            'flags' => 'Include the flags',
