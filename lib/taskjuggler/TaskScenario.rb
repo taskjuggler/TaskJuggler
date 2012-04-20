@@ -1595,31 +1595,41 @@ class TaskJuggler
     # Check if the Task _task_ depends on this task. _depth_ specifies how
     # many dependent task are traversed at max. A value of 0 means no limit.
     # TODO: Change this to a non-recursive implementation.
-    def isDependencyOf(task, depth)
+    def isDependencyOf(task, depth, list = [])
       return true if task == @property
+
+      # If this task is already in the list of traversed task, we can ignore
+      # it.
+      return false if list.include?(@property)
+      list << @property
+
+      @startsuccs.each do |t, onEnd|
+        unless onEnd
+          # must be a start->start dependency
+          return true if t.isDependencyOf(@scenarioIdx, task, depth, list)
+        end
+      end
+
+      # For task to depend on this task, the start of task must be after the
+      # end of this task.
+      if task['start', @scenarioIdx] && @end
+        return false if task['start', @scenarioIdx] < @end
+      end
 
       # Check if any of the parent tasks is a dependency of _task_.
       t = @property.parent
       while t
         # If the parent is a dependency, than all childs are as well.
-        return true if t.isDependencyOf(@scenarioIdx, task, depth)
+        return true if t.isDependencyOf(@scenarioIdx, task, depth, list)
         t = t.parent
-      end
-
-
-      @startsuccs.each do |dep|
-        unless dep[1]
-          # must be a start->start dependency
-          return true if dep[0].isDependencyOf(@scenarioIdx, task, depth)
-        end
       end
 
       return false if depth == 1
 
-      @endsuccs.each do |dep|
-        unless dep[1]
+      @endsuccs.each do |ta, onEnd|
+        unless onEnd
           # must be an end->start dependency
-          return true if dep[0].isDependencyOf(@scenarioIdx, task, depth - 1)
+          return true if ta.isDependencyOf(@scenarioIdx, task, depth - 1, list)
         end
       end
 
