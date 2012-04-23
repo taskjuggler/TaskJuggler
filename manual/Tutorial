@@ -229,34 +229,38 @@ optional attribute. Attributes are only inherited from the parent
 property if the attribute was declared in the parent property before
 the child property declaration was started.
 
-With [[leaves]] you can specify a certain time interval where the
-resource is not available. Leaves are list attributes. They accumulate
-the declarations. If you want to get rid of inherited values, you can
-use the [[purge]] attribute to clear the list.
+The syntax reference lists for each property whether an attribute is
+inherited from the parent or the attribute in the global scope.
 
-It is important that you understand how TaskJuggler handles time
-intervals.  Internally, TaskJuggler uses the number of seconds after
-January 1st, 1970 to store any date.  So all dates are actually stored
-with an accuracy of 1 second in UTC time. ''''2002-02-01'''' specifies
-midnight February 1st, 2002. Following the TaskJuggler concept of
-requiring as little information as necessary and extending the rest
-with sensible defaults, TaskJuggler adds the time 0:00:00 if nothing
-else has been specified. So the vacation ends on midnight February
-5th, 2002. Well, almost. Every time you specify a time interval, the
-end date is not included in the interval. So Klaus Müller's vacation
-ends exactly at 0:00:00 on February 5th, 2002. Febrary 5 is not part
-of the leave!
+With [[leaves]] you can specify certain time intervals where the
+resource is not available. Leaves are list attributes. They accumulate
+the declarations. If you want to get rid of inherited or previously
+assigned values, you can use the [[purge]] attribute to clear the
+list.
+
+''''leaves'''' requires a time interval. It is important to understand
+how TaskJuggler handles time intervals.  Internally, TaskJuggler uses
+the number of seconds after January 1st, 1970 to store any date.  So
+all dates are actually stored with an accuracy of 1 second in UTC
+time. ''''2002-02-01'''' specifies midnight February 1st, 2002.
+Following the TaskJuggler concept of requiring as little information
+as necessary and extending the rest with sensible defaults,
+TaskJuggler adds the time 0:00:00 if nothing else has been specified.
+So the vacation ends on midnight February 5th, 2002. Well, almost.
+Every time you specify a time interval, the end date is not included
+in the interval. So Klaus Müller's vacation ends exactly at 0:00:00 on
+February 5th, 2002. February 5 is not part of the leave!
 
 Peter Murphy only works 6.4 hours a day. So we use the
 [[limits.resource|limits]] attribute to limit his daily working hours.
 We could also define exact working hours using the [[shift|shift
 property]], but we ignore this for now.
 
-Note that we have attached the flag team after the declaration of the
-sub-resources to the team resources.  This way, these flags don't get
-passed down to the sub-resources. If we would have declared the flags
-before the sub-resources, then they would have the flags attached as
-well.
+Note that we have attached the flag ''''team'''' after the declaration
+of the sub-resources to the team resources.  This way, these flags
+don't get passed down to the sub-resources. If we would have declared
+the flags before the sub-resources, then they would have the flags
+attached as well.
 
 === Specifying the Tasks ===
 
@@ -264,7 +268,7 @@ Let's focus on the real work now. The project should solve a problem:
 the creation of an accounting software. Because the job is quite
 complicated, we break it down into several subtasks. We need to do a
 specification, develop the software, test the software, and write a
-manual. Using the [[task|task property]], thiis would look as follows:
+manual. Using the [[task|task property]], this would look as follows:
 
 <[example file="tutorial" tag="task1"]>
 
@@ -301,7 +305,7 @@ resources could be allocated long enough to reach the specified
 effort. Tasks with ''''length'''' or ''''duration'''' criteria and
 allocated resources will last exactly as long as requested. Resources
 will be allocated only if available. It's possible that such a tasks
-ends up with no allocations at all since the resources are always
+ends up with no allocations at all if the resources are always
 assigned to other tasks for that period. Each task can only have one
 of the three duration criteria. Container tasks may never have a
 duration specification. They are automatically adjusted to fit all
@@ -315,12 +319,8 @@ expression ''''${allocate_developers}'''' is simply expanded to
 If you need to [[allocate]] the same bunch of people to several tasks,
 the macro saves you some typing. You could have written the allocate
 attributes directly instead of using the macro. Since the allocation
-of multiple resources to a task is a very common place for macro
+of multiple resources to a task is a good place for macro
 usage, we found it a good idea to use it in this example as well.
-
-One more interesting thing to note is the fact that we like the
-resource ''''dev2'''' only to work 4 hours each day on this task, so
-we use the optional attribute [[limits.resource]] to specify this.
 
 For TaskJuggler to schedule a task, it needs to know either the start
 and end criteria of a task, or one of them and a duration
@@ -329,7 +329,7 @@ relative dates. Relative dates are specifications of the type ''task B
 starts after task A has finished''. Or in other words, task B depends
 on task A. In this example the spec task depends on a subtasks of the
 deliveries task. We have not specified it yet, but it has the local ID
-start.
+''''start''''.
 
 To specify the dependency between the two tasks, we use the
 [[depends]] attribute. This attribute must be followed by one or more
@@ -374,6 +374,10 @@ the AcSo scope that contains the spec tasks. For a change, we
 [[allocate]] resources directly without using a macro.
 
 <[example file="tutorial" tag="gui"]>
+
+One more interesting thing to note is the fact that we like the
+resource ''''dev2'''' only to work 6 hours each day on this task, so
+we use the optional attribute [[limits.resource]] to specify this.
 
 TaskJuggler can schedule your project for two different [[scenario|
 scenarios]]. We have called the first scenario ''''plan'''' scenario
