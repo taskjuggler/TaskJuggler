@@ -565,7 +565,7 @@ class TaskJuggler
     def query_alert(query)
       journal = @project['journal']
       query.sortable = query.numerical = alert =
-        journal.alertLevel(query.end, self, query.hideJournalEntry)
+        journal.alertLevel(query.end, self, query)
       alertLevel = @project['alertLevels'][alert]
       query.string = alertLevel.name
       rText = "<fcol:#{alertLevel.color}><nowiki>#{alertLevel.name}" +
@@ -581,15 +581,13 @@ class TaskJuggler
 
     def query_alertmessages(query)
       journalMessages(@project['journal'].alertEntries(query.end, self, 1,
-                                                       query.start,
-                                                       query.hideJournalEntry),
+                                                       query.start, query),
                       query, true)
     end
 
     def query_alertsummaries(query)
       journalMessages(@project['journal'].alertEntries(query.end, self, 1,
-                                                       query.start,
-                                                       query.hideJournalEntry),
+                                                       query.start, query),
                       query, false)
     end
 
@@ -609,8 +607,8 @@ class TaskJuggler
 
     def query_alerttrend(query)
       journal = @project['journal']
-      startAlert = journal.alertLevel(query.start, self, query.hideJournalEntry)
-      endAlert = journal.alertLevel(query.end, self, query.hideJournalEntry)
+      startAlert = journal.alertLevel(query.start, self, query)
+      endAlert = journal.alertLevel(query.end, self, query)
       if startAlert < endAlert
         query.sortable = 0
         query.string = 'Up'

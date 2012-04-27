@@ -129,7 +129,7 @@ class TaskJuggler
           # all it's sub tasks.
           entries = @project['journal'].
             currentEntriesR(a('end'), task, 0, a('start') + 1,
-                            resourceList.query.hideJournalEntry)
+                            resourceList.query)
           next if entries.empty?
 
           manager.responsibilities << ManagerResponsibilities.new(task, entries)

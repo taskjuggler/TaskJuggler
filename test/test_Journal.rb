@@ -108,62 +108,66 @@ class TestJournal < Test::Unit::TestCase
 
   def test_currentEntries
     createTaskTree
+    q = Query.new
+    q.scenarioIdx = 0
     # Set a 0 alert for a task
     a1 = addAlert('2009-11-29', 0, t = task('p1.m1.l1'))
-    ce = @j.currentEntriesR(tm('2009-12-05'), t)
+    ce = @j.currentEntriesR(tm('2009-12-05'), t, 0, nil, q)
     assert_equal(1, ce.count)
     assert_equal(a1, ce[0])
 
     # Add a later alert for the same task
     a2 = addAlert('2009-11-30', 0, t = task('p1.m1.l1'))
-    ce = @j.currentEntriesR(tm('2009-12-05'), t)
+    ce = @j.currentEntriesR(tm('2009-12-05'), t, 0, nil, q)
     assert_equal(1, ce.count)
     assert_equal(a2, ce[0])
 
     # Add another alert to the sister task and check parent
     a3 = addAlert('2009-11-30', 0, t = task('p1.m1.l2'))
-    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1.m1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1.m1'), 0, nil, q)
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Check root task
-    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'), 0, nil, q)
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Add old override alert to p1.m1
     addAlert('2009-11-29', 0, t = task('p1.m1'))
-    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'), 0, nil, q)
     assert_equal(2, ce.count)
     assert_equal(a2, ce[0])
     assert_equal(a3, ce[1])
 
     # Add new override alert to p1.m1
     a4 = addAlert('2009-12-01', 0, t = task('p1.m1'))
-    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'))
+    ce = @j.currentEntriesR(tm('2009-12-05'), task('p1'), 0, nil, q)
     assert_equal(1, ce.count)
     assert_equal(a4, ce[0])
   end
 
   def test_alertSimple
     createTaskTree
+    q = Query.new
+    q.scenarioIdx = 0
     # Set a 0 alert for a task
     addAlert('2009-11-29', 0, t = task('p1.m1.l1'))
-    assert_equal(0, @j.alertLevel(tm('2009-12-01'), t, nil))
+    assert_equal(0, @j.alertLevel(tm('2009-12-01'), t, q))
 
     # Now add a later 1 alert
     addAlert('2009-12-01', 1, t)
-    assert_equal(1, @j.alertLevel(tm('2009-12-02'), t, nil))
+    assert_equal(1, @j.alertLevel(tm('2009-12-02'), t, q))
 
     # Set a 2 alert for p1.m1.l2
     addAlert('2009-11-29', 2, task('p1.m1.l2'))
-    assert_equal(2, @j.alertLevel(tm('2009-12-01'), task('p1'), nil))
+    assert_equal(2, @j.alertLevel(tm('2009-12-01'), task('p1'), q))
 
     # Overide p1.m1 with 0 alert
     addAlert('2009-12-01', 0, task('p1.m1'))
-    assert_equal(0, @j.alertLevel(tm('2009-12-01'), task('p1'), nil))
+    assert_equal(0, @j.alertLevel(tm('2009-12-01'), task('p1'), q))
   end
 
   private

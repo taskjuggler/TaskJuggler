@@ -439,15 +439,14 @@ class TaskJuggler
         if query.property
           if query.property.is_a?(Task)
             entries += currentEntriesR(query.end, query.property, 0,
-                                       query.start, query.hideJournalEntry)
+                                       query.start, query)
           end
         else
           query.project.tasks.each do |task|
             # We only care about top-level tasks.
             next if task.parent
 
-            entries += currentEntriesR(query.end, task, 0, query.start,
-                                       query.hideJournalEntry)
+            entries += currentEntriesR(query.end, task, 0, query.start, query)
             # Eliminate duplicates due to entries from adopted tasks
             entries.uniq!
           end
@@ -459,15 +458,14 @@ class TaskJuggler
         if query.property
           if query.property.is_a?(Task)
             entries += alertEntries(query.end, query.property, 1, query.start,
-                                    query.hideJournalEntry)
+                                    query)
           end
         else
           query.project.tasks.each do |task|
             # We only care about top-level tasks.
             next if task.parent
 
-            entries += alertEntries(query.end, task, 1, query.start,
-                                    query.hideJournalEntry)
+            entries += alertEntries(query.end, task, 1, query.start, query)
             # Eliminate duplicates due to entries from adopted tasks
             entries.uniq!
           end
@@ -581,12 +579,12 @@ class TaskJuggler
     # If the property does not have any JournalEntry objects or they are out
     # of date compared to the child properties, the level is computed based on
     # the highest level of the children. Only take the entries that are not
-    # filtered by _logExp_ into account.
-    def alertLevel(date, property, logExp)
+    # filtered by _query_.hideJournalEntry into account.
+    def alertLevel(date, property, query)
       maxLevel = 0
       # Gather all the current (as of the specified _date_) JournalEntry
       # objects for the property and than find the highest level.
-      currentEntriesR(date, property, 0, nil, logExp).each do |e|
+      currentEntriesR(date, property, 0, nil, query).each do |e|
         maxLevel = e.alertLevel if maxLevel < e.alertLevel
       end
       maxLevel
@@ -596,12 +594,12 @@ class TaskJuggler
     # _date_, are for _property_ or any of its childs, have at least _level_
     # alert and are after _minDate_. We only return those entries with the
     # highest overall alert level.
-    def alertEntries(date, property, minLevel, minDate, logExp)
+    def alertEntries(date, property, minLevel, minDate, query)
       maxLevel = 0
       entries = []
       # Gather all the current (as of the specified _date_) JournalEntry
       # objects for the property and than find the highest level.
-      currentEntriesR(date, property, minLevel, minDate, logExp).each do |e|
+      currentEntriesR(date, property, minLevel, minDate, query).each do |e|
         if maxLevel < e.alertLevel
           maxLevel = e.alertLevel
           entries = [ e ]
@@ -655,62 +653,82 @@ class TaskJuggler
     # property unless there is a property in the sub-tree specified by the
     # root _property_ with more up-to-date entries. The result is a
     # JournalEntryList.
-    def currentEntriesR(date, property, minLevel = 0, minDate = nil,
-                        logExp = nil)
-      # See if this property has any current JournalEntry objects.
-      pEntries = getEntries(property) ? getEntries(property).last(date) :
-                 JournalEntryList.new
-      # Remove entries below the minium alert level or before the timeout
-      # date.
-      pEntries.delete_if do |e|
-        e.headline.empty? || e.alertLevel < minLevel ||
-        (e.alertLevel == minLevel && minDate && e.date < minDate)
-      end
-
-      # Determine the highest alert level of the pEntries.
-      maxPAlertLevel = 0
-      pEntries.each do |e|
-        maxPAlertLevel = e.alertLevel if e.alertLevel > maxPAlertLevel
-      end
-
-      cEntries = JournalEntryList.new
-      latestDate = nil
-      maxAlertLevel = 0
-      # If we have an entry from this property, we only care about child
-      # entries that are from a later date.
-      minDate = pEntries.first.date + 1 unless pEntries.empty?
-
-      # Now gather all current entries of the child properties and find the
-      # date that is closest to and right before the given _date_.
-      property.kids.each do |p|
-        currentEntriesR(date, p, minLevel, minDate).each do |e|
-          # Find the date of the most recent entry.
-          latestDate = e.date if latestDate.nil? || e.date > latestDate
-          # Find the highest alert level.
-          maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
-          cEntries << e
+    def currentEntriesR(date, property, minLevel, minDate, query)
+      DataCache.instance.cached(self, :currentEntriesR, date, property,
+                                minLevel, minDate, query) do
+        # See if this property has any current JournalEntry objects.
+        pEntries = getEntries(property) ? getEntries(property).last(date) :
+                   JournalEntryList.new
+        # Remove entries below the minium alert level or before the timeout
+        # date.
+        pEntries.delete_if do |e|
+          e.headline.empty? || e.alertLevel < minLevel ||
+          (e.alertLevel == minLevel && minDate && e.date < minDate)
         end
-      end
 
-      if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
-                              latestDate.nil? ||
-                              pEntries.first.date >= latestDate)
-        # If no child property has a more current JournalEntry or one with a
-        # higher alert level than this property and this property has
-        # JournalEntry objects, than those are taken.
-        entries = pEntries
-      else
-        # Otherwise we take the entries from the kids.
-        entries = cEntries
-      end
+        # Determine the highest alert level of the pEntries.
+        maxPAlertLevel = 0
+        pEntries.each do |e|
+          maxPAlertLevel = e.alertLevel if e.alertLevel > maxPAlertLevel
+        end
 
-      # Remove all entries that are filtered by logExp.
-      if logExp
-        entries.delete_if { |e| hidden(e, logExp) }
-      end
+        cEntries = JournalEntryList.new
+        latestDate = nil
+        maxAlertLevel = 0
+        # If we have an entry from this property, we only care about child
+        # entries that are from a later date.
+        minDate = pEntries.first.date + 1 unless pEntries.empty?
 
-      # Otherwise return the list provided by the childen.
-      entries
+        # Now gather all current entries of the child properties and find the
+        # date that is closest to and right before the given _date_.
+        property.kids.each do |p|
+          currentEntriesR(date, p, minLevel, minDate, query).each do |e|
+            # Find the date of the most recent entry.
+            latestDate = e.date if latestDate.nil? || e.date > latestDate
+            # Find the highest alert level.
+            maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
+            cEntries << e
+          end
+        end
+
+        # Only Task properties have dependencies.
+        #if property.is_a?(Task)
+        #  # Now gather all current entries of the dependency properties and find
+        #  # the date that is closest to and right before the given _date_.
+        #  property['startpreds', query.scenarioIdx].each do |p, onEnd|
+        #    # We only follow end->start dependencies.
+        #    next unless onEnd
+
+        #    currentEntriesR(date, p, minLevel, minDate, query).each do |e|
+        #      # Find the date of the most recent entry.
+        #      latestDate = e.date if latestDate.nil? || e.date > latestDate
+        #      # Find the highest alert level.
+        #      maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
+        #      cEntries << e
+        #    end
+        #  end
+        #end
+
+        if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
+                                latestDate.nil? ||
+                                pEntries.first.date >= latestDate)
+          # If no child property has a more current JournalEntry or one with a
+          # higher alert level than this property and this property has
+          # JournalEntry objects, than those are taken.
+          entries = pEntries
+        else
+          # Otherwise we take the entries from the kids.
+          entries = cEntries
+        end
+
+        # Remove all entries that are filtered by query.hideJournalEntry.
+        if query.hideJournalEntry
+          entries.delete_if { |e| hidden(e, query.hideJournalEntry) }
+        end
+
+        # Otherwise return the list provided by the childen.
+        entries
+      end
     end
 
     private
