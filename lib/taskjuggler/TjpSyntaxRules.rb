@@ -2201,7 +2201,6 @@ periods that are partially outside of the project period only the part inside
 the project period will be considered.
 EOT
        )
-    level(:beta)
     example('Leave')
   end
 
