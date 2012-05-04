@@ -1,0 +1,46 @@
+project "Transitive Alert Test" 2012-05-04 +2m
+
+task t1 "T1" {
+  task t1 "T1" {
+    task t1 "T1" {
+      journalentry 2012-05-06 "Red" {
+        alert red
+      }
+    }
+  }
+  task t2 "T2" {
+    depends !t1
+  }
+}
+task t2 "T2" {
+  task t2 "T2" {
+    depends t1.t2
+  }
+}
+task t3 "T3" {
+  adopt t2
+}
+
+task "L2" {
+  task t1 "T1" {
+    depends t2.t2
+  }
+}
+task "L3" {
+  task t1 "T1" {
+    depends t1
+  }
+}
+task l4 "L4" {
+  depends t1.t2
+  task t1 "T1"
+}
+task "L5" {
+  adopt l4
+}
+
+taskreport "Alerts-2" {
+  formats html
+  journalmode alerts_dep
+  columns name, journal
+}
