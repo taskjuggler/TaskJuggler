@@ -1995,6 +1995,14 @@ all journal entries that are dated in the query interval for the task and all
 its sub tasks.
 EOT
        )
+    pattern(%w( _status_dep ), lambda { :status_dep })
+    descr(<<'EOT'
+In this mode only the last entries before the report end date for each
+property and all its sub-properties and their dependencies are included. If
+there are multiple entries at the exact same date, then all these entries are
+included.
+EOT
+       )
     pattern(%w( _status_down ), lambda { :status_down })
     descr(<<'EOT'
 In this mode only the last entries before the report end date for each
@@ -2009,6 +2017,16 @@ property are included. If there are multiple entries at the exact same date,
 then all these entries are included. If any of the parent properties has a
 more recent entry that is still before the report end date, no entries will be
 included.
+EOT
+       )
+    pattern(%w( _alerts_dep ), lambda { :alerts_dep })
+    descr(<<'EOT'
+In this mode only the last entries before the report end date for the context
+property and all its sub-properties and their dependencies is included. If
+there are multiple entries at the exact same date, then all these entries are
+included. In contrast to the ''''status_down'''' mode, only entries with an
+alert level above the default level, and only those with the highest overall
+alert level are included.
 EOT
        )
     pattern(%w( _alerts_down ), lambda { :alerts_down })
@@ -4393,7 +4411,7 @@ EOT
     })
 
     pattern(%w( _supplement !resourceId !resourceBody ), lambda {
-      @property = @property.parent
+      @property = @idStack.pop
     })
     doc('supplement.resource', <<'EOT'
 The supplement keyword provides a mechanism to add more attributes to already
@@ -5416,21 +5434,22 @@ EOT
 
   def rule_supplement
     pattern(%w( !supplementAccount !accountBody ), lambda {
-      @property = nil
+      @property = @idStack.pop
     })
     pattern(%w( !supplementReport !reportBody ), lambda {
-      @property = nil
+      @property = @idStack.pop
     })
     pattern(%w( !supplementResource !resourceBody ), lambda {
-      @property = nil
+      @property = @idStack.pop
     })
     pattern(%w( !supplementTask !taskBody ), lambda {
-      @property = nil
+      @property = @idStack.pop
     })
   end
 
   def rule_supplementAccount
     pattern(%w( _account !accountId ), lambda {
+      @idStack.push(@property)
       @property = @val[1]
     })
     arg(1, 'account ID', 'The ID of an already defined account.')
@@ -5438,6 +5457,7 @@ EOT
 
   def rule_supplementReport
     pattern(%w( _report !reportId ), lambda {
+      @idStack.push(@property)
       @property = @val[1]
     })
     arg(1, 'report ID', 'The absolute ID of an already defined report.')
@@ -5445,6 +5465,7 @@ EOT
 
   def rule_supplementResource
     pattern(%w( _resource !resourceId ), lambda {
+      @idStack.push(@property)
       @property = @val[1]
     })
     arg(1, 'resource ID', 'The ID of an already defined resource.')
@@ -5452,6 +5473,7 @@ EOT
 
   def rule_supplementTask
     pattern(%w( _task !taskId ), lambda {
+      @idStack.push(@property)
       @property = @val[1]
     })
     arg(1, 'task ID', 'The absolute ID of an already defined task.')
@@ -5557,7 +5579,7 @@ EOT
     pattern(%w( !purge ))
 
     pattern(%w( _supplement !supplementTask !taskBody ), lambda {
-      @property = @property.parent
+      @property = @idStack.pop
     })
     doc('supplement.task', <<'EOT'
 The supplement keyword provides a mechanism to add more attributes to already

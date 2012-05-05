@@ -433,7 +433,7 @@ class TaskJuggler
             entries.uniq!
           end
         end
-      when :status_down
+      when :status_down, :status_dep
         # In this mode only the last entries before the query end date for
         # each task (incl. sub tasks) are included.
         if query.property
@@ -451,7 +451,7 @@ class TaskJuggler
             entries.uniq!
           end
         end
-      when :alerts_down
+      when :alerts_down, :alerts_dep
         # In this mode only the last entries before the query end date for
         # each task (incl. sub tasks) and only the ones with the highest alert
         # level are included.
@@ -687,27 +687,28 @@ class TaskJuggler
             latestDate = e.date if latestDate.nil? || e.date > latestDate
             # Find the highest alert level.
             maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
-            cEntries << e
+            cEntries << e unless cEntries.include?(e)
           end
         end
 
         # Only Task properties have dependencies.
-        #if property.is_a?(Task)
-        #  # Now gather all current entries of the dependency properties and find
-        #  # the date that is closest to and right before the given _date_.
-        #  property['startpreds', query.scenarioIdx].each do |p, onEnd|
-        #    # We only follow end->start dependencies.
-        #    next unless onEnd
+        if (query.journalMode == :status_dep ||
+            query.journalMode == :alerts_dep) && property.is_a?(Task)
+          # Now gather all current entries of the dependency properties and find
+          # the date that is closest to and right before the given _date_.
+          property['startpreds', query.scenarioIdx].each do |p, onEnd|
+            # We only follow end->start dependencies.
+            next unless onEnd
 
-        #    currentEntriesR(date, p, minLevel, minDate, query).each do |e|
-        #      # Find the date of the most recent entry.
-        #      latestDate = e.date if latestDate.nil? || e.date > latestDate
-        #      # Find the highest alert level.
-        #      maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
-        #      cEntries << e
-        #    end
-        #  end
-        #end
+            currentEntriesR(date, p, minLevel, minDate, query).each do |e|
+              # Find the date of the most recent entry.
+              latestDate = e.date if latestDate.nil? || e.date > latestDate
+              # Find the highest alert level.
+              maxAlertLevel = e.alertLevel if e.alertLevel > maxAlertLevel
+              cEntries << e unless cEntries.include?(e)
+            end
+          end
+        end
 
         if !pEntries.empty? && (maxPAlertLevel > maxAlertLevel ||
                                 latestDate.nil? ||

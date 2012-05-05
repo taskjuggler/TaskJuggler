@@ -60,6 +60,9 @@ class TaskJuggler
       @property = nil
       @scenarioIdx = 0
       initFileStack
+      # Stack for property IDs. Needed to handle nested 'supplement'
+      # statements.
+      @idStack = []
     end
 
     # Call this function to cleanup the parser structures after the file
