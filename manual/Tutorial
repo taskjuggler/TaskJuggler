@@ -9,11 +9,15 @@ demonstrates most of the commonly used features of TaskJuggler. It
 also includes some of the more advanced concepts that you may or may
 not need for your projects. Don't get scared by them. You can use
 them once you are more familiar with TaskJuggler and your projects
-grow larger. The complete tutorial example can be downloaded
-[http://www.taskjuggler.org/tj3/examples/Tutorial/tutorial.tjp here].
-You can use any plain text editor to view and modify it.  The
-resulting reports can be found
-[http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html here].
+grow larger. The complete tutorial example comes with your
+TaskJuggler software installation. You can use the following command
+to find the base directory of the example projects.
+
+  ruby19 -e "puts Gem::Specification.find_by_name('taskjuggler').gem_dir"
+
+The file for the tutorial project is called
+''''examples/Tutorial/tutorial.tjp''''. You can use any plain text
+editor to view and modify it.
 
 === Starting the project ===
 
