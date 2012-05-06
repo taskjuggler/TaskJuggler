@@ -203,14 +203,13 @@ class TaskJuggler
       if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
         @lastBookedSlot = sbIdx
       end
-      if task
-        if @firstBookedSlots[task].nil? || @firstBookedSlots[task] > sbIdx
-          @firstBookedSlots[task] = sbIdx
-        end
-        if @lastBookedSlots[task].nil? || @lastBookedSlots[task] < sbIdx
-          @lastBookedSlots[task] = sbIdx
-        end
+      if @firstBookedSlots[task].nil? || @firstBookedSlots[task] > sbIdx
+        @firstBookedSlots[task] = sbIdx
       end
+      if @lastBookedSlots[task].nil? || @lastBookedSlots[task] < sbIdx
+        @lastBookedSlots[task] = sbIdx
+      end
+
       true
     end
 
