@@ -1920,6 +1920,7 @@ class TaskJuggler
           error('booking_forward_only',
                 "Only forward scheduled tasks may have booking statements.")
         end
+        booked = false
         booking.intervals.each do |interval|
           startIdx = @project.dateToIdx(interval.start, false)
           endIdx = @project.dateToIdx(interval.end, false)
@@ -1927,17 +1928,17 @@ class TaskJuggler
             if booking.resource.bookBooking(@scenarioIdx, idx, booking)
               # Booking was successful for this time slot.
               @doneEffort += booking.resource['efficiency', @scenarioIdx]
+              booked = true
 
               # Store the indexes of the first slot and the slot after the
               # last slot.
               firstSlotIdx = idx if !firstSlotIdx || firstSlotIdx > idx
               lastSlotIdx = idx if !lastSlotIdx || lastSlotIdx < idx
-
-              unless @assignedresources.include?(booking.resource)
-                @assignedresources << booking.resource
-              end
             end
           end
+        end
+        if booked && !@assignedresources.include?(booking.resource)
+          @assignedresources << booking.resource
         end
       end
 
