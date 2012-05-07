@@ -18,7 +18,7 @@ class TaskJuggler
 
   class TaskScenario < ScenarioData
 
-    attr_reader :isRunAway
+    attr_reader :isRunAway, :hasDurationSpec
 
     # Create a new TaskScenario object.
     def initialize(task, scenarioIdx, attributes)
@@ -67,19 +67,27 @@ class TaskJuggler
       @startPropagated = false
       @endPropagated = false
 
+      @durationType =
+        if @effort > 0
+          @hasDurationSpec = true
+          :effortTask
+        elsif @length > 0
+          @hasDurationSpec = true
+          :lengthTask
+        elsif @duration > 0
+          @hasDurationSpec = true
+          :durationTask
+        else
+          # If the task is set as milestone is has a duration spec.
+          @hasDurationSpec = @milestone
+          :startEndTask
+        end
+
       markMilestone
-      # Milestones may only have start or end date even when the 'scheduled'
-      # attribute is set. For further processing, we need to add the missing
-      # date.
-      if @milestone
-        @end = @start if @start && !@end
-        @start = @end if !@start && @end
-      end
 
       # For start-end-tasks without allocation, we don't have to do
       # anything but to set the 'scheduled' flag.
-      if @start && @end && @effort == 0 && @length == 0 && @duration == 0 &&
-         @allocate.empty?
+      if @durationType == :startEndTask && @start && @end && @allocate.empty?
         @scheduled = true
         Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
       end
@@ -105,17 +113,6 @@ class TaskJuggler
       end
 
       bookBookings
-
-      @durationType =
-        if @effort > 0
-          :effortTask
-        elsif @length > 0
-          :lengthTask
-        elsif @duration > 0
-          :durationTask
-        else
-          :startEndTask
-        end
     end
 
     # The parser only stores the full task IDs for each of the dependencies.
@@ -880,9 +877,9 @@ class TaskJuggler
       return false if @isRunAway
 
       if @forward
-        return true if @start && (hasDurationSpec? || @end)
+        return true if @start && (@hasDurationSpec || @end)
       else
-        return true if @end && (hasDurationSpec? || @start)
+        return true if @end && (@hasDurationSpec || @start)
       end
 
       false
@@ -1053,21 +1050,20 @@ class TaskJuggler
 
       hasThatSpec = !instance_variable_get('@' + thatEnd).nil? ||
                     hasStrongDeps?(!atEnd)
-      hasDurationSpec = hasDurationSpec?
 
       # Check for tasks that have no start and end spec, no duration spec but
       # allocates. They can inherit the start and end date.
-      return true if hasThatSpec && !hasDurationSpec && !@allocate.empty?
+      return true if hasThatSpec && !@hasDurationSpec && !@allocate.empty?
 
       if @forward ^ atEnd
         # the scheduling direction is pointing away from this end
-        return true if hasDurationSpec || !@booking.empty?
+        return true if @hasDurationSpec || !@booking.empty?
 
         return hasThatSpec
       else
         # the scheduling direction is pointing towards this end
         return !instance_variable_get('@' + thatEnd).nil? &&
-               !hasDurationSpec && @booking.empty? #&& @allocate.empty?
+               !@hasDurationSpec && @booking.empty? #&& @allocate.empty?
       end
     end
 
@@ -1115,11 +1111,6 @@ class TaskJuggler
       # new date to surrounding tasks.
       propagateDate(nStart, false) if startSet
       propagateDate(nEnd, true) if endSet
-    end
-
-    # Return true if the task has a effort, length or duration setting.
-    def hasDurationSpec?
-      @length > 0 || @duration > 0 || @effort > 0 || @milestone
     end
 
     # Find the earliest possible start date for the task. This date must be
@@ -2095,7 +2086,7 @@ class TaskJuggler
     # This function determines if a task is a milestones and marks it
     # accordingly.
     def markMilestone
-      return if @property.container? || hasDurationSpec? ||
+      return if @property.container? || @hasDurationSpec ||
         !@booking.empty? || !@allocate.empty?
 
       # The following cases qualify for an automatic milestone promotion.
@@ -2113,6 +2104,15 @@ class TaskJuggler
       @milestone = (hasStartSpec && @forward && !hasEndSpec) ||
                    (!hasStartSpec && !@forward && hasEndSpec) ||
                    (!hasStartSpec && !hasEndSpec)
+
+      # Milestones may only have start or end date even when the 'scheduled'
+      # attribute is set. For further processing, we need to add the missing
+      # date.
+      if @milestone
+        @hasDurationSpec = true
+        @end = @start if @start && !@end
+        @start = @end if !@start && @end
+      end
     end
 
     def checkDependency(dependency, depType)
@@ -2181,7 +2181,7 @@ class TaskJuggler
 
       # Don't propagate if the task has a duration or is a milestone and the
       # task end to set is in the scheduling direction.
-      return if task.hasDurationSpec?(@scenarioIdx) &&
+      return if task.hasDurationSpec(@scenarioIdx) &&
                 !(atEnd ^ task['forward', @scenarioIdx])
 
       # Check if all other dependencies for that task end have been determined
