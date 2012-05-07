@@ -188,7 +188,7 @@ class TaskJuggler
       # resources.
       t = @property
       while t
-        t['effort', @scenarioIdx] += 1
+        t['effort', @scenarioIdx] += @efficiency
         t = t.parent
       end
       @limits.inc(sbIdx) if @limits
@@ -198,15 +198,13 @@ class TaskJuggler
       # relevant intervals, we store the interval for all bookings and for
       # each individual task.
       if @firstBookedSlot.nil? || @firstBookedSlot > sbIdx
-        @firstBookedSlot = sbIdx
-      end
-      if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
-        @lastBookedSlot = sbIdx
-      end
-      if @firstBookedSlots[task].nil? || @firstBookedSlots[task] > sbIdx
+        @firstBookedSlot = @firstBookedSlots[task] = sbIdx
+      elsif @firstBookedSlots[task].nil? || @firstBookedSlots[task] > sbIdx
         @firstBookedSlots[task] = sbIdx
       end
-      if @lastBookedSlots[task].nil? || @lastBookedSlots[task] < sbIdx
+      if @lastBookedSlot.nil? || @lastBookedSlot < sbIdx
+        @lastBookedSlot = @lastBookedSlots[task] = sbIdx
+      elsif @lastBookedSlots[task].nil? || @lastBookedSlots[task] < sbIdx
         @lastBookedSlots[task] = sbIdx
       end
 
