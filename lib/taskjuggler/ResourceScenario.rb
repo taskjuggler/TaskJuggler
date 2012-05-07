@@ -184,13 +184,8 @@ class TaskJuggler
       #puts "Booking resource #{@property.fullId} at " +
       #     "#{@scoreboard.idxToDate(sbIdx)}/#{sbIdx} for task #{task.fullId}\n"
       @scoreboard[sbIdx] = task
-      # Track the total allocated slots for this resource and all parent
-      # resources.
-      t = @property
-      while t
-        t['effort', @scenarioIdx] += @efficiency
-        t = t.parent
-      end
+      # Track the total allocated slots for this resource.
+      @effort += @efficiency
       @limits.inc(sbIdx) if @limits
 
       # Scoreboard iterations are fairly expensive but they are very frequent
@@ -248,6 +243,21 @@ class TaskJuggler
       end
 
       book(sbIdx, booking.task, true)
+    end
+
+    # @effort only trackes the already allocated effort for leaf resources. It's
+    # too expensive to propagate this to the group resources on every booking.
+    # If a value for a group effort is needed, it's computed here.
+    def bookedEffort
+      if @property.leaf?
+        @effort
+      else
+        effort = 0
+        @property.kids.each do |r|
+          effort += r.bookedEffort(@scenarioIdx)
+        end
+        effort
+      end
     end
 
     # Compute the annual leave days within the period specified by the

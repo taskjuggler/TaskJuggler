@@ -90,9 +90,9 @@ class TaskJuggler
         when 1 # lowest alloc probability
           x['criticalness', scenarioIdx] <=> y['criticalness', scenarioIdx]
         when 2 # lowest allocated load
-          x['effort', scenarioIdx] <=> y['effort', scenarioIdx]
+          x.bookedEffort(scenarioIdx) <=> y.bookedEffort(scenarioIdx)
         when 3 # hightes allocated load
-          y['effort', scenarioIdx] <=> x['effort', scenarioIdx]
+          y.bookedEffort(scenarioIdx) <=> x.bookedEffort(scenarioIdx)
         else
           raise "Unknown selection mode #{@selectionMode}"
         end

@@ -374,9 +374,11 @@ class TaskJuggler
         end
       end
 
-      # This list is no longer needed, so let's save some memory. Set it to
+      # These lists are no longer needed, so let's save some memory. Set it to
       # nil so we can detect accidental use.
       @candidates = nil
+      @mandatories = nil
+      @allLimits = nil
     end
 
     # This function is not essential but does perform a large number of
