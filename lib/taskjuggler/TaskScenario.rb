@@ -113,6 +113,11 @@ class TaskJuggler
       end
 
       bookBookings
+
+      if @durationType == :startEndTask
+        @startIdx = @project.dateToIdx(@start) if @start
+        @endIdx = @project.dateToIdx(@end) if @end
+      end
     end
 
     # The parser only stores the full task IDs for each of the dependencies.
@@ -961,6 +966,10 @@ class TaskJuggler
       # are only set in scheduleContainer().
       if @property.leaf?
         instance_variable_set(('@' + thisEnd).intern, date)
+        if @durationType == :startEndTask
+          instance_variable_set(('@' + thisEnd + 'Idx').intern,
+                                @project.dateToIdx(date))
+        end
         Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
       end
 
@@ -1739,9 +1748,8 @@ class TaskJuggler
 
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
-        currentSlot = @project.idxToDate(@currentSlotIdx)
-        if (@forward && currentSlot + @project['scheduleGranularity'] >= @end) ||
-           (!@forward && currentSlot <= @start)
+        if (@forward && @currentSlotIdx >= @endIdx) |
+           (!@forward && @currentSlotIdx <= @startIdx)
           @scheduled = true
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
