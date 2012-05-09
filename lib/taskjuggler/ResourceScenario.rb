@@ -139,7 +139,10 @@ class TaskJuggler
       # Add the parent tasks of each task to the duties list.
       @duties.each do |task|
         task.ancestors(true).each do |pTask|
-          @duties << pTask unless @duties.include?(pTask)
+          # If the duty list already contains a parent tasks, all parents are
+          # already included.
+          break if @duties.include?(pTask)
+          @duties << pTask
         end
       end
 
