@@ -62,9 +62,11 @@ class TaskJuggler::TextParser
       resolved = @macros[name].value.dup
       i = 0
       args.each do |arg|
-        resolved.gsub!("${#{i}}", arg)
+        resolved.gsub!(Regexp.new("(([^$]|^))\\$\\{#{i}\\}"), "\\1#{arg}")
         i += 1
       end
+      # Remove the escape character from all the escaped '${...}'.
+      resolved.gsub!('$${', '${')
       [ @macros[name], resolved ]
     end
 
