@@ -60,6 +60,7 @@ class MRXScanner
 
   end
 
+  # Utility class to iterate a String.
   class Stream
 
     def initialize(str)
@@ -67,12 +68,14 @@ class MRXScanner
       @pos = 0
     end
 
+    # Return next character an update position pointer.
     def nextChar
       c = @str[@pos]
       @pos += 1
       c
     end
 
+    # Move position pointer by _n_ characters backwards.
     def rewind(n = 1)
       @pos -= n
     end
@@ -90,11 +93,12 @@ class MRXScanner
   class Group
 
     attr_reader :before
-    attr_accessor :first, :last, :after, :min, :max, :counter
+    attr_accessor :alternativeStack, :first, :last, :after, :min, :max, :counter
 
     @@counter = 0
 
-    def initialize(before)
+    def initialize(before, alternativeStack = nil)
+      @alternativeStack = alternativeStack
       @index = @@counter
       @@counter += 1
       @before = before
@@ -119,6 +123,13 @@ class MRXScanner
       raise RuntimeError, '@first undefined' unless @first
       # Add link to loop-back to group start.
       @last.nextNodes << @first if @max.nil?
+      # Add link to last elements of the Alternatives of this group. We skip
+      # the last ones since that one was taken care of already.
+      if @alternativeStack
+        @alternativeStack[0..-2].each do |alt|
+          alt.last.nextNodes << @after if @after
+        end
+      end
     end
 
     def stepAndCheck
@@ -148,6 +159,19 @@ class MRXScanner
 
   end
 
+  class Alternative
+
+    attr_reader :before
+    attr_accessor :first, :last
+
+    def initialize(before)
+      @before = before
+      @first = nil
+      @last = nil
+    end
+
+  end
+
   def initialize
     @nodes = []
     @startNode = @node = Node.new(nil)
@@ -165,6 +189,7 @@ class MRXScanner
     @groupStack = []
     # A stack of Groups that wait for the next Node.
     @unfinishedGroups = []
+    @alternativeStack = [ Alternative.new(@startNode) ]
 
     while (c = @re.nextChar) do
       set = Set.new
@@ -174,7 +199,7 @@ class MRXScanner
       when ?[
         set, invert = readBracketExpression
       when ?\\
-        set = readEscapedCharacter
+        set, invert = readEscapedCharacter
       when ?.
         set.add(?\n)
         invert = true
@@ -183,6 +208,9 @@ class MRXScanner
         next
       when ?)
         endGroup
+        next
+      when ?|
+        newAlternative
         next
       when ??, ?+, ?*
         fixedRepeatGroup(c)
@@ -199,6 +227,15 @@ class MRXScanner
         # node and link it.
         @nodes << (newNode = Node.new(set, invert))
         @node.nextNodes << newNode
+      end
+
+      unless @alternativeStack.last.first
+        @alternativeStack.last.first = newNode
+        # If this isn't the first alternative, link the node before the
+        # 1st alternative to the first node of the current alternative.
+        if @alternativeStack.length > 1
+          @alternativeStack[0].before.nextNodes << newNode
+        end
       end
 
       @groupStack.each do |group|
@@ -226,6 +263,7 @@ class MRXScanner
 
     @unfinishedGroups.each { |g| g.finish }
     @node.tokenType = tokenType
+    @alternativeStack.each { |alt| alt.last.tokenType = tokenType if alt.last }
   end
 
   def scan(string, index = 0)
@@ -339,32 +377,68 @@ class MRXScanner
 
   def readEscapedCharacter
     set = Set.new
+    invert = false
 
     # Handle escaped meta characters.
     if '[](){}|?+-*^$\.'.include?(c = @re.nextChar)
       set.add(c)
+    elsif 'dDwWsS'.include?(c)
+      case c
+      when ?d
+        set = Set.new('0'..'9')
+      when ?D
+        set = Set.new('0'..'9')
+        invert = true
+      when ?s
+        set = Set.new([ ?\ , ?\t, ?\r, ?\n, ?\v, ?\f ])
+      when ?S
+        set = Set.new([ ?\ , ?\t, ?\r, ?\n, ?\v, ?\f ])
+        invert = true
+      when ?w
+        set = Set.new(?A..?Z) + Set.new(?a..?z) + Set.new(?0..?9) + [ ?_ ]
+      when ?W
+        set = Set.new(?A..?Z) + Set.new(?a..?z) + Set.new(?0..?9) + [ ?_ ]
+        invert = true
+      end
     else
       # Not an escaped meta character. Insert \.
       set.add(?\\)
     end
 
-    set
+    [ set, invert ]
   end
 
   def startGroup
-    @groups << (group = Group.new(@node))
+    # Create a new group and save the Alternative stack with it.
+    @groups << (group = Group.new(@node, @alternativeStack))
+    # Create a new Alternative stack.
+    @alternativeStack = [ Alternative.new(@node) ]
     @groupStack.push(group)
   end
 
   def endGroup
+    @alternativeStack.last.last = @node
     group = @groupStack.pop
     raise "No group to be closed by ')'" unless group
+
+    # Swap the stored Alternative stack and the current one. This saves a
+    # copy of the stack used for this group with the group and restores the
+    # stack from the enclosing group again.
+    as = group.alternativeStack
+    group.alternativeStack = @alternativeStack
+    @alternativeStack = as
+
     group.last = @node
     @node.terminatedGroups << group
 
     # Register the new groups as unfinished, so the 'after' Node can be set
     # once it exists.
     @unfinishedGroups << group
+  end
+
+  def newAlternative
+    @alternativeStack.last.last = @node
+    @alternativeStack.push(Alternative.new(@node))
   end
 
   def fixedRepeatGroup(c)
