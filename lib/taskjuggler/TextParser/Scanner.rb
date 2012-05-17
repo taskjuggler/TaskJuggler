@@ -17,6 +17,7 @@ require 'strscan'
 require 'taskjuggler/UTF8String'
 require 'taskjuggler/TextParser/SourceFileInfo'
 require 'taskjuggler/TextParser/MacroTable'
+require 'taskjuggler/TextParser/MRXScanner'
 
 class TaskJuggler::TextParser
 
@@ -59,6 +60,7 @@ class TaskJuggler::TextParser
         @line = nil
         @endPos = 1
         @scanner = nil
+        @mrxScanner = nil
         @wrapped = false
         @macroStack = []
         @nextMacroEnd = nil
@@ -75,17 +77,22 @@ class TaskJuggler::TextParser
       # Inject the String _text_ into the input stream at the current cursor
       # position.
       def injectText(text, callLength)
-        # Remove the macro call from the end of the already parsed input.
-        preCall = @scanner.pre_match[0..-(callLength + 1)]
-        # Store the end position of the inserted macro in bytes.
-        @nextMacroEnd = preCall.bytesize + text.bytesize
-        # Compose the new @line from the cleaned input, the injected text and
-        # the remainer of the old @line.
-        @line = preCall + text + @scanner.post_match
-        # Start the StringScanner again at the first character of the injected
-        # text.
-        @scanner = StringScanner.new(@line)
-        @scanner.pos = preCall.bytesize
+        if @scanner.is_a?(MRXScanner)
+          @scanner.scan(@line)
+          @scanner.seek(preCall.bytesize)
+        else
+          # Remove the macro call from the end of the already parsed input.
+          preCall = @scanner.pre_match[0..-(callLength + 1)]
+          # Store the end position of the inserted macro in bytes.
+          @nextMacroEnd = preCall.bytesize + text.bytesize
+          # Compose the new @line from the cleaned input, the injected text and
+          # the remainer of the old @line.
+          @line = preCall + text + @scanner.post_match
+          # Start the StringScanner again at the first character of the injected
+          # text.
+          @scanner = StringScanner.new(@line)
+          @scanner.pos = preCall.bytesize
+        end
       end
 
       def injectMacro(macro, args, text, callLength)
@@ -97,6 +104,37 @@ class TaskJuggler::TextParser
 
         @macroStack << MacroStackEntry.new(macro, args, text, @nextMacroEnd)
         true
+      end
+
+      def mrxscan(mode)
+        # We read the file line by line with gets(). If we don't have a line
+        # yet or we've reached the end of a line, we get the next one.
+        if @scanner.nil? || @scanner.eos?
+          if (@line = @stream.gets)
+            # Update activity meter about every 1024 lines.
+            @log.activity if (@stream.lineno & 0x3FF) == 0
+          else
+            # We've reached the end of the current file.
+            @scanner = nil
+            # Return special EOF symbol.
+            return :scannerEOF
+          end
+          @scanner = @textScanner.mrxs
+          @scanner.read(@line)
+          @wrapped = @line[-1] == ?\n
+        end
+        return nil if (token = @scanner.scan(nil, nil, mode)).nil?
+        #puts "#{re.to_s[0..20]}: [#{token}]"
+
+        if @nextMacroEnd
+          pos = @scanner.pos
+          while @nextMacroEnd && @nextMacroEnd < pos
+            @macroStack.pop
+            @nextMacroEnd = @macroStack.empty? ? nil : @macroStack.last.endPos
+          end
+        end
+
+        token
       end
 
       def scan(re)
@@ -200,6 +238,8 @@ class TaskJuggler::TextParser
 
     end
 
+    attr_reader :mrxs
+
     # Create a new instance of Scanner. _masterFile_ must be a String that
     # either contains the name of the file to start with or the text itself.
     # _messageHandler_ is a MessageHandler that is used for error messages.
@@ -237,12 +277,15 @@ class TaskJuggler::TextParser
       # Points to the currently active pattern set as defined by the mode.
       @activePatterns = nil
 
+      @mrxs = MRXScanner.new
+
       tokenPatterns.each do |pat|
         type = pat[0]
         regExp = pat[1]
-        mode = pat[2] || :tjp
-        postProc = pat[3]
-        addPattern(type, regExp, mode, postProc)
+        mode = pat[3] || :tjp
+        postProc = pat[4]
+        addPattern(type, Regexp.new(regExp), mode, postProc)
+        @mrxs.addRegExp(regExp, type, postProc, mode)
       end
       self.mode = defaultMode
     end
@@ -416,51 +459,10 @@ class TaskJuggler::TextParser
       end
 
       # Start processing characters from the input.
-      @startOfToken = sourceFileInfo
-      loop do
-        match = nil
-        begin
-          @activePatterns.each do |type, re, postProc|
-            if (match = @cf.scan(re))
-              if match == :scannerEOF
-                if @scannerMode != @defaultMode
-                  # The stream resets the line number to 1. Since we still
-                  # know the start of the token, we setup @lineDelta so that
-                  # sourceFileInfo() returns the proper line number.
-                  @lineDelta = -(@startOfToken.lineNo - 1)
-                  error('runaway_token',
-                        "Unterminated token starting at #{@startOfToken}")
-                end
-                # We've found the end of an input file. Return a special token
-                # that describes the end of a file.
-                @finishLastFile = true
-                return [ :eof, '<END>', @startOfToken ]
-              end
-
-              raise "#{re} matches empty string" if match.empty?
-              # If we have a post processing method, call it now. It may modify
-              # the type or the found token String.
-              type, match = postProc.call(type, match) if postProc
-
-              break if type.nil? # Ignore certain tokens with nil type.
-
-              return [ type, match, @startOfToken ]
-            end
-          end
-        rescue ArgumentError
-          error('scan_encoding_error', $!.to_s)
-        end
-
-        if match.nil?
-          if @cf.eof?
-            error('unexpected_eof',
-                  "Unexpected end of file found")
-          else
-            error('no_token_match',
-                  "Unexpected characters found: '#{@cf.peek(10)}...'")
-          end
-        end
-      end
+      # (Un)-comment to toggle between StringScanner (scanToken) and
+      # MRXScanner (mrxScanToken).
+      scanToken
+      # mrxScanToken
     end
 
     # Return a token to retrieve it with the next nextToken() call again. Only 1
@@ -514,6 +516,103 @@ class TaskJuggler::TextParser
     end
 
     private
+
+    def scanToken
+      @startOfToken = sourceFileInfo
+      loop do
+        match = nil
+        begin
+          @activePatterns.each do |type, re, postProc|
+            if (match = @cf.scan(re))
+              if match == :scannerEOF
+                if @scannerMode != @defaultMode
+                  # The stream resets the line number to 1. Since we still
+                  # know the start of the token, we setup @lineDelta so that
+                  # sourceFileInfo() returns the proper line number.
+                  @lineDelta = -(@startOfToken.lineNo - 1)
+                  error('runaway_token',
+                        "Unterminated token starting at line #{@startOfToken}")
+                end
+                # We've found the end of an input file. Return a special token
+                # that describes the end of a file.
+                @finishLastFile = true
+                return [ :eof, '<END>', @startOfToken ]
+              end
+
+              raise "#{re} matches empty string" if match.empty?
+              # If we have a post processing method, call it now. It may modify
+              # the type or the found token String.
+              type, match = postProc.call(type, match) if postProc
+
+              break if type.nil? # Ignore certain tokens with nil type.
+
+              return [ type, match, @startOfToken ]
+            end
+          end
+        rescue ArgumentError
+          error('scan_encoding_error', $!.to_s)
+        end
+
+        if match.nil?
+          if @cf.eof?
+            error('unexpected_eof',
+                  "Unexpected end of file found")
+          else
+            error('no_token_match',
+                  "Unexpected characters found: '#{@cf.peek(10)}...'")
+          end
+        end
+      end
+    end
+
+    def mrxScanToken
+      loop do
+        @startOfToken = sourceFileInfo
+        match = nil
+        begin
+          puts "Mode: #{@scannerMode}"
+          match, type, postProc = @cf.mrxscan(@scannerMode)
+          puts "Matched: [[#{match}]] of type [#{type ? type : nil}]"
+          if match
+            if match == :scannerEOF
+              if @scannerMode != @defaultMode
+                # The stream resets the line number to 1. Since we still
+                # know the start of the token, we setup @lineDelta so that
+                # sourceFileInfo() returns the proper line number.
+                @lineDelta = -(@startOfToken.lineNo - 1)
+                error('runaway_token',
+                      "Unterminated token starting at line #{@startOfToken}")
+              end
+              # We've found the end of an input file. Return a special token
+              # that describes the end of a file.
+              @finishLastFile = true
+              return [ :eof, '<END>', @startOfToken ]
+            end
+
+            raise "A regexp matches empty strings" if match.empty?
+            # If we have a post processing method, call it now. It may modify
+            # the type or the found token String.
+            type, match = postProc.call(type, match) if postProc
+
+            next if type.nil? # Ignore certain tokens with nil type.
+
+            return [ type, match, @startOfToken ]
+          end
+        #rescue ArgumentError
+        #  error('scan_encoding_error', $!.to_s)
+        end
+
+        if match.nil?
+          if @cf.eof?
+            error('unexpected_eof',
+                  "Unexpected end of file found")
+          else
+            error('no_token_match',
+                  "Unexpected characters found: '#{@cf.peek(10)}...'")
+          end
+        end
+      end
+    end
 
     def message(type, id, text, sfi, data)
       unless text.empty?

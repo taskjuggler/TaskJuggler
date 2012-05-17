@@ -11,378 +11,427 @@
 # published by the Free Software Foundation.
 #
 
-require 'taskjuggler/MRXScanner'
+require 'taskjuggler/TextParser/MRXScanner'
 
-describe MRXScanner do
+class TaskJuggler::TextParser
 
-  before :each do
-    @s = MRXScanner.new
-  end
+  describe MRXScanner do
 
-  describe 'Simple plain text regexp' do
+    def scanfor(str, type)
+      @s.scan(str).should == [ str, type, nil ]
+    end
+
+    def scanfail(str)
+      @s.scan(str).should be_nil
+    end
 
     before :each do
-      @s.addRegExp('abc', 'ABC')
+      @s = MRXScanner.new
     end
 
-    it 'should find a simple known string' do
-      @s.scan('abc').should == [ 'abc', 'ABC' ]
+    describe 'Simple plain text regexp' do
+
+      before :each do
+        @s.addRegExp('abc', 1)
+      end
+
+      it 'should find a simple known string' do
+        scanfor('abc', 1)
+      end
+
+      it 'should ignore non-matching tail' do
+        @s.scan('abcde').should == [ 'abc', 1, nil ]
+      end
+
+      it 'should not find an unknown string' do
+        scanfail('axc')
+      end
+
     end
 
-    it 'should ignore non-matching tail' do
-      @s.scan('abcde').should == [ 'abc', 'ABC' ]
+    describe '"."' do
+
+      before :each do
+        @s.addRegExp('a.', 1)
+      end
+
+      it 'should match any character' do
+        scanfor('ab', 1)
+      end
+
+      it 'should not match a newline' do
+        scanfail("\n")
+      end
+
     end
 
-    it 'should not find an unknown string' do
-      @s.scan('axc').should be_nil
+    describe 'Simple character sets' do
+
+      before :each do
+        @s.addRegExp('a[bc]d', 1)
+      end
+
+      it 'should find a simple known string' do
+        scanfor('abd', 1)
+      end
+
+      it 'should not find an unknown string' do
+        scanfail('axc')
+      end
+
     end
 
-  end
+    describe 'Simple alternative patterns' do
 
-  describe '"."' do
+      before :each do
+        @s.addRegExp('a[bc]d', 1)
+        @s.addRegExp('a[12]d', 2)
+      end
 
-    before :each do
-      @s.addRegExp('a.', 1)
+      it 'should find a simple known string' do
+        scanfor('abd', 1)
+        scanfor('a2d', 2)
+      end
+
+      it 'should not find an unknown string' do
+        scanfail('a0c')
+      end
+
     end
 
-    it 'should match any character' do
-      @s.scan('ab').should == [ 'ab', 1 ]
+    describe 'More complex alternative patterns' do
+
+      before :each do
+        @s.addRegExp('a[12]b[4]c', 1)
+        @s.addRegExp('a[12]b[34]c', 2)
+        @s.addRegExp('a[12]d', 3)
+        @s.addRegExp('a[12]d[34]cd', 4)
+      end
+
+      it 'should find a simple known string' do
+        scanfor('a1b3c', 2)
+        scanfor('a1b4c', 1)
+      end
+
+      it 'should not find an unknown string' do
+        scanfail('a1bc4')
+      end
+
     end
 
-    it 'should not match a newline' do
-      @s.scan("\n").should be_nil
+    describe 'Range used in alternative pattern' do
+
+      before :each do
+        @s.addRegExp('a[0-9]c', 1)
+      end
+
+      it 'should find a string within the range' do
+        scanfor('a1c', 1)
+        scanfor('a9c', 1)
+      end
+
+      it 'should not find an unknown string' do
+        scanfail('abc')
+      end
+
     end
 
-  end
+    describe 'Range should with - at start or end' do
 
-  describe 'Simple character sets' do
+      before :each do
+        @s.addRegExp('a[-9]c', 1)
+        @s.addRegExp('b[9-]c', 1)
+      end
 
-    before :each do
-      @s.addRegExp('a[bc]d', 'A[BC]D')
+      it 'should treat it as normal character' do
+        scanfor('a-c', 1)
+        scanfor('a9c', 1)
+      end
+
+      it 'should treat it as normal character' do
+        scanfor('b-c', 1)
+        scanfor('b9c', 1)
+      end
+
     end
 
-    it 'should find a simple known string' do
-      @s.scan('abd').should == [ 'abd', 'A[BC]D' ]
+    describe 'Inverted alternative expression' do
+
+      before :each do
+        @s.addRegExp('a[^0-9]c', 1)
+        @s.addRegExp('a[^bcd]e', 1)
+      end
+
+      it 'should not match the range' do
+        scanfor('abc', 1)
+        scanfor('a0e', 1)
+      end
+
     end
 
-    it 'should not find an unknown string' do
-      @s.scan('axc').should be_nil
+    describe 'Range with unterminated regexp' do
+
+      it 'should raise an exception' do
+        lambda{@s.addRegExp('a[01', 1)}.should raise_error
+      end
+
     end
 
-  end
+    describe 'Escaped meta characters' do
 
-  describe 'Simple alternative patterns' do
+      it 'should be inserted verbatim' do
+        mc = '\[\]\(\)\{\}\|\?\+\-\*\^\$\\\.'
+        @s.addRegExp(mc, 1)
+        umc = '[](){}|?+-*^$\.'
+        scanfor(umc, 1)
+      end
 
-    before :each do
-      @s.addRegExp('a[bc]d', 'A[BC]D')
-      @s.addRegExp('a[12]d', 'A[12]D')
     end
 
-    it 'should find a simple known string' do
-      @s.scan('abd').should == [ 'abd', 'A[BC]D' ]
-      @s.scan('a2d').should == [ 'a2d', 'A[12]D' ]
+    describe 'Character class' do
+
+      it '\d should match a digit' do
+        @s.addRegExp('\d*', 1)
+        scanfor('123', 1)
+        scanfail('abc')
+      end
+
+      it '\D should not match a digit' do
+        @s.addRegExp('\D*', 1)
+        scanfor('abc', 1)
+        scanfail('123')
+      end
+
+      it '\s should match a whitespace' do
+        @s.addRegExp('\s*', 1)
+        scanfor("\t\r\n ", 1)
+        scanfail('123')
+      end
+
+      it '\S should not match a whitespace' do
+        @s.addRegExp('\S*', 1)
+        scanfail("\t\r\n ")
+        scanfor('123', 1)
+      end
+
+      it '\w should match a word' do
+        @s.addRegExp('\w*', 1)
+        scanfor('abyz09_', 1)
+        scanfail(' 12 ab')
+      end
+
+      it '\W should not match a word' do
+        @s.addRegExp('\W*', 1)
+        scanfail('abyz09_')
+        @s.scan(' 12 ab').should == [ ' ', 1, nil ]
+      end
+
     end
 
-    it 'should not find an unknown string' do
-      @s.scan('a0c').should be_nil
+    describe 'Group' do
+
+      it 'should be transparent without repeat operator' do
+        @s.addRegExp('a(bc(de))',1)
+        @s.addRegExp('a(bc)d', 2)
+        @s.addRegExp('(((abc)))', 3)
+        puts @s.inspect
+        scanfor('abcde', 1)
+        scanfor('abcd', 2)
+        scanfor('abc', 3)
+      end
+
+      it 'should detect unterminated groups' do
+        lambda { @s.addregexp('(') }.should raise_error
+        lambda { @s.addregexp('a(b') }.should raise_error
+        lambda { @s.addregexp('a(bc)((ab)') }.should raise_error
+        lambda { @s.addregexp('(abc)') }.should raise_error
+        lambda { @s.addregexp(')') }.should raise_error
+      end
+
     end
 
-  end
+    describe '? operator' do
 
-  describe 'More complex alternative patterns' do
+      before :each do
+        @s.addRegExp('ab?c', 1)
+      end
 
-    before :each do
-      @s.addRegExp('a[12]b[4]c', 1)
-      @s.addRegExp('a[12]b[34]c', 2)
-      @s.addRegExp('a[12]d', 3)
-      @s.addRegExp('a[12]d[34]cd', 4)
+      it 'should allow 0 repeated characters' do
+        scanfor('ac', 1)
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abc', 1)
+      end
+
+      it 'should not allow 2 repeated characters' do
+        scanfail('abbc')
+      end
+
     end
 
-    it 'should find a simple known string' do
-      @s.scan('a1b3c').should == [ 'a1b3c', 2 ]
-      @s.scan('a1b4c').should == [ 'a1b4c', 1 ]
+    describe '+ operator' do
+
+      before :each do
+        @s.addRegExp('ab+c', 1)
+      end
+
+      it 'should not allow 0 repeated characters' do
+        scanfail('ac')
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abc', 1)
+      end
+
+      it 'should allow 2 repeated characters' do
+        scanfor('abbc', 1)
+      end
+
     end
 
-    it 'should not find an unknown string' do
-      @s.scan('a1bc4').should be_nil
+    describe '* operator' do
+
+      before :each do
+        @s.addRegExp('ab*c', 1)
+      end
+
+      it 'should allow 0 repeated characters' do
+        scanfor('ac', 1)
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abc', 1)
+      end
+
+      it 'should allow 2 repeated characters' do
+        scanfor('abbc', 1)
+      end
+
     end
 
-  end
+    describe '{0,} operator' do
 
-  describe 'Range used in alternative pattern' do
+      before :each do
+        @s.addRegExp('ab{0,}c', 1)
+      end
 
-    before :each do
-      @s.addRegExp('a[0-9]c', 1)
+      it 'should allow 0 repeated characters' do
+        scanfor('ac', 1)
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abc', 1)
+      end
+
+      it 'should allow 2 repeated characters' do
+        scanfor('abbc', 1)
+      end
+
     end
 
-    it 'should find a string within the range' do
-      @s.scan('a1c').should == [ 'a1c', 1 ]
-      @s.scan('a9c').should == [ 'a9c', 1 ]
+    describe '{1,2} operator' do
+
+      before :each do
+        @s.addRegExp('ab{1,2}c', 1)
+      end
+
+      it 'should not allow 0 repeated characters' do
+        scanfail('ac')
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abc', 1)
+      end
+
+      it 'should allow 2 repeated characters' do
+        scanfor('abbc', 1)
+      end
+
+      it 'should not allow 3 repeated characters' do
+        scanfail('abbbc')
+      end
+
     end
 
-    it 'should not find an unknown string' do
-      @s.scan('abc').should be_nil
+    describe 'Repeated groups' do
+
+      before :each do
+        @s.addRegExp('a(bc)*d', 1)
+      end
+
+      it 'should allow 0 repeated characters' do
+        scanfor('ad', 1)
+      end
+
+      it 'should allow 1 repeated characters' do
+        scanfor('abcd', 1)
+      end
+
+      it 'should allow 2 repeated characters' do
+        scanfor('abcbcd', 1)
+      end
+
     end
 
-  end
+    describe 'Alternative' do
 
-  describe 'Range should with - at start or end' do
+      it 'should allow alternatives on the top-level' do
+        @s.addRegExp('a|b', 1)
+        @s.addRegExp('12|34|56', 2)
+        scanfor('a', 1)
+        scanfor('b', 1)
+        scanfor('12', 2)
+        scanfor('34', 2)
+        scanfor('56', 2)
+      end
 
-    before :each do
-      @s.addRegExp('a[-9]c', 1)
-      @s.addRegExp('b[9-]c', 1)
+      it 'should allow alternatives in groups' do
+        @s.addRegExp('a(12|34)b', 1)
+        scanfor('a12b', 1)
+        scanfor('a34b', 1)
+      end
+
+      it 'should allow alternatives in a repeat group' do
+        @s.addRegExp('(a|b|c)*', 1)
+        scanfor('a', 1)
+        scanfor('b', 1)
+        scanfor('c', 1)
+        scanfor('ab', 1)
+        scanfor('aa', 1)
+        scanfor('bb', 1)
+        scanfor('abab', 1)
+      end
+
+      it 'should allow multiple successive alternatives' do
+        # TODO
+      end
+
     end
 
-    it 'should treat it as normal character' do
-      @s.scan('a-c').should == [ 'a-c', 1 ]
-      @s.scan('a9c').should == [ 'a9c', 1 ]
-    end
+    describe 'Real use cases' do
+
+      it 'should detect TJP tokens' do
+        @s.addRegExp('\s+', :SPACE, nil, :tjp)
+        @s.addRegExp('[a-zA-Z_]\w*', :ID, nil, :tjp)
+        @s.addRegExp('\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?', :DATE, nil, :tjp)
+        @s.addRegExp('\d*\.\d+', :FLOAT, :tjp)
+        @s.addRegExp('\d+', :INTEGER, :tjp)
+        @s.addRegExp('"(\\\\"|[^"])*', :DQSTRINGSTART, nil, :tjp)
+        @s.addRegExp('(\\\\"|[^"])*"', :DQSTRINGEND, nil, :dqString)
+        @s.addRegExp('.', :LITERAL, nil, :tjp)
+        puts @s.inspect
+
+        str = 'project "test" 2012-05-15 +2m'
+
+        @s.scan(str, nil, :tjp).should == [ 'project', :ID, nil ]
+        @s.scan().should == [ ' ', :SPACE, nil ]
+        @s.scan().should == [ '"test', :DQSTRINGSTART, nil ]
+        @s.scan(nil, nil, :dqString).should == [ '"', :DQSTRINGEND, nil ]
+        @s.scan(nil, nil, :tjp).should == [ ' ', :SPACE, nil ]
+        @s.scan().should == [ '2012-05-15', :DATE, nil ]
+      end
 
-    it 'should treat it as normal character' do
-      @s.scan('b-c').should == [ 'b-c', 1 ]
-      @s.scan('b9c').should == [ 'b9c', 1 ]
-    end
-
-  end
-
-  describe 'Inverted alternative expression' do
-
-    before :each do
-      @s.addRegExp('a[^0-9]c', 1)
-      @s.addRegExp('a[^bcd]e', 1)
-    end
-
-    it 'should not match the range' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-      @s.scan('a0e').should == [ 'a0e', 1 ]
-    end
-
-  end
-
-  describe 'Range with unterminated regexp' do
-
-    it 'should raise an exception' do
-      lambda{@s.addRegExp('a[01', 1)}.should raise_error
-    end
-
-  end
-
-  describe 'Escaped meta characters' do
-
-    it 'should be inserted verbatim' do
-      mc = '\[\]\(\)\{\}\|\?\+\-\*\^\$\\\.'
-      @s.addRegExp(mc, 1)
-      umc = '[](){}|?+-*^$\.'
-      @s.scan(umc).should == [ umc, 1 ]
-    end
-
-  end
-
-  describe 'Character class' do
-
-    it '\d should match a digit' do
-      @s.addRegExp('\d*', 1)
-      @s.scan('123').should == [ '123', 1 ]
-      @s.scan('abc').should be_nil
-    end
-
-    it '\D should not match a digit' do
-      @s.addRegExp('\D*', 1)
-      @s.scan('abc').should == [ 'abc', 1 ]
-      @s.scan('123').should be_nil
-    end
-
-    it '\s should match a whitespace' do
-      @s.addRegExp('\s*', 1)
-      @s.scan("\t\r\n ").should == [ "\t\r\n ", 1 ]
-      @s.scan('123').should be_nil
-    end
-
-    it '\S should not match a whitespace' do
-      @s.addRegExp('\S*', 1)
-      @s.scan("\t\r\n ").should be_nil
-      @s.scan('123').should == [ '123', 1 ]
-    end
-
-    it '\w should match a word' do
-      @s.addRegExp('\w*', 1)
-      @s.scan('abyz09_').should == [ 'abyz09_', 1 ]
-      @s.scan(' 12 ab').should be_nil
-    end
-
-    it '\W should not match a word' do
-      @s.addRegExp('\W*', 1)
-      @s.scan('abyz09_').should be_nil
-      @s.scan(' 12 ab').should == [ ' ', 1 ]
-    end
-
-  end
-
-  describe 'Group' do
-
-    it 'should be transparent without repeat operator' do
-      @s.addRegExp('a(bc(de))',1)
-      @s.addRegExp('a(bc)d', 2)
-      @s.addRegExp('(((abc)))', 3)
-      @s.scan('abcde').should == [ 'abcde', 1 ]
-      @s.scan('abcd').should == [ 'abcd', 2 ]
-      @s.scan('abc').should == [ 'abc', 3 ]
-    end
-
-    it 'should detect unterminated groups' do
-      lambda { @s.addregexp('(') }.should raise_error
-      lambda { @s.addregexp('a(b') }.should raise_error
-      lambda { @s.addregexp('a(bc)((ab)') }.should raise_error
-      lambda { @s.addregexp('(abc)') }.should raise_error
-      lambda { @s.addregexp(')') }.should raise_error
-    end
-
-  end
-
-  describe '? operator' do
-
-    before :each do
-      @s.addRegExp('ab?c', 1)
-    end
-
-    it 'should allow 0 repeated characters' do
-      @s.scan('ac').should == [ 'ac', 1 ]
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-    end
-
-    it 'should not allow 2 repeated characters' do
-      @s.scan('abbc').should be_nil
-    end
-
-  end
-
-  describe '+ operator' do
-
-    before :each do
-      @s.addRegExp('ab+c', 1)
-    end
-
-    it 'should not allow 0 repeated characters' do
-      @s.scan('ac').should be_nil
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-    end
-
-    it 'should allow 2 repeated characters' do
-      @s.scan('abbc').should == [ 'abbc', 1 ]
-    end
-
-  end
-
-  describe '* operator' do
-
-    before :each do
-      @s.addRegExp('ab*c', 1)
-    end
-
-    it 'should allow 0 repeated characters' do
-      @s.scan('ac').should == [ 'ac', 1 ]
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-    end
-
-    it 'should allow 2 repeated characters' do
-      @s.scan('abbc').should == [ 'abbc', 1 ]
-    end
-
-  end
-
-  describe '{0,} operator' do
-
-    before :each do
-      @s.addRegExp('ab{0,}c', 1)
-    end
-
-    it 'should allow 0 repeated characters' do
-      @s.scan('ac').should == [ 'ac', 1 ]
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-    end
-
-    it 'should allow 2 repeated characters' do
-      @s.scan('abbc').should == [ 'abbc', 1 ]
-    end
-
-  end
-
-  describe '{1,2} operator' do
-
-    before :each do
-      @s.addRegExp('ab{1,2}c', 1)
-    end
-
-    it 'should not allow 0 repeated characters' do
-      @s.scan('ac').should be_nil
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abc').should == [ 'abc', 1 ]
-    end
-
-    it 'should allow 2 repeated characters' do
-      @s.scan('abbc').should == [ 'abbc', 1 ]
-    end
-
-    it 'should not allow 3 repeated characters' do
-      @s.scan('abbbc').should be_nil
-    end
-
-  end
-
-  describe 'Repeated groups' do
-
-    before :each do
-      @s.addRegExp('a(bc)*d', 1)
-    end
-
-    it 'should allow 0 repeated characters' do
-      @s.scan('ad').should == [ 'ad', 1 ]
-    end
-
-    it 'should allow 1 repeated characters' do
-      @s.scan('abcd').should == [ 'abcd', 1 ]
-    end
-
-    it 'should allow 2 repeated characters' do
-      @s.scan('abcbcd').should == [ 'abcbcd', 1 ]
-    end
-
-  end
-
-  describe 'Alternative' do
-
-    it 'should allow alternatives on the top-level' do
-      @s.addRegExp('a|b', 1)
-      @s.addRegExp('12|34|56', 2)
-      @s.scan('a').should == [ 'a', 1 ]
-      @s.scan('b').should == [ 'b', 1 ]
-      @s.scan('12').should == [ '12', 2 ]
-      @s.scan('34').should == [ '34', 2 ]
-      @s.scan('56').should == [ '56', 2 ]
-    end
-
-    it 'should allow alternatives in groups' do
-      @s.addRegExp('a(12|34)b', 1)
-      @s.scan('a12b').should == [ 'a12b', 1 ]
-      @s.scan('a34b').should == [ 'a34b', 1 ]
-    end
-
-    it 'should allow multiple successive alternatives' do
-      # TODO
     end
 
   end

@@ -428,8 +428,8 @@ class TaskJuggler
             end
           end
         end
-        print " -> #{sl.state ? sl.state.to_s(true) : 'nil'} #{sl.function.nil? ? '' : '(Called)'}"
-        puts ""
+        puts " -> #{sl.state ? sl.state.to_s(true) : 'nil'}" +
+             "#{sl.function.nil? ? '' : '(Called)'}"
       end
     end
 

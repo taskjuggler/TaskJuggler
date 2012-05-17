@@ -22,26 +22,26 @@ class TaskJuggler
     def initialize(masterFile)
       tokenPatterns = [
         # Any white spaces
-        [ nil, /\s+/, :tjp, method('newPos') ],
+        [ nil, '\s+', /\s+/, :tjp, method('newPos') ],
 
         # Single line comments starting with #
-        [ nil, /#.*\n?/, :tjp, method('newPos') ],
+        [ nil, '#.*\n?', /#.*\n?/, :tjp, method('newPos') ],
 
         # C++ style single line comments starting with //
-        [ nil, /\/\/.*\n?/, :tjp, method('newPos') ],
+        [ nil, '//.*\n?', /\/\/.*\n?/, :tjp, method('newPos') ],
 
         # C style single line comment /* .. */.
-        [ nil, /\/\*.*\*\//, :tjp, method('newPos') ],
+        [ nil, '/\*.*\*/', /\/\*.*\*\//, :tjp, method('newPos') ],
 
         # C style multi line comment: We need three patterns here. The first
         # one is for the start of the string. It switches the scanner mode to
         # the :cppComment mode.
-        [ nil, /\/\*([^*]*[^\/]|.*)\n/, :tjp, method('startComment') ],
+        [ nil, '/\*([^*]*[^/]|.*)\n', /\/\*([^*]*[^\/]|.*)\n/, :tjp, method('startComment') ],
         # This is the string end pattern. It switches back to tjp mode.
-        [ nil, /.*\*\//, :cppComment, method('endComment') ],
+        [ nil, '.*\*/', /.*\*\//, :cppComment, method('endComment') ],
         # This pattern matches string lines that contain neither the start,
         # nor the end of the string.
-        [ nil, /^.*\n/, :cppComment ],
+        [ nil, '^.*\n', /^.*\n/, :cppComment ],
 
         # Macro Call: This case is more complicated because we want to replace
         # macro calls inside of numbers, strings and identifiers. For this to
@@ -54,100 +54,102 @@ class TaskJuggler
         # with neither start nor end. Macro calls inside of strings need a
         # special start pattern that is active in the string modes. Both
         # patterns switch the scanner to macroCall mode.
-        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, '([-a-zA-Z_0-9>:.+]*|"(\\\\"|[^"])*?|\'(\\\\\'|[^\'])*?)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\\\"|[^"])*")*', /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :tjp, method('startMacroCall') ],
         # This pattern is similar to the previous one, but is active inside of
         # multi-line strings. The corresponding rule for sizzors strings
         # can be found below.
-        [ nil, /(\\"|[^"])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, '(\\\\"|[^"])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\\\"|[^"])*")*',
+/(\\"|[^"])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :dqString, method('startMacroCall') ],
-        [ nil, /(\\'|[^'])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, '(\\\\\'|[^\'])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\\\"|[^"])*")*',
+/(\\'|[^'])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :sqString, method('startMacroCall') ],
         # This pattern matches the end of a macro call. It injects the prefix
         # and the expanded macro into the scanner again. The mode is restored
         # to the previous mode.
-        [ nil, /(\s*"(\\"|[^"])*")*\s*\}/, :macroCall, method('endMacroCall') ],
+        [ nil, '(\s*"(\\\\"|[^"])*")*\s*\}', /(\s*"(\\"|[^"])*")*\s*\}/, :macroCall, method('endMacroCall') ],
         # This pattern collects macro call arguments in lines that contain
         # neither the start nor the end of the macro.
-        [ nil, /.*\n/, :macroCall, method('midMacroCall') ],
+        [ nil, '.*\n', /.*\n/, :macroCall, method('midMacroCall') ],
 
         # Environment variable reference. This is similar to the macro call,
         # but the it can only extend within the starting line.
-        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\([A-Z_][A-Z_0-9]*\)/,
+        [ nil, '([-a-zA-Z_0-9>:.+]*|"(\\\\"|[^"])*?|\'(\\\\\'|[^\'])*?)?\$\([A-Z_][A-Z_0-9]*\)', /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\([A-Z_][A-Z_0-9]*\)/,
           :tjp, method('environmentVariable') ],
         # An ID with a colon suffix: foo:
-        [ :ID_WITH_COLON, /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
+        [ :ID_WITH_COLON, '[a-zA-Z_]\w*:', /[a-zA-Z_]\w*:/, :tjp, method('chop') ],
 
         # An absolute ID: a.b.c
-        [ :ABSOLUTE_ID, /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
+        [ :ABSOLUTE_ID, '[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+', /[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+/ ],
 
         # A normal ID: bar
-        [ :ID, /[a-zA-Z_]\w*/ ],
+        [ :ID, '[a-zA-Z_]\w*', /[a-zA-Z_]\w*/ ],
 
         # A date
-        [ :DATE, /\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?/, :tjp, method('to_date') ],
+        [ :DATE, '\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?', /\d{4}-\d{1,2}-\d{1,2}(-\d{1,2}:\d{1,2}(:\d{1,2})?(-[-+]?\d{4})?)?/, :tjp, method('to_date') ],
 
         # A time of day
-        [ :TIME, /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
+        [ :TIME, '\d{1,2}:\d{2}', /\d{1,2}:\d{2}/, :tjp, method('to_time') ],
 
         # A floating point number (e. g. 3.143)
-        [ :FLOAT, /\d*\.\d+/, :tjp, method('to_f') ],
+        [ :FLOAT, '\d*\.\d+', /\d*\.\d+/, :tjp, method('to_f') ],
 
         # An integer number
-        [ :INTEGER, /\d+/, :tjp, method('to_i') ],
+        [ :INTEGER, '\d+', /\d+/, :tjp, method('to_i') ],
 
         # Multi line string enclosed with double quotes. The string may
         # contain double quotes prefixed by a backslash. The first rule
         # switches the scanner to dqString mode.
-        [ 'nil', /"(\\"|[^"])*/, :tjp, method('startStringDQ') ],
+        [ 'nil', '"(\\\\"|[^"])*', /"(\\"|[^"])*/, :tjp, method('startStringDQ') ],
         # Any line not containing the start or end.
-        [ 'nil', /^(\\"|[^"])*\n/, :dqString, method('midStringDQ') ],
+        [ 'nil', '^(\\\\"|[^"])*\n', /^(\\"|[^"])*\n/, :dqString, method('midStringDQ') ],
         # The end of the string.
-        [ :STRING, /(\\"|[^"])*"/, :dqString, method('endStringDQ') ],
+        [ :STRING, '(\\\\"|[^"])*"', /(\\"|[^"])*"/, :dqString, method('endStringDQ') ],
 
         # Multi line string enclosed with single quotes.
-        [ 'nil', /'(\\'|[^'])*/, :tjp, method('startStringSQ') ],
+        [ 'nil', '\'(\\\\\'|[^\'])*', /'(\\'|[^'])*/, :tjp, method('startStringSQ') ],
         # Any line not containing the start or end.
-        [ 'nil', /^(\\'|[^'])*\n/, :sqString, method('midStringSQ') ],
+        [ 'nil', '^(\\\\\'|[^\'])*\n', /^(\\'|[^'])*\n/, :sqString, method('midStringSQ') ],
         # The end of the string.
-        [ :STRING, /(\\'|[^'])*'/, :sqString, method('endStringSQ') ],
+        [ :STRING, '(\\\\\'|[^\'])*\'', /(\\'|[^'])*'/, :sqString, method('endStringSQ') ],
 
         # Scizzors marked string -8<- ... ->8-: The opening mark must be the
         # last thing in the line. The indentation of the first line after the
         # opening mark determines the indentation for all following lines. So,
         # we first switch the scanner to szrString1 mode.
-        [ 'nil', /-8<-.*\n/, :tjp, method('startStringSZR') ],
+        [ 'nil', '-8<-.*\n', /-8<-.*\n/, :tjp, method('startStringSZR') ],
         # Since the first line can be the last line (empty string case), we
         # need to detect the end in szrString1 and szrString mode. The
         # patterns switch the scanner back to tjp mode.
-        [ :STRING, /\s*->8-/, :szrString1, method('endStringSZR') ],
-        [ :STRING, /\s*->8-/, :szrString, method('endStringSZR') ],
+        [ :STRING, '\s*->8-', /\s*->8-/, :szrString1, method('endStringSZR') ],
+        [ :STRING, '\s*->8-', /\s*->8-/, :szrString, method('endStringSZR') ],
         # This rule handles macros inside of sizzors strings.
-        [ nil, /.*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, '.*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\\\"|[^"])*")*', /.*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           [ :szrString, :szrString1 ], method('startMacroCall') ],
         # Any line not containing the start or end.
-        [ 'nil', /.*\n/, :szrString1, method('firstStringSZR') ],
-        [ 'nil', /.*\n/, :szrString, method('midStringSZR') ],
+        [ 'nil', '.*\n', /.*\n/, :szrString1, method('firstStringSZR') ],
+        [ 'nil', '.*\n', /.*\n/, :szrString, method('midStringSZR') ],
 
         # Single line macro definition
-        [ :MACRO, /\[.*\]\n/, :tjp, method('chop2nl') ],
+        [ :MACRO, '\[.*\]\n', /\[.*\]\n/, :tjp, method('chop2nl') ],
 
         # Multi line macro definition: The pattern switches the scanner into
         # macroDef mode.
-        [ nil, /\[.*\n/, :tjp, method('startMacroDef') ],
+        [ nil, '\[.*\n', /\[.*\n/, :tjp, method('startMacroDef') ],
         # The end of the macro is marked by a ']' that is immediately followed
         # by a line break. It switches the scanner back to tjp mode.
-        [ :MACRO, /.*\]\n/, :macroDef, method('endMacroDef') ],
+        [ :MACRO, '.*\]\n', /.*\]\n/, :macroDef, method('endMacroDef') ],
         # Any line not containing the start or end.
-        [ nil, /.*\n/, :macroDef, method('midMacroDef') ],
+        [ nil, '.*\n', /.*\n/, :macroDef, method('midMacroDef') ],
 
         # Some multi-char literals.
-        [ :LITERAL, /<=?/ ],
-        [ :LITERAL, />=?/ ],
-        [ :LITERAL, /!=?/ ],
+        [ :LITERAL, '<=?', /<=?/ ],
+        [ :LITERAL, '>=?', />=?/ ],
+        [ :LITERAL, '!=?', /!=?/ ],
 
         # Everything else is returned as a single-char literal.
-        [ :LITERAL, /./ ]
+        [ :LITERAL, '.', /./ ]
       ]
 
       super(masterFile, Log, tokenPatterns, :tjp)
