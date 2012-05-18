@@ -483,10 +483,11 @@ class TaskJuggler
       task = task.ptn if task
       # There can't be any effective work if the start is after the end or the
       # todo list doesn't contain the specified task.
-      return 0.0 if startIdx >= endIdx || (task && !@duties.include?(task))
+      return 0.0 if startIdx >= endIdx #TODO || (task && !@duties.include?(task))
+      # Temporary workaround until @duties is fixed again.
 
       # The unique key we use to address the result in the cache.
-      @dCache.cached(self, :ResourceScenarioEffectiveWork, startIdx, endIdx,
+      @dCache.cached(self, :ResourceScenarioGetEffectiveWork, startIdx, endIdx,
                      task) do
         work = 0.0
         if @property.container?
