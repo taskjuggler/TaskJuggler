@@ -139,10 +139,7 @@ class TaskJuggler
       # Add the parent tasks of each task to the duties list.
       @duties.each do |task|
         task.ancestors(true).each do |pTask|
-          # If the duty list already contains a parent tasks, all parents are
-          # already included.
-          break if @duties.include?(pTask)
-          @duties << pTask
+          @duties << pTask unless @duties.include?(pTask)
         end
       end
 
@@ -483,7 +480,7 @@ class TaskJuggler
       task = task.ptn if task
       # There can't be any effective work if the start is after the end or the
       # todo list doesn't contain the specified task.
-      return 0.0 if startIdx >= endIdx #TODO || (task && !@duties.include?(task))
+      return 0.0 if startIdx >= endIdx || (task && !@duties.include?(task))
       # Temporary workaround until @duties is fixed again.
 
       # The unique key we use to address the result in the cache.
