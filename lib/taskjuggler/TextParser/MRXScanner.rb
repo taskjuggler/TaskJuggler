@@ -56,11 +56,9 @@ class TaskJuggler
           match = @combinedRegExp.match(scanner.str, scanner.pos)
           return nil unless match
 
-          idx = match.captures.find_index { |x| x }
-          rx = @regExps[idx]
-          @matchStart = match.begin(rx.id)
-          scanner.seek(@matchEnd = match.end(rx.id))
-          [ match[0], rx.tokenType, rx.postProc ]
+          rx = @regExps[match.captures.find_index { |x| x }]
+          scanner.advance(str = match[0])
+          [ str, rx.tokenType, rx.postProc ]
         end
 
       end
@@ -107,7 +105,7 @@ class TaskJuggler
       def scanStr(str)
         @str = str
         @pos = 0
-        @matchStart = @matchEnd = nil
+        @lastMatch = nil
       end
 
       def scan(mode = nil)
@@ -143,19 +141,22 @@ class TaskJuggler
         @str[peekPos]
       end
 
+      def advance(str)
+        @lastMatch = str
+        @pos += str.length
+      end
+
       def pre_match
-        return nil unless @matchStart
-        @str[0..(@matchStart - 1)]
+        return nil unless @lastMatch
+        @str[0..(@pos - @lastMatch.length)]
       end
 
       def matched
-        return nil unless @matchStart && @matchEnd
-        @str[@matchStart..(@matchEnd - 1)]
+        return @lastMatch
       end
 
       def post_match
-        return nil unless @matchEnd
-        @str[@matchEnd.. -1]
+        @str[@pos.. -1]
       end
 
     end

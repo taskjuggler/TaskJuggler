@@ -595,19 +595,17 @@ class TaskJuggler::TextParser
             next if type.nil? # Ignore certain tokens with nil type.
 
             return [ type, match, @startOfToken ]
+          else
+            if @cf.eof?
+              error('unexpected_eof',
+                    "Unexpected end of file found")
+            else
+              error('no_token_match',
+                    "Unexpected characters found: '#{@cf.peek(10)}...'")
+            end
           end
         #rescue ArgumentError
         #  error('scan_encoding_error', $!.to_s)
-        end
-
-        if match.nil?
-          if @cf.eof?
-            error('unexpected_eof',
-                  "Unexpected end of file found")
-          else
-            error('no_token_match',
-                  "Unexpected characters found: '#{@cf.peek(10)}...'")
-          end
         end
       end
     end
