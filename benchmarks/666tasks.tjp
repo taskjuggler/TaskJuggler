@@ -52,7 +52,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -204,7 +204,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -254,7 +254,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -307,7 +307,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -357,7 +357,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -410,7 +410,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e, f, g, h
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -462,7 +462,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e, f, g, h
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -515,7 +515,7 @@ task g1 "Group 1" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -568,7 +568,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -668,7 +668,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -721,7 +721,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -823,7 +823,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -873,7 +873,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -926,7 +926,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e, a, b, c, d, f
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -978,7 +978,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e, a, b, c, d
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1031,7 +1031,7 @@ task g2 "Group 2" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1083,7 +1083,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1136,7 +1136,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1281,7 +1281,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1332,7 +1332,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e, f, g, h
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1431,7 +1431,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1529,7 +1529,7 @@ task g3 "Group 3" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1584,7 +1584,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1637,7 +1637,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1734,7 +1734,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1784,7 +1784,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1837,7 +1837,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1887,7 +1887,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -1940,7 +1940,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2042,7 +2042,7 @@ task g4 "Group 4" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2097,7 +2097,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2150,7 +2150,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2200,7 +2200,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2253,7 +2253,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2351,7 +2351,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2401,7 +2401,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2454,7 +2454,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2554,7 +2554,7 @@ task g5 "Group 5" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2609,7 +2609,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2662,7 +2662,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2712,7 +2712,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2765,7 +2765,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2815,7 +2815,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2868,7 +2868,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2918,7 +2918,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -2971,7 +2971,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -3021,7 +3021,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4
@@ -3074,7 +3074,7 @@ task g6 "Group 6" {
       depends !t1
       allocate e
       priority 900
-      shift parttime
+      shifts parttime
     }
     task t8 "Task 8" {
       depends !t4

@@ -78,8 +78,7 @@ class TaskJuggler::TextParser
       # position.
       def injectText(text, callLength)
         if @scanner.is_a?(MRXScanner)
-          @scanner.scan(@line)
-          @scanner.seek(preCall.bytesize)
+          @nextMacroEnd = @scanner.replaceInInputStream(text, callLength)
         else
           # Remove the macro call from the end of the already parsed input.
           preCall = @scanner.pre_match[0..-(callLength + 1)]
@@ -96,7 +95,6 @@ class TaskJuggler::TextParser
       end
 
       def injectMacro(macro, args, text, callLength)
-        # We add 3 chars more for the ${}.
         injectText(text, callLength)
 
         # Simple detection for recursive macro calls.
@@ -119,12 +117,12 @@ class TaskJuggler::TextParser
             # Return special EOF symbol.
             return :scannerEOF
           end
-          @scanner = @textScanner.mrxs
-          @scanner.read(@line)
+          @scanner = MRXScanner.new(@textScanner.mrxs, @line)
           @wrapped = @line[-1] == ?\n
         end
-        return nil if (token = @scanner.scan(nil, nil, mode)).nil?
-        #puts "#{re.to_s[0..20]}: [#{token}]"
+        if (token = @scanner.scan(mode)).nil?
+          return nil
+        end
 
         if @nextMacroEnd
           pos = @scanner.pos
@@ -277,7 +275,7 @@ class TaskJuggler::TextParser
       # Points to the currently active pattern set as defined by the mode.
       @activePatterns = nil
 
-      @mrxs = MRXScanner.new
+      @mrxs = MRXScannerDefinition.new
 
       tokenPatterns.each do |pat|
         type = pat[0]
@@ -287,6 +285,7 @@ class TaskJuggler::TextParser
         addPattern(type, Regexp.new(regExp), mode, postProc)
         @mrxs.addRegExp(regExp, type, postProc, mode)
       end
+      #@mrxs.compile
       self.mode = defaultMode
     end
 
@@ -462,7 +461,7 @@ class TaskJuggler::TextParser
       # (Un)-comment to toggle between StringScanner (scanToken) and
       # MRXScanner (mrxScanToken).
       scanToken
-      # mrxScanToken
+      #mrxScanToken
     end
 
     # Return a token to retrieve it with the next nextToken() call again. Only 1
@@ -566,13 +565,12 @@ class TaskJuggler::TextParser
     end
 
     def mrxScanToken
+      @startOfToken = sourceFileInfo
       loop do
-        @startOfToken = sourceFileInfo
         match = nil
         begin
-          puts "Mode: #{@scannerMode}"
           match, type, postProc = @cf.mrxscan(@scannerMode)
-          puts "Matched: [[#{match}]] of type [#{type ? type : nil}]"
+          #puts "Matched: [[#{match}]] of type [#{type ? type : nil}]"
           if match
             if match == :scannerEOF
               if @scannerMode != @defaultMode

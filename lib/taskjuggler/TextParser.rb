@@ -339,7 +339,8 @@ class TaskJuggler
             # the syntax rules.
             error("no_reduce",
                   "Unexpected token '#{token[1]}' found. " +
-                  "Expecting one of " +
+                  "Expecting #{@stack.last.state.expectedTokens.length > 1 ?
+                               'one of ' : ''}" +
                   "#{@stack.last.state.expectedTokens.join(', ')}",
                   @scanner.sourceFileInfo)
           end
