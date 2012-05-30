@@ -154,6 +154,16 @@ class TaskJuggler
       @type.id + " " + get.to_s
     end
 
+    private
+
+    def quotedString(str)
+      if str.include?("\n")
+        "-8<-\n#{str}\n->8-"
+      else
+        "\"#{str.gsub("\"", '\"')}\""
+      end
+    end
+
   end
 
   # The ListAttributeBase is a specialized form of AttributeBase for a list of

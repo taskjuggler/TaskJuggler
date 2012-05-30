@@ -480,7 +480,7 @@ class TaskJuggler
     end
 
     def quotedString(str)
-      if str[-1] == ?\n
+      if str.include?("\n")
         "-8<-\n#{str}\n->8-"
       else
         escaped = str.gsub("\"", '\"')

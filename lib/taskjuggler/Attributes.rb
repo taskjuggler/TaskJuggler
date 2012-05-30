@@ -543,13 +543,7 @@ class TaskJuggler
     end
 
     def to_tjp
-      inputText = get.richText.inputText
-      if inputText[-1] == ?\n
-        "#{@type.id} -8<-\n#{inputText}\n->8-"
-      else
-        escaped = inputText.gsub("\"", '\"')
-        "#{@type.id} \"#{escaped}\""
-      end
+      "#{@type.id} #{quotedString(get.richText.inputText)}"
     end
 
   end
@@ -623,7 +617,7 @@ class TaskJuggler
     end
 
     def to_tjp
-      "#{@type.id} \"#{get}\""
+      "#{@type.id} #{quotedString(get)}"
     end
 
   end
