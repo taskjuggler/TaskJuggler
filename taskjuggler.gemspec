@@ -51,7 +51,7 @@ EOT
             (`git ls-files -- manual`).split("\n") +
             (`git ls-files -- examples`).split("\n") +
             (`git ls-files -- tasks`).split("\n") +
-            %w( .gemtest taskjuggler.gemspec Rakefile ) +
+            %w( .gemtest taskjuggler.gemspec Rakefile )
             # Generated files, not contained in Git repository.            
   s.bindir = 'bin'
   s.executables = (`git ls-files -- bin`).split("\n").
