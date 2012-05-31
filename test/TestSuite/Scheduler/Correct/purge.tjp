@@ -1,0 +1,30 @@
+project "Test" 2012-05-31 +1m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+  }
+}
+
+include "checks.tji"
+
+resource r1 "R1" {
+  workinghours mon - fri 8:00 - 12:00
+}
+resource r2 "R2"
+
+task "T1" {
+  allocate r1
+  task "T2" {
+    purge s2:allocate
+    s2:allocate r2
+    effort 2w
+    ${FixEndSc "2012-06-27-12:00" "s1"}
+    ${FixEndSc "2012-06-13-17:00" "s2"}
+  }
+}
+
+taskreport "purge" {
+  formats html
+  columns name, scenario, end, weekly
+  hideresource 0
+  scenarios s1, s2
+}

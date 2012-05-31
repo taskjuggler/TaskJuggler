@@ -2927,6 +2927,17 @@ EOT
       @val[0] / 100.0
     })
   end
+  def rule_optionalScenarioIdCol
+    optional
+    pattern(%w( $ID_WITH_COLON ), lambda {
+      if (@scenarioIdx = @project.scenarioIdx(@val[0])).nil?
+        error('unknown_scenario_id', "Unknown scenario: #{@val[0]}",
+              @sourceFileInfo[0])
+      end
+      @scenarioIdx
+    })
+  end
+
 
   def rule_optionalVersion
     optional
@@ -3465,21 +3476,27 @@ EOT
   end
 
   def rule_purge
-    pattern(%w( _purge $ID ), lambda {
-      if (attributeDefinition = @property.attributeDefinition(@val[1])).nil?
+    pattern(%w( _purge !optionalScenarioIdCol $ID ), lambda {
+      attrId = @val[2]
+      if (attributeDefinition = @property.attributeDefinition(attrId)).nil?
         error('purge_unknown_id',
-              "#{@val[1]} is not a known attribute for this property",
-              @sourceFileInfo[1])
+              "#{attrId} is not a known attribute for this property",
+              @sourceFileInfo[2])
       end
       if attributeDefinition.scenarioSpecific
-        attr = @property[@val[1], 0]
+        @scenarioIdx = 0 unless @val[1]
+        attr = @property[attrId, 0]
       else
-        attr = @property.get(@val[1])
+        if @val[1]
+          error('purge_non_sc_spec_attr',
+                'Scenario specified for a non-scenario specific attribute')
+        end
+        attr = @property.get(attrId)
       end
-      if @property.attributeDefinition(@val[1]).scenarioSpecific
-        @property.getAttribute(@val[1], @scenarioIdx).reset
+      if @property.attributeDefinition(attrId).scenarioSpecific
+        @property.getAttribute(attrId, @scenarioIdx).reset
       else
-        @property.getAttribute(@val[1]).reset
+        @property.getAttribute(attrId).reset
       end
     })
     doc('purge', <<'EOT'
@@ -3493,6 +3510,10 @@ the list that was inherited from the enclosing property. The purge
 attribute resets any attribute to its default value. A subsequent definition
 for the attribute within the property will then add their values to an empty
 list. The value of the enclosing property is not affected by purge.
+
+For scenario specific attributes, an optional scenario ID can be specified
+before the attribute ID. If it's missing, the default (first) scenario will be
+used.
 EOT
        )
     arg(1, 'attribute', 'Any name of a list attribute')
