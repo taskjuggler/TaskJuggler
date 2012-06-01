@@ -25,6 +25,6 @@ task "T1" {
 taskreport "purge" {
   formats html
   columns name, scenario, end, weekly
-  hideresource 0
+  hideresource @none
   scenarios s1, s2
 }

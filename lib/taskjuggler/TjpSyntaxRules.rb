@@ -2484,7 +2484,7 @@ EOT
       LogicalExpression.new(@val[0], sourceFileInfo)
     })
     pattern(%w( _@ !allOrNone ), lambda {
-      LogicalOperation.new(@val[1])
+      LogicalExpression.new(LogicalOperation.new(@val[1]), sourceFileInfo)
     })
     doc('logicalexpression', <<'EOT'
 A logical expression is a combination of operands and mathematical operations.
