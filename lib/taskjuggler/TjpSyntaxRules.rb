@@ -1912,12 +1912,23 @@ EOT
         error('zero_duration', "The interval duration may not be 0.",
               @sourceFileInfo[1])
       end
-      duration = @val[0] * convFactors[@val[1]]
+      duration = (@val[0] * convFactors[@val[1]]).to_i
       resolution = @project.nil? ? 60 * 60 : @project['scheduleGranularity']
+      if @val[1] == 4
+        # If the duration unit is months, we have to align the duration with
+        # the timing resolution of the project.
+        duration = (duration / resolution).to_i * resolution
+      end
       # Make sure the interval aligns with the timing resolution.
-      (duration / resolution).to_i * resolution
+      if duration % resolution != 0
+        error('iv_duration_not_aligned',
+              "The interval duration must be a multiple of the specified" +
+              "timing resolution (#{resolution / 60} min) of the project.")
+      end
+      duration
     })
-    arg(0, 'duration', 'The duration of the interval. May not be 0.')
+    arg(0, 'duration', 'The duration of the interval. May not be 0 and must ' +
+                       'be a multiple of [[timingresolution]].')
   end
 
   def rule_intervalEnd
