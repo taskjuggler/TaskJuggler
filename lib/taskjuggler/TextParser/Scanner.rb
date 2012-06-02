@@ -120,9 +120,8 @@ class TaskJuggler::TextParser
           @scanner = MRXScanner.new(@textScanner.mrxs, @line)
           @wrapped = @line[-1] == ?\n
         end
-        if (token = @scanner.scan(mode)).nil?
-          return nil
-        end
+
+        return nil unless (token = @scanner.scan(mode))
 
         if @nextMacroEnd
           pos = @scanner.pos
@@ -567,45 +566,39 @@ class TaskJuggler::TextParser
     def mrxScanToken
       @startOfToken = sourceFileInfo
       loop do
-        match = nil
-        begin
-          match, type, postProc = @cf.mrxscan(@scannerMode)
-          #puts "Matched: [[#{match}]] of type [#{type ? type : nil}]"
-          if match
-            if match == :scannerEOF
-              if @scannerMode != @defaultMode
-                # The stream resets the line number to 1. Since we still
-                # know the start of the token, we setup @lineDelta so that
-                # sourceFileInfo() returns the proper line number.
-                @lineDelta = -(@startOfToken.lineNo - 1)
-                error('runaway_token',
-                      "Unterminated token starting at line #{@startOfToken}")
-              end
-              # We've found the end of an input file. Return a special token
-              # that describes the end of a file.
-              @finishLastFile = true
-              return [ :eof, '<END>', @startOfToken ]
-            end
+        match, type, postProc = @cf.mrxscan(@scannerMode)
+        #puts "Matched: [[#{match}]] of type [#{type ? type : nil}]"
 
-            raise "A regexp matches empty strings" if match.empty?
-            # If we have a post processing method, call it now. It may modify
-            # the type or the found token String.
-            type, match = postProc.call(type, match) if postProc
-
-            next if type.nil? # Ignore certain tokens with nil type.
-
-            return [ type, match, @startOfToken ]
-          else
-            if @cf.eof?
-              error('unexpected_eof',
-                    "Unexpected end of file found")
-            else
-              error('no_token_match',
-                    "Unexpected characters found: '#{@cf.peek(10)}...'")
-            end
+        if match == :scannerEOF
+          if @scannerMode != @defaultMode
+            # The stream resets the line number to 1. Since we still
+            # know the start of the token, we setup @lineDelta so that
+            # sourceFileInfo() returns the proper line number.
+            @lineDelta = -(@startOfToken.lineNo - 1)
+            error('runaway_token',
+                  "Unterminated token starting at line #{@startOfToken}")
           end
-        #rescue ArgumentError
-        #  error('scan_encoding_error', $!.to_s)
+          # We've found the end of an input file. Return a special token
+          # that describes the end of a file.
+          @finishLastFile = true
+          return [ :eof, '<END>', @startOfToken ]
+        elsif match.nil?
+          if @cf.eof?
+            error('unexpected_eof',
+                  "Unexpected end of file found")
+          else
+            error('no_token_match',
+                  "Unexpected characters found: '#{@cf.peek(10)}...'")
+          end
+        else
+          raise "A regexp matches empty strings" if match.empty?
+          # If we have a post processing method, call it now. It may modify
+          # the type or the found token String.
+          type, match = postProc.call(type, match) if postProc
+
+          next if type.nil? # Ignore certain tokens with nil type.
+
+          return [ type, match, @startOfToken ]
         end
       end
     end
