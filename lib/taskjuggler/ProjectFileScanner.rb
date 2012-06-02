@@ -132,14 +132,14 @@ class TaskJuggler
         [ 'nil', '.*\n', /.*\n/, :szrString, method('midStringSZR') ],
 
         # Single line macro definition
-        [ :MACRO, '\[.*\]\n', /\[.*\]\n/, :tjp, method('chop2nl') ],
+        [ :MACRO, '\[.*\](\n|$)', /\[.*\]\n/, :tjp, method('chop2nl') ],
 
         # Multi line macro definition: The pattern switches the scanner into
         # macroDef mode.
         [ nil, '\[.*\n', /\[.*\n/, :tjp, method('startMacroDef') ],
         # The end of the macro is marked by a ']' that is immediately followed
         # by a line break. It switches the scanner back to tjp mode.
-        [ :MACRO, '.*\]\n', /.*\]\n/, :macroDef, method('endMacroDef') ],
+        [ :MACRO, '.*\](\n|$)', /.*\]\n/, :macroDef, method('endMacroDef') ],
         # Any line not containing the start or end.
         [ nil, '.*\n', /.*\n/, :macroDef, method('midMacroDef') ],
 
@@ -205,8 +205,12 @@ class TaskJuggler
     end
 
     def chop2nl(type, match)
-      # remove first and last 2 characters.
-      [ type, match[1..-3] ]
+      # remove first and last \n (if it exists) and the last character.
+      if match[-1] == ?\n
+        [ type, match[1..-3] ]
+      else
+        [ type, match[1..-2] ]
+      end
     end
 
     def startComment(type, match)
@@ -334,8 +338,12 @@ class TaskJuggler
 
     def endMacroDef(type, match)
       self.mode = :tjp
-      # Remove "]\n"
-      @macroDef += match[0..-3]
+      # Remove "](\n|$)"
+      if match[-1] == ?\n
+        @macroDef += match[0..-3]
+      else
+        @macroDef += match[0..-2]
+      end
       [ :MACRO, @macroDef ]
     end
 
