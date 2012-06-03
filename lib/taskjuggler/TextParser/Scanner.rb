@@ -134,7 +134,7 @@ class TaskJuggler::TextParser
         token
       end
 
-      def scan(re)
+      def readyNextLine
         # We read the file line by line with gets(). If we don't have a line
         # yet or we've reached the end of a line, we get the next one.
         if @scanner.nil? || @scanner.eos?
@@ -144,12 +144,16 @@ class TaskJuggler::TextParser
           else
             # We've reached the end of the current file.
             @scanner = nil
-            # Return special EOF symbol.
-            return :scannerEOF
+            return false
           end
           @scanner = StringScanner.new(@line)
           @wrapped = @line[-1] == ?\n
         end
+
+        true
+      end
+
+      def scan(re)
         return nil if (token = @scanner.scan(re)).nil?
         #puts "#{re.to_s[0..20]}: [#{token}]"
 
@@ -520,23 +524,23 @@ class TaskJuggler::TextParser
       loop do
         match = nil
         begin
+          unless @cf.readyNextLine
+            if @scannerMode != @defaultMode
+              # The stream resets the line number to 1. Since we still
+              # know the start of the token, we setup @lineDelta so that
+              # sourceFileInfo() returns the proper line number.
+              @lineDelta = -(@startOfToken.lineNo - 1)
+              error('runaway_token',
+                    "Unterminated token starting at line #{@startOfToken}")
+            end
+            # We've found the end of an input file. Return a special token
+            # that describes the end of a file.
+            @finishLastFile = true
+            return [ :eof, '<END>', @startOfToken ]
+          end
+
           @activePatterns.each do |type, re, postProc|
             if (match = @cf.scan(re))
-              if match == :scannerEOF
-                if @scannerMode != @defaultMode
-                  # The stream resets the line number to 1. Since we still
-                  # know the start of the token, we setup @lineDelta so that
-                  # sourceFileInfo() returns the proper line number.
-                  @lineDelta = -(@startOfToken.lineNo - 1)
-                  error('runaway_token',
-                        "Unterminated token starting at line #{@startOfToken}")
-                end
-                # We've found the end of an input file. Return a special token
-                # that describes the end of a file.
-                @finishLastFile = true
-                return [ :eof, '<END>', @startOfToken ]
-              end
-
               raise "#{re} matches empty string" if match.empty?
               # If we have a post processing method, call it now. It may modify
               # the type or the found token String.
