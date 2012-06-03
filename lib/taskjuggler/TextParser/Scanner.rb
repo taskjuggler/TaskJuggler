@@ -89,7 +89,7 @@ class TaskJuggler::TextParser
           @line = preCall + text + @scanner.post_match
           # Start the StringScanner again at the first character of the injected
           # text.
-          @scanner = StringScanner.new(@line)
+          @scanner.string = @line
           @scanner.pos = preCall.bytesize
         end
       end
@@ -154,9 +154,10 @@ class TaskJuggler::TextParser
       end
 
       def scan(re)
-        return nil if (token = @scanner.scan(re)).nil?
-        #puts "#{re.to_s[0..20]}: [#{token}]"
+        @scanner.scan(re)
+      end
 
+      def cleanupMacroStack
         if @nextMacroEnd
           pos = @scanner.pos
           while @nextMacroEnd && @nextMacroEnd < pos
@@ -164,8 +165,6 @@ class TaskJuggler::TextParser
             @nextMacroEnd = @macroStack.empty? ? nil : @macroStack.last.endPos
           end
         end
-
-        token
       end
 
       def peek(n)
@@ -541,13 +540,14 @@ class TaskJuggler::TextParser
 
           @activePatterns.each do |type, re, postProc|
             if (match = @cf.scan(re))
-              raise "#{re} matches empty string" if match.empty?
+              #raise "#{re} matches empty string" if match.empty?
               # If we have a post processing method, call it now. It may modify
               # the type or the found token String.
               type, match = postProc.call(type, match) if postProc
 
               break if type.nil? # Ignore certain tokens with nil type.
 
+              @cf.cleanupMacroStack
               return [ type, match, @startOfToken ]
             end
           end
@@ -563,6 +563,8 @@ class TaskJuggler::TextParser
             error('no_token_match',
                   "Unexpected characters found: '#{@cf.peek(10)}...'")
           end
+        else
+          @cf.cleanupMacroStack
         end
       end
     end
