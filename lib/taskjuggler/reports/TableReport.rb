@@ -307,10 +307,19 @@ class TaskJuggler
         rStart -= margin
         rEnd += margin
 
+        # This could cause rStart to be larger than rEnd.
+        rStart = origStart if doNotAdjustStart
+        rEnd = origEnd if doNotAdjustEnd
+
+        # Ensure that we have a valid interval. If not, go back to the
+        # original interval dates.
+        if rStart >= rEnd
+          rStart = origStart
+          rEnd = origEnd
+        end
+
         # Save the adjusted dates to the columns Hash.
-        @columns[columnDef] = TableReportColumn.new(
-          doNotAdjustStart ? origStart : rStart,
-          doNotAdjustEnd ? origEnd : rEnd)
+        @columns[columnDef] = TableReportColumn.new(rStart, rEnd)
       end
     end
 
@@ -328,6 +337,7 @@ class TaskJuggler
         # table.
         gantt = GanttChart.new(a('now'),
                                a('weekStartsMonday'), self)
+
         gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
         gantt.header.height = @table.headerLineHeight * 2 + 1
