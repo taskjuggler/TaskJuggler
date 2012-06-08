@@ -63,14 +63,16 @@ class TaskJuggler
       @toc = TableOfContents.new
       @references = {}
       @anchors = []
+      # Collect all file names as potentencial anchors.
       @snippets.each do |snip|
         snip.tableOfContents(@toc, snip.name)
         @anchors << snip.name
-        @toc.each do |tocEntry|
-          @anchors << snip.name + '#' + tocEntry.tag
-        end
-        (refs = snip.internalReferences).empty? ||
-          @references[snip.name] = refs
+        (refs = snip.internalReferences).empty? || @references[snip.name] = refs
+      end
+      # Then add all section entries as well. We use the HTML style
+      # <file>#<tag> notation.
+      @toc.each do |tocEntry|
+        @anchors << tocEntry.file + '#' + tocEntry.tag
       end
     end
 
