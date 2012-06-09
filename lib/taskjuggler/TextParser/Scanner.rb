@@ -474,9 +474,11 @@ class TaskJuggler::TextParser
 
     def scanToken
       @startOfToken = sourceFileInfo
-      loop do
+      begin
         match = nil
-        begin
+        loop do
+          # First make sure that the line buffer has been filled and we have a
+          # line to parse.
           unless @cf.readyNextLine
             if @scannerMode != @defaultMode
               # The stream resets the line number to 1. Since we still
@@ -505,21 +507,26 @@ class TaskJuggler::TextParser
               return [ type, match, @startOfToken ]
             end
           end
-        rescue ArgumentError
-          error('scan_encoding_error', $!.to_s)
-        end
 
-        if match.nil?
-          if @cf.eof?
-            error('unexpected_eof',
-                  "Unexpected end of file found")
+          if match.nil?
+            # If we haven't found a match, we either hit EOF or a token we did
+            # not expect.
+            if @cf.eof?
+              error('unexpected_eof',
+                    "Unexpected end of file found")
+            else
+              error('no_token_match',
+                    "Unexpected characters found: '#{@cf.peek(10)}...'")
+            end
           else
-            error('no_token_match',
-                  "Unexpected characters found: '#{@cf.peek(10)}...'")
+            # Remove completely scanned expanded macros from stack.
+            @cf.cleanupMacroStack
           end
-        else
-          @cf.cleanupMacroStack
         end
+      rescue ArgumentError
+        # This is triggered by StringScanner.scan, but we don't want to put
+        # the block in the inner loops for performance reasons.
+        error('scan_encoding_error', $!.to_s)
       end
     end
 
