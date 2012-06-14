@@ -2394,30 +2394,30 @@ class TaskJuggler
       return if checkedTasks.include?(@property)
       checkedTasks << @property
 
-      # A target must be a leaf function that has no direct or indirect
-      # (through parent) following tasks. Only milestones are recognized as
-      # targets.
+      # An "input" must be a leaf task that has no direct or indirect (through
+      # parent) following tasks. Only milestones are recognized as inputs.
       if @property.leaf? && !hasPredecessors && @milestone
         foundInputs << @property
         return
       end
 
-      @startpreds.each do |t, onEnd|
-        t.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
-      end
-
-      # Check for indirect predecessors.
-      if @property.parent
-        @property.parent.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
-      end
-
-      # Also include targets of child tasks. The recursive iteration of child
-      # tasks is limited to the tested task only. The predecessors are not
-      # iterated.
+      # We also include inputs of child tasks if requested. The recursive
+      # iteration of child tasks is limited to the tested task only. The
+      # predecessors children are not iterated. (see further below)
       if includeChildren
         @property.kids.each do |child|
           child.inputs(@scenarioIdx, foundInputs, true, checkedTasks)
         end
+      end
+
+      # Now check the direct predecessors.
+      @startpreds.each do |t, onEnd|
+        t.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
+      end
+
+      # Check for indirect predecessors inherited from the ancestors.
+      if @property.parent
+        @property.parent.inputs(@scenarioIdx, foundInputs, false, checkedTasks)
       end
     end
 
