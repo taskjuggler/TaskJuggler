@@ -2391,8 +2391,8 @@ class TaskJuggler
     # current task.
     def inputs(foundInputs, includeChildren, checkedTasks = [])
       # Ignore tasks that we have already included in the checked tasks list.
-      return if checkedTasks.include?(@property)
-      checkedTasks << @property
+      return if checkedTasks.include?([ @property, includeChildren ])
+      checkedTasks << [ @property, includeChildren ]
 
       # An "input" must be a leaf task that has no direct or indirect (through
       # parent) following tasks. Only milestones are recognized as inputs.
@@ -2425,8 +2425,8 @@ class TaskJuggler
     # current task.
     def targets(foundTargets, includeChildren, checkedTasks = [])
       # Ignore tasks that we have already included in the checked tasks list.
-      return if checkedTasks.include?(@property)
-      checkedTasks << @property
+      return if checkedTasks.include?([ @property, includeChildren ])
+      checkedTasks << [ @property, includeChildren ]
 
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
