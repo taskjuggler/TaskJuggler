@@ -31,6 +31,8 @@ class TaskJuggler
 
       # A reference to the TaskJuggler object that holds the project data.
       @tj = tj
+      # This is set to the ID(s) of the reports that should be generated.
+      @reportId = 'unknown'
 
       @lastPing = TjTime.new
 
@@ -114,6 +116,7 @@ class TaskJuggler
     def generateReport(id, regExpMode, formats, dynamicAttributes)
       info('generating_report', "Generating report #{id}")
       startTime = Time.now
+      @reportId = id
       begin
         if (ok = @tj.generateReport(id, regExpMode, formats, dynamicAttributes))
           info('report_id_generated',
@@ -146,6 +149,7 @@ class TaskJuggler
 
     def checkTimeSheet(sheet)
       info('check_time_sheet', "Checking time sheet #{sheet}")
+      @reportId = 'timesheet'
       begin
         ok = @tj.checkTimeSheet(sheet)
         debug('', "Time sheet #{sheet} is #{ok ? '' : 'not '}ok")
@@ -158,6 +162,7 @@ class TaskJuggler
 
     def checkStatusSheet(sheet)
       info('check_status_sheet', "Checking status sheet #{sheet}")
+      @reportId = 'statussheet'
       begin
         ok = @tj.checkStatusSheet(sheet)
         debug('', "Status sheet #{sheet} is #{ok ? '' : 'not '}ok")
@@ -175,7 +180,9 @@ class TaskJuggler
         loop do
           if TjTime.new - @lastPing > 120
             error('ps_heartbeat_lost',
-                  'Heartbeat from ProjectServer lost. Terminating.')
+                  "Report server (Project #{@tj.project['projectid']} " +
+                  "report #{@reportId}) lost heartbeat " +
+                  'from ProjectServer. Terminating.')
           end
           sleep 30
         end
