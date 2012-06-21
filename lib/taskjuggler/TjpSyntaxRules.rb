@@ -247,6 +247,13 @@ exactly it will be assigned to the task. Shifts and limits can be used to
 restrict the allocation to certain time intervals or to limit them to a
 certain maximum per time period. The purge statement can be used to remove
 inherited allocations or flags.
+
+If the specified resources can be allocated for at least one time slot of the
+task duration, the task duration is clipped to only extend from the begin of
+the first allocation to the end of the last allocation. This is done to
+optimize for an overall minimum project duration as dependent tasks can
+potentially use the unallocated, clipped slots. If no allocation was possible
+due to unavailability of the resources, no clipping will be done.
 EOT
        )
     example('Allocate-1', '1')
