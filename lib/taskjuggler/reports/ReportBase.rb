@@ -38,14 +38,6 @@ class TaskJuggler
       end
     end
 
-    def to_html
-      raise 'This function must be overriden by derived classes.'
-    end
-
-    def to_csv
-      raise 'This function must be overriden by derived classes.'
-    end
-
     # Take the complete account list and remove all accounts that are matching
     # the hide expression, the rollup Expression or are not a descendent of
     # accountroot.

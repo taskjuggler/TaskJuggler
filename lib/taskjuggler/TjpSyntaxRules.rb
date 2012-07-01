@@ -1033,30 +1033,6 @@ EOT
     example('Export')
   end
 
-  def rule_exportHeader
-    pattern(%w( _export !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
-      @property.set('formats', [ :tjp ])
-
-      # By default, we export all scenarios.
-      scenarios = Array.new(@project.scenarios.items) { |i| i }
-      scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
-      @property.set('scenarios', scenarios)
-      # Show all tasks, sorted by seqno-up.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
-    })
-    arg(2, 'file name', <<'EOT'
-The name of the report file to generate. It must end with a .tjp or .tji
-extension, or use . to use the standard output channel.
-EOT
-       )
-  end
-
   def rule_exportAttributes
     optional
     repeatable
@@ -1078,6 +1054,17 @@ EOT
                            'projecids' => 'Include project IDs',
                            'tasks' => 'Include task definitions',
                            'resources' => 'Include resource definitions' })
+
+    pattern(%w( _formats !exportFormats ), lambda {
+      @property.set('formats', @val[1])
+    })
+    level(:beta)
+    doc('formats.export', <<'EOT'
+This attribute defines for which output formats the export report should be
+generated. By default, the TJP format will be used.
+EOT
+       )
+
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
     pattern(%w( !reportEnd ))
@@ -1140,6 +1127,57 @@ EOT
 
   def rule_exportBody
     optionsRule('exportAttributes')
+  end
+
+  def rule_exportFormat
+    pattern(%w( _tjp ), lambda {
+      :tjp
+    })
+    descr('Export of the scheduled project in TJP syntax.')
+
+    pattern(%w( _mspxml ), lambda {
+      :mspxml
+    })
+    descr(<<'EOT'
+Export of the scheduled project in Microsoft Project XML format. This will
+export the data of the fully scheduled project. The exported data include the
+tasks, resources and the assignments of resources to task. This is only a
+small subset of the data that TaskJuggler can manage. This export is only
+intended to share resource assignement data with other teams using Microsoft
+Project. It's not a feature to migrate your projects from TaskJuggler to
+Microsoft Project.
+EOT
+         )
+  end
+
+  def rule_exportFormats
+    pattern(%w( !exportFormat !moreExportFormats ), lambda {
+      [ @val[0] ] + (@val[1].nil? ? [] : @val[1])
+    })
+  end
+
+  def rule_exportHeader
+    pattern(%w( _export !optionalID $STRING ), lambda {
+      newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
+      @property.set('formats', [ :tjp ])
+
+      # By default, we export all scenarios.
+      scenarios = Array.new(@project.scenarios.items) { |i| i }
+      scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
+      @property.set('scenarios', scenarios)
+      # Show all tasks, sorted by seqno-up.
+      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      # Show all resources, sorted by seqno-up.
+      @property.set('hideResource',
+                    LogicalExpression.new(LogicalOperation.new(0)))
+      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+    })
+    arg(2, 'file name', <<'EOT'
+The name of the report file to generate. It must end with a .tjp or .tji
+extension, or use . to use the standard output channel.
+EOT
+       )
   end
 
   def rule_extendAttributes
@@ -2586,6 +2624,10 @@ EOT
 
   def rule_moreDepTasks
     commaListRule('!taskDep')
+  end
+
+  def rule_moreExportFormats
+    commaListRule('!exportFormat')
   end
 
   def rule_moreJournalSortCriteria

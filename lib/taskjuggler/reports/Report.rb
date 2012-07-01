@@ -20,7 +20,7 @@ require 'taskjuggler/reports/TaskListRE'
 require 'taskjuggler/reports/ResourceListRE'
 require 'taskjuggler/reports/TraceReport'
 require 'taskjuggler/reports/TagFile'
-require 'taskjuggler/reports/TjpExportRE'
+require 'taskjuggler/reports/ExportRE'
 require 'taskjuggler/reports/StatusSheetReport'
 require 'taskjuggler/reports/TimeSheetReport'
 require 'taskjuggler/reports/NikuReport'
@@ -95,6 +95,8 @@ class TaskJuggler
           generateNiku
         when :tjp
           generateTJP
+        when :mspxml
+          generateMspXml
         else
           raise 'Unknown report output format #{format}.'
         end
@@ -118,7 +120,7 @@ class TaskJuggler
       when :accountreport
         @content = AccountListRE.new(self)
       when :export
-        @content = TjpExportRE.new(self)
+        @content = ExportRE.new(self)
       when :iCal
         @content = ICalReport.new(self)
       when :niku
@@ -280,7 +282,7 @@ EOT
       end
     end
 
-    # Generate time sheet drafts.
+    # Generate the report in TJP format.
     def generateTJP
       unless @content.respond_to?('to_tjp')
         warning('tjp_not_supported',
@@ -304,6 +306,29 @@ EOT
       end
     end
 
+    # Generate the report in Microsoft Project XML format.
+    def generateMspXml
+      unless @content.respond_to?('to_mspxml')
+        warning('mspxml_not_supported',
+                "Microsoft Project XML format is not supported for " +
+                "report #{@id} of type #{@typeSpec}.")
+        return nil
+      end
+
+      begin
+        fileName = '.'
+        if @name == '.'
+          $stdout.write(@content.to_mspxml)
+        else
+          fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name + '.xml'
+          fileName.untaint
+          File.open(fileName, 'w') { |f| f.write(@content.to_mspxml) }
+        end
+      rescue IOError, SystemCallError
+        error('write_mspxml', "Cannot write to file #{fileName}.\n#{$!}")
+      end
+    end
+
     # Generate Niku report
     def generateNiku
       unless @content.respond_to?('to_niku')
@@ -323,7 +348,7 @@ EOT
       end
     end
 
-    # Generate Niku report
+    # Generate the report in iCal format.
     def generateICal
       unless @content.respond_to?('to_iCal')
         warning('ical_not_supported',
