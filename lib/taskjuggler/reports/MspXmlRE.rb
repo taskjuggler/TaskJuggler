@@ -290,6 +290,8 @@ class TaskJuggler
       a << XMLNamedText.new(uid.to_s, 'UID')
       a << XMLNamedText.new(booking.task.sequenceNo.to_s, 'TaskUID')
       a << XMLNamedText.new(booking.resource.sequenceNo.to_s, 'ResourceUID')
+      a << XMLNamedText.new(booking.task['complete', @scenarioIdx].to_i.to_s,
+                            'PercentWorkComplete')
       booking.intervals.each do |iv|
         a << (td = XMLElement.new('TimephasedData'))
         td << XMLNamedText.new(iv.start > @project['now'] ? '1' : '2', 'Type')
