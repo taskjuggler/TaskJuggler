@@ -57,9 +57,9 @@ class TaskJuggler
                                'xmlns' =>
                                'http://schemas.microsoft.com/project'))
 
-      generateProjectAttributes(project)
+      calendars = generateProjectAttributes(project)
       generateTasks(project)
-      generateResources(project)
+      generateResources(project, calendars)
       generateAssignments(project)
 
       @file.to_s
@@ -76,6 +76,24 @@ class TaskJuggler
                             'StartDate')
       p << XMLNamedText.new(@report.project['end'].to_s(@timeformat),
                             'FinishDate')
+      p << XMLNamedText.new('09:00:00', 'DefaultStartTime')
+      p << XMLNamedText.new('17:00:00', 'DefaultFinishTime')
+      p << XMLNamedText.new('1', 'CalendarUID')
+      p << XMLNamedText.new((@project.dailyWorkingHours * 60 * 60).to_s,
+                            'MinutesPerDay')
+      p << XMLNamedText.new((@project.weeklyWorkingDays *
+                             @project.dailyWorkingHours * 60 * 60).to_s,
+                            'MinutesPerWeek')
+      p << XMLNamedText.new((@project.yearlyWorkingDays / 12).to_s,
+                            'DaysPerMonth')
+      p << XMLNamedText.new(@project['now'].to_s(@timeformat), 'StatusDate')
+      p << XMLNamedText.new('1', 'NewTasksAreManual')
+      p << XMLNamedText.new('0', 'SpreadPercentComplete')
+
+      p << (calendars = XMLElement.new('Calendars'))
+      generateCalendar(calendars, @project['workinghours'], '1', 'Standard')
+
+      calendars
     end
 
     def generateTasks(project)
@@ -86,11 +104,11 @@ class TaskJuggler
       end
     end
 
-    def generateResources(project)
+    def generateResources(project, calendars)
       project << (resources = XMLElement.new('Resources'))
 
       @resourceList.each do |resource|
-        generateResource(resources, resource)
+        generateResource(resources, resource, calendars)
       end
     end
 
@@ -108,33 +126,111 @@ class TaskJuggler
       end
     end
 
+    def generateCalendar(calendars, workinghours, uid, name)
+      calendars << (cal = XMLElement.new('Calendar'))
+      cal << XMLNamedText.new(uid, 'UID')
+      cal << XMLNamedText.new(name, 'Name')
+      cal << XMLNamedText.new('1', 'IsBaseCalendar')
+      cal << XMLNamedText.new('-1', 'BaseCalendarUID')
+
+      cal << (weekdays = XMLElement.new('WeekDays'))
+      d = 1
+      workinghours.days.each do |day|
+        weekdays << (weekday = XMLElement.new('WeekDay'))
+        weekday << XMLNamedText.new(d.to_s, 'DayType')
+        d += 1
+        if day.empty?
+          weekday << XMLNamedText.new('0', 'DayWorking')
+        else
+          weekday << XMLNamedText.new('1', 'DayWorking')
+          weekday << (workingtimes = XMLElement.new('WorkingTimes'))
+          day.each do |iv|
+            workingtimes << (worktime = XMLElement.new('WorkingTime'))
+            worktime << XMLNamedText.new(daytime_to_s(iv[0]), 'FromTime')
+            worktime << XMLNamedText.new(daytime_to_s(iv[1]), 'ToTime')
+          end
+        end
+      end
+    end
+
     def generateTask(tasks, task)
+      task.calcCompletion(@scenarioIdx)
+      percentComplete = task['complete', @scenarioIdx]
+
       tasks << (t = XMLElement.new('Task'))
       t << XMLNamedText.new(task.sequenceNo.to_s, 'UID')
       t << XMLNamedText.new(task.sequenceNo.to_s, 'ID')
       t << XMLNamedText.new('1', 'Active')
-      t << XMLNamedText.new('1', 'Type')
+      t << XMLNamedText.new('2', 'Type')
       t << XMLNamedText.new('0', 'IsNull')
       t << XMLNamedText.new('0', 'Manual')
-      t << XMLNamedText.new('1', 'Estimated')
       t << XMLNamedText.new(task.get('name'), 'Name')
       t << XMLNamedText.new(task.get('bsi'), 'WBS')
       t << XMLNamedText.new(task.get('bsi'), 'OutlineNumber')
       t << XMLNamedText.new(task.level.to_s, 'OutlineLevel')
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
-                            'ActualStart')
+                            'Start')
       t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
-                            'ActualFinish')
-      t << XMLNamedText.new('6', 'ConstraintType')
+                            'Finish')
+      t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
+                            'ManualStart')
+      t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
+                            'ManualFinish')
+      t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
+                            'ActualStart')
+      #if percentComplete >= 100
+        t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
+                              'ActualFinish')
+      #end
+      #t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
+      #                      'EarlyStart')
+      #t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
+      #                      'EarlyFinish')
+      #t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
+      #                      'LateStart')
+      #t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
+      #                      'LateFinish')
+      t << XMLNamedText.new('2', 'ConstraintType')
+      t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
+                            'ConstraintDate')
+      t << XMLNamedText.new('3', 'FixedCostAccrual')
+
       if task.container?
         t << XMLNamedText.new('1', 'Summary')
       else
         t << XMLNamedText.new('0', 'Summary')
-        t << XMLNamedText.new(task['complete', @scenarioIdx].to_i.to_s,
-                              'PercentComplete')
+        t << XMLNamedText.new('0', 'Estimated')
+        t << XMLNamedText.new('5', 'DurationFormat')
         if task['milestone', @scenarioIdx]
           t << XMLNamedText.new('1', 'Milestone')
+          #t << XMLNamedText.new(durationToMsp(0), 'Duration')
+          #t << XMLNamedText.new(durationToMsp(0), 'ActualDuration')
+          #t << XMLNamedText.new(durationToMsp(0), 'RemainingDuration')
         else task['effort', @scenarioIdx] > 0
+          t << XMLNamedText.new('0', 'Milestone')
+          # Task duration in hours.
+          iv = Interval.new(task['start', @scenarioIdx],
+                            task['end', @scenarioIdx])
+          # Working time in seconds.
+          duration = @project.workingDays(iv) * @project.dailyWorkingHours * 3600
+          #t << XMLNamedText.new(durationToMsp(duration), 'Duration')
+          #t << XMLNamedText.new(durationToMsp(duration *
+          #                                    percentComplete / 100.0),
+          #                      'ActualDuration')
+          #t << XMLNamedText.new(durationToMsp(duration *
+          #                                    (1.0 - percentComplete / 100.0)),
+          #                      'RemainingDuration')
+          t << XMLNamedText.new(percentComplete.to_i.to_s,
+                                'PercentComplete')
+          t << XMLNamedText.new(percentComplete.to_i.to_s,
+                                'PercentWorkComplete')
+          #effort = task['effort', @scenarioIdx] * @project['scheduleGranularity']
+          #t << XMLNamedText.new(durationToMsp(effort), 'Work')
+          #t << XMLNamedText.new(durationToMsp(effort * percentComplete / 100.0),
+          #                      'ActualWork')
+          #t << XMLNamedText.new(durationToMsp(effort *
+          #                                    (1.0 - percentComplete / 100.0)),
+          #                      'RemainingWork')
         end
       end
       task['startpreds', @scenarioIdx].each do |dt, onEnd|
@@ -153,9 +249,26 @@ class TaskJuggler
         pl << XMLNamedText.new(dt.sequenceNo.to_s, 'PredecessorUID')
         pl << XMLNamedText.new(onEnd ? '0' : '2', 'Type')
       end
+
+      #days = (task['end', @scenarioIdx] - task['start', @scenarioIdx]) /
+      #       (24 * 60 * 60)
+      #ivStart = task['start', @scenarioIdx]
+      #i = 0
+      #while ivStart < task['end', @scenarioIdx]
+      #  t << (td = XMLElement.new('TimephasedData'))
+      #  td << XMLNamedText.new(ivStart > @project['now'] ? '1' : '2', 'Type')
+      #  td << XMLNamedText.new(ivStart.to_s(@timeformat), 'Start')
+      #  td << XMLNamedText.new((ivStart + 24 * 60 * 60).to_s(@timeformat),
+      #                         'Finish')
+      #  td << XMLNamedText.new('2', 'Unit')
+      #  td << XMLNamedText.new((100.0 / days).to_s, 'Value')
+
+      #  ivStart += 24 * 60 * 60
+      #  i += 1
+      #end
     end
 
-    def generateResource(resources, resource)
+    def generateResource(resources, resource, calendars)
       # MS Project can only deal with a flat resource list. We don't export
       # resource groups.
       return unless resource.leaf?
@@ -165,6 +278,11 @@ class TaskJuggler
       # All TJ resources are people or equipment.
       r << XMLNamedText.new('1', 'Type')
       r << XMLNamedText.new(resource.name, 'Name')
+      # Generate a calendar for this resource and assign it.
+      generateCalendar(calendars, resource['workinghours', @scenarioIdx],
+                       "calendar #{resource.fullId}",
+                       "Calendar #{resource.name}")
+      r << XMLNamedText.new("calendar #{resource.fullId}", 'CalendarUID')
     end
 
     def generateAssignment(assignments, booking, uid)
@@ -174,9 +292,9 @@ class TaskJuggler
       a << XMLNamedText.new(booking.resource.sequenceNo.to_s, 'ResourceUID')
       booking.intervals.each do |iv|
         a << (td = XMLElement.new('TimephasedData'))
-        td << XMLNamedText.new('2', 'Type')
-        td << XMLNamedText.new(iv.start.to_s(@timeFormat), 'Start')
-        td << XMLNamedText.new(iv.end.to_s(@timeFormat), 'Finish')
+        td << XMLNamedText.new(iv.start > @project['now'] ? '1' : '2', 'Type')
+        td << XMLNamedText.new(iv.start.to_s(@timeformat), 'Start')
+        td << XMLNamedText.new(iv.end.to_s(@timeformat), 'Finish')
         td << XMLNamedText.new('2', 'Unit')
         td << XMLNamedText.new(durationToMsp(iv.duration), 'Value')
       end
@@ -210,6 +328,13 @@ class TaskJuggler
       seconds = (duration % 60).to_i
 
       "PT#{hours}H#{minutes}M#{seconds}S"
+    end
+
+    def daytime_to_s(t)
+      h = (t / (60 * 60)).to_i
+      m = ((t - (h * 60 * 60)) / 60).to_i
+      s = (t % 60).to_i
+      sprintf('%02d:%02d:%02d', h, m, s)
     end
 
   end
