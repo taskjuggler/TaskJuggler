@@ -57,10 +57,4 @@ task check "Check Work" {
   allocate jill
   effort 1w
 }
-task view "Virtual View" {
-  adopt plan.plan_b
-  adopt execute.ex2
-  adopt execute.ms1
-  adopt check
-}
 

@@ -1123,6 +1123,24 @@ EOT
                            'priority' => 'Include priorities',
                            'responsible' => 'Include responsible resource' })
 
+    pattern(%w( _taskroot !taskId), lambda {
+      if @val[1].leaf?
+        error('taskroot_leaf',
+              "#{@val[1].fullId} is not a container task",
+              @sourceFileInfo[1])
+      end
+      @property.set('taskroot', @val[1])
+    })
+    level(:experimental)
+    doc('taskroot.export', <<'EOT'
+Only tasks below the specified root-level tasks are exported. The exported
+tasks will have the ID of the root-level task stripped from their ID, so that
+the sub-tasks of the root-level task become top-level tasks in the report
+file.
+EOT
+       )
+    example('TaskRoot')
+
     pattern(%w( _timezone !validTimeZone ), lambda {
       @property.set('timezone', @val[1])
     })
@@ -5634,13 +5652,16 @@ EOT
     })
     level(:experimental)
     doc('adopt.task', <<'EOT'
-Add a previously defined task to the sub-tasks of this task. This can be used
-to create virtual sub projects that contain of task trees that were defined as
-sub tasks of other tasks. Adopted tasks don't inherit anything from their step
-parents. However, the adopting task is scheduled to fit all adopted childs as
-well.
+Add a previously defined task and its sub-tasks to this task. This can be used
+to create virtual projects that contain task (sub-)trees that are originally
+defined in another task context. Adopted tasks don't inherit anything from
+their step parents. However, the adopting task is scheduled to fit all adopted
+sub-tasks.
 
-A top-level tasks must never include the same task more than once.
+A top-level task and all its sub-tasks must never contain the same task more
+than once. All reports must use appropriate filters by setting [[taskroot]],
+[[hidetask]] or [[rolluptask]] to ensure that no tasks are contained more than
+once in the report.
 EOT
        )
 

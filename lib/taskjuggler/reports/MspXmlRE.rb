@@ -44,10 +44,12 @@ class TaskJuggler
 
       # Prepare the task list.
       @taskList = PropertyList.new(@project.tasks)
+      @taskList.includeAdopted
       @taskList.setSorting(a('sortTasks'))
       @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'),
                                  a('openNodes'))
       @taskList.sort!
+      @taskList.checkForDuplicates(@report.sourceFileInfo)
 
       @file = XMLDocument.new
       @file << XMLBlob.new('<?xml version="1.0" encoding="UTF-8" ' +
@@ -72,9 +74,9 @@ class TaskJuggler
       p << XMLNamedText.new(@report.name + '.xml', 'Name')
       p << XMLNamedText.new(TjTime.new.to_s(@timeformat), 'CreationDate')
       p << XMLNamedText.new('1', 'ScheduleFromStart')
-      p << XMLNamedText.new(@report.project['start'].to_s(@timeformat),
+      p << XMLNamedText.new(@project['start'].to_s(@timeformat),
                             'StartDate')
-      p << XMLNamedText.new(@report.project['end'].to_s(@timeformat),
+      p << XMLNamedText.new(@project['end'].to_s(@timeformat),
                             'FinishDate')
       p << XMLNamedText.new('09:00:00', 'DefaultStartTime')
       p << XMLNamedText.new('17:00:00', 'DefaultFinishTime')
@@ -89,6 +91,12 @@ class TaskJuggler
       p << XMLNamedText.new(@project['now'].to_s(@timeformat), 'StatusDate')
       p << XMLNamedText.new('1', 'NewTasksAreManual')
       p << XMLNamedText.new('0', 'SpreadPercentComplete')
+      rate = (@project['rate'] / @project.dailyWorkingHours).to_s
+      p << XMLNamedText.new(rate, 'StandardRate')
+      p << XMLNamedText.new(rate, 'OvertimeRate')
+      p << XMLNamedText.new(@project['currency'], 'CurrencySymbol')
+      p << XMLNamedText.new(@project['currency'], 'CurrencyCode')
+      #p << XMLNamedText.new('0', 'MicrosoftProjectServerURL')
 
       p << (calendars = XMLElement.new('Calendars'))
       generateCalendar(calendars, @project['workinghours'], '1', 'Standard')
@@ -158,8 +166,8 @@ class TaskJuggler
       percentComplete = task['complete', @scenarioIdx]
 
       tasks << (t = XMLElement.new('Task'))
-      t << XMLNamedText.new(task.sequenceNo.to_s, 'UID')
-      t << XMLNamedText.new(task.sequenceNo.to_s, 'ID')
+      t << XMLNamedText.new(task.get('index').to_s, 'UID')
+      t << XMLNamedText.new(task.get('index').to_s, 'ID')
       t << XMLNamedText.new('1', 'Active')
       t << XMLNamedText.new('2', 'Type')
       t << XMLNamedText.new('0', 'IsNull')
@@ -167,7 +175,9 @@ class TaskJuggler
       t << XMLNamedText.new(task.get('name'), 'Name')
       t << XMLNamedText.new(task.get('bsi'), 'WBS')
       t << XMLNamedText.new(task.get('bsi'), 'OutlineNumber')
-      t << XMLNamedText.new(task.level.to_s, 'OutlineLevel')
+      t << XMLNamedText.new((task.level -
+                             (a('taskroot') ? a('taskroot').level : 0)).to_s,
+                             'OutlineLevel')
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
                             'Start')
       t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
@@ -194,6 +204,9 @@ class TaskJuggler
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
                             'ConstraintDate')
       t << XMLNamedText.new('3', 'FixedCostAccrual')
+      if (note = task.get('note'))
+        t << XMLNamedText.new(note.to_s, 'Notes')
+      end
 
       if task.container?
         t << XMLNamedText.new('1', 'Summary')
@@ -238,7 +251,8 @@ class TaskJuggler
         next if task.parent &&
                 task.parent['startpreds', @scenarioIdx].include?([ dt, onEnd ])
         t << (pl = XMLElement.new('PredecessorLink'))
-        pl << XMLNamedText.new(dt.sequenceNo.to_s, 'PredecessorUID')
+        pl << XMLNamedText.new(@taskList[dt].get('index').to_s,
+                               'PredecessorUID')
         pl << XMLNamedText.new(onEnd ? '1' : '3', 'Type')
       end
       task['endpreds', @scenarioIdx].each do |dt, onEnd|
@@ -246,26 +260,10 @@ class TaskJuggler
         next if task.parent &&
                 task.parent['endpreds', @scenarioIdx].include?([ dt, onEnd ])
         t << (pl = XMLElement.new('PredecessorLink'))
-        pl << XMLNamedText.new(dt.sequenceNo.to_s, 'PredecessorUID')
+        pl << XMLNamedText.new(@taskList[dt].get('index').to_s,
+                               'PredecessorUID')
         pl << XMLNamedText.new(onEnd ? '0' : '2', 'Type')
       end
-
-      #days = (task['end', @scenarioIdx] - task['start', @scenarioIdx]) /
-      #       (24 * 60 * 60)
-      #ivStart = task['start', @scenarioIdx]
-      #i = 0
-      #while ivStart < task['end', @scenarioIdx]
-      #  t << (td = XMLElement.new('TimephasedData'))
-      #  td << XMLNamedText.new(ivStart > @project['now'] ? '1' : '2', 'Type')
-      #  td << XMLNamedText.new(ivStart.to_s(@timeformat), 'Start')
-      #  td << XMLNamedText.new((ivStart + 24 * 60 * 60).to_s(@timeformat),
-      #                         'Finish')
-      #  td << XMLNamedText.new('2', 'Unit')
-      #  td << XMLNamedText.new((100.0 / days).to_s, 'Value')
-
-      #  ivStart += 24 * 60 * 60
-      #  i += 1
-      #end
     end
 
     def generateResource(resources, resource, calendars)
@@ -274,10 +272,27 @@ class TaskJuggler
       return unless resource.leaf?
 
       resources << (r = XMLElement.new('Resource'))
-      r << XMLNamedText.new(resource.sequenceNo.to_s, 'UID')
+      r << XMLNamedText.new(resource.get('index').to_s, 'UID')
       # All TJ resources are people or equipment.
       r << XMLNamedText.new('1', 'Type')
       r << XMLNamedText.new(resource.name, 'Name')
+      r << XMLNamedText.new(resource.id, 'Initials')
+      # MS Project seems to use hourly rates, TJ daily rates.
+      rate = (resource['rate', @scenarioIdx] / @project.dailyWorkingHours).to_s
+      r << XMLNamedText.new(rate, 'StandardRate')
+      r << XMLNamedText.new(rate, 'OvertimeRate')
+      r << XMLNamedText.new(resource['efficiency', @scenarioIdx].to_s,
+                            'MaxUnits')
+      if (email = resource.get('email'))
+        r << XMLNamedText.new(email, 'EmailAddress')
+      end
+      #if (code = resource.get('Code'))
+      #  r << XMLNamedText.new(code, 'Code')
+      #  r << XMLNamedText.new('1', 'IsEnterprise')
+      #end
+      #if (ntaccount = resource.get('NTAccount'))
+      #  r << XMLNamedText.new(ntaccount, 'NTAccount')
+      #end
       # Generate a calendar for this resource and assign it.
       generateCalendar(calendars, resource['workinghours', @scenarioIdx],
                        "calendar #{resource.fullId}",
@@ -288,8 +303,13 @@ class TaskJuggler
     def generateAssignment(assignments, booking, uid)
       assignments << (a = XMLElement.new('Assignment'))
       a << XMLNamedText.new(uid.to_s, 'UID')
-      a << XMLNamedText.new(booking.task.sequenceNo.to_s, 'TaskUID')
-      a << XMLNamedText.new(booking.resource.sequenceNo.to_s, 'ResourceUID')
+      a << XMLNamedText.new(@taskList[booking.task].get('index').to_s,
+                            'TaskUID')
+      a << XMLNamedText.new(@resourceList[booking.resource].get('index').to_s,
+                            'ResourceUID')
+      a << XMLNamedText.new(booking.resource['efficiency', @scenarioIdx].to_s,
+                            'Units')
+      a << XMLNamedText.new('100.0', 'Cost')
       a << XMLNamedText.new(booking.task['complete', @scenarioIdx].to_i.to_s,
                             'PercentWorkComplete')
       booking.intervals.each do |iv|

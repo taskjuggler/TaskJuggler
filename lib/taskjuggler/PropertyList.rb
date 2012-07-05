@@ -12,6 +12,7 @@
 #
 
 require 'taskjuggler/PTNProxy'
+require 'taskjuggler/MessageHandler'
 
 class TaskJuggler
 
@@ -23,6 +24,8 @@ class TaskJuggler
   # direction (up/down). All nodes in the PropertyList must belong to the same
   # PropertySet.
   class PropertyList
+
+    include MessageHandler
 
     attr_writer :query
     attr_reader :propertySet, :query, :sortingLevels, :sortingCriteria,
@@ -70,6 +73,33 @@ class TaskJuggler
         end
       end
       append(adopted)
+    end
+
+    # Make sure that the list does not contain the same PropertyTreeNode more
+    # than once. This could happen for adopted tasks. If you use
+    # includeAdopted(), you should call this method after filtering to see if
+    # the filter was strict enough.
+    def checkForDuplicates(sourceFileInfo)
+      ptns = []
+      @items.each do |i|
+        if ptns.include?(i.ptn)
+          error('proplist_duplicate',
+                "The adopted property #{i.fullId} is included " +
+                'multiple times. Please use stronger filtering to ' +
+                'avoid including the property more than once!', sourceFileInfo)
+        end
+        ptns << i.ptn
+      end
+    end
+
+
+    # Specialized version of Array::include? that also matches adopted tasks.
+    def include?(ptn)
+      !@items.find { |p| p.ptn == ptn }.nil?
+    end
+
+    def [](ptn)
+      @items.find { |n| n.ptn == ptn }
     end
 
     def to_ary

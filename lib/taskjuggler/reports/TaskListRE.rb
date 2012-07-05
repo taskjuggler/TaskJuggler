@@ -42,6 +42,7 @@ class TaskJuggler
                                 @report.get('rollupTask'),
                                 @report.get('openNodes'))
       taskList.sort!
+      taskList.checkForDuplicates(@report.sourceFileInfo)
 
       # Prepare the resource list. Don't filter it yet! It would break the
       # *_() LogicalFunctions.
