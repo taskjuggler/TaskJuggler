@@ -80,26 +80,27 @@ class TaskJuggler
     # includeAdopted(), you should call this method after filtering to see if
     # the filter was strict enough.
     def checkForDuplicates(sourceFileInfo)
-      ptns = []
+      ptns = {}
       @items.each do |i|
         if ptns.include?(i.ptn)
           error('proplist_duplicate',
-                "The adopted property #{i.fullId} is included " +
-                'multiple times. Please use stronger filtering to ' +
-                'avoid including the property more than once!', sourceFileInfo)
+                "An adopted property is included as #{i.logicalId} and " +
+                "as #{ptns[i.ptn].logicalId}. Please use stronger filtering " +
+                'to avoid including the property more than once!',
+                sourceFileInfo)
         end
-        ptns << i.ptn
+        ptns[i.ptn] = i
       end
     end
 
 
     # Specialized version of Array::include? that also matches adopted tasks.
-    def include?(ptn)
-      !@items.find { |p| p.ptn == ptn }.nil?
+    def include?(node)
+      !@items.find { |p| p.ptn == node.ptn }.nil?
     end
 
-    def [](ptn)
-      @items.find { |n| n.ptn == ptn }
+    def [](node)
+      @items.find { |n| n.ptn == node.ptn }
     end
 
     def to_ary
@@ -134,6 +135,7 @@ class TaskJuggler
       end
 
       @items.concat(list)
+      raise "Duplicate items" if @items != @items.uniq
       sort!
     end
 

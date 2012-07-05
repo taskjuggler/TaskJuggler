@@ -1017,7 +1017,7 @@ EOT
 
   def rule_export
     pattern(%w( !exportHeader !exportBody ), lambda {
-      @property = nil
+      @property = @property.parent
     })
     doc('export', <<'EOT'
 The export report looks like a regular TaskJuggler file with the provided
@@ -3621,6 +3621,7 @@ EOT
 
   def rule_reports
     pattern(%w( !accountReport ))
+    pattern(%w( !export ))
     pattern(%w( !resourceReport ))
     pattern(%w( !taskReport ))
     pattern(%w( !textReport ))
@@ -4423,7 +4424,6 @@ EOT
   end
 
   def rule_reportProperties
-    pattern(%w( !export ))
     pattern(%w( !iCalReport ))
     pattern(%w( !nikuReport ))
     pattern(%w( !reports ))

@@ -25,11 +25,24 @@ class TaskJuggler
 
     def initialize(ptn, parent)
       @ptn = ptn
-      raise "Adopted classes must have a parent" unless parent
+      raise "Adopted properties must have a parent" unless parent
       @parent = parent
       @indext =  nil
       @tree = nil
       @level = -1
+    end
+
+    # Return the logical ID of this node respesting adoptions. For PropertySet
+    # objects with a flat namespace, this is just the ID. Otherwise, the
+    # logical ID is composed of all IDs from the root node to this node,
+    # separating the IDs by a dot. In contrast to PropertyTreeNode::fullId()
+    # the logicalId takes the aption path into account.
+    def logicalId
+      if @ptn.propertySet.flatNamespace
+        @ptn.id
+      else
+        @parent.logicalId + '.' + @ptn.id[(@ptn.id.rindex('.') + 1).. -1]
+      end
     end
 
     def set(attribute, val)

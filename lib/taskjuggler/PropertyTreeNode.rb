@@ -283,6 +283,10 @@ class TaskJuggler
       res
     end
 
+    def logicalId
+      fullId
+    end
+
     # Return the full id of this node. For PropertySet objects with a flat
     # namespace, this is just the ID. Otherwise, the full ID is composed of all
     # IDs from the root node to this node, separating the IDs by a dot.

@@ -178,6 +178,7 @@ class TaskJuggler
       t << XMLNamedText.new((task.level -
                              (a('taskroot') ? a('taskroot').level : 0)).to_s,
                              'OutlineLevel')
+      t << XMLNamedText.new(task['priority', @scenarioIdx].to_s, 'Priority')
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
                             'Start')
       t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
