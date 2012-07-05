@@ -6367,8 +6367,10 @@ EOT
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'
-This is mostly for internal use. It specifies that the task can be ignored for
-scheduling in the scenario.
+This is mostly for internal use. It specifies that the task should be ignored
+for scheduling in the scenario. This option only makes sense if you provide
+all resource [[booking.resource|bookings]] manually. Without booking
+statements, the task will be reported with 0 effort and no resources assigned.
 EOT
        )
 
