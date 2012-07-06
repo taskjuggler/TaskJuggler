@@ -35,6 +35,8 @@ class TaskJuggler
 
     # Return the project data in Microsoft Project XML format.
     def to_mspxml
+      @query = @project.reportContexts.last.query.dup
+
       # Prepare the resource list.
       @resourceList = PropertyList.new(@project.resources)
       @resourceList.setSorting(a('sortResources'))
@@ -128,7 +130,7 @@ class TaskJuggler
       i = 0
       @bookings.each do |task, resources|
         resources.each do |resource, booking|
-          generateAssignment(assignments, booking, i)
+          generateAssignment(assignments, task, booking, i)
           i += 1
         end
       end
@@ -162,6 +164,7 @@ class TaskJuggler
     end
 
     def generateTask(tasks, task)
+      @query.property = task
       task.calcCompletion(@scenarioIdx)
       percentComplete = task['complete', @scenarioIdx]
 
@@ -210,7 +213,9 @@ class TaskJuggler
       end
 
       if task.container?
-        t << XMLNamedText.new('1', 'Summary')
+        rollupTask = a('rollupTask')
+        t << XMLNamedText.new(rollupTask && rollupTask.eval(@query) ? '0' : '1',
+                              'Summary')
       else
         t << XMLNamedText.new('0', 'Summary')
         t << XMLNamedText.new('0', 'Estimated')
@@ -301,17 +306,17 @@ class TaskJuggler
       r << XMLNamedText.new("calendar #{resource.fullId}", 'CalendarUID')
     end
 
-    def generateAssignment(assignments, booking, uid)
+    def generateAssignment(assignments, task, booking, uid)
       assignments << (a = XMLElement.new('Assignment'))
       a << XMLNamedText.new(uid.to_s, 'UID')
-      a << XMLNamedText.new(@taskList[booking.task].get('index').to_s,
+      a << XMLNamedText.new(@taskList[task].get('index').to_s,
                             'TaskUID')
       a << XMLNamedText.new(@resourceList[booking.resource].get('index').to_s,
                             'ResourceUID')
       a << XMLNamedText.new(booking.resource['efficiency', @scenarioIdx].to_s,
                             'Units')
       a << XMLNamedText.new('100.0', 'Cost')
-      a << XMLNamedText.new(booking.task['complete', @scenarioIdx].to_i.to_s,
+      a << XMLNamedText.new(task['complete', @scenarioIdx].to_i.to_s,
                             'PercentWorkComplete')
       booking.intervals.each do |iv|
         a << (td = XMLElement.new('TimephasedData'))
@@ -335,13 +340,31 @@ class TaskJuggler
 
         # Now convert/add them to a double-stage hash by task and then resource.
         bookings.each do |task, booking|
-          next unless @taskList.include?(task)
+          if !@taskList.include?(task)
+            next unless (task = findRolledUpParent(task))
+          end
 
           if !@bookings.include?(task)
             @bookings[task] = {}
           end
           @bookings[task][resource] = booking
         end
+      end
+    end
+
+    def findRolledUpParent(task)
+      return nil unless (rollupTask = a('rollupTask'))
+
+      hideTask = a('hideTask')
+      while task
+        @query.property = task
+        # We don't want to include any tasks that are explicitely hidden via
+        # 'hidetask'.
+        return nil if hideTask && hideTask.eval(@query)
+
+        return task if rollupTask.eval(@query) && @taskList.include?(task)
+
+        task = task.parent
       end
     end
 
