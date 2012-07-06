@@ -1072,8 +1072,10 @@ EOT
 
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
+    pattern(%w( !purge ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
+    pattern(%w( !reports ))
     pattern(%w( !reportStart ))
 
     pattern(%w( _resourceattributes !exportableResourceAttributes ), lambda {
