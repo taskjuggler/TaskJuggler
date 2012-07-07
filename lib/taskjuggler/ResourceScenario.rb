@@ -549,14 +549,14 @@ class TaskJuggler
         end
       else
         if task
-          # If we have a know task, we only include the amount that is
+          # If we have a known task, we only include the amount that is
           # specific to this resource, this task and the chargeset of the
           # task.
           amount += task.turnover(@scenarioIdx, startIdx, endIdx, account,
                                   @property)
         elsif !@chargeset.empty?
           # If no tasks was provided, we include the amount of this resource,
-          # weighted by the charset of this resource.
+          # weighted by the chargeset of this resource.
           totalResourceCost = cost(startIdx, endIdx)
           @chargeset.each do |set|
             set.each do |accnt, share|

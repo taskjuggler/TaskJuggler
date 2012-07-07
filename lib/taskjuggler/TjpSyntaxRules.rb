@@ -616,7 +616,7 @@ consists of one or more accounts. Each account must be a leaf account. The
 account ID may be followed by a percentage value that determines the share for
 this account. The total percentage of all accounts must be exactly 100%. If
 some accounts don't have a percentage specification, the remainder to 100% is
-distributed evenly to them.
+distributed evenly between them.
 EOT
        )
   end

@@ -2469,9 +2469,13 @@ class TaskJuggler
         end
       end
 
+      # If we are evaluating the task in the context of a specific resource,
+      # we use the chargeset of that resource, not the chargeset of the task.
+      chargeset = resource ? resource['chargeset', @scenarioIdx] : @chargeset
+
       # If there are no chargeset defined for this task, we don't need to
       # compute the resource related or other cost.
-      unless @chargeset.empty?
+      unless chargeset.empty?
         resourceCost = 0.0
         otherCost = 0.0
 
@@ -2501,7 +2505,7 @@ class TaskJuggler
 
         totalCost = resourceCost + otherCost
         # Now weight the total cost by the share of the account
-        @chargeset.each do |set|
+        chargeset.each do |set|
           set.each do |accnt, share|
             if share > 0.0 && (accnt == account || accnt.isChildOf?(account))
               amount += totalCost * share
