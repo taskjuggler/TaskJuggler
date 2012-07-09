@@ -318,13 +318,30 @@ class TaskJuggler
       a << XMLNamedText.new('100.0', 'Cost')
       a << XMLNamedText.new(task['complete', @scenarioIdx].to_i.to_s,
                             'PercentWorkComplete')
-      booking.intervals.each do |iv|
+
+      # We provide assignement data on a day-by-day basis. We report the work
+      # that happens each day from task start to task end.
+      tStart = task['start', @scenarioIdx].midnight
+      tEnd = task['end', @scenarioIdx].midnight.sameTimeNextDay
+      t = tStart
+      @query.property = booking.resource
+      @query.scopeProperty = task
+      @query.attributeId = 'effort'
+      @query.scenarioIdx = @scenarioIdx
+      while t < tEnd
+        tn = t.sameTimeNextDay
+        @query.start = t
+        @query.end = tn
+        @query.process
+        workSeconds = @query.to_num * @project.dailyWorkingHours * 3600
         a << (td = XMLElement.new('TimephasedData'))
-        td << XMLNamedText.new(iv.start > @project['now'] ? '1' : '2', 'Type')
-        td << XMLNamedText.new(iv.start.to_s(@timeformat), 'Start')
-        td << XMLNamedText.new(iv.end.to_s(@timeformat), 'Finish')
-        td << XMLNamedText.new('2', 'Unit')
-        td << XMLNamedText.new(durationToMsp(iv.duration), 'Value')
+        td << XMLNamedText.new(uid.to_s, 'UID')
+        td << XMLNamedText.new(t > @project['now'] ? '1' : '2', 'Type')
+        td << XMLNamedText.new(t.to_s(@timeformat), 'Start')
+        td << XMLNamedText.new((tn - 1).to_s(@timeformat), 'Finish')
+        td << XMLNamedText.new('1', 'Unit')
+        td << XMLNamedText.new(durationToMsp(workSeconds), 'Value')
+        t = tn
       end
     end
 
