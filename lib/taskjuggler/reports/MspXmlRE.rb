@@ -123,14 +123,19 @@ class TaskJuggler
     end
 
     def generateAssignments(project)
-      getBookings
-
       project << (assignments = XMLElement.new('Assignments'))
 
       i = 0
-      @bookings.each do |task, resources|
-        resources.each do |resource, booking|
-          generateAssignment(assignments, task, booking, i)
+      @taskList.each do |task|
+        rollupTask = a('rollupTask')
+        @query.property = task
+        @query.scopeProperty = nil
+        # We only generate assignments for leaf tasks and rolled-up container
+        # tasks.
+        next if (task.container? && !(rollupTask && rollupTask.eval(@query)))
+
+        task.assignedResources(@scenarioIdx).each do |resource|
+          generateAssignment(assignments, task, resource, i)
           i += 1
         end
       end
@@ -306,30 +311,63 @@ class TaskJuggler
       r << XMLNamedText.new("calendar #{resource.fullId}", 'CalendarUID')
     end
 
-    def generateAssignment(assignments, task, booking, uid)
+    def generateAssignment(assignments, task, resource, uid)
       assignments << (a = XMLElement.new('Assignment'))
       a << XMLNamedText.new(uid.to_s, 'UID')
       a << XMLNamedText.new(@taskList[task].get('index').to_s,
                             'TaskUID')
-      a << XMLNamedText.new(@resourceList[booking.resource].get('index').to_s,
+      a << XMLNamedText.new(resource.get('index').to_s,
                             'ResourceUID')
-      a << XMLNamedText.new(booking.resource['efficiency', @scenarioIdx].to_s,
+      a << XMLNamedText.new(resource['efficiency', @scenarioIdx].to_s,
                             'Units')
       a << XMLNamedText.new('100.0', 'Cost')
       a << XMLNamedText.new(task['complete', @scenarioIdx].to_i.to_s,
                             'PercentWorkComplete')
 
-      # We provide assignement data on a day-by-day basis. We report the work
-      # that happens each day from task start to task end.
-      tStart = task['start', @scenarioIdx].midnight
-      tEnd = task['end', @scenarioIdx].midnight.sameTimeNextDay
-      t = tStart
-      @query.property = booking.resource
+      # Setup the query for this task and resource.
+      @query.property = resource
       @query.scopeProperty = task
       @query.attributeId = 'effort'
       @query.scenarioIdx = @scenarioIdx
+      @query.start = task['start', @scenarioIdx]
+      @query.end = task['end', @scenarioIdx]
+      @query.process
+
+      workSeconds = @query.to_num * @project.dailyWorkingHours * 3600
+
+      # We provide assignement data on a day-by-day basis. We report the work
+      # that happens each day from task start to task end.
+      case a('loadUnit')
+      when :hours
+        # MS Project can't really handle data with an hourly accuracy. We just
+        # store the total effort for the task/resource combination and let MS
+        # Project do some scheduling. Of course this has little to do with
+        # the schedule and assignments that match our project. But it's still
+        # better than nothing.
+        a << XMLNamedText.new(durationToMsp(workSeconds), 'Work')
+        return
+      when :days
+        tStart = task['start', @scenarioIdx].midnight
+        stepFunc = :sameTimeNextDay
+      when :weeks
+        tStart = task['start', @scenarioIdx].beginOfWeek(a('weekStartsMonday'))
+        stepFunc = :sameTimeNextWeek
+      when :months
+        tStart = task['start', @scenarioIdx].beginOfMonth
+        stepFunc = :sameTimeNextMonth
+      when :quarters
+        tStart = task['start', @scenarioIdx].beginOfQuarter
+        stepFunc = :sameTimeNextQuarter
+      when :years
+        tStart = task['start', @scenarioIdx].beginOfYear
+        stepFunc = :sameTimeNextYear
+      else
+        raise "Unknown loadunit #{a('loadUnit')}"
+      end
+      tEnd = task['end', @scenarioIdx]
+      t = tStart
       while t < tEnd
-        tn = t.sameTimeNextDay
+        tn = t.send(stepFunc)
         @query.start = t
         @query.end = tn
         @query.process
@@ -342,30 +380,6 @@ class TaskJuggler
         td << XMLNamedText.new('1', 'Unit')
         td << XMLNamedText.new(durationToMsp(workSeconds), 'Value')
         t = tn
-      end
-    end
-
-    # Get the booking data for all resources that should be included in the
-    # report.
-    def getBookings
-      @bookings = {}
-      @resourceList.each do |resource|
-        # Get the bookings for this resource hashed by task.
-        bookings = resource.getBookings(
-          @scenarioIdx, TimeInterval.new(a('start'), a('end')))
-        next if bookings.nil?
-
-        # Now convert/add them to a double-stage hash by task and then resource.
-        bookings.each do |task, booking|
-          if !@taskList.include?(task)
-            next unless (task = findRolledUpParent(task))
-          end
-
-          if !@bookings.include?(task)
-            @bookings[task] = {}
-          end
-          @bookings[task][resource] = booking
-        end
       end
     end
 

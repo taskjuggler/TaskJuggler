@@ -1072,6 +1072,7 @@ EOT
 
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
+    pattern(%w( !loadunit ))
     pattern(%w( !purge ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
@@ -1168,9 +1169,12 @@ Export of the scheduled project in Microsoft Project XML format. This will
 export the data of the fully scheduled project. The exported data include the
 tasks, resources and the assignments of resources to task. This is only a
 small subset of the data that TaskJuggler can manage. This export is only
-intended to share resource assignement data with other teams using Microsoft
-Project. It's not a feature to migrate your projects from TaskJuggler to
-Microsoft Project.
+intended to share resource assignment data with other teams using Microsoft
+Project. You can control the granularity of the exported assignments by
+setting the [[loadunit]] attribute. Since MS Project apparently can't deal
+with a granularity of 1 hour or less, the loadunit ''''hours'''' results in
+automatically assigned slots by MS Project. It's not a feature to migrate your
+projects from TaskJuggler to Microsoft Project.
 EOT
          )
   end
@@ -1184,19 +1188,31 @@ EOT
   def rule_exportHeader
     pattern(%w( _export !optionalID $STRING ), lambda {
       newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
-      @property.set('formats', [ :tjp ])
+      unless @property.modified?('formats')
+        @property.set('formats', [ :tjp ])
+      end
 
       # By default, we export all scenarios.
-      scenarios = Array.new(@project.scenarios.items) { |i| i }
-      scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
-      @property.set('scenarios', scenarios)
+      unless @property.modified?('scenarios')
+        scenarios = Array.new(@project.scenarios.items) { |i| i }
+        scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
+        @property.set('scenarios', scenarios)
+      end
       # Show all tasks, sorted by seqno-up.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      unless @property.modified?('hideTask')
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortTasks')
+        @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+      end
       # Show all resources, sorted by seqno-up.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      unless @property.modified?('hideResource')
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+      end
+      unless @property.modified?('sortResources')
+        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      end
     })
     arg(2, 'file name', <<'EOT'
 The name of the report file to generate. It must end with a .tjp or .tji
@@ -2504,6 +2520,16 @@ EOT
   end
 
   def rule_loadunit
+    pattern(%w( _loadunit !loadunitName ), lambda {
+      @property.set('loadUnit', @val[1])
+    })
+    doc('loadunit', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
+  end
+
+  def rule_loadunitName
     pattern([ '_days' ], lambda { :days })
     descr('Display all load and duration values as days.')
 
@@ -4202,13 +4228,7 @@ EOT
        )
     example('textreport')
 
-    pattern(%w( _loadunit !loadunit ), lambda {
-      @property.set('loadUnit', @val[1])
-    })
-    doc('loadunit', <<'EOT'
-Determines what unit should be used to display all load values in this report.
-EOT
-       )
+    pattern(%w( !loadunit ))
 
     pattern(%w( !numberFormat ), lambda {
       @property.set('numberFormat', @val[0])

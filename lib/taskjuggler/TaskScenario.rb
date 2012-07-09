@@ -1671,7 +1671,8 @@ class TaskJuggler
 
     # Gather a list of Resource objects that have been assigned to the task
     # (including sub tasks) for the given Interval _interval_.
-    def assignedResources(interval)
+    def assignedResources(interval = nil)
+      interval = Interval.new(a('start'), a('end')) unless interval
       list = []
 
       if @property.container?
