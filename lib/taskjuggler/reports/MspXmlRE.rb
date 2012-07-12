@@ -368,15 +368,20 @@ class TaskJuggler
       t = tStart
       while t < tEnd
         tn = t.send(stepFunc)
-        @query.start = t
-        @query.end = tn
+        # We need to make sure that the stored intervals are within the task
+        # boundaries. tn and tnc are corrected versions of t and tn that meet
+        # this criterium.
+        tc = t < task['start', @scenarioIdx] ? task['start', @scenarioIdx] : t
+        tnc = tn > task['end', @scenarioIdx] ? task['end', @scenarioIdx] : tn
+        @query.start = tc
+        @query.end = tnc
         @query.process
         workSeconds = @query.to_num * @project.dailyWorkingHours * 3600
         a << (td = XMLElement.new('TimephasedData'))
         td << XMLNamedText.new(uid.to_s, 'UID')
-        td << XMLNamedText.new(t > @project['now'] ? '1' : '2', 'Type')
-        td << XMLNamedText.new(t.to_s(@timeformat), 'Start')
-        td << XMLNamedText.new((tn - 1).to_s(@timeformat), 'Finish')
+        td << XMLNamedText.new(tc > @project['now'] ? '1' : '2', 'Type')
+        td << XMLNamedText.new(tc.to_s(@timeformat), 'Start')
+        td << XMLNamedText.new((tnc - 1).to_s(@timeformat), 'Finish')
         td << XMLNamedText.new('1', 'Unit')
         td << XMLNamedText.new(durationToMsp(workSeconds), 'Value')
         t = tn
