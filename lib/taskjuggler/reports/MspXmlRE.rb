@@ -177,9 +177,9 @@ class TaskJuggler
       t << XMLNamedText.new(task.get('index').to_s, 'UID')
       t << XMLNamedText.new(task.get('index').to_s, 'ID')
       t << XMLNamedText.new('1', 'Active')
-      t << XMLNamedText.new('2', 'Type')
+      t << XMLNamedText.new('0', 'Type')
       t << XMLNamedText.new('0', 'IsNull')
-      t << XMLNamedText.new('0', 'Manual')
+      t << XMLNamedText.new('1', 'Manual')
       t << XMLNamedText.new(task.get('name'), 'Name')
       t << XMLNamedText.new(task.get('bsi'), 'WBS')
       t << XMLNamedText.new(task.get('bsi'), 'OutlineNumber')
@@ -339,13 +339,8 @@ class TaskJuggler
       # that happens each day from task start to task end.
       case a('loadUnit')
       when :hours
-        # MS Project can't really handle data with an hourly accuracy. We just
-        # store the total effort for the task/resource combination and let MS
-        # Project do some scheduling. Of course this has little to do with
-        # the schedule and assignments that match our project. But it's still
-        # better than nothing.
-        a << XMLNamedText.new(durationToMsp(workSeconds), 'Work')
-        return
+        tStart = task['start', @scenarioIdx].beginOfHour
+        stepFunc = :sameTimeNextHour
       when :days
         tStart = task['start', @scenarioIdx].midnight
         stepFunc = :sameTimeNextDay
@@ -362,17 +357,24 @@ class TaskJuggler
         tStart = task['start', @scenarioIdx].beginOfYear
         stepFunc = :sameTimeNextYear
       else
-        raise "Unknown loadunit #{a('loadUnit')}"
+        # The loadunits shortauto and longauto don't make sense for this
+        # report. We use them to not export any fixed assignements, but only
+        # the total effort of the resource and let MS Project figure out the
+        # slots.
+        a << XMLNamedText.new(durationToMsp(workSeconds), 'Work')
+        return
       end
       tEnd = task['end', @scenarioIdx]
       t = tStart
       while t < tEnd
         tn = t.send(stepFunc)
         # We need to make sure that the stored intervals are within the task
-        # boundaries. tn and tnc are corrected versions of t and tn that meet
-        # this criterium.
+        # and report boundaries. tn and tnc are corrected versions of t and tn
+        # that meet this criterium.
         tc = t < task['start', @scenarioIdx] ? task['start', @scenarioIdx] : t
+        tc = tc < a('start') ? a('start') : tc
         tnc = tn > task['end', @scenarioIdx] ? task['end', @scenarioIdx] : tn
+        tnc = tnc > a('end') ? a('end') : tnc
         @query.start = tc
         @query.end = tnc
         @query.process
