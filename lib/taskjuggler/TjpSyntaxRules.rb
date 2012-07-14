@@ -1072,7 +1072,18 @@ EOT
 
     pattern(%w( !hideresource ))
     pattern(%w( !hidetask ))
+
     pattern(%w( !loadunit ))
+    doc('loadunit.export', <<'EOT'
+Determines the resolution of the exported data in Microsoft Project XML
+format. ''WARNING:'' It is strongly recommended to use ''''quarters'''' or
+''''years''''. A finer granularity will cause MS Project to take hours to load
+the file!. Alternatively, ''''shortauto'''' or ''''longauto'''' can be
+used. In this case, only the total effort per resource per task will
+be exported ans MS Project will reschedule the assignments.
+EOT
+       )
+
     pattern(%w( !purge ))
     pattern(%w( !reportEnd ))
     pattern(%w( !reportPeriod ))
@@ -1171,10 +1182,9 @@ tasks, resources and the assignments of resources to task. This is only a
 small subset of the data that TaskJuggler can manage. This export is only
 intended to share resource assignment data with other teams using Microsoft
 Project. You can control the granularity of the exported assignments by
-setting the [[loadunit]] attribute. Since MS Project apparently can't deal
-with a granularity of 1 hour or less, the loadunit ''''hours'''' results in
-automatically assigned slots by MS Project. It's not a feature to migrate your
-projects from TaskJuggler to Microsoft Project.
+setting the [[loadunit.export]] attribute. These reports are not designed to
+migrate your projects from TaskJuggler to Microsoft Project or even to use
+both tools in parallel to manage your project.
 EOT
          )
   end
@@ -2523,10 +2533,6 @@ EOT
     pattern(%w( _loadunit !loadunitName ), lambda {
       @property.set('loadUnit', @val[1])
     })
-    doc('loadunit', <<'EOT'
-Determines what unit should be used to display all load values in this report.
-EOT
-       )
   end
 
   def rule_loadunitName
@@ -3668,14 +3674,14 @@ EOT
     singlePattern('_annualleave')
     descr(<<'EOT'
 The number of annual leave units within the reported time period. The unit
-can be adjusted with [[loadunit]].
+can be adjusted with [[loadunit.report]].
 EOT
          )
 
     singlePattern('_annualleavebalance')
     descr(<<'EOT'
 The balance of the annual leave at the end of the reporting interval. The unit
-can be adjusted with [[loadunit]].
+can be adjusted with [[loadunit.report]].
 EOT
          )
 
@@ -4024,14 +4030,14 @@ EOT
     singlePattern('_sickleave')
     descr(<<'EOT'
 The number of sick leave units within the reported time period. The unit can
-be adjusted with [[loadunit]].
+be adjusted with [[loadunit.report]].
 EOT
          )
 
     singlePattern('_specialleave')
     descr(<<'EOT'
 The number of special leave units within the reported time period. The unit
-can be adjusted with [[loadunit]].
+can be adjusted with [[loadunit.report]].
 EOT
          )
 
@@ -4065,7 +4071,7 @@ EOT
     singlePattern('_unpaidleave')
     descr(<<'EOT'
 The number of unpaid leave units within the reported time period. The unit
-can be adjusted with [[loadunit]].
+can be adjusted with [[loadunit.report]].
 EOT
          )
 
@@ -4229,6 +4235,10 @@ EOT
     example('textreport')
 
     pattern(%w( !loadunit ))
+    doc('loadunit.report', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
 
     pattern(%w( !numberFormat ), lambda {
       @property.set('numberFormat', @val[0])
