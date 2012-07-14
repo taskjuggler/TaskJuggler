@@ -2011,7 +2011,7 @@ EOT
       # Make sure the interval aligns with the timing resolution.
       if duration % resolution != 0
         error('iv_duration_not_aligned',
-              "The interval duration must be a multiple of the specified" +
+              "The interval duration must be a multiple of the specified " +
               "timing resolution (#{resolution / 60} min) of the project.")
       end
       duration
