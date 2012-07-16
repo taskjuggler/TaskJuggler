@@ -736,7 +736,7 @@ which cells the text should be used. If multiple celltext patterns are
 provided for a column, the first matching one is taken for each cell.
 EOT
         )
-    arg(1, 'text',
+    arg(2, 'text',
         'Alterntive cell text specified as [[Rich_Text_Attributes|Rich Text]]')
 
     pattern(%w( _cellcolor !logicalExpression !color ), lambda {
