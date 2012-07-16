@@ -28,17 +28,23 @@ task t2 "Task 2" {
 # *** EXAMPLE: 1 -
 # *** EXAMPLE: 2 +
 # Export the project as fully scheduled project.
-export "FullProject.tjp" {
+export "FullProject" {
   definitions *
   taskattributes *
   hideresource 0
 }
 
 # Export only bookings for 1st week as resource supplements
-export "Week1Bookings.tji" {
+export "Week1Bookings" {
   definitions -
   start 2007-01-01
   end 2007-01-08
   taskattributes booking
   hideresource 0
+}
+
+# Export the scheduled project as Microsoft Project XML format.
+export "MS-Project" {
+  formats mspxml
+  loadunit quarters
 }
