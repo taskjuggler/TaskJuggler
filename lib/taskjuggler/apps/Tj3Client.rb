@@ -149,7 +149,7 @@ EOT
                         'purposes.')) do |arg|
           @unsafeMode = true
         end
-        @opts.on('--format [FORMAT]', [ :csv, :html, :niku, :tjp ],
+        @opts.on('--format [FORMAT]', [ :csv, :html, :mspxml, :niku, :tjp ],
                  format('Request the report to be generated in the specified' +
                         'format. Use multiple options to request multiple ' +
                         'formats. Supported formats are csv, html, niku and ' +
