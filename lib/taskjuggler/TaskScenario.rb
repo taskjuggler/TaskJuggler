@@ -2257,7 +2257,7 @@ class TaskJuggler
           return nil unless (comp = child.calcCompletion(@scenarioIdx))
           completion += comp
         end
-        completion /= @property.children.length
+        completion /= @property.kids.length
       else
         # For leaf tasks we first compare the start and end dates against the
         # current date.
