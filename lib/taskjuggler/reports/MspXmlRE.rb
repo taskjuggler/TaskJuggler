@@ -321,6 +321,7 @@ class TaskJuggler
       a << XMLNamedText.new(resource['efficiency', @scenarioIdx].to_s,
                             'Units')
       a << XMLNamedText.new('100.0', 'Cost')
+      a << XMLNamedText.new('8', 'WorkContour')
       a << XMLNamedText.new(task['complete', @scenarioIdx].to_i.to_s,
                             'PercentWorkComplete')
 
