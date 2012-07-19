@@ -26,6 +26,8 @@ class TaskJuggler
     def initialize(report)
       super(report)
       @scenarioIdx = 0
+      # Hash to map calendar names to UIDs (numbers).
+      @calendarUIDs = {}
       @timeformat = "%Y-%m-%dT%H:%M:%S"
     end
 
@@ -91,6 +93,18 @@ class TaskJuggler
       p << XMLNamedText.new((@project.yearlyWorkingDays / 12).to_s,
                             'DaysPerMonth')
       p << XMLNamedText.new(@project['now'].to_s(@timeformat), 'StatusDate')
+      loadUnitsMap = {
+        :minutes => 1,
+        :hours => 2,
+        :days => 3,
+        :weeks => 4,
+        :months => 5,
+        :quarters => 5,
+        :years => 5,
+        :shortAuto => 3,
+        :longAuto => 3
+      }
+      p << XMLNamedText.new(loadUnitsMap[a('loadUnit')].to_s, 'WorkFormat')
       p << XMLNamedText.new('1', 'NewTasksAreManual')
       p << XMLNamedText.new('0', 'SpreadPercentComplete')
       rate = (@project['rate'] / @project.dailyWorkingHours).to_s
@@ -101,7 +115,7 @@ class TaskJuggler
       #p << XMLNamedText.new('0', 'MicrosoftProjectServerURL')
 
       p << (calendars = XMLElement.new('Calendars'))
-      generateCalendar(calendars, @project['workinghours'], '1', 'Standard')
+      generateCalendar(calendars, @project['workinghours'], 'Standard')
 
       calendars
     end
@@ -141,8 +155,10 @@ class TaskJuggler
       end
     end
 
-    def generateCalendar(calendars, workinghours, uid, name)
+    def generateCalendar(calendars, workinghours, name)
       calendars << (cal = XMLElement.new('Calendar'))
+      uid = @calendarUIDs.length.to_s
+      @calendarUIDs[name] = uid
       cal << XMLNamedText.new(uid, 'UID')
       cal << XMLNamedText.new(name, 'Name')
       cal << XMLNamedText.new('1', 'IsBaseCalendar')
@@ -306,9 +322,9 @@ class TaskJuggler
       #end
       # Generate a calendar for this resource and assign it.
       generateCalendar(calendars, resource['workinghours', @scenarioIdx],
-                       "calendar #{resource.fullId}",
                        "Calendar #{resource.name}")
-      r << XMLNamedText.new("calendar #{resource.fullId}", 'CalendarUID')
+      r << XMLNamedText.new(@calendarUIDs["Calendar #{resource.name}"],
+                            'CalendarUID')
     end
 
     def generateAssignment(assignments, task, resource, uid)
@@ -336,26 +352,28 @@ class TaskJuggler
 
       workSeconds = @query.to_num * @project.dailyWorkingHours * 3600
 
+      tStart = task['start', @scenarioIdx]
+      tStart = a('start') if tStart < a('start')
       # We provide assignement data on a day-by-day basis. We report the work
       # that happens each day from task start to task end.
       case a('loadUnit')
-      when :hours
-        tStart = task['start', @scenarioIdx].beginOfHour
+      when :minutes, :hours
+        tStart = tStart.beginOfHour
         stepFunc = :sameTimeNextHour
       when :days
-        tStart = task['start', @scenarioIdx].midnight
+        tStart = tStart.midnight
         stepFunc = :sameTimeNextDay
       when :weeks
-        tStart = task['start', @scenarioIdx].beginOfWeek(a('weekStartsMonday'))
+        tStart = tStart.beginOfWeek(a('weekStartsMonday'))
         stepFunc = :sameTimeNextWeek
       when :months
-        tStart = task['start', @scenarioIdx].beginOfMonth
+        tStart = tStart.beginOfMonth
         stepFunc = :sameTimeNextMonth
       when :quarters
-        tStart = task['start', @scenarioIdx].beginOfQuarter
+        tStart = tStart.beginOfQuarter
         stepFunc = :sameTimeNextQuarter
       when :years
-        tStart = task['start', @scenarioIdx].beginOfYear
+        tStart = tStart.beginOfYear
         stepFunc = :sameTimeNextYear
       else
         # The loadunits shortauto and longauto don't make sense for this
@@ -366,6 +384,7 @@ class TaskJuggler
         return
       end
       tEnd = task['end', @scenarioIdx]
+      tEnd = a('end') if tEnd > a('end')
       t = tStart
       while t < tEnd
         tn = t.send(stepFunc)

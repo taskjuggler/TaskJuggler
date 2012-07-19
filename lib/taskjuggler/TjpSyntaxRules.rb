@@ -1181,10 +1181,14 @@ export the data of the fully scheduled project. The exported data include the
 tasks, resources and the assignments of resources to task. This is only a
 small subset of the data that TaskJuggler can manage. This export is only
 intended to share resource assignment data with other teams using Microsoft
-Project. You can control the granularity of the exported assignments by
-setting the [[loadunit.export]] attribute. These reports are not designed to
-migrate your projects from TaskJuggler to Microsoft Project or even to use
-both tools in parallel to manage your project.
+Project. TaskJuggler manages assignments with a much larger accuracy than the
+Microsft Project XML format can represent. This will inevitably lead to
+rounding errors and different interpretation of the data. The numbers you will
+see in Project are rarely an exact match of the numbers you see in
+TaskJuggler. You can control the accuracy of the exported assignments by
+setting the [[loadunit.export]] attribute. These Microsoft Project export
+reports are only capable of exporting a rough equivalent of your project data
+to share them with other team.
 EOT
          )
   end
