@@ -99,6 +99,7 @@ EOT
                             'MinutesPerWeek')
       p << XMLNamedText.new((@project.yearlyWorkingDays / 12).to_s,
                             'DaysPerMonth')
+      p << XMLNamedText.new(@project['now'].to_s(@timeformat), 'CurrentDate')
       p << XMLNamedText.new(@project['now'].to_s(@timeformat), 'StatusDate')
       loadUnitsMap = {
         :minutes => 1,
@@ -202,7 +203,6 @@ EOT
       t << XMLNamedText.new('1', 'Active')
       t << XMLNamedText.new('0', 'Type')
       t << XMLNamedText.new('0', 'IsNull')
-      t << XMLNamedText.new('1', 'Manual')
       t << XMLNamedText.new(task.get('name'), 'Name')
       t << XMLNamedText.new(task.get('bsi'), 'WBS')
       t << XMLNamedText.new(task.get('bsi'), 'OutlineNumber')
@@ -220,18 +220,8 @@ EOT
                             'ManualFinish')
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
                             'ActualStart')
-      #if percentComplete >= 100
-        t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
+      t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
                               'ActualFinish')
-      #end
-      #t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
-      #                      'EarlyStart')
-      #t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
-      #                      'EarlyFinish')
-      #t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
-      #                      'LateStart')
-      #t << XMLNamedText.new(task['end', @scenarioIdx].to_s(@timeformat),
-      #                      'LateFinish')
       t << XMLNamedText.new('2', 'ConstraintType')
       t << XMLNamedText.new(task['start', @scenarioIdx].to_s(@timeformat),
                             'ConstraintDate')
@@ -239,12 +229,17 @@ EOT
       if (note = task.get('note'))
         t << XMLNamedText.new(note.to_s, 'Notes')
       end
+      responsible = task['responsible', @scenarioIdx].
+        map { |r| r.name }.join(', ')
+      t << XMLNamedText.new(responsible, 'Contact') unless responsible.empty?
 
       if task.container?
         rollupTask = a('rollupTask')
+        t << XMLNamedText.new(rollupTask ? '1' : '0', 'Manual')
         t << XMLNamedText.new(rollupTask && rollupTask.eval(@query) ? '0' : '1',
                               'Summary')
       else
+        t << XMLNamedText.new('1', 'Manual')
         t << XMLNamedText.new('0', 'Summary')
         t << XMLNamedText.new('0', 'Estimated')
         t << XMLNamedText.new('5', 'DurationFormat')
@@ -320,6 +315,7 @@ EOT
       if (email = resource.get('email'))
         r << XMLNamedText.new(email, 'EmailAddress')
       end
+      r << XMLNamedText.new(resource.parent.name, 'Group') if resource.parent
       #if (code = resource.get('Code'))
       #  r << XMLNamedText.new(code, 'Code')
       #  r << XMLNamedText.new('1', 'IsEnterprise')
@@ -352,6 +348,9 @@ EOT
       # The PercentWorkComplete value must be 0. Otherwise the completed
       # work of the assignments will be ignored.
       a << XMLNamedText.new('0', 'PercentWorkComplete')
+      responsible = task['responsible', @scenarioIdx].
+        map { |r| r.name }.join(', ')
+      a << XMLNamedText.new(responsible, 'AssnOwner') unless responsible.empty?
 
       # Setup the query for this task and resource.
       @query.property = resource
