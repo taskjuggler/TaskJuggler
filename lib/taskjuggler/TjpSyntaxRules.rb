@@ -1074,15 +1074,6 @@ EOT
     pattern(%w( !hidetask ))
 
     pattern(%w( !loadunit ))
-    doc('loadunit.export', <<'EOT'
-Determines the resolution of the exported data in Microsoft Project XML
-format. ''WARNING:'' It is strongly recommended to use ''''quarters'''' or
-''''years''''. A finer granularity will cause MS Project to take hours to load
-the file!. Alternatively, ''''shortauto'''' or ''''longauto'''' can be
-used. In this case, only the total effort per resource per task will
-be exported ans MS Project will reschedule the assignments.
-EOT
-       )
 
     pattern(%w( !purge ))
     pattern(%w( !reportEnd ))
@@ -1179,16 +1170,13 @@ EOT
 Export of the scheduled project in Microsoft Project XML format. This will
 export the data of the fully scheduled project. The exported data include the
 tasks, resources and the assignments of resources to task. This is only a
-small subset of the data that TaskJuggler can manage. This export is only
-intended to share resource assignment data with other teams using Microsoft
-Project. TaskJuggler manages assignments with a much larger accuracy than the
-Microsft Project XML format can represent. This will inevitably lead to
-rounding errors and different interpretation of the data. The numbers you will
-see in Project are rarely an exact match of the numbers you see in
-TaskJuggler. You can control the accuracy of the exported assignments by
-setting the [[loadunit.export]] attribute. These Microsoft Project export
-reports are only capable of exporting a rough equivalent of your project data
-to share them with other team.
+small subset of the data that TaskJuggler can manage. This export is intended
+to share resource assignment data with other teams using Microsoft Project.
+TaskJuggler manages assignments with a larger accuracy than the Microsft
+Project XML format can represent. This will inevitably lead to some rounding
+errors and different interpretation of the data. The numbers you will see in
+Project are not necessarily an exact match of the numbers you see in
+TaskJuggler.
 EOT
          )
   end
@@ -2537,6 +2525,10 @@ EOT
     pattern(%w( _loadunit !loadunitName ), lambda {
       @property.set('loadUnit', @val[1])
     })
+    doc('loadunit', <<'EOT'
+Determines what unit should be used to display all load values in this report.
+EOT
+       )
   end
 
   def rule_loadunitName
@@ -4239,10 +4231,6 @@ EOT
     example('textreport')
 
     pattern(%w( !loadunit ))
-    doc('loadunit.report', <<'EOT'
-Determines what unit should be used to display all load values in this report.
-EOT
-       )
 
     pattern(%w( !numberFormat ), lambda {
       @property.set('numberFormat', @val[0])

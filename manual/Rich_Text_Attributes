@@ -225,7 +225,7 @@ requested attribute is scenario specific.
 
 * ''''end'''' : The end date of the report period of the current report.
 
-* ''''loadunit'''' : The [[loadunit.report]] that should be used in
+* ''''loadunit'''' : The [[loadunit]] that should be used in
 case the requested attribute is an effort or duration value.
 
 * ''''timeformat'''' : The [[timeformat]] used to format date attributes.

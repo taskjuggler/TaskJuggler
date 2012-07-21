@@ -595,7 +595,7 @@ syntax uses, but also like to include the weekday. To change the date
 format, the [[timeformat]] attribute can be used.
 
 The project will last a few weeks. The most convenient unit to list
-efforts in is man or resource days. The [[loadunit.report]] attribute
+efforts in is man or resource days. The [[loadunit]] attribute
 tells TaskJuggler to list the load of each task or resource in man
 days.  Since this will just be a number without a unit, it is
 advisable to include a small hint for the reader that these values are
