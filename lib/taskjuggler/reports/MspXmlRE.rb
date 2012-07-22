@@ -245,34 +245,12 @@ EOT
         t << XMLNamedText.new('5', 'DurationFormat')
         if task['milestone', @scenarioIdx]
           t << XMLNamedText.new('1', 'Milestone')
-          #t << XMLNamedText.new(durationToMsp(0), 'Duration')
-          #t << XMLNamedText.new(durationToMsp(0), 'ActualDuration')
-          #t << XMLNamedText.new(durationToMsp(0), 'RemainingDuration')
-        else task['effort', @scenarioIdx] > 0
+        else
           t << XMLNamedText.new('0', 'Milestone')
-          # Task duration in hours.
-          iv = Interval.new(task['start', @scenarioIdx],
-                            task['end', @scenarioIdx])
-          # Working time in seconds.
-          duration = @project.workingDays(iv) * @project.dailyWorkingHours * 3600
-          #t << XMLNamedText.new(durationToMsp(duration), 'Duration')
-          #t << XMLNamedText.new(durationToMsp(duration *
-          #                                    percentComplete / 100.0),
-          #                      'ActualDuration')
-          #t << XMLNamedText.new(durationToMsp(duration *
-          #                                    (1.0 - percentComplete / 100.0)),
-          #                      'RemainingDuration')
           t << XMLNamedText.new(percentComplete.to_i.to_s,
                                 'PercentComplete')
           t << XMLNamedText.new(percentComplete.to_i.to_s,
                                 'PercentWorkComplete')
-          #effort = task['effort', @scenarioIdx] * @project['scheduleGranularity']
-          #t << XMLNamedText.new(durationToMsp(effort), 'Work')
-          #t << XMLNamedText.new(durationToMsp(effort * percentComplete / 100.0),
-          #                      'ActualWork')
-          #t << XMLNamedText.new(durationToMsp(effort *
-          #                                    (1.0 - percentComplete / 100.0)),
-          #                      'RemainingWork')
         end
       end
       task['startpreds', @scenarioIdx].each do |dt, onEnd|

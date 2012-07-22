@@ -74,6 +74,7 @@ browser is all you need for your work.
 * Powerful project description language with macro support
 * Scales well on multi-core or multi-CPU systems
 * Support for project management teams and revision control systems
+* Data export to Microsoft Project and Computer Associates Clarity
 
 == Web Publishing and Groupware Functions
 
