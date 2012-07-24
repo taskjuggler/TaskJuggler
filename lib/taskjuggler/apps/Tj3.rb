@@ -35,6 +35,10 @@ class TaskJuggler
       @checkSyntax = false
       # Don't generate reports when previous errors have been found.
       @forceReports = false
+      # List of requested report IDs.
+      @reportIDs = []
+      # List of requested report IDs (as regular expressions).
+      @reportRegExpIDs = []
       # Don't generate trace reports by default
       @generateTraces = false
       # Should a booking file be generated?
@@ -71,10 +75,6 @@ EOT
         @opts.on('--debugmodules x,y,z', Array,
                 format('Restrict debug output to a list of modules')) do |arg|
           TaskJuggler::Log.segments = arg
-        end
-        @opts.on('-f', '--force-reports',
-                format('Generate reports despite scheduling errors')) do
-          @forceReports = true
         end
         @opts.on('--freeze',
                  format('Generate or update the booking file for ' +
@@ -119,6 +119,21 @@ EOT
                 format('Just schedule the project, but don\'t generate any ' +
                        'reports.')) do
          @noReports = true
+        end
+        @opts.on('--report <report ID>', String,
+                 format('Only generate the report with the specified ID. ' +
+                        'This option can be used multiple times.')) do |arg|
+          @reportIDs << arg
+        end
+        @opts.on('--reports <report ID RegExp>', String,
+                 format('Only generate the reports that have IDs that match ' +
+                        'the specified regular expression. This option can ' +
+                        'be used multiple times.')) do |arg|
+          @reportRegExpIDs << arg
+        end
+        @opts.on('-f', '--force-reports',
+                format('Generate reports despite scheduling errors')) do
+          @forceReports = true
         end
         @opts.on('--add-trace',
                  format('Append a current data set to all trace reports.')) do
@@ -181,7 +196,16 @@ EOT
 
       return 0 if @noReports
 
-      return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+      if @reportIDs.empty? && @reportRegExpIDs.empty?
+        return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
+      else
+        @reportIDs.each do |id|
+          return 1 if !tj.generateReport(id, false)
+        end
+        @reportRegExpIDs.each do |id|
+          return 1 if !tj.generateReport(id, true)
+        end
+      end
 
       0
     end
