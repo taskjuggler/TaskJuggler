@@ -2390,10 +2390,11 @@ class TaskJuggler
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
-    def inputs(foundInputs, includeChildren, checkedTasks = [])
+    def inputs(foundInputs, includeChildren, checkedTasks = {})
       # Ignore tasks that we have already included in the checked tasks list.
-      return if checkedTasks.include?([ @property, includeChildren ])
-      checkedTasks << [ @property, includeChildren ]
+      taskSignature = [ @property, includeChildren ]
+      return if checkedTasks.include?(taskSignature)
+      checkedTasks[taskSignature] = true
 
       # An "input" must be a leaf task that has no direct or indirect (through
       # parent) following tasks. Only milestones are recognized as inputs.
@@ -2424,10 +2425,11 @@ class TaskJuggler
 
     # Recursively compile a list of Task properties which depend on the
     # current task.
-    def targets(foundTargets, includeChildren, checkedTasks = [])
+    def targets(foundTargets, includeChildren, checkedTasks = {})
       # Ignore tasks that we have already included in the checked tasks list.
-      return if checkedTasks.include?([ @property, includeChildren ])
-      checkedTasks << [ @property, includeChildren ]
+      taskSignature = [ @property, includeChildren ]
+      return if checkedTasks.include?(taskSignature)
+      checkedTasks[taskSignature] = true
 
       # A target must be a leaf function that has no direct or indirect
       # (through parent) following tasks. Only milestones are recognized as
