@@ -179,8 +179,10 @@ class TaskJuggler
 
       html = HTMLDocument.new
       head = html.generateHead(@project['name'] + " - #{get('title') || @name}",
-                               'description' => 'TaskJuggler Report',
-                               'keywords' => 'taskjuggler, project, management')
+                               { 'description' => 'TaskJuggler Report',
+                                 'keywords' =>
+                                   'taskjuggler, project, management' },
+                               a('rawHtmlHead'))
       if a('selfcontained')
         auxSrcDir = AppConfig.dataDirs('data/css')[0]
         cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')

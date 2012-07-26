@@ -3670,14 +3670,14 @@ EOT
     singlePattern('_annualleave')
     descr(<<'EOT'
 The number of annual leave units within the reported time period. The unit
-can be adjusted with [[loadunit.report]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
     singlePattern('_annualleavebalance')
     descr(<<'EOT'
 The balance of the annual leave at the end of the reporting interval. The unit
-can be adjusted with [[loadunit.report]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
@@ -4026,14 +4026,14 @@ EOT
     singlePattern('_sickleave')
     descr(<<'EOT'
 The number of sick leave units within the reported time period. The unit can
-be adjusted with [[loadunit.report]].
+be adjusted with [[loadunit]].
 EOT
          )
 
     singlePattern('_specialleave')
     descr(<<'EOT'
 The number of special leave units within the reported time period. The unit
-can be adjusted with [[loadunit.report]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
@@ -4067,7 +4067,7 @@ EOT
     singlePattern('_unpaidleave')
     descr(<<'EOT'
 The number of unpaid leave units within the reported time period. The unit
-can be adjusted with [[loadunit.report]].
+can be adjusted with [[loadunit]].
 EOT
          )
 
@@ -4254,6 +4254,16 @@ EOT
     also(%w( epilog footer header ))
 
     pattern(%w( !purge ))
+
+    pattern(%w( _rawhtmlhead $STRING ), lambda {
+      @property.set('rawHtmlHead', @val[1])
+    })
+    doc('rawhtmlhead', <<'EOT'
+Define a HTML fragment that will be inserted at the end of the HTML head
+section.
+EOT
+       )
+
     pattern(%w( !reports ))
 
     pattern(%w( _right $STRING ), lambda {

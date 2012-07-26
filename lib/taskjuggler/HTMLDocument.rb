@@ -60,7 +60,7 @@ class TaskJuggler
     end
 
     # Generate the 'head' section of an HTML page.
-    def generateHead(title, metaTags = {})
+    def generateHead(title, metaTags = {}, blob = nil)
       @html << HEAD.new {
         e = [
           TITLE.new { title },
@@ -73,6 +73,8 @@ class TaskJuggler
         metaTags.each do |name, content|
           e << META.new({ 'name' => name, 'content' => content })
         end
+        # Add a raw HTML blob into the header if provided.
+        e << XMLBlob.new(blob) if blob
 
         e
       }
