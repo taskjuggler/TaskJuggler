@@ -121,6 +121,11 @@ in nowiki tags.
 
  <nowiki> This is not '''bold''' text. </nowiki>
 
+You can also insert raw HTML code by enclosing it in
+'''<nowiki><html>...</html></nowiki>''' tags. For all other output
+formats, this content will be ignored. There is also no error checking
+if the code is valid! Use this feature very carefully.
+
 ==== Block and Inline Generators ====
 
 Block and inline generators are a very powerful extension that allow

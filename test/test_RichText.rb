@@ -669,6 +669,26 @@ EOT
     assert_outputs(inp, tagged, str, html)
   end
 
+  def test_htmlblob
+    inp = <<'EOT'
+A <html>raw foo
+bar</html> blob.
+EOT
+    tagged = <<'EOT'
+<div>[A] <html>raw foo
+bar</html> [blob.]</div>
+EOT
+    str = <<'EOT'
+A  blob.
+EOT
+   html = <<'EOT'
+<div>A raw foo
+ bar blob.</div>
+EOT
+
+    assert_outputs(inp, tagged, str, html)
+  end
+
   def test_nowiki
     inp = <<'EOT'
 == This the first section ==

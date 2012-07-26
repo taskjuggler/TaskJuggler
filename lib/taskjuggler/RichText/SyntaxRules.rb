@@ -371,6 +371,11 @@ class TaskJuggler
     def rule_plainText
       repeatable
       optional
+      pattern(%w( !htmlBlob !space ), lambda {
+        el = RichTextElement.new(@richTextI, :htmlblob, @val[0].join)
+        el.appendSpace = !@val[1].nil?
+        el
+      })
       pattern(%w( $WORD !space ), lambda {
         el = RichTextElement.new(@richTextI, :text, @val[0])
         el.appendSpace = !@val[1].nil?
@@ -383,6 +388,13 @@ class TaskJuggler
       optional
       pattern(%w( !wordWithQueries !space ), lambda {
         @val[0][-1].appendSpace = true if @val[1]
+        @val[0]
+      })
+    end
+
+    def rule_htmlBlob
+      repeatable
+      pattern(%w( $HTMLBLOB ), lambda {
         @val[0]
       })
     end

@@ -25,6 +25,7 @@ class TaskJuggler
   # :bol :     at the begining of a line.
   # :inline :  in the middle of a line
   # :nowiki :  ignoring all MediaWiki special tokens
+  # :html   :  read anything until </html>
   # :ref :     inside of a REF [[ .. ]]
   # :href :    inside of an HREF [ .. ]
   # :func :    inside of a block <[ .. ]> or inline <- .. -> function
@@ -56,6 +57,7 @@ class TaskJuggler
         # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
         [ nil, '<nowiki>', /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
+        [ nil, '<html>', /<html>/, [ :bop, :bol, :inline ], method('htmlStart') ],
         [ :FCOLSTART, '<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>', /<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>/, [ :bop, :bol,
           :inline ],
           method('fontColorStart') ],
@@ -72,6 +74,10 @@ class TaskJuggler
         [ :WORD, '(<(?!\/nowiki>)|[^ \t\n<])+', /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
         [ :SPACE, '[ \t]+', /[ \t]+/, :nowiki ],
         [ :LINEBREAK, '\s*\n', /\s*\n/, :nowiki ],
+
+        # :html mode rules
+        [ :HTMLBLOB, '.*</html>', /(.|\n)*<\/html>/ , :html, method('htmlEnd') ],
+        [ :HTMLBLOB, '.*\n', /.*\n/ , :html ],
 
         # :ref mode rules
         [ :REFEND, '\]\]', /\]\]/, :ref, method('refEnd') ],
@@ -164,6 +170,16 @@ class TaskJuggler
       self.mode = :inline
       types = [ nil, nil, :ITALIC, :BOLD , :CODE, :BOLDITALIC ]
       [ types[match.length], match ]
+    end
+
+    def htmlStart(type, match)
+      self.mode = :html
+      [ type, match ]
+    end
+
+    def htmlEnd(type, match)
+      self.mode = :inline
+      [ type, match[0..-8] ]
     end
 
     def nowikiStart(type, match)

@@ -87,7 +87,7 @@ class TaskJuggler
         end
         @children += arg
       elsif arg.nil?
-        # do nothing
+        # Do nothing. Insertions of nil are simply ignored.
       else
         raise "Elements must be of type XMLElement not #{arg.class}"
       end
@@ -215,6 +215,7 @@ class TaskJuggler
 
     def initialize(blob = '')
       super(nil, {})
+      raise ArgumentError, "blob may not be nil" if blob.nil?
       @blob = blob
     end
 

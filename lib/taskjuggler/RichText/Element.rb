@@ -224,6 +224,8 @@ class TaskJuggler
       when :fontCol
       when :code
       when :text
+      when :htmlblob
+        return ''
       else
         raise "Unknown RichTextElement category #{@category}"
       end
@@ -348,6 +350,9 @@ class TaskJuggler
       when :code
         pre = '<code>'
         post = '</code>'
+      when :htmlblob
+        pre = '<html>'
+        post = '</html>'
       when :text
         pre = '['
         post = ']'
@@ -460,6 +465,9 @@ class TaskJuggler
         XMLElement.new('span', 'style' => "color:#{@data}")
       when :code
         XMLElement.new('code', attrs)
+      when :htmlblob
+        noChilds = true
+        XMLBlob.new(@children[0])
       when :text
         noChilds = true
         XMLText.new(@children[0])
