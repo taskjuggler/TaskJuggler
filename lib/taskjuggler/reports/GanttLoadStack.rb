@@ -30,7 +30,7 @@ class TaskJuggler
       @lineHeight = line.height
       @x = x
       @y = @line.y
-      @w = w
+      @w = w <= 0 ? 1 : w
       @drawFrame = false
       if values.length != categories.length
         raise "Values and categories must have the same number of entries!"
