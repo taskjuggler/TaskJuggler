@@ -69,7 +69,7 @@ class TaskJuggler
     end
 
     # Return the candidate list sorted according to the selectionMode.
-    def candidates(scenarioIdx = nil)
+    def candidates(scenarioIdx = nil, startIdx = nil)
       if scenarioIdx.nil? || @selectionMode == 0 # declaration order
         return @candidates
       end
@@ -88,7 +88,22 @@ class TaskJuggler
       list = @candidates.sort do |x, y|
         case @selectionMode
         when 1 # lowest alloc probability
-          x['criticalness', scenarioIdx] <=> y['criticalness', scenarioIdx]
+          if @persistent
+            # For persistent resources we use a more sophisticated heuristic
+            # than just the criticalness of the resource. Instead, we
+            # calculate the already allocated slots of the resource. This will
+            # reduce the probability to pick a persistent resource that was
+            # already allocated for a higher priority or more critical task.
+            project = x.project
+            # Since we don't really know the end date of the task yet, we look
+            # at the remaining project period starting with the currently
+            # scheduled slot.
+            projectEnd = project.dateToIdx(project['end'])
+            x.getAllocatedSlots(scenarioIdx, startIdx, projectEnd) <=>
+            y.getAllocatedSlots(scenarioIdx, startIdx, projectEnd)
+          else
+            x['criticalness', scenarioIdx] <=> y['criticalness', scenarioIdx]
+          end
         when 2 # lowest allocated load
           x.bookedEffort(scenarioIdx) <=> y.bookedEffort(scenarioIdx)
         when 3 # hightes allocated load

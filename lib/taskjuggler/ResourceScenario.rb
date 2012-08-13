@@ -677,7 +677,7 @@ class TaskJuggler
     # Count the booked slots between the start and end index. If _task_ is not
     # nil count only those slots that are assigned to this particular task or
     # any of its sub tasks.
-    def getAllocatedSlots(startIdx, endIdx, task)
+    def getAllocatedSlots(startIdx, endIdx, task = nil)
       # If there is no scoreboard, we don't have any allocations.
       return 0 unless @scoreboard
 
