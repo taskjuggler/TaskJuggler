@@ -123,8 +123,24 @@ class TaskJuggler
       return if @@silent
 
       maxlen = 60
-      text = text.ljust(maxlen)
-      text = text[0..maxlen - 1] if text.length > maxlen
+      verarray = Config::CONFIG["ruby_version"].split(/\./)[0..1]
+      if verarray[0].to_i >= 1 and verarray[1].to_i >= 9
+        if text.length > maxlen
+          text = text[0..maxlen - 4]
+          text += '...'
+        else
+          text = text.ljust(maxlen)
+        end
+      else
+        realsize = text.scan(/./mu).size
+        if realsize > maxlen
+          splitter = text.scan(/./mu)
+          text = splitter[0..maxlen - 4].join
+          text += '...'
+        else
+          text = text.ljust(maxlen + text.length - realsize)
+        end
+      end
       @@progressMeter = text
       $stdout.print("#{@@progressMeter} ...\r")
     end
