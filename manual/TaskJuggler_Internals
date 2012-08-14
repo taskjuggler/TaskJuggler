@@ -98,6 +98,19 @@ an optimization process. It does not evaluate alternatives, it does
 not revise taken decisions and it does not search for local extremes
 in a solution space.
 
+When the criticalness and pathcriticalness for all leaf resources and
+tasks has been determined, the leaf tasks are sorted by priority
+(hight to low), then by pathcricialness (high to low) and then by the
+index (low to high). In a loop that is terminated when all tasks have
+been scheduled or an error condition has been detected, the first
+task that is ready for scheduling is completely scheduled. This means
+that resources are allocated for all time slots and missing dates are
+being computed. The newly determined end (for ASAP tasks) or start
+(for ALAP tasks) date is then propagated to dependent tasks,
+milestones or parent tasks if needed. This can result in other tasks
+becoming ready for scheduling and the list is searched again for the
+first task that is ready for scheduling to be scheduled.
+
 A task can only be scheduled when it is ready for scheduling. This
 means that at least the start date for the scheduling process must be
 known. For ASAP (As Soon As Possible) tasks, the scheduler start date
@@ -107,3 +120,10 @@ be scheduled from start to end, ALAP tasks from end to start. This is
 important to understand as resource assignments for each time slot
 will be determined in this order.
 
+Mixing ASAP and ALAP tasks in the same project is supported but
+should be used very carefully. It can lead to situations where a
+lower priority tasks that is earlier in the scheduling process ready
+for scheduling takes away resources from a higher prioritized task
+that competes for the same resources. This condition is known is
+priority inversion. Due to the required computation overhead, this
+condition is not detected by the scheduler.
