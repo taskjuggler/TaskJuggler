@@ -1790,7 +1790,7 @@ class TaskJuggler
         # For mandatory allocations with alternatives at least one of the
         # alternatives must be available.
         found = false
-        allocation.candidates(@scenarioIdx, @currentSlotIdx).each do |candidate|
+        allocation.candidates(@scenarioIdx).each do |candidate|
           # When a resource group is marked mandatory, all members of the
           # group must be available.
           allAvailable = true
@@ -1826,8 +1826,7 @@ class TaskJuggler
         else
           # If not, we create a list of candidates in the proper order and
           # assign the first one available.
-          candidates = allocation.candidates(@scenarioIdx, @currentSlotIdx)
-          candidates.each do |candidate|
+          allocation.candidates(@scenarioIdx).each do |candidate|
             if bookResource(candidate)
               allocation.lockedResource = candidate if allocation.persistent
               break

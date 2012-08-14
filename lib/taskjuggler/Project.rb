@@ -1152,8 +1152,8 @@ class TaskJuggler
     # Schedule all tasks for the given Scenario with index +scIdx+.
     def scheduleScenario(scIdx)
       tasks = PropertyList.new(@tasks)
-      # Only care about leaf tasks that are not milestones are aren't
-      # scheduled already (due to bookings).
+      # Only care about leaf tasks that are not milestones and aren't
+      # scheduled already (marked with the 'scheduled' attribute).
       tasks.delete_if { |task| !task.leaf? ||
                                task['milestone', scIdx] ||
                                task['scheduled', scIdx] }
