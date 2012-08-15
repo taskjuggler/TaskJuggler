@@ -39,6 +39,8 @@ class TaskJuggler
       'balance'           => [ 'Balance',              true,   :right, true ],
       'bsi'               => [ 'BSI',                  false,  :left,  false ],
       'closedtasks'       => [ 'Closed Tasks',         true,   :right, true ],
+      'competitorcount'   => [ 'Competitor count',     true,   :right, true ],
+      'competitors'       => [ 'Competitors',          true,   :left,  true ],
       'complete'          => [ 'Completion',           false,  :right, true ],
       'cost'              => [ 'Cost',                 true,   :right, true ],
       'duration'          => [ 'Duration',             true,   :right, true ],

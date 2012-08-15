@@ -27,7 +27,8 @@ class TaskJuggler
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
       %w( allocate assignedresources booking charge chargeset complete
-          criticalness depends duration effort end forward gauge length
+          competitors criticalness depends duration
+          effort end forward gauge length
           maxend maxstart minend minstart milestone pathcriticalness
           precedes priority scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
@@ -1260,6 +1261,11 @@ class TaskJuggler
       query.string = "#{count.to_i}"
     end
 
+    def query_competitorcount(query)
+      query.sortable = query.numerical = @competitors.length
+      query.string = "#{@competitors.length}"
+    end
+
     def query_complete(query)
       # If we haven't calculated the value yet, calculate it first.
       unless @complete
@@ -1878,6 +1884,11 @@ class TaskJuggler
             @assignedresources << r
           end
           booked = true
+        elsif (competitor = r.bookedTask(@scenarioIdx, @currentSlotIdx))
+          # Keep a list of all the Tasks that have successfully competed for
+          # the same resources and are potentially delaying the progress of
+          # this Task.
+          @competitors << competitor unless @competitors.include?(competitor)
         end
       end
 

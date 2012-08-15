@@ -3733,6 +3733,19 @@ before the current time or [[now]] date.
 EOT
          )
 
+    singlePattern('_competitorcount')
+    descr(<<'EOT'
+The number of tasks that have successfully competed for the same resources and
+have potentially delayed the completion of this task.
+EOT
+         )
+    singlePattern('_competitors')
+    descr(<<'EOT'
+A list of tasks that have successfully competed for the same resources and
+have potentially delayed the completion of this task.
+EOT
+         )
+
     singlePattern('_complete')
     descr(<<'EOT'
 The completion degree of a task. Unless a completion degree is manually

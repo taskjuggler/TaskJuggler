@@ -170,6 +170,13 @@ class TaskJuggler
       @scoreboard[sbIdx].is_a?(Task)
     end
 
+    # Return the Task that this resource is booked for at the time specified
+    # by _sbIdx_. If not booked to a task, nil is returned.
+    def bookedTask(sbIdx)
+      return nil unless (sb = @scoreboard[sbIdx]).is_a?(Task)
+      sb
+    end
+
     # Book the slot indicated by the scoreboard index +sbIdx+ for Task +task+.
     # If +force+ is true, overwrite the existing booking for this slot. The
     # method returns true if the slot was available.

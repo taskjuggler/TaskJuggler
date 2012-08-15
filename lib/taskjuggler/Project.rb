@@ -253,6 +253,8 @@ class TaskJuggler
               true,  false,   true,  [] ],
         [ 'complete',  'Completion',   FloatAttribute,
               false, false,   true,  nil ],
+        [ 'competitors', 'Competitors', TaskListAttribute,
+              false, false,   true,  [] ],
         [ 'criticalness', 'Criticalness', FloatAttribute,
               false, false,   true,  0.0 ],
         [ 'depends',   'Preceding tasks', DependencyListAttribute,
