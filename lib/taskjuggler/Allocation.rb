@@ -45,6 +45,7 @@ class TaskJuggler
       @persistent = persistent
       @mandatory = mandatory
       @shifts = nil
+      @staticCandidates = nil
     end
 
     # Set the selection mode identified by name specified in _str_. For
@@ -70,9 +71,14 @@ class TaskJuggler
 
     # Return the candidate list sorted according to the selectionMode.
     def candidates(scenarioIdx = nil)
+      # In case we have selection criteria that results in a static list, we
+      # can use the previously determined list.
+      return @staticCandidates if @staticCandidates
+
       if scenarioIdx.nil? || @selectionMode == 0 # declaration order
         return @candidates
       end
+
       if @selectionMode == 4 # random
         # For a random sorting we put the candidates in a hash with a random
         # number as key. Then we sort the hash according to the random keys an
@@ -111,6 +117,9 @@ class TaskJuggler
           raise "Unknown selection mode #{@selectionMode}"
         end
       end
+
+      @staticCandidates = list if @selectionMode == 1 && !@persistent
+
       list
     end
 
