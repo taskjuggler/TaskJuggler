@@ -10,6 +10,7 @@ task t1 "T1" {
   priority 400
 }
 
+# MARK: warning 14 priority_inversion
 task "T2" {
   precedes t1 { onend }
   effort 1w

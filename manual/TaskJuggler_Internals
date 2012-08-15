@@ -2,9 +2,26 @@
 
 This chapter contains information that you don't need to know to use
 TaskJuggler. It describes internal algorithms that are provided for
-the curious.
+the curious. 
 
 === How the Scheduler works ===
+
+It's important to understand that the scheduler implementation is not
+an optimization algorithm. It does not search a solution space and
+evaluates various alternative results against each other. This has
+been tried, but for any real-world project, the solution space becomes
+unmanageable and scheduling runs took hours to complete.
+
+Instead, we use a heuristic to decide when each task gets its
+resources assigned. This heuristic is certainly not perfect but has
+shown good results with fairly moderate computation costs. The
+following sections contain an overview of the scheduling algorithm.
+Users are also encouraged to read the actual source code. It can be
+found in ''''Project.rb'''', ''''TaskScenario.rb'''',
+''''ResourceScenario.rb'''' and ''''Allocation.rb''''. All these files
+can be found in the ''''lib/taskjuggler'''' directory. You can also
+browse the sources on [https://github.com/taskjuggler/TaskJuggler
+github].
 
 The scheduler needs to determine the start and end date for all tasks
 that don't have such dates yet. To deal with multiple concurrent time
@@ -92,12 +109,6 @@ project are tried to be kept short. The user can use the
 '''criticalness''' and '''pathcriticalness''' [[columnid|columns]] to
 review the respective values for he project's tasks and resources.
 
-This heuristic is certainly not perfect but has shown good results
-with fairly moderate computation costs. The scheduling process is not
-an optimization process. It does not evaluate alternatives, it does
-not revise taken decisions and it does not search for local extremes
-in a solution space.
-
 When the criticalness and pathcriticalness for all leaf resources and
 tasks has been determined, the leaf tasks are sorted by priority
 (hight to low), then by pathcricialness (high to low) and then by the
@@ -125,5 +136,5 @@ should be used very carefully. It can lead to situations where a
 lower priority tasks that is earlier in the scheduling process ready
 for scheduling takes away resources from a higher prioritized task
 that competes for the same resources. This condition is known is
-priority inversion. Due to the required computation overhead, this
-condition is not detected by the scheduler.
+priority inversion. If the scheduler detects such a situation, a
+warning is generated.

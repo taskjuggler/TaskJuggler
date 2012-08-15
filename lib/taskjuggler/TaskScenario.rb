@@ -576,6 +576,18 @@ class TaskJuggler
                 "to ensure allocations or use a higher 'priority'.")
       end
 
+      thieves = []
+      @competitors.each do |t|
+        thieves << t if t['priority', @scenarioIdx] < @priority
+      end
+      unless thieves.empty?
+        warning('priority_inversion',
+                "Due to a mix of ALAP and ASAP scheduled tasks the following " +
+                "task(s) stole resources from #{@property.fullId} " +
+                "despite having a lower priority: " +
+                "#{thieves.map{ |t| t.fullId }.join(', ')}")
+      end
+
       @errors == 0
     end
 
