@@ -34,71 +34,71 @@ class TaskJuggler
     def initialize(masterFile, log)
       tokenPatterns = [
         # :bol mode rules
-        [ :LINEBREAK, '\s*\n', /\s*\n/, :bol, method('linebreak') ],
-        [ nil, '\s+', /\s+/, :bol, method('inlineMode') ],
+        [ :LINEBREAK, /\s*\n/, :bol, method('linebreak') ],
+        [ nil, /\s+/, :bol, method('inlineMode') ],
 
         # :bop mode rules
-        [ :PRE, ' [^\n]+\n?', / [^\n]+\n?/, :bop, method('pre') ],
-        [ nil, '\s*\n', /\s*\n/, :bop, method('linebreak') ],
+        [ :PRE, / [^\n]+\n?/, :bop, method('pre') ],
+        [ nil, /\s*\n/, :bop, method('linebreak') ],
 
         # :inline mode rules
-        [ :SPACE, '[ \t\n]+', /[ \t\n]+/, :inline, method('space') ],
+        [ :SPACE, /[ \t\n]+/, :inline, method('space') ],
 
         # :bop and :bol mode rules
-        [ :INLINEFUNCSTART, '<-', /<-/, [ :bop, :bol, :inline ],
+        [ :INLINEFUNCSTART, /<-/, [ :bop, :bol, :inline ],
           method('functionStart') ],
-        [ :BLOCKFUNCSTART, '<\[', /<\[/, [ :bop, :bol ], method('functionStart') ],
-        [ ':TITLE*', '={2,5}', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
-        [ 'TITLE*END', '={2,5}', /={2,5}/, :inline, method('titleEnd') ],
-        [ 'BULLET*', '\*{1,4}[ \t]+', /\*{1,4}[ \t]+/, [ :bop, :bol ], method('bullet') ],
-        [ 'NUMBER*', '\#{1,4}[ \t]+', /\#{1,4}[ \t]+/, [ :bop, :bol ], method('number') ],
-        [ :HLINE, '----', /----/, [ :bop, :bol ], method('inlineMode') ],
+        [ :BLOCKFUNCSTART, /<\[/, [ :bop, :bol ], method('functionStart') ],
+        [ ':TITLE*', /={2,5}/, [ :bop, :bol ], method('titleStart') ],
+        [ 'TITLE*END', /={2,5}/, :inline, method('titleEnd') ],
+        [ 'BULLET*', /\*{1,4}[ \t]+/, [ :bop, :bol ], method('bullet') ],
+        [ 'NUMBER*', /\#{1,4}[ \t]+/, [ :bop, :bol ], method('number') ],
+        [ :HLINE, /----/, [ :bop, :bol ], method('inlineMode') ],
 
         # :bop, :bol and :inline mode rules
         # The <nowiki> token puts the scanner into :nowiki mode.
-        [ nil, '<nowiki>', /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
-        [ nil, '<html>', /<html>/, [ :bop, :bol, :inline ], method('htmlStart') ],
-        [ :FCOLSTART, '<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>', /<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>/, [ :bop, :bol,
+        [ nil, /<nowiki>/, [ :bop, :bol, :inline ], method('nowikiStart') ],
+        [ nil, /<html>/, [ :bop, :bol, :inline ], method('htmlStart') ],
+        [ :FCOLSTART, /<fcol:([a-z]+|#[0-9A-Fa-f]{3,6})>/, [ :bop, :bol,
           :inline ],
           method('fontColorStart') ],
-        [ :FCOLEND, '<\/fcol>', /<\/fcol>/, [ :bop, :bol, :inline ],
+        [ :FCOLEND, /<\/fcol>/, [ :bop, :bol, :inline ],
           method('fontColorEnd') ],
-        [ :QUOTES, '\'{2,5}', /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
-        [ :REF, '\[\[', /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
-        [ :HREF, '\[', /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
-        [ :WORD, '.[^ \n\t\[<\']*', /.[^ \n\t\[<']*/, [ :bop, :bol, :inline ],
+        [ :QUOTES, /'{2,5}/, [ :bop, :bol, :inline ], method('quotes') ],
+        [ :REF, /\[\[/, [ :bop, :bol, :inline ], method('refStart') ],
+        [ :HREF, /\[/, [ :bop, :bol, :inline], method('hrefStart') ],
+        [ :WORD, /.[^ \n\t\[<']*/, [ :bop, :bol, :inline ],
           method('inlineMode') ],
 
         # :nowiki mode rules
-        [ nil, '<\/nowiki>', /<\/nowiki>/, :nowiki, method('nowikiEnd') ],
-        [ :WORD, '(<(?!\/nowiki>)|[^ \t\n<])+', /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
-        [ :SPACE, '[ \t]+', /[ \t]+/, :nowiki ],
-        [ :LINEBREAK, '\s*\n', /\s*\n/, :nowiki ],
+        [ nil, /<\/nowiki>/, :nowiki, method('nowikiEnd') ],
+        [ :WORD, /(<(?!\/nowiki>)|[^ \t\n<])+/, :nowiki ],
+        [ :SPACE, /[ \t]+/, :nowiki ],
+        [ :LINEBREAK, /\s*\n/, :nowiki ],
 
         # :html mode rules
-        [ :HTMLBLOB, '.*</html>', /(.|\n)*<\/html>/ , :html, method('htmlEnd') ],
-        [ :HTMLBLOB, '.*\n', /.*\n/ , :html ],
+        [ :HTMLBLOB, /(.|\n)*<\/html>/ , :html, method('htmlEnd') ],
+        [ :HTMLBLOB, /.*\n/ , :html ],
 
         # :ref mode rules
-        [ :REFEND, '\]\]', /\]\]/, :ref, method('refEnd') ],
-        [ :WORD, '(<(?!-)|(\](?!\])|[^|<\]]))+', /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
-        [ :QUERY, '<-\w+->', /<-\w+->/, :ref, method('query') ],
-        [ :LITERAL, '.', /./, :ref ],
+        [ :REFEND, /\]\]/, :ref, method('refEnd') ],
+        [ :WORD, /(<(?!-)|(\](?!\])|[^|<\]]))+/, :ref ],
+        [ :QUERY, /<-\w+->/, :ref, method('query') ],
+        [ :LITERAL, /./, :ref ],
 
         # :href mode rules
-        [ :HREFEND, '\]', /\]/, :href, method('hrefEnd') ],
-        [ :WORD, '(<(?!-)|[^ \t\n\]<])+', /(<(?!-)|[^ \t\n\]<])+/, :href ],
-        [ :QUERY, '<-\w+->', /<-\w+->/, :href, method('query') ],
-        [ :SPACE, '[ \t\n]+', /[ \t\n]+/, :href ],
+        [ :HREFEND, /\]/, :href, method('hrefEnd') ],
+        [ :WORD, /(<(?!-)|[^ \t\n\]<])+/, :href ],
+        [ :QUERY, /<-\w+->/, :href, method('query') ],
+        [ :SPACE, /[ \t\n]+/, :href ],
 
         # :func mode rules
-        [ :INLINEFUNCEND, '->' , /->/ , :func, method('functionEnd') ],
-        [ :BLOCKFUNCEND, '\]>', /\]>/, :func, method('functionEnd') ],
-        [ :ID, '[a-zA-Z_]\w*', /[a-zA-Z_]\w*/, :func ],
-        [ :STRING, '"(\\\\"|[^"])*"', /"(\\"|[^"])*"/, :func, method('dqString') ],
-        [ :STRING, '\'(\\\\\'|[^\'])*\'', /'(\\'|[^'])*'/, :func, method('sqString') ],
-        [ nil, '[ \t\n]+', /[ \t\n]+/, :func ],
-        [ :LITERAL, '.', /./, :func ]
+        [ :INLINEFUNCEND, /->/ , :func, method('functionEnd') ],
+        [ :BLOCKFUNCEND, /\]>/, :func, method('functionEnd') ],
+        [ :ID, /[a-zA-Z_]\w*/, :func ],
+        [ :STRING, /"(\\"|[^"])*"/, :func, method('dqString') ],
+        [ :STRING, /'(\\'|[^'])*'/, :func, method('sqString') ],
+        [ nil, /[ \t\n]+/, :func ],
+        [ :LITERAL, /./, :func ]
       ]
       super(masterFile, log, tokenPatterns, :bop)
     end

@@ -242,9 +242,9 @@ class TaskJuggler::TextParser
       tokenPatterns.each do |pat|
         type = pat[0]
         regExp = pat[1]
-        mode = pat[3] || :tjp
-        postProc = pat[4]
-        addPattern(type, Regexp.new(regExp), mode, postProc)
+        mode = pat[2] || :tjp
+        postProc = pat[3]
+        addPattern(type, regExp, mode, postProc)
       end
       self.mode = defaultMode
     end
