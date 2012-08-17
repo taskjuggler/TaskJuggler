@@ -57,6 +57,13 @@ class TaskJuggler::TextParser
     # unchanged. No error is generated.
     def resolve(args, sourceFileInfo)
       name = args[0]
+      # If the first character of the macro name is a '?', the macro may be
+      # undefined and is silently ignored.
+      if name[0] == ??
+        # Remove the '?' from the name.
+        name = name[1..-1]
+        return [ nil, '' ] unless @macros[name]
+      end
       return nil unless @macros[name]
 
       resolved = @macros[name].value.dup
