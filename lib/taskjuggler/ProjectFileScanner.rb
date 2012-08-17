@@ -54,14 +54,14 @@ class TaskJuggler
         # with neither start nor end. Macro calls inside of strings need a
         # special start pattern that is active in the string modes. Both
         # patterns switch the scanner to macroCall mode.
-        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /([-a-zA-Z_0-9>:.+]*|"(\\"|[^"])*?|'(\\'|[^'])*?)?\$\{\s*(\??[a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :tjp, method('startMacroCall') ],
         # This pattern is similar to the previous one, but is active inside of
         # multi-line strings. The corresponding rule for sizzors strings
         # can be found below.
-        [ nil, /(\\"|[^"])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /(\\"|[^"])*?\$\{\s*(\??[a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :dqString, method('startMacroCall') ],
-        [ nil, /(\\'|[^'])*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /(\\'|[^'])*?\$\{\s*(\??[a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           :sqString, method('startMacroCall') ],
         # This pattern matches the end of a macro call. It injects the prefix
         # and the expanded macro into the scanner again. The mode is restored
@@ -123,7 +123,7 @@ class TaskJuggler
         [ :STRING, /\s*->8-/, :szrString1, method('endStringSZR') ],
         [ :STRING, /\s*->8-/, :szrString, method('endStringSZR') ],
         # This rule handles macros inside of sizzors strings.
-        [ nil, /.*?\$\{\s*([a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
+        [ nil, /.*?\$\{\s*(\??[a-zA-Z_]\w*)(\s*"(\\"|[^"])*")*/,
           [ :szrString, :szrString1 ], method('startMacroCall') ],
         # Any line not containing the start or end.
         [ 'nil', /.*\n/, :szrString1, method('firstStringSZR') ],
@@ -373,6 +373,7 @@ class TaskJuggler
       macroCallLength = @macroCall.length
       # Remove '${' and '}' and white spaces at begin and end
       argsStr = @macroCall[2..-2].sub(/^[ \t\n]*(.*?)[ \t\n]*$/, '\1')
+
       # Extract the macro name.
       if argsStr.index(' ').nil?
         expandMacro(prefix, [ argsStr ], macroCallLength)
