@@ -86,6 +86,11 @@ class String
       len
     end
 
+    def ljust(len, pad = ' ')
+      return self + pad * (len - length_utf8) if length_utf8 < len
+      self
+    end
+
     alias old_reverse reverse
 
     # UTF-8 aware version of reverse that replaces the built-in one.

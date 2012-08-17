@@ -42,7 +42,11 @@ recommended Ruby version to make full use of TaskJuggler is 1.9.2.
 Ruby 1.9.1 contains some bugs that prevent the multi-core support to
 work. For users that are not interested in multi-core support, the web
 server,  the time sheet infrastructure and daemon Ruby 1.8.7 is still
-ok to use. On Windows you need at least Ruby 1.9.2.
+ok to use. On Windows you need at least Ruby 1.9.2. If you want to
+use non-ASCII characters, Ruby 1.9.2 or later is required as well.
+
+You must have configured your system locale to be UTF-8 to work
+properly with non-ASCII characters.
 
 See below for instructions on how to use the latest and greates Ruby
 version in parallel with your distribution Ruby.
