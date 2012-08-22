@@ -1846,16 +1846,28 @@ class TaskJuggler
 
         # In case we have a persistent allocation we need to check if there
         # is already a locked resource and use it.
-        if allocation.lockedResource
-          bookResource(allocation.lockedResource)
-        else
-          # If not, we create a list of candidates in the proper order and
-          # assign the first one available.
-          allocation.candidates(@scenarioIdx).each do |candidate|
-            if bookResource(candidate)
-              allocation.lockedResource = candidate if allocation.persistent
-              break
-            end
+        locked_candidate = allocation.lockedResource
+        if locked_candidate
+          next if bookResource(locked_candidate)
+          if @forward
+            next if @currentSlotIdx < locked_candidate.getMaxSlot(@scenarioIdx)
+          else
+            next if @currentSlotIdx > locked_candidate.getMinSlot(@scenarioIdx)
+          end
+          # Persistent candidate is gone for the rest of the project!
+          # Warn and assign somebody else, if available!
+          warning('broken_persistence',
+                  "Persistence broken for Task #{@property.fullId} " +
+                  "- resource #{locked_candidate.name} is gone")
+          allocation.lockedResource = nil
+        end
+
+        # Create a list of candidates in the proper order and
+        # assign the first one available.
+        allocation.candidates(@scenarioIdx).each do |candidate|
+          if bookResource(candidate)
+            allocation.lockedResource = candidate if allocation.persistent
+            break
           end
         end
       end
