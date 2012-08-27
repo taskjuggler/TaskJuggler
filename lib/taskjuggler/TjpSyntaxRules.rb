@@ -4033,6 +4033,12 @@ EOT
     singlePattern('_scenario')
     descr('The name of the scenario')
 
+    singlePattern('_scheduling')
+    descr(<<'EOT'
+The scheduling mode of the leaf tasks. ASAP tasks are scheduled start to end while ALAP tasks are scheduled end to start.
+EOT
+         )
+
     singlePattern('_seqno')
     descr('The index of the item based on the declaration order')
 

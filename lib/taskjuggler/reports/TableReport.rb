@@ -68,6 +68,7 @@ class TaskJuggler
       'responsible'       => [ 'Responsible',          false,  :left,  true ],
       'revenue'           => [ 'Revenue',              true,   :right, true ],
       'scenario'          => [ 'Scenario',             false,  :left,  true ],
+      'scheduling'        => [ 'Scheduling Mode',      true,   :left,  true ],
       'sickleave'         => [ 'Sick Leave',           true,   :right, true ],
       'specialleave'      => [ 'Special Leave',        true,   :right, true ],
       'status'            => [ 'Status',               false,  :left,  true ],

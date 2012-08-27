@@ -1499,6 +1499,10 @@ class TaskJuggler
       end
     end
 
+    def query_scheduling(query)
+      query.string = @forward ? 'ASAP' : 'ASAP' if @property.leaf?
+    end
+
     def query_status(query)
       # If we haven't calculated the completion yet, calculate it first.
       calcStatus if @status.empty?
