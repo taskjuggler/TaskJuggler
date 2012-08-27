@@ -582,10 +582,13 @@ class TaskJuggler
       end
       unless thieves.empty?
         warning('priority_inversion',
-                "Due to a mix of ALAP and ASAP scheduled tasks the following " +
-                "task(s) stole resources from #{@property.fullId} " +
-                "despite having a lower priority: " +
-                "#{thieves.map{ |t| t.fullId }.join(', ')}")
+                "Due to a mix of ALAP and ASAP scheduled tasks or a " +
+                "dependency on a lower priority tasks the following " +
+                "task#{thieves.length > 1 ? 's' : ''} stole resources from " +
+                "#{@property.fullId} despite having a lower priority:")
+        thieves.each do |t|
+          info('priority_inversion_info', "Task #{t.fullId}", t.sourceFileInfo)
+        end
       end
 
       @errors == 0
