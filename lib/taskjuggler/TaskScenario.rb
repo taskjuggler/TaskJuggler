@@ -39,6 +39,20 @@ class TaskJuggler
       @dCache = DataCache.instance
     end
 
+    def markAsScheduled
+      return if @scheduled
+      @scheduled = true
+      if @milestone
+        typename = 'Milestone'
+      elsif @property.leaf?
+        typename = 'Task'
+      else
+        typename = 'Container'
+      end
+
+      Log.msg { "#{typename} #{@property.fullId} has been scheduled." }
+    end
+
     # Call this function to reset all scheduling related data prior to
     # scheduling.
     def prepareScheduling
@@ -79,18 +93,17 @@ class TaskJuggler
           @hasDurationSpec = true
           :durationTask
         else
-          # If the task is set as milestone is has a duration spec.
+          # If the task is set as milestone it has a duration spec.
           @hasDurationSpec = @milestone
           :startEndTask
         end
 
-      markMilestone
+      markAsMilestone
 
       # For start-end-tasks without allocation, we don't have to do
       # anything but to set the 'scheduled' flag.
       if @durationType == :startEndTask && @start && @end && @allocate.empty?
-        @scheduled = true
-        Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
+        markAsScheduled
       end
 
       # Collect the limits of this task and all parent tasks into a single
@@ -982,25 +995,27 @@ class TaskJuggler
       # are only set in scheduleContainer().
       if @property.leaf?
         instance_variable_set(('@' + thisEnd).intern, date)
+        typename = 'Task'
         if @durationType == :startEndTask
           instance_variable_set(('@' + thisEnd + 'Idx').intern,
                                 @project.dateToIdx(date))
+          if @milestone
+            typename = 'Milestone'
+          end
         end
-        Log.msg { "Task #{@property.fullId}: #{period_to_s}" }
+        Log.msg { "Update #{typename} #{@property.fullId}: #{period_to_s}" }
       end
 
       if @milestone
         # Start and end date of a milestone are identical.
-        @scheduled = true
+        markAsScheduled
         if a(otherEnd).nil?
           propagateDate(a(thisEnd), !atEnd)
         end
-        Log.msg { "Milestone #{@property.fullId}: #{period_to_s}" }
       elsif !@scheduled && @start && @end &&
             !(@length == 0 && @duration == 0 && @effort == 0 &&
               !@allocate.empty?)
-        @scheduled = true
-        Log.msg { "Task #{@property.fullId} has been scheduled" }
+        markAsScheduled
       end
 
       # Propagate date to all dependent tasks. Don't do this for start
@@ -1131,8 +1146,8 @@ class TaskJuggler
       unless @start && @end
         raise "Start (#{@start}) and end (#{@end}) must be set"
       end
-      @scheduled = true
       Log.msg { "Container task #{@property.fullId} completed: #{period_to_s}" }
+      markAsScheduled
 
       # If we have modified the start or end date, we need to communicate this
       # new date to surrounding tasks.
@@ -1776,7 +1791,7 @@ class TaskJuggler
         # scheduled once we have reached the other end.
         if (@forward && @currentSlotIdx >= @endIdx) |
            (!@forward && @currentSlotIdx <= @startIdx)
-          @scheduled = true
+          markAsScheduled
           @property.parents.each do |parent|
             parent.scheduleContainer(@scenarioIdx)
           end
@@ -1846,16 +1861,28 @@ class TaskJuggler
 
         # In case we have a persistent allocation we need to check if there
         # is already a locked resource and use it.
-        if allocation.lockedResource
-          bookResource(allocation.lockedResource)
-        else
-          # If not, we create a list of candidates in the proper order and
-          # assign the first one available.
-          allocation.candidates(@scenarioIdx).each do |candidate|
-            if bookResource(candidate)
-              allocation.lockedResource = candidate if allocation.persistent
-              break
-            end
+        locked_candidate = allocation.lockedResource
+        if locked_candidate
+          next if bookResource(locked_candidate)
+          if @forward
+            next if @currentSlotIdx < locked_candidate.getMaxSlot(@scenarioIdx)
+          else
+            next if @currentSlotIdx > locked_candidate.getMinSlot(@scenarioIdx)
+          end
+          # Persistent candidate is gone for the rest of the project!
+          # Warn and assign somebody else, if available!
+          warning('broken_persistence',
+                  "Persistence broken for Task #{@property.fullId} " +
+                  "- resource #{locked_candidate.name} is gone")
+          allocation.lockedResource = nil
+        end
+
+        # Create a list of candidates in the proper order and
+        # assign the first one available.
+        allocation.candidates(@scenarioIdx).each do |candidate|
+          if bookResource(candidate)
+            allocation.lockedResource = candidate if allocation.persistent
+            break
           end
         end
       end
@@ -1874,6 +1901,7 @@ class TaskJuggler
           # For effort based task we adjust the the start end (as defined by
           # the scheduling direction) to align with the first booked time
           # slot.
+          Log.msg { "Book #{resource.name} on task #{@property.fullId}" }
           if @effort > 0 && @assignedresources.empty?
             if @forward
               @start = @project.idxToDate(@currentSlotIdx)
@@ -1996,7 +2024,7 @@ class TaskJuggler
         if @effort > 0
           if @doneEffort >= @effort
             @end = tentativeEnd
-            @scheduled = true
+            markAsScheduled
           end
         elsif @length > 0
           @doneLength = 0
@@ -2010,7 +2038,7 @@ class TaskJuggler
             if @doneLength >= @length && date >= tentativeEnd
               endDate = @project.idxToDate(idx + 1)
               @end = [ endDate, tentativeEnd ].max
-              @scheduled = true
+              markAsScheduled
               break
             end
           end
@@ -2018,13 +2046,13 @@ class TaskJuggler
           @doneDuration = ((tentativeEnd - @start) / slotDuration).to_i
           if @doneDuration >= @duration
             @end = tentativeEnd
-            @scheduled = true
+            markAsScheduled
           elsif @duration * slotDuration < (@project['now'] - @start)
             # This handles the case where the bookings don't provide enough
             # @doneDuration to reach @duration, but the now date would be
             # after the @start + @duration date.
             @end = @start + @duration * slotDuration
-            @scheduled = true
+            markAsScheduled
           end
         end
       end
@@ -2126,7 +2154,7 @@ class TaskJuggler
 
     # This function determines if a task is a milestones and marks it
     # accordingly.
-    def markMilestone
+    def markAsMilestone
       return if @property.container? || @hasDurationSpec ||
         !@booking.empty? || !@allocate.empty?
 
@@ -2153,6 +2181,7 @@ class TaskJuggler
         @hasDurationSpec = true
         @end = @start if @start && !@end
         @start = @end if !@start && @end
+        Log.msg { "Mark as milestone #{@property.fullId}" }
       end
     end
 
