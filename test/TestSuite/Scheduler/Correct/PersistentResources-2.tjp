@@ -1,0 +1,33 @@
+project "Test" 2012-08-10 +3m
+
+include "checks.tji"
+
+resource a "A" {
+  leaves project "" 2012-08-14 - ${projectend}
+}
+resource b "B"
+
+macro Alloc [
+  allocate a { alternative b persistent }
+]
+
+# MARK: warning 15 broken_persistence
+task "T1" {
+  start 2012-08-13
+  effort 5d
+  ${Alloc}
+  ${FixEnd "2012-08-27-17:00"}
+}
+task "T2" {
+  start 2012-08-14
+  effort 6d
+  ${Alloc}
+  ${FixEnd "2012-08-21-17:00"}
+}
+
+taskreport "PersistentResources" {
+  formats html
+  columns name, criticalness, pathcriticalness, chart { scale day }
+  hideresource @none
+}
+
