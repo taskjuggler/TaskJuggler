@@ -1898,10 +1898,13 @@ class TaskJuggler
                   @doneEffort >= @effort) || !limitsOk?(@currentSlotIdx, r)
 
         if r.book(@scenarioIdx, @currentSlotIdx, @property)
+          # This method is _very_ performance sensitive. Uncomment this log
+          # message only if you really need it.
+          #Log.msg { "Book #{resource.name} on task #{@property.fullId}" }
+
           # For effort based task we adjust the the start end (as defined by
           # the scheduling direction) to align with the first booked time
           # slot.
-          Log.msg { "Book #{resource.name} on task #{@property.fullId}" }
           if @effort > 0 && @assignedresources.empty?
             if @forward
               @start = @project.idxToDate(@currentSlotIdx)
