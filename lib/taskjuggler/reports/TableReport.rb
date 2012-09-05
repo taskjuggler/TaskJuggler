@@ -339,7 +339,7 @@ class TaskJuggler
         # set so that the lines of the Gantt chart line up with the lines of the
         # table.
         gantt = GanttChart.new(a('now'),
-                               a('weekStartsMonday'), self)
+                               a('weekStartsMonday'), columnDef, self)
 
         gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
@@ -355,23 +355,23 @@ class TaskJuggler
         @table.equiLines = true
       when 'hourly'
         genCalChartHeader(columnDef, rStart.midnight, rEnd, :sameTimeNextHour,
-                          :weekdayAndDate, :hour)
+                          '%A %Y-%m-%d', '%H')
       when 'daily'
         genCalChartHeader(columnDef, rStart.midnight, rEnd, :sameTimeNextDay,
-                          :monthAndYear, :day)
+                          '%b %Y', '%d')
       when 'weekly'
         genCalChartHeader(columnDef,
                           rStart.beginOfWeek(a('weekStartsMonday')), rEnd,
-                          :sameTimeNextWeek, :monthAndYear, :day)
+                          :sameTimeNextWeek, '%b %Y', '%d')
       when 'monthly'
         genCalChartHeader(columnDef, rStart.beginOfMonth, rEnd,
-                          :sameTimeNextMonth, :year, :shortMonthName)
+                          :sameTimeNextMonth, '%Y', '%b')
       when 'quarterly'
         genCalChartHeader(columnDef, rStart.beginOfQuarter, rEnd,
-                          :sameTimeNextQuarter, :year, :quarterName)
+                          :sameTimeNextQuarter, '%Y', 'Q%Q')
       when 'yearly'
         genCalChartHeader(columnDef, rStart.beginOfYear, rEnd, :sameTimeNextYear,
-                          nil, :year)
+                          nil, '%Y')
       else
         # This is the most common case. It does not need any special treatment.
         # We just set the pre-defined or user-defined column title in the first
@@ -546,11 +546,15 @@ class TaskJuggler
     # each hour, day, week, etc. _columnDef_ is the definition of the columns.
     # _t_ is the start time for the calendar. _sameTimeNextFunc_ is a function
     # that is called to advance _t_ to the next table column interval.
-    # _name1Func_ and _name2Func_ are functions that return the upper and lower
-    # title of the particular column.
+    # _timeformat1_ and _timeformat2_ are strftime format Strings that are used
+    # to generate the upper and lower title of the particular column.
     def genCalChartHeader(columnDef, t, rEnd, sameTimeNextFunc,
-                          name1Func, name2Func)
+                          timeformat1, timeformat2)
       tableColumn = ReportTableColumn.new(@table, columnDef, '')
+      # Overwrite the built-in time formats if the user specified a different
+      # one.
+      timeformat1 = columnDef.timeformat1 if columnDef.timeformat1
+      timeformat2 = columnDef.timeformat2 if columnDef.timeformat2
 
       # Calendar chars only work when all lines have same height.
       @table.equiLines = true
@@ -572,12 +576,12 @@ class TaskJuggler
       while t < rEnd
         cellsInInterval = 0
         # Label for upper scale. The yearly calendar only has a lower scale.
-        currentInterval = t.send(name1Func) if name1Func
+        currentInterval = t.to_s(timeformat1) if timeformat1
         firstColumn = nil
         # The innter loops terminates when the label for the upper scale has
         # changed to the next scale cell.
-        while t < rEnd && (name1Func.nil? ||
-                           t.send(name1Func) == currentInterval)
+        while t < rEnd && (timeformat1.nil? ||
+                           t.to_s(timeformat1) == currentInterval)
           # call TjTime::sameTimeNext... function to get the end of the column.
           nextT = t.send(sameTimeNextFunc)
           iv = TimeInterval.new(t, nextT)
@@ -589,11 +593,11 @@ class TaskJuggler
           # all lower scale cells that belong to this upper cell.
           if firstColumn.nil?
             firstColumn = column
-            column.cell1.text = currentInterval.to_s
+            column.cell1.text = currentInterval
           else
             column.cell1.hidden = true
           end
-          column.cell2.text = t.send(name2Func).to_s
+          column.cell2.text = t.to_s(timeformat2)
           # We assume an average of 7 pixel per character
           width = 8 + 7 * column.cell2.text.length
           # Ensure a minimum with of 28 to have good looking tables even with

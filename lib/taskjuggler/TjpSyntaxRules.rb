@@ -839,6 +839,26 @@ invariant values.
 EOT
        )
 
+    pattern(%w( _timeformat1 $STRING ), lambda {
+      @column.timeformat1 = @val[1]
+    })
+    doc('timeformat1', <<'EOT'
+Specify an alternative format for the upper header line of calendar or Gantt
+chart columns.
+EOT
+       )
+    arg(1, 'format', 'See [[timeformat]] for details.')
+
+    pattern(%w( _timeformat2 $STRING ), lambda {
+      @column.timeformat2 = @val[1]
+    })
+    doc('timeformat2', <<'EOT'
+Specify an alternative format for the lower header line of calendar or Gantt
+chart columns.
+EOT
+       )
+    arg(1, 'format', 'See [[timeformat]] for details.')
+
     pattern(%w( _title $STRING ), lambda {
       @column.title = @val[1]
     })
