@@ -1,0 +1,10 @@
+project "Test" 2012-09-05 +2y
+
+task "Foo"
+
+taskreport "Calendars" {
+  formats html
+  columns name,
+          quarterly { timeformat1 "TF1: %Y" timeformat2 "TF2: %Q" },
+          chart { timeformat1 "TF1: %Y" timeformat2 "TF2: %Q" }
+}

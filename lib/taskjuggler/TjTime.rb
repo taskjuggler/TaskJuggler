@@ -370,10 +370,13 @@ class TaskJuggler
     def to_s(format = nil)
       return 'unknown' if @time.nil?
       if format.nil?
-        format = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
+        fmt = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
+      else
+        # Handle TJ specific extensions to the strftime format.
+        fmt = format.sub(/%Q/, "#{((localtime.mon - 1) / 3) + 1}")
       end
       # Always report values in local timezone
-      localtime.strftime(format)
+      localtime.strftime(fmt)
     end
 
     # Return the seconds since Epoch.
@@ -414,32 +417,6 @@ class TaskJuggler
     # Return the year.
     def year
       localtime.year
-    end
-
-    # Return the abbreviated month name.
-    def shortMonthName
-      localtime.strftime('%b')
-    end
-
-    # Return the number of the quarter prefixed by a 'Q'.
-    def quarterName
-      "Q#{(localtime.mon / 3) + 1}"
-    end
-
-    # Return the week number. _weekStartsMonday_ specifies wheter the counting
-    # should be for weeks starting Mondays or Sundays.
-    def week(weekStartsMonday)
-      localtime.strftime(weekStartsMonday ? '%W' : '%U')
-    end
-
-    # Return the abbreviated month name and the full year. E. g. 'Feb 1972'.
-    def monthAndYear
-      localtime.strftime('%b %Y')
-    end
-
-    # Return the abbreviated weekday and the full date. E. g. 'Sat 2007-11-03'.
-    def weekdayAndDate
-      localtime.strftime('%A %Y-%m-%d')
     end
 
   private

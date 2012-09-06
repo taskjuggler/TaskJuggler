@@ -25,7 +25,8 @@ class TaskJuggler
     attr_accessor :height
 
     # Create a GanttHeader object and generate the scales for the header.
-    def initialize(chart)
+    def initialize(columnDef, chart)
+      @columnDef = columnDef
       @chart = chart
 
       @largeScale = []
@@ -70,29 +71,32 @@ class TaskJuggler
       case @chart.scale['name']
       when 'hour'
         genHeaderScale(@largeScale, 0, h, :midnight, :sameTimeNextDay,
-                       :weekdayAndDate)
+                       @columnDef.timeformat1 || '%A %Y-%m-%d')
         genHeaderScale(@smallScale, h + 1, h, :beginOfHour, :sameTimeNextHour,
-                       :hour)
+                       @columnDef.timeformat2 || '%H')
       when 'day'
         genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,
-                       :monthAndYear)
-        genHeaderScale(@smallScale, h + 1, h, :midnight, :sameTimeNextDay, :day)
+                       @columnDef.timeformat1 || '%b %Y')
+        genHeaderScale(@smallScale, h + 1, h, :midnight, :sameTimeNextDay,
+                       @columnDef.timeformat2 || '%d')
       when 'week'
         genHeaderScale(@largeScale, 0, h, :beginOfMonth, :sameTimeNextMonth,
-                       :monthAndYear)
+                       @columnDef.timeformat1 || '%b %Y')
         genHeaderScale(@smallScale, h + 1, h, :beginOfWeek, :sameTimeNextWeek,
-                       :week)
+                       @columnDef.timeformat2 || '%d')
       when 'month'
-        genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear, :year)
+        genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear,
+                       @columnDef.timeformat1 || '%Y')
         genHeaderScale(@smallScale, h + 1, h, :beginOfMonth, :sameTimeNextMonth,
-                       :shortMonthName)
+                       @columnDef.timeformat2 || '%b')
       when 'quarter'
-        genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear, :year)
+        genHeaderScale(@largeScale, 0, h, :beginOfYear, :sameTimeNextYear,
+                       @columnDef.timeformat1 || '%Y')
         genHeaderScale(@smallScale, h + 1, h, :beginOfQuarter,
-                       :sameTimeNextQuarter, :quarterName)
+                       :sameTimeNextQuarter, @columnDef.timeformat2 || 'Q%Q')
       when 'year'
         genHeaderScale(@smallScale, h + 1, h, :beginOfYear, :sameTimeNextYear,
-                       :year)
+                       @columnDef.timeformat1 || '%Y')
       else
         raise "Unknown scale: #{@chart.scale['name']}"
       end
@@ -102,7 +106,7 @@ class TaskJuggler
     end
 
     # Generate the actual scale cells.
-    def genHeaderScale(scale, y, h, beginOfFunc, sameTimeNextFunc, nameFunc)
+    def genHeaderScale(scale, y, h, beginOfFunc, sameTimeNextFunc, timeformat)
       # The beginOfWeek function needs a parameter, so we have to handle it as a
       # special case.
       if beginOfFunc == :beginOfWeek
@@ -125,11 +129,7 @@ class TaskJuggler
         else
           @cellStartDates << t
         end
-        # Again, nameFunc needs special handling for the week case due to the
-        # extra parameter.
-        name = nameFunc == :week ? t.send(nameFunc, @chart.weekStartsMonday) :
-                                   t.send(nameFunc)
-        scale << GanttHeaderScaleItem.new(name, x, y, w, h)
+        scale << GanttHeaderScaleItem.new(t.to_s(timeformat), x, y, w, h)
         t = nextT
       end
       # Add the end date of the last cell when generating the small scale.

@@ -51,6 +51,11 @@ class TaskJuggler
       # Same but for each assigned resource.
       @lastBookedSlots = {}
 
+      # First available slot of the resource.
+      @minslot = nil
+      # Last available slot of the resource.
+      @maxslot = nil
+
       # Attributed are only really created when they are accessed the first
       # time. So make sure some needed attributes really exist so we don't
       # have to check for existance each time we access them.
@@ -735,6 +740,16 @@ class TaskJuggler
       end
     end
 
+    # Get the first available slot of the resource.
+    def getMinSlot
+      @minslot
+    end
+
+    # Get the last available slot of the resource.
+    def getMaxSlot
+      @maxslot
+    end
+
   private
 
     def initScoreboard
@@ -798,6 +813,24 @@ class TaskJuggler
             @scoreboard[i] = v & 0x3E
           end
         end
+      end
+
+      # Set minimum and maximum availability
+      idx = 0
+      while idx < @scoreboard.size
+        if available?(idx)
+          @minslot = idx
+          break
+        end
+        idx += 1
+      end
+      idx = @scoreboard.size - 1
+      while idx >= 0
+        if available?(idx)
+          @maxslot = idx
+          break
+        end
+        idx -= 1
       end
     end
 

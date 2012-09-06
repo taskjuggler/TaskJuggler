@@ -43,11 +43,12 @@ class TaskJuggler
     # is the date that should be used as current date. _weekStartsMonday_ is
     # true if the weeks should start on Mondays instead of Sundays. _table_ is a
     # reference to the TableReport that the chart is part of.
-    def initialize(now, weekStartsMonday, table = nil)
+    def initialize(now, weekStartsMonday, columnDef, table = nil)
       # The start and end dates of the reported interval.
       @start = nil
       @end = nil
       @now = now
+      @columnDef = columnDef
       @table = table
 
       # This defines the possible horizontal scales that the Gantt chart can
@@ -135,7 +136,7 @@ class TaskJuggler
       steps = @start.send(@scale['stepsToFunc'], @end)
       @width = @stepSize * steps
 
-      @header = GanttHeader.new(self)
+      @header = GanttHeader.new(@columnDef, self)
     end
 
     # Convert the chart into an HTML representation.
