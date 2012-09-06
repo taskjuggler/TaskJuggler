@@ -652,7 +652,7 @@ definition.
 <[example file="tutorial" tag="overview"]>
 
 The generated report can be found
-[http://www.taskjuggler.org/tj3/examples/Overview.html
+[http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html
 here]. It servers as an entry page for the other reports. While it
 already contains some references, a navigator bar would be handy as
 well. Fortunately, there is a block generator called 'navigator' to
