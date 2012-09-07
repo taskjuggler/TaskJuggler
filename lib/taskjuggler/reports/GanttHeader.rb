@@ -110,7 +110,7 @@ class TaskJuggler
       # The beginOfWeek function needs a parameter, so we have to handle it as a
       # special case.
       if beginOfFunc == :beginOfWeek
-        t = @chart.start.send(beginOfFunc, @chart.weekStartsMonday)
+        t = @chart.start.send(beginOfFunc, @chart.weekStartsOn)
       else
         t = @chart.start.send(beginOfFunc)
       end

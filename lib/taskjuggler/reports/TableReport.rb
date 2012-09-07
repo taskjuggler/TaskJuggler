@@ -339,7 +339,7 @@ class TaskJuggler
         # set so that the lines of the Gantt chart line up with the lines of the
         # table.
         gantt = GanttChart.new(a('now'),
-                               a('weekStartsMonday'), columnDef, self)
+                               a('weekStartsOn'), columnDef, self)
 
         gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
@@ -361,7 +361,7 @@ class TaskJuggler
                           '%b %Y', '%d')
       when 'weekly'
         genCalChartHeader(columnDef,
-                          rStart.beginOfWeek(a('weekStartsMonday')), rEnd,
+                          rStart.beginOfWeek(a('weekStartsOn')), rEnd,
                           :sameTimeNextWeek, '%b %Y', '%d')
       when 'monthly'
         genCalChartHeader(columnDef, rStart.beginOfMonth, rEnd,
@@ -662,7 +662,7 @@ class TaskJuggler
         start = query.start.midnight
         sameTimeNextFunc = :sameTimeNextDay
       when 'weekly'
-        start = query.start.beginOfWeek(a('weekStartsMonday'))
+        start = query.start.beginOfWeek(a('weekStartsOn'))
         sameTimeNextFunc = :sameTimeNextWeek
       when 'monthly'
         start = query.start.beginOfMonth

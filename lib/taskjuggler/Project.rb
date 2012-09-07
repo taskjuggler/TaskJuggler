@@ -98,7 +98,7 @@ class TaskJuggler
         'timezone' => TjTime.timeZone,
         'trackingScenarioIdx' => nil,
         'version' => version || "1.0",
-        'weekStartsMonday' => true,
+        'weekStartsOn' => 0,
         'workinghours' => nil,
         'yearlyworkingdays' => 260.714
       }
@@ -450,8 +450,8 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ],
-        [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
-              true,  true,    false, false ],
+        [ 'weekStartsOn', 'Week Starts On', FixnumAttribute,
+              true,  true,    false, 0 ],
         [ 'width',     'Width',        FixnumAttribute,
               true,  false,   false, 640 ]
       ]

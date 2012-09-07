@@ -205,19 +205,23 @@ class TaskJuggler
       TjTime.new([ year, month, day, hour, min, sec, 0 ])
     end
 
-    # Normalize time to the beginning of the current week. _startMonday_
-    # determines whether the week should start on Monday or Sunday.
-    def beginOfWeek(startMonday)
+    # Normalize time to the beginning of the current week. _startOn_
+    # determines what day the week should start on
+    def beginOfWeek(startOn)
       t = localtime.to_a
       # Set time to noon, 12:00:00
       t[0, 3] = [ 0, 0, 12 ]
       weekday = t[6]
       t.slice!(6, 4)
       t.reverse!
+      newweekday = weekday - startOn
+      if (newweekday < 0)
+        newweekday += 7
+      end
       # Substract the number of days determined by the weekday t[6] and set time
       # to midnight of that day.
       (TjTime.new(Time.local(*t)) -
-       (weekday - (startMonday ? 1 : 0)) * 60 * 60 * 24).midnight
+       (newweekday) * 60 * 60 * 24).midnight
     end
 
     # Normalize time to the beginning of the current month.

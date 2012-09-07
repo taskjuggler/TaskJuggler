@@ -16,10 +16,10 @@ require 'taskjuggler/AppConfig'
 
 AppConfig.version = '3.3.0'
 AppConfig.packageName = 'taskjuggler'
-AppConfig.softwareName = 'TaskJuggler'
+AppConfig.softwareName = 'TaskJuggler-AJL'
 AppConfig.packageInfo = 'A Project Management Software'
 AppConfig.copyright = [ (2006..2012).to_a ]
-AppConfig.authors = [ 'Chris Schlaeger <chris@linux.com>' ]
+AppConfig.authors = [ 'Chris Schlaeger <chris@linux.com>', 'AJ Lewis <aj.lewis@quantum.com>' ]
 AppConfig.contact = 'http://www.taskjuggler.org'
 AppConfig.license = <<'EOT'
 This program is free software; you can redistribute it and/or modify it under

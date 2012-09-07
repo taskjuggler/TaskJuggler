@@ -34,16 +34,16 @@ class TaskJuggler
 
     include HTMLGraphics
 
-    attr_reader :start, :end, :now, :weekStartsMonday, :header, :width,
+    attr_reader :start, :end, :now, :weekStartsOn, :header, :width,
                 :scale, :scales, :table
     attr_writer :viewWidth
 
     # Create the GanttChart object, but don't do much right now. We still need
     # more information about the chart before we can actually generate it. _now_
-    # is the date that should be used as current date. _weekStartsMonday_ is
-    # true if the weeks should start on Mondays instead of Sundays. _table_ is a
+    # is the date that should be used as current date. _weekStartsOn is
+    # a number representing the first day of the week. _table_ is a
     # reference to the TableReport that the chart is part of.
-    def initialize(now, weekStartsMonday, columnDef, table = nil)
+    def initialize(now, weekStartsOn, columnDef, table = nil)
       # The start and end dates of the reported interval.
       @start = nil
       @end = nil
@@ -83,7 +83,7 @@ class TaskJuggler
       # view will be adapted to the width of the chart.
       @viewWidth = nil
       # True of the week starts on a Monday.
-      @weekStartsMonday = weekStartsMonday
+      @weekStartsOn = weekStartsOn
 
       # Reference to the GanttHeader object that models the chart header.
       @header = nil
