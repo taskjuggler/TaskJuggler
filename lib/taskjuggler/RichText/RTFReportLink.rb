@@ -31,20 +31,14 @@ class TaskJuggler
 
     # Not supported for this function
     def to_s(args)
-      ''
+      report = checkArgs(args)
+
+      report.name
     end
 
     # Return a HTML tree for the report.
     def to_html(args)
-      if args.nil? || (id = args['id']).nil?
-        error('rtp_report_id',
-              "Argument 'id' missing to specify the report to be used.")
-        return nil
-      end
-      unless (report = @project.report(id))
-        error('rtp_report_unknown_id', "Unknown report #{id}")
-        return nil
-      end
+      report = checkArgs(args)
 
       # The URL for interactive reports is different than for static reports.
       if report.interactive?
@@ -69,6 +63,22 @@ class TaskJuggler
     # Not supported for this function.
     def to_tagged(args)
       nil
+    end
+
+    private
+
+    def checkArgs(args)
+      if args.nil? || (id = args['id']).nil?
+        error('rtp_report_id',
+              "Argument 'id' missing to specify the report to be used.")
+        return nil
+      end
+      unless (report = @project.report(id))
+        error('rtp_report_unknown_id', "Unknown report #{id}")
+        return nil
+      end
+
+      report
     end
 
   end
