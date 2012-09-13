@@ -466,8 +466,7 @@ class TaskJuggler
     # Pop the last stack entry from the @fileStack and restore the class
     # variables according to the now top-entry.
     def popFileStack
-      @fileStack.pop
-      stackEntry = @fileStack.last
+      stackEntry = @fileStack.pop
       @fileStackVariables.each do |var|
         instance_variable_set('@' + var, stackEntry[var])
       end
