@@ -183,10 +183,7 @@ EOT
                                         @report.get('rollupResource'),
                                         @report.get('openNodes'))
       # Prepare a template for the Query we will use to get all the data.
-      unless (scenarioIdx = @project['trackingScenarioIdx'])
-        @report.error('ts_no_tracking_scenario',
-                      'No trackingscenario defined.')
-      end
+      scenarioIdx = a('scenarios')[0]
       queryAttrs = { 'project' => @project,
                      'scopeProperty' => nil,
                      'scenarioIdx' => scenarioIdx,

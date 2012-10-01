@@ -5364,8 +5364,9 @@ EOT
       newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0])
       @property.set('formats', [ :tjp ])
 
-      unless @project.scenario(0).get('active')
-        @property.set('scenarios', [ 0 ])
+      unless (scenarioIdx = @project['trackingScenarioIdx'])
+        error('ss_no_tracking_scenario',
+              'You must have a tracking scenario defined to use status sheets.')
       end
       # Show all tasks, sorted by id-up.
       @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
@@ -7024,9 +7025,11 @@ EOT
       newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
       @property.set('formats', [ :tjp ])
 
-      unless @project.scenario(0).get('active')
-        @property.set('scenarios', [ 0 ])
+      unless (scenarioIdx = @project['trackingScenarioIdx'])
+        error('ts_no_tracking_scenario',
+              'You must have a tracking scenario defined to use time sheets.')
       end
+      @property.set('scenarios', [ scenarioIdx ])
       # Show all tasks, sorted by seqno-up.
       @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
       @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
