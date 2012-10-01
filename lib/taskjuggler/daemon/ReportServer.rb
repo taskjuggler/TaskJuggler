@@ -179,10 +179,13 @@ class TaskJuggler
       Thread.new do
         loop do
           if TjTime.new - @lastPing > 120
-            error('ps_heartbeat_lost',
-                  "Report server (Project #{@tj.project['projectid']} " +
-                  "report #{@reportId}) lost heartbeat " +
-                  'from ProjectServer. Terminating.')
+            # Since the abort via error() is not thread safe, we issue a
+            # warning and abort manually.
+            warning('ps_heartbeat_lost',
+                    "Report server (Project #{@tj.project['projectid']} " +
+                    "report #{@reportId}) lost heartbeat " +
+                    'from ProjectServer. Terminating.')
+            exit 1
           end
           sleep 30
         end

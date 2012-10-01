@@ -340,8 +340,11 @@ class TaskJuggler
             # If we have not received a ping from the ProjectBroker for 2
             # minutes, we assume it has died and terminate as well.
             if TjTime.new - @lastPing > 180
-              error('daemon_heartbeat_lost',
-                    'Heartbeat from daemon lost. Terminating.')
+              # Since the abort via error() is not thread safe, we issue a
+              # warning and abort manually.
+              warning('daemon_heartbeat_lost',
+                      'Heartbeat from daemon lost. Terminating.')
+              exit 1
             end
             sleep 1
           end

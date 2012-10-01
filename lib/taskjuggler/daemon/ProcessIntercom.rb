@@ -29,7 +29,7 @@ class TaskJuggler
         MessageHandlerInstance.instance.trapSetup = false
         res
       rescue => e
-        # Any exception here is a fata error. We try hard to terminate the DRb
+        # Any exception here is a fatal error. We try hard to terminate the DRb
         # thread and then exit the program.
         begin
           fatal('pi_crash_trap', "#{e}\n#{e.backtrace.join("\n")}\n\n" +
