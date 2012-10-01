@@ -27,9 +27,11 @@ class TaskJuggler
     # +separator+ and a +quote+ string for the CSV file.
     def initialize(data = nil, separator = ';', quote = '"')
       @data = data
-      raise "Illegal separator: #{separator}" if '."'.include?(separator)
+      if !separator.nil? && '."'.include?(separator)
+        raise "Illegal separator: #{separator}"
+      end
       @separator = separator
-      raise "Illegal quote: #{separator}" if quote == '.'
+      raise "Illegal quote: #{quote}" if quote == '.'
       @quote = quote
     end
 
@@ -64,6 +66,8 @@ class TaskJuggler
 
     # Convert the CSV data into a CSV formatted String.
     def to_s
+      raise "No seperator defined." if @separator.nil?
+
       s = ''
       @data.each do |line|
         first = true
@@ -89,6 +93,9 @@ class TaskJuggler
 
       # Make sure the input is terminated with a record end.
       str += "\n" unless str[-1] == ?\n
+
+      # If the user hasn't defined a separator, we try to detect it.
+      @separator = detectSeparator(str) unless @separator
 
       line = 1
       str.each_utf8_char do |c|
@@ -230,6 +237,21 @@ class TaskJuggler
         # Unquoted fields are inspected for special types
         CSVFile.strToNative(field)
       end
+    end
+
+    def detectSeparator(str)
+      # Pick the separator that was found the most.
+      best = nil
+      bestCount = 0
+
+      "\t;:".each_char do |c|
+        if best.nil? || str.count(c) > bestCount
+          best = c
+          bestCount = str.count(c)
+        end
+      end
+
+      return best
     end
 
   end

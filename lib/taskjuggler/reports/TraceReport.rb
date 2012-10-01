@@ -88,7 +88,7 @@ class TaskJuggler
       discontinuedColumns = 0
       if File.exists?(@fileName)
         begin
-          @table = CSVFile.new.read(@fileName)
+          @table = CSVFile.new(nil, nil).read(@fileName)
         rescue
           error('tr_cannot_read_csv',
                 "Cannot read CSV file #{@fileName}: #{$!}")

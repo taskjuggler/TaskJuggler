@@ -28,6 +28,16 @@ EOT
    assert_equal(ref, csv.to_s)
   end
 
+  def test_separatorDetection
+    csv = TaskJuggler::CSVFile.new(nil, nil)
+    inp = <<EOT
+"foo";"bar"
+"rab";"oof"
+EOT
+    v = [ [ "foo", "bar" ], [ "rab", "oof" ] ]
+   assert_equal(csv.parse(inp), v)
+  end
+
   def test_simple
     v = [ [ "foo" ], [ "bar" ] ]
     check(v)
