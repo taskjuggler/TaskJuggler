@@ -1864,6 +1864,13 @@ class TaskJuggler
         locked_candidate = allocation.lockedResource
         if locked_candidate
           next if bookResource(locked_candidate)
+
+          if allocation.atomic &&
+             locked_candidate.bookedTask(@scenarioIdx, @currentSlotIdx)
+            rollbackBookings
+            return
+          end
+
           if @forward
             next if @currentSlotIdx < locked_candidate.getMaxSlot(@scenarioIdx)
           else
@@ -2099,6 +2106,19 @@ class TaskJuggler
                 "The total duration (#{duration}d) of the provided bookings " +
                 "for task #{@property.fullId} exceeds the specified duration " +
                 "of #{requestedDuration}d.")
+      end
+    end
+
+    def rollbackBookings
+      @doneEffort = 0.0
+
+      @allocate.each do |allocation|
+        allocation.lockedResource = nil
+        allocation.candidates(@scenarioIdx).each do |resource|
+          resource.allLeaves.each do |r|
+            r.rollbackBookings(@scenarioIdx, @property)
+          end
+        end
       end
     end
 

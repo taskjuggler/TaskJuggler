@@ -24,12 +24,12 @@ class TaskJuggler
   class Allocation
 
     attr_reader :selectionMode
-    attr_accessor :persistent, :mandatory, :shifts, :lockedResource
+    attr_accessor :atomic, :persistent, :mandatory, :shifts, :lockedResource
 
     # Create an Allocation object. The _candidates_ list must at least contain
     # one Resource reference.
     def initialize(candidates, selectionMode = 1, persistent = false,
-                   mandatory = false)
+                   mandatory = false, atomic = false)
       @candidates = candidates
       # The selection mode determines how the candidate is selected from the
       # list of candidates.
@@ -42,6 +42,7 @@ class TaskJuggler
       #                      load
       # 4 : 'random'       : select a random candidate
       @selectionMode = selectionMode
+      @atomic = atomic
       @persistent = persistent
       @mandatory = mandatory
       @shifts = nil

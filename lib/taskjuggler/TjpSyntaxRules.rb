@@ -6486,6 +6486,10 @@ higher priority. This can result in situations where high priority tasks do
 not get their resources even though the parallel competing tasks have a much
 lower priority.
 
+ALAP tasks may not have [[bookings.task|bookings]] since the first booked slot
+determines the start date of the task and prevents it from being scheduled
+from end to start.
+
 As a general rule, try to avoid ALAP tasks whenever possible. Have a close
 eye on tasks that have been switched implicitly to ALAP mode because the
 end attribute comes after the start attribute.

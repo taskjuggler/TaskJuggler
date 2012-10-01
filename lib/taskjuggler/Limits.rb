@@ -83,6 +83,20 @@ class TaskJuggler
         end
       end
 
+      # Decrease the counter if the _index_ matches the @interval. The
+      # relationship between @resource and _resource_ is described below.
+      # @r \ _r_  nil    y
+      # nil       inc   inc
+      #  x         -    if x==y inc else -
+      def dec(index, resource)
+        if @interval.contains?(index) &&
+           (@resource.nil? || @resource == resource)
+          # The condition is met, decrement the counter for the interval.
+          @dirty = true
+          @scoreboard[idxToSbIdx(index)] -= 1
+        end
+      end
+
       # Returns true if the counter for the time slot specified by +index+ or
       # all counters are within the limit. If +upper+ is true, only upper
       # limits are checked. If not, only lower limits are checked. The
@@ -234,6 +248,14 @@ class TaskJuggler
     def inc(index, resource = nil)
       @limits.each do |limit|
         limit.inc(index, resource)
+      end
+    end
+
+    # This function decreases the counters for all limits for a specific
+    # interval identified by _index_.
+    def dec(index, resource = nil)
+      @limits.each do |limit|
+        limit.dec(index, resource)
       end
     end
 
