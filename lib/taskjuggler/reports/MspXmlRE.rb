@@ -25,7 +25,11 @@ class TaskJuggler
     # Create a new object and set some default values.
     def initialize(report)
       super(report)
-      @scenarioIdx = 0
+
+      # This report type currently only supports a single scenario. Use the
+      # first specified one.
+      @scenarioIdx = a('scenarios').first
+
       # Hash to map calendar names to UIDs (numbers).
       @calendarUIDs = {}
       @timeformat = "%Y-%m-%dT%H:%M:%S"
