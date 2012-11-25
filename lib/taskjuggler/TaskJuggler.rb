@@ -218,13 +218,13 @@ class TaskJuggler
       # Check the master file is really a file and not stdin.
       unless (masterFile = @project.inputFiles.masterFile)
         error('cannot_freeze_stdin',
-              "The project freeze feature only when the " +
+              "The project freeze feature can only be used when the " +
               "master file is a real file, not standard input.")
       end
 
       # Derive the file names for the header and bookings file from the base
       # name of the master file.
-      masterFileBase = File.basename(masterFile, '.tjp')
+      masterFileBase = Dir.pwd + '/' + File.basename(masterFile, '.tjp')
       headerFile = masterFileBase + '-header.tji'
       bookingsFileBase = masterFileBase + '-bookings'
       bookingsFile = bookingsFileBase + '.tji'
