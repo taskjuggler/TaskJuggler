@@ -27,7 +27,7 @@ class TaskJuggler
     SCROLLBARHEIGHT = 20
 
     attr_reader :maxIndent, :headerLineHeight, :headerFontSize
-    attr_accessor :equiLines, :embedded
+    attr_accessor :equiLines, :embedded, :selfcontained, :auxDir
 
     # Create a new ReportTable object.
     def initialize
@@ -44,6 +44,10 @@ class TaskJuggler
       @equiLines = false
       # True if the table is embedded as a column of another ReportTable.
       @embedded = false
+      # True if the report does not rely on the data of other files.
+      @selfcontained = false
+      # Path to the auxiliary data directory.
+      @auxDir = ''
     end
 
     # This function should only be called by the ReportTableColumn constructor.

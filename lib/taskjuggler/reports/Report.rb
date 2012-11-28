@@ -203,7 +203,7 @@ class TaskJuggler
       else
         head << XMLElement.new('link', 'rel' => 'stylesheet',
                                'type' => 'text/css',
-                               'href' => 'css/tjreport.css')
+                               'href' => "#{a('auxdir')}css/tjreport.css")
       end
       html.html <<
         XMLComment.new("Dynamic Report ID: " +
@@ -212,7 +212,7 @@ class TaskJuggler
 
       unless a('selfcontained')
         body << XMLElement.new('script', 'type' => 'text/javascript',
-                               'src' => 'scripts/wz_tooltip.js')
+                               'src' => "#{a('auxdir')}scripts/wz_tooltip.js")
         body << (noscript = XMLElement.new('noscript'))
         noscript << (nsdiv = XMLElement.new('div',
                                             'style' => 'text-align:center; ' +
@@ -389,8 +389,9 @@ EOT
     end
 
     def copyAuxiliaryFiles
-      # Don't copy files if output is stdout.
-      return if @name == '.' || a('interactive')
+      # Don't copy files if output is stdout, the requested by the web server
+      # or the user has specified a custom aux directory.
+      return if @name == '.' || a('interactive') || !a('auxdir').empty?
 
       copyDirectory('css')
       copyDirectory('icons')

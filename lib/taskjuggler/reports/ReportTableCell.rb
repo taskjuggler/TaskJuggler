@@ -23,7 +23,7 @@ class TaskJuggler
     attr_reader :line
     attr_accessor :data, :category, :hidden, :alignment, :padding,
                   :text, :tooltip, :showTooltipHint,
-                  :iconTooltip, :selfcontained,
+                  :iconTooltip,
                   :cellColor, :indent, :icon, :fontSize, :fontColor,
                   :bold, :width,
                   :rows, :columns, :special
@@ -81,9 +81,6 @@ class TaskJuggler
       @rows = 1
       # The number of columns the cell spans
       @columns = 1
-      # True of the resulting report should not contain any information from
-      # other files.
-      @selfcontained = false
       # Ignore everything and use this reference to generate the output.
       @special = nil
     end
@@ -134,10 +131,11 @@ class TaskJuggler
 
       # Overwrite the tooltip if the user has specified a custom tooltip.
       tooltip = @tooltip if @tooltip
-      if tooltip && !tooltip.empty? && !@selfcontained
+      if tooltip && !tooltip.empty? && !selfcontained
         if @showTooltipHint
           row << (td = XMLElement.new('td'))
-          td << XMLElement.new('img', 'src' => 'icons/details.png',
+          td << XMLElement.new('img',
+                               'src' => "#{auxDir}icons/details.png",
                                'class' => 'tj_table_cell_tooltip')
           addHtmlTooltip(tooltip, td, cell)
         else
@@ -195,6 +193,14 @@ class TaskJuggler
 
     private
 
+    def selfcontained
+      @line.table.selfcontained
+    end
+
+    def auxDir
+      @line.table.auxDir
+    end
+
     def calculateIndentation
       # In tree sorting mode, some cells have to be indented to reflect the
       # tree nesting structure. The indentation is achieved with padding cells
@@ -220,9 +226,9 @@ class TaskJuggler
     end
 
     def cellIcon(cell)
-      if @icon && !@selfcontained
+      if @icon && !selfcontained
         td = XMLElement.new('td', 'class' => 'tj_table_cell_icon')
-        td << XMLElement.new('img', 'src' => "icons/#{@icon}.png",
+        td << XMLElement.new('img', 'src' => "#{auxDir}icons/#{@icon}.png",
                                     'alt' => "Icon")
         addHtmlTooltip(@iconTooltip, td, cell)
         return td
@@ -279,7 +285,7 @@ class TaskJuggler
         labelWidth = @width - 8
         labelWidth -= @leftIndent if @leftIndent
         labelWidth -= @rightIndent if @rightIndent
-        if !@selfcontained
+        if !selfcontained
           # The icons are 20 pixels width including padding.
           labelWidth -= 20 if @icon
           labelWidth -= 20 if tooltip || @tooltip
@@ -342,7 +348,7 @@ class TaskJuggler
     end
 
     def addHtmlTooltip(tooltip, trigger, hook = nil)
-      return unless tooltip && !tooltip.empty? && !@selfcontained
+      return unless tooltip && !tooltip.empty? && !selfcontained
 
       hook = trigger if hook.nil?
       if tooltip.respond_to?('functionHandler')

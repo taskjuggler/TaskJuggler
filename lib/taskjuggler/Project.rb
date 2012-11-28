@@ -336,8 +336,10 @@ class TaskJuggler
         #     Inh.   Inh.Prj  Scen.  Default
         [ 'accountroot',  'Account Root',    PropertyAttribute,
               true,  false,   false, nil ],
+        [ 'auxdir', 'Auxiliary files directory', StringAttribute,
+              true,  false,   false, '' ],
         [ 'bsi',       'BSI',          StringAttribute,
-              false, false,   false, "" ],
+              false, false,   false, '' ],
         [ 'caption',   'Caption',      RichTextAttribute,
               true,  false,   false, nil ],
         [ 'center',    'Center',       RichTextAttribute,

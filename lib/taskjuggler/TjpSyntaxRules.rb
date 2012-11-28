@@ -4139,6 +4139,22 @@ EOT
        )
     example('AccountReport')
 
+    pattern(%w( _auxdir $STRING ), lambda {
+      auxdir = @val[1]
+      # Ensure that the directory always ends with a '/'.
+      auxdir += '/' unless auxdir[-1] == ?/
+      @property.set('auxdir', auxdir)
+    })
+    level(:beta)
+    doc('auxdir', <<'EOT'
+Specifies an alternative directory for the auxiliary report files such as CSS,
+JavaScript and icon files. If this attribute is not set, the directoy will be
+generated automatically. If an alternative is provided, the user has to ensure
+that the directory exists and is filled with the proper data. The specified
+path and be absolute or relative to the generated report file.
+EOT
+       )
+
     pattern(%w( !balance ), lambda {
       @property.set('costaccount', @val[0][0])
       @property.set('revenueaccount', @val[0][1])

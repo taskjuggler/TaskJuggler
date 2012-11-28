@@ -566,6 +566,7 @@ class TaskJuggler
       # Create the table that is embedded in this column.
       tableColumn.cell1.special = table = ColumnTable.new
       table.equiLines = true
+      table.selfcontained = a('selfcontained')
       tableColumn.cell2.hidden = true
       table.viewWidth = columnDef.width ? columnDef.width : 450
 
@@ -1142,7 +1143,6 @@ class TaskJuggler
 
       # Cells for containers should be using bold font face.
       cell.bold = true if property.container? && line.bold
-      cell.selfcontained = a('selfcontained')
       cell
     end
 

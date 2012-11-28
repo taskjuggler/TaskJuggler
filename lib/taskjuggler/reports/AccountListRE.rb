@@ -27,6 +27,8 @@ class TaskJuggler
     def initialize(report)
       super
       @table = ReportTable.new
+      @table.selfcontained = report.get('selfcontained')
+      @table.auxDir = report.get('auxdir')
     end
 
     # Generate the table in the intermediate format.
