@@ -41,7 +41,12 @@ class TaskJuggler
       if @ptn.propertySet.flatNamespace
         @ptn.id
       else
-        @parent.logicalId + '.' + @ptn.id[(@ptn.id.rindex('.') + 1).. -1]
+        if (dotPos = @ptn.id.rindex('.'))
+          id = @ptn.id[(dotPos + 1)..-1]
+        else
+          id = @ptn.id
+        end
+        @parent.logicalId + '.' + id
       end
     end
 
