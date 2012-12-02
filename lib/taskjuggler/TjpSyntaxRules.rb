@@ -3303,19 +3303,19 @@ EOT
        )
     example('TimeSheet1', '2')
 
-    pattern(%w( _weekstartsmonday ), lambda {
-      @project['weekStartsMonday'] = true
+    pattern(%w( _weekstartson !number), lambda {
+      @project['weekStartsOn'] = @val[1]
     })
-    doc('weekstartsmonday',
-        'Specify that you want to base all week calculation on weeks ' +
-        'starting on Monday. This is common in many European countries.')
+    doc('weekstartson',
+        'Specify the day of the week you want to base all week calculation on ' +
+        'Sunday=0, Monday=1, etc.')
 
-    pattern(%w( _weekstartssunday ), lambda {
-      @project['weekStartsMonday'] = false
-    })
-    doc('weekstartssunday',
-        'Specify that you want to base all week calculation on weeks ' +
-        'starting on Sunday. This is common in the United States of America.')
+#    pattern(%w( _weekstartssunday ), lambda {
+#      @project['weekStartsMonday'] = false
+#    })
+#    doc('weekstartssunday',
+#        'Specify that you want to base all week calculation on weeks ' +
+#        'starting on Sunday. This is common in the United States of America.')
 
     pattern(%w( !workinghoursProject ))
     pattern(%w( _yearlyworkingdays !number ), lambda {
