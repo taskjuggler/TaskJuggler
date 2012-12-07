@@ -5380,7 +5380,7 @@ EOT
       newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0])
       @property.set('formats', [ :tjp ])
 
-      unless (scenarioIdx = @project['trackingScenarioIdx'])
+      unless (@project['trackingScenarioIdx'])
         error('ss_no_tracking_scenario',
               'You must have a tracking scenario defined to use status sheets.')
       end

@@ -341,8 +341,7 @@ class TaskJuggler
                   "Unexpected token '#{token[1]}' found. " +
                   "Expecting #{@stack.last.state.expectedTokens.length > 1 ?
                                'one of ' : ''}" +
-                  "#{@stack.last.state.expectedTokens.join(', ')}",
-                  @scanner.sourceFileInfo)
+                  "#{@stack.last.state.expectedTokens.join(', ')}", token[2])
           end
           if finishPattern(token)
             # Accept: We're done with parsing.
@@ -378,8 +377,7 @@ class TaskJuggler
         # rules.
         error('unexpctd_token', "Unexpected token '#{token[1]}' found. " +
               "Expecting one of " +
-              "#{stackEntry.state.expectedTokens.join(', ')}",
-              @scanner.sourceFileInfo)
+              "#{stackEntry.state.expectedTokens.join(', ')}", token[2])
       end
       # Memorize if the rule for this pattern was repeatable. Then we will
       # store the result of the pattern in an Array.
