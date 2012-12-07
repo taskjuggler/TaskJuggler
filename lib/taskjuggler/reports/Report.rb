@@ -78,7 +78,7 @@ class TaskJuggler
         if @name.empty?
           error('empty_report_file_name',
                 "Report #{@id} has output formats requested, but the " +
-                "file name is empty.")
+                "file name is empty.", sourceFileInfo)
         end
 
         case format
@@ -194,7 +194,7 @@ class TaskJuggler
         if cssFile.empty?
           error('css_file_error',
                 "Cannot read '#{cssFileName}'. Make sure the file is not " +
-                "empty and you have read access permission.")
+                "empty and you have read access permission.", sourceFileInfo)
         end
         head << XMLElement.new('meta', 'http-equiv' => 'Content-Style-Type',
                                'content' => 'text/css; charset=utf-8')
@@ -254,7 +254,8 @@ EOT
       begin
         html.write(fileName)
       rescue IOError, SystemCallError
-        error('write_html', "Cannot write to file #{fileName}.\n#{$!}")
+        error('write_html', "Cannot write to file #{fileName}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -280,7 +281,8 @@ EOT
                                   @name + '.csv').untaint
         CSVFile.new(csv, ';').write(fileName)
       rescue IOError, SystemCallError
-        error('write_csv', "Cannot write to file #{fileName}.\n#{$!}")
+        error('write_csv', "Cannot write to file #{fileName}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -304,7 +306,8 @@ EOT
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
       rescue IOError, SystemCallError
-        error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}")
+        error('write_tjp', "Cannot write to file #{fileName}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -327,7 +330,8 @@ EOT
           File.open(fileName, 'w') { |f| f.write(@content.to_mspxml) }
         end
       rescue IOError, SystemCallError
-        error('write_mspxml', "Cannot write to file #{fileName}.\n#{$!}")
+        error('write_mspxml', "Cannot write to file #{fileName}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -346,7 +350,8 @@ EOT
                     @name + '.xml').untaint, 'w')
         f.puts "#{@content.to_niku}"
       rescue IOError, SystemCallError
-        error('write_niku', "Cannot write to file #{@name}.\n#{$!}")
+        error('write_niku', "Cannot write to file #{@name}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -365,7 +370,8 @@ EOT
                     @name + '.ics').untaint, 'w')
         f.puts "#{@content.to_iCal}"
       rescue IOError, SystemCallError
-        error('write_ical', "Cannot write to file #{@name}.\n#{$!}")
+        error('write_ical', "Cannot write to file #{@name}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -384,7 +390,8 @@ EOT
                     @name).untaint, 'w')
         f.puts "#{@content.to_ctags}"
       rescue IOError, SystemCallError
-        error('write_ctags', "Cannot write to file #{@name}.\n#{$!}")
+        error('write_ctags', "Cannot write to file #{@name}.\n#{$!}",
+              sourceFileInfo)
       end
     end
 
@@ -416,7 +423,7 @@ EOT
         FileUtils.cp_r(auxSrcDir, auxDstDir)
       rescue IOError, SystemCallError
         error('copy_dir', "Cannot copy directory #{auxSrcDir} to " +
-                          "#{auxDstDir}.\n#{$!}")
+                          "#{auxDstDir}.\n#{$!}", sourceFileInfo)
       end
     end
 
@@ -435,7 +442,7 @@ EOT
     end
 
     def dataDirError(dirName, dirs)
-      error('data_dir_error', <<"EOT"
+      error('data_dir_error', <<"EOT",
 Cannot find the #{dirName} directory. This is usually the result of an
 improper TaskJuggler installation. If you know the directory, you can use the
 TASKJUGGLER_DATA_PATH environment variable to specify the location.  The
@@ -445,6 +452,7 @@ tried:
 
 #{dirs.join("\n")}
 EOT
+            sourceFileInfo
            )
     end
 
@@ -452,7 +460,7 @@ EOT
       if name =~ /[\\?%*:|"<>]/
         error('invalid_file_name',
               'File names may not contain any of the following characters: ' +
-              '\?%*:|\"<>')
+              '\?%*:|\"<>', sourceFileInfo)
       end
     end
 
