@@ -194,11 +194,11 @@ class TaskJuggler
     private
 
     def selfcontained
-      @line.table.selfcontained
+      @line && @line.table.selfcontained
     end
 
     def auxDir
-      @line.table.auxDir
+      @line ? @line.table.auxDir : nil
     end
 
     def calculateIndentation
