@@ -5693,8 +5693,8 @@ EOT
       @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
     })
     arg(2, 'file name', <<'EOT'
-The name of the tagfile to generate. You can leave it empty and it will
-default to the commonly used name ''''tags''''.
+The name of the tagfile to generate. Use ''''tags'''' if you want vim and
+other tools to find it automatically.
 EOT
        )
   end
