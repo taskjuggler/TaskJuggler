@@ -23,7 +23,7 @@ class TestProject < Test::Unit::TestCase
     @t = Thread.new do
       # Timout for the watchdog timer. Even slow hardware should finish each
       # test in under 30s.
-      sleep(30)
+      sleep(120)
       assert(false, 'Test timed out')
     end
   end
