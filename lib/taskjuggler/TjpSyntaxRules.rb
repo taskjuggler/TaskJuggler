@@ -3724,8 +3724,8 @@ EOT
     singlePattern('_alerttrend')
     descr(<<'EOT'
 Shows how the alert level at the end of the report period compares to the
-alert level at the begining of the report period. Possible values are up, down
-or flat.
+alert level at the begining of the report period. Possible values are
+''''Up'''', ''''Down'''' or ''''Flat''''.
 EOT
          )
 
@@ -6503,7 +6503,7 @@ higher priority. This can result in situations where high priority tasks do
 not get their resources even though the parallel competing tasks have a much
 lower priority.
 
-ALAP tasks may not have [[bookings.task|bookings]] since the first booked slot
+ALAP tasks may not have [[booking.task|bookings]] since the first booked slot
 determines the start date of the task and prevents it from being scheduled
 from end to start.
 
