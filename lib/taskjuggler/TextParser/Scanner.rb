@@ -174,7 +174,7 @@ class TaskJuggler::TextParser
         begin
           @stream = StringIO.new(data.forceUTF8Encoding)
         rescue
-          error('fileEncoding', $!)
+          error('fileEncoding', $!.message)
         end
         @log.msg { "Parsing file #{@fileName} ..." }
         @log.startProgressMeter("Reading file #{fileName}")
@@ -195,7 +195,7 @@ class TaskJuggler::TextParser
         begin
           @stream = StringIO.new(buffer.forceUTF8Encoding)
         rescue
-          error('bufferEncoding', $!)
+          error('bufferEncoding', $!.message)
         end
         #@log.msg { "Parsing buffer #{buffer[0, 20]} ..." }
       end
@@ -527,7 +527,7 @@ class TaskJuggler::TextParser
       rescue ArgumentError
         # This is triggered by StringScanner.scan, but we don't want to put
         # the block in the inner loops for performance reasons.
-        error('scan_encoding_error', $!.to_s)
+        error('scan_encoding_error', $!.message)
       end
     end
 

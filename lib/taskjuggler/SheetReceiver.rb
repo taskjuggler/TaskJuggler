@@ -149,7 +149,7 @@ EOT
       begin
         @sheet = sheet.forceUTF8Encoding
       rescue
-        error($!)
+        error($!.message)
       end
 
       # If the sheet contains special cut markers, we extract only the content
