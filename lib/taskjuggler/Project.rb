@@ -71,6 +71,7 @@ class TaskJuggler
         # members: the tjp syntax token, the user visible name and the
         # associated color as RGB byte array.
         'alertLevels' => AlertLevelDefinitions.new,
+        'auxdir' => '',
         'copyright' => nil,
         'costaccount' => nil,
         'currency' => "EUR",
@@ -337,7 +338,7 @@ class TaskJuggler
         [ 'accountroot',  'Account Root',    PropertyAttribute,
               true,  false,   false, nil ],
         [ 'auxdir', 'Auxiliary files directory', StringAttribute,
-              true,  false,   false, '' ],
+              true,  true,    false, '' ],
         [ 'bsi',       'BSI',          StringAttribute,
               false, false,   false, '' ],
         [ 'caption',   'Caption',      RichTextAttribute,
