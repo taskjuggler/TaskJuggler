@@ -3465,6 +3465,24 @@ EOT
 
     pattern(%w( !account ))
 
+    pattern(%w( _auxdir $STRING ), lambda {
+      auxdir = @val[1]
+      # Ensure that the directory always ends with a '/'.
+      auxdir += '/' unless auxdir[-1] == ?/
+      @project['auxdir'] = auxdir
+    })
+    level(:beta)
+    doc('auxdir', <<'EOT'
+Specifies an alternative directory for the auxiliary report files such as CSS,
+JavaScript and icon files. This setting will affect all subsequent report
+definitions unless it gets overridden. If this attribute is not set, the
+directory and its contents will be generated automatically. If this attribute
+is provided, the user has to ensure that the directory exists and is filled
+with the proper data. The specified path can be absolute or relative to the
+generated report file.
+EOT
+       )
+
     pattern(%w( _copyright $STRING ), lambda {
       @project['copyright'] = @val[1]
     })
@@ -4156,12 +4174,12 @@ EOT
       @property.set('auxdir', auxdir)
     })
     level(:beta)
-    doc('auxdir', <<'EOT'
+    doc('auxdir.report', <<'EOT'
 Specifies an alternative directory for the auxiliary report files such as CSS,
-JavaScript and icon files. If this attribute is not set, the directoy will be
-generated automatically. If an alternative is provided, the user has to ensure
+JavaScript and icon files. If this attribute is not set, the directory will be
+generated automatically. If this attribute is provided, the user has to ensure
 that the directory exists and is filled with the proper data. The specified
-path and be absolute or relative to the generated report file.
+path can be absolute or relative to the generated report file.
 EOT
        )
 
