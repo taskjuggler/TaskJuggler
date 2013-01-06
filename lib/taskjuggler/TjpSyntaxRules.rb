@@ -3730,7 +3730,11 @@ EOT
          )
 
     singlePattern('_balance')
-    descr('The account balance at the beginning of the reported period.')
+    descr(<<'EOT'
+The account balance at the beginning of the reported period. This is the
+balance before any transactions of the reported period have been credited.
+EOT
+         )
 
     singlePattern('_bsi')
     descr('The hierarchical or work breakdown structure index (i. e. 1.2.3)')
@@ -4093,6 +4097,12 @@ will also include the targets of the child tasks. Targets may not have any
 follower tasks.
 
 The list can be customized by the [[listitem.column|listitem]] attribute.
+EOT
+         )
+
+    singlePattern('_turnover')
+    descr(<<'EOT'
+The financial turnover of an account during the reporting interval.
 EOT
          )
 
