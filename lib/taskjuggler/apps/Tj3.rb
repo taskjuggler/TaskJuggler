@@ -52,7 +52,7 @@ class TaskJuggler
       # Treat warnings like errors or not.
       @abortOnWarning = false
       # The directory where generated reports should be put in.
-      @outputDir = ''
+      @outputDir = nil
       # The file names of the time sheet files to check.
       @timeSheets = []
       # The file names of the status sheet files to check.
@@ -145,7 +145,7 @@ EOT
         end
         @opts.on('-o', '--output-dir <directory>', String,
                 format('Directory the reports should go into')) do |arg|
-          @outputDir = arg + '/'
+          @outputDir = arg + (arg[-1] == ?/ ? '' : '/')
         end
         @opts.on('-c N', Integer,
                  format('Maximum number of CPU cores to use')) do |arg|
@@ -159,9 +159,9 @@ EOT
         error('tj3_tjp_file_missing',
               'You must provide at least one .tjp file')
       end
-      if @outputDir != '' && !File.directory?(@outputDir)
+      if @outputDir && !File.directory?(@outputDir)
         error('tj3_outdir_missing',
-              "Output directory #{@outputDir} does not exist or is not " +
+              "Output directory '#{@outputDir}' does not exist or is not " +
               "a directory!")
       end
 

@@ -3229,6 +3229,24 @@ EOT
       @project['numberFormat'] = @val[0]
     })
 
+    pattern(%w( _outputdir $STRING ), lambda {
+      # Directory name must be terminated by a slash.
+      if @val[1].empty?
+        error('outdir_empty', 'Output directory may not be empty.')
+      end
+      if !File.directory?(@val[1])
+        error('outdir_missing',
+              "Output directory '#{@val[1]}' does not exist or is not " +
+              "a directory!")
+      end
+      @project.outputDir = @val[1] + (@val[1][-1] == ?/ ? '' : '/')
+    })
+    doc('outputdir',
+        'Specifies the directory into which the reports should be generated. ' +
+        'This will not affect reports whos name start with a slash. This ' +
+        'setting can be overwritten by the command line option.')
+    arg(1, 'directory', 'Path to an existing directory')
+
     pattern(%w( !scenario ))
     pattern(%w( _shorttimeformat $STRING ), lambda {
       @project['shortTimeFormat'] = @val[1]

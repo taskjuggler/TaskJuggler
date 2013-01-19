@@ -144,10 +144,13 @@ class TaskJuggler
   # Generate all specified reports. The project must have be scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
-  def generateReports(outputDir = './')
+  def generateReports(outputDir = nil)
     @project.checkReports
-    outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
-    @project.outputDir = outputDir
+    if outputDir
+      # Make sure the output directory path always ends with a '/' unless empty.
+      outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
+      @project.outputDir = outputDir
+    end
     Log.enter('reports', 'Generating reports ...')
 
     begin

@@ -478,7 +478,7 @@ class TaskJuggler
       # context of enclosing reports needs to be preserved. Therefor we use a
       # stack to implement this.
       @reportContexts = []
-      @outputDir = ''
+      @outputDir = './'
       @warnTsDeltas = false
     end
 
