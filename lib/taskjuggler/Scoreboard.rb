@@ -144,16 +144,18 @@ class TaskJuggler
       # index.
       duration = start = 0
 
-      startIdx.upto(endIdx) do |idx|
-        # Check whether the scoreboard slot matches any of the target values.
-        if yield(@sb[idx])
+      idx = startIdx
+      loop do
+        # Check whether the scoreboard slot matches any of the target values
+        # and we have not yet reached the last slot.
+        if yield(@sb[idx]) && idx < endIdx
           # If so, save the start position if this is the first slot and start
           # counting the matching slots.
           start = idx if start == 0
           duration += 1
         else
-          # If we don't have a match, check if we've just finished a matching
-          # interval.
+          # If we don't have a match or are at the end of the interval, check
+          # if we've just finished a matching interval.
           if duration > 0
             if duration >= minDuration
               # Make sure that all intervals are within the originally
@@ -166,7 +168,9 @@ class TaskJuggler
             duration = start = 0
           end
         end
+        break if (idx += 1) > endIdx
       end
+
       intervals
     end
 
