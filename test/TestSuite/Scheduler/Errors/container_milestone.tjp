@@ -1,0 +1,13 @@
+project test "Test" "1.0" 2013-01-22 +1m
+
+resource tux "Tux"
+
+# MARK: error 6 container_milestone
+task t "T" {
+  milestone
+  task s "S" {
+    effort 1d
+    allocate tux
+  }
+}
+

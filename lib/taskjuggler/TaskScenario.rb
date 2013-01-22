@@ -2178,6 +2178,13 @@ class TaskJuggler
     # This function determines if a task is a milestones and marks it
     # accordingly.
     def markAsMilestone
+      # Containers may not be milestones
+      if @milestone && @property.container?
+        error('container_milestone',
+              "Container task #{@property.fullId} may not be marked " +
+              "as a milestone.")
+      end
+
       return if @property.container? || @hasDurationSpec ||
         !@booking.empty? || !@allocate.empty?
 
