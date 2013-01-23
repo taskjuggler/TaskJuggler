@@ -6860,10 +6860,13 @@ EOT
       @timeSheetRecord = nil
     })
     doc('newtask', <<'EOT'
-The keyword can be used add a new task to the project. If the task ID requires
-further parent task that don't exist yet, these tasks will be created as well.
-If the task exists already, an error is generated. The new task can be used
-immediately to report progress and status against it.
+The keyword can be used to request a new task to the project. If the task ID
+requires further parent task that don't exist yet, these tasks will be
+requested as well. If the task exists already, an error will be generated. The
+newly requested task can be used immediately to report progress and status
+against it. These tasks will not automatically be added to the project plan.
+The project manager has to manually create them after reviewing the request
+during the time sheet reviews.
 EOT
        )
     example('TimeSheet1', '3')
