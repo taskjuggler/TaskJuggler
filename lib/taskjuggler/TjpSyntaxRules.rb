@@ -745,9 +745,9 @@ EOT
     })
     doc('cellcolor.column', <<'EOT'
 Specifies an alternative background color for the cells of this column. The
-logical expression specifies for which cells the color should be used. If
-multiple cellcolor patterns are provided for a column, the first
-matching one is used for each cell.
+[[logicalexpression|logical expression]] specifies for which cells the color
+should be used. If multiple cellcolor patterns are provided for a column, the
+first matching one is used for each cell.
 EOT
        )
 
@@ -769,9 +769,9 @@ EOT
     })
     doc('fontcolor.column', <<'EOT'
 Specifies an alternative font color for the cells of this column. The
-logical expression specifies for which cells the color should be used. If
-multiple fontcolor patterns are provided for a column, the first
-matching one is used for each cell.
+[[logicalexpression|logical expression]] specifies for which cells the color
+should be used. If multiple fontcolor patterns are provided for a column, the
+first matching one is used for each cell.
 EOT
        )
 
@@ -780,10 +780,10 @@ EOT
         CellSettingPattern.new(@val[2], @val[1]))
     })
     doc('halign.column', <<'EOT'
-Specifies the horizontal alignment of the cell content. The logical expression
-specifies for which cells the alignment setting should be used. If multiple
-halign patterns are provided for a column, the first matching one is used for
-each cell.
+Specifies the horizontal alignment of the cell content. The
+[[logicalexpression|logical expression]] specifies for which cells the alignment
+setting should be used. If multiple halign patterns are provided for a column,
+the first matching one is used for each cell.
 EOT
        )
 
@@ -876,9 +876,10 @@ EOT
     doc('tooltip.column', <<'EOT'
 Specifies an alternative content for the tooltip. This will replace the
 original content of the tooltip that would be available for columns with text
-that does not fit the column with.  The logical expression specifies for which
-cells the text should be used. If multiple tooltip patterns are provided for a
-column, the first matching one is taken for each cell.
+that does not fit the column with.  The [[logicalexpression|logical expression]]
+specifies for which cells the text should be used. If multiple tooltip
+patterns are provided for a column, the first matching one is taken for each
+cell.
 EOT
        )
     arg(2, 'text', <<'EOT'
@@ -1405,10 +1406,10 @@ EOT
       end
     })
     doc('fail', <<'EOT'
-The fail attribute adds a logical expression to the property. The condition
-described by the logical expression is checked after the scheduling and an
-error is raised if the condition evaluates to true. This attribute is
-primarily intended for testing purposes.
+The fail attribute adds a [[logicalexpression|logical expression]] to the
+property. The condition described by the logical expression is checked after
+the scheduling and an error is raised if the condition evaluates to true. This
+attribute is primarily intended for testing purposes.
 EOT
        )
   end
@@ -1729,8 +1730,9 @@ EOT
       @property.set('hideAccount', @val[1])
     })
     doc('hideaccount', <<'EOT'
-Do not include accounts that match the specified logical expression. If the
-report is sorted in ''''tree'''' mode (default) then enclosing accounts are
+Do not include accounts that match the specified [[logicalexpression|logical
+expression]]. If the report is sorted in ''''tree'''' mode (default) then
+enclosing accounts are
 listed even if the expression matches the account.
 EOT
        )
@@ -1752,9 +1754,9 @@ EOT
       @property.set('hideResource', @val[1])
     })
     doc('hideresource', <<'EOT'
-Do not include resources that match the specified logical expression. If the
-report is sorted in ''''tree'''' mode (default) then enclosing resources are
-listed even if the expression matches the resource.
+Do not include resources that match the specified [[logicalexpression|logical
+expression]]. If the report is sorted in ''''tree'''' mode (default) then
+enclosing resources are listed even if the expression matches the resource.
 EOT
        )
     also(%w( sortresources ))
@@ -1765,9 +1767,9 @@ EOT
       @property.set('hideTask', @val[1])
     })
     doc('hidetask', <<'EOT'
-Do not include tasks that match the specified logical expression. If the
-report is sorted in ''''tree'''' mode (default) then enclosing tasks are
-listed even if the expression matches the task.
+Do not include tasks that match the specified [[logicalexpression|logical
+expression]]. If the report is sorted in ''''tree'''' mode (default) then
+enclosing tasks are listed even if the expression matches the task.
 EOT
        )
     also(%w( sorttasks ))
@@ -2751,7 +2753,7 @@ EOT
     })
     doc('hidereport', <<'EOT'
 This attribute can be used to exclude the reports that match the specified
-expression from the navigation bar.
+[[logicalexpression|logical expression]] from the navigation bar.
 EOT
           )
   end
@@ -4968,8 +4970,8 @@ EOT
       @property.set('rollupAccount', @val[1])
     })
     doc('rollupaccount', <<'EOT'
-Do not show sub-accounts of accounts that match the specified logical
-expression.
+Do not show sub-accounts of accounts that match the specified
+[[logicalexpression|logical expression]].
 EOT
        )
   end
@@ -4979,8 +4981,8 @@ EOT
       @property.set('rollupResource', @val[1])
     })
     doc('rollupresource', <<'EOT'
-Do not show sub-resources of resources that match the specified logical
-expression.
+Do not show sub-resources of resources that match the specified
+[[logicalexpression|logical expression]].
 EOT
        )
     example('RollupResource')
@@ -4991,7 +4993,8 @@ EOT
       @property.set('rollupTask', @val[1])
     })
     doc('rolluptask', <<'EOT'
-Do not show sub-tasks of tasks that match the specified logical expression.
+Do not show sub-tasks of tasks that match the specified
+[[logicalexpression|logical expression]].
 EOT
        )
   end
@@ -7403,10 +7406,10 @@ EOT
       end
     })
     doc('warn', <<'EOT'
-The warn attribute adds a logical expression to the property. The condition
-described by the logical expression is checked after the scheduling and an
-warning is generated if the condition evaluates to true. This attribute is
-primarily intended for testing purposes.
+The warn attribute adds a [[logicalexpression|logical expression]] to the
+property. The condition described by the logical expression is checked after
+the scheduling and an warning is generated if the condition evaluates to true.
+This attribute is primarily intended for testing purposes.
 EOT
        )
   end
