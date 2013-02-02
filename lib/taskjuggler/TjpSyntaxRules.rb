@@ -164,11 +164,7 @@ EOT
     example('AccountReport')
 
     pattern(%w( _credits !accountCredits ), lambda {
-      begin
-        @property['credits', @scenarioIdx] += @val[1]
-      rescue AttributeOverwrite
-        # Adding multiple credits for an account is a pretty common idiom.
-      end
+      @property['credits', @scenarioIdx] += @val[1]
     })
     doc('credits', <<'EOT'
 Book the specified amounts to the account at the specified date. The
@@ -232,13 +228,7 @@ EOT
   def rule_allocate
     pattern(%w( _allocate !allocations ), lambda {
       checkContainer('allocate')
-      # Don't use << operator here so the 'provided' flag gets set properly.
-      begin
-        @property['allocate', @scenarioIdx] =
-          @property['allocate', @scenarioIdx] + @val[1]
-      rescue AttributeOverwrite
-        # Adding multiple allocates for a task is a pretty common idiom.
-      end
+      @property['allocate', @scenarioIdx] += @val[1]
     })
     doc('allocate', <<'EOT'
 Specify which resources should be allocated to the task. The
@@ -1523,11 +1513,7 @@ EOT
       @val[1].each do |flag|
         next if @property['flags', @scenarioIdx].include?(flag)
 
-        # We allow multiple instances of flag definitions.
-        begin
-          @property['flags', @scenarioIdx] += [ flag ]
-        rescue AttributeOverwrite
-        end
+        @property['flags', @scenarioIdx] += [ flag ]
       end
     })
   end
@@ -4849,10 +4835,7 @@ EOT
     pattern(%w( !leaveAllowances ))
 
     pattern(%w( !leaves ), lambda {
-      begin
-        @property['leaves', @scenarioIdx] += @val[0]
-      rescue AttributeOverwrite
-      end
+      @property['leaves', @scenarioIdx] += @val[0]
     })
 
     pattern(%w( !limits ), lambda {
@@ -4932,11 +4915,8 @@ EOT
 
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       @val[2].each do |interval|
-        begin
-          # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
-        rescue AttributeOverwrite
-        end
+        # We map the old 'vacation' attribute to public holidays.
+        @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
       end
     })
     doc('vacation.resource', <<'EOT'
@@ -5231,10 +5211,7 @@ EOT
 
   def rule_shiftScenarioAttributes
     pattern(%w( !leaves ), lambda {
-      begin
-        @property['leaves', @scenarioIdx] += @val[0]
-      rescue AttributeOverwrite
-      end
+      @property['leaves', @scenarioIdx] += @val[0]
     })
 
     pattern(%w( _replace ), lambda {
@@ -5273,11 +5250,8 @@ EOT
 
     pattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
       @val[2].each do |interval|
-        begin
-          # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
-        rescue AttributeOverwrite
-        end
+        # We map the old 'vacation' attribute to public holidays.
+        @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
       end
     })
     doc('vacation.shift', <<'EOT'
@@ -6163,12 +6137,8 @@ EOT
         mode = :perDiem
         amount = @val[1] / 7.0
       end
-      # Multiple 'charge' attributes are allowed.
-      begin
-        @property['charge', @scenarioIdx] +=
-          [ Charge.new(amount, mode, @property, @scenarioIdx) ]
-      rescue AttributeOverwrite
-      end
+      @property['charge', @scenarioIdx] +=
+        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
     })
     doc('charge', <<'EOT'
 Specify a one-time or per-period charge to a certain account. The charge can
@@ -6205,9 +6175,8 @@ EOT
 
     pattern(%w( _depends !taskDepList ), lambda {
       checkContainer('depends')
+      @property['depends', @scenarioIdx] += @val[1]
       begin
-        @property['depends', @scenarioIdx] =
-          @property['depends', @scenarioIdx] + @val[1]
         @property['forward', @scenarioIdx] = true
       rescue AttributeOverwrite
       end
@@ -6417,8 +6386,8 @@ EOT
 
     pattern(%w( _precedes !taskPredList ), lambda {
       checkContainer('precedes')
-      begin
         @property['precedes', @scenarioIdx] += @val[1]
+      begin
         @property['forward', @scenarioIdx] = false
       rescue AttributeOverwrite
       end

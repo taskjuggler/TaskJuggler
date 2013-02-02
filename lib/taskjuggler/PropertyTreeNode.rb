@@ -442,7 +442,10 @@ class TaskJuggler
           @project.scenario(scenario).all.each do |sc|
             scenarioIdx = @project.scenarioIdx(sc)
 
-            if @scenarioAttributes[scenarioIdx][attributeId].provided
+            if @scenarioAttributes[scenarioIdx][attributeId].provided &&
+               !@scenarioAttributes[scenarioIdx][attributeId].isList?
+              # Assignments to list attributes always append. We don't
+              # consider this an overwrite.
               overwrite = true
             end
 

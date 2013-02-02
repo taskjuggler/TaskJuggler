@@ -1,4 +1,8 @@
-require 'rake/rdoctask'
+if RUBY_VERSION < '1.9.3'
+  require 'rake/rdoctask'
+else
+  require 'rdoc/task'
+end
 
 # RDOC TASK
 Rake::RDocTask.new(:rdoc) do |t|
