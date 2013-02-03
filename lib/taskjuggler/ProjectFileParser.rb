@@ -265,6 +265,14 @@ class TaskJuggler
       @property.typeSpec = type
       @property.sourceFileInfo = sourceFileInfo
       @property.inheritAttributes
+
+      if block_given?
+        # The default attribute values for this report type have to be set in
+        # 'inherited' mode since they are not user provided.
+        AttributeBase.setMode(1)
+        yield
+        AttributeBase.setMode(0)
+      end
     end
 
     # If the @limitResources list is not empty, we have to create a Limits

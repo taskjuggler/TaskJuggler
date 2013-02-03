@@ -242,7 +242,7 @@ class TaskJuggler
           end
           bsi += idx.to_s
         end
-        p.set('bsi', bsi)
+        p.force('bsi', bsi)
       end
     end
 
