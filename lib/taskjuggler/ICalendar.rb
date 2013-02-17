@@ -218,7 +218,7 @@ EOT
     end
 
     def dateTime(date)
-      date.to_s("%Y%m%dT%H%M%SZ")
+      date.to_s("%Y%m%dT%H%M%SZ", 'UTC')
     end
 
     private

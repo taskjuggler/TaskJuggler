@@ -21,7 +21,7 @@ class TaskJuggler
   # time zones.
   class TjTime
 
-    attr_reader :time, :timeZone
+    attr_reader :time
 
     # The number of days per month. Leap years are taken care of separately.
     MON_MAX = [ 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]
@@ -40,17 +40,13 @@ class TaskJuggler
     # is a Time object it's assumed to be in local time. If it's a string, it
     # is parsed as a date. Or else it is interpreted as seconds after Epoch.
     def initialize(t = nil)
-      @timeZone = @@tz
-
       case t
       when nil
         @time = Time.now
       when Time
         @time = t
-        @timeZone = nil
       when TjTime
         @time = t.time
-        @timeZone = nil
       when String
         parse(t)
       when Array
@@ -367,16 +363,18 @@ class TaskJuggler
 
     # This function is just a wrapper around Time.strftime(). In case @time is
     # nil, it returns 'unkown'.
-    def to_s(format = nil)
+    def to_s(format = nil, tz = nil)
       return 'unknown' if @time.nil?
+
+      t = tz == 'UTC' ? gmtime : localtime
       if format.nil?
         fmt = '%Y-%m-%d-%H:%M' + (@time.sec == 0 ? '' : ':%S') + '-%z'
       else
         # Handle TJ specific extensions to the strftime format.
-        fmt = format.sub(/%Q/, "#{((localtime.mon - 1) / 3) + 1}")
+        fmt = format.sub(/%Q/, "#{((t.mon - 1) / 3) + 1}")
       end
       # Always report values in local timezone
-      localtime.strftime(fmt)
+      t.strftime(fmt)
     end
 
     # Return the seconds since Epoch.
@@ -515,7 +513,6 @@ class TaskJuggler
                                  "(0 - 59) but is #{tzMinute}"
         end
         @time += sign * (tzHour * 3600 + tzMinute * 60)
-        @timeZone = 'UTC'
       else
         @time = Time.mktime(year, month, day, hour, minute, second)
       end
@@ -550,9 +547,17 @@ class TaskJuggler
       end
     end
 
-    def localtime
-      return @time if @timeZone == @@tz
+    def gmtime
+      if @time.utc?
+        # @time is already in the right zone (UTC)
+        @time
+      else
+        # To convert a Time object from local time to UTC.
+        @time.dup.gmtime
+      end
+    end
 
+    def localtime
       if @time.utc?
         if @@tz == 'UTC'
           # @time is already in the right zone (UTC)
