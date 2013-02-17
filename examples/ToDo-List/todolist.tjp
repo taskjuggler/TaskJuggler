@@ -4,7 +4,7 @@ project "My TODO List" 2011-01-01 +5y {
   now 2011-12-20
 }
 
-task "Arrents" {
+task "Errands" {
   priority 5
 
   task "By some milk" {
