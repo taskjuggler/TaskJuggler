@@ -191,7 +191,7 @@ class TaskJuggler
     def index
       i = 0
       @items.each do |p|
-        p.set('index', i += 1)
+        p.force('index', i += 1)
       end
     end
 

@@ -130,24 +130,24 @@ EOT
 
   def rule_accountReportHeader
     pattern(%w( _accountreport !optionalID !reportName ), lambda {
-      newReport(@val[1], @val[2], :accountreport, @sourceFileInfo[0])
-
-      unless @property.modified?('columns')
-        # Set the default columns for this report.
-        %w( bsi name monthly ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+      newReport(@val[1], @val[2], :accountreport, @sourceFileInfo[0]) do
+        unless @property.modified?('columns')
+          # Set the default columns for this report.
+          %w( bsi name monthly ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
         end
-      end
-      # Show all accounts, sorted by tree, seqno-up.
-      unless @property.modified?('hideAccount')
-        @property.set('hideAccount',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortAccounts')
-        @property.set('sortAccounts',
-                      [ [ 'tree', true, -1 ],
-                        [ 'seqno', true, -1 ] ])
+        # Show all accounts, sorted by tree, seqno-up.
+        unless @property.modified?('hideAccount')
+          @property.set('hideAccount',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortAccounts')
+          @property.set('sortAccounts',
+                        [ [ 'tree', true, -1 ],
+                          [ 'seqno', true, -1 ] ])
+        end
       end
     })
   end
@@ -164,11 +164,7 @@ EOT
     example('AccountReport')
 
     pattern(%w( _credits !accountCredits ), lambda {
-      begin
-        @property['credits', @scenarioIdx] += @val[1]
-      rescue AttributeOverwrite
-        # Adding multiple credits for an account is a pretty common idiom.
-      end
+      @property['credits', @scenarioIdx] += @val[1]
     })
     doc('credits', <<'EOT'
 Book the specified amounts to the account at the specified date. The
@@ -232,13 +228,7 @@ EOT
   def rule_allocate
     pattern(%w( _allocate !allocations ), lambda {
       checkContainer('allocate')
-      # Don't use << operator here so the 'provided' flag gets set properly.
-      begin
-        @property['allocate', @scenarioIdx] =
-          @property['allocate', @scenarioIdx] + @val[1]
-      rescue AttributeOverwrite
-        # Adding multiple allocates for a task is a pretty common idiom.
-      end
+      @property['allocate', @scenarioIdx] += @val[1]
     })
     doc('allocate', <<'EOT'
 Specify which resources should be allocated to the task. The
@@ -1210,31 +1200,33 @@ EOT
 
   def rule_exportHeader
     pattern(%w( _export !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :export, @sourceFileInfo[0])
-      unless @property.modified?('formats')
-        @property.set('formats', [ :tjp ])
-      end
+      newReport(@val[1], @val[2], :export, @sourceFileInfo[0]) do
+        unless @property.modified?('formats')
+          @property.set('formats', [ :tjp ])
+        end
 
-      # By default, we export all scenarios.
-      unless @property.modified?('scenarios')
-        scenarios = Array.new(@project.scenarios.items) { |i| i }
-        scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
-        @property.set('scenarios', scenarios)
-      end
-      # Show all tasks, sorted by seqno-up.
-      unless @property.modified?('hideTask')
-        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortTasks')
-        @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      end
-      # Show all resources, sorted by seqno-up.
-      unless @property.modified?('hideResource')
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortResources')
-        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        # By default, we export all scenarios.
+        unless @property.modified?('scenarios')
+          scenarios = Array.new(@project.scenarios.items) { |i| i }
+          scenarios.delete_if { |sc| !@project.scenario(sc).get('active') }
+          @property.set('scenarios', scenarios)
+        end
+        # Show all tasks, sorted by seqno-up.
+        unless @property.modified?('hideTask')
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortTasks')
+          @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+        end
+        # Show all resources, sorted by seqno-up.
+        unless @property.modified?('hideResource')
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortResources')
+          @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        end
       end
     })
     arg(2, 'file name', <<'EOT'
@@ -1523,11 +1515,7 @@ EOT
       @val[1].each do |flag|
         next if @property['flags', @scenarioIdx].include?(flag)
 
-        # We allow multiple instances of flag definitions.
-        begin
-          @property['flags', @scenarioIdx] += [ flag ]
-        rescue AttributeOverwrite
-        end
+        @property['flags', @scenarioIdx] += [ flag ]
       end
     })
   end
@@ -1822,23 +1810,24 @@ EOT
 
   def rule_iCalReportHeader
     pattern(%w( _icalreport !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :iCal, @sourceFileInfo[0])
-      @property.set('formats', [ :iCal ])
+      newReport(@val[1], @val[2], :iCal, @sourceFileInfo[0]) do
+        @property.set('formats', [ :iCal ])
 
-      # By default, we export only the first scenario.
-      unless @project.scenario(0).get('active')
-        @property.set('scenarios', [ 0 ])
+        # By default, we export only the first scenario.
+        unless @project.scenario(0).get('active')
+          @property.set('scenarios', [ 0 ])
+        end
+        # Show all tasks, sorted by seqno-up.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+        # Show all resources, sorted by seqno-up.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        # Show all journal entries.
+        @property.set('hideJournalEntry',
+                      LogicalExpression.new(LogicalOperation.new(0)))
       end
-      # Show all tasks, sorted by seqno-up.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
-      # Show all journal entries.
-      @property.set('hideJournalEntry',
-                    LogicalExpression.new(LogicalOperation.new(0)))
     })
     arg(1, 'file name', <<'EOT'
 The name of the report file to generate without an extension.  Use . to use
@@ -2812,8 +2801,9 @@ EOF
 
   def rule_nikuReportHeader
     pattern(%w( _nikureport !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :niku, @sourceFileInfo[0])
-      @property.set('numberFormat', RealFormat.new(['-', '', '', '.', 2]))
+      newReport(@val[1], @val[2], :niku, @sourceFileInfo[0]) do
+        @property.set('numberFormat', RealFormat.new(['-', '', '', '.', 2]))
+      end
     })
     arg(1, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji
@@ -4754,34 +4744,34 @@ EOT
 
   def rule_resourceReportHeader
     pattern(%w( _resourcereport !optionalID !reportName ), lambda {
-      newReport(@val[1], @val[2], :resourcereport, @sourceFileInfo[0])
-
-      unless @property.modified?('columns')
-        # Set the default columns for this report.
-        %w( no name ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+      newReport(@val[1], @val[2], :resourcereport, @sourceFileInfo[0]) do
+        unless @property.modified?('columns')
+          # Set the default columns for this report.
+          %w( no name ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
         end
-      end
-      # Show all resources, sorted by tree and id-up.
-      unless @property.modified?('hideResource')
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortResources')
-        @property.set('sortResources', [ [ 'tree', true, -1 ],
-                      [ 'id', true, -1 ] ])
-      end
-      # Hide all resources, but set sorting to tree, start-up, seqno-up.
-      unless @property.modified?('hideTask')
-        @property.set('hideTask',
-                      LogicalExpression.new(LogicalOperation.new(1)))
-      end
-      unless @property.modified?('sortTasks')
-        @property.set('sortTasks',
-                      [ [ 'tree', true, -1 ],
-                        [ 'start', true, 0 ],
-                        [ 'seqno', true, -1 ] ])
+        # Show all resources, sorted by tree and id-up.
+        unless @property.modified?('hideResource')
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortResources')
+          @property.set('sortResources', [ [ 'tree', true, -1 ],
+                        [ 'id', true, -1 ] ])
+        end
+        # Hide all resources, but set sorting to tree, start-up, seqno-up.
+        unless @property.modified?('hideTask')
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+        end
+        unless @property.modified?('sortTasks')
+          @property.set('sortTasks',
+                        [ [ 'tree', true, -1 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
+        end
       end
     })
   end
@@ -4849,10 +4839,7 @@ EOT
     pattern(%w( !leaveAllowances ))
 
     pattern(%w( !leaves ), lambda {
-      begin
-        @property['leaves', @scenarioIdx] += @val[0]
-      rescue AttributeOverwrite
-      end
+      @property['leaves', @scenarioIdx] += @val[0]
     })
 
     pattern(%w( !limits ), lambda {
@@ -4932,11 +4919,8 @@ EOT
 
     pattern(%w( _vacation !vacationName !intervals ), lambda {
       @val[2].each do |interval|
-        begin
-          # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
-        rescue AttributeOverwrite
-        end
+        # We map the old 'vacation' attribute to public holidays.
+        @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
       end
     })
     doc('vacation.resource', <<'EOT'
@@ -5231,10 +5215,7 @@ EOT
 
   def rule_shiftScenarioAttributes
     pattern(%w( !leaves ), lambda {
-      begin
-        @property['leaves', @scenarioIdx] += @val[0]
-      rescue AttributeOverwrite
-      end
+      @property['leaves', @scenarioIdx] += @val[0]
     })
 
     pattern(%w( _replace ), lambda {
@@ -5273,11 +5254,8 @@ EOT
 
     pattern(%w( _vacation !vacationName !intervalsOptional ), lambda {
       @val[2].each do |interval|
-        begin
-          # We map the old 'vacation' attribute to public holidays.
-          @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
-        rescue AttributeOverwrite
-        end
+        # We map the old 'vacation' attribute to public holidays.
+        @property['leaves', @scenarioIdx] += [ Leave.new(:holiday, interval) ]
       end
     })
     doc('vacation.shift', <<'EOT'
@@ -5426,22 +5404,23 @@ EOT
   end
   def rule_ssReportHeader
     pattern(%w( _statussheetreport !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0])
-      @property.set('formats', [ :tjp ])
+      newReport(@val[1], @val[2], :statusSheet, @sourceFileInfo[0]) do
+        @property.set('formats', [ :tjp ])
 
-      unless (@project['trackingScenarioIdx'])
-        error('ss_no_tracking_scenario',
-              'You must have a tracking scenario defined to use status sheets.')
+        unless (@project['trackingScenarioIdx'])
+          error('ss_no_tracking_scenario',
+                'You must have a tracking scenario defined to use status sheets.')
+        end
+        # Show all tasks, sorted by id-up.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortTasks', [ [ 'id', true, -1 ] ])
+        # Show all resources, sorted by seqno-up.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        @property.set('loadUnit', :hours)
+        @property.set('definitions', [])
       end
-      # Show all tasks, sorted by id-up.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'id', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
-      @property.set('loadUnit', :hours)
-      @property.set('definitions', [])
     })
     arg(2, 'file name', <<'EOT'
 The name of the status sheet report file to generate. It must end with a .tji
@@ -5730,16 +5709,17 @@ EOT
 
   def rule_tagfileHeader
     pattern(%w( _tagfile !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :tagfile, @sourceFileInfo[0])
-      @property.set('formats', [ :ctags ])
+      newReport(@val[1], @val[2], :tagfile, @sourceFileInfo[0]) do
+        @property.set('formats', [ :ctags ])
 
-      # Include all tasks.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Include all resources.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        # Include all tasks.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+        # Include all resources.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+      end
     })
     arg(2, 'file name', <<'EOT'
 The name of the tagfile to generate. Use ''''tags'''' if you want vim and
@@ -6066,33 +6046,33 @@ EOT
 
   def rule_taskReportHeader
     pattern(%w( _taskreport !optionalID !reportName ), lambda {
-      newReport(@val[1], @val[2], :taskreport, @sourceFileInfo[0])
-
-      unless @property.modified?('columns')
-        # Set the default columns for this report.
-        %w( bsi name start end effort chart ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+      newReport(@val[1], @val[2], :taskreport, @sourceFileInfo[0]) do
+        unless @property.modified?('columns')
+          # Set the default columns for this report.
+          %w( bsi name start end effort chart ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
         end
-      end
-      # Show all tasks, sorted by tree, start-up, seqno-up.
-      unless @property.modified?('hideTask')
-        @property.set('hideTask',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortTasks')
-        @property.set('sortTasks',
-                      [ [ 'tree', true, -1 ],
-                        [ 'start', true, 0 ],
-                        [ 'seqno', true, -1 ] ])
-      end
-      # Show no resources, but set sorting to id-up.
-      unless @property.modified?('hideResource')
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(1)))
-      end
-      unless @property.modified?('sortResources')
-        @property.set('sortResources', [ [ 'id', true, -1 ] ])
+        # Show all tasks, sorted by tree, start-up, seqno-up.
+        unless @property.modified?('hideTask')
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortTasks')
+          @property.set('sortTasks',
+                        [ [ 'tree', true, -1 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
+        end
+        # Show no resources, but set sorting to id-up.
+        unless @property.modified?('hideResource')
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+        end
+        unless @property.modified?('sortResources')
+          @property.set('sortResources', [ [ 'id', true, -1 ] ])
+        end
       end
     })
   end
@@ -6163,12 +6143,8 @@ EOT
         mode = :perDiem
         amount = @val[1] / 7.0
       end
-      # Multiple 'charge' attributes are allowed.
-      begin
-        @property['charge', @scenarioIdx] +=
-          [ Charge.new(amount, mode, @property, @scenarioIdx) ]
-      rescue AttributeOverwrite
-      end
+      @property['charge', @scenarioIdx] +=
+        [ Charge.new(amount, mode, @property, @scenarioIdx) ]
     })
     doc('charge', <<'EOT'
 Specify a one-time or per-period charge to a certain account. The charge can
@@ -6205,9 +6181,8 @@ EOT
 
     pattern(%w( _depends !taskDepList ), lambda {
       checkContainer('depends')
+      @property['depends', @scenarioIdx] += @val[1]
       begin
-        @property['depends', @scenarioIdx] =
-          @property['depends', @scenarioIdx] + @val[1]
         @property['forward', @scenarioIdx] = true
       rescue AttributeOverwrite
       end
@@ -6417,8 +6392,8 @@ EOT
 
     pattern(%w( _precedes !taskPredList ), lambda {
       checkContainer('precedes')
-      begin
         @property['precedes', @scenarioIdx] += @val[1]
+      begin
         @property['forward', @scenarioIdx] = false
       rescue AttributeOverwrite
       end
@@ -7031,51 +7006,51 @@ EOT
 
   def rule_traceReportHeader
     pattern(%w( _tracereport !optionalID !reportName ), lambda {
-      newReport(@val[1], @val[2], :tracereport, @sourceFileInfo[0])
-
-      # The top-level always inherits the global timeFormat setting. This is
-      # not desireable in this case, so we ignore this.
-      if (@property.level == 0 && !@property.provided('timeFormat')) ||
-         (@property.level > 0 && !@property.modified?('timeFormat'))
-        # CSV readers such of Libre-/OpenOffice can't deal with time zones. We
-        # probably also don't need seconds.
-        @property.set('timeFormat', '%Y-%m-%d-%H:%M')
-      end
-      unless @property.modified?('columns')
-        # Set the default columns for this report.
-        %w( end ).each do |col|
-          @property.get('columns') <<
-          TableColumnDefinition.new(col, columnTitle(col))
+      newReport(@val[1], @val[2], :tracereport, @sourceFileInfo[0]) do
+        # The top-level always inherits the global timeFormat setting. This is
+        # not desireable in this case, so we ignore this.
+        if (@property.level == 0 && !@property.provided('timeFormat')) ||
+           (@property.level > 0 && !@property.modified?('timeFormat'))
+          # CSV readers such of Libre-/OpenOffice can't deal with time zones. We
+          # probably also don't need seconds.
+          @property.set('timeFormat', '%Y-%m-%d-%H:%M')
         end
-      end
-      # Hide all accounts.
-      unless @property.modified?('hideAccount')
-        @property.set('hideAccount',
-                      LogicalExpression.new(LogicalOperation.new(1)))
-      end
-      unless @property.modified?('sortAccounts')
-        @property.set('sortAccounts',
-                      [ [ 'tree', true, -1 ],
-                        [ 'seqno', true, -1 ] ])
-      end
-      # Show all tasks, sorted by tree, start-up, seqno-up.
-      unless @property.modified?('hideTask')
-        @property.set('hideTask',
-                      LogicalExpression.new(LogicalOperation.new(0)))
-      end
-      unless @property.modified?('sortTasks')
-        @property.set('sortTasks',
-                      [ [ 'tree', true, -1 ],
-                        [ 'start', true, 0 ],
-                        [ 'seqno', true, -1 ] ])
-      end
-      # Show no resources, but set sorting to id-up.
-      unless @property.modified?('hideResource')
-        @property.set('hideResource',
-                      LogicalExpression.new(LogicalOperation.new(1)))
-      end
-      unless @property.modified?('sortResources')
-        @property.set('sortResources', [ [ 'id', true, -1 ] ])
+        unless @property.modified?('columns')
+          # Set the default columns for this report.
+          %w( end ).each do |col|
+            @property.get('columns') <<
+            TableColumnDefinition.new(col, columnTitle(col))
+          end
+        end
+        # Hide all accounts.
+        unless @property.modified?('hideAccount')
+          @property.set('hideAccount',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+        end
+        unless @property.modified?('sortAccounts')
+          @property.set('sortAccounts',
+                        [ [ 'tree', true, -1 ],
+                          [ 'seqno', true, -1 ] ])
+        end
+        # Show all tasks, sorted by tree, start-up, seqno-up.
+        unless @property.modified?('hideTask')
+          @property.set('hideTask',
+                        LogicalExpression.new(LogicalOperation.new(0)))
+        end
+        unless @property.modified?('sortTasks')
+          @property.set('sortTasks',
+                        [ [ 'tree', true, -1 ],
+                          [ 'start', true, 0 ],
+                          [ 'seqno', true, -1 ] ])
+        end
+        # Show no resources, but set sorting to id-up.
+        unless @property.modified?('hideResource')
+          @property.set('hideResource',
+                        LogicalExpression.new(LogicalOperation.new(1)))
+        end
+        unless @property.modified?('sortResources')
+          @property.set('sortResources', [ [ 'id', true, -1 ] ])
+        end
       end
     })
   end
@@ -7090,23 +7065,24 @@ EOT
   end
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
-      newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0])
-      @property.set('formats', [ :tjp ])
+      newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0]) do
+        @property.set('formats', [ :tjp ])
 
-      unless (scenarioIdx = @project['trackingScenarioIdx'])
-        error('ts_no_tracking_scenario',
-              'You must have a tracking scenario defined to use time sheets.')
+        unless (scenarioIdx = @project['trackingScenarioIdx'])
+          error('ts_no_tracking_scenario',
+                'You must have a tracking scenario defined to use time sheets.')
+        end
+        @property.set('scenarios', [ scenarioIdx ])
+        # Show all tasks, sorted by seqno-up.
+        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
+        # Show all resources, sorted by seqno-up.
+        @property.set('hideResource',
+                      LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
+        @property.set('loadUnit', :hours)
+        @property.set('definitions', [])
       end
-      @property.set('scenarios', [ scenarioIdx ])
-      # Show all tasks, sorted by seqno-up.
-      @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
-      # Show all resources, sorted by seqno-up.
-      @property.set('hideResource',
-                    LogicalExpression.new(LogicalOperation.new(0)))
-      @property.set('sortResources', [ [ 'seqno', true, -1 ] ])
-      @property.set('loadUnit', :hours)
-      @property.set('definitions', [])
     })
     arg(2, 'file name', <<'EOT'
 The name of the time sheet report file to generate. It must end with a .tji

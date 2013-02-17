@@ -423,10 +423,28 @@ class TaskJuggler
       end
     end
 
-    # Set the non-scenario-specific attribute with ID _attributeId_ to _value_.
-    # In case the attribute does not exist, an exception is raised.
-    def set(attributeId, value)
+    # Set the non-scenario-specific attribute with ID _attributeId_ to
+    # _value_. No further checks are done.
+    def force(attributeId, value)
       @attributes[attributeId].set(value)
+    end
+
+    # Set the non-scenario-specific attribute with ID _attributeId_ to _value_.
+    # In case an already provided value is overwritten again, an exeception is
+    # raised.
+    def set(attributeId, value)
+      attr = @attributes[attributeId]
+      # Assignments to list attributes always append. We don't
+      # consider this an overwrite.
+      overwrite = attr.provided && !attr.isList?
+      attr.set(value)
+
+      # We only raise the overwrite error after the value has been set.
+      if overwrite
+        raise AttributeOverwrite,
+          "Overwriting a previously provided value for attribute " +
+          "#{attributeId}"
+      end
     end
 
     # Set the scenario specific attribute with ID _attributeId_ for the
@@ -434,36 +452,46 @@ class TaskJuggler
     # attribute must not be scenario specific. In case the attribute does not
     # exist, an exception is raised.
     def []=(attributeId, scenario, value)
+      overwrite = false
+
       if scenario
         if AttributeBase.mode == 0
           # If we get values in 'provided' mode, we copy them immedidately to
           # all derived scenarios.
-          overwrite = false
           @project.scenario(scenario).all.each do |sc|
             scenarioIdx = @project.scenarioIdx(sc)
+            attr = @scenarioAttributes[scenarioIdx][attributeId]
 
-            if @scenarioAttributes[scenarioIdx][attributeId].provided
+            if attr.provided && !attr.isList?
+              # Assignments to list attributes always append. We don't
+              # consider this an overwrite.
               overwrite = true
             end
 
             if scenarioIdx == scenario
-              @scenarioAttributes[scenarioIdx][attributeId].set(value)
+              attr.set(value)
             else
-              @scenarioAttributes[scenarioIdx][attributeId].inherit(value)
+              attr.inherit(value)
             end
           end
-          # We only raise the overwrite error after all scenarios have been
-          # set. For some attributes the overwrite is actually allowed.
-          if overwrite
-            raise AttributeOverwrite,
-              "Overwriting a previously provided value for attribute " +
-              "#{attributeId}"
-          end
         else
-          @scenarioAttributes[scenario][attributeId].set(value)
+          attr = @scenarioAttributes[scenario][attributeId]
+          overwrite = attr.provided && !attr.isList?
+
+          attr.set(value)
         end
       else
-        @attributes[attributeId].set(value)
+        attr = @attributes[attributeId]
+        overwrite = attr.provided && !attr.isList?
+        attr.set(value)
+      end
+
+      # We only raise the overwrite error after all scenarios have been
+      # set. For some attributes the overwrite is actually allowed.
+      if overwrite
+        raise AttributeOverwrite,
+          "Overwriting a previously provided value for attribute " +
+          "#{attributeId}"
       end
     end
 

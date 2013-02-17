@@ -54,7 +54,7 @@ class TaskJuggler
 
   end
 
-  class AllocationAttribute < AttributeBase
+  class AllocationAttribute < ListAttributeBase
     def initialize(property, type, container)
       super
 

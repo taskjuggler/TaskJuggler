@@ -120,6 +120,11 @@ class TaskJuggler
       end
     end
 
+    # We overwrite this for ListAttributeBase.
+    def isList?
+      false
+    end
+
     # Return the value as String.
     def to_s(query = nil)
       get.to_s
@@ -177,6 +182,11 @@ class TaskJuggler
 
     def to_s
       get.join(', ')
+    end
+
+    # We overwrite this for ListAttributeBase.
+    def isList?
+      true
     end
 
   end
