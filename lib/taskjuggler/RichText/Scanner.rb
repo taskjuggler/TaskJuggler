@@ -145,6 +145,7 @@ class TaskJuggler
     end
 
     def fontColorStart(type, match)
+      self.mode = :inline
       # Extract color name from <fcol:colname>
       colName = match[6..-2]
       if colName =~ /#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})/
