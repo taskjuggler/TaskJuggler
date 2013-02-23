@@ -11,7 +11,6 @@
 # published by the Free Software Foundation.
 #
 
-require 'rubygems'
 require 'optparse'
 require 'term/ansicolor'
 require 'taskjuggler/Tj3Config'
