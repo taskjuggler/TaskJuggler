@@ -945,6 +945,9 @@ This is result in a date 2 weeks earlier than the current (or specified) date.
 See [[duration]] for a complete list of supported time intervals. Don't forget
 to put at least one space character after the date to prevent TaskJuggler from
 interpreting the interval as an hour.
+
+Date attributes may be invalid in some cases. This needs special care in
+[[logicalexpression|logical expressions]].
 EOT
        )
   end
@@ -1672,6 +1675,10 @@ EOT
 
     pattern(['_istask', '_(', '_)' ])
     doc('istask', 'The result is true if the property is a task.')
+
+    pattern(%w( _isvalid _( $ID _) ))
+    doc('isvalid', 'Returns false if argument is not an assigned or ' +
+                   'properly computed value.')
 
     pattern(%w( _treelevel _( _) ))
     doc('treelevel', <<'EOT'
@@ -2600,17 +2607,27 @@ in the report.
 Operands can be previously declared flags, built-in [[functions]], property
 attributes (specified as scenario.attribute) or another logical expression.
 When you combine logical operations to a more complex expression, the
-operators are evaluated from left to right. '''a | b & c''' is identical to
-'''(a | b) & c'''. It's highly recommended that you always use brackets to
+operators are evaluated from left to right. ''''a | b & c'''' is identical to
+''''(a | b) & c''''. It's highly recommended that you always use brackets to
 control the evaluation sequence. Currently, TaskJuggler does not support the
 concept of operator precedence or right-left associativity. This may change in
 the future.
 
 An operand can also be just a number. 0 evaluates to false, all other numbers
-to true. The logical expression can also be the special constants ''''@all'''' or ''''@none''''. The first always evaluates to true, the latter to false.
+to true. The logical expression can also be the special constants ''''@all''''
+or ''''@none''''. The first always evaluates to true, the latter to false.
+
+Date attributes needs special attention. Attributes like [[maxend]] can
+be undefined. To use such an attribute in a comparison, you need to test for
+the validity first. E. g. to compare the end date of the ''''plan''''
+scenario with the ''''maxend'''' value use ''''isvalid(plan.maxend) &
+(plan.end > plan.maxend)''''. The ''''&'''' and ''''|'''' operators are lazy.
+If the result is already known after evaluation the first operand, the second
+operand will not be evaluated any more.
 EOT
        )
     also(%w( functions ))
+    example('LogicalExpression', '1')
   end
 
   def rule_macro

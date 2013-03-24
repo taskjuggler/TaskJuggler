@@ -36,6 +36,7 @@ class TaskJuggler
         'isresource' => 0,
         'isresponsibilityof' => 2,
         'istask' => 0,
+        'isvalid' => 1,
         'treelevel' => 0
     }
 
@@ -229,6 +230,27 @@ class TaskJuggler
       property = properties(expr)[0]
       return false unless property
       property.is_a?(Task)
+    end
+
+    def isvalid(expr, args)
+      property = properties(expr)[0]
+      project = property.project
+      attr = args[0]
+      scenario, attr = args[0].split('.')
+      if attr.nil?
+        attr = scenario
+        scenario = nil
+      end
+      expr.error("Argument must not be empty") unless attr
+      if scenario && (scenarioIdx = project.scenarioIdx(scenario)).nil?
+        expr.error("Unknown scenario '#{scenario}' used for function " +
+                   "isvalid()")
+      end
+      unless property.propertySet.knownAttribute?(attr)
+        expr.error("Unknown attribute '#{attr}' used for function " +
+                   "isvalid()")
+      end
+      !property[attr, scenarioIdx].nil?
     end
 
     def treelevel(expr, args)

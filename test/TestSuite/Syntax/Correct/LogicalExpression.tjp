@@ -25,3 +25,14 @@ taskreport "LogExp7" {
   hidetask @none
   hideresource @all
 }
+
+# *** EXAMPLE: 1 +
+taskreport "LeaveTasks" {
+  hidetask isleaf()
+  sorttasks plan.id # not 'tree' to really hide parent tasks
+}
+
+taskreport "Overruns" {
+  hidetask isvalid(plan.maxend) & (plan.end > plan.maxend)
+}
+# *** EXAMPLE: 1 -
