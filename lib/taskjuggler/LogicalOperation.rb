@@ -191,7 +191,7 @@ class TaskJuggler
     # To evaluate a property attribute we use the Query mechanism to retrieve
     # the value.
     def eval(expr)
-      query = expr.query
+      query = expr.query.dup
       query.scenarioIdx = @scenario.sequenceNo - 1
       query.attributeId = @operand1
       query.process
@@ -207,6 +207,9 @@ class TaskJuggler
     # names are shown, otherwise their values.
     def to_s(query)
       if query
+        query = query.dup
+        query.scenarioIdx = @scenario.sequenceNo - 1
+        query.attributeId = @operand1
         query.process
         query.to_s
       else

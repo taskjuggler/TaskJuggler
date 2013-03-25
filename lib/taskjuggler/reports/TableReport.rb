@@ -416,7 +416,6 @@ class TaskJuggler
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
-            query.attributeId = columnDef.id
             next unless generateTableCell(line, columnDef, query)
           end
         end
@@ -463,7 +462,6 @@ class TaskJuggler
 
           # Generate a cell for each column in this line.
           a('columns').each do |columnDef|
-            query.attributeId = columnDef.id
             next unless generateTableCell(line, columnDef, query)
           end
         end
@@ -520,7 +518,6 @@ class TaskJuggler
 
           # Generate a cell for each column in this line.
           a('columns').each do |column|
-            query.attributeId = column.id
             next unless generateTableCell(line, column, query)
           end
         end
@@ -636,6 +633,7 @@ class TaskJuggler
       # the Query to avoid spoiling the original query with column specific
       # settings.
       query = query.dup
+      query.attributeId = columnDef.id
       query.start = @columns[columnDef].start
       query.end = @columns[columnDef].end
       query.listType = columnDef.listType
@@ -696,7 +694,8 @@ class TaskJuggler
         genCalChartResourceCell(query, tcLine, columnDef, start,
                                 sameTimeNextFunc)
       elsif query.property.is_a?(Account)
-        genCalChartAccountCell(query, tcLine, columnDef, start, sameTimeNextFunc)
+        genCalChartAccountCell(query, tcLine, columnDef, start,
+                               sameTimeNextFunc)
       else
         raise "Unknown property type #{query.property.class}"
       end
