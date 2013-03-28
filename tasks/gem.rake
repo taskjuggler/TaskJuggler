@@ -1,5 +1,7 @@
 # GEM TASK
 require 'find'
+require 'rubygems'
+require 'rubygems/package'
 
 # Unfortunately Rake::GemPackageTest cannot deal with files that are generated
 # by Rake targets. So we have to write our own packaging task.
@@ -13,7 +15,11 @@ task :gem => [:clobber] do
   load 'taskjuggler.gemspec';
 
   # Build the gem file according to the loaded spec.
-  Gem::Builder.new(GEM_SPEC).build
+  if RUBY_VERSION >= "2.0.0"
+    Gem::Package.build(GEM_SPEC)
+  else
+    Gem::Builder.new(GEM_SPEC).build
+  end
   pkgBase = "#{GEM_SPEC.name}-#{GEM_SPEC.version}"
   # Create a pkg directory if it doesn't exist already.
   FileUtils.mkdir_p('pkg')
