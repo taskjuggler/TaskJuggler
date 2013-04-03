@@ -742,11 +742,15 @@ class TaskJuggler
 
     # Get the first available slot of the resource.
     def getMinSlot
+      initScoreboard unless @minslot
+
       @minslot
     end
 
     # Get the last available slot of the resource.
     def getMaxSlot
+      initScoreboard unless @maxslot
+
       @maxslot
     end
 
