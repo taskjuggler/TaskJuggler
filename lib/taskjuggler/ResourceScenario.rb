@@ -199,6 +199,7 @@ class TaskJuggler
       # Track the total allocated slots for this resource.
       @effort += @efficiency
       @limits.inc(sbIdx) if @limits
+      task.incLimits(@scenarioIdx, sbIdx, @property)
 
       # Scoreboard iterations are fairly expensive but they are very frequent
       # operations in later processing. To limit the interations to the
