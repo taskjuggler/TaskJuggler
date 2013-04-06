@@ -882,11 +882,12 @@ EOT
       @column.width = @val[1]
     })
     doc('width.column', <<'EOT'
-Specifies the width of the column in screen pixels. If the content of the
-column does not fit into this width, it will be cut off. In some cases a
+Specifies the maximum width of the column in screen pixels. If the content of
+the column does not fit into this width, it will be cut off. In some cases a
 scrollbar is added or a tooltip window with the complete content is shown when
 the mouse is moved over the column. The latter is only supported in
-interactive output formats.
+interactive output formats. The resulting column width may be smaller if the
+column has a fixed width (e. g. the chart column).
 EOT
        )
   end
