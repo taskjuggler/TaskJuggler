@@ -185,7 +185,7 @@ have [http://www.kernel.org/pub/software/scm/git/docs/ git] installed.
 
 Then checkout the source code with the following command
 
- git clone http://www.taskjuggler.org/git-repos/taskjuggler3.git
+ git clone git@github.com:taskjuggler/TaskJuggler.git
 
 Make sure, you have removed all previously installed instances of
 TaskJuggler from your system before doing so. It is a common mistake
