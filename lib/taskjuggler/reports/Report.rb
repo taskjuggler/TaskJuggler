@@ -248,8 +248,7 @@ EOT
         else
           # Prepend the specified output directory unless the provided file
           # name is an absolute file name.
-          ((@name[0] == '/' ? '' : @project.outputDir) +
-           @name + '.html').untaint
+          absoluteFileName(@name) + '.html'
         end
       begin
         html.write(fileName)
@@ -276,9 +275,7 @@ EOT
       # Use the CSVFile class to write the Array of Arrays to a colon
       # separated file. Write to $stdout if the filename was set to '.'.
       begin
-        fileName = (@name == '.' ? @name :
-                                  (@name[0] == '/' ? '' : @project.outputDir) +
-                                  @name + '.csv').untaint
+        fileName = (@name == '.' ? '.' : absoluteFileName(@name) + '.csv')
         CSVFile.new(csv, ';').write(fileName)
       rescue IOError, SystemCallError
         error('write_csv', "Cannot write to file #{fileName}.\n#{$!}",
@@ -300,9 +297,8 @@ EOT
         if @name == '.'
           $stdout.write(@content.to_tjp)
         else
-          fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name
+          fileName = absoluteFileName(@name)
           fileName += a('definitions').include?('project') ? '.tjp' : '.tji'
-          fileName.untaint
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
       rescue IOError, SystemCallError
@@ -325,8 +321,7 @@ EOT
         if @name == '.'
           $stdout.write(@content.to_mspxml)
         else
-          fileName = (@name[0] == '/' ? '' : @project.outputDir) + @name + '.xml'
-          fileName.untaint
+          fileName = absoluteFileName(@name) + '.xml'
           File.open(fileName, 'w') { |f| f.write(@content.to_mspxml) }
         end
       rescue IOError, SystemCallError
@@ -346,8 +341,7 @@ EOT
 
       begin
         f = @name == '.' ? $stdout :
-          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
-                    @name + '.xml').untaint, 'w')
+          File.new(absoluteFileName(@name) + '.xml', 'w')
         f.puts "#{@content.to_niku}"
       rescue IOError, SystemCallError
         error('write_niku', "Cannot write to file #{@name}.\n#{$!}",
@@ -366,8 +360,7 @@ EOT
 
       begin
         f = @name == '.' ? $stdout :
-          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
-                    @name + '.ics').untaint, 'w')
+          File.new(absoluteFileName(@name) + '.ics', 'w')
         f.puts "#{@content.to_iCal}"
       rescue IOError, SystemCallError
         error('write_ical', "Cannot write to file #{@name}.\n#{$!}",
@@ -386,8 +379,7 @@ EOT
 
       begin
         f = @name == '.' ? $stdout :
-          File.new(((@name[0] == '/' ? '' : @project.outputDir) +
-                    @name).untaint, 'w')
+          File.new(absoluteFileName(@name), 'w')
         f.puts "#{@content.to_ctags}"
       rescue IOError, SystemCallError
         error('write_ctags', "Cannot write to file #{@name}.\n#{$!}",
@@ -407,8 +399,7 @@ EOT
 
     def copyDirectory(dirName)
       # The directory needs to be in the same directory as the HTML report.
-      auxDstDir = (File.dirname((@name[0] == '/' ? '' : @project.outputDir) +
-                                @name) + '/').untaint
+      auxDstDir = File.dirname(absoluteFileName(@name)) + '/'
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0].untaint
       # Raise an error if we haven't found the data directory
@@ -456,8 +447,12 @@ EOT
            )
     end
 
+    def windowsOS?
+      (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+    end
+
     def checkFileName(name)
-      if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+      if windowsOS?
         illegalChars = /[\x00\\\*\?\"<>\|]/
       else
         illegalChars = /[\\?%*:|"<>]/
@@ -467,6 +462,18 @@ EOT
               'File names may not contain any of the following characters: ' +
               '\?%*:|\"<>', sourceFileInfo)
       end
+    end
+
+    def absoluteFileName?(name)
+      if windowsOS?
+        name[0] =~ /a-zA-Z/ && name[1] == ?:
+      else
+        name[0] == ?/
+      end
+    end
+
+    def absoluteFileName(name)
+      ((absoluteFileName?(name) ? '' : @project.outputDir) + name).untaint
     end
 
   end
