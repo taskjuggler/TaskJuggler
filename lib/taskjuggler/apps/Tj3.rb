@@ -47,6 +47,10 @@ class TaskJuggler
       @freezeDate = TjTime.new.align(3600)
       # Should bookings be grouped by Task or by Resource (default).
       @freezeByTask = false
+      # Generate a list of all defined reports if true.
+      @listReports = false
+      # Regular expression to select the report IDs to be listed.
+      @listReportPattern = '*'
       # Don't generate any reports.
       @noReports = false
       # Treat warnings like errors or not.
@@ -120,12 +124,19 @@ EOT
                        'reports.')) do
          @noReports = true
         end
+        @opts.on('--list-reports <report ID regular expression>', String,
+                 format('List id, formats and file name of all the defined ' +
+                        'reports that have IDs that match the specified ' +
+                        'regular expression.')) do |arg|
+          @listReports = true
+          @listReportPattern = arg
+        end
         @opts.on('--report <report ID>', String,
                  format('Only generate the report with the specified ID. ' +
                         'This option can be used multiple times.')) do |arg|
           @reportIDs << arg
         end
-        @opts.on('--reports <report ID RegExp>', String,
+        @opts.on('--reports <report ID regular expression>', String,
                  format('Only generate the reports that have IDs that match ' +
                         'the specified regular expression. This option can ' +
                         'be used multiple times.')) do |arg|
@@ -193,6 +204,9 @@ EOT
         return 1 unless tj.freeze(@freezeDate, @freezeByTask) &&
                         tj.errors == 0
       end
+
+      # List all the reports that match the requested expression.
+      tj.listReports(@listReportPattern, true) if @listReports
 
       return 0 if @noReports
 
