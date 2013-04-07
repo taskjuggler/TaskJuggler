@@ -457,7 +457,12 @@ EOT
     end
 
     def checkFileName(name)
-      if name =~ /[\\?%*:|"<>]/
+      if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+        illegalChars = /[\x00\\\*\?\"<>\|]/
+      else
+        illegalChars = /[\\?%*:|"<>]/
+      end
+      if name =~ illegalChars
         error('invalid_file_name',
               'File names may not contain any of the following characters: ' +
               '\?%*:|\"<>', sourceFileInfo)
