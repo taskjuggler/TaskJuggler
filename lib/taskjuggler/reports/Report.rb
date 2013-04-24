@@ -3,7 +3,7 @@
 #
 # = Report.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 #               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -457,7 +457,12 @@ EOT
     end
 
     def checkFileName(name)
-      if name =~ /[\\?%*:|"<>]/
+      if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+        illegalChars = /[\x00\\\*\?\"<>\|]/
+      else
+        illegalChars = /[\\?%*:|"<>]/
+      end
+      if name =~ illegalChars
         error('invalid_file_name',
               'File names may not contain any of the following characters: ' +
               '\?%*:|\"<>', sourceFileInfo)

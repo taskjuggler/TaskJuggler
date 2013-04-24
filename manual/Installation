@@ -38,7 +38,7 @@ runtime environment to run it. This can be downloaded from
 [http://www.ruby-lang.org/en/downloads/ here].  Most Linux
 distributions usually have Ruby already included. So does MacOS X
 Leopard. For Windows, there is a one-click installer available. The
-recommended Ruby version to make full use of TaskJuggler is 1.9.2.
+recommended Ruby version to make full use of TaskJuggler is Ruby 2.0.
 Ruby 1.9.1 contains some bugs that prevent the multi-core support to
 work. For users that are not interested in multi-core support, the web
 server,  the time sheet infrastructure and daemon Ruby 1.8.7 is still
@@ -185,7 +185,7 @@ have [http://www.kernel.org/pub/software/scm/git/docs/ git] installed.
 
 Then checkout the source code with the following command
 
- git clone http://www.taskjuggler.org/git-repos/taskjuggler3.git
+ git clone git@github.com:taskjuggler/TaskJuggler.git
 
 Make sure, you have removed all previously installed instances of
 TaskJuggler from your system before doing so. It is a common mistake
@@ -257,7 +257,7 @@ New Ruby versions are released usually about once or twice a year.
 Unfortunately, it takes some time before Linux distributions pick up
 the new release. Depending on your distribution, this can take
 anything from a few weeks to several years. Many distributions still
-have not yet made the switch to Ruby 1.9. The core part of
+have not yet made the switch to Ruby 2.0. The core part of
 TaskJuggler can be used with Ruby 1.8.9, but it is at least 3 times
 slower. Therefor it is recommended, that you install the latest
 stable release of Ruby to use TaskJuggler. This can easily and safely

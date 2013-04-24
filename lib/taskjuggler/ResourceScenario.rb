@@ -3,7 +3,7 @@
 #
 # = ResourceScenario.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 #               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -199,6 +199,7 @@ class TaskJuggler
       # Track the total allocated slots for this resource.
       @effort += @efficiency
       @limits.inc(sbIdx) if @limits
+      task.incLimits(@scenarioIdx, sbIdx, @property)
 
       # Scoreboard iterations are fairly expensive but they are very frequent
       # operations in later processing. To limit the interations to the
@@ -742,11 +743,15 @@ class TaskJuggler
 
     # Get the first available slot of the resource.
     def getMinSlot
+      initScoreboard unless @minslot
+
       @minslot
     end
 
     # Get the last available slot of the resource.
     def getMaxSlot
+      initScoreboard unless @maxslot
+
       @maxslot
     end
 

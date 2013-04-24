@@ -3,7 +3,7 @@
 #
 # = TaskScenario.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 #               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1931,11 +1931,6 @@ class TaskJuggler
           end
 
           @doneEffort += r['efficiency', @scenarioIdx]
-          # Limits do not take efficiency into account. Limits are usage limits,
-          # not effort limits.
-          @allLimits.each do |limit|
-            limit.inc(@currentSlotIdx, resource)
-          end
 
           unless @assignedresources.include?(r)
             @assignedresources << r
@@ -1962,6 +1957,15 @@ class TaskJuggler
       end
       true
     end
+
+    # Limits do not take efficiency into account. Limits are usage limits, not
+    # effort limits.
+    def incLimits(sbIdx, resource = nil)
+      @allLimits.each do |limit|
+        limit.inc(sbIdx, resource)
+      end
+    end
+
 
     # Calculate the number of general working time slots between the TjTime
     # objects _d1_ and _d2_.
