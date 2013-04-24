@@ -1,15 +1,59 @@
-project "Custom Attributes" 2007-05-28 - 2007-06-28 {
-  timezone "America/Denver"
+project "Extend Test" 2013-04-24 +1m {
   extend task {
-    reference MyLink "My Link"
-    text MyText "My Text" { inherit }
+    date DueDate "Due Date"
+    number Count "Count"
+    reference URL "URL"
+    richtext Claim "Claim"
+    text Intro "Intro"
+
+    date DueDateS "Due Date" { scenariospecific inherit }
+    number CountS "Count" { scenariospecific }
+    reference URLS "URL" { scenariospecific }
+    richtext ClaimS "Claim" { scenariospecific inherit }
+    text IntroS "Intro" { scenariospecific }
+  }
+  extend resource {
+    date Birthday "Birthday"
+    number Count "Count"
+    reference URL "URL"
+    richtext Claim "Claim"
+    text Intro "Intro"
+
+    date BirthdayS "Birthday" { scenariospecific inherit }
+    number CountS "Count" { scenariospecific }
+    reference URLS "URL" { scenariospecific }
+    richtext ClaimS "Claim" { scenariospecific inherit }
+    text IntroS "Intro" { scenariospecific }
+  }
+  scenario one "One" {
+    scenario two "Two"
   }
 }
 
-task t "Task" {
-  start ${projectstart}
-  milestone
-  MyLink "http://www.taskjuggler.org" { label "TJ Web" }
-  MyText "TaskJuggler is great!"
+resource "R" {
+  Birthday 2000-05-01
+  Count 42
+  URL "http://www.taskjuggler.org"
+  Claim "A '''big''' statement."
+  Intro "Let's think about this..."
+
+  two:BirthdayS 2000-05-01
+  two:CountS 42
+  two:URLS "http://www.taskjuggler.org" { label "TJ Web" }
+  two:ClaimS "A '''big''' statement."
+  two:IntroS "Let's think about this..."
 }
 
+task "T" {
+  DueDate 2013-05-01
+  Count 42
+  URL "http://www.taskjuggler.org"
+  Claim "A '''big''' statement."
+  Intro "Let's think about this..."
+
+  two:DueDateS 2013-05-01
+  two:CountS 42
+  two:URLS "http://www.taskjuggler.org" { label "TJ Web" }
+  two:ClaimS "A '''big''' statement."
+  two:IntroS "Let's think about this..."
+}

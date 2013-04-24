@@ -53,6 +53,11 @@ class TaskJuggler::TextParser
       @patterns << pattern
     end
 
+    def include?(token)
+      @patterns.each { |p| return true if p[0][1] == token }
+      false
+    end
+
     # Mark the rule as an optional element of the syntax.
     def setOptional
       @optional = true
