@@ -121,7 +121,14 @@ class TaskJuggler
           next unless ad.userDefined && attributes.include?(ad.id)
 
           @file << "    #{ad.objClass.tjpId} #{ad.id} " +
-                   "#{quotedString(ad.name)}\n"
+                   "#{quotedString(ad.name)}"
+          if ad.scenarioSpecific || ad.inheritedFromParent
+            @file << " { "
+            @file << "scenariospecific " if ad.scenarioSpecific
+            @file << "inherit " if ad.inheritedFromParent
+            @file << "}"
+          end
+          @file << "\n"
         end
       @file << "  }\n"
     end
