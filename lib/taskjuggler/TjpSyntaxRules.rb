@@ -1265,6 +1265,28 @@ EOT
     arg(2, 'name', 'The name of the new attribute. It is used as header ' +
                    'in report columns and the like.')
 
+    pattern(%w( _number !extendId  $STRING !extendOptionsBody ), lambda {
+      # Extend the propertySet definition and parser rules
+      if extendPropertySetDefinition(FloatAttribute, nil)
+        @ruleToExtendWithScenario.addPattern(TextParser::Pattern.new(
+          [ '_' + @val[1], '!number' ], lambda {
+            @property[@val[0], @scenarioIdx] = @val[1]
+          }))
+      else
+        @ruleToExtend.addPattern(TextParser::Pattern.new(
+          [ '_' + @val[1], '!number' ], lambda {
+            @property.set(@val[0], @val[1])
+          }))
+      end
+    })
+    doc('number.extend', <<'EOT'
+Extend the property with a new attribute of type number. Possible values for
+this attribute could be integer or floating point numbers.
+EOT
+       )
+    arg(2, 'name', 'The name of the new attribute. It is used as header ' +
+                   'in report columns and the like.')
+
     pattern(%w( _reference !extendId $STRING !extendOptionsBody ), lambda {
       # Extend the propertySet definition and parser rules
       if extendPropertySetDefinition(ReferenceAttribute, nil)

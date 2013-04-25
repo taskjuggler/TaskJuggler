@@ -299,7 +299,7 @@ class TaskJuggler
     end
 
     def FloatAttribute::tjpId
-      'float'
+      'number'
     end
 
     def to_tjp

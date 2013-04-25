@@ -1,25 +1,77 @@
-project prj "Custom Attributes" "1.0" 2007-05-28-00:00-+0000 - 2007-06-28-00:00-+0000 {
-  timezone "America/Denver"
-  extend task{
-    reference MyLink "My Link"
-    text MyText "My Text"
+project prj "Extend Test" "1.0" 2013-04-24-00:00-+0000 - 2013-05-24-10:00-+0000 {
+  timezone "UTC"
+  extend resource{
+    date Birthday "Birthday"
+    date BirthdayS "Birthday" { scenariospecific inherit }
+    richtext Claim "Claim"
+    richtext ClaimS "Claim" { scenariospecific inherit }
+    number Count "Count"
+    number CountS "Count" { scenariospecific }
+    text Intro "Intro"
+    text IntroS "Intro" { scenariospecific }
+    reference URL "URL"
+    reference URLS "URL" { scenariospecific }
   }
-  scenario plan "Plan Scenario" {
+  extend task{
+    richtext Claim "Claim"
+    richtext ClaimS "Claim" { scenariospecific inherit }
+    number Count "Count"
+    number CountS "Count" { scenariospecific }
+    date DueDate "Due Date"
+    date DueDateS "Due Date" { scenariospecific inherit }
+    text Intro "Intro"
+    text IntroS "Intro" { scenariospecific }
+    reference URL "URL"
+    reference URLS "URL" { scenariospecific }
+  }
+  scenario one "One" {
+    scenario two "Two" {
+      active yes
+    }
     active yes
   }
 }
 
 projectids prj
 
+resource _Resource_1 "R"
 
-task t "Task" {
-  start 2007-05-28-00:00-+0000
+task _Task_1 "T" {
+  start 2013-04-24-00:00-+0000
   milestone
   scheduled
+  two:milestone
 }
-supplement task t {
-  MyLink "http://www.taskjuggler.org" { label "TJ Web" }
-  MyText "TaskJuggler is great!"
+supplement task _Task_1 {
+  Claim "A '''big''' statement."
+  two:ClaimS "A '''big''' statement."
+  Count 42
+  two:CountS 42
+  DueDate 2013-05-01-00:00-+0000
+  two:DueDateS 2013-05-01-00:00-+0000
+  Intro "Let's think about this..."
+  two:IntroS "Let's think about this..."
+  URL "http://www.taskjuggler.org" { label "http://www.taskjuggler.org" }
+  two:URLS "http://www.taskjuggler.org" { label "TJ Web" }
   priority 500
   projectid prj
+}
+supplement resource _Resource_1 {
+  Birthday 2000-05-01-00:00-+0000
+  two:BirthdayS 2000-05-01-00:00-+0000
+  Claim "A '''big''' statement."
+  two:ClaimS "A '''big''' statement."
+  Count 42
+  two:CountS 42
+  Intro "Let's think about this..."
+  two:IntroS "Let's think about this..."
+  URL "http://www.taskjuggler.org" { label "http://www.taskjuggler.org" }
+  two:URLS "http://www.taskjuggler.org" { label "TJ Web" }
+  workinghours sun off
+               workinghours mon 9:00 - 17:00
+               workinghours tue 9:00 - 17:00
+               workinghours wed 9:00 - 17:00
+               workinghours thu 9:00 - 17:00
+               workinghours fri 9:00 - 17:00
+               workinghours sat off
 }
