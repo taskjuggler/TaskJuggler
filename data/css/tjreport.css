@@ -11,6 +11,9 @@ h1, h2, table, tr, td, div, span {
 }
 table {
 }
+/* Treat images in tables as block and not line elements. This will
+ * eliminate surprising space at the bottom. */
+td img {display: block;}
 p {
   font-size:15px;
 }
@@ -138,7 +141,7 @@ p.tj_journal {
 
 /* This is the text label of a cell. */
 .tj_table_cell_label {
-  font-size:13px;
+  font-size:12px;
   vertical-align:top;
   padding-top:1px;
 }
