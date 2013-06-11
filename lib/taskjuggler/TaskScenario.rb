@@ -1755,7 +1755,7 @@ class TaskJuggler
       when :lengthTask
         bookResources
         # The doneLength is only increased for global working time slots.
-        @doneLength += 1 if @project.isWorkingTime(@currentSlotIdx)
+        @doneLength += 1 if onShift?(@currentSlotIdx)
 
         # If we have reached the specified duration or lengths, we set the end
         # or start date and propagate the value to neighbouring tasks.
@@ -1947,6 +1947,14 @@ class TaskJuggler
       booked
     end
 
+    def onShift?(sbIdx)
+      if @shifts && @shifts.assigned?(sbIdx)
+        return @shifts.onShift?(sbIdx)
+      else
+        return @project.isWorkingTime(sbIdx)
+      end
+    end
+
     # Check if all of the task limits are not exceded at the given _sbIdx_. If
     # a _resource_ is provided, the limit for that particular resource is
     # checked. If no resource is provided, only non-resource-specific limits
@@ -2045,7 +2053,7 @@ class TaskJuggler
           startIdx = @project.dateToIdx(date = @start)
           endIdx = @project.dateToIdx(@project['now'])
           startIdx.upto(endIdx) do |idx|
-            @doneLength += 1 if @project.isWorkingTime(idx)
+            @doneLength += 1 if onShift?(idx)
             date += slotDuration
             # Continue not only until the @length has been reached, but also
             # the tentativeEnd date. This allows us to detect overbookings.
