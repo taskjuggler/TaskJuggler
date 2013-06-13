@@ -123,7 +123,7 @@ class TaskJuggler
       reset
       begin
         # Resolve property reference from property ID.
-        if @property.nil? && !@propertyId.nil?
+        if @propertyId && (@property.nil? || @propertyId[0] == '!')
           @property = resolvePropertyId(@propertyType, @propertyId)
           unless @property
             @errorMessage = "Unknown property #{@propertyId} queried"
@@ -297,15 +297,28 @@ class TaskJuggler
       unless @project
         raise "Need Project reference to process the query"
       end
-      case pType
-      when :Account
-        @project.account(pId)
-      when :Task
-        @project.task(pId)
-      when:Resource
-        @project.resource(pId)
+      if pId[0] == '!'
+        # This is the case where the property ID is just a sequence of
+        # exclamation marks. Each one moves the scope 1 level up from the
+        # current level.
+        pId.each_utf8_char do |c|
+          if c == '!'
+            @property = @property.parent
+          end
+          break unless @property
+        end
+        @property
       else
-        raise "Unknown property type #{pType}"
+        case pType
+        when :Account
+          @project.account(pId)
+        when :Task
+          @project.task(pId)
+        when:Resource
+          @project.resource(pId)
+        else
+          raise "Unknown property type #{pType}"
+        end
       end
     end
 

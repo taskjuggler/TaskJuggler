@@ -86,7 +86,8 @@ class TaskJuggler
           SimpleQueryExpander.new(value, @query, @sourceFileInfo).expand
       end
 
-      if (expandedArgs['property'] || expandedArgs['scopeproperty']) &&
+      if ((expandedArgs['property'] && expandedArgs['property'][0] != '!') ||
+          expandedArgs['scopeproperty']) &&
           !(expandedArgs['family'] || @query.propertyType)
         error('missing_family',
               "If you provide a property or scope property you need to " +
@@ -99,7 +100,7 @@ class TaskJuggler
       # with the easy ones.
       if expandedArgs['property']
         query.propertyId = expandedArgs['property']
-        query.property = nil
+        query.property = nil unless query.propertyId[0] == '!'
       end
       if expandedArgs['scopeproperty']
         query.scopePropertyId = expandedArgs['scopeproperty']

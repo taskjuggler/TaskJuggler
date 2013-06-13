@@ -210,9 +210,12 @@ Paramters:
 * ''''family'''' : Specifies whether a ''''task'''' or a ''''resource''''
 should be queried.
 
-* ''''property'''' : The ID of the task or resource to be queried. If no
-property is specified, the query will return a global project
-attribute.
+* ''''property'''' : The ID of the task or resource to be queried. If
+no property is specified and no property is provided by the scope, the
+query will return a global project attribute. When the query is used
+with a scope that already provides a property, a sequence of ! can be
+used to move the property to the parent property. That way you can
+access attributes of any of the parents.
 
 * ''''scopeproperty'''' : The ID of the scope property. If the property is a
 task this must be a resource ID and vice versa.
