@@ -5176,8 +5176,9 @@ EOT
     })
     doc('shift', <<'EOT'
 A shift combines several workhours related settings in a reusable entity.
-Besides the weekly working hours it can also hold information such as
-leaves and a time zone.
+Besides the weekly working hours it can also hold information such as leaves
+and a time zone. It lets you create a work time calendar that can be used to
+limit the working time for resources or tasks.
 
 Shifts have a global name space. All IDs must be unique within the shifts of
 the project.
