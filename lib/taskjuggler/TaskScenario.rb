@@ -119,6 +119,8 @@ class TaskJuggler
         task = task.parent
       end
 
+      @contendedResources = Hash.new { |hash, key| hash[key] = Hash.new(0) }
+
       # Collect the mandatory allocations.
       @mandatories = []
       @allocate.each do |allocation|
@@ -1941,6 +1943,7 @@ class TaskJuggler
           # the same resources and are potentially delaying the progress of
           # this Task.
           @competitors << competitor unless @competitors.include?(competitor)
+          @contendedResources[competitor][r] += 1
         end
       end
 
@@ -2181,10 +2184,23 @@ class TaskJuggler
     end
 
     def markAsRunaway
-      warning('runaway', "Task #{@property.fullId} does not fit into " +
-                         "project time frame")
-
       @isRunAway = true
+      warning('runaway', "Task #{@property.fullId} does not fit into " +
+                         "the project time frame. ")
+      unless @competitors.empty?
+        info('runaway_tasks',
+             "The following task#{@competitors.length > 1 ? 's' : ''} " +
+             "compete for the same resources that this task is requesting: ")
+        @competitors.each do |t|
+          res = @contendedResources[t].to_a
+          res.sort! { |i, j| j[1] <=> i[1] }
+          resList = res.map { |r| "#{r[0].id}:#{r[1]}" }.join(', ')
+          info('runaway_competitor',
+               "Task #{t.fullId} has conflicts for the following " +
+               "resource#{res.length > 1 ? 's' : ''}: #{resList}",
+               t.sourceFileInfo)
+        end
+      end
     end
 
     # This function determines if a task is a milestones and marks it
