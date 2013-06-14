@@ -176,7 +176,21 @@ class TaskJuggler
       head << XMLElement.new('base', 'target' => 'navigator')
       html.html << (body = XMLElement.new('body'))
 
+      body << (divf = XMLElement.new('div'))
+      divf << (form = XMLElement.new(
+        'form', 'action' => 'http://www.google.com/search',
+        'method' => "get", 'target' => 'display', 'style' => 'margin:0'))
+      form << XMLElement.new('input', 'type' => 'text',
+                             'value' => '',
+                             'maxlength' => '255',
+                             'size' => '25',
+                             'name' => 'q')
+      form << XMLElement.new('input', 'type' => 'submit', 'value' => 'Search')
+      form << XMLElement.new('input', 'type' => 'hidden',
+                             'value' => 'taskjuggler.org/manual',
+                             'name' => 'sitesearch')
       body << (h3 = XMLElement.new('h3'))
+
       letters.each do |l|
         h3 << XMLNamedText.new(l.upcase, 'a',
                                'href' => "navbar.html##{l}")
