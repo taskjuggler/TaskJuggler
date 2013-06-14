@@ -179,7 +179,7 @@ class TaskJuggler
       body << (divf = XMLElement.new('div'))
       divf << (form = XMLElement.new(
         'form', 'action' => 'http://www.google.com/search',
-        'method' => "get", 'target' => 'display', 'style' => 'margin:0'))
+        'method' => "get", 'target' => '_blank', 'style' => 'margin:0'))
       form << XMLElement.new('input', 'type' => 'text',
                              'value' => '',
                              'maxlength' => '255',

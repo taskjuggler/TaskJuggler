@@ -199,7 +199,7 @@ class TaskJuggler
                           'keywords' => 'taskjuggler, manual, reference'})
       html.html << FRAMESET.new('cols' => '15%, 85%') do
         [
-          FRAMESET.new('rows' => '15%, 85%') do
+          FRAMESET.new('rows' => '140,*') do
             [
               FRAME.new('src' => 'alphabet.html', 'name' => 'alphabet'),
               FRAME.new('src' => 'navbar.html', 'name' => 'navigator')
