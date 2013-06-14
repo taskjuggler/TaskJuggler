@@ -132,14 +132,13 @@ parser source code. It can be found in the file
 ''''lib/TjpSyntaxRules.rb''''. You can ignore all but the
 ''''doc(...)'''', ''''arg(...)'''' and ''''example(...)'''' sections.
 
-# The TJP examples are in the ''''test/TestSuite/Syntax/Correct''''
-directory.
+# The TJP syntax examples are in the
+''''test/TestSuite/Syntax/Correct'''' directory.
 
-The following commands build the HTML files for the manual in the
-''''data/manual'''' directory.
+The following command build the HTML files for the manual in the
+''''manual/html'''' directory.
 
- cd lib
- ruby UserManual.rb 
+ rake manual
 
 ==== Contributing to the Test Suite ====
 
