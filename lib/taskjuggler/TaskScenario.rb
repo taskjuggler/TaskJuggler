@@ -996,6 +996,15 @@ class TaskJuggler
       # For leaf tasks, propagate start may set the date. Container task dates
       # are only set in scheduleContainer().
       if @property.leaf?
+        # If we already have a date, we will only shrink the task period with
+        # the new date.
+        if (setDate = instance_variable_get('@' + thisEnd)) &&
+           atEnd ? date > setDate : date < setDate
+          Log.msg { "Preserving #{thisEnd} date of #{typename} " +
+                    "#{@property.fullId}: #{setDate}" }
+          return
+        end
+
         instance_variable_set(('@' + thisEnd).intern, date)
         typename = 'Task'
         if @durationType == :startEndTask

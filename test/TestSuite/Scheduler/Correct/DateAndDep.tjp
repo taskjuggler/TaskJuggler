@@ -1,0 +1,25 @@
+project "Date and dependency" 2013-06-22 +2m
+
+include "checks.tji"
+
+resource r "R"
+
+task "Forward" {
+  task t1 "T1" {
+    start 2013-06-24
+    effort 2d
+    allocate r
+  }
+  task t2 "T2" {
+    depends !t1 { onstart }
+    start 2013-06-27
+    effort 2d
+    allocate r
+    ${FixStart "2013-06-27-9:00"}
+  }
+}
+
+taskreport "DateAndDep" {
+  formats html
+  columns no, name, start, end, chart
+}
