@@ -26,8 +26,6 @@ used instead of the defined charge set.
 
 * Evaluate if account name space should be hierarchical.
 
-* Hammock tasks
-
 * Delta reports that show only the differences between 2 arbitrary
   scenarios.
 

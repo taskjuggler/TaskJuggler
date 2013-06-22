@@ -22,6 +22,6 @@ test/TestSuite/HTML-Reports/scripts
 test/TestSuite/Syntax/Correct/css
 test/TestSuite/Syntax/Correct/icons
 test/TestSuite/Syntax/Correct/scripts
-test/TestSuite/Syntax/Correct/*.hmtl
-test/TestSuite/Syntax/Correct/*.cvs
+test/TestSuite/Syntax/Correct/*.html
+test/TestSuite/Syntax/Correct/*.csv
 test/TestSuite/Syntax/Correct/*.xml

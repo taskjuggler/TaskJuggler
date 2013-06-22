@@ -1,10 +1,10 @@
 project prj "Project" "1.0" 2009-08-16 +6m
 
 task T1 "T1" {
-  start 2009-10-01
+  start 2009-09-23
   duration 2w
 }
-# MARK: error 8 weak_start_dep
+# MARK: error 8 impossible_start_dep
 task T2 "T2" {
   depends !T1
   end 2009-09-30

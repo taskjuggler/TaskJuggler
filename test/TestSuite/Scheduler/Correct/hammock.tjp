@@ -1,0 +1,27 @@
+project "Hammock tasks" 2013-06-22 +2m
+
+include 'checks.tji'
+
+task m1 "Milestone 1" {
+  start 2013-07-01
+}
+task m2 "Milestone 2" {
+  start 2013-08-01
+}
+task p1 "phase 1" {
+  precedes m2
+  depends m1
+  task f "Foo" {
+    ${FixStart "2013-07-01"}
+    ${FixEnd "2013-08-01"}
+  }
+  task b "Bar" {
+    ${FixStart "2013-07-01"}
+    ${FixEnd "2013-08-01"}
+  }
+}
+
+taskreport "test" {
+  formats html
+  columns name, start, end, chart
+}

@@ -4,10 +4,10 @@ task T1 "T1" {
   end 2009-12-31
   duration 2w
 }
-# MARK: error 8 weak_end_dep
+# MARK: error 8 impossible_end_dep
 task T2 "T2" {
   precedes !T1
-  start 2009-12-01
+  start 2009-12-24
 }
 task T3 "T3" {
   precedes !T2

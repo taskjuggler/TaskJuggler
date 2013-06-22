@@ -1214,10 +1214,10 @@ class TaskJuggler
       # task B depends on A and they are specified this way:
       # task A: | --> D-
       # task B: -D <-- |
-      if @end && startDate > @end
-        error('weak_start_dep',
-              "Task #{@property.fullId} has a too weak start dependencies " +
-              "to be scheduled properly.")
+      if @end && (startDate.nil? || startDate > @end)
+        error('impossible_start_dep',
+              "Task #{@property.fullId} has start date dependencies " +
+              "that conflict with the end date #{@end}.")
       end
 
       startDate
@@ -1271,10 +1271,10 @@ class TaskJuggler
       # task A precedes B and they are specified this way:
       # task A: | --> D-
       # task B: -D <-- |
-      if @start && (endDate.nil? || endDate > @start)
-        error('weak_end_dep',
-              "Task #{@property.fullId} has a too weak end dependencies " +
-              "to be scheduled properly.")
+      if @start && (endDate.nil? || endDate < @start)
+        error('impossible_end_dep',
+              "Task #{@property.fullId} has end date dependencies " +
+              "that conflict with the start date #{@start}.")
       end
 
       endDate
