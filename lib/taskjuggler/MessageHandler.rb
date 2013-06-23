@@ -136,6 +136,8 @@ class TaskJuggler
       @logLevel = 3
       # The full file name of the log file.
       @logFile = nil
+      # Toggle if scenario ids are included in the messages or not.
+      @hideScenario = true
       # The name of the current application
       @appName = 'unknown'
       # Set to true if program should be exited on warnings.
@@ -168,7 +170,6 @@ class TaskJuggler
       @messages = []
     end
 
-
     # Set the console output level.
     def outputLevel=(level)
       @outputLevel = checkLevel(level)
@@ -177,6 +178,10 @@ class TaskJuggler
     # Set the log output level.
     def logLevel=(level)
       @logLevel = checkLevel(level)
+    end
+
+    def hideScenario=(yesNo)
+      @hideScenario = yesNo
     end
 
     # Generate a fatal message that will abort the application.
@@ -268,7 +273,8 @@ class TaskJuggler
       # Treat criticals like errors but without generating another
       # exception.
       msg = Message.new(type == :critical ? :error : type, id, message,
-                        sourceFileInfo, line, data, scenario)
+                        sourceFileInfo, line, data,
+                        @hideScenario ? nil : scenario)
       @messages << msg
 
       # Append the message to the log file if requested by the user.

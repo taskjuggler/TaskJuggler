@@ -5126,6 +5126,10 @@ EOT
       end
       @property = Scenario.new(@project, @val[1], @val[2], @property)
       @property.inheritAttributes
+
+      if @project.scenarios.length > 1
+        MessageHandlerInstance.instance.hideScenario = false
+      end
     })
     arg(1, 'id', 'The ID of the scenario')
     arg(2, 'name', 'The name of the scenario')
