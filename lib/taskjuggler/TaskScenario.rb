@@ -1352,7 +1352,6 @@ class TaskJuggler
       query.string = query.scaleLoad(effort)
     end
 
-
     # The remaining (as of 'now') effort allocated for the task in the
     # specified interval.  In case a Resource is given as scope property only
     # the effort allocated for this resource is taken into account.
@@ -2194,16 +2193,22 @@ class TaskJuggler
 
     def markAsRunaway
       @isRunAway = true
-      warning('runaway', "Task #{@property.fullId} does not fit into " +
-                         "the project time frame. ")
+      remainingEffort =
+        @project.convertToDailyLoad(@project['scheduleGranularity'] *
+            (@effort - @doneEffort))
+      warning('runaway', "#{remainingEffort}d of effort of task " +
+                         "#{@property.fullId} " +
+                         "does not fit into the project time frame. ")
       unless @competitors.empty?
+        multi = @competitors.length > 1
         info('runaway_tasks',
-             "The following task#{@competitors.length > 1 ? 's' : ''} " +
-             "compete for the same resources that this task is requesting: ")
+             "The following task#{multi ? 's' : ''} " +
+             "compete#{multi ? '' : 's'} for the same resources that " +
+             "this task is requesting: ")
         @competitors.each do |t|
           res = @contendedResources[t].to_a
           res.sort! { |i, j| j[1] <=> i[1] }
-          resList = res.map { |r| "#{r[0].id}:#{r[1]}" }.join(', ')
+          resList = res.map { |r| "#{r[0].id}(#{r[1]})" }.join(', ')
           info('runaway_competitor',
                "Task #{t.fullId} has conflicts for the following " +
                "resource#{res.length > 1 ? 's' : ''}: #{resList}",

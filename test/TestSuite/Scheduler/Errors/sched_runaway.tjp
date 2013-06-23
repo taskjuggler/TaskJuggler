@@ -1,0 +1,20 @@
+project "Runaway" 2013-06-23 +3w
+
+resource r "R"
+
+# MARK: warning 11 runaway
+# MARK: info 11 runaway_tasks
+# MARK: info 17 runaway_competitor
+# MARK: warning 11 unscheduled_tasks
+# MARK: warning 11 unscheduled_task
+# MARK: error 11 sched_runaway
+task "T low" {
+  effort 15d
+  priority 1
+  allocate r
+}
+
+task "T high" {
+  effort 10d
+  allocate r
+}
