@@ -4,7 +4,7 @@ task t1 "T1" {
   duration 1w
   end 2010-07-26
 }
-# MARK: error 8 task_succ_after_gl
+# MARK: error 8 task_succ_after
 task t2 "T2" {
   precedes !t1 { gaplength 3d }
   duration 6d

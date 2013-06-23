@@ -506,34 +506,21 @@ class TaskJuggler
         task = dependency.task
         limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         next if limit.nil?
-        if @start < limit
+        if @start < limit ||
+           (dependency.gapDuration > 0 &&
+            limit + dependency.gapDuration > @start) ||
+           (dependency.gapLength > 0 &&
+            calcLength(limit, @start) < dependency.gapLength)
           error('task_pred_before',
-                "Task #{@property.fullId} (#{@start}) must start after " +
+                "Task #{@property.fullId} (#{@start}) must start " +
+                (dependency.gapDuration > 0 ?
+                  "#{dependency.gapDuration / (60 * 60 * 24)} days " :
+                  (dependency.gapLength > 0 ?
+                    "#{@project.slotsToDays(dependency.gapLength)} " +
+                    "working days " : '')) +
+                "after " +
                 "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
-                "#{task.fullId}.")
-        end
-        if dependency.gapDuration > 0
-          if limit + dependency.gapDuration > @start
-            error('task_pred_before_gd',
-                  "Task #{@property.fullId} must start " +
-                  "#{dependency.gapDuration / (60 * 60 * 24)} days after " +
-                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
-                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ALAP (finish-to-start) or " +
-                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
-          end
-        end
-        if dependency.gapLength > 0
-          if calcLength(limit, @start) < dependency.gapLength
-            error('task_pred_before_gl',
-                  "Task #{@property.fullId} must start " +
-                  "#{@project.slotsToDays(dependency.gapLength)} " +
-                  "working days after " +
-                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
-                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ALAP (finish-to-start) or " +
-                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
-          end
+                "#{task.fullId}. This condition could not be met.")
         end
       end
 
@@ -542,34 +529,21 @@ class TaskJuggler
         task = dependency.task
         limit = task[dependency.onEnd ? 'end' : 'start', @scenarioIdx]
         next if limit.nil?
-        if limit < @end
+        if limit < @end ||
+           (dependency.gapDuration > 0 &&
+            limit - dependency.gapDuration < @end) ||
+           (dependency.gapLength > 0 &&
+            calcLength(@end, limit) < dependency.gapLength)
           error('task_succ_after',
-                "Task #{@property.fullId} (#{@end}) must end before " +
+                "Task #{@property.fullId} (#{@end}) must end " +
+                (dependency.gapDuration > 0 ?
+                   "#{dependency.gapDuration / (60 * 60 * 24)} days " :
+                   (dependency.gapLength > 0 ?
+                     "#{@project.slotsToDays(dependency.gapLength)} " +
+                     "working days " : '')) +
+                "before " +
                 "#{dependency.onEnd ? 'end' : 'start'} (#{limit}) of task " +
-                "#{task.fullId}.")
-        end
-        if dependency.gapDuration > 0
-          if limit - dependency.gapDuration < @end
-            error('task_succ_after_gd',
-                  "Task #{@property.fullId} must end " +
-                  "#{dependency.gapDuration / (60 * 60 * 24)} days before " +
-                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
-                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ASAP (start-to-finish) or " +
-                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
-          end
-        end
-        if dependency.gapLength > 0
-          if calcLength(@end, limit) < dependency.gapLength
-            error('task_succ_after_gl',
-                  "Task #{@property.fullId} must end " +
-                  "#{@project.slotsToDays(dependency.gapLength)} " +
-                  "working days before " +
-                  "#{dependency.onEnd ? 'end' : 'start'} of task " +
-                  "#{task.fullId}. TaskJuggler cannot enforce this condition " +
-                  "because the task is scheduled ASAP (start-to-finish) or " +
-                  "has a fixed #{dependency.onEnd ? 'end' : 'start'} date.")
-          end
+                "#{task.fullId}. This condition could not be met.")
         end
       end
 
