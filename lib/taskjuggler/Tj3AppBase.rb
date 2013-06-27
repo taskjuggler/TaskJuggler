@@ -162,6 +162,8 @@ EOT
                 "#{'*' * 79}\nYou have triggered a bug in " +
                 "#{AppConfig.softwareName} version #{AppConfig.version}!\n" +
                 "Please see the user manual on how to get this bug fixed!\n" +
+                "http://www.taskjuggler.org/tj3/manual/Reporting_Bugs.html#" +
+                "Reporting_Bugs_and_Feature_Requests\n" +
                 "#{'*' * 79}\n")
         end
       end

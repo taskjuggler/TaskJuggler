@@ -60,7 +60,7 @@ class TaskJuggler
         TaskJuggler_Internals
         fdl
       ).each do |file|
-        snip = addSnip(srcDir + file)
+        snip = addSnip(File.join(srcDir, file))
         snip.cssClass = 'manual'
       end
       # Generate the table of contents

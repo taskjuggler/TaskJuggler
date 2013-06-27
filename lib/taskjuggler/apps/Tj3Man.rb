@@ -30,7 +30,7 @@ class TaskJuggler
       @manual = false
       @showHtml = false
       @browser = ENV['BROWSER'] || 'firefox'
-      @directory = nil
+      @directory = './'
       @mininumRubyVersion = '1.8.7'
     end
 

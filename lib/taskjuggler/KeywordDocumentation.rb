@@ -688,7 +688,8 @@ class TaskJuggler
       return nil if @pattern.supportLevel == :removed
 
       if @pattern.exampleFile
-        exampleDir = AppConfig.dataDirs('test')[0] + "TestSuite/Syntax/Correct/"
+        exampleDir = File.join(AppConfig.dataDirs('test')[0], 'TestSuite',
+                               'Syntax', 'Correct')
         example = TjpExample.new
         fileName = "#{exampleDir}/#{@pattern.exampleFile}.tjp"
         example.open(fileName)
