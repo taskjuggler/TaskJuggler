@@ -1030,6 +1030,10 @@ EOT
     descr('days')
   end
 
+  def rule_dynamicAttributes
+    pattern(%w( !reportAttributes . ))
+  end
+
   def rule_export
     pattern(%w( !exportHeader !exportBody ), lambda {
       @property = @property.parent

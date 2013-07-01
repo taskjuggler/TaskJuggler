@@ -103,8 +103,9 @@ class TaskJuggler
       $stdout = stdout if stdout
       $stderr = stderr if stdout
       $stdin = stdin if stdin
-      debug('', 'IO is now routed to the client')
       Log.silent = silent
+      Term::ANSIColor.coloring = !silent
+      debug('', 'IO is now routed to the client')
       true
     end
 

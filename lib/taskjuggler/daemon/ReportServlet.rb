@@ -15,6 +15,7 @@ require 'webrick'
 require 'taskjuggler/MessageHandler'
 require 'taskjuggler/RichText'
 require 'taskjuggler/HTMLDocument'
+require 'taskjuggler/URLParameter'
 require 'taskjuggler/daemon/DaemonConnector'
 
 class TaskJuggler
@@ -50,10 +51,14 @@ class TaskJuggler
         else
           debug('', "Report #{reportId} of project #{projectId} requested")
           attributes = req.query['attributes'] || ''
-          attributes = URLParameter.decode(attributes) unless attributes.empty?
+          unless attributes.empty?
+            attributes = URLParameter.decode(attributes)
+          end
+          debug('', "Attributes: #{attributes}")
           generateReport(projectId, reportId, attributes)
         end
       rescue
+        error('get_req_failed', "Cannot serve GET request: #{req}\n#{$!}")
       end
     end
 
@@ -116,9 +121,10 @@ class TaskJuggler
       end
 
       # Ask the ReportServer to generate the reports with the provided ID.
+      retVal = true
       begin
-        @reportServer.generateReport(@rs_authKey, reportId, false, nil,
-                                     attributes)
+        retVal = @reportServer.generateReport(@rs_authKey, reportId, false, nil,
+                                              attributes)
       rescue
         stdOut.rewind
         stdErr.rewind
@@ -142,12 +148,17 @@ class TaskJuggler
       broker.disconnect
 
       @res['content-type'] = 'text/html'
-      stdErr.rewind
-      $stderr.puts stdErr.read
-      # To read the $stdout of the ReportServer we need to rewind the buffer
-      # and then read the full text.
-      stdOut.rewind
-      @res.body = stdOut.read
+      if retVal
+        # To read the $stdout of the ReportServer we need to rewind the buffer
+        # and then read the full text.
+        stdOut.rewind
+        @res.body = stdOut.read
+      else
+        stdErr.rewind
+        error('get_req_stderr',
+              "Error while parsing attribute definition:\n-8<-\n" +
+              "#{attributes}\n->8-\n#{stdErr.read}")
+      end
     end
 
     def generateWelcomePage(projectId)

@@ -193,7 +193,7 @@ class TaskJuggler::TextParser
       def initialize(buffer, log, textScanner)
         super(log, textScanner)
         begin
-          @stream = StringIO.new(buffer.forceUTF8Encoding)
+          @stream = StringIO.new(buffer)
         rescue
           error('bufferEncoding', $!.message)
         end
