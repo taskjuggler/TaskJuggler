@@ -590,6 +590,24 @@ class TaskJuggler
       end
     end
 
+    def query_children(query)
+      list = []
+      kids.each do |property|
+        if query.listItem
+          rti = RichText.new(query.listItem, RTFHandlers.create(@project)).
+            generateIntermediateFormat
+          q = query.dup
+          q.property = property
+          rti.setQuery(q)
+          list << "<nowiki>#{rti.to_s}</nowiki>"
+        else
+          list << "<nowiki>#{property.name} (#{property.fullId})</nowiki>"
+        end
+      end
+
+      query.assignList(list)
+    end
+
     def query_journal(query)
       @project['journal'].to_rti(query)
     end

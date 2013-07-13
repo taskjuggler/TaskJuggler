@@ -3821,6 +3821,15 @@ column.
 EOT
          )
 
+    singlePattern('_children')
+    descr(<<'EOT'
+A list of all direct sub elements.
+
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
+EOT
+         )
+
     singlePattern('_closedtasks')
     descr(<<'EOT'
 The number of sub-tasks (including the current task) that have been closed
@@ -3881,7 +3890,8 @@ EOT
     descr(<<'EOT'
 The resources that have this resource assigned as manager.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attribute.
 EOT
          )
 
@@ -3923,9 +3933,10 @@ symbols are used for <nowiki><dep></nowiki>.
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
-The dependency symbol can be generated via the ''''dependency'''' attribute
-inthe query, the target date via the ''''date'''' attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column]] attributes. The dependency symbol can be generated via
+the ''''dependency'''' attribute inthe query, the target date via the
+''''date'''' attribute.
 EOT
          )
 
@@ -3993,7 +4004,8 @@ A list of milestones that are a prerequiste for the current task. For
 container tasks it will also include the inputs of the child tasks. Inputs may
 not have any predecessors.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attribute.
 EOT
          )
 
@@ -4029,7 +4041,8 @@ EOT
     descr(<<'EOT'
 A list of managers that the resource reports to.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
 EOT
         )
 
@@ -4080,9 +4093,10 @@ are used
 * '''<nowiki>]->]</nowiki>''': End-to-End dependency
 * '''<nowiki>[->]</nowiki>''': Start-to-End dependency
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
-The dependency symbol can be generated via the ''''dependency'''' attribute
-inthe query, the target date via the ''''date'''' attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.  The dependency symbol can be
+generated via the ''''dependency'''' attribute inthe query, the target date
+via the ''''date'''' attribute.
 EOT
          )
 
@@ -4099,7 +4113,8 @@ EOT
     descr(<<'EOT'
 All resources that have this resource assigned as a direct or indirect manager.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
 EOT
          )
 
@@ -4107,7 +4122,8 @@ EOT
     descr(<<'EOT'
 A list of resources that are assigned to the task in the report time frame.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
 EOT
          )
 
@@ -4115,7 +4131,8 @@ EOT
     descr(<<'EOT'
 The responsible people for this task.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
 EOT
          )
 
@@ -4168,7 +4185,8 @@ A list of milestones that depend on the current task. For container tasks it
 will also include the targets of the child tasks. Targets may not have any
 follower tasks.
 
-The list can be customized by the [[listitem.column|listitem]] attribute.
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attributes.
 EOT
          )
 
