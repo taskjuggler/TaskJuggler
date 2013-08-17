@@ -5926,9 +5926,10 @@ EOT
       @taskDependency.gapDuration = @val[1]
     })
     doc('gapduration', <<'EOT'
-Specifies the minimum required gap between the end of a preceding task and the
-start of this task, or the start of a following task and the end of this task.
-This is calendar time, not working time. 7d means one week.
+Specifies the minimum required gap between the start or end of a preceding
+task and the start of this task, or the start or end of a following task and
+the end of this task. This is calendar time, not working time. 7d means one
+week.
 EOT
        )
 
@@ -5936,11 +5937,11 @@ EOT
       @taskDependency.gapLength = @val[1]
     })
     doc('gaplength', <<'EOT'
-Specifies the minimum required gap between the end of a preceding task and the
-start of this task, or the start of a following task and the end of this task.
-This is working time, not calendar time. 7d means 7 working days, not one
-week. Whether a day is considered a working day or not depends on the defined
-working hours and global leaves.
+Specifies the minimum required gap between the start or end of a preceding
+task and the start of this task, or the start or end of a following task and
+the end of this task. This is working time, not calendar time. 7d means 7
+working days, not one week. Whether a day is considered a working day or not
+depends on the defined working hours and global leaves.
 EOT
        )
 

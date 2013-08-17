@@ -956,7 +956,7 @@ class TaskJuggler
                         "to task #{@property.id}")
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
-      #puts "Propagating #{thisEnd} date #{date} of #{@property.fullId} " +
+      #puts "Propagating #{thisEnd} date #{date} to #{@property.fullId} " +
       #     "#{ignoreEffort ? "ignoring effort" : "" }"
 
       # These flags are just used to avoid duplicate calls of this function
@@ -1898,19 +1898,13 @@ class TaskJuggler
           # slot.
           if @effort > 0 && @assignedresources.empty?
             if @forward
-              @start = @project.idxToDate(@currentSlotIdx)
+              propagateDate(@project.idxToDate(@currentSlotIdx), false, true)
               Log.msg { "Task #{@property.fullId} first assignment: " +
                         "#{period_to_s}" }
-              @startsuccs.each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, @start, false, true)
-              end
             else
-              @end = @project.idxToDate(@currentSlotIdx + 1)
+              propagateDate(@project.idxToDate(@currentSlotIdx + 1), true, true)
               Log.msg { "Task #{@property.fullId} last assignment: " +
                         "#{period_to_s}" }
-              @endpreds.each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, @end, true, true)
-              end
             end
           end
 
