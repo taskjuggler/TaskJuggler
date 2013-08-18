@@ -2085,8 +2085,8 @@ class TaskJuggler
         requestedLength = @project.slotsToDays(@length)
         warning('overbooked_length',
                 "The total length (#{length}d) of the provided bookings " +
-                "for task #{@property.fullId} exceeds the specified length of " +
-                "#{requestedLength}d.")
+                "for task #{@property.fullId} exceeds the specified length " +
+                "of #{requestedLength}d.")
       end
       if @duration > 0 && @doneDuration > @duration
         duration = @doneDuration * @project['scheduleGranularity'] /
@@ -2097,6 +2097,16 @@ class TaskJuggler
                 "The total duration (#{duration}d) of the provided bookings " +
                 "for task #{@property.fullId} exceeds the specified duration " +
                 "of #{requestedDuration}d.")
+      end
+
+      # If a task has only bookings but no effort, length or duration and is
+      # not a milestone but marked as being scheduled, we set the start and
+      # end date according to the first/last booking date unless the date has
+      # been set already.
+      if @scheduled && @effort == 0 && @length == 0 && @duration == 0 &&
+         !@milestone
+        @start = @project.idxToDate(firstSlotIdx) unless @start
+        @end = @project.idxToDate(lastSlotIdx + 1) unless @end
       end
     end
 

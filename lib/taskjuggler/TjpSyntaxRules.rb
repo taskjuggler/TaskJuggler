@@ -6542,7 +6542,8 @@ EOT
           @property['end', @scenarioIdx].nil?) ||
          (!@property['milestone', @scenarioIdx] &&
           (@property['start', @scenarioIdx].nil? ||
-           @property['end', @scenarioIdx].nil?))
+           @property['end', @scenarioIdx].nil?) &&
+          @property['booking', @scenarioIdx].empty?)
         error('not_scheduled',
               "Task #{@property.fullId} is marked as scheduled but does not " +
               'have a fixed start and end date.',
@@ -6551,10 +6552,13 @@ EOT
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'
-This is mostly for internal use. It specifies that the task should be ignored
-for scheduling in the scenario. This option only makes sense if you provide
-all resource [[booking.resource|bookings]] manually. Without booking
-statements, the task will be reported with 0 effort and no resources assigned.
+It specifies that the task can be ignored for scheduling in the scenario. This
+option only makes sense if you provide all resource
+[[booking.resource|bookings]] manually. Without booking statements, the task
+will be reported with 0 effort and no resources assigned. If the task is not a
+milestone, has no effort, length or duration criteria, the start and end date
+will be derived from the first and last booking in case those dates are not
+supplied.
 EOT
        )
 
