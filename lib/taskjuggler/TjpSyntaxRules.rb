@@ -7065,6 +7065,10 @@ shows the tracked values over time will be generated. The CSV file may contain
 all kinds of values that are being tracked. Report formats that don't support
 a mix of different values will just show the values of the second column.
 
+The values in the CSV files are fixed units and cannot be formated. Effort
+values are always in resource-days. This allows other software to interpret
+the file without any need for additional context information.
+
 The HTML version generates SVG graphs that are embedded in the HTML page.
 These graphs are only visble if the web browser supports HTML5. This is true
 for the latest generation of browsers, but older browsers may not support this
@@ -7133,6 +7137,7 @@ EOT
     })
     arg(1, 'task', 'ID of the new task')
   end
+
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
       newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0]) do
@@ -7144,7 +7149,8 @@ EOT
         end
         @property.set('scenarios', [ scenarioIdx ])
         # Show all tasks, sorted by seqno-up.
-        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('hideTask',
+                      LogicalExpression.new(LogicalOperation.new(0)))
         @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
         # Show all resources, sorted by seqno-up.
         @property.set('hideResource',

@@ -228,7 +228,7 @@ class TaskJuggler
             query.property = property
 
             query.process
-            @table[idx] << query.result
+            @table[idx] << query.to_s
           end
         end
       end
