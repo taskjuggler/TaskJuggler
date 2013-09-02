@@ -5926,9 +5926,10 @@ EOT
       @taskDependency.gapDuration = @val[1]
     })
     doc('gapduration', <<'EOT'
-Specifies the minimum required gap between the end of a preceding task and the
-start of this task, or the start of a following task and the end of this task.
-This is calendar time, not working time. 7d means one week.
+Specifies the minimum required gap between the start or end of a preceding
+task and the start of this task, or the start or end of a following task and
+the end of this task. This is calendar time, not working time. 7d means one
+week.
 EOT
        )
 
@@ -5936,11 +5937,11 @@ EOT
       @taskDependency.gapLength = @val[1]
     })
     doc('gaplength', <<'EOT'
-Specifies the minimum required gap between the end of a preceding task and the
-start of this task, or the start of a following task and the end of this task.
-This is working time, not calendar time. 7d means 7 working days, not one
-week. Whether a day is considered a working day or not depends on the defined
-working hours and global leaves.
+Specifies the minimum required gap between the start or end of a preceding
+task and the start of this task, or the start or end of a following task and
+the end of this task. This is working time, not calendar time. 7d means 7
+working days, not one week. Whether a day is considered a working day or not
+depends on the defined working hours and global leaves.
 EOT
        )
 
@@ -6541,7 +6542,8 @@ EOT
           @property['end', @scenarioIdx].nil?) ||
          (!@property['milestone', @scenarioIdx] &&
           (@property['start', @scenarioIdx].nil? ||
-           @property['end', @scenarioIdx].nil?))
+           @property['end', @scenarioIdx].nil?) &&
+          @property['booking', @scenarioIdx].empty?)
         error('not_scheduled',
               "Task #{@property.fullId} is marked as scheduled but does not " +
               'have a fixed start and end date.',
@@ -6550,10 +6552,13 @@ EOT
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'
-This is mostly for internal use. It specifies that the task should be ignored
-for scheduling in the scenario. This option only makes sense if you provide
-all resource [[booking.resource|bookings]] manually. Without booking
-statements, the task will be reported with 0 effort and no resources assigned.
+It specifies that the task can be ignored for scheduling in the scenario. This
+option only makes sense if you provide all resource
+[[booking.resource|bookings]] manually. Without booking statements, the task
+will be reported with 0 effort and no resources assigned. If the task is not a
+milestone, has no effort, length or duration criteria, the start and end date
+will be derived from the first and last booking in case those dates are not
+supplied.
 EOT
        )
 
@@ -7064,6 +7069,10 @@ shows the tracked values over time will be generated. The CSV file may contain
 all kinds of values that are being tracked. Report formats that don't support
 a mix of different values will just show the values of the second column.
 
+The values in the CSV files are fixed units and cannot be formated. Effort
+values are always in resource-days. This allows other software to interpret
+the file without any need for additional context information.
+
 The HTML version generates SVG graphs that are embedded in the HTML page.
 These graphs are only visble if the web browser supports HTML5. This is true
 for the latest generation of browsers, but older browsers may not support this
@@ -7132,6 +7141,7 @@ EOT
     })
     arg(1, 'task', 'ID of the new task')
   end
+
   def rule_tsReportHeader
     pattern(%w( _timesheetreport !optionalID $STRING ), lambda {
       newReport(@val[1], @val[2], :timeSheet, @sourceFileInfo[0]) do
@@ -7143,7 +7153,8 @@ EOT
         end
         @property.set('scenarios', [ scenarioIdx ])
         # Show all tasks, sorted by seqno-up.
-        @property.set('hideTask', LogicalExpression.new(LogicalOperation.new(0)))
+        @property.set('hideTask',
+                      LogicalExpression.new(LogicalOperation.new(0)))
         @property.set('sortTasks', [ [ 'seqno', true, -1 ] ])
         # Show all resources, sorted by seqno-up.
         @property.set('hideResource',

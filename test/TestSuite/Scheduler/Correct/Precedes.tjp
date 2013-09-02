@@ -2,6 +2,9 @@ project test "Test" "1.0" 2007-04-02 - 2007-07-01
 
 include "checks.tji"
 
+resource r1 "R1"
+resource r2 "R2"
+
 task t1 "T1" {
   end ${projectend}
   duration 1w
@@ -36,6 +39,20 @@ task t6 "T6" {
   precedes t4 { onend gaplength 1w }
   duration 1w
   ${FixTask "2007-05-14-9:00" "2007-05-21-9:00"}
+}
+
+task t7 "T7" {
+  end ${projectend}
+  effort 1w
+  allocate r1
+  ${FixStart "2007-06-25-9:00"}
+}
+
+task t8 "T8" {
+  precedes t7 { onend gaplength 1w }
+  effort 1w
+  allocate r2
+  ${FixTask "2007-06-18-9:00" "2007-06-22-17:00"}
 }
 
 taskreport preceds "Precedes" {

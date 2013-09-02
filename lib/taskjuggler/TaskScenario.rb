@@ -956,7 +956,7 @@ class TaskJuggler
                         "to task #{@property.id}")
       thisEnd = atEnd ? 'end' : 'start'
       otherEnd = atEnd ? 'start' : 'end'
-      #puts "Propagating #{thisEnd} date #{date} of #{@property.fullId} " +
+      #puts "Propagating #{thisEnd} date #{date} to #{@property.fullId} " +
       #     "#{ignoreEffort ? "ignoring effort" : "" }"
 
       # These flags are just used to avoid duplicate calls of this function
@@ -1898,19 +1898,13 @@ class TaskJuggler
           # slot.
           if @effort > 0 && @assignedresources.empty?
             if @forward
-              @start = @project.idxToDate(@currentSlotIdx)
+              propagateDate(@project.idxToDate(@currentSlotIdx), false, true)
               Log.msg { "Task #{@property.fullId} first assignment: " +
                         "#{period_to_s}" }
-              @startsuccs.each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, @start, false, true)
-              end
             else
-              @end = @project.idxToDate(@currentSlotIdx + 1)
+              propagateDate(@project.idxToDate(@currentSlotIdx + 1), true, true)
               Log.msg { "Task #{@property.fullId} last assignment: " +
                         "#{period_to_s}" }
-              @endpreds.each do |task, onEnd|
-                task.propagateDate(@scenarioIdx, @end, true, true)
-              end
             end
           end
 
@@ -2091,8 +2085,8 @@ class TaskJuggler
         requestedLength = @project.slotsToDays(@length)
         warning('overbooked_length',
                 "The total length (#{length}d) of the provided bookings " +
-                "for task #{@property.fullId} exceeds the specified length of " +
-                "#{requestedLength}d.")
+                "for task #{@property.fullId} exceeds the specified length " +
+                "of #{requestedLength}d.")
       end
       if @duration > 0 && @doneDuration > @duration
         duration = @doneDuration * @project['scheduleGranularity'] /
@@ -2103,6 +2097,16 @@ class TaskJuggler
                 "The total duration (#{duration}d) of the provided bookings " +
                 "for task #{@property.fullId} exceeds the specified duration " +
                 "of #{requestedDuration}d.")
+      end
+
+      # If a task has only bookings but no effort, length or duration and is
+      # not a milestone but marked as being scheduled, we set the start and
+      # end date according to the first/last booking date unless the date has
+      # been set already.
+      if @scheduled && @effort == 0 && @length == 0 && @duration == 0 &&
+         !@milestone
+        @start = @project.idxToDate(firstSlotIdx) unless @start
+        @end = @project.idxToDate(lastSlotIdx + 1) unless @end
       end
     end
 

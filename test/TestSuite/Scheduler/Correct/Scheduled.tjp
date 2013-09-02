@@ -1,0 +1,11 @@
+project "Test" 2013-08-18 +1m
+
+include "checks.tji"
+
+resource r "R"
+
+task "Foo" {
+  booking r 2013-08-19-9:00 +8h
+  scheduled
+  ${FixTask "2013-08-19-9:00" "2013-08-19-17:00"}
+}
