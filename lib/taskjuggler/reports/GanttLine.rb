@@ -32,7 +32,7 @@ class TaskJuggler
     attr_reader :y, :height, :query
 
     # Create a GanttLine object and generate the abstract representation.
-    def initialize(chart, query, y, height, tooltip)
+    def initialize(chart, query, y, height, lineIndex, tooltip)
       # A reference to the chart that the line belongs to.
       @chart = chart
       # Register the line with the chart.
@@ -49,6 +49,9 @@ class TaskJuggler
       @y = y + chart.header.height + 1
       # The height of the line in screen pixels.
       @height = height
+      # The index of the line in the chart. It starts with 0 and is
+      # incremented for each line by one.
+      @lineIndex = lineIndex
       # The x coordinates of the time-off zones. It's an Array of [ startX, endX
       # ] touples.
       @timeOffZones = []
@@ -133,7 +136,7 @@ class TaskJuggler
     # appear in the scope of a resource.
     def generateTask
       # Set the background color
-      @category = "taskcell#{(@query.property.get('index') + 1) % 2 + 1}"
+      @category = "taskcell#{(@lineIndex + 1) % 2 + 1}"
 
       project = @query.project
       property = @query.property
@@ -228,7 +231,7 @@ class TaskJuggler
     # line or appear in the scope of a task.
     def generateResource
       # Set the alternating background color
-      @category = "resourcecell#{(@query.property.get('index') + 1) % 2 + 1}"
+      @category = "resourcecell#{(@lineIndex + 1) % 2 + 1}"
 
       # The cellStartDate Array contains the end of the final cell as last
       # element. We need to use a shift mechanism to start and end
