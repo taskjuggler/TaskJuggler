@@ -197,6 +197,11 @@ class TaskJuggler
             raise ArgumentError unless aType
             scIdx = aType.scenarioSpecific ? @scenarioIdx : nil
             @attr = @property.getAttribute(@attributeId, scIdx)
+            if @attr.nil? && @attr.is_a?(DateAttribute)
+              @errorMessage = "Attribute '#{@attributeId}' of property " +
+                "'#{@property.fullId}' has undefined value."
+              return @ok = false
+            end
           rescue ArgumentError
             @errorMessage = "Unknown attribute '#{@attributeId}' queried"
             return @ok = false
