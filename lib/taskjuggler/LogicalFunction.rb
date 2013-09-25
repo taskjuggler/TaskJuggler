@@ -250,7 +250,19 @@ class TaskJuggler
         expr.error("Unknown attribute '#{attr}' used for function " +
                    "isvalid()")
       end
-      !property[attr, scenarioIdx].nil?
+      if scenario
+        unless property.attributeDefinition(attr).scenarioSpecific
+          expr.error("Attribute '#{attr}' of property '#{property.fullId}' " +
+                     "is not scenario specific. Don't provide a scenario ID!")
+        end
+        !property[attr, scenarioIdx].nil?
+      else
+        if property.attributeDefinition(attr).scenarioSpecific
+          expr.error("Attribute '#{attr}' of property '#{property.fullId}' " +
+                     "is scenario specific. Please provide a scenario ID!")
+        end
+        !property.get(attr).nil?
+      end
     end
 
     def treelevel(expr, args)
