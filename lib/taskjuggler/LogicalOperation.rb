@@ -195,12 +195,17 @@ class TaskJuggler
       query.scenarioIdx = @scenario.sequenceNo - 1
       query.attributeId = @operand1
       query.process
-      # The logical expressions are mostly about comparing values. So we use
-      # the sortableResult of the Query. This creates some challenges for load
-      # values, as the user is not accustomed to the internal representation
-      # of those.
-      # Convert nil results into empty Strings if necessary
-      query.result || ''
+      if query.ok
+        # The logical expressions are mostly about comparing values. So we use
+        # the sortableResult of the Query. This creates some challenges for load
+        # values, as the user is not accustomed to the internal representation
+        # of those.
+        # Convert nil results into empty Strings if necessary
+        query.result || ''
+      else
+        expr.error(query.errorMessage)
+        query.errorMessage
+      end
     end
 
     # Dumps the LogicalOperation as String. If _query_ is nil, the variable
@@ -241,9 +246,9 @@ class TaskJuggler
     def to_s(query)
       if query
         if query.is_a?(Query)
-          query.property['flags', 0].include(@operand1) ? 'true' : 'false'
+          query.property['flags', 0].include?(@operand1) ? 'true' : 'false'
         else
-          query.flags.include(@operand1) ? 'true' : 'false'
+          query.flags.include?(@operand1) ? 'true' : 'false'
         end
       else
         @operand1

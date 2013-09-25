@@ -126,7 +126,7 @@ class TaskJuggler
         if @propertyId && (@property.nil? || @propertyId[0] == '!')
           @property = resolvePropertyId(@propertyType, @propertyId)
           unless @property
-            @errorMessage = "Unknown property #{@propertyId} queried"
+            @errorMessage = "Unknown property '#{@propertyId}' queried"
             return @ok = false
           end
         end
@@ -198,7 +198,7 @@ class TaskJuggler
             scIdx = aType.scenarioSpecific ? @scenarioIdx : nil
             @attr = @property.getAttribute(@attributeId, scIdx)
           rescue ArgumentError
-            @errorMessage = "Unknown attribute #{@attributeId} queried"
+            @errorMessage = "Unknown attribute '#{@attributeId}' queried"
             return @ok = false
           end
         end
