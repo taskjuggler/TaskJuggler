@@ -30,7 +30,8 @@ class TaskJuggler
           competitors criticalness depends duration
           effort end forward gauge length
           maxend maxstart minend minstart milestone pathcriticalness
-          precedes priority scheduled shifts start status ).each do |attr|
+          precedes priority responsible
+          scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
       end
 
@@ -202,6 +203,17 @@ class TaskJuggler
           end
         end
       end
+
+      @responsible.map! do |resourceId|
+        # 'resource' is still just an ID and needs to be converted into a
+        # Resource.
+        if (resource = @project.resource(resourceId)).nil?
+          error('resource_id_expected', "#{resourceId} is not a defined " +
+                'resource.', @sourceFileInfo)
+        end
+        resource
+      end
+      @responsible.uniq!
 
       # Leaf tasks can be turned into containers after bookings have been added.
       # We need to check for this.

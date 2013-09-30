@@ -4780,7 +4780,7 @@ EOT
   end
 
   def rule_resourceList
-    listRule('moreResources', '!resourceId')
+    listRule('moreResources', '!undefResourceId')
   end
 
   def rule_resourceReport
@@ -7351,6 +7351,13 @@ EOT
       @timeSheetRecord.sourceFileInfo = @sourceFileInfo[0]
     })
     arg(1, 'task', 'ID of an already existing task')
+  end
+
+  def rule_undefResourceId
+    pattern(%w( $ID ), lambda {
+      (@resourceprefix.empty? ? '' : @resourceprefix + '.') + @val[0]
+    })
+    arg(0, 'resource', 'The ID of a defined resource')
   end
 
   def rule_vacationName

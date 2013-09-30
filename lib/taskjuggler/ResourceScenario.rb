@@ -73,8 +73,6 @@ class TaskJuggler
     def prepareScheduling
       @effort = 0
       initScoreboard if @property.leaf?
-
-      setDirectReports
     end
 
     # The criticalness of a resource is a measure for the probabilty that all
@@ -97,17 +95,35 @@ class TaskJuggler
     end
 
     def setDirectReports
-      # Only leaf resources have reporting lines.
-      return unless @property.leaf?
-
-      # The 'directreports' attribute is the reverse link for the 'managers'
-      # attribute. In contrast to the 'managers' attribute, the
-      # 'directreports' list has no duplicate entries.
-      @managers.each do |manager|
-        unless manager['directreports', @scenarioIdx].include?(@property)
-          manager['directreports', @scenarioIdx] << @property
+      @managers.map! do |managerId|
+        # First we need to map 'managerId' to an existing Resource.
+        if (manager = @project.resource(managerId)).nil?
+          error('resource_id_expected', "#{managerId} is not a defined " +
+                'resource.', @sourceFileInfo)
         end
+        unless manager.leaf?
+          error('manager_is_group',
+                "Resource #{@property.fullId} has group #{manager.fullId} " +
+                "assigned as manager. Managers must be leaf resources.")
+        end
+        if manager == @property
+          error('manager_is_self',
+                "Resource #{@property.fullId} cannot manage itself.")
+        end
+
+        # Only leaf resources have reporting lines.
+        if @property.leaf?
+          # The 'directreports' attribute is the reverse link for the 'managers'
+          # attribute. In contrast to the 'managers' attribute, the
+          # 'directreports' list has no duplicate entries.
+          unless manager['directreports', @scenarioIdx].include?(@property)
+            manager['directreports', @scenarioIdx] << @property
+          end
+        end
+
+        manager
       end
+      @managers.uniq!
     end
 
     def setReports
@@ -119,17 +135,6 @@ class TaskJuggler
     end
 
     def preScheduleCheck
-      @managers.each do |manager|
-        unless manager.leaf?
-          error('manager_is_group',
-                "Resource #{@property.fullId} has group #{manager.fullId} " +
-                "assigned as manager. Managers must be leaf resources.")
-        end
-        if manager == @property
-          error('manager_is_self',
-                "Resource #{@property.fullId} cannot manage itself.")
-        end
-      end
     end
 
     # This method does some housekeeping work after the scheduling is
