@@ -5354,6 +5354,12 @@ EOT
       case args.length
       when 2
         # <attribute>.<up|down>
+        # We default to the top-level scenario.
+        if args[1] != 'up' && args[1]!= 'down'
+          error('sort_direction', "Sorting direction must be 'up' or 'down'",
+                @sourceFileInfo[0])
+        end
+
         scenario = -1
         direction = args[1] == 'up'
         attribute = args[0]
@@ -5381,6 +5387,30 @@ EOT
               '(without appended .up or .down) instead.',
               @sourceFileInfo[0])
       end
+      case @sortProperty
+      when :account
+        ps = @project.accounts
+      when :resource
+        ps = @project.resources
+      when :task
+        ps = @project.tasks
+      end
+      unless ps.knownAttribute?(attribute) ||
+        TableReport::calculated?(attribute)
+        error('sorting_unknown_attr',
+              "Sorting criterium '#{attribute} is not a known attribute.")
+      end
+      if scenario > 0 && !(ps.scenarioSpecific?(attribute) ||
+                           TableReport.scenarioSpecific?(attribute))
+        error('sorting_attr_scen_spec',
+              "Sorting criterium '#{attribute}' is not scenario specific " +
+              "but a scenario has been specified.")
+      elsif scenario == -1 && (ps.scenarioSpecific?(attribute) ||
+                               TableReport.scenarioSpecific?(attribute))
+        # If no scenario was specified but the attribute is scenario specific,
+        # we default to the top-level scenario.
+        scenario = 0
+      end
       [ attribute, direction, scenario ]
     })
     arg(0, 'criteria', <<'EOT'
@@ -5388,7 +5418,8 @@ The sorting criteria must consist of a property attribute ID. See [[columnid]]
 for a complete list of available attributes. The ID must be suffixed by '.up'
 or '.down' to determine the sorting direction. Optionally the ID may be
 prefixed with a scenario ID and a dot to determine the scenario that should be
-used for sorting. So, possible values are 'plan.start.up' or 'priority.down'.
+used for sorting. In case no scenario was specified, the top-level scenario is
+used. Example values are 'plan.start.up' or 'priority.down'.
 EOT
          )
   end
@@ -5418,8 +5449,14 @@ EOT
         )
   end
 
+  def rule_sortAccountsKeyword
+    pattern(%w( _sortaccounts ), lambda {
+      @sortProperty = :account
+    })
+  end
+
   def rule_sortAccounts
-    pattern(%w( _sortaccounts !sortCriteria ), lambda {
+    pattern(%w( !sortAccountsKeyword !sortCriteria ), lambda {
       @property.set('sortAccounts', @val[1])
     })
     doc('sortaccounts', <<'EOT'
@@ -5431,8 +5468,14 @@ EOT
        )
   end
 
+  def rule_sortResourcesKeyword
+    pattern(%w( _sortresources ), lambda {
+      @sortProperty = :resource
+    })
+  end
+
   def rule_sortResources
-    pattern(%w( _sortresources !sortCriteria ), lambda {
+    pattern(%w( !sortResourcesKeyword !sortCriteria ), lambda {
       @property.set('sortResources', @val[1])
     })
     doc('sortresources', <<'EOT'
@@ -5444,8 +5487,14 @@ EOT
        )
   end
 
+  def rule_sortTasksKeyword
+    pattern(%w( _sorttasks ), lambda {
+      @sortProperty = :task
+    })
+  end
+
   def rule_sortTasks
-    pattern(%w( _sorttasks !sortCriteria ), lambda {
+    pattern(%w( !sortTasksKeyword !sortCriteria ), lambda {
       @property.set('sortTasks', @val[1])
     })
     doc('sorttasks', <<'EOT'

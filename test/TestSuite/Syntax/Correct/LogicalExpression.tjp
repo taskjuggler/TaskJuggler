@@ -29,7 +29,7 @@ taskreport "LogExp7" {
 # *** EXAMPLE: 1 +
 taskreport "LeaveTasks" {
   hidetask isleaf()
-  sorttasks plan.id # not 'tree' to really hide parent tasks
+  sorttasks id.up # not 'tree' to really hide parent tasks
 }
 
 taskreport "Overruns" {

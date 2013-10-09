@@ -226,21 +226,14 @@ class TaskJuggler
       unless @propertySet.knownAttribute?(criteria) ||
              @propertySet.hasQuery?(criteria, scIdx)
         raise TjException.new,
-              "Unknown attribute #{criteria} used for sorting criterium"
+              "Unknown attribute '#{criteria}' used for sorting criterium"
       end
-      if scIdx == -1
-        if @propertySet.scenarioSpecific?(criteria)
-          raise TjException.new,
-                "Attribute #{criteria} is scenario specific." +
-                "You must specify a scenario id."
+      if @propertySet.scenarioSpecific?(criteria)
+        if @propertySet.project.scenario(scIdx).nil?
+          raise TjException.new, "Unknown scenario index '#{scIdx}' used."
         end
       else
-        if @propertySet.project.scenario(scIdx).nil?
-          raise TjException.new, "Unknown scenario index #{scIdx} used."
-        end
-        if !@propertySet.scenarioSpecific?(criteria)
-          raise TjException.new, "Attribute #{criteria} is not scenario specific"
-        end
+        scIdx == -1
       end
       @sortingCriteria.push(criteria)
       @sortingUp.push(up)

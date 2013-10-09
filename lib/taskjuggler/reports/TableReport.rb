@@ -163,7 +163,7 @@ class TaskJuggler
 
     # Return if the column values should be indented based on the _colId_ or the
     # _propertyType_.
-    def indent(colId, propertyType)
+    def TableReport::indent(colId, propertyType)
       if @@propertiesById.has_key?(colId)
         return @@propertiesById[colId][1]
       elsif @@propertiesByType.has_key?(propertyType)
@@ -175,7 +175,7 @@ class TaskJuggler
 
     # Return the alignment of the column based on the _colId_ or the
     # _attributeType_.
-    def alignment(colId, attributeType)
+    def TableReport::alignment(colId, attributeType)
       if @@propertiesById.has_key?(colId)
         return @@propertiesById[colId][2]
       elsif @@propertiesByType.has_key?(attributeType)
@@ -187,22 +187,22 @@ class TaskJuggler
 
     # This function returns true if the values for the _colId_ column need to be
     # calculated.
-    def calculated?(colId)
+    def TableReport::calculated?(colId)
       return @@propertiesById.has_key?(colId)
     end
 
     # This functions returns true if the values for the _col_id_ column are
     # scenario specific.
-    def scenarioSpecific?(colId)
+    def TableReport::scenarioSpecific?(colId)
       if @@propertiesById.has_key?(colId)
         return @@propertiesById[colId][3]
       end
       return false
     end
 
-    def supportedColumns
-      @@propertiesById.keys
-    end
+    #def TableReport::supportedColumns
+    #  @@propertiesById.keys
+    #end
 
   protected
 
@@ -675,7 +675,7 @@ class TaskJuggler
         start = query.start.beginOfYear
         sameTimeNextFunc = :sameTimeNextYear
       else
-        if calculated?(columnDef.id)
+        if TableReport.calculated?(columnDef.id)
           return genCalculatedCell(query, line, columnDef)
         else
           return genStandardCell(query, line, columnDef)
@@ -756,7 +756,7 @@ class TaskJuggler
       cell = newCell(query, line)
 
       unless setScenarioSettings(cell, query.scenarioIdx,
-                                 scenarioSpecific?(columnDef.id))
+                                 TableReport.scenarioSpecific?(columnDef.id))
         return false
       end
 
@@ -1075,12 +1075,12 @@ class TaskJuggler
     # alignment and background color.
     def setStandardCellAttributes(query, cell, columnDef, attributeType, line)
       # Determine whether it should be indented
-      if indent(columnDef.id, attributeType)
+      if TableReport.indent(columnDef.id, attributeType)
         cell.indent = line.indentation
       end
 
       # Determine the cell alignment
-      cell.alignment = alignment(columnDef.id, attributeType)
+      cell.alignment = TableReport.alignment(columnDef.id, attributeType)
 
       # Set background color
       if line.property.is_a?(Task)
