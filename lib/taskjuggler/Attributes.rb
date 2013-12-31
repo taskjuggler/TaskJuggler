@@ -454,7 +454,7 @@ class TaskJuggler
       'reference'
     end
 
-    def to_s(query)
+    def to_s(query = nil)
       url || ''
     end
 
