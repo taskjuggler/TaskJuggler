@@ -110,7 +110,7 @@ EOT
                             'manual', 'html')
       file = "#{manualDir}/#{keyword || 'index'}.html"
       # Make sure the file exists.
-      unless File.exists?(file)
+      unless File.exist?(file)
         $stderr.puts "Cannot open manual file #{file}"
         exit 1
       end

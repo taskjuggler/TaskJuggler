@@ -86,7 +86,7 @@ class TaskJuggler
                 generatePropertyListHeader(taskList, query)
 
       discontinuedColumns = 0
-      if File.exists?(@fileName)
+      if File.exist?(@fileName)
         begin
           @table = CSVFile.new(nil, nil).read(@fileName)
         rescue

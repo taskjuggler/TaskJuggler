@@ -246,7 +246,7 @@ class TaskJuggler
       auxSrcDir = AppConfig.dataDirs('data/css')[0]
       cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')
       # Raise an error if we haven't found the data directory
-      if auxSrcDir.nil? || !File.exists?(cssFileName)
+      if auxSrcDir.nil? || !File.exist?(cssFileName)
         dataDirError(cssFileName)
       end
       cssFile = IO.read(cssFileName)

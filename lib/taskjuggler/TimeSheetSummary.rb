@@ -78,7 +78,7 @@ EOT
         templateFile = "#{@templateDir}/#{@date}/#{resourceId}_#{@date}.tji"
         sheetFile = "#{@sheetDir}/#{@date}/#{resourceId}_#{@date}.tji"
         if File.exist?(templateFile)
-          if File.exists?(sheetFile)
+          if File.exist?(sheetFile)
             # If there are no recipients specified, we don't need to compile
             # the summary.
             unless @digestRecipients.empty? && @sheetRecipients.empty?

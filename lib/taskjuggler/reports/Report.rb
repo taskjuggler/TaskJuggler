@@ -187,7 +187,7 @@ class TaskJuggler
         auxSrcDir = AppConfig.dataDirs('data/css')[0]
         cssFileName = (auxSrcDir ? auxSrcDir + '/tjreport.css' : '')
         # Raise an error if we haven't found the data directory
-        if auxSrcDir.nil? || !File.exists?(cssFileName)
+        if auxSrcDir.nil? || !File.exist?(cssFileName)
           dataDirError(cssFileName, AppConfig.dataSearchDirs('data/css'))
         end
         cssFile = IO.read(cssFileName)
@@ -403,7 +403,7 @@ EOT
       # Find the data directory that came with the TaskJuggler installation.
       auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0].untaint
       # Raise an error if we haven't found the data directory
-      if auxSrcDir.nil? || !File.exists?(auxSrcDir)
+      if auxSrcDir.nil? || !File.exist?(auxSrcDir)
         dataDirError(dirName, AppConfig.dataSearchDirs("data/#{dirName}"))
       end
       # Don't copy directory if all files are up-to-date.
@@ -419,7 +419,7 @@ EOT
     end
 
     def directoryUpToDate?(auxSrcDir, auxDstDir)
-      return false unless File.exists?(auxDstDir.untaint)
+      return false unless File.exist?(auxDstDir.untaint)
 
       Dir.entries(auxSrcDir).each do |file|
         next if file == '.' || file == '..'

@@ -232,7 +232,7 @@ class TaskJuggler
       bookingsFileBase = masterFileBase + '-bookings'
       bookingsFile = bookingsFileBase + '.tji'
 
-      if !File.exists?(bookingsFile) || !File.exists?(headerFile)
+      if !File.exist?(bookingsFile) || !File.exist?(headerFile)
         info('incl_freeze_files',
              "Please make sure you include #{headerFile} at " +
              "the end of the project header and " +

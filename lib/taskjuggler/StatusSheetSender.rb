@@ -94,7 +94,7 @@ EOT
 
       missingFile = "#{tsDir}/missing-reports"
       # Check if it's got a missing-reports file.
-      return [] if !File.exists?(missingFile)
+      return [] if !File.exist?(missingFile)
 
       # The sheet could have been submitted after tj3ts_summary was run. We
       # ignore the entry if a time sheet file now exists. There is a race
@@ -106,7 +106,7 @@ EOT
       list = File.readlines(missingFile)
       list.delete_if do |resource|
         tsDate = tsDir[-10..-1]
-        File.exists?("#{tsDir}/#{resource.chomp}_#{tsDate}.tji")
+        File.exist?("#{tsDir}/#{resource.chomp}_#{tsDate}.tji")
       end
 
       # Return the content of the file.

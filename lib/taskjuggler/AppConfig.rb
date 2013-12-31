@@ -109,7 +109,7 @@ class AppConfig
     dirs = dataSearchDirs(baseDir)
     # Remove non-existing directories from the list again
     dirs.delete_if do |dir|
-      !File.exists?(dir.untaint)
+      !File.exist?(dir.untaint)
     end
     dirs
   end
