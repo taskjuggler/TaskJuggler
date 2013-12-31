@@ -53,7 +53,10 @@ class TaskJuggler
       # Prepare the task list.
       @taskList = PropertyList.new(@project.tasks)
       @taskList.includeAdopted
-      @taskList.setSorting(a('sortTasks'))
+      # The MSP XML format requires that the tasks are listed in 'tree' order.
+      # We purposely ignore the user provided sorting criteria.
+      @taskList.setSorting([ [ 'tree', true, -1 ],
+                             [ 'seqno', true, -1 ] ])
       @taskList = filterTaskList(@taskList, nil, a('hideTask'), a('rollupTask'),
                                  a('openNodes'))
       @taskList.sort!

@@ -1195,7 +1195,9 @@ TaskJuggler manages assignments with a larger accuracy than the Microsft
 Project XML format can represent. This will inevitably lead to some rounding
 errors and different interpretation of the data. The numbers you will see in
 Project are not necessarily an exact match of the numbers you see in
-TaskJuggler.
+TaskJuggler. The XML file format requires the sequence of the tasks in the
+file to follow the work breakdown structure. Hence all user provided sorting
+directions will be ignored for this format.
 EOT
          )
   end
