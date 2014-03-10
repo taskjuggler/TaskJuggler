@@ -1,0 +1,6 @@
+project "Test" 2014-03-10 +1m
+
+task "Foo" {
+# MARK: error 5 working_duration_too_small
+  length 20min
+}

@@ -2309,7 +2309,8 @@ EOT
   end
 
   def rule_leaveAllowance
-    pattern(%w( _annual !valDate !optionalMinus !workingDuration ), lambda {
+    pattern(%w( _annual !valDate !optionalMinus
+                !nonZeroWorkingDuration ), lambda {
       LeaveAllowance.new(:annual, @val[1], (@val[2] ? -1 : 1) * @val[3])
     })
   end
@@ -2431,7 +2432,7 @@ EOT
   end
 
   def rule_limitValue
-    pattern([ '!workingDuration' ], lambda {
+    pattern([ '!nonZeroWorkingDuration' ], lambda {
       @limitInterval = ScoreboardInterval.new(@project['start'],
                                               @project['scheduleGranularity'],
                                               @project['start'], @project['end'])
@@ -5984,7 +5985,7 @@ week.
 EOT
        )
 
-    pattern(%w( _gaplength !workingDuration ), lambda {
+    pattern(%w( _gaplength !nonZeroWorkingDuration ), lambda {
       @taskDependency.gapLength = @val[1]
     })
     doc('gaplength', <<'EOT'
@@ -6402,7 +6403,7 @@ EOT
 
     pattern(%w( !fail ))
 
-    pattern(%w( _length !workingDuration ), lambda {
+    pattern(%w( _length !nonZeroWorkingDuration ), lambda {
       setDurationAttribute('length', @val[1])
     })
     doc('length', <<'EOT'
@@ -7565,6 +7566,19 @@ EOT
     })
     arg(1, 'end weekday',
         'Weekday (sun - sat). It is included in the interval.')
+  end
+
+  def rule_nonZeroWorkingDuration
+    pattern(%w( !workingDuration ), lambda {
+      slots = @val[0]
+      if slots <= 0
+        error('working_duration_too_small',
+              "Duration values must be at least " +
+              "#{@project['scheduleGranularity'] / 60} minutes " +
+              "(your timingresolution) long.")
+      end
+      slots
+    })
   end
 
   def rule_workingDuration
