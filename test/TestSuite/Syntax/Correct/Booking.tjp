@@ -20,7 +20,7 @@ supplement resource tux {
                2007-01-09-13:00 +4h
   # This is a common mistake. With standard working hours, this will
   # yield a zero time booking! The interval is midnight to 8am. So
-  # it's outside of the working hours and 'sloopy 2' surpresses the
+  # it's outside of the working hours and 'sloppy 2' surpresses the
   # warning.
   booking test 2007-01-11 +8h { sloppy 2 }
   # Use 'overtime' to book off-hour slots. This booking will book the
