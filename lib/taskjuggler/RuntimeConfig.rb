@@ -47,11 +47,11 @@ class RuntimeConfig
     sections = section.split('.')
     p = @config
     sections.each do |sec|
-      if p.nil? || !p.include?('_' + sec)
+      p = p['_' + sec]
+      unless p
         debug("Section #{section} not found in config file")
         return false
       end
-      p = p['_' + sec]
     end
 
     object.instance_variables.each do |iv|
