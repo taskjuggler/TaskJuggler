@@ -2002,37 +2002,48 @@ class TaskJuggler
     def bookBookings
       firstSlotIdx = nil
       lastSlotIdx = nil
+      if @effortdone || @effortleft
+        # Force task to be scheduled in ASAP mode.
+        @forward = true
+        unless @start
+          error('effort_done_left_start_missing',
+                "Task #{@property.fullId} has 'effortdone' or 'effortleft' " +
+                "attribute but no start date specified.")
+        end
+        unless @effort > 0
+          error('effort_missing',
+                "Task #{@property.fullId} has 'effortdone' or " +
+                "'effortleft' attribute but no 'effort'.")
+        end
+        if @effortdone
+          if @effortdone > @effort
+            error('effort_done_larger_effort',
+                  "Task #{@property.fullId} has larger 'effortdone' " +
+                  "than 'effort'.")
+          end
+          @doneEffort = @effortdone
+          if @effortleft
+            error('effort_done_and_left',
+                  "A task cannot have the 'effortdone' and 'effortleft' " +
+                  "attribute.")
+          end
+        else
+          if @effortleft > @effort
+            error('effort_left_larger_effort',
+                  "Task #{@property.fullId} has larger 'effortleft' " +
+                  "than 'effort'.")
+          end
+          @doneEffort = @effort - @effortleft
+        end
+        firstSlotIdx = @project.dateToIdx(@start)
+        lastSlotIdx = @project.dateToIdx(@project['now'])
+      end
       if (bookings = findBookings).empty?
         if @effortdone || @effortleft
-          unless @start
-            error('effort_done_left_start_missing',
-                  "Task #{@property.fullId} has 'effortdone' or 'effortleft' " +
-                  "attribute but no start date specified.")
-          end
-          unless @effort > 0
-            effort('effort_missing',
-                   "Task #{@property.fullId} has 'effortdone' or " +
-                   "'effortleft' attribute but no 'effort'.")
-          end
-          if @effortdone
-            if @effortdone > @effort
-              effort('effort_done_larger_effort',
-                     "Task #{@property.fullId} has larger 'effortdone' " +
-                     "than 'effort'.")
-            end
-            @doneEffort = @effortdone
-          else
-            if @effortleft > @effort
-              effort('effort_left_larger_effort',
-                     "Task #{@property.fullId} has larger 'effortleft' " +
-                     "than 'effort'.")
-            end
-            @doneEffort = @effort - @effortleft
-          end
-          firstSlotIdx = @project.dateToIdx(@start)
-          lastSlotIdx = @project.dateToIdx(@project['now'])
+          error('bookings_and_effort',
+                "Bookings can not be used together with 'effortdone' or " +
+                "'effortleft' attributes.")
         end
-      else
         bookings.each do |booking|
           unless booking.resource.leaf?
             error('booking_resource_not_leaf',

@@ -6379,7 +6379,8 @@ specified for the scenario.  TaskJuggler is unable to create exact bookings
 for the time period before the current date. All effort values prior to the
 current date will be reported as zero.
 
-This attribute can only be used if the task is scheduled in [[scheduling|ASAP mode]] and has a predetermined [[start]] date.
+This attribute forces the task to be scheduled in [[scheduling|ASAP mode]].
+The task must have a predetermined [[start]] date.
 EOT
        )
     also(%w( effort effortleft schedulingmode trackingscenario ))
@@ -6396,7 +6397,8 @@ specified for the scenario.  TaskJuggler is unable to create exact bookings
 for the time period before the current date. All effort values prior to the
 current date will be reported as zero.
 
-This attribute can only be used if the task is scheduled in [[scheduling|ASAP mode]] and has a predetermined [[start]] date.
+This attribute forces the task to be scheduled in [[scheduling|ASAP mode]].
+The task must have a predetermined [[start]] date.
 EOT
        )
     also(%w( effort effortdone schedulingmode trackingscenario ))
