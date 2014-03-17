@@ -28,11 +28,24 @@ class TaskJuggler
       # have to check for existance each time we access them.
       %w( allocate assignedresources booking charge chargeset complete
           competitors criticalness depends duration
-          effort end forward gauge length
+          effort effortdone effortleft end forward gauge length
           maxend maxstart minend minstart milestone pathcriticalness
-          precedes priority responsible
+          precedes priority projectionmode responsible
           scheduled shifts start status ).each do |attr|
         @property[attr, @scenarioIdx]
+      end
+      unless @property.parent
+        # The projectionmode attributes is a scenario specific attribute that
+        # can be inherited from the project. The normal inherit-from-project
+        # mechanism does not support scenario specific inheritance. We have to
+        # deal with this separately here. To make it look like a regularly
+        # inherted value, we need to switch the AttributeBase mode and restore
+        # it afterwards.
+          mode = AttributeBase.mode
+          AttributeBase.setMode(1)
+          @property['projectionmode', @scenarioIdx] =
+            @project.scenario(@scenarioIdx).get('projection')
+          AttributeBase.setMode(mode)
       end
 
       # A list of all allocated leaf resources.
@@ -43,15 +56,17 @@ class TaskJuggler
     def markAsScheduled
       return if @scheduled
       @scheduled = true
-      if @milestone
-        typename = 'Milestone'
-      elsif @property.leaf?
-        typename = 'Task'
-      else
-        typename = 'Container'
-      end
 
-      Log.msg { "#{typename} #{@property.fullId} has been scheduled." }
+      Log.msg do
+        if @milestone
+          typename = 'Milestone'
+        elsif @property.leaf?
+          typename = 'Task'
+        else
+          typename = 'Container'
+        end
+        "#{typename} #{@property.fullId} has been scheduled."
+      end
     end
 
     # Call this function to reset all scheduling related data prior to
@@ -72,7 +87,6 @@ class TaskJuggler
       # Due to the 'efficiency' factor the effort slots must be a float.
       @doneEffort = 0.0
 
-      @projectionMode = @project.scenario(@scenarioIdx).get('projection')
       @nowIdx = @project.dateToIdx(@project['now'])
 
       @startIsDetermed = nil
@@ -930,7 +944,7 @@ class TaskJuggler
         # the tasks has allocations.
         if @currentSlotIdx.nil?
           @currentSlotIdx = @project.dateToIdx(
-            @projectionMode && (@project['now'] > @start) && !@allocate.empty? ?
+            @projectionmode && (@project['now'] > @start) && !@allocate.empty? ?
             @project['now'] : @start)
         end
       else
@@ -1330,11 +1344,16 @@ class TaskJuggler
     # specified interval.  In case a Resource is given as scope property only
     # the effort allocated for this resource is taken into account.
     def query_effortdone(query)
-      # For this query, we always override the query period.
-      query.sortable = query.numerical = effort =
-        getEffectiveWork(@project.dateToIdx(@project['start'], false),
-                         @project.dateToIdx(@project['now']),
-                         query.scopeProperty)
+      if @effortdone
+        effort = @project.convertToDailyLoad(@effortdone *
+                                             @project['scheduleGranularity'])
+      else
+        # For this query, we always override the query period.
+        effort = getEffectiveWork(@project.dateToIdx(@project['start'], false),
+                                  @project.dateToIdx(@project['now']),
+                                  query.scopeProperty)
+      end
+      query.sortable = query.numerical = effort
       query.string = query.scaleLoad(effort)
     end
 
@@ -1785,7 +1804,7 @@ class TaskJuggler
 
         # Depending on the scheduling direction we can mark the task as
         # scheduled once we have reached the other end.
-        if (@forward && @currentSlotIdx >= @endIdx) |
+        if (@forward && @currentSlotIdx >= @endIdx) ||
            (!@forward && @currentSlotIdx <= @startIdx)
           markAsScheduled
           @property.parents.each do |parent|
@@ -1803,7 +1822,7 @@ class TaskJuggler
     def bookResources
       # First check if there is any resource at all for this slot.
       return if !@project.anyResourceAvailable?(@currentSlotIdx) ||
-                (@projectionMode && (@nowIdx > @currentSlotIdx))
+                (@projectionmode && (@nowIdx > @currentSlotIdx))
 
 
       # If the task has resource independent allocation limits we need to make
@@ -1908,7 +1927,7 @@ class TaskJuggler
           # For effort based task we adjust the the start end (as defined by
           # the scheduling direction) to align with the first booked time
           # slot.
-          if @effort > 0 && @assignedresources.empty?
+          if @effort > 0 && @doneEffort == 0
             if @forward
               propagateDate(@project.idxToDate(@currentSlotIdx), false, true)
               Log.msg { "Task #{@property.fullId} first assignment: " +
@@ -1983,35 +2002,67 @@ class TaskJuggler
     def bookBookings
       firstSlotIdx = nil
       lastSlotIdx = nil
-      findBookings.each do |booking|
-        unless booking.resource.leaf?
-          error('booking_resource_not_leaf',
-                "Booked resources may not be group resources",
-                booking.sourceFileInfo)
+      if (bookings = findBookings).empty?
+        if @effortdone || @effortleft
+          unless @start
+            error('effort_done_left_start_missing',
+                  "Task #{@property.fullId} has 'effortdone' or 'effortleft' " +
+                  "attribute but no start date specified.")
+          end
+          unless @effort > 0
+            effort('effort_missing',
+                   "Task #{@property.fullId} has 'effortdone' or " +
+                   "'effortleft' attribute but no 'effort'.")
+          end
+          if @effortdone
+            if @effortdone > @effort
+              effort('effort_done_larger_effort',
+                     "Task #{@property.fullId} has larger 'effortdone' " +
+                     "than 'effort'.")
+            end
+            @doneEffort = @effortdone
+          else
+            if @effortleft > @effort
+              effort('effort_left_larger_effort',
+                     "Task #{@property.fullId} has larger 'effortleft' " +
+                     "than 'effort'.")
+            end
+            @doneEffort = @effort - @effortleft
+          end
+          firstSlotIdx = @project.dateToIdx(@start)
+          lastSlotIdx = @project.dateToIdx(@project['now'])
         end
-        unless @forward || @scheduled
-          error('booking_forward_only',
-                "Only forward scheduled tasks may have booking statements.")
-        end
-        booked = false
-        booking.intervals.each do |interval|
-          startIdx = @project.dateToIdx(interval.start, false)
-          endIdx = @project.dateToIdx(interval.end, false)
-          startIdx.upto(endIdx - 1) do |idx|
-            if booking.resource.bookBooking(@scenarioIdx, idx, booking)
-              # Booking was successful for this time slot.
-              @doneEffort += booking.resource['efficiency', @scenarioIdx]
-              booked = true
+      else
+        bookings.each do |booking|
+          unless booking.resource.leaf?
+            error('booking_resource_not_leaf',
+                  "Booked resources may not be group resources",
+                  booking.sourceFileInfo)
+          end
+          unless @forward || @scheduled
+            error('booking_forward_only',
+                  "Only forward scheduled tasks may have booking statements.")
+          end
+          booked = false
+          booking.intervals.each do |interval|
+            startIdx = @project.dateToIdx(interval.start, false)
+            endIdx = @project.dateToIdx(interval.end, false)
+            startIdx.upto(endIdx - 1) do |idx|
+              if booking.resource.bookBooking(@scenarioIdx, idx, booking)
+                # Booking was successful for this time slot.
+                @doneEffort += booking.resource['efficiency', @scenarioIdx]
+                booked = true
 
-              # Store the indexes of the first slot and the slot after the
-              # last slot.
-              firstSlotIdx = idx if !firstSlotIdx || firstSlotIdx > idx
-              lastSlotIdx = idx if !lastSlotIdx || lastSlotIdx < idx
+                # Store the indexes of the first slot and the slot after the
+                # last slot.
+                firstSlotIdx = idx if !firstSlotIdx || firstSlotIdx > idx
+                lastSlotIdx = idx if !lastSlotIdx || lastSlotIdx < idx
+              end
             end
           end
-        end
-        if booked && !@assignedresources.include?(booking.resource)
-          @assignedresources << booking.resource
+          if booked && !@assignedresources.include?(booking.resource)
+            @assignedresources << booking.resource
+          end
         end
       end
 

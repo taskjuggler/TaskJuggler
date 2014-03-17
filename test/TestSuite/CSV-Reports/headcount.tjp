@@ -28,4 +28,5 @@ taskreport "." {
   formats csv
   columns name, efficiency, headcount,
           weekly { celltext 1 "<-query attribute='headcount'->" }
+  sorttasks tree, id.up
 }

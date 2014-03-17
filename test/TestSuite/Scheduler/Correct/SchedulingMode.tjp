@@ -1,0 +1,45 @@
+project "Scheduling Mode" 2014-03-16 +2m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+    scenario s3 "S3"
+  }
+  trackingscenario s2
+  now 2014-03-23
+  timeformat "%Y-%m-%d-%H:%M"
+}
+
+include "checks.tji"
+
+resource r1 "R1"
+resource r2 "R2"
+
+task t1 "T1" {
+  effort 10d
+  allocate r1
+  ${FixStartSc "2014-03-17-09:00" "s1"}
+  ${FixStartSc "2014-03-24-09:00" "s2"}
+  ${FixStartSc "2014-03-17-09:00" "s3"}
+  ${FixEndSc "2014-03-28-17:00" "s1"}
+  ${FixEndSc "2014-04-04-17:00" "s2"}
+  ${FixEndSc "2014-03-28-17:00" "s3"}
+}
+task t2 "T2" {
+  task t3 "T3" {
+    effort 10d
+    allocate r2
+    s2:start 2014-03-17-9:00
+    s2:effortdone 5d
+    ${FixStartSc "2014-03-17-09:00" "s1"}
+    ${FixStartSc "2014-03-17-09:00" "s2"}
+    ${FixStartSc "2014-03-17-09:00" "s3"}
+    ${FixEndSc "2014-03-28-17:00" "s1"}
+    ${FixEndSc "2014-03-28-17:00" "s2"}
+    ${FixEndSc "2014-03-28-17:00" "s3"}
+  }
+}
+
+taskreport "SchedulingMode" {
+  formats html
+  columns no, name, start, end, effort, effortdone, effortleft, chart
+  scenarios s1, s2, s3
+}

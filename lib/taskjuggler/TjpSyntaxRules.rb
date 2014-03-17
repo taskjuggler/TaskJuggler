@@ -5199,6 +5199,11 @@ EOT
     singlePattern('_asap')
   end
 
+  def rule_schedulingMode
+    singlePattern('_planning')
+    singlePattern('_projection')
+  end
+
   def rule_shift
     pattern(%w( !shiftHeader !shiftBody ), lambda {
       @property = @property.parent
@@ -6362,6 +6367,40 @@ EOT
     example('Durations')
     also(%w( duration length ))
 
+    pattern(%w( _effortdone !workingDuration ), lambda {
+      @property['effortdone', @scenarioIdx] = @val[1]
+    })
+    level(:beta)
+    doc('effortdone', <<'EOT'
+Specifies how much effort of the task has already been completed. This can
+only be used for [[effort]] based tasks and only if the task is scheduled in
+[[schedulingmode|projection mode]]. No [[booking.task|bookings]] must be
+specified for the scenario.  TaskJuggler is unable to create exact bookings
+for the time period before the current date. All effort values prior to the
+current date will be reported as zero.
+
+This attribute can only be used if the task is scheduled in [[scheduling|ASAP mode]] and has a predetermined [[start]] date.
+EOT
+       )
+    also(%w( effort effortleft schedulingmode trackingscenario ))
+
+    pattern(%w( _effortleft !workingDuration ), lambda {
+      @property['effortleft', @scenarioIdx] = @val[1]
+    })
+    level(:beta)
+    doc('effortleft', <<'EOT'
+Specifies how much effort of the task is still not completed. This can
+only be used for [[effort]] based tasks and only if the task is scheduled in
+[[schedulingmode|projection mode]]. No [[booking.task|bookings]] must be
+specified for the scenario.  TaskJuggler is unable to create exact bookings
+for the time period before the current date. All effort values prior to the
+current date will be reported as zero.
+
+This attribute can only be used if the task is scheduled in [[scheduling|ASAP mode]] and has a predetermined [[start]] date.
+EOT
+       )
+    also(%w( effort effortdone schedulingmode trackingscenario ))
+
     pattern(%w( _end !valDate ), lambda {
       @property['end', @scenarioIdx] = @val[1]
       begin
@@ -6660,6 +6699,22 @@ from end to start.
 As a general rule, try to avoid ALAP tasks whenever possible. Have a close
 eye on tasks that have been switched implicitly to ALAP mode because the
 end attribute comes after the start attribute.
+EOT
+       )
+
+    pattern(%w( _schedulingmode !schedulingMode ), lambda {
+      @property['projectionmode', @scenarioIdx] = (@val[1] == 'projection')
+    })
+    level(:beta)
+    doc('schedulingmode', <<'EOT'
+The scheduling mode controls how the scheduler assigns resources to this task.
+In planning mode, resources are allocated before and after the current date.
+In projection mode, resources are only allocated after the current date. In
+this mode, any resource activity prior to the current date must be provided
+with [[booking.task|bookings]]. Alternatively, the [[effortdone]] or
+[[effortleft]] attribute can be used.
+
+This scheduling mode is automatically set to projection mode when the [[trackingscenario]] is set. However, the setting can be overwritten by using this attribute.
 EOT
        )
 
