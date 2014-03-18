@@ -2038,10 +2038,10 @@ class TaskJuggler
         firstSlotIdx = @project.dateToIdx(@start)
         lastSlotIdx = @project.dateToIdx(@project['now'])
       end
-      if (bookings = findBookings).empty?
+      unless (bookings = findBookings).empty?
         if @effortdone || @effortleft
           error('bookings_and_effort',
-                "Bookings can not be used together with 'effortdone' or " +
+                "Bookings cannot be used together with 'effortdone' or " +
                 "'effortleft' attributes.")
         end
         bookings.each do |booking|
