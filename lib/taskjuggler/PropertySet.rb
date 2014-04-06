@@ -139,6 +139,10 @@ class TaskJuggler
       @attributeDefinitions[attrId].userDefined
     end
 
+    def listAttribute?(attrId)
+      (ad = @attributeDefinitions[attrId]) && ad.objClass.isList?
+    end
+
     # Return the default value of the attribute.
     def defaultValue(attrId)
       return nil if @attributeDefinitions[attrId].nil?

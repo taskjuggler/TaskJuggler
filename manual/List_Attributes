@@ -1,0 +1,45 @@
+=== List Attributes ===
+
+All properties have some optional attributes. Which attributes can be
+used depends on the type of the property. Attributes can either be
+single value attributes or they can have multiple values. In the
+latter case, we call them list attributes.
+
+All list attributes are marked as such in the syntax reference. When
+using an attribute inside a property context, it is important to
+understand whether it is a list attribute or not. In many cases, the
+attribute name already indicates that the attribute may have a list
+of values. E. g. [[flags.task|flags]] or [[limits.task|limits]].
+
+The multiple values of the list attributes can either be specified as
+a comma separated list or by using multiple attribute statements in
+the same context. In this example, the task has the flags ''''f1'''',
+''''f2'''' and ''''f3'''' assigned. The second ''''flags''''
+attribute does not override the first value. It will append the new
+ones to the old list.
+
+<[example file="ListAttributes" tag="define"]>
+
+Special care needs to be taken when list attributes are inherited by
+the enclosing property or by the parent scenario.
+
+<[example file="ListAttributes" tag="inherit"]>
+
+In this example, task ''''T3'''' has the flags ''''f1'''' and
+''''f2'''' assigned.
+
+The same works for scenarios as well. Even though the syntax may not
+look like inheritance is at play the scenario ''''s2'''' inherits all
+values from ''''s1''''.
+
+<[example file="ListAttributes" tag="scenario"]>
+
+In scenario ''''s2'''' the task ''''T4'''' has the flags ''''f1''''
+and ''''f2'''' assigned.
+
+Sometimes this inheritance is not desired. In these cases, you can
+explicitely purge the attribute list before assigning new values.
+Here, task ''''T6'''' only has the flag ''''f2'''' assigned.
+
+<[example file="ListAttributes" tag="purge"]>
+
