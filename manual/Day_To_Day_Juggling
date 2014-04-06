@@ -257,7 +257,7 @@ as HTML pages from a web server.
 
 === Implementing the status tracking system ===
 
-==== Prerequisites ====
+==== Prerequesites ====
 
 The .tjp and .tji files of your project plan should be managed by a
 revision control system. TaskJuggler does not require a particular
@@ -285,7 +285,7 @@ For the email based communication you need to provide email addresses
 for all project contributors. This is done in the project plan in the
 resource definition by using the [[email]] attribute.
 
- resource joe "Joe Average" {
+ resource joe "Joe Avergage" {
    email "joe@your_company.com
  }
 
@@ -372,7 +372,7 @@ To test the command without sending out actual emails you can use the
 directories. A copy of the generated templates will be stored in
 ''''TimeSheetTemplates/<date>/'''' under
 ''''<resource_id>-date.tji''''. ''''<date>'''' is replaced with the
-end date of the reporting interval and ''''<resource_id>'''' is the ID
+end date of the reporting interval and ''''<resoruce_id>'''' is the ID
 of the resource.
 
 If you re-run the command existing templates will not be regenerated
@@ -380,7 +380,7 @@ nor will they be sent out again. You can use the ''''-f''''
 command line option to force them to be generated and sent out again.
 
 The ''''tj3ts_sender'''' command will also add the reporting interval
-to a file called ''''TimeSheetTemplates/acceptable_intervals''''.
+to a file called ''''TimeSheetTemplates/acceptable_invervals''''.
 We'll cover this file later on when we deal with the time sheet
 receiver.
 
@@ -490,7 +490,7 @@ the taskjuggler home directory, you need to create it now.
 This procmail configuration will cause incoming emails that are
 addressed to timesheets@taskjuggler.your_company.com to be forwarded
 to the ''''tj3ts_receiver'''' program. Of course you need to replace
-''your_company.com'' with whatever domain you are using.
+''your_comany.com'' with whatever domain you are using.
 
 The received emails are then checked for syntactical and logical
 errors. If such are found, an email is sent back with an appropriate
@@ -751,7 +751,7 @@ used. It will use the ''''tj3client'''' program to do retrieve the
 necessary data from the TaskJuggler server.
 
 Before the program can be used, a new section must be added to the
-TaskJuggler configuration file.
+TaskJuggelr configuration file.
 
  _statussheets:
    projectId: prj
@@ -764,7 +764,7 @@ can hardcode that like in the example above. For multiple level of
 management you need to specify which group of managers should the
 report templates be generated for and pass that information on the
 command line. Use the ''''--hideresource'''' option to specify a
-logical expression to filter away the resources you don't want
+logicalexpression to filter away the resources you don't want
 templates to be generated for. The easiest way to achieve this is by
 using unique flags for each management level. In the example above we
 assume you have assigned the flag ''''manager'''' to each first-level
