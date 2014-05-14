@@ -13,10 +13,10 @@
 
 # This class is an implementation of the classic UNIX diff functionality. It's
 # based on an original implementation by Lars Christensen, which based his
-# version on the Perl Algorithm::Diff implementation. This is largly a
+# version on the Perl Algorithm::Diff implementation. This is largely a
 # from-scratch implementation that tries to have a less intrusive and more
 # user-friendly interface. But some code fragments are very similar to the
-# origninal and are copyright (C) 2001 Lars Christensen.
+# original and are copyright (C) 2001 Lars Christensen.
 class Diff
 
   # A Hunk stores all information about a contiguous change of the destination
