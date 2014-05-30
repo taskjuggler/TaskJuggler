@@ -120,8 +120,12 @@ class TaskJuggler
       end
     end
 
-    # We overwrite this for ListAttributeBase.
     def isList?
+      false
+    end
+
+    # We overwrite this for ListAttributeBase.
+    def AttributeBase::isList?
       false
     end
 
@@ -184,8 +188,12 @@ class TaskJuggler
       get.join(', ')
     end
 
-    # We overwrite this for ListAttributeBase.
     def isList?
+      true
+    end
+
+    # We overwrite this for ListAttributeBase.
+    def ListAttributeBase::isList?
       true
     end
 

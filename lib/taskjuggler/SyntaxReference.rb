@@ -72,7 +72,7 @@ class TaskJuggler
       # Figure out whether the keyword describes an inheritable attribute or
       # not.
       @keywords.each_value do |kwd|
-        kwd.computeInheritance(@keywords, @parser.rules)
+        kwd.computeInheritance
       end
     end
 

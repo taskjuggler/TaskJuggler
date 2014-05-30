@@ -28,7 +28,7 @@ renamed to ''''shifts'''' to allow support for multiple shifts.
 * The global ''''limits'''' attribute has been removed. Since both
 tasks and resources have a ''''limits'''' attribute, a global
 attribute was inconsistent as only resources inherited this
-attribute. Use a parent resource to emulate the old behaviour.
+attribute. Use a parent resource to emulate the old behavior.
 
 * Shifts and limits for allocations have been deprecated. The concept
 was bogus and not compatible with bookings. The functionality is
@@ -107,7 +107,7 @@ The resulting ''''FullProject.tjp'''' file is a valid self-contained
 project file that can be read with TaskJuggler 2.x or TaskJuggler
 3.x. The file does not contain any report definitions. To generate
 reports with TaskJuggler 3.x you need to create an additional file
-that contains the TaskJugler 3.x report definitions.
+that contains the TaskJuggler 3.x report definitions.
 
 Let's assume the file is called ''''tj3reports.tji''''. Start
 TaskJuggler 3.x with the following command:

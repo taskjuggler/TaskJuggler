@@ -1,0 +1,48 @@
+# *** EXAMPLE: scenario +
+project "List attributes" 2014-04-06 +1m {
+  scenario s1 "S1" {
+    scenario s2 "S2"
+  }
+}
+# *** EXAMPLE: scenario -
+
+flags f1, f2, f3
+
+# *** EXAMPLE: define +
+task "T1" {
+  flags f1
+  flags f2, f3
+}
+# *** EXAMPLE: define -
+
+# *** EXAMPLE: inherit +
+task "T2" {
+  flags f1
+  task "T3" {
+    flags f2
+  }
+}
+# *** EXAMPLE: inherit -
+
+# *** EXAMPLE: scenario +
+task "T4" {
+  s1:flags f1
+  s2:flags f2
+}
+# *** EXAMPLE: scenario -
+
+# *** EXAMPLE: purge +
+task "T5" {
+  flags f1
+  task "T6" {
+    purge flags
+    flags f2
+  }
+}
+# *** EXAMPLE: purge -
+
+taskreport "ListAttributes" {
+  formats html
+  columns name, scenario, flags
+  scenarios s1, s2
+}

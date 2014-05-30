@@ -466,7 +466,7 @@ EOT
 
     def absoluteFileName?(name)
       if windowsOS?
-        name[0] =~ /a-zA-Z/ && name[1] == ?:
+        name[0] =~ /[a-zA-Z]/ && name[1] == ?:
       else
         name[0] == ?/
       end

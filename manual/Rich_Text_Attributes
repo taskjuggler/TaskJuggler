@@ -50,7 +50,7 @@ as pre-formatted text. The formatting will be preserved by using a
 fixed-width font and by not interpreting any markup characters within
 the text.
 
-  Preformatted text start with
+  Pre-formatted text start with
   a single space at the start of 
   each line.
 
@@ -64,7 +64,7 @@ start at the start of the line.
  This is a ''''monospaced'''' word.
  This is a '''''italic and bold''''' word.
 
-The monospace format is not part of the original MediaWiki markup, but
+The monospaced format is not part of the original MediaWiki markup, but
 we found it useful to have for this manual.
 
 Text can be colored when enclosed in ''''fcol'''' tags.
@@ -163,7 +163,7 @@ The navigator generator inserts the referenced navigator.
 ----
 '''Block Generator''' ''''report''''
 
-Paramters:
+Parameters:
 
 * ''''id'''' : ID of a defined report
 
@@ -173,7 +173,7 @@ report period and the property set from the referencing report.
 ----
 '''Inline Generator''' ''''reportlink''''
 
-Paramters:
+Parameters:
 
 * ''''id'''' : ID of a defined report
 
@@ -205,7 +205,7 @@ The report link generator inserts a link to the referenced report.
 ----
 '''Inline Generator''' ''''query''''
 
-Paramters:
+Parameters:
 
 * ''''family'''' : Specifies whether a ''''task'''' or a ''''resource''''
 should be queried.

@@ -150,32 +150,18 @@ class TaskJuggler
       end
     end
 
-    def computeInheritance(keywords, rules)
-      property = nil
-      @contexts.each do |kwd|
-        if %w( task resource account shift scenario
-               accountreport resourcereport taskreport textreport ).
-               include?(kwd.keyword)
-          property = kwd.keyword
-          break
-        end
+    def listAttribute?
+      if (propertySet = findPropertySet)
+        keyword = @keyword
+        keyword = keyword.split('.')[0] if keyword.include?('.')
+        return propertySet.listAttribute?(keyword)
       end
-      if property
-        project = Project.new('id', 'dummy', '1.0')
-        propertySet = case property
-                      when 'task'
-                        project.tasks
-                      when 'resource'
-                        project.resources
-                      when 'account'
-                        project.accounts
-                      when 'shift'
-                        project.shifts
-                      when 'scenario'
-                        project.scenarios
-                      else
-                        project.reports
-                      end
+
+      false
+    end
+
+    def computeInheritance
+      if (propertySet = findPropertySet)
         keyword = @keyword
         keyword = keyword.split('.')[0] if keyword.include?('.')
         @inheritedFromProject = propertySet.inheritedFromProject?(keyword)
@@ -202,7 +188,8 @@ class TaskJuggler
       textW = 79
 
       # Top line with multiple elements
-      str = "#{blue('Keyword:')}     #{bold(@keyword)}\n\n"
+      str = "#{blue('Keyword:')}     #{bold(@keyword)}" +
+            "#{listAttribute? ? ' (List Attribute)' : '' }\n\n"
 
       if @pattern.supportLevel != :supported
         msg = supportLevelMessage
@@ -463,8 +450,13 @@ class TaskJuggler
             [
               TD.new({ 'class' => 'tag',
                        'style' => 'width:16%'}) { 'Keyword' },
-              TD.new({ 'class' => 'descr',
-                       'style' => 'width:84%; font-weight:bold' }) { title }
+              TD.new({ 'class' => 'descr', 'style' => 'width:84%' }) do
+                [
+                  B.new() { title },
+                  listAttribute? ? A.new({ 'href' => "List_Attributes.html" }) {
+                                     "List Attribute" } : ""
+                ]
+              end
             ]
           end
         end
@@ -735,6 +727,38 @@ class TaskJuggler
       end
       descr << " instead."
     end
+
+    def findPropertySet
+      property = nil
+      @contexts.each do |kwd|
+        if %w( task resource account shift scenario
+               accountreport resourcereport taskreport textreport ).
+               include?(kwd.keyword)
+          property = kwd.keyword
+          break
+        end
+      end
+      if property
+        project = Project.new('id', 'dummy', '1.0')
+        case property
+        when 'task'
+          project.tasks
+        when 'resource'
+          project.resources
+        when 'account'
+          project.accounts
+        when 'shift'
+          project.shifts
+        when 'scenario'
+          project.scenarios
+        else
+          project.reports
+        end
+      else
+        nil
+      end
+    end
+
   end
 
 end

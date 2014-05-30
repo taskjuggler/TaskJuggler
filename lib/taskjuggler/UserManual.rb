@@ -55,6 +55,7 @@ class TaskJuggler
         Tutorial
         The_TaskJuggler_Syntax
         Rich_Text_Attributes
+        List_Attributes
         Software
         Day_To_Day_Juggling
         TaskJuggler_Internals
