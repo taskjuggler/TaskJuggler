@@ -26,14 +26,7 @@ class TaskJuggler
       # Bit 0:      Reserved
       # Bit 1:      0: Work time (as defined by working hours)
       #             1: No work time (as defined by working hours)
-      # Bit 2 - 5:  0: No holiday or leave time
-      #             1: Public holiday (holiday)
-      #             2: Annual leave
-      #             3: Special leave
-      #             4: Sick leave
-      #             5: unpaid leave
-      #             6: blocked for other projects
-      #             7 - 15: Reserved
+      # Bit 2 - 5:  See Leave class for acutal values.
       # Bit 6 - 7:  Reserved
       # Bit 8:      0: No global override
       #             1: Override global setting
@@ -392,7 +385,11 @@ class TaskJuggler
           headcount += query.to_num
         end
       else
-        headcount += @efficiency.round
+        if employed?(@project.dateToIdx(query.start))
+          # We only count headcount that is employed at the start date of the
+          # query interval.
+          headcount += @efficiency.round
+        end
       end
 
       query.sortable = query.numerical = headcount
@@ -897,6 +894,16 @@ class TaskJuggler
       else
         @workinghours.onShift?(sbIdx)
       end
+    end
+
+    def employed?(sbIdx)
+      initScoreboard unless @scoreboard
+
+      val = @scoreboard[sbIdx]
+      return true unless val.is_a?(Fixnum)
+
+      leave_type = (val >> 2) & 0xF
+      leave_type < Leave::Types[:unemployed]
     end
 
     # Returns true if the resource or any of its children is allocated during
