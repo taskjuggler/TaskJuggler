@@ -28,7 +28,8 @@ class TaskJuggler
       :special => 3,
       :sick => 4,
       :unpaid => 5,
-      :holiday => 6
+      :holiday => 6,
+      :unemployed => 7
     }
 
     # Create a new Leave object. _interval_ should be an Interval describing
