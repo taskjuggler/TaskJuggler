@@ -38,7 +38,7 @@ In scenario ''''s2'''' the task ''''T4'''' has the flags ''''f1''''
 and ''''f2'''' assigned.
 
 Sometimes this inheritance is not desired. In these cases, you can
-explicitely purge the attribute list before assigning new values.
+explicitly purge the attribute list before assigning new values.
 Here, task ''''T6'''' only has the flag ''''f2'''' assigned.
 
 <[example file="ListAttributes" tag="purge"]>
