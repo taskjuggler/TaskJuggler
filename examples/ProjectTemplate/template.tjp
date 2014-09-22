@@ -1,5 +1,5 @@
 /*
- * This file contains a project skeletton. It is part of the
+ * This file contains a project skeleton. It is part of the
  * TaskJuggler project management tool. You can use this as a basis to
  * start you own project file.
  */
@@ -27,7 +27,7 @@ project your_project_id "Your Project Title"  2011-11-11-0:00--0500 +4m {
   #}
 
   # You can define your own attributes for tasks and resources. This
-  # is handy to capture additonal information about the project that
+  # is handy to capture additional information about the project that
   # is not directly impacting the project schedule but you like to
   # keep in one place.
   #extend task {
