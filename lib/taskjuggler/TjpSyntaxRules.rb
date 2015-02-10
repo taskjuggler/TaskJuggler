@@ -6754,7 +6754,7 @@ EOT
       @shiftAssignments = nil
     })
     doc('shifts.task', <<'EOT'
-Limits the working time for this task during the during the specified interval
+Limits the working time for this task during the specified interval
 to the working hours of the given shift. Multiple shifts can be defined, but
 shift intervals may not overlap. This is an additional working time
 restriction ontop of the working hours of the allocated resources. It does not
