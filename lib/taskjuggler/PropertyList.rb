@@ -255,7 +255,7 @@ class TaskJuggler
           # real-world projects.
           tree += idx.to_s.rjust(6, '0')
         end
-        property.set('tree', tree)
+        property.force('tree', tree)
       end
     end
 
