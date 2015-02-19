@@ -7,7 +7,7 @@ flexible and superior to the commonly used Gantt chart editing tools.
 TaskJuggler is project management software for serious project managers. It
 covers the complete spectrum of project management tasks from the first idea
 to the completion of the project. It assists you during project scoping,
-resource assignment, cost and revenue planing, risk and communication
+resource assignment, cost and revenue planing, risk management, and communication
 management.
 
 TaskJuggler provides an optimizing scheduler that computes your project time
@@ -30,7 +30,7 @@ become a companion that you don't want to miss anymore.
 TaskJuggler is written in {Ruby}[http://www.ruby-lang.org/en/] and should
 be easily installable and usable on all popular operating systems. It may
 sound surprising at first, but this software does not need a graphical user
-interface. A command shell, a plain text editor (no word processor!) and a web
+interface. A command shell, a plain text editor (no word processor!), and a web
 browser is all you need for your work.
 
 = Features and Highlights
@@ -68,7 +68,7 @@ browser is all you need for your work.
 
 == Scaling and Enterprise Features
 
-* Projects can be combined to larger projects
+* Projects can be combined into larger projects
 * Support for central resource allocation database
 * Manages roles and complex reporting lines
 * Powerful project description language with macro support
@@ -107,7 +107,7 @@ details. If you have a question about TaskJuggler usage, the user
 list is the best place to go. Please remain subscribed and help other
 users when you get more proficient in TaskJuggler.
 
-If you think that you have found a bug in the software, please the
+If you think that you have found a bug in the software, please view 
 the {bug reporting
 guidelines}[http://www.taskjuggler.org/tj3/manual/Reporting_Bugs.html#Reporting_Bugs_and_Sending_Feedback].
 
