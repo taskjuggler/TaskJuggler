@@ -6634,18 +6634,6 @@ EOT
        )
 
     pattern(%w( _scheduled ), lambda {
-      if (@property['milestone', @scenarioIdx] &&
-          @property['start', @scenarioIdx].nil? &&
-          @property['end', @scenarioIdx].nil?) ||
-         (!@property['milestone', @scenarioIdx] &&
-          (@property['start', @scenarioIdx].nil? ||
-           @property['end', @scenarioIdx].nil?) &&
-          @property['booking', @scenarioIdx].empty?)
-        error('not_scheduled',
-              "Task #{@property.fullId} is marked as scheduled but does not " +
-              'have a fixed start and end date.',
-              @sourceFileInfo[0], @property)
-      end
       @property['scheduled', @scenarioIdx] = true
     })
     doc('scheduled', <<'EOT'
