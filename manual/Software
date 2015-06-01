@@ -115,7 +115,7 @@ settings.
 All taskjuggler components can use the same TaskJuggler configuration
 file. The format is a simple plain text format that follows the
 [http://www.yaml.org/ YAML specification]. The file should be called
-''''.taskjuglerrc'''' or ''''taskjuggler.rc''''. The settings are
+''''.taskjugglerrc'''' or ''''taskjuggler.rc''''. The settings are
 structured by sections. Section names always start with an underscore.
 
  _global:

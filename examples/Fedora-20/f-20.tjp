@@ -60,7 +60,7 @@ project ${content}${major} "${content_title}" "${major}" ${start_date} - ${end_d
 # This section also serves as a "style guide" for the source file too
 
 /*
-1) EVERY entry should be in the following line order and indented consistently with the rest of the file.  This makes the source file consistent and eaiser to read.
+1) EVERY entry should be in the following line order and indented consistently with the rest of the file.  This makes the source file consistent and easier to read.
    a) task name and description
    b) dependency (if applicable)
    c) length (not "duration") (if applicable)
@@ -78,17 +78,17 @@ should include weekends because community members work at all times and not with
 
 6) All "Blocker Bug Days" should be on Fridays
 
-7) If a task takes one day or less--schedule with no length--this way it showes up as a milestone and gets included in iCalendar (ics) file
+7) If a task takes one day or less--schedule with no length--this way it shows up as a milestone and gets included in iCalendar (ics) file
 
 8) Because of bugs in the way TaskJuggler ics files get rendered in some calendars (e.g. Zimbra) we only include zero length (milestone) tasks in the ics file.  As a result there are several duplicate tasks with no length that have been added so they appear in the ics file.
 
 9) Use core schedule milestones (flags = key) as anchor points (depends/precedes) for tasks in this schedule file instead of more transient tasks like meetings, compose dates, etc. that may change (or slip) from release to release.  This makes building new release schedules easier and require less maintenance and updating.
 
-10) In ALL but limited cases task beginning and ending should be automatically calculated based on logic in this file.  When using hard coded dates, explicitly call them out with a comment to hightlight their existence.  Hard coded dates are particularly troublesome when slipping a schedule or branching the file to create a new release schedule because they must be adjusted and recalculated manually
+10) In ALL but limited cases task beginning and ending should be automatically calculated based on logic in this file.  When using hard coded dates, explicitly call them out with a comment to highlight their existence.  Hard coded dates are particularly troublesome when slipping a schedule or branching the file to create a new release schedule because they must be adjusted and recalculated manually
 
 11) TaskJuggler does not provide an easy way (that I am aware of) to schedule tasks to happen *before* other tasks.  I've created a hack/methodology I call "shadow" tasks.  These are unreported tasks that go backwards a certain period of time and serve as an anchor or starting point for the actual task to be reported.
 
-12) The "milestone" declaration is NOT used in this source file.  It is redundant and unnecessary.  Do not inlude it.  All tasks without 'length' or 'duration' are automatically considered "milestone" tasks.
+12) The "milestone" declaration is NOT used in this source file.  It is redundant and unnecessary.  Do not include it.  All tasks without 'length' or 'duration' are automatically considered "milestone" tasks.
 
 */
 
@@ -347,7 +347,7 @@ task ${content}${major} "${content_title} ${major}" {
         flags releng, devel, pm, proto, key, roadmap, fpl
       }
 
-      task bugzilla_descrption "Reflect supported versions in Bugzilla product description" {
+      task bugzilla_description "Reflect supported versions in Bugzilla product description" {
         depends !shadow_feature_freeze
         flags pm
       }
@@ -379,7 +379,7 @@ task ${content}${major} "${content_title} ${major}" {
         flags devel, pm
       }
 
-      #two weeks before spins submission deadilen get wiki pages in order
+      #two weeks before spins submission deadline get wiki pages in order
       task spins_wiki_update "Update All Spins Wiki Pages From Previous Releases" {
         depends !shadow_feature_submit_remind_3_weeks
         flags spins
@@ -789,7 +789,7 @@ task ${content}${major} "${content_title} ${major}" {
           flags docs
         }
 
-        task recruite_beat_writers "Recruit New Beat Writers" {
+        task recruited_beat_writers "Recruit New Beat Writers" {
           depends !validate_beat_writers
           length 5d
           flags docs
@@ -941,7 +941,7 @@ task ${content}${major} "${content_title} ${major}" {
       }
 
       # Create anchor one week before for Beta Deadline
-      task shadow_beta_deadline "SHADOW: one week before Beta Deadeline" {
+      task shadow_beta_deadline "SHADOW: one week before Beta Deadline" {
         precedes !beta_deadline {gaplength 6d}
         flags hidden
       }
@@ -951,7 +951,7 @@ task ${content}${major} "${content_title} ${major}" {
         flags pm
       }
 
-      task remind_final_freatures "Remind Features 100% Complete in 1 week" {
+      task remind_final_features "Remind Features 100% Complete in 1 week" {
         depends !shadow_beta_deadline
         flags pm
       }
@@ -1601,7 +1601,7 @@ task ${content}${major} "${content_title} ${major}" {
         flags web
       }
 
-      # web propertities need to be updated and translated
+      # web properties need to be updated and translated
       # Tasks start at time Beta Release goes out
       # http://fedoraproject.org/en/index
       # http://fedoraproject.org/en/get-fedora
@@ -1752,7 +1752,7 @@ task ${content}${major} "${content_title} ${major}" {
 
       # Hold on Tuesday instead of Wednesday (Alpha and Beta)--this provides a little cushion
       # if something goes wrong.  Mirrors do not have to start sync until Thursday
-      task final_go_not "${content_title} ${major} Final Go/No-Go Meeting (17:00 US Eeastern)" {
+      task final_go_not "${content_title} ${major} Final Go/No-Go Meeting (17:00 US Eastern)" {
         depends !start_final_compose {gaplength 4d}
         flags releng, quality, docs, pm, proto, blocker
       }
@@ -1819,7 +1819,7 @@ task ${content}${major} "${content_title} ${major}" {
 
     } # end of rc task
 
-    task bugzilla_descrption "Reflect supported versions in Bugzilla product description" {
+    task bugzilla_description "Reflect supported versions in Bugzilla product description" {
       depends !rc.stage_final
       flags pm
     }
@@ -1897,7 +1897,7 @@ task ${content}${major} "${content_title} ${major}" {
       flags docs
     }
 
-    task annouce_publish_draft "Notify announce-list and f-devel-list draft guides available" {
+    task announce_publish_draft "Notify announce-list and f-devel-list draft guides available" {
       depends !publish_draft
       flags docs
     }
@@ -1967,7 +1967,7 @@ task ${content}${major} "${content_title} ${major}" {
       flags hidden
     }
 
-    # zero duration tasks (milestones/deadlines) need a shadow preceds task so they report correctly
+    # zero duration tasks (milestones/deadlines) need a shadow precedes task so they report correctly
     # Also needed for ICS files which only report milestones
     task guides_trans_deadline "Translation Deadline: All Final Guides" {
       depends !shadow_guides_trans_deadline
@@ -2119,7 +2119,7 @@ task ${content}${major} "${content_title} ${major}" {
 
   # The release naming process for the next release should end three weeks prior
   # to the end of the current release
-  # It is easiest to start this task by hardcoding the start date to be 6 weeks before GA
+  # It is easiest to start this task by hard coding the start date to be 6 weeks before GA
   # 2010-09-14
   # 1 week -- collect names
   # 1 week --fedora board reviews names

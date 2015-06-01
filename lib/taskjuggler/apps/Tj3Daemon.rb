@@ -57,7 +57,11 @@ EOT
                         'requests (Default: 8474).')) do |arg|
           @port = arg
         end
-        @opts.on('--urifile', String,
+        @opts.on('--logfile <FILE NAME>', String,
+                          format('Log daemon messages to the specified file.')) do |arg|
+              @mhi.logFile = arg
+              end
+        @opts.on('--urifile <FILE NAME>', String,
                  format('If the port is 0, use this file to store the URI ' +
                         'of the server.')) do |arg|
           @uriFile = arg

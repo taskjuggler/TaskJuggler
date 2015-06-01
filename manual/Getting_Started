@@ -47,8 +47,8 @@ reports. Each project must have at least one task defined and should
 have at least one report.  Properties don't have to be listed in a
 particular order, but may have interdependencies that require such an
 order. If you want to assign a resource to work on a task, this
-resource needs to be defined first. It is therefor recommended to
-define them in the following sequence.
+resource needs to be defined first. It is therefore recommended to
+define them in the following sequence:
 
 * [[macro|macros]]
 * [[flags]]
