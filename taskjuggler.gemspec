@@ -3,7 +3,7 @@
 # = taskjuggler.gemspec -- The TaskJuggler III Project Management Software
 #
 # Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
-#               by Chris Schlaeger <chris@linux.com>
+#               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
@@ -30,7 +30,7 @@ GEM_SPEC = Gem::Specification.new { |s|
   s.version = PROJECT_VERSION
   s.homepage = 'http://www.taskjuggler.org'
   s.author = 'Chris Schlaeger'
-  s.email = 'chris@linux.com'
+  s.email = 'cs@taskjuggler.org'
   s.rubyforge_project = 'taskjuggler'
   s.summary = 'A Project Management Software'
   s.description = <<'EOT'
