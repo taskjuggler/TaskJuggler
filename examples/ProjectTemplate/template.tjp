@@ -1,7 +1,7 @@
 /*
  * This file contains a project skeleton. It is part of the
  * TaskJuggler project management tool. You can use this as a basis to
- * start you own project file.
+ * start your own project file.
  */
 project your_project_id "Your Project Title"  2011-11-11-0:00--0500 +4m {
   # Set the default time zone for the project. If not specified, UTC
@@ -28,7 +28,7 @@ project your_project_id "Your Project Title"  2011-11-11-0:00--0500 +4m {
 
   # You can define your own attributes for tasks and resources. This
   # is handy to capture additional information about the project that
-  # is not directly impacting the project schedule but you like to
+  # is not directly impacting the project schedule, but which you like to
   # keep in one place.
   #extend task {
   #  reference spec "Link to Wiki page"
@@ -59,7 +59,7 @@ copyright "Claim your rights here"
 # used to filter out subsets of them during reporting.
 flags important, hidden
 
-# If you want to do budget planning for you project, you need to
+# If you want to do budget planning for your project, you need to
 # define some accounts.
 account cost "Project Cost" {
   account dev "Development"
@@ -67,10 +67,10 @@ account cost "Project Cost" {
 }
 account rev "Customer Payments"
 
-# The Profit&Loss analysis should be rev - cost accounts.
+# The Profit & Loss analysis should be rev - cost accounts.
 balance cost rev
 
-# Define you public holidays here.
+# Define your public holidays here.
 vacation "New Year's Day" 2012-01-02
 vacation "Birthday of Martin Luther King, Jr." 2012-01-16
 vacation "Washington's Birthday" 2012-02-20
@@ -83,7 +83,7 @@ vacation "Thanksgiving Day" 2012-11-22
 vacation "Christmas Day" 2012-12-25
 
 # The daily default rate of all resources. This can be overridden for each
-# resource. We specify this, so that we can do a good calculation of
+# resource. We specify this so we can do a good calculation of
 # the costs of the project.
 rate 400.0
 
@@ -123,7 +123,7 @@ task project "Project" {
 
 # Now the project has been specified completely. Stopping here would
 # result in a valid TaskJuggler file that could be processed and
-# scheduled. But no reports would be generated to visualize the
+# scheduled. Here reports will be generated to visualize the
 # results.
 
 navigator navbar {
