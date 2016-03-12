@@ -350,7 +350,6 @@ class TaskJuggler
                      'property' => ss[0],
                      'scopeProperty' => nil,
                      'scenarioIdx' => @project['trackingScenarioIdx'],
-                     'timeFormat' => '%Y-%m-%d',
                      'start' => ss[1],
                      'end' => ss[2],
                      'timeFormat' => '%Y-%m-%d',
