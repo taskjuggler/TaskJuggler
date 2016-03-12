@@ -17,6 +17,10 @@ require 'taskjuggler/apps/Tj3TsSender'
 require 'taskjuggler/apps/Tj3TsReceiver'
 require 'taskjuggler/apps/Tj3TsSummary'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe TimeSheets do

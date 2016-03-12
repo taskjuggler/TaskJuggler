@@ -15,6 +15,10 @@ require 'rubygems'
 require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/apps/Tj3'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe Tj3 do

@@ -17,6 +17,10 @@ require 'taskjuggler/ICalendar'
 
 require 'support/spec_helper.rb'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe ICalendar do

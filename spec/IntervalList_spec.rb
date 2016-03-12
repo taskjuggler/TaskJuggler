@@ -15,6 +15,10 @@ require 'rubygems'
 
 require 'taskjuggler/IntervalList'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe IntervalList do
@@ -53,7 +57,7 @@ class TaskJuggler
 
       it 'Intervals should be added in ascending order' do
         @il << @i1_2
-        lambda { @il << @i0_1 }.should raise_error
+        lambda { @il << @i0_1 }.should raise_error RuntimeError
       end
 
       it 'should merge adjecent intervals on add' do

@@ -14,6 +14,10 @@
 require 'rubygems'
 require 'support/DaemonControl'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe Tj3Daemon do

@@ -15,6 +15,10 @@ require 'rubygems'
 
 require 'taskjuggler/TernarySearchTree'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe TernarySearchTree do
@@ -39,11 +43,11 @@ class TaskJuggler
     end
 
     it 'should not accept an empty String' do
-      lambda { @tst.insert('') }.should raise_error
+      lambda { @tst.insert('') }.should raise_error ArgumentError
     end
 
     it 'should not accept nil' do
-      lambda { @tst.insert(nil) }.should raise_error
+      lambda { @tst.insert(nil) }.should raise_error ArgumentError
     end
 
     it 'should store inserted values' do

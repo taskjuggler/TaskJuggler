@@ -15,6 +15,10 @@ require 'taskjuggler/daemon/ProjectBroker'
 
 require 'support/spec_helper'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   def TaskJuggler::runBroker(pb, key)

@@ -15,6 +15,10 @@ require 'rubygems'
 
 require 'taskjuggler/TableColumnSorter'
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 class TaskJuggler
 
   describe TableColumnSorter do
