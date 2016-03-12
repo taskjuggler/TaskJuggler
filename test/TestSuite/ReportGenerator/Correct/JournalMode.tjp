@@ -63,7 +63,7 @@ timesheet r3 2011-08-01 +1w {
 }
 
 # Timesheet 2nd week
-timesheet r1 2011-08-01 +1w {
+timesheet r1 2011-08-08 +1w {
   task t1.t2 {
     work 5d
     remaining 1d

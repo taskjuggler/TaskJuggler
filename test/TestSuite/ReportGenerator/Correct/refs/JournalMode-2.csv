@@ -15,14 +15,6 @@ No problems found
 
 Work is progressing well
 
-[Green]T2 (ID: t1.t2)
-
-Work: 100% (0%) Remaining: 1.0d (5.0d)
-
-All ok
-
-Reported on 2011-08-08 by R1
-
 [Green]T3 (ID: t1.t3)
 
 r1 had to help out
@@ -34,6 +26,14 @@ Reported on 2011-08-08 by R2
 Don't panik!
 
 Reported on 2011-08-10 by R4
+
+[Green]T2 (ID: t1.t2)
+
+Work: 100% (0%) Remaining: 1.0d (5.0d)
+
+All ok
+
+Reported on 2011-08-15 by R1
 
 [Yellow]T3 (ID: t1.t3)
 
@@ -51,34 +51,56 @@ Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
 
 It's really hot";"[Green]T1 (ID: t1)
 
 Don't panik!
 
-Reported on 2011-08-10 by R4";"[Green]T1 (ID: t1)
+Reported on 2011-08-10 by R4";"[Green]T2 (ID: t1.t2)
 
-Don't panik!
+Work: 100% (0%) Remaining: 1.0d (5.0d)
 
-Reported on 2011-08-10 by R4";"[Red]T3 (ID: t1.t3)
+All ok
+
+Reported on 2011-08-15 by R1
+
+[Red]T3 (ID: t1.t3)
 
 Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
+
+It's really hot";"[Red]T3 (ID: t1.t3)
+
+Work: 0% Remaining: 2.0d (0.0d)
+
+Fire burning
+
+Reported on 2011-08-15 by R1
 
 It's really hot"
 "  T2";"[Green]T2 (ID: t1.t2)
 
+Work: 60% (0%) Remaining: 6.0d (5.0d)
+
+All good
+
+Reported on 2011-08-08 by R1
+
+No problems found
+
+Work is progressing well
+
+[Green]T2 (ID: t1.t2)
+
 Work: 100% (0%) Remaining: 1.0d (5.0d)
 
 All ok
 
-Reported on 2011-08-08 by R1
-
-[Green]T2 (ID: t1.t2)
+Reported on 2011-08-15 by R1";"[Green]T2 (ID: t1.t2)
 
 Work: 60% (0%) Remaining: 6.0d (5.0d)
 
@@ -88,43 +110,27 @@ Reported on 2011-08-08 by R1
 
 No problems found
 
-Work is progressing well";"[Green]T2 (ID: t1.t2)
+Work is progressing well
+
+[Green]T2 (ID: t1.t2)
 
 Work: 100% (0%) Remaining: 1.0d (5.0d)
 
 All ok
 
-Reported on 2011-08-08 by R1
-
-[Green]T2 (ID: t1.t2)
-
-Work: 60% (0%) Remaining: 6.0d (5.0d)
-
-All good
-
-Reported on 2011-08-08 by R1
-
-No problems found
-
-Work is progressing well";"";"[Green]T2 (ID: t1.t2)
+Reported on 2011-08-15 by R1";"[Green]T2 (ID: t1.t2)
 
 Work: 100% (0%) Remaining: 1.0d (5.0d)
 
 All ok
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1";"[Green]T2 (ID: t1.t2)
 
-[Green]T2 (ID: t1.t2)
+Work: 100% (0%) Remaining: 1.0d (5.0d)
 
-Work: 60% (0%) Remaining: 6.0d (5.0d)
+All ok
 
-All good
-
-Reported on 2011-08-08 by R1
-
-No problems found
-
-Work is progressing well";""
+Reported on 2011-08-15 by R1";""
 "  T3";"[Green]T3 (ID: t1.t3)
 
 r1 had to help out
@@ -147,7 +153,7 @@ Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
 
 It's really hot";"[Green]T3 (ID: t1.t3)
 
@@ -171,31 +177,7 @@ Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
-
-It's really hot";"";"[Green]T3 (ID: t1.t3)
-
-r1 had to help out
-
-Reported on 2011-08-08 by R2
-
-[Yellow]T3 (ID: t1.t3)
-
-Work: 20% (0%) Remaining: 2.0d (0.0d)
-
-Helped out
-
-Reported on 2011-08-08 by R1
-
-r2 asked for d2
-
-[Red]T3 (ID: t1.t3)
-
-Work: 0% Remaining: 2.0d (0.0d)
-
-Fire burning
-
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
 
 It's really hot";"[Red]T3 (ID: t1.t3)
 
@@ -203,6 +185,22 @@ Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
+
+It's really hot";"[Red]T3 (ID: t1.t3)
+
+Work: 0% Remaining: 2.0d (0.0d)
+
+Fire burning
+
+Reported on 2011-08-15 by R1
+
+It's really hot";"[Red]T3 (ID: t1.t3)
+
+Work: 0% Remaining: 2.0d (0.0d)
+
+Fire burning
+
+Reported on 2011-08-15 by R1
 
 It's really hot"

@@ -1,14 +1,6 @@
 "Name";"journal";"journal_sub";"status_up";"status_down";"alerts_down"
 "R1";"[Green]T2 (ID: t1.t2)
 
-Work: 100% (0%) Remaining: 1.0d (5.0d)
-
-All ok
-
-Reported on 2011-08-08 by R1
-
-[Green]T2 (ID: t1.t2)
-
 Work: 60% (0%) Remaining: 6.0d (5.0d)
 
 All good
@@ -18,6 +10,14 @@ Reported on 2011-08-08 by R1
 No problems found
 
 Work is progressing well
+
+[Green]T2 (ID: t1.t2)
+
+Work: 100% (0%) Remaining: 1.0d (5.0d)
+
+All ok
+
+Reported on 2011-08-15 by R1
 
 [Yellow]T3 (ID: t1.t3)
 
@@ -49,7 +49,7 @@ Work: 0% Remaining: 2.0d (0.0d)
 
 Fire burning
 
-Reported on 2011-08-08 by R1
+Reported on 2011-08-15 by R1
 
 It's really hot";"";"";"";""
 "R2";"[Green]T3 (ID: t1.t3)
