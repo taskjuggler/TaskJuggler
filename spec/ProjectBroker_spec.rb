@@ -82,7 +82,7 @@ class TaskJuggler
 
       it "should fail with bad authentication key" do
         TaskJuggler::runBroker(@pb, @authKey) do
-          @pbi.command('bad key', :status, []).should be_false
+          @pbi.command('bad key', :status, []).should be false
         end
       end
 
@@ -105,14 +105,14 @@ class TaskJuggler
           stdOut = StringIO.new
           stdErr = StringIO.new
           args = [ Dir.getwd, [ '.' ], stdOut, stdErr, stdIn, true ]
-          @pbi.command(@authKey, :addProject, args).should be_true
+          @pbi.command(@authKey, :addProject, args).should be true
           stdErr.string.should be_empty
 
           # Can't remove non-existing project bar
-          @pbi.command(@authKey, :removeProject, 'bar').should be_false
-          @pbi.command(@authKey, :removeProject, 'foo').should be_true
+          @pbi.command(@authKey, :removeProject, 'bar').should be false
+          @pbi.command(@authKey, :removeProject, 'foo').should be true
           # Can't remove foo twice
-          @pbi.command(@authKey, :removeProject, 'foo').should be_false
+          @pbi.command(@authKey, :removeProject, 'foo').should be false
         end
       end
 
@@ -123,7 +123,7 @@ class TaskJuggler
       it "should fail with bad authentication key" do
         TaskJuggler::runBroker(@pb, @authKey) do
           @pbi.updateState('bad key', 'foo', 'foo', :status, true).should \
-            be_false
+            be false
         end
       end
 
