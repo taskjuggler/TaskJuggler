@@ -44,7 +44,7 @@ to the completion of the project. It assists you during project scoping,
 resource assignment, cost and revenue planing, risk and communication
 management.
 EOT
-
+  s.license = 'GNU GPL version 2'
   s.require_path = 'lib'
   s.files = (`git ls-files -- lib`).split("\n") +
             (`git ls-files -- data`).split("\n") +

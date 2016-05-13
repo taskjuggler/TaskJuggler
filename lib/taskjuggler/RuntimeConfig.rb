@@ -45,7 +45,7 @@ class RuntimeConfig
   def configure(object, section)
     debug("Configuring object of type #{object.class}")
     sections = section.split('.')
-    p = @config
+    return false unless (p = @config)
     sections.each do |sec|
       p = p['_' + sec]
       unless p
