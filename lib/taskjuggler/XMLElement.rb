@@ -202,9 +202,17 @@ class TaskJuggler
       super(nil, {})
       @text = text
     end
-
+    ## It is crucial to canonicalize xml comment text because xml
+    ## comment syntax forbids having a -- in the comment body.  I
+    ## picked emacs's "M-x comment-region" approach of putting a
+    ## backslash between the two.
+    def canonicalize_comment(text)
+      new_text = text.gsub("--", "-\\-")
+      new_text
+    end
     def to_s(indent)
-      '<!-- ' + @text + " -->\n#{' ' * indent}"
+      @comment_text = canonicalize_comment(@text)
+      '<!-- ' + @comment_text + " -->\n#{' ' * indent}"
     end
 
   end
