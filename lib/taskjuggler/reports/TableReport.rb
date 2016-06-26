@@ -1048,11 +1048,11 @@ class TaskJuggler
                             'busy'
                           elsif workLoad > 0.0 && freeLoad > 0.0
                             'loaded'
-                          elsif workLoad == 0.0 && freeLoad > 0.0
-                            'free'
-                          else
+                          elsif workLoad == 0.0 && freeLoad == 0.0
                             cell.tooltip = nil
                             'offduty'
+                          else
+                            'free'
                           end
                         end
         cell.category += line.subLineNo % 2 == 1 ? '1' : '2'
