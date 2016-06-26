@@ -31,7 +31,7 @@ will result in longer scheduling times and higher memory consumption.
 
 <[example file="tutorial" tag="header1"]>
 
-All TaskJuggler properties have a unique ID ,a name, and a set of
+All TaskJuggler properties have a unique ID, a name, and a set of
 optional attributes. The name must always be specified. The ID can be
 omitted if you never have to reference the property from another
 context. If you omit the ID, TaskJuggler will automatically generate a
