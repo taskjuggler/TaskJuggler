@@ -338,9 +338,9 @@ class TaskJuggler
       when 'chart'
         # For the 'chart' column we generate a GanttChart object. The sizes are
         # set so that the lines of the Gantt chart line up with the lines of the
-        # table.
+        # table
         gantt = GanttChart.new(a('now'),
-                               a('weekStartsMonday'), columnDef, self)
+                               a('weekStartsMonday'), columnDef, self, a('markdate'))
 
         gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.

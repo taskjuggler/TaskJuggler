@@ -33,6 +33,11 @@ project acso "Accounting Software"  2002-01-16 +4m {
 # *** EXAMPLE: now +
   now 2002-03-05-13:00
 # *** EXAMPLE: now -
+  # The date that is used to show additional line on a Gannt chart
+  # and can be specified by the user.
+# *** EXAMPLE: markdate +
+  markdate 2002-08-07-03:00
+# *** EXAMPLE: markdate -
   # The currency for all money values is the Euro.
 # *** EXAMPLE: currency +
   currency "USD"
