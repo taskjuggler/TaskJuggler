@@ -48,7 +48,7 @@ EOT
         end
         @opts.on('--html',
                  format('Show the user manual in your local web browser. ' +
-                        'By default, Firefox is used or the brower specified ' +
+                        'By default, Firefox is used or the browser specified ' +
                         'with the $BROWSER environment variable.')) do
           @showHtml = true
         end
