@@ -2,6 +2,8 @@
 
 require 'taskjuggler/apps/Tj3Man'
 
+CLOBBER.include "manual/html/"
+
 desc 'Generate User Manual'
 task :manual do
   htmldir = 'manual/html'
