@@ -3779,6 +3779,13 @@ can be adjusted with [[loadunit]].
 EOT
          )
 
+    singlePattern('_annualleavelist')
+    descr(<<'EOT'
+A list with all annual leave intervals. The list can be customized with the
+[[listtype.column|listtype]] attribute.
+EOT
+         )
+
     singlePattern('_alert')
     descr(<<'EOT'
 The alert level of the property that was reported with the date closest to the

@@ -32,6 +32,7 @@ class TaskJuggler
       'activetasks'       => [ 'Active Tasks',         true,   :right, true ],
       'annualleave'       => [ 'Annual Leave',         true,   :right, true ],
       'annualleavebalance'=> [ 'Annual Leave Balance', false,  :right, true ],
+      'annualleavelist'   => [ 'Annual Leave List',    false,  :left,  true ],
       'alert'             => [ 'Alert',                true,   :left,  false ],
       'alertmessages'     => [ 'Alert Messages',       false,  :left,  false ],
       'alertsummaries'    => [ 'Alert Summaries',      false,  :left,  false ],

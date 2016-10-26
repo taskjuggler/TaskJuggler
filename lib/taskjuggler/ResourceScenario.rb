@@ -279,6 +279,23 @@ class TaskJuggler
       query.string = query.scaleLoad(val)
     end
 
+    # Compute a list of the annual leave days within the period specified by
+    # the _query_. The result is a list of dates and how much of that day was
+    # taken.
+    def query_annualleavelist(query)
+      iv_list = collectLeaveIntervals(Interval.new(query.start, query.end), :annual)
+      iv_list.map! do |iv|
+        # The interval is at most one working day. We list the date of that
+        # day.
+        day = iv.start.strftime(@project['timeFormat'])
+        # And how much of the working day was taken. A full working day is
+        # 1.0, a half working day 0.5.
+        days = (iv.end - iv.start) / (60 * 60 * @project['dailyworkinghours'])
+        "#{day} (#{'%.1f' % days})"
+      end
+      query.assignList(iv_list)
+    end
+
     def query_annualleavebalance(query)
       if @property.leaf?
         leave = getLeave(query.startIdx, query.endIdx, :annual)
@@ -686,6 +703,21 @@ class TaskJuggler
 
       @scoreboard.collectIntervals(iv, minDuration) do |val|
         val.is_a?(Fixnum) && (val & 0x3E) != 0
+      end
+    end
+
+    # Return a list of scoreboard intervals that are at least _minDuration_ long
+    # and only contain leave slots of the given type. The result is an Array of
+    # [ start, end ] TjTime values.
+    def collectLeaveIntervals(iv, type)
+      # Time-off intervals are only useful for leaf resources. Group resources
+      # would just default to the global working hours.
+      return [] unless @property.leaf?
+
+      initScoreboard if @scoreboard.nil?
+
+      @scoreboard.collectIntervals(iv, 60 * 60) do |val|
+        val.is_a?(Fixnum) && (val & 0x3E) == (Leave::Types[type] << 2)
       end
     end
 
