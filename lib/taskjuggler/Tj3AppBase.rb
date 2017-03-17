@@ -75,7 +75,7 @@ class TaskJuggler
                format(<<'EOT'
 Don't use ANSI contol sequences to color the terminal output. Colors should
 only be used when spooling to an ANSI terminal. In case the detection fails,
-you can this option to force colors to be off.
+you can use this option to force colors to be off.
 EOT
                      )) do
         Term::ANSIColor::coloring = false
@@ -128,7 +128,7 @@ EOT
         args = processArguments(argv)
 
         # If DEBUG mode has been enabled, we restore the INT trap handler again
-        # to get Ruby backtrackes.
+        # to get Ruby backtraces.
         Kernel.trap('INT', intHandler) if $DEBUG
 
         unless @silent
@@ -146,7 +146,7 @@ EOT
           retVal = appMain(args)
           MessageHandlerInstance.instance.trapSetup = false
         rescue TjRuntimeError
-          # We have hit a sitatuation that we can't recover from. A message
+          # We have hit a situation that we can't recover from. A message
           # was severed via the MessageHandler to inform the user and we now
           # abort the program.
           return 1

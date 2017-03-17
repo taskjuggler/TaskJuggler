@@ -55,16 +55,16 @@ class TaskJuggler
           Font_LiberationSans_bold_italic
       end
 
-      # Return the height of the _font_ with _ptSize_ points in screen pixels.
+      # Return the height of the _font_ with _ptSize_ points in screen pixel.
       def height(font, ptSize)
         checkFontName(font)
         # Calculate resulting height scaled to the font size and convert to
-        # screen pixels instead of points.
+        # screen pixel instead of points.
         (@fonts[font].height * (ptSize.to_f / @fonts[font].ptSize) *
          (4.0 / 3.0)).to_i
       end
 
-      # Return the width of the string in screen pixels when using the font
+      # Return the width of the string in screen pixel when using the font
       # _font_ with _ptSize_ points.
       def width(font, ptSize, str)
         checkFontName(font)
@@ -80,7 +80,7 @@ class TaskJuggler
           lastC = c
         end
         # Calculate resulting width scaled to the font size and convert to
-        # screen pixels instead of points.
+        # screen pixel instead of points.
         (w * (ptSize.to_f / @fonts[font].ptSize) * (4.0 / 3.0)).to_i
       end
 

@@ -22,7 +22,7 @@ class TaskJuggler
   # appropriate format.
   class ReportTable
 
-    # The height in pixels of a horizontal scrollbar on an HTML page. This
+    # The height in pixel of a horizontal scrollbar on an HTML page. This
     # value should be large enough to work for all browsers.
     SCROLLBARHEIGHT = 20
 
@@ -31,7 +31,7 @@ class TaskJuggler
 
     # Create a new ReportTable object.
     def initialize
-      # The height if the header lines in screen pixels.
+      # The height if the header lines in screen pixel.
       @headerLineHeight = 19
       # Size of the font used in the header
       @headerFontSize = 15
@@ -120,7 +120,7 @@ class TaskJuggler
 
       # In case we have columns with scrollbars, we generate an extra line with
       # cells for all columns that don't have a scrollbar. The scrollbar must
-      # have a height of SCROLLBARHEIGHT pixels or less.
+      # have a height of SCROLLBARHEIGHT pixel or less.
       if hasScrollbar?
         tbody << (tr = XMLElement.new('tr',
                                       'style' => "height:#{SCROLLBARHEIGHT}px"))

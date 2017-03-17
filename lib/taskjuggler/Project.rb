@@ -866,7 +866,7 @@ class TaskJuggler
     #   isWorkingTime(startTime, endTime) -> true or false
     #   isWorkingTime(interval) -> true or false
     #
-    # Return true if the slot or interval is withing globally defined working
+    # Return true if the slot or interval is within globally defined working
     # time or false if not. If the argument is a TimeInterval, all slots of
     # the interval must be working time to return true as result. Global work
     # time means, no global leaves defined and the slot lies within a

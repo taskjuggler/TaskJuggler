@@ -48,7 +48,7 @@ class TaskJuggler
       # Now we generate a 'div' that will contain the nested table. It has a
       # height that fits all lines but has a maximum width. In case the embedded
       # table is larger, a scrollbar will appear. We assume that the scrollbar
-      # has a height of SCROLLBARHEIGHT pixels or less.
+      # has a height of SCROLLBARHEIGHT pixel or less.
       # If there is a user specified with, use it. Otherwise use the
       # calculated minimum with.
       width = @viewWidth ? @viewWidth : minWidth

@@ -43,9 +43,9 @@ class TaskJuggler::TextParser
 
     # This class is used to handle the low-level input operations. It knows
     # whether it deals with a text buffer or a file and abstracts this to the
-    # Scanner. For each nested file the scanner puts an StreamHandle on the
+    # Scanner. For each nested file the scanner puts a StreamHandle on the
     # stack while the file is scanned. With this stack the scanner can resume
-    # the processing of the enclosing file once the included files has been
+    # the processing of the enclosing file once the included files have been
     # completely processed.
     class StreamHandle
 
@@ -281,7 +281,7 @@ class TaskJuggler::TextParser
     end
 
 
-    # Start the processing. if _fileNameIsBuffer_ is true, we operate on a
+    # Start the processing. If _fileNameIsBuffer_ is true, we operate on a
     # String, else on a File.
     def open(fileNameIsBuffer = false)
       @fileNameIsBuffer = fileNameIsBuffer

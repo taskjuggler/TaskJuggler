@@ -1,6 +1,6 @@
 == The TaskJuggler Software ==
 
-After the installation of a software package the first questions that
+After the installation of a software package the first question that
 most users have is ''"How do I run it?"''. Many users expect to find
 an icon on their desktop or an entry in the start menu hierarchy.
 Don't bother looking for them, you won't find any for TaskJuggler. As
@@ -80,7 +80,7 @@ in your web browser.
 
 The latter defaults to using the
 [http://www.mozilla.com/en-US/firefox/new/ Mozilla Firefox] web
-browser . Please see
+browser. Please see
 
  tj3man --help
 
@@ -102,12 +102,12 @@ Linux lingo. The program is called ''''tj3d''''. When started, it
 automatically disconnects from the terminal and runs in the
 background. All interactions with the server are done via the TCP/IP
 protocol. For security reasons, only connections from the same
-machine (localhost) are accepted. To get access all clients must
+machine (localhost) are accepted. To get access, all clients must
 provide an authentication key. A TaskJuggler server can serve any
 number of projects. Once a project has been loaded successfully,
 clients can retrieve the data in form of reports. Projects are
 identified by their project ID. If a newly added project has the same
-ID such as an already loaded project, the new project will replace
+ID as an already loaded project, the new project will replace
 the old project once it was scheduled successfully. Before you start
 the server, you need to provide a configuration file with some basic
 settings.
@@ -147,7 +147,7 @@ configuration option controls the amount of details to be printed out.
 * 3: Like 2, but additionally with information messages
 * 4: Like 3, but additionally with debug messages
 
-The configuration file will be searched in the current directory,
+The configuration file will be searched for in the current directory,
 the current user's home directory or ''''/etc''''. You can also
 explicitly tell the server where to find the configuration file with
 the ''''-c'''' option. See
@@ -210,7 +210,7 @@ changed in the ''''_global'''' section of the config file.
    authKey: topsecret
    webServerPort: 8080
 
-To access the HTML reports point your web browser to
+To access the HTML reports, point your web browser to
 ''''http://localhost:8080/taskjuggler''''. This assumes that the
 server is running on your local machine. You will then see a list of
 all loaded projects. Click on the project name to get a list of all

@@ -198,14 +198,14 @@ class TaskJuggler
     end
 
     def calcChartGeometry
-      # The size of the X-axis in pixels
+      # The size of the X-axis in pixel
       xAxisPixels = @width - (@rightMargin + @leftMargin)
       fm = Painter::FontMetrics.new
-      # Width of the date label in pixels
+      # Width of the date label in pixel
       @dateLabelWidth = fm.width('LiberationSans', 10.0, '2000-01-01')
-      # Height of the date label in pixels
+      # Height of the date label in pixel
       @labelHeight = fm.height('LiberationSans', 10.0)
-      # Distance between 2 labels in pixels
+      # Distance between 2 labels in pixel
       labelPadding = 10
       # The number of labels that fit underneath the X-axis
       @noXLabels = (xAxisPixels / (@dateLabelWidth + labelPadding)).floor

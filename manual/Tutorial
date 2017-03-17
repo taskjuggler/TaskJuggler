@@ -13,7 +13,7 @@ grow larger. The complete tutorial example comes with your
 TaskJuggler software installation. You can use the following command
 to find the base directory of the example projects.
 
-  ruby19 -e "puts Gem::Specification.find_by_name('taskjuggler').gem_dir"
+  ruby -e "puts Gem::Specification.find_by_name('taskjuggler').gem_dir"
 
 The file for the tutorial project is called
 ''''examples/Tutorial/tutorial.tjp''''. You can use any plain text
@@ -75,7 +75,7 @@ The [[currency]] attribute specifies the unit of all currency values.
 <[example file="tutorial" tag="currency"]>
 
 Because each culture has its own way of specifying dates and numbers,
-the format for these are configurable.  Use the [[timeformat]]
+the format for these is configurable.  Use the [[timeformat]]
 attribute to specify the default format for dates. This format is used
 for reports, it does not affect the way you specify dates in the
 project files. Here you always need to use the [[date|TaskJuggler date
@@ -148,7 +148,7 @@ does not do any resource assignments to tasks.
 
 Use the [[leaves]] attribute to define a global holiday. Global
 holidays may have a name and must have a date or date range. Other leaves for
-individual resources or groups of resources can be defines similarly.
+individual resources or groups of resources can be defined similarly.
 
 === Macros ===
 
@@ -189,6 +189,8 @@ In order not to get lost with all the various amounts, we declare 3
 [[account|accounts]] to credit the amounts to. We create one account
 for the development costs, one for the documentation costs, and one
 for the customer payments.
+Actually, there is a fourth account consisting of two accounts nested
+into it.
 
 <[example file="tutorial" tag="accounts"]>
 
@@ -308,7 +310,7 @@ should be allocated to the task. The task won't finish before the
 resources could be allocated long enough to reach the specified
 effort. Tasks with ''''length'''' or ''''duration'''' criteria and
 allocated resources will last exactly as long as requested. Resources
-will be allocated only if available. It's possible that such a tasks
+will be allocated only if available. It's possible that such a task
 ends up with no allocations at all if the resources are always
 assigned to other tasks for that period. Each task can only have one
 of the three duration criteria. Container tasks may never have a
@@ -331,7 +333,7 @@ and end criteria of a task, or one of them and a duration
 specification. The start and end criteria can either be fixed dates or
 relative dates. Relative dates are specifications of the type ''task B
 starts after task A has finished''. Or in other words, task B depends
-on task A. In this example the spec task depends on a subtasks of the
+on task A. In this example the spec task depends on a subtask of the
 deliveries task. We have not specified it yet, but it has the local ID
 ''''start''''.
 
@@ -347,7 +349,7 @@ specification task would be ''''AcSo.spec''''.
 Relative IDs always start with one or more exclamation marks. Each
 exclamation mark moves the scope to the next enclosing task. So
 ''''!deliveries.start'''' is expanded to ''''AcSo.deliveries.start''''
-since ''''AcSo'''' is the enclosing task of deliveries. Relative task
+since ''''AcSo'''' is the enclosing task of ''''deliveries''''. Relative task
 IDs are a little bit confusing at first, but have a real advantage
 over absolute IDs.  Sooner or later you want to move tasks around in
 your project and then it's a lot less likely that you have to fix
@@ -362,7 +364,7 @@ We use the [[priority]] attribute to mark the importance of
 the tasks. 500 is the default priority of top-level tasks. Setting the
 priority to 1000 marks the task as most important task, since the
 possible range is 1 (not important at all) to 1000 (ultimately
-important). priority is an attribute that is passed down to subtasks
+important). ''''priority'''' is an attribute that is passed down to subtasks
 if specified before the subtasks' declaration. So all subtasks of
 software have a priority of 1000 as well, unless they have their own
 priority definition.
@@ -486,7 +488,7 @@ scheduled. But no reports would be generated to visualize the results.
 
 === Visualizing the Project ===
 
-To see and share the project data you reports can be generated. You
+To see and share the project data, reports can be generated. You
 can generate any number of reports and you can select from a variety
 of report types and output formats. To have a report generated after
 the project scheduling has been completed, you need include a report
@@ -645,7 +647,7 @@ For HTML output, the reference is a click-able link to the referenced
 report file.
 
 For the [[footer]] we can proceed accordingly. We just add a few more
-paragraphs of text the describe certain aspects of the project. By
+paragraphs of text to describe certain aspects of the project. By
 putting it all together, we end up with the following report
 definition.
 
@@ -653,7 +655,7 @@ definition.
 
 The generated report can be found
 [http://www.taskjuggler.org/tj3/examples/Tutorial/Overview.html
-here]. It servers as an entry page for the other reports. While it
+here]. It serves as an entry page for the other reports. While it
 already contains some references, a navigator bar would be handy as
 well. Fortunately, there is a block generator called 'navigator' to
 take care of this. But before we can include the navigator in the

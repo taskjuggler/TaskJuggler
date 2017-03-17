@@ -16,7 +16,7 @@ require 'monitor'
 
 class TaskJuggler
 
-  # The JobInfo class is just a storage container for some batch job realted
+  # The JobInfo class is just a storage container for some batch job related
   # pieces of information. It contains things like a job id, the process id,
   # the stdout data and the like.
   class JobInfo
