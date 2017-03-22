@@ -3267,6 +3267,21 @@ EOT
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
+    pattern(%w( _markdate !date ), lambda {
+      @project['markdate'] = @val[1]
+      @scanner.addMacro(TextParser::Macro.new('markdate', @val[1].to_s,
+                                              @sourceFileInfo[0]))
+      @scanner.addMacro(TextParser::Macro.new(
+        'today', @val[1].to_s(@project['timeFormat']), @sourceFileInfo[0]))
+    })
+    doc('markdate', <<'EOT'
+Specify the reference date that TaskJuggler uses as date that can be specified
+and set by the user. It can be used as additional point in time to help with
+tracking tasks. If no value is specified, the current value of the system clock is used.
+EOT
+       )
+    arg(1, 'date', 'Alternative date to be used as custom date specified by the user')
+
     pattern(%w( !numberFormat ), lambda {
       @project['numberFormat'] = @val[0]
     })
