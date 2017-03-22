@@ -239,7 +239,7 @@ certain maximum per time period. The purge statement can be used to remove
 inherited allocations or flags.
 
 For effort-based tasks the task duration is clipped to only extend from the
-begining of the first allocation to the end of the last allocation. This is
+beginning of the first allocation to the end of the last allocation. This is
 done to optimize for an overall minimum project duration as dependent tasks
 can potentially use the unallocated, clipped slots.
 EOT
@@ -287,7 +287,7 @@ EOT
       @allocate.setSelectionMode(@val[1])
     })
     doc('select', <<'EOT'
-The select functions controls which resource is picked from an allocation and
+The select function controls which resource is picked from an allocation and
 it's alternatives. The selection is re-evaluated each time the resource used
 in the previous time slot becomes unavailable.
 
@@ -301,7 +301,7 @@ EOT
       @allocate.persistent = true
     })
     doc('persistent', <<'EOT'
-Specifies that once a resource is picked from the list of alternatives this
+Specifies that once a resource is picked from the list of alternatives, this
 resource is used for the whole task. This is useful when several alternative
 resources have been specified. Normally the selected resource can change after
 each break. A break is an interval of at least one timeslot where no resources
@@ -389,7 +389,7 @@ EOT
     descr(<<'EOT'
 Pick the resource that has the smallest allocation factor. The
 allocation factor is calculated from the various allocations of the resource
-across the tasks. This is the default setting.)
+across the tasks. This is the default setting.
 EOT
          )
 
@@ -748,7 +748,7 @@ EOT
 Normally, columns with calculated values take the specified report period into
 account when calculating their values. With this attribute, the user can
 specify an end date for the period that should be used when calculating the
-values of this column. It does not have an impact on column with time
+values of this column. It does not have an impact on columns with time
 invariant values.
 EOT
        )
@@ -781,7 +781,7 @@ EOT
       @column.listItem = @val[1]
     })
     doc('listitem.column', <<'EOT'
-Specifies a RichText pattern that is used to generate the text for the list
+Specifies a [[Rich_Text_Attributes|Rich Text]] pattern that is used to generate the text for the list
 items. The pattern should contain at least one ''''<nowiki><</nowiki>-query
 attribute='XXX'->'''' element that will be replaced with the value of
 attribute XXX. For the replacement, the property of the query will be the list
@@ -824,7 +824,7 @@ EOT
 Normally, columns with calculated values take the specified report period into
 account when calculating their values. With this attribute, the user can
 specify a start date for the period that should be used when calculating the
-values of this column. It does not have an impact on column with time
+values of this column. It does not have an impact on columns with time
 invariant values.
 EOT
        )
@@ -930,19 +930,19 @@ are set to 0.  ''''TIMEZONE'''' must be an offset to GMT or UTC, specified as
 ''''+HHMM'''' or ''''-HHMM''''. Dates must always be aligned with the
 [[timingresolution]].
 
-TaskJuggler also supports simple date calculations. You can add or substract a
+TaskJuggler also supports simple date calculations. You can add or subtract a
 given interval from a fixed date.
 
  %{2009-11-01 + 8m}
 
-This will result in an actual date of around 2009-07-01. Keep in mind that due
+This will result in an actual date of around 2010-07-01. Keep in mind that due
 to the varying lengths of months TaskJuggler cannot add exactly 8 calendar
 months. The date calculation functionality makes most sense when used with
 macros.
 
  %{${now} - 2w}
 
-This is result in a date 2 weeks earlier than the current (or specified) date.
+This results in a date 2 weeks earlier than the current (or specified) date.
 See [[duration]] for a complete list of supported time intervals. Don't forget
 to put at least one space character after the date to prevent TaskJuggler from
 interpreting the interval as an hour.
@@ -1065,11 +1065,11 @@ EOT
       @property.set('definitions', @val[1])
     })
     doc('definitions', <<"EOT"
-This attributes controls what definitions will be contained in the report. If
+This attribute controls what definitions will be contained in the report. If
 the list includes ''project'', the generated file will have a ''''.tjp''''
 extension. Otherwise it will have a ''''.tji'''' extension.
 
-By default, the report contains everything and the generated files has a ''''.tjp'''' extension.
+By default, the report contains everything and the generated files have a ''''.tjp'''' extension.
 EOT
        )
     allOrNothingListRule('exportDefinitions',
@@ -1188,13 +1188,13 @@ EOT
     descr(<<'EOT'
 Export of the scheduled project in Microsoft Project XML format. This will
 export the data of the fully scheduled project. The exported data include the
-tasks, resources and the assignments of resources to task. This is only a
+tasks, resources and the assignments of resources to tasks. This is only a
 small subset of the data that TaskJuggler can manage. This export is intended
 to share resource assignment data with other teams using Microsoft Project.
-TaskJuggler manages assignments with a larger accuracy than the Microsft
+TaskJuggler manages assignments with a larger accuracy than the Microsoft
 Project XML format can represent. This will inevitably lead to some rounding
 errors and different interpretation of the data. The numbers you will see in
-Project are not necessarily an exact match of the numbers you see in
+Microsoft Project are not necessarily an exact match of the numbers you see in
 TaskJuggler. The XML file format requires the sequence of the tasks in the
 file to follow the work breakdown structure. Hence all user provided sorting
 directions will be ignored for this format.
@@ -1385,7 +1385,7 @@ EOT
 
     singlePattern('_inherit')
     doc('inherit.extend', <<'EOT'
-If the this attribute is used, the property extension will be inherited by
+If this attribute is used, the property extension will be inherited by
 child properties from their parent property.
 EOT
        )
@@ -1457,7 +1457,7 @@ A logical flag expression is a combination of operands and mathematical
 operations.  The final result of a logical expression is always true or false.
 Logical expressions are used the reduce the properties in a report to a
 certain subset or to select alternatives for the cell content of a table. When
-used with attributes like [[hidejournalentry]] the logical expression
+the logical expression is used with attributes like [[hidejournalentry]] and
 evaluates to true for a certain property, this property is hidden or rolled-up
 in the report.
 
@@ -1507,7 +1507,7 @@ EOT
     })
     arg(0, 'operand', <<'EOT'
 An operand is a declared flag. An operand can be a negated operand by
-prefixing a ~ charater or it can be another logical expression enclosed in
+prefixing a ~ character or it can be another logical expression enclosed in
 braces.
 EOT
         )
@@ -1527,7 +1527,7 @@ EOT
     })
     arg(1, 'operand', <<'EOT'
 An operand is a declared flag. An operand can be a negated operand by
-prefixing a ~ charater or it can be another logical expression enclosed in
+prefixing a ~ character or it can be another logical expression enclosed in
 braces.
 EOT
         )
@@ -1582,18 +1582,18 @@ the evaluation, implicit and explicit parameters are used.
 
 All functions may operate on the current property and the scope property. The
 scope property is the enclosing property in reports with nested properties.
-Imagine e. g a task report with nested resources. When the function is called
+Imagine e. g. a task report with nested resources. When the function is called
 for a task line, the task is the property and we don't have a scope property.
 When the function is called for a resource line, the resource is the property
 and the enclosing task is the scope property.
 
-These number of arguments that are passed in brackets to the function depends
+The number of arguments that are passed in brackets to the function depends
 on the specific function. See the reference for details on each function.
 
 All functions can be suffixed with an underscore character. In that case, the
 function is operating on the scope property as if it were the property. The
 original property is ignored in that case. In our task report example from
-above, calling a function with an appended dash would mean that a task
+above, calling a function with an appended underscore would mean that a task
 line would be evaluated for the enclosing resource.
 
 In the example below you can see how this can be used. To generate a task
@@ -1684,7 +1684,7 @@ EOT
 
     pattern(%w( _isongoing _( $ID _) ))
     doc('isongoing', <<'EOT'
-Will evaluate to true for tasks that overlap with the report period in given
+Will evaluate to true for tasks that overlap with the report period in the given
 scenario.
 EOT
        )
@@ -1837,8 +1837,8 @@ EOT
       end
     })
     doc('scenario.ical', <<'EOT'
-Id of the scenario that should be included in the report. By default, the
-top-level scenario will be included. This attribute can be used select another
+ID of the scenario that should be included in the report. By default, the
+top-level scenario will be included. This attribute can be used to select another
 scenario.
 EOT
        )
@@ -2021,7 +2021,7 @@ dates without a time specification! Date specifications are 0 extended. An
 end date without a time is expanded to midnight that day. So the day of the
 end date is not included in the interval! The start and end dates must be separated by a hyphen character.
 
-In the second form specifies the start date and an interval duration. The
+The second form specifies the start date and an interval duration. The
 duration must be prefixed by a plus character.
 EOT
        )
@@ -2161,7 +2161,7 @@ EOT
     pattern(%w( _alerts_dep ), lambda { :alerts_dep })
     descr(<<'EOT'
 In this mode only the last entries before the report end date for the context
-property and all its sub-properties and their dependencies is included. If
+property and all its sub-properties and their dependencies are included. If
 there are multiple entries at the exact same date, then all these entries are
 included. In contrast to the ''''status_down'''' mode, only entries with an
 alert level above the default level, and only those with the highest overall
@@ -2190,7 +2190,7 @@ used to record events, decisions or news that happened at a particular moment
 during the project. Depending on the context, a journal entry may or may not
 be associated with a specific property or author.
 
-A journal entry can consists of up to three parts. The headline is mandatory
+A journal entry can consist of up to three parts. The headline is mandatory
 and should be only 5 to 10 words long. The introduction is optional and should
 be only one or two sentences long. All other details should be put into the
 third part.
@@ -2209,7 +2209,7 @@ EOT
       @journalEntry.alertLevel = @val[1]
     })
     doc('alert', <<'EOT'
-Specify the alert level for this entry. This attribute is inteded to be used for
+Specify the alert level for this entry. This attribute is intended to be used for
 status reporting. When used for a journal entry that is associated with a
 property, the value can be reported in the alert column. When multiple entries
 have been specified for the property, the entry with the date closest to the
@@ -2330,7 +2330,7 @@ allowances. The ''''leaveallowancebalance'''' report [[columns|column]] can be
 used to report the current annual leave balance.
 
 Leaves outside of the project period are silently ignored and will not be
-considered in the leave balance calculation. Therefor, leave allowances are
+considered in the leave balance calculation. Therefore, leave allowances are
 only allowed within the project period.
 EOT
       )
@@ -2352,7 +2352,7 @@ Leaves can be defined at global level, at resource level and at shift level
 and intervals may overlap. The leave types have different priorities. A higher
 priority leave type can overwrite a lower priority type. This means that
 resource level leaves can overwrite global leaves when they have a higher
-priority. A sub resource can overwrite a leave of a enclosing resource.
+priority. A sub resource can overwrite a leave of an enclosing resource.
 
 Leave periods outside of the project interval are silently ignored. For leave
 periods that are partially outside of the project period only the part inside
@@ -2469,7 +2469,7 @@ EOT
     doc('dailymin', <<'EOT'
 Minimum required effort for any calendar day. This value cannot be guaranteed by
 the scheduler. It is only checked after the schedule is complete. In case the
-minium required amount has not been reached, a warning will be generated.
+minimum required amount has not been reached, a warning will be generated.
 EOT
        )
     example('Limits-1', '4')
@@ -2506,7 +2506,7 @@ EOT
     doc('monthlymin', <<'EOT'
 Minimum required effort for any calendar month. This value cannot be
 guaranteed by the scheduler. It is only checked after the schedule is
-complete. In case the minium required amount has not been reached, a warning
+complete. In case the minimum required amount has not been reached, a warning
 will be generated.
 EOT
        )
@@ -2525,7 +2525,7 @@ EOT
     doc('weeklymin', <<'EOT'
 Minimum required effort for any calendar week. This value cannot be guaranteed by
 the scheduler. It is only checked after the schedule is complete. In case the
-minium required amount has not been reached, a warning will be generated.
+minimum required amount has not been reached, a warning will be generated.
 EOT
        )
   end
@@ -2632,8 +2632,8 @@ EOT
 A logical expression is a combination of operands and mathematical operations.
 The final result of a logical expression is always true or false. Logical
 expressions are used the reduce the properties in a report to a certain subset
-or to select alternatives for the cell content of a table. When used with
-attributes like [[hidetask]] or [[hideresource]] the logical expression
+or to select alternatives for the cell content of a table. When the
+logical expression is used with attributes like [[hidetask]] or [[hideresource]] and
 evaluates to true for a certain property, this property is hidden or rolled-up
 in the report.
 
@@ -2655,7 +2655,7 @@ be undefined. To use such an attribute in a comparison, you need to test for
 the validity first. E. g. to compare the end date of the ''''plan''''
 scenario with the ''''maxend'''' value use ''''isvalid(plan.maxend) &
 (plan.end > plan.maxend)''''. The ''''&'''' and ''''|'''' operators are lazy.
-If the result is already known after evaluation the first operand, the second
+If the result is already known after evaluation of the first operand, the second
 operand will not be evaluated any more.
 EOT
        )
@@ -2690,9 +2690,9 @@ numbers as names.  The number specifies the index of the argument.
 will expand to ''''This stupid text'''' if called as ''''${FOO "stupid"}''''.
 Macros may call other macros. All macro arguments must be enclosed by double
 quotes. In case the argument contains a double quote, it must be escaped by a
-slash (''''/'''').
+backslash (''''\'''').
 
-User defined macro IDs must have at least one uppercase letter as all
+User defined macro IDs should start with one uppercase letter as all
 lowercase letter IDs are reserved for built-in macros.
 
 To terminate the macro definition, the ''''<nowiki>]</nowiki>'''' must be the
@@ -3018,7 +3018,7 @@ them from flags. See [[columnid]] for a list of available attributes. The use
 of list attributes is not recommended. User defined attributes are available
 as well.
 
-An operand can be a negated operand by prefixing a ~ charater or it can be
+An operand can be a negated operand by prefixing a ~ character or it can be
 another logical expression enclosed in braces.
 EOT
         )
@@ -3037,7 +3037,7 @@ EOT
       [ @val[0], @val[1] ]
     })
     arg(1, 'operand', <<'EOT'
-An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ charater or it can be another operation enclosed in braces.
+An operand can consist of a date, a text string or a numerical value. It can also be the name of a declared flag. Finally, an operand can be a negated operand by prefixing a ~ character or it can be another operation enclosed in braces.
 EOT
         )
   end
@@ -3075,7 +3075,7 @@ EOT
     })
     arg(0, 'id', <<"EOT"
 An optional ID. If you ever want to reference this property, you must specify
-your own unique ID. If no ID is specified one will be automatically generated.
+your own unique ID. If no ID is specified, one will be automatically generated.
 These IDs may become visible in reports, but may change at any time. You may
 never rely on automatically generated IDs.
 EOT
@@ -3140,7 +3140,7 @@ EOT
     pattern(%w( _niku ), lambda {
       :niku
     })
-    descr('Generate a XOG XML file to be used with Clarity.')
+    descr('Generate an XOG XML file to be used with Clarity.')
   end
 
   def rule_outputFormats
@@ -3238,7 +3238,7 @@ EOT
     doc('extend', <<'EOT'
 Often it is desirable to collect more information in the project file than is
 necessary for task scheduling and resource allocation. To add such information
-to tasks, resources or accounts the user can extend these properties with
+to tasks, resources or accounts, the user can extend these properties with
 user-defined attributes. The new attributes can be of various types such as
 text, date or reference to capture various types of data. Optionally the user
 can specify if the attribute value should be inherited from the enclosing
@@ -3285,8 +3285,8 @@ EOT
     })
     doc('outputdir',
         'Specifies the directory into which the reports should be generated. ' +
-        'This will not affect reports whos name start with a slash. This ' +
-        'setting can be overwritten by the command line option.')
+        'This will not affect reports whose name start with a slash. This ' +
+        'setting can be overwritten by the command line option -o or --output-dir.')
     arg(1, 'directory', 'Path to an existing directory')
 
     pattern(%w( !scenario ))
@@ -3294,8 +3294,8 @@ EOT
       @project['shortTimeFormat'] = @val[1]
     })
     doc('shorttimeformat',
-        'Specifies time format for time short specifications. This is normal' +
-        'just the hour and minutes.')
+        'Specifies time format for short time specifications. This is normal ' +
+        'just hours and minutes.')
     arg(1, 'format', 'strftime like format string')
 
     pattern(%w( !timeformat ), lambda {
@@ -3352,7 +3352,7 @@ the project. All sub-scenarios of this scenario inherit the bookings of the
 tracking scenario and may not have any bookings of their own. The tracking
 scenario must also be specified to use time and status sheet reports.
 
-The tracking scenario must be defined after all scenario have been defined.
+The tracking scenario must be defined after all scenarios have been defined.
 
 The tracking scenario and all scenarios derived from it will be scheduled in
 projection mode. This means that the scheduler will only add bookings after
@@ -3472,7 +3472,7 @@ EOT
     # documentation.
     pattern(%w( !projectPropertiesBody ))
     doc('properties', <<'EOT'
-The project properties. Every project must consists of at least one task. The other properties are optional. To save the scheduled data at least one output generating property should be used.
+The project properties. Every project must consist of at least one task. The other properties are optional. To save the scheduled data at least one output generating property should be used.
 EOT
        )
   end
@@ -3489,7 +3489,7 @@ EOT
     doc('include.project', <<'EOT'
 Includes the specified file name as if its contents would be written
 instead of the include property. When the included files contains other
-include statements or report definitions, the filenames are relative to file
+include statements or report definitions, the filenames are relative to the file
 where they are defined in.
 
 This version of the include directive may only be used inside the [[project]]
@@ -3506,7 +3506,7 @@ EOT
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
 statement itself. When the included files contains other include
-statements or report definitions, the filenames are relative to file
+statements or report definitions, the filenames are relative to the file
 where they are defined in.
 
 The included file may only contain macro definitions. This version of the
@@ -3667,7 +3667,7 @@ EOT
 Includes the specified file name as if its contents would be written
 instead of the include property. The only exception is the include
 statement itself. When the included files contains other include
-statements or report definitions, the filenames are relative to file
+statements or report definitions, the filenames are relative to the file
 where they are defined in. include commands can be used in the project
 header, at global scope or between property declarations of tasks,
 resources, and accounts.
@@ -3809,7 +3809,7 @@ EOT
     singlePattern('_alerttrend')
     descr(<<'EOT'
 Shows how the alert level at the end of the report period compares to the
-alert level at the begining of the report period. Possible values are
+alert level at the beginning of the report period. Possible values are
 ''''Up'''', ''''Down'''' or ''''Flat''''.
 EOT
          )
@@ -3846,7 +3846,7 @@ EOT
     singlePattern('_closedtasks')
     descr(<<'EOT'
 The number of sub-tasks (including the current task) that have been closed
-during the reported time period.  Closed means that they have and end date
+during the reported time period.  Closed means that they have an end date
 before the current time or [[now]] date.
 EOT
          )
@@ -3867,12 +3867,12 @@ EOT
     singlePattern('_complete')
     descr(<<'EOT'
 The completion degree of a task. Unless a completion degree is manually
-provided, this is a computed value relative the [[now]] date of the project. A
+provided, this is a computed value relative to the [[now]] date of the project. A
 task that has ended before the now date is always 100% complete. A task that
-starts at or after the now date is always 0%. For [[effort]] based task the
+starts at or after the now date is always 0%. For [[effort]] based tasks the
 computation degree is the percentage of done effort of the overall effort. For
-other leaf task, the completion degree is the percentage of the already passed
-duration of the overall task duration. For container task, it's always the
+other leaf tasks, the completion degree is the percentage of the already passed
+duration of the overall task duration. For container tasks, it's always the
 average of the direct sub tasks. If the sub tasks consist of a mixture of
 effort and non-effort tasks, the completion value is only of limited value.
 EOT
@@ -3886,8 +3886,8 @@ EOT
     descr('Deprecated alias for complete')
 
     singlePattern('_criticalness')
-    descr('A measure for how much effort the resource is allocated for, or' +
-          'how strained the allocated resources of a task are')
+    descr('A measure for how much effort the resource is allocated for, or ' +
+          'how strained the allocated resources of a task are.')
 
     singlePattern('_cost')
     descr(<<'EOT'
@@ -3939,7 +3939,7 @@ EOT
     descr(<<'EOT'
 A list of tasks that depend on the current task. The list contains the names,
 the IDs, the date and the type of dependency. For the type the following
-symbols are used for <nowiki><dep></nowiki>.
+symbols are used for <nowiki><dep></nowiki>:
 
 * '''<nowiki>]->[</nowiki>''': End-to-Start dependency
 * '''<nowiki>[->[</nowiki>''': Start-to-Start dependency
@@ -3948,7 +3948,7 @@ symbols are used for <nowiki><dep></nowiki>.
 
 The list can be customized by the [[listitem.column|listitem]] and
 [[listtype.column]] attributes. The dependency symbol can be generated via
-the ''''dependency'''' attribute inthe query, the target date via the
+the ''''dependency'''' attribute in the query, the target date via the
 ''''date'''' attribute.
 EOT
          )
@@ -4026,7 +4026,7 @@ EOT
     singlePattern('_journal')
     descr(<<'EOT'
 The journal entries for the task or resource for the reported interval. The
-generated text can be customized with the [[journalmode]],
+generated text can be customized with [[journalmode]],
 [[journalattributes]], [[hidejournalentry]] and [[sortjournalentries]]. If
 used in queries without a property context, the journal for the complete
 project is generated.
@@ -4087,7 +4087,7 @@ EOT
     singlePattern('_opentasks')
     descr(<<'EOT'
 The number of sub-tasks (including the current task) that have not yet been
-closed during the reported time period. Closed means that they have and end
+closed during the reported time period. Closed means that they have an end
 date before the current time or [[now]] date.
 EOT
          )
@@ -4109,7 +4109,7 @@ are used
 
 The list can be customized by the [[listitem.column|listitem]] and
 [[listtype.column|listtype]] attributes.  The dependency symbol can be
-generated via the ''''dependency'''' attribute inthe query, the target date
+generated via the ''''dependency'''' attribute in the query, the target date
 via the ''''date'''' attribute.
 EOT
          )
@@ -4371,7 +4371,7 @@ EOT
     })
     doc('height', <<'EOT'
 Set the height of the report in pixels. This attribute is only used for
-reports that cannot determine the height based on the content. Such report can
+reports that cannot determine the height based on the content. Such reports can
 be freely resized to fit in. The vast majority of reports can determine their
 height based on the provided content. These reports will simply ignore this
 setting.
@@ -4428,7 +4428,7 @@ EOT
       @property.set('rawHtmlHead', @val[1])
     })
     doc('rawhtmlhead', <<'EOT'
-Define a HTML fragment that will be inserted at the end of the HTML head
+Define an HTML fragment that will be inserted at the end of the HTML head
 section.
 EOT
        )
@@ -4492,7 +4492,7 @@ EOT
     doc('resourceroot', <<'EOT'
 Only resources below the specified root-level resources are exported. The
 exported resources will have the ID of the root-level resource stripped from
-their ID, so that the sub-resourcess of the root-level resource become
+their ID, so that the sub-resources of the root-level resource become
 top-level resources in the report file.
 EOT
        )
@@ -4541,7 +4541,7 @@ EOT
     })
     doc('width', <<'EOT'
 Set the width of the report in pixels. This attribute is only used for
-reports that cannot determine the width based on the content. Such report can
+reports that cannot determine the width based on the content. Such reports can
 be freely resized to fit in. The vast majority of reports can determine their
 width based on the provided content. These reports will simply ignore this
 setting.
@@ -4803,9 +4803,9 @@ EOT
     })
     doc('resourcereport', <<'EOT'
 The report lists resources and their respective values in a table. The task
-that are the resources are allocated to can be listed as well. To reduce the
+that the resources are allocated to can be listed as well. To reduce the
 list of included resources, you can use the [[hideresource]],
-[[rollupresource]] or [[resourceroot]] attributes. The order of the task can
+[[rollupresource]] or [[resourceroot]] attributes. The order of the tasks can
 be controlled with [[sortresources]]. If the first sorting criteria is tree
 sorting, the parent resources will always be included to form the tree.
 Tree sorting is the default. You need to change it if you do not want certain
@@ -4864,7 +4864,7 @@ it as a crude way to model a team. A team of 5 people should have an
 efficiency of 5.0. Keep in mind that you cannot track the members of the team
 individually if you use this feature. They always act as a group.
 
-The other use is to model performance variations between your resources. Again, this is a fairly crude mechanism and should be used with care. A resource that isn't every good at some task might be pretty good at another. This can't be taken into account as the resource efficiency can only set globally for all tasks.
+The other use is to model performance variations between your resources. Again, this is a fairly crude mechanism and should be used with care. A resource that isn't very good at some task might be pretty good at another. This can't be taken into account as the resource efficiency can only be set globally for all tasks.
 
 All resources that do not contribute effort to the task, should have an
 efficiency of 0.0. A typical example would be a conference room. It's necessary for a meeting, but it does not contribute any work.
@@ -4881,7 +4881,7 @@ EOT
     pattern(%w( _booking !resourceBooking ))
     doc('booking.resource', <<'EOT'
 The booking attribute can be used to report actually completed work.  A task
-with bookings must be [[scheduling|scheduled]] in ''''asap'''' mode.  If the
+with bookings must be [[scheduling|scheduled]] in ''''ASAP'''' mode.  If the
 scenario is not the [[trackingscenario|tracking scenario]] or derived from it,
 the scheduler will not allocate resources prior to the current date or the
 date specified with [[now]] when a task has at least one booking.
@@ -4967,7 +4967,7 @@ EOT
       @shiftAssignments = nil
     })
     level(:deprecated)
-    also('shift.resource')
+    also('shifts.resource')
     doc('shift.resource', <<'EOT'
 This keyword has been deprecated. Please use [[shifts.resource|shifts
 (resource)]] instead.
@@ -5077,10 +5077,10 @@ that are listed as scenario specific may differ between the various
 scenarios. A nested scenario uses all attributes from the enclosing scenario
 unless the user has specified a different value for this attribute.
 
-By default, the scheduler assigns resources to task beginning with the project
+By default, the scheduler assigns resources to tasks beginning with the project
 start date. If the scenario is switched to projection mode, no assignments
 will be made prior to the current date or the date specified by [[now]]. In
-this case, TaskJuggler assumes, that all assignements prior to the
+this case, TaskJuggler assumes, that all assignments prior to the
 current date have been provided by [[booking.task]] statements.
 EOT
        )
@@ -5095,7 +5095,7 @@ EOT
     })
     doc('active', <<'EOT'
 Enable the scenario to be scheduled or not. By default, all scenarios will be
-scheduled. If a scenario is marked as inactive, it not be scheduled and will
+scheduled. If a scenario is marked as inactive, it cannot be scheduled and will
 be ignored in the reports.
 EOT
        )
@@ -5710,7 +5710,7 @@ EOT
       @property = @propertyStack.pop
     })
     doc('task.statussheet', <<'EOT'
-Opens the task with the specified ID to add a status report. Child task can be
+Opens the task with the specified ID to add a status report. Child tasks can be
 opened inside this context by specifying their relative ID to this parent.
 EOT
        )
@@ -6050,7 +6050,7 @@ EOT
          )
 
     singlePattern('$ID')
-    arg(0, 'ID', 'Just the ID of the task without and parent IDs.')
+    arg(0, 'ID', 'Just the ID of the task without any parent IDs.')
 
     pattern(%w( !relativeId ), lambda {
       task = @property
@@ -6166,7 +6166,7 @@ EOT
     doc('taskreport', <<'EOT'
 The report lists tasks and their respective values in a table. To reduce the
 list of included tasks, you can use the [[hidetask]], [[rolluptask]] or
-[[taskroot]] attributes. The order of the task can be controlled with
+[[taskroot]] attributes. The order of the tasks can be controlled with
 [[sorttasks]]. If the first sorting criteria is tree sorting, the parent tasks
 will always be included to form the tree. Tree sorting is the default. You
 need to change it if you do not want certain parent tasks to be included in
@@ -6225,7 +6225,7 @@ EOT
     pattern(%w( _booking !taskBooking ))
     doc('booking.task', <<'EOT'
 The booking attribute can be used to report actually completed work.  A task
-with bookings must be [[scheduling|scheduled]] in ''''asap'''' mode.  If the
+with bookings must be [[scheduling|scheduled]] in ''''ASAP'''' mode.  If the
 scenario is not the [[trackingscenario|tracking scenario]] or derived from it,
 the scheduler will not allocate resources prior to the current date or the
 date specified with [[now]] when a task has at least one booking.
@@ -6328,7 +6328,7 @@ Specifies that the task cannot start before the specified tasks have been
 finished.
 
 By using the 'depends' attribute, the scheduling policy is automatically set
-to asap. If both depends and precedes are used, the last policy counts.
+to ASAP. If both depends and precedes are used, the last policy counts.
 EOT
         )
     example('Depends1')
@@ -6425,10 +6425,10 @@ EOT
 The end attribute provides a guideline to the scheduler when the task should
 end. It will never end later, but it may end earlier when allocated
 resources are not available that long. When an end date is provided for a
-container task, it will be passed down to ALAP task that don't have a well
+container task, it will be passed down to ALAP tasks that don't have a well
 defined end criteria.
 
-Setting an end date will implicitely set the scheduling policy for this task
+Setting an end date will implicitly set the scheduling policy for this task
 to ALAP.
 EOT
        )
@@ -6441,7 +6441,7 @@ EOT
     level(:deprecated)
     doc('endcredit', <<'EOT'
 Specifies an amount that is credited to the accounts specified by the
-[[chargeset]] attributes at the moment the tasks ends.
+[[chargeset]] attributes at the moment the task ends.
 EOT
        )
     also('charge')
@@ -6473,7 +6473,7 @@ and global working hours are defined accordingly.
 For the length calculation, the global working hours and the global leaves
 matter unless the task has [[shifts.task|shifts]] assigned. In the latter case
 the working hours and leaves of the shift apply for the specified period to
-determine if a slot is working time or not. If a resource has additinal
+determine if a slot is working time or not. If a resource has additional
 working hours defined, it's quite possible that a task with a length of 5d
 will have an allocated effort larger than 40 hours.  Resource working hours
 only have an impact on whether an allocation is made or not for a particular
@@ -6521,7 +6521,7 @@ EOT
     })
     doc('milestone', <<'EOT'
 Turns the task into a special task that has no duration. You may not specify a
-duration, length, effort or subtasks for a milestone task.
+duration, length, effort or subtask for a milestone task.
 
 A task that only has a start or an end specification and no duration
 specification, inherited start or end dates, no dependencies or sub tasks,
@@ -6558,7 +6558,7 @@ EOT
     level(:deprecated)
     doc('startcredit', <<'EOT'
 Specifies an amount that is credited to the account specified by the
-[[chargeset]] attributes at the moment the tasks starts.
+[[chargeset]] attributes at the moment the task starts.
 EOT
        )
     also('charge')
@@ -6573,14 +6573,14 @@ EOT
       end
     })
     doc('precedes', <<'EOT'
-Specifies that the tasks with the specified IDs cannot start before the task
+Specifies that the tasks with the specified IDs cannot start before this task
 has been finished. If multiple IDs are specified, they must be separated by
 commas. IDs must be either global or relative. A relative ID starts with a
 number of '!'. Each '!' moves the scope to the parent task. Global IDs do not
 contain '!', but have IDs separated by dots.
 
 By using the 'precedes' attribute, the scheduling policy is automatically set
-to alap. If both depends and precedes are used within a task, the last policy
+to ALAP. If both depends and precedes are used within a task, the last policy
 counts.
 EOT
        )
@@ -6596,13 +6596,13 @@ EOT
 Specifies the priority of the task. A task with higher priority is more
 likely to get the requested resources. The default priority value of all tasks
 is 500. Don't confuse the priority of a tasks with the importance or urgency
-of a task. It only increases the chances that the tasks gets the requested
+of a task. It only increases the chances that the task gets the requested
 resources. It does not mean that the task happens earlier, though that is
 usually the effect you will see. It also does not have any effect on tasks
 that don't have any resources assigned (e.g. milestones).
 
-For milestones it will raise or lower the chances that task leading up the
-milestone will get their resources over task with equal priority that compete
+For milestones, it will raise or lower the chances that tasks leading up the
+milestone will get their resources over tasks with equal priority that compete
 for the same resources.
 
 This attribute is inherited by subtasks if specified prior to the definition
@@ -6620,12 +6620,12 @@ EOT
       begin
         @property['projectid', @scenarioIdx] = @val[1]
       rescue AttributeOverwrite
-        # This attribute always overwrites the implicitely provided ID.
+        # This attribute always overwrites the implicitly provided ID.
       end
     })
     doc('projectid.task', <<'EOT'
-In larger projects it may be desireable to work with different project IDs for
-parts of the project. This attribute assignes a new project ID to this task an
+In larger projects it may be desirable to work with different project IDs for
+parts of the project. This attribute assignes a new project ID to this task and
 all subsequently defined sub tasks. The project ID needs to be declared first using [[projectid]] or [[projectids]].
 EOT
        )
@@ -6669,8 +6669,8 @@ EOT
     })
     doc('scheduling', <<'EOT'
 Specifies the scheduling policy for the task. A task can be scheduled from
-start to end (As Soon As Possible, asap) or from end to start (As Late As
-Possible, alap).
+start to end (As Soon As Possible, ASAP) or from end to start (As Late As
+Possible, ALAP).
 
 A task can be scheduled from start to end (ASAP mode) when it has a hard
 (start) or soft (depends) criteria for the start time. A task can be scheduled
@@ -6679,21 +6679,21 @@ criteria for the end time.
 
 Some task attributes set the scheduling policy implicitly. This attribute can
 be used to explicitly set the scheduling policy of the task to a certain
-direction. To avoid it being overwritten again by an implicit attribute this
+direction. To avoid it being overwritten again by an implicit attribute, this
 attribute should always be the last attribute of the task.
 
 A random mixture of ASAP and ALAP tasks can have unexpected side effects on
 the scheduling of the project. It increases significantly the scheduling
 complexity and results in much longer scheduling times. Especially in projects
-with many hundreds of tasks the scheduling time of a project with a mixture of
-ASAP and ALAP times can be 2 to 10 times longer. When the projects contains
-chains of ALAP and ASAP tasks the tasks further down the dependency chain will
-be served much later than other non-chained task even when they have a much
+with many hundreds of tasks, the scheduling time of a project with a mixture of
+ASAP and ALAP times can be 2 to 10 times longer. When the project contains
+chains of ALAP and ASAP tasks, the tasks further down the dependency chain will
+be served much later than other non-chained tasks, even when they have a much
 higher priority. This can result in situations where high priority tasks do
-not get their resources even though the parallel competing tasks have a much
+not get their resources, even though the parallel competing tasks have a much
 lower priority.
 
-ALAP tasks may not have [[booking.task|bookings]] since the first booked slot
+ALAP tasks may not have [[booking.task|bookings]], since the first booked slot
 determines the start date of the task and prevents it from being scheduled
 from end to start.
 
@@ -6752,7 +6752,7 @@ EOT
 Limits the working time for this task during the specified interval
 to the working hours of the given shift. Multiple shifts can be defined, but
 shift intervals may not overlap. This is an additional working time
-restriction ontop of the working hours of the allocated resources. It does not
+restriction on top of the working hours of the allocated resources. It does not
 replace the resource working hour restrictions. For a resource to be assigned
 to a time slot, both the respective task shift as well as the resource working
 hours must declare the time slot as duty slot.
@@ -6770,10 +6770,10 @@ EOT
 The start attribute provides a guideline to the scheduler when the task should
 start. It will never start earlier, but it may start later when allocated
 resources are not available immediately. When a start date is provided for a
-container task, it will be passed down to ASAP task that don't have a well
+container task, it will be passed down to ASAP tasks that don't have a well
 defined start criteria.
 
-Setting a start date will implicitely set the scheduling policy for this task
+Setting a start date will implicitly set the scheduling policy for this task
 to ASAP.
 EOT
        )
@@ -6801,7 +6801,7 @@ EOT
       @property = @property.parent
     })
     doc('textreport', <<'EOT'
-This report consists of 5 RichText sections, a header, a center section with a
+This report consists of 5 [[Rich_Text_Attributes|Rich Text]] sections, a header, a center section with a
 left and right margin and a footer. The sections may contain the output of
 other defined reports.
 EOT
@@ -6826,7 +6826,7 @@ EOT
     arg(1, 'format', <<'EOT'
 Ordinary characters placed in the format string are copied without
 conversion. Conversion specifiers are introduced by a `%' character, and are
-replaced in s as follows:
+replaced as follows:
 
 * ''''%a''''  The abbreviated weekday name according to the current locale.
 
@@ -6986,7 +6986,7 @@ The work is booked for the scenario specified by [[trackingscenario]].
 
 The intended use for time sheets is to have all resources report a time sheet
 every day, week or month. All time sheets can be added to the project plan.
-The status information is always used to determin the current status of the
+The status information is always used to determine the current status of the
 project. The [[work]], [[remaining]] and [[end.timesheet|end]] attributes are
 ignored if there are also [[booking.task|bookings]] for the resource in the
 time sheet period. The non-ignored attributes of the time sheets will be
@@ -7021,7 +7021,7 @@ EOT
     })
     doc('newtask', <<'EOT'
 The keyword can be used to request a new task to the project. If the task ID
-requires further parent task that don't exist yet, these tasks will be
+requires further parent tasks that don't exist yet, these tasks will be
 requested as well. If the task exists already, an error will be generated. The
 newly requested task can be used immediately to report progress and status
 against it. These tasks will not automatically be added to the project plan.
@@ -7155,14 +7155,14 @@ the [[columns]] attribute. This column set is then repeated for all properties
 that are not hidden by [[hideaccount]], [[hideresource]] and [[hidetask]]. By
 default, all properties are excluded. You must provide at least one of the
 ''''hide...'''' attributes to select the properties you want to have included
-in the report. Please be aware that total number of columns is the product of
+in the report. Please be aware that the total number of columns is the product of
 attributes defined with [[columns]] times the number of included properties.
-Select you values carefully or you will end up with very large reports.
+Select your values carefully or you will end up with very large reports.
 
 The column headers can be customized by using the [[title.column|title]]
 attribute.  When you include multiple properties, these headers are not unique
-unless you include mini-queries to modify them based on the property they
-colum is represeting.  You can use the queries
+unless you include mini-queries to modify them based on the property the
+column is representing.  You can use the queries
 ''''<nowiki><-id-></nowiki>'''', ''''<nowiki><-name-></nowiki>'''',
 ''''<nowiki><-scenario-></nowiki>'''' and
 ''''<nowiki><-attribute-></nowiki>''''. ''''<nowiki><-id-></nowiki>'''' is
@@ -7177,12 +7177,12 @@ shows the tracked values over time will be generated. The CSV file may contain
 all kinds of values that are being tracked. Report formats that don't support
 a mix of different values will just show the values of the second column.
 
-The values in the CSV files are fixed units and cannot be formated. Effort
+The values in the CSV files are fixed units and cannot be formatted. Effort
 values are always in resource-days. This allows other software to interpret
 the file without any need for additional context information.
 
 The HTML version generates SVG graphs that are embedded in the HTML page.
-These graphs are only visble if the web browser supports HTML5. This is true
+These graphs are only visible if the web browser supports HTML5. This is true
 for the latest generation of browsers, but older browsers may not support this
 format.
 EOT
@@ -7194,7 +7194,7 @@ EOT
     pattern(%w( _tracereport !optionalID !reportName ), lambda {
       newReport(@val[1], @val[2], :tracereport, @sourceFileInfo[0]) do
         # The top-level always inherits the global timeFormat setting. This is
-        # not desireable in this case, so we ignore this.
+        # not desirable in this case, so we ignore this.
         if (@property.level == 0 && !@property.provided('timeFormat')) ||
            (@property.level > 0 && !@property.modified?('timeFormat'))
           # CSV readers such of Libre-/OpenOffice can't deal with time zones. We
@@ -7377,7 +7377,7 @@ EOT
     })
     doc('end.timesheet', <<'EOT'
 The expected end date for the task. This can only be used for duration based
-task. For effort based task [[remaining]] has to be used.
+tasks. For effort based tasks [[remaining]] has to be used.
 EOT
        )
     example('TimeSheet1', '5')
@@ -7393,7 +7393,7 @@ EOT
     })
     doc('priority.timesheet', <<'EOT'
 The priority is a value between 1 and 1000. It is used to determine the
-sequence of task when converting [[work]] to [[booking.task|bookings]]. Tasks
+sequence of tasks when converting [[work]] to [[booking.task|bookings]]. Tasks
 that need to finish earlier in the period should have a high priority, tasks
 that end later in the period should have a low priority. For tasks that don't
 get finished in the reported period the priority should be set to 1.
@@ -7407,7 +7407,7 @@ EOT
 The remaining effort for the task. This value is ignored if there are
 [[booking.task|bookings]] for the resource that overlap with the time sheet
 period.  If there are no bookings, the value is compared with the [[effort]]
-specification of the task. If there a mismatch between the accumulated effort
+specification of the task. If there is a mismatch between the accumulated effort
 specified with bookings, [[work]] and [[remaining]] on one side and the
 specified [[effort]] on the other, a warning is generated.
 
@@ -7423,7 +7423,7 @@ EOT
       @timeSheetRecord.work = @val[1]
     })
     doc('work', <<'EOT'
-The amount of time that the resource has spend with the task during the
+The amount of time that the resource has spent with the task during the
 reported period. This value is ignored when there are
 [[booking.task|bookings]] for the resource overlapping with the time sheet
 period. If there are no bookings, TaskJuggler will try to convert the work
@@ -7559,7 +7559,7 @@ specifications are 0 extended. An end date without a time is expanded to
 midnight that day. So the day of the end date is not included in the interval!
 The start and end dates must be separated by a hyphen character.
 
-In the second form specifies the start date and an interval duration. The
+The second form specifies the start date and an interval duration. The
 duration must be prefixed by a plus character.
 EOT
        )
@@ -7579,7 +7579,7 @@ EOT
     doc('warn', <<'EOT'
 The warn attribute adds a [[logicalexpression|logical expression]] to the
 property. The condition described by the logical expression is checked after
-the scheduling and an warning is generated if the condition evaluates to true.
+the scheduling and a warning is generated if the condition evaluates to true.
 This attribute is primarily intended for testing purposes.
 EOT
        )
@@ -7715,7 +7715,7 @@ EOT
     pattern(%w( !workinghours ))
     doc('workinghours.project', <<'EOT'
 Set the default working hours for all subsequent resource definitions. The
-standard working hours are 9:00am - 12:00am, 1:00pm - 18:00pm, Monday to
+standard working hours are 9:00am - 12:00am, 1:00pm - 6:00pm, Monday to
 Friday. The working hours specification limits the availability of resources
 to certain time slots of week days.
 

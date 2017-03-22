@@ -34,7 +34,7 @@ options separated by a vertical bar.
  keyword ( foo | bar | foobar )
 
 Some keywords take one or more arguments. These are known as list
-attributes. The arguments are comma separated. The tree dots in the
+attributes. The arguments are comma separated. The three dots in the
 syntax description mean that the sequence before the dots can be
 repeated if needed. Inheritable list attributes will append the new
 list values to the inherited list. Use can use the [[purge]]
@@ -73,7 +73,7 @@ An integer is any natural number, e. g. ''''0'''', ''''1'''',
 
 Strings are character sequences that are enclosed by special
 character marks. There are three different marks supported. For
-short strings that fit on one lines, you can either use single or
+short strings that fit on one line, you can either use single or
 double quotes.
 
  'This is a single quoted string.'
@@ -112,7 +112,7 @@ exact same combination of tabs and spaces.
 === Predefined Macros ===
 
 TaskJuggler supports a few predefined macros. These are available
-after the project header. They values correspond to the values
+after the project header. Their values correspond to the values
 provided in the project header.
 
 * ''''projectstart'''' The start date of the project.
@@ -128,6 +128,6 @@ the [[timeformat]] setting of the current context.
 === Environment Variable Expansions ===
 
 By using the $(VAR) syntax, you can insert the value of the
-environment variable name VAR. The name of the variable must consists
-only of uppercase ASCII letters, underscore or decimal digits.
+environment variable name VAR. The name of the variable must consist
+only of uppercase ASCII letters, underscores or decimal digits.
 

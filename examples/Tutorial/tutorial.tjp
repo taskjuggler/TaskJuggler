@@ -20,7 +20,7 @@ project acso "Accounting Software"  2002-01-16 +4m {
   # used, but this will likely be outside of the project range, so it
   # can't be seen in the reports.
   now 2002-03-05-13:00
-  # The currency for all money values is the Euro.
+  # The currency for all money values is the US Dollar.
   currency "USD"
 
   # We want to compare the baseline scenario to one with a slightly

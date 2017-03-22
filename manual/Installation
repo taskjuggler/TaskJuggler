@@ -88,7 +88,7 @@ If you don't want to install TaskJuggler for all users on the system,
 you can also install it into your home or data directory. This does
 not require root or admin permissions.
 
-The following steps are describe the installation on a Linux system
+The following steps describe the installation on a Linux system
 with the bash shell. You may have to use slightly different commands
 on a different operating system.
 
@@ -119,7 +119,7 @@ Configure gem to find the installed files.
 The last two settings should also be added to your .profile file to
 make them permanent.
 
-That's it. You now should be run TaskJuggler.
+That's it. You now should run TaskJuggler.
 
   tj3 --version
 
@@ -187,7 +187,7 @@ Then checkout the source code with the following command
 
  git clone git@github.com/taskjuggler/TaskJuggler.git
 
-Make sure, you have removed all previously installed instances of
+Make sure you have removed all previously installed instances of
 TaskJuggler from your system before doing so. It is a common mistake
 to have an old version of the TaskJuggler installed and then use parts
 of the old and new version together.
@@ -323,7 +323,7 @@ Log out and back in again. Now
 
   which ruby
 
-should show return the path to the link to your
+should return the path to the link to your
 ''''${HOME}/bin/ruby''''. You now have the latest Ruby installed and
 are ready to use TaskJuggler.
 
@@ -343,7 +343,7 @@ TaskJuggler can be used with any text editor that supports UTF-8 text
 file editing. If you don't have a preference yet, we recommend to try
 the [http://www.vim.org Vim] text editor. It's a very powerful editor
 and it has been customized for better integration with TaskJuggler.
-This section describes, how to activate and use the Vim integration.
+This section describes how to activate and use the Vim integration.
 Vim is provided by pretty much any Linux distribution and also works
 well on MacOX and Windows. See the web page for how to install it if
 you don't have it yet.
@@ -366,7 +366,7 @@ you may have to modify it accordingly.
 
   cp `gem contents taskjuggler | fgrep tjp.vim` .vim/syntax
 
-Now we have to make sure, Vim detects the file. Edit the
+Now we have to make sure Vim detects the file. Edit the
 ''''.vim/filetype.vim'''' file to contain the following section.
 
  augroup filetypedetect

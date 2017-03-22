@@ -29,7 +29,7 @@ class TaskJuggler
   attr_accessor :maxCpuCores, :warnTsDeltas, :generateTraces
 
   # Create a new TaskJuggler object. _console_ is a boolean that determines
-  # whether or not messsages can be written to $stderr.
+  # whether or not messages can be written to $stderr.
   def initialize
     @project = nil
     @parser = nil
@@ -141,7 +141,7 @@ class TaskJuggler
     res
   end
 
-  # Generate all specified reports. The project must have be scheduled before
+  # Generate all specified reports. The project must have been scheduled before
   # this method can be called. It returns true if no error occured, false
   # otherwise.
   def generateReports(outputDir = nil)
@@ -289,7 +289,7 @@ class TaskJuggler
   end
 
   # Check the content of the file _fileName_ and interpret it as a time sheet.
-  # If the sheet is syntaxtically correct and matches the loaded project, true
+  # If the sheet is syntactically correct and matches the loaded project, true
   # is returned. Otherwise false.
   def checkTimeSheet(fileName)
     begin
@@ -333,7 +333,7 @@ class TaskJuggler
   end
 
   # Check the content of the file _fileName_ and interpret it as a status
-  # sheet.  If the sheet is syntaxtically correct and matches the loaded
+  # sheet.  If the sheet is syntactically correct and matches the loaded
   # project, true is returned. Otherwise false.
   def checkStatusSheet(fileName)
     begin

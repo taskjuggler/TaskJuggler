@@ -123,7 +123,7 @@ class TaskJuggler
     # Add a new rule to the rule set. _name_ must be a unique identifier. The
     # function also sets the class variable @cr to the new rule. Subsequent
     # calls to TextParser#pattern, TextParser#optional or
-    # TextParser#repeatable will then implicitely operate on the most recently
+    # TextParser#repeatable will then implicitly operate on the most recently
     # added rule.
     def newRule(name)
       # Use a symbol instead of a String.

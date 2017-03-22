@@ -26,7 +26,7 @@ github].
 The scheduler needs to determine the start and end date for all tasks
 that don't have such dates yet. To deal with multiple concurrent time
 zones, all time related events are stored internally as UTC
-time.Additionally, it allocates resources to tasks.  All events such
+time. Additionally, it allocates resources to tasks.  All events such
 as start or end of a task, or allocation of a resource can only happen
 aligned with the [[timingresolution|timing resolution]]. This
 determines the smallest possible allocation period that we call a time
@@ -57,7 +57,7 @@ are scheduled from end to start.
 resources have been assigned for all time slots.
 
 The goal of the scheduler is to transfer all tasks in the completed
-state. Until this goal has been reached, at least one tasks needs to
+state. Until this goal has been reached, at least one task needs to
 be in the ready state. If that's not the case, the project schedule
 cannot be determined and an error is raised. In case there are more
 than one task in the ready state, we need to have a well defined
@@ -103,7 +103,7 @@ that is going through a task, the sum of the criticalness values of
 the tasks of the path is computed. The largest sum is the path
 criticalness of that task.
 
-This heuristic will favor allocations to task with critical resources
+This heuristic will favor allocations to tasks with critical resources
 and long dependency chains. As a result, the critical paths of the
 project are tried to be kept short. The user can use the
 '''criticalness''' and '''pathcriticalness''' [[columnid|columns]] to

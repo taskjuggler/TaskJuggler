@@ -126,7 +126,7 @@ in nowiki tags.
 You can also insert raw HTML code by enclosing it in
 '''<nowiki><html>...</html></nowiki>''' tags. For all other output
 formats, this content will be ignored. There is also no error checking
-if the code is valid! Use this feature very carefully.
+whether the code is valid! Use this feature very carefully.
 
 ==== Block and Inline Generators ====
 
@@ -179,12 +179,13 @@ Parameters:
 
 * ''''attributes'''': A set of attributes that override the original
 attributes of the referenced report. All report attributes
-are supported. Since the value of attributes already must be enclosed
+are supported. Since the values of attributes already must be enclosed
 by single or double quotes, all single or double quotes contained in
 the string must be escaped with backslashes. This feature enables
 reports with content that is customized based on where they have been
 referenced from. It requires the reports to be dynamically generated
-and is only available when used with the ''''tj3d'''' web server.
+and is only available when used with the ''''tj3d'''' web server
+''''tj3webd''''.
 The ''''tj3'''' application will ignore the attributes setting.
 
  taskreport "All" {
@@ -254,8 +255,8 @@ is used, certain or all of the above parameters have already
 predefined values. When used in the header section of a report, the
 context does not provide a property or scope property. Start and end
 dates as well the formatting options are taken from the report
-context. But when used e. g. in [[celltext.column]] the cell
-provides, that property and the attribute and possibly even the scope
+context. But when used e. g. in [[celltext.column]], the cell
+provides that property and the attribute and possibly even the scope
 property.
 
 

@@ -29,7 +29,7 @@ In this example, task ''''T3'''' has the flags ''''f1'''' and
 ''''f2'''' assigned.
 
 The same works for scenarios as well. Even though the syntax may not
-look like inheritance is at play the scenario ''''s2'''' inherits all
+look like inheritance is at play, the scenario ''''s2'''' inherits all
 values from ''''s1''''.
 
 <[example file="ListAttributes" tag="scenario"]>
