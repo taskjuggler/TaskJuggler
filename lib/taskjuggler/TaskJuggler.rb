@@ -352,7 +352,6 @@ class TaskJuggler
                      'scenarioIdx' => @project['trackingScenarioIdx'],
                      'start' => ss[1],
                      'end' => ss[2],
-                     'timeFormat' => '%Y-%m-%d',
                      'selfContained' => true }
       query = Query.new(queryAttrs)
       puts ss[0].query_dashboard(query).richText.inputText
