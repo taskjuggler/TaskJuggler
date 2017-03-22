@@ -272,7 +272,7 @@ First, you need to download the source code of the latest stable
 release from
 [http://www.ruby-lang.org/en/downloads/ www.ruby-lang.org].
 
-The source code is distributed as zipped tarfile. You can extract it
+The source code is distributed as zipped tar file. You can extract it
 like this. Change the file name to the actual version you have
 downloaded.
 
