@@ -28,7 +28,7 @@ class TaskJuggler
   # created, the user must call generateByWidth or generateByResolution.
   class GanttChart
 
-    # The height in pixel of a horizontal scrollbar on an HTML page. This
+    # The height in pixels of a horizontal scrollbar on an HTML page. This
     # value should be large enough to work for all browsers.
     SCROLLBARHEIGHT = 20
 
@@ -55,7 +55,7 @@ class TaskJuggler
       # have. The scales differ in their resolution and the amount of detail
       # that is displayed. A scale is defined by its name. The _name_ must be
       # unique and can be used to select the scale. The _stepSize_ defines the
-      # width of a scale step in pixel. The _stepsToFunc_ is a TjTime method
+      # width of a scale step in pixels. The _stepsToFunc_ is a TjTime method
       # that determines the number of steps between 2 dates. _minTimeOff_
       # defines the minimum required length of an time-off interval that is
       # displayed in this scale.
@@ -77,7 +77,7 @@ class TaskJuggler
       @scale = nil
       # The height of the chart (without the header)
       @height = 0
-      # The width of the chart in pixel.
+      # The width of the chart in pixels.
       @width = 0
       # The width of the view that the chart is presented in. If it's nil, the
       # view will be adapted to the width of the chart.
@@ -153,7 +153,7 @@ class TaskJuggler
       # Now we generate two 'div's nested into each other. The first div is the
       # view. It may contain a scrollbar if the second div is wider than the
       # first one. In case we need a scrollbar The outer div is
-      # SCROLLBARHEIGHT pixel heigher to hold the scrollbar. Unfortunately
+      # SCROLLBARHEIGHT pixels heigher to hold the scrollbar. Unfortunately
       # this must be a hardcoded value even though the height of the scrollbar
       # varies from system to system. This value should be good enough for
       # most systems.

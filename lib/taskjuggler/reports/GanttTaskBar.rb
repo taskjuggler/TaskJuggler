@@ -20,7 +20,7 @@ class TaskJuggler
 
     include HTMLGraphics
 
-    # The size of the bar in pixel from center to top/bottom.
+    # The size of the bar in pixels from center to top/bottom.
     @@size = 6
 
     # Create a GanttContainer object based on the following information: _line_

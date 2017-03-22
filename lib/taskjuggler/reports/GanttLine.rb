@@ -47,7 +47,7 @@ class TaskJuggler
       @category = nil
       # The y coordinate of the topmost pixel of this line.
       @y = y + chart.header.height + 1
-      # The height of the line in screen pixel.
+      # The height of the line in screen pixels.
       @height = height
       # The index of the line in the chart. It starts with 0 and is
       # incremented for each line by one.

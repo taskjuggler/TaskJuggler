@@ -35,9 +35,9 @@ class TaskJuggler
       @table.addLine(self)
       # The cells of this line. Should be references to ReportTableCell objects.
       @cells = []
-      # Heigh of the line in screen pixel
+      # Heigh of the line in screen pixels
       @height = 21
-      # Indentation for hierachiecal columns in screen pixel.
+      # Indentation for hierachiecal columns in screen pixels.
       @indentation = 0
       # The factor used to enlarge or shrink the font size for this line.
       @fontSize = 12

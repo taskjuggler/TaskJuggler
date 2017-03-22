@@ -42,7 +42,7 @@ class TaskJuggler
       # The x coordinates and width of the cells created by the small scale. The
       # values are stored as [ x, w ].
       @cellStartDates = []
-      # The height of the header in pixel.
+      # The height of the header in pixels.
       @height = 39
 
       generate

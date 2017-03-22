@@ -67,7 +67,7 @@ class TaskJuggler
       @icon = nil
       # A custom tooltip for the cell icon
       @iconTooltip = nil
-      # Font size of the cell text in pixel
+      # Font size of the cell text in pixels
       @fontSize = nil
       # The background color of the cell. Overwrite the @category color.
       @cellColor = nil
@@ -75,7 +75,7 @@ class TaskJuggler
       @fontColor = nil
       # True of a bold font is to be used for the cell text.
       @bold = false
-      # The width of the column in pixel
+      # The width of the column in pixels
       @width = nil
       # The number of rows the cell spans
       @rows = 1
@@ -281,12 +281,12 @@ class TaskJuggler
       return nil, nil if textAsString.empty?
 
       if @width
-        # We have 4 pixel padding on each side of the cell.
+        # We have 4 pixels padding on each side of the cell.
         labelWidth = @width - 8
         labelWidth -= @leftIndent if @leftIndent
         labelWidth -= @rightIndent if @rightIndent
         if !selfcontained
-          # The icons are 20 pixel width including padding.
+          # The icons are 20 pixels width including padding.
           labelWidth -= 20 if @icon
           labelWidth -= 20 if tooltip || @tooltip
         end
@@ -331,7 +331,7 @@ class TaskJuggler
       end
       if width
         widthWithoutIcon = width - 20
-        # Assuming an average character width of 7 pixel
+        # Assuming an average character width of 7 pixels
         maxChars = widthWithoutIcon / 7
         if text.length > maxChars
           if maxChars > 0

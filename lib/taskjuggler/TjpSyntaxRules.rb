@@ -882,7 +882,7 @@ EOT
       @column.width = @val[1]
     })
     doc('width.column', <<'EOT'
-Specifies the maximum width of the column in screen pixel. If the content of
+Specifies the maximum width of the column in screen pixels. If the content of
 the column does not fit into this width, it will be cut off. In some cases a
 scrollbar is added or a tooltip window with the complete content is shown when
 the mouse is moved over the column. The latter is only supported in
@@ -4365,12 +4365,12 @@ EOT
     pattern(%w( _height $INTEGER ), lambda {
       if @val[1] < 200
         error('min_report_height',
-              "The report must have a minimum height of 200 pixel.")
+              "The report must have a minimum height of 200 pixels.")
       end
       @property.set('height', @val[1])
     })
     doc('height', <<'EOT'
-Set the height of the report in pixel. This attribute is only used for
+Set the height of the report in pixels. This attribute is only used for
 reports that cannot determine the height based on the content. Such reports can
 be freely resized to fit in. The vast majority of reports can determine their
 height based on the provided content. These reports will simply ignore this
@@ -4535,12 +4535,12 @@ EOT
     pattern(%w( _width $INTEGER ), lambda {
       if @val[1] < 400
         error('min_report_width',
-              "The report must have a minimum width of 400 pixel.")
+              "The report must have a minimum width of 400 pixels.")
       end
       @property.set('width', @val[1])
     })
     doc('width', <<'EOT'
-Set the width of the report in pixel. This attribute is only used for
+Set the width of the report in pixels. This attribute is only used for
 reports that cannot determine the width based on the content. Such reports can
 be freely resized to fit in. The vast majority of reports can determine their
 width based on the provided content. These reports will simply ignore this
