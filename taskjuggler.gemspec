@@ -35,13 +35,13 @@ GEM_SPEC = Gem::Specification.new { |s|
   s.summary = 'A Project Management Software'
   s.description = <<'EOT'
 TaskJuggler is a modern and powerful, Free and Open Source Software project
-management tool. Its new approach to project planing and tracking is more
+management tool. It's new approach to project planning and tracking is more
 flexible and superior to the commonly used Gantt chart editing tools.
 
 TaskJuggler is project management software for serious project managers. It
 covers the complete spectrum of project management tasks from the first idea
 to the completion of the project. It assists you during project scoping,
-resource assignment, cost and revenue planing, risk and communication
+resource assignment, cost and revenue planning, risk and communication
 management.
 EOT
   s.license = 'GNU GPL version 2'
