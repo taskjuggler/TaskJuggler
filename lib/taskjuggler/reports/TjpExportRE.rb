@@ -267,7 +267,14 @@ class TaskJuggler
           generateAttribute(task, 'start', indent + 2, scenarioIdx)
           if task['milestone', scenarioIdx]
             if task['scheduled', scenarioIdx]
-              generateAttributeText('milestone', indent + 2, scenarioIdx)
+              # This feature is a bit buggy, assuming scenario plan { scenario actual }
+              # if in plan is no effort but there is in actual with bookings
+              # importing such a plan with milestones defined will result in an error: cannot add booking to a milestone
+              #
+              # possible solution would be that milestone is added if and only if it is milestoe in all sub-scenarios.
+              # or by using purge:milestone in sub-scenarios.
+              #
+              #generateAttributeText('milestone', indent + 2, scenarioIdx)
             end
           else
             generateAttribute(task, 'end', indent + 2, scenarioIdx)
