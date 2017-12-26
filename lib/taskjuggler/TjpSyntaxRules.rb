@@ -76,7 +76,7 @@ EOT
   def rule_accountHeader
     pattern(%w( _account !optionalID $STRING ), lambda {
       if @property.nil? && !@accountprefix.empty?
-        @property = @project.accout(@accountprefix)
+        @property = @project.account(@accountprefix)
       end
       if @val[1] && @project.account(@val[1])
         error('account_exists', "Account #{@val[1]} has already been defined.",
