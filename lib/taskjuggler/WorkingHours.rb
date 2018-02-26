@@ -17,7 +17,7 @@ require 'taskjuggler/Scoreboard'
 class TaskJuggler
 
   # Class to store the working hours for each day of the week. The working hours
-  # are stored as Arrays of Fixnum intervals for each day of the week. A day off
+  # are stored as Arrays of Integer intervals for each day of the week. A day off
   # is modelled as empty Array for that week day. The start end end times of
   # each working period are stored as seconds after midnight.
   class WorkingHours
@@ -100,7 +100,7 @@ class TaskJuggler
 
     # Set the working hours for a given week day. +dayOfWeek+ must be 0 for
     # Sunday, 1 for Monday and so on. +intervals+ must be an Array that
-    # contains an Array with 2 Fixnums for each working period. Each value
+    # contains an Array with 2 Integers for each working period. Each value
     # specifies the time of day as minutes after midnight. The first value is
     # the start time of the interval, the second the end time.
     def setWorkingHours(dayOfWeek, intervals)
@@ -133,7 +133,7 @@ class TaskJuggler
 
     # Return the working hour intervals for a given day of the week.
     # +dayOfWeek+ must 0 for Sunday, 1 for Monday and so on. The result is an
-    # Array that contains Arrays of 2 Fixnums.
+    # Array that contains Arrays of 2 Integers.
     def getWorkingHours(dayOfWeek)
       @days[dayOfWeek]
     end

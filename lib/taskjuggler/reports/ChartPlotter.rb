@@ -163,7 +163,7 @@ class TaskJuggler
 
               @yMinDate = cell if @yMinDate.nil? || cell < @yMinDate
               @yMaxDate = cell if @yMaxDate.nil? || cell > @yMaxDate
-            elsif cell.is_a?(Fixnum) || cell.is_a?(Float)
+            elsif cell.is_a?(Integer) || cell.is_a?(Float)
               if @dataType && @dataType != :number
                 error("Column #{colIdx} contains non-number (#{cell}). " +
                       "The columns will be ignored.")

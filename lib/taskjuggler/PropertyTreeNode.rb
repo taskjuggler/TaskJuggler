@@ -331,7 +331,7 @@ class TaskJuggler
     end
 
     # Return the 'index' attributes of this property, prefixed by the 'index'
-    # attributes of all its parents. The result is an Array of Fixnums.
+    # attributes of all its parents. The result is an Array of Integers.
     def getIndicies
       idcs = []
       p = self

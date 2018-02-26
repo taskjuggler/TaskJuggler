@@ -230,7 +230,7 @@ class TaskJuggler
     private
 
     def checkLevel(level)
-      if level.is_a?(Fixnum)
+      if level.is_a?(Integer)
         if level < 0 || level > 5
           raise ArgumentError, "Unsupported level #{level}"
         end

@@ -50,7 +50,7 @@ class TaskJuggler
     end
 
     # Set the selection mode identified by name specified in _str_. For
-    # efficiency reasons, we turn the name into a Fixnum value.
+    # efficiency reasons, we turn the name into an Integer value.
     def setSelectionMode(str)
       modes = %w( order minallocated minloaded maxloaded random )
       @selectionMode = modes.index(str)

@@ -81,7 +81,7 @@ class TaskJuggler
     end
 
     def startIdx=(idx)
-      if idx.is_a?(Fixnum)
+      if idx.is_a?(Integer)
         @startIdx = idx
         @start = @project.idxToDate(idx)
       else
@@ -99,7 +99,7 @@ class TaskJuggler
     end
 
     def endIdx=(idx)
-      if idx.is_a?(Fixnum)
+      if idx.is_a?(Integer)
         @endIdx = idx
         @end = @project.idxToDate(idx)
       else
@@ -239,7 +239,7 @@ class TaskJuggler
       @attr ? @attr.to_s(self) : (@rti ? @rti.to_s : (@string || ''))
     end
 
-    # Return the result of the Query as Fixnum or Float. The result may be
+    # Return the result of the Query as Integer or Float. The result may be
     # nil.
     def to_num
       @attr ? @attr.to_num : @numerical

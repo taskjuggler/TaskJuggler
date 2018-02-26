@@ -18,7 +18,7 @@ require 'base64'
 # This is an extension and modification of the standard String class. We do a
 # lot of UTF-8 character processing in the parser. Ruby 1.8 does not have good
 # enough UTF-8 support and Ruby 1.9 only handles UTF-8 characters as Strings.
-# This is very inefficient compared to representing them as Fixnum objects.
+# This is very inefficient compared to representing them as Integer objects.
 # Some of these hacks can be removed once we have switched to 1.9 support
 # only.
 class String
@@ -58,7 +58,7 @@ class String
     alias old_double_left_angle <<
 
     # Replacement for the existing << operator that also works for characters
-    # above Fixnum 255 (UTF-8 characters).
+    # above Integer 255 (UTF-8 characters).
     def << (obj)
       if obj.is_a?(String) || (obj < 256)
         # In this case we can use the built-in concat.

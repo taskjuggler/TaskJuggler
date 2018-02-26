@@ -27,7 +27,7 @@ class TaskJuggler
 
     # Create a RichTextSnip object. _document_ is a reference to the
     # RichTextDocument. _fileName_ is the name of the structured text file
-    # using RichText syntax. _sectionCounter_ is an 3 item Fixnum Array. These
+    # using RichText syntax. _sectionCounter_ is an 3 item Integer Array. These
     # 3 numbers are used to store the section counters over multiple
     # RichTextSnip objects.
     def initialize(document, fileName, sectionCounter)
