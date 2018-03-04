@@ -20,7 +20,7 @@ class TaskJuggler
     def initialize(resource, scenarioIdx, attributes)
       super
 
-      # Scoreboard may be nil, a Task, or a bit vector encoded as a Fixnum
+      # Scoreboard may be nil, a Task, or a bit vector encoded as an Integer
       # nil:        Value has not been determined yet.
       # Task:       A reference to a Task object
       # Bit 0:      Reserved
@@ -702,7 +702,7 @@ class TaskJuggler
       initScoreboard if @scoreboard.nil?
 
       @scoreboard.collectIntervals(iv, minDuration) do |val|
-        val.is_a?(Fixnum) && (val & 0x3E) != 0
+        val.is_a?(Integer) && (val & 0x3E) != 0
       end
     end
 
@@ -717,7 +717,7 @@ class TaskJuggler
       initScoreboard if @scoreboard.nil?
 
       @scoreboard.collectIntervals(iv, 60 * 60) do |val|
-        val.is_a?(Fixnum) && (val & 0x3E) == (Leave::Types[type] << 2)
+        val.is_a?(Integer) && (val & 0x3E) == (Leave::Types[type] << 2)
       end
     end
 
@@ -755,7 +755,7 @@ class TaskJuggler
     # leave.
     def getLeaveSlots(startIdx, endIdx, type)
       countSlots(startIdx, endIdx) do |val|
-        val.is_a?(Fixnum) && (val & 0x3E) == (Leave::Types[type] << 2)
+        val.is_a?(Integer) && (val & 0x3E) == (Leave::Types[type] << 2)
       end
     end
 
@@ -771,7 +771,7 @@ class TaskJuggler
     def getTimeOffSlots(startIdx, endIdx)
       countSlots(startIdx, endIdx) do |val|
         # Bit 1 needs to be unset and the leave bits must not be 0.
-        val.is_a?(Fixnum) && (val & 0x2) == 0 && (val & 0x3C) != 0
+        val.is_a?(Integer) && (val & 0x2) == 0 && (val & 0x3C) != 0
       end
     end
 
@@ -932,7 +932,7 @@ class TaskJuggler
       initScoreboard unless @scoreboard
 
       val = @scoreboard[sbIdx]
-      return true unless val.is_a?(Fixnum)
+      return true unless val.is_a?(Integer)
 
       leave_type = (val >> 2) & 0xF
       leave_type < Leave::Types[:unemployed]

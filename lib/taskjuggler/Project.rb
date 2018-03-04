@@ -126,7 +126,7 @@ class TaskJuggler
               false, false,   false, true ],
         [ 'projection', 'Projection Mode', BooleanAttribute,
               true,  false,   false, false ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',          IntegerAttribute,
               false, false,   false, nil ],
       ]
       attrs.each { |a| @scenarios.addAttributeType(AttributeDefinition.new(*a)) }
@@ -139,7 +139,7 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'id',       'ID',            StringAttribute,
               false, false,   false, nil ],
-        [ 'index',     'Index',        FixnumAttribute,
+        [ 'index',     'Index',        IntegerAttribute,
               false, false,   false, -1 ],
         [ 'leaves',    'Leaves',       LeaveListAttribute,
               true,  true,    true,  LeaveList.new ],
@@ -147,7 +147,7 @@ class TaskJuggler
               false, false,   false, nil ],
         [ 'replace',   'Replace',      BooleanAttribute,
               true,  false,   true,  false ],
-        [ 'seqno',    'No',            FixnumAttribute,
+        [ 'seqno',    'No',            IntegerAttribute,
               false, false,   false, nil ],
         [ 'timezone',  'Time Zone',    StringAttribute,
               true,  true,    true,  TjTime.timeZone ],
@@ -170,13 +170,13 @@ class TaskJuggler
               false, false,   true,  [] ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
-        [ 'index',     'Index',        FixnumAttribute,
+        [ 'index',     'Index',        IntegerAttribute,
               false, false,   false, -1 ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
         [ 'name',     'Name',       StringAttribute,
               false, false,   false, nil ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',          IntegerAttribute,
               false, false,   false, nil ],
         [ 'tree',      'Tree Index',   StringAttribute,
               false, false,   false, "" ]
@@ -201,7 +201,7 @@ class TaskJuggler
               false, false,   true,  [] ],
         [ 'efficiency','Efficiency',   FloatAttribute,
               true,  false,   true,  1.0 ],
-        [ 'effort', 'Total Effort',    FixnumAttribute,
+        [ 'effort', 'Total Effort',    IntegerAttribute,
               false, false,   true,  0 ],
         [ 'email',     'Email',        StringAttribute,
               false, false,   false, nil ],
@@ -209,7 +209,7 @@ class TaskJuggler
               false, false,   false,  [] ],
         [ 'flags',     'Flags',        FlagListAttribute,
               true,  false,   true,  [] ],
-        [ 'index',     'Index',        FixnumAttribute,
+        [ 'index',     'Index',        IntegerAttribute,
               false, false,   false, -1 ],
         [ 'leaveallowances', 'Leave Allowances', LeaveAllowanceListAttribute,
               true,  false,   true,  LeaveAllowanceList.new ],
@@ -223,7 +223,7 @@ class TaskJuggler
               true,  true,    true,  0.0 ],
         [ 'reports', 'Reports', ResourceListAttribute,
               false, false,   true,  [] ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',          IntegerAttribute,
               false, false,   false, nil ],
         [ 'shifts',    'Shifts',       ShiftAssignmentsAttribute,
               true, false,    true,  nil ],
@@ -264,9 +264,9 @@ class TaskJuggler
               false, false,   true,  0 ],
         [ 'effort',    'Effort',       DurationAttribute,
               false, false,   true,  0 ],
-        [ 'effortdone', 'Completed Effort', FixnumAttribute,
+        [ 'effortdone', 'Completed Effort', IntegerAttribute,
               false, false,   true,  nil ],
-        [ 'effortleft', 'Remaining Effort', FixnumAttribute,
+        [ 'effortleft', 'Remaining Effort', IntegerAttribute,
               false, false,   true,  nil ],
         [ 'end',       'End',          DateAttribute,
               false, false,   true,  nil ],
@@ -284,7 +284,7 @@ class TaskJuggler
               false, false,   true,  nil ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
-        [ 'index',     'Index',        FixnumAttribute,
+        [ 'index',     'Index',        IntegerAttribute,
               false, false,   false, -1 ],
         [ 'length',    'Length',       DurationAttribute,
               false, false,   true,  0 ],
@@ -308,7 +308,7 @@ class TaskJuggler
               false, false,   true, 0.0 ],
         [ 'precedes',  'Following tasks', DependencyListAttribute,
               true,  false,   true,  [] ],
-        [ 'priority',  'Priority',     FixnumAttribute,
+        [ 'priority',  'Priority',     IntegerAttribute,
               true,  true,    true,  500 ],
         [ 'projectid', 'Project ID',   SymbolAttribute,
               true,  true,    true,  nil ],
@@ -318,7 +318,7 @@ class TaskJuggler
               true,  false,   true,  false ],
         [ 'projectionmode', 'Projection Mode', BooleanAttribute,
               true,  false,   true,  false ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',          IntegerAttribute,
               false, false,   false, nil ],
         [ 'shifts',     'Shifts',      ShiftAssignmentsAttribute,
               true,  false,   true, nil ],
@@ -383,11 +383,11 @@ class TaskJuggler
               true,  false,   false, nil ],
         [ 'hideTask',  'Hide Task',    LogicalExpressionAttribute,
               true,  false,   false, nil ],
-        [ 'height',    'Height',       FixnumAttribute,
+        [ 'height',    'Height',       IntegerAttribute,
               false,  false,   false, 480 ],
         [ 'id',       'ID',         StringAttribute,
               false, false,   false, nil ],
-        [ 'index',     'Index',        FixnumAttribute,
+        [ 'index',     'Index',        IntegerAttribute,
               false, false,   false, -1 ],
         [ 'interactive', 'Interactive', BooleanAttribute,
               false, false,   false, false ],
@@ -429,7 +429,7 @@ class TaskJuggler
               true, false,    false, [ 0 ] ],
         [ 'selfcontained', 'Selfcontained', BooleanAttribute,
               true, false,    false, false ],
-        [ 'seqno',    'No',          FixnumAttribute,
+        [ 'seqno',    'No',          IntegerAttribute,
               false, false,   false, nil ],
         [ 'shortTimeFormat', 'Short Time Format', StringAttribute,
               true,  true,    false, nil ],
@@ -461,7 +461,7 @@ class TaskJuggler
               false, false,   false, "" ],
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
               true,  true,    false, false ],
-        [ 'width',     'Width',        FixnumAttribute,
+        [ 'width',     'Width',        IntegerAttribute,
               true,  false,   false, 640 ]
       ]
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
@@ -560,7 +560,7 @@ class TaskJuggler
     #
     # Return the Scenario with the given _id_ or _index_.
     def scenario(arg)
-      if arg.is_a?(Fixnum)
+      if arg.is_a?(Integer)
         @scenarios.each do |sc|
           return sc if sc.sequenceNo - 1 == arg
         end
@@ -874,7 +874,7 @@ class TaskJuggler
     def isWorkingTime(*args)
       # Normalize argument(s) to TimeInterval
       if args.length == 1
-        if args[0].is_a?(Fixnum) || args[0].is_a?(Bignum)
+        if args[0].is_a?(Integer)
           return @scoreboard[args[0]].nil?
         elsif args[0].is_a?(TjTime)
           return @scoreboard[dateToIdx(args[0])].nil?
@@ -969,7 +969,7 @@ class TaskJuggler
 
     def collectTimeOffIntervals(iv, minDuration)
       @scoreboard.collectIntervals(iv, minDuration) do |val|
-        val.is_a?(Fixnum) && (val & 0x3E) != 0
+        val.is_a?(Integer) && (val & 0x3E) != 0
       end
     end
 

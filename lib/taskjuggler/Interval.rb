@@ -166,7 +166,7 @@ class TaskJuggler
     #
     # sbStart must be a TjTime of the scoreboard start
     # slotDuration must be the duration of the scoreboard slots in seconds
-    # a and b should be TjTime or Fixnum objects that describe the start and
+    # a and b should be TjTime or Integer objects that describe the start and
     # end time or index of the interval.
     #
     # TimeInterval.new(iv)
@@ -191,7 +191,7 @@ class TaskJuggler
         # If the third argument is a date we convert it to a scoreboard index.
         args[2] = dateToIndex(args[2]) if args[2].is_a?(TjTime)
 
-        if args[2].is_a?(Fixnum) || args[2].is_a?(Bignum)
+        if args[2].is_a?(Integer)
           super(args[2], args[2])
         else
           raise ArgumentError, "Illegal argument 3: #{args[0].class}"
@@ -204,11 +204,11 @@ class TaskJuggler
         args[2] = dateToIndex(args[2]) if args[2].is_a?(TjTime)
         args[3] = dateToIndex(args[3]) if args[3].is_a?(TjTime)
 
-        if !(args[2].is_a?(Fixnum) || args[2].is_a?(Bignum))
+        if !(args[2].is_a?(Integer))
           raise ArgumentError, "Interval start must be an index or TjTime, " +
                 "not a #{args[2].class}"
         end
-        if !(args[3].is_a?(Fixnum) || args[3].is_a?(Bignum))
+        if !(args[3].is_a?(Integer))
           raise ArgumentError, "Interval end must be an index or TjTime, " +
                 "not a #{args[3].class}"
         end
@@ -221,19 +221,18 @@ class TaskJuggler
         raise ArgumentError, "sbStart must be a TjTime object, not a" +
               "#{@sbStart.class}"
       end
-      unless @slotDuration.is_a?(Fixnum)
-        raise ArgumentError, "slotDuration must be a Fixnum, not a " +
+      unless @slotDuration.is_a?(Integer)
+        raise ArgumentError, "slotDuration must be an Integer, not a " +
               "#{@slotDuration.class}"
       end
 
     end
 
-    # Assign the start of the interval. +arg+ can be a Fixnum, Bignum or
+    # Assign the start of the interval. +arg+ can be an Integer or
     # TjTime object.
     def start=(arg)
       case arg
-      when Fixnum
-      when Bignum
+      when Integer
         @start = arg
       when TjTime
         @start = dateToIndex(arg)
@@ -242,12 +241,11 @@ class TaskJuggler
       end
     end
 
-    # Assign the start of the interval. +arg+ can be a Fixnum, Bignum or
+    # Assign the start of the interval. +arg+ can be an Integer or
     # TjTime object.
     def end=(arg)
       case arg
-      when Fixnum
-      when Bignum
+      when Integer
         @end = arg
       when TjTime
         @end = dateToIndex(arg)

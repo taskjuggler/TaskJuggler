@@ -136,7 +136,7 @@ class TaskJuggler
 
     def to_num
       v = get
-      if v.is_a?(Fixnum) || v.is_a?(Bignum) || v.is_a?(Float)
+      if v.is_a?(Integer) || v.is_a?(Float)
         v
       else
         nil
@@ -145,7 +145,7 @@ class TaskJuggler
 
     def to_sort
       v = get
-      if v.is_a?(Fixnum) || v.is_a?(Bignum) || v.is_a?(Float)
+      if v.is_a?(Integer) || v.is_a?(Float)
         v
       elsif v.respond_to?('to_s')
         v.to_s

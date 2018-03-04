@@ -24,7 +24,7 @@ class TaskJuggler
   # thousandsSeparator: Separator used after 3 integer digits. (String)
   # fractionSeparator: Separator used between the inter part and the
   #                    fractional part. (String)
-  # fractionDigits: Number of fractional digits to show. (Fixnum)
+  # fractionDigits: Number of fractional digits to show. (Integer)
   class RealFormat
 
     attr_reader :signPrefix, :signSuffix, :thousandsSeparator,

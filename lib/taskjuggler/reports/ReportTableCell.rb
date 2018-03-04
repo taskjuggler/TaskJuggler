@@ -60,7 +60,7 @@ class TaskJuggler
       @alignment = :center
       # Horizontal padding between frame and cell content
       @padding = 3
-      # Whether or not to indent the cell. If not nil, it is a Fixnum
+      # Whether or not to indent the cell. If not nil, it is an Integer
       # indicating the indentation level.
       @indent = nil
       # The basename of the icon file

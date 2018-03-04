@@ -37,7 +37,7 @@ class Object
     # We can't clone frozen objects. So just return a reference to them.
     # Built-in classed can't be cloned either. The check below is probably
     # cheaper than the frequent (hiddent) exceptions from those objects.
-    return self if frozen? || nil? || is_a?(Fixnum) || is_a?(Float) ||
+    return self if frozen? || nil? || is_a?(Integer) || is_a?(Float) ||
                    is_a?(TrueClass) || is_a?(FalseClass) || is_a?(Symbol)
 
     # In case we have loops in our graph, we return references, not
