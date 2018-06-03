@@ -613,7 +613,7 @@ class TaskJuggler
     # This function returns a list of entries that have all the exact same
     # date and are the last entries before the deadline _date_. Only messages
     # with at least the required alert level _minLevel_ are returned. Messages
-    # with alert level _minLevel_ must be newer than _minDate_.
+    # with alert level _minLevel_ or higher must be newer than _minDate_.
     def currentEntries(date, property, minLevel, minDate, logExp)
       pEntries = getEntries(property) ?  getEntries(property).last(date) :
                  JournalEntryList.new
@@ -621,7 +621,7 @@ class TaskJuggler
       # date.
       pEntries.delete_if do |e|
         e.headline.empty? || e.alertLevel < minLevel ||
-        (e.alertLevel == minLevel && minDate && e.date < minDate)
+        (e.alertLevel >= minLevel && minDate && e.date < minDate)
       end
 
       unless pEntries.empty?
