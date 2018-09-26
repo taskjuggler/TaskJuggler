@@ -56,7 +56,7 @@ EOT
       [:LITERAL, '-', 6],
       [:LITERAL, '$', 6],
       [:MACRO, 'A Macro', 6],
-      [:TIME, time(15, 23), 7],
+      [:TIME, mktime(15, 23), 7],
       [:STRING, 'A string', 7],
       [:STRING, "It's a string", 8],
       [:STRING, "A\nmult\"i line\nstring", 9],
@@ -101,12 +101,12 @@ EOT
 24:00
 EOT
     ref = [
-      [:TIME, time(0, 0), 1],
-      [:TIME, time(0, 0), 2],
-      [:TIME, time(1, 0), 3],
-      [:TIME, time(11, 59), 4],
-      [:TIME, time(12, 1), 5],
-      [:TIME, time(24, 0), 6],
+      [:TIME, mktime(0, 0), 1],
+      [:TIME, mktime(0, 0), 2],
+      [:TIME, mktime(1, 0), 3],
+      [:TIME, mktime(11, 59), 4],
+      [:TIME, mktime(12, 1), 5],
+      [:TIME, mktime(24, 0), 6],
       [:eof, '<END>', 7]
     ]
 
@@ -172,7 +172,7 @@ EOT
 
   private
 
-  def time(h, m)
+  def mktime(h, m)
     (h * 60 + m) * 60
   end
 
