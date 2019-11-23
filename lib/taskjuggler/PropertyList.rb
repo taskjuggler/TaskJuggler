@@ -3,7 +3,7 @@
 #
 # = PropertyList.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2019
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -271,10 +271,16 @@ class TaskJuggler
 
             @query.property = a
             @query.process
+            unless @query.ok
+              fatal "List sort failed: #{@query.errorMessage}"
+            end
             aVal = @query.to_sort
 
             @query.property = b
             @query.process
+            unless @query.ok
+              fatal "List sort failed: #{@query.errorMessage}"
+            end
             bVal = @query.to_sort
           else
             # In case we don't have a query, we use the static mechanism.

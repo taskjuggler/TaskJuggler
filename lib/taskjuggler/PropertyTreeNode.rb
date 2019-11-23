@@ -3,7 +3,7 @@
 #
 # = PropertyTreeNode.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2019
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -702,11 +702,13 @@ class TaskJuggler
       res += '-' * 75 + "\n"
     end
 
+    alias to_str to_s
+
     # Many PropertyTreeNode functions are scenario specific. These functions are
     # provided by the class *Scenario classes. In case we can't find a function
     # called for the base class we try to find it in corresponding *Scenario
     # class.
-    def method_missing(func, scenarioIdx, *args, &block)
+    def method_missing(func, scenarioIdx = 0, *args, &block)
       @data[scenarioIdx].send(func, *args, &block)
     end
 

@@ -3,7 +3,7 @@
 #
 # = AttributeBase.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2019
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -148,7 +148,13 @@ class TaskJuggler
       if v.is_a?(Integer) || v.is_a?(Float)
         v
       elsif v.respond_to?('to_s')
-        v.to_s
+        if v.respond_to?('join')
+          # If the attribute is an Array we convert it to a comma separated
+          # list.
+          v.join(', ')
+        else
+          v.to_s
+        end
       else
         nil
       end
