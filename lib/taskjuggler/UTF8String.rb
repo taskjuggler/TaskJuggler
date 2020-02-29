@@ -59,7 +59,7 @@ class String
 
     # Replacement for the existing << operator that also works for characters
     # above Integer 255 (UTF-8 characters).
-    def << (obj)
+    def <<(obj)
       if obj.is_a?(String) || (obj < 256)
         # In this case we can use the built-in concat.
         concat(obj)

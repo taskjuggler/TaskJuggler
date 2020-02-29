@@ -868,12 +868,6 @@ class TaskJuggler
     # the next cell.
     def genCalChartTaskCell(query, line, columnDef, t, sameTimeNextFunc)
       task = line.property
-      # Find out if we have an enclosing resource scope.
-      if line.scopeLine && line.scopeLine.property.is_a?(Resource)
-        resource = line.scopeLine.property
-      else
-        resource = nil
-      end
 
       # Get the interval of the task. In case a date is invalid due to a
       # scheduling problem, we use the full project interval.

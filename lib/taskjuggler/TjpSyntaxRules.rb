@@ -3689,13 +3689,11 @@ EOT
       end
       if attributeDefinition.scenarioSpecific
         @scenarioIdx = 0 unless @val[1]
-        attr = @property[attrId, 0]
       else
         if @val[1]
           error('purge_non_sc_spec_attr',
                 'Scenario specified for a non-scenario specific attribute')
         end
-        attr = @property.get(attrId)
       end
       if @property.attributeDefinition(attrId).scenarioSpecific
         @property.getAttribute(attrId, @scenarioIdx).reset

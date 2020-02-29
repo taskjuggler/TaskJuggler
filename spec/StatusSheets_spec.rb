@@ -230,7 +230,7 @@ EOT
       it 'should have matching status sheets in body and attachment' do
         @sss_mails.each do |mail|
           bodySheet = extractStatusSheet(mail.parts[0].decoded)
-          attachedSheet = extractStatusSheet(mail.part[1].decoded)
+          attachedSheet = extractStatusSheet(mail.part[1].decoded).tr("\r", '')
           bodySheet.should == attachedSheet
         end
       end
