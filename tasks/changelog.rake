@@ -1,5 +1,7 @@
 require 'time'
 
+CLOBBER.include "CHANGELOG"
+
 desc 'Generate the CHANGELOG file'
 task :changelog do
 
