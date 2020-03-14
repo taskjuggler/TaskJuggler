@@ -40,11 +40,13 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 The TaskJuggler web server can be used to serve the HTTP reports of
 TaskJuggler projects to be viewed by any HTML5 compliant web browser. It uses
 the TaskJuggler daemon (tj3d) for data hosting and report generation.
+
 EOT
+	)
         @opts.on('-d', '--dont-daemonize',
                  format("Don't put program into daemon mode. Keep it " +
                         'connected to the terminal and show debug output.')) do

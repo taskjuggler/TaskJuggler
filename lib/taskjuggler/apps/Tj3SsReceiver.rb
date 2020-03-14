@@ -27,13 +27,15 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This program can be used to receive filled-out status sheets via email.
 It reads the emails from STDIN and extracts the status sheet from the
 attached files. The status sheet is checked for correctness. Good status
 sheets are filed away. The sender be informed by email that the status
 sheets was accepted or rejected.
+
 EOT
+	)
       end
     end
 

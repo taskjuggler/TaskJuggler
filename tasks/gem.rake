@@ -13,6 +13,7 @@ task :gem => [:clobber] do
   Rake::Task[:manual].invoke
   Rake::Task[:changelog].invoke
   Rake::Task[:permissions].invoke
+  Rake::Task[:help2man].invoke
 
   load 'taskjuggler.gemspec';
 

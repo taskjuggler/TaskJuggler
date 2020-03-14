@@ -68,10 +68,12 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This is the main application. It reads in your project files, schedules the
 project and generates the reports.
+
 EOT
+	)
         @opts.on('--debuglevel N', Integer,
                  format("Verbosity of debug output")) do |arg|
           TaskJuggler::Log.level = arg

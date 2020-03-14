@@ -36,17 +36,19 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This program can be used to generate the user manual in HTML format or to get
 a textual help for individual keywords.
+
 EOT
+	)
         @opts.on('-d', '--dir <directory>', String,
                 format('directory to put the manual')) do |dir|
           @directory = dir
         end
         @opts.on('--html',
                  format('Show the user manual in your local web browser. ' +
-                        'By default, Firefox is used or the brower specified ' +
+                        'By default, Firefox is used or the browser specified ' +
                         'with the $BROWSER environment variable.')) do
           @showHtml = true
         end
