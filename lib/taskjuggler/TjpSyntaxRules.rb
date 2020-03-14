@@ -1825,6 +1825,11 @@ EOT
     pattern(%w( !reportStart ))
     pattern(%w( !rollupresource ))
     pattern(%w( !rolluptask ))
+    pattern(%w( _novevents), lambda { @property.set('novevents', [ true ]) })
+    doc('novevents', <<'EOT'
+Don't add VEVENT entries to generated [[icalreport]]s.
+EOT
+    )
 
     pattern(%w( _scenario !scenarioId ), lambda {
       # Don't include disabled scenarios in the report
@@ -1863,6 +1868,8 @@ EOT
         # Show all journal entries.
         @property.set('hideJournalEntry',
                       LogicalExpression.new(LogicalOperation.new(0)))
+        # Add VEVENT entries to icalreports by default
+        @property.set('novevents', [ false ])
       end
     })
     arg(1, 'file name', <<'EOT'

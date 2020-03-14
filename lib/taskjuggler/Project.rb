@@ -465,7 +465,9 @@ class TaskJuggler
         [ 'weekStartsMonday', 'Week Starts Monday', BooleanAttribute,
               true,  true,    false, false ],
         [ 'width',     'Width',        IntegerAttribute,
-              true,  false,   false, 640 ]
+              true,  false,   false, 640 ],
+        [ 'novevents',  'No vevents in icalreports', BooleanAttribute,
+              true,  false,   false, false ]
       ]
       attrs.each { |a| @reports.addAttributeType(AttributeDefinition.new(*a)) }
 

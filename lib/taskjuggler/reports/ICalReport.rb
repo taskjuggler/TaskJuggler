@@ -96,7 +96,7 @@ class TaskJuggler
 
         # Generate an additional VEVENT entry for all leaf tasks that aren't
         # milestones.
-        if task.leaf? && !task['milestone', scenarioIdx]
+        if task.leaf? && !task['milestone', scenarioIdx] && @report.get('novevents') == [false]
           event = ICalendar::Event.new(
             @ical, "#{task['projectid', scenarioIdx]}-#{task.fullId}",
             task.name, task['start', scenarioIdx], task['end', scenarioIdx])
