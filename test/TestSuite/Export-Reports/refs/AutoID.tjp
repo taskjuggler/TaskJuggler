@@ -32,7 +32,6 @@ resource _Resource_1 "Foo" {
 task _Task_1 "Foo" {
   task _Task_2 "Bar" {
     start 2009-10-04-00:00-+0000
-    milestone
     scheduled
   }
 }

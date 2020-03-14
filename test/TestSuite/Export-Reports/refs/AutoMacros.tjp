@@ -10,7 +10,6 @@ projectids prj
 
 task items "Project breakdown" {
   start 2006-09-22-00:00-+0000
-  milestone
   scheduled
 }
 supplement task items {

@@ -10,17 +10,14 @@ projectids prj, prj1, prj2
 
 task t1 "Task 1" {
   start 2006-08-22-06:00-+0000
-  milestone
   scheduled
 }
 task t2 "Task 2" {
   start 2006-08-22-06:00-+0000
-  milestone
   scheduled
 }
 task t3 "Task 3" {
   start 2006-08-22-06:00-+0000
-  milestone
   scheduled
 }
 supplement task t1 {

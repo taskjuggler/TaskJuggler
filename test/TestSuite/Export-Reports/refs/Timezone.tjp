@@ -10,7 +10,6 @@ projectids tz
 
 task item "Project" {
   start 2005-06-06-09:00-+0000
-  milestone
   scheduled
 }
 supplement task item {

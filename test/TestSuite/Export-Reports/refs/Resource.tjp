@@ -15,7 +15,6 @@ resource team "A team" {
 
 task t "An important date" {
   start 2005-06-10-06:00-+0000
-  milestone
   scheduled
 }
 supplement task t {

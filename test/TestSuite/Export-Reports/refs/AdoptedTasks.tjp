@@ -10,12 +10,10 @@ projectids prj
 
 task t1 "T1" {
   start 2011-03-05-00:00-+0000
-  milestone
   scheduled
 }
 task t2 "T2" {
   start 2011-03-05-00:00-+0000
-  milestone
   scheduled
 }
 task t3 "T3" {

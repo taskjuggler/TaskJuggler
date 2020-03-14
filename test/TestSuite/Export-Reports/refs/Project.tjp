@@ -10,7 +10,6 @@ projectids prj
 
 task t "Task" {
   start 2007-01-01-07:00-+0000
-  milestone
   scheduled
 }
 supplement task t {

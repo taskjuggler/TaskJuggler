@@ -19,7 +19,6 @@ resource r5 "R5"
 
 task _Task_1 "T" {
   start 2010-11-10-00:00-+0000
-  milestone
   scheduled
 }
 supplement task _Task_1 {

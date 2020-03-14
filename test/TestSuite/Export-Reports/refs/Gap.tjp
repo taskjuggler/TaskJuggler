@@ -10,19 +10,16 @@ projectids prj
 
 task t1 "Task 1" {
   start 2005-05-29-06:00-+0000
-  milestone
   scheduled
 }
 task t2 "Task 2" {
   depends t1
   start 2005-06-03-06:00-+0000
-  milestone
   scheduled
 }
 task t3 "Task 3" {
   depends t1
   start 2005-06-03-23:00-+0000
-  milestone
   scheduled
 }
 supplement task t1 {

@@ -11,7 +11,6 @@ projectids prj
 task foo1 "foo1" {
   task foo2 "foo2" {
     start 2003-12-04-07:00-+0000
-    milestone
     scheduled
   }
   task foo3 "foo3" {
