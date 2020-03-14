@@ -44,7 +44,7 @@ to the completion of the project. It assists you during project scoping,
 resource assignment, cost and revenue planning, risk and communication
 management.
 EOT
-  s.license = 'GNU GPL version 2'
+  s.license = 'GPL-2.0'
   s.require_path = 'lib'
   s.files = (`git ls-files -- lib`).split("\n") +
             (`git ls-files -- data`).split("\n") +
@@ -63,9 +63,9 @@ EOT
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
 
-  s.add_dependency('mail', '>= 2.4.3')
-  s.add_dependency('term-ansicolor', '>= 1.0.7')
-  s.add_development_dependency('rspec', '>= 2.5.0')
+  s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
+  s.add_runtime_dependency('term-ansicolor', '~> 1.7', '>= 1.7.1')
+  s.add_development_dependency('rspec', '~> 2.5', '>= 2.5.0')
   s.platform = Gem::Platform::RUBY
   s.required_ruby_version  = '>= 2.0.0'
 }
