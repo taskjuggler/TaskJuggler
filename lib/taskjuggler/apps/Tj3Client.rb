@@ -100,7 +100,7 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        prebanner = <<'EOT'
 The TaskJuggler client is used to send commands and data to the TaskJuggler
 daemon. The communication is done via TCP/IP.
 
@@ -125,9 +125,10 @@ EOT
             end
           end
           args = args.join(' ')
-          @opts.banner += "     #{cmd[:label] + ' ' + args + tail}" +
+          prebanner += "     #{cmd[:label] + ' ' + args + tail}" +
                           "\n\n#{' ' * 10 + format(cmd[:descr], 10)}\n"
         end
+	@opts.banner.prepend(prebanner)
         @opts.on('-p', '--port <NUMBER>', Integer,
                  format('Use the specified TCP/IP port')) do |arg|
            @port = arg

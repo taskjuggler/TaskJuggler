@@ -42,11 +42,13 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 The TaskJuggler daemon can be used to quickly generate reports for a number
 of scheduled projects that are resident in memory. Once the daemon has been
 started tj3client can be used to control it.
+
 EOT
+	)
         @opts.on('-d', '--dont-daemonize',
                  format("Don't put program into daemon mode. Keep it " +
                         'connected to the terminal and show debug output.')) do

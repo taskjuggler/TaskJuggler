@@ -53,7 +53,7 @@ EOT
             (`git ls-files -- tasks`).split("\n") +
             %w( .gemtest taskjuggler.gemspec Rakefile ) +
             # Generated files, not contained in Git repository.
-            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*')
+            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
   s.bindir = 'bin'
   s.executables = (`git ls-files -- bin`).split("\n").
                   map { |fn| File.basename(fn) }

@@ -1,0 +1,22 @@
+[NAME]
+tj3man \- get documentation for TaskJuggler keywords or generate user manual
+
+[ENVIRONMENT]
+
+.TP
+\fBBROWSER\fR
+The web browser used to display the user manual as HTML.
+
+[EXAMPLES]
+
+tj3man shift
+.br
+tj3man --html shift.timesheet
+.br
+tj3man --html
+
+[SEE ALSO]
+
+tj3(1)
+
+The TaskJuggler manual is also available online at http://www.taskjuggler.org/tj3/manual/.

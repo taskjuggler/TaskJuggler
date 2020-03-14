@@ -37,11 +37,13 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This program can be used to send out time sheets templates via email. It will
 generate time sheet templates for all resources of the project. The project
 data will be accesses via tj3client from a running TaskJuggler server process.
+
 EOT
+	)
         @opts.on('-r', '--resource <ID>', String,
                 format('Only generate template for given resource')) do |arg|
           @resourceList << arg

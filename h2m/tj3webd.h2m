@@ -1,0 +1,24 @@
+[NAME]
+tj3webd \- TaskJuggler reports web server
+
+[ENVIRONMENT]
+
+.TP
+\fBHOME\fR
+The user's home folder. Used to search for configuration file if not specified.
+
+[FILES]
+
+.TP
+\fB.taskjugglerrc\fR or \fBtaskjuggler.rc\fR
+tj3d searches for a config file named .taskjugglerrc or taskjuggler.rc in the current path, the user's home path as specified by the HOME environment variable or /etc/. At a minimum the file must contain:
+
+_global:
+  authKey: ********
+
+(the user should specify their own auth key and set file permissions accordingly). An alternative config file location may be specified using the -c, --config FILE option.
+
+[SEE ALSO]
+tj3d(1)
+
+The full TaskJuggler manual is available online at http://www.taskjuggler.org/tj3/manual/, or via the tj3man command.
