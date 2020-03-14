@@ -21,7 +21,7 @@ class TaskJuggler
   # holds the small scale (e. g. week or day).
   class GanttHeader
 
-    attr_reader :gridLines, :nowLineX, :cellStartDates
+    attr_reader :gridLines, :nowLineX, :cellStartDates, :markdateLineX
     attr_accessor :height
 
     # Create a GanttHeader object and generate the scales for the header.
@@ -38,6 +38,10 @@ class TaskJuggler
 
       # X coordinate of the "now" line. nil if "now" is off-chart.
       @nowLineX = nil
+
+      # X coordinate of the custom "markdate" line with date specified by user.
+      # nil if "markdate" is off-chart.
+      @markdateLineX = nil
 
       # The x coordinates and width of the cells created by the small scale. The
       # values are stored as [ x, w ].
@@ -103,6 +107,12 @@ class TaskJuggler
 
       nlx = @chart.dateToX(@chart.now)
       @nowLineX = nlx if nlx
+
+      if @chart.markdate
+        flx = @chart.dateToX(@chart.markdate)
+        @markdateLineX = flx if flx
+      end
+
     end
 
     # Generate the actual scale cells.

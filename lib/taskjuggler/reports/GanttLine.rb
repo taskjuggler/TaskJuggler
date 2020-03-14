@@ -49,6 +49,7 @@ class TaskJuggler
       @y = y + chart.header.height + 1
       # The height of the line in screen pixels.
       @height = height
+
       # The index of the line in the chart. It starts with 0 and is
       # incremented for each line by one.
       @lineIndex = lineIndex
@@ -93,6 +94,11 @@ class TaskJuggler
       # Render the 'now' line
       if @chart.header.nowLineX
         div << rectToHTML(@chart.header.nowLineX, 0, 1, @height, 'nowline')
+      end
+
+      # Render the 'markdate' line
+      if @chart.header.markdateLineX
+        div << rectToHTML(@chart.header.markdateLineX, 0, 1, @height, 'markdateline')
       end
 
       div
