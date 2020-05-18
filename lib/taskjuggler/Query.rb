@@ -154,7 +154,7 @@ class TaskJuggler
         end
 
         # Same for the scope property.
-        if !@scopeProperty.nil? && !@scopePropertyId.nil?
+        if @scopeProperty.nil? && !@scopePropertyId.nil?
           @scopeProperty = resolvePropertyId(@scopePropertyType,
                                              @scopePropertyId)
           unless @scopeProperty
