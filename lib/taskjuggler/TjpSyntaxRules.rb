@@ -3932,7 +3932,13 @@ EOT
     descr('The duration of a task')
 
     singlePattern('_duties')
-    descr('List of tasks that the resource is allocated to')
+    descr(<<'EOT'
+List of tasks that the resource is allocated to
+
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attribute.
+EOT
+         )
 
     singlePattern('_efficiency')
     descr('Measure for how efficient a resource can perform tasks')

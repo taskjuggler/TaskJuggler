@@ -322,6 +322,33 @@ class TaskJuggler
       end
     end
 
+    # A list of the tasks that the resource has been  allocated to work on in
+    # the report time frame.
+    def query_duties(query)
+      list = []
+      iv = TimeInterval.new(query.start, query.end)
+      @duties.each do |task|
+        if task.hasResourceAllocated?(@scenarioIdx, iv, @property)
+          if query.listItem
+            rti = RichText.new(query.listItem, RTFHandlers.create(@project)).
+              generateIntermediateFormat
+            unless rti
+              error('bad_resource_ts_query',
+                    "Syntax error in query statement for task attribute " +
+                    "'resources'.")
+            end
+            q = query.dup
+            q.property = task
+            rti.setQuery(q)
+            list << "<nowiki>#{rti.to_s}</nowiki>"
+          else
+            list << "<nowiki>#{task.name} (#{task.id})</nowiki>"
+          end
+        end
+      end
+      query.assignList(list)
+    end
+
     # The effort allocated to the Resource in the specified interval. In case a
     # Task is given as scope property only the effort allocated to this Task is
     # taken into account.
