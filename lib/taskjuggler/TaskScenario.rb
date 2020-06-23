@@ -1508,6 +1508,7 @@ class TaskJuggler
             end
             q = query.dup
             q.property = resource
+            q.scopeProperty = @property
             rti.setQuery(q)
             list << "<nowiki>#{rti.to_s}</nowiki>"
           else
