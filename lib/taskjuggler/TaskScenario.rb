@@ -2180,8 +2180,12 @@ class TaskJuggler
       # been set already.
       if @scheduled && @effort == 0 && @length == 0 && @duration == 0 &&
          !@milestone
-        @start = @project.idxToDate(firstSlotIdx) unless @start
-        @end = @project.idxToDate(lastSlotIdx + 1) unless @end
+        unless @start || !firstSlotIdx
+          @start = @project.idxToDate(firstSlotIdx)
+        end
+        unless @end || !lastSlotIdx
+          @end = @project.idxToDate(lastSlotIdx + 1)
+        end
       end
     end
 
