@@ -221,7 +221,7 @@ class TaskJuggler
         field.to_s
       else
         # Duplicate quote characters.
-        f = field.gsub(/@quote/, "#{@quote * 2}")
+        f = field.gsub(Regexp.new(@quote), "#{@quote * 2}")
         # Enclose the field in quote characters
         @quote + f.to_s + @quote
       end
