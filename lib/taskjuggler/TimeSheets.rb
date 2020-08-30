@@ -325,9 +325,10 @@ class TaskJuggler
     def totalGrossWorkingSlots
       project = @resource.project
       # Calculate the number of weeks in the report
-      weeksToReport = (@interval.end - @interval.start) / (60 * 60 * 24 * 7)
+      weeksToReport = (@interval.end - @interval.start).to_f /
+        (60 * 60 * 24 * 7)
 
-      daysToSlots(project.weeklyWorkingDays * weeksToReport)
+      daysToSlots((project.weeklyWorkingDays * weeksToReport).to_i)
     end
 
     # Compute the total number of actual working time slots of the
