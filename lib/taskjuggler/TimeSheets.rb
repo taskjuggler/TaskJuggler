@@ -291,13 +291,13 @@ class TaskJuggler
         # reported work.
         delta = 1
         if totalSlots < (targetSlots - delta)
-          error('ts_work_too_low',
+          warning('ts_work_too_low',
                 "The total work to be reported for this time sheet " +
                 "is #{workWithUnit(targetSlots)} but only " +
                 "#{workWithUnit(totalSlots)} were reported.")
         end
         if totalSlots > (targetSlots + delta)
-          error('ts_work_too_high',
+          warning('ts_work_too_high',
                 "The total work to be reported for this time sheet " +
                 "is #{workWithUnit(targetSlots)} but " +
                 "#{workWithUnit(totalSlots)} were reported.")
