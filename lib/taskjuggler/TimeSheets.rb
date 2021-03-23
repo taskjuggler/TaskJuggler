@@ -337,8 +337,9 @@ class TaskJuggler
       project = @resource.project
       startIdx = project.dateToIdx(@interval.start)
       endIdx = project.dateToIdx(@interval.end)
-      @resource.getAllocatedSlots(@scenarioIdx, startIdx, endIdx, nil) +
-        @resource.getFreeSlots(@scenarioIdx, startIdx, endIdx)
+      shiftSlots = @resource.countOnShiftSlots(@scenarioIdx, startIdx, endIdx)
+      allocatedSlots = @resource.getAllocatedSlots(@scenarioIdx, startIdx, endIdx, nil)
+      [shiftSlots,allocatedSlots].max
     end
 
     # Converts allocation percentage into time slots.
