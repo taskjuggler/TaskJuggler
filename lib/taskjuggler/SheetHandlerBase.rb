@@ -166,11 +166,12 @@ class TaskJuggler
                   inReplyTo = nil)
       case @emailDeliveryMethod
       when 'smtp'
-        Mail.defaults do
-          delivery_method :smtp, {
+        settings_dto = {
             :address => @smtpServer,
-            :port => 25
-          }
+            :port => 25,
+        }
+        Mail.defaults do
+          delivery_method :smtp, settings_dto
         end
       when 'sendmail'
         Mail.defaults do
