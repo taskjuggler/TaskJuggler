@@ -37,7 +37,7 @@ class TaskJuggler
       @port = nil
       @webServer = false
       @webServerPort = 8080
-      @webdPidFile = File.join(Dir.getwd, ".tj3webd-#{$$}.pid").untaint
+      @webdPidFile = File.join(Dir.getwd, ".tj3webd-#{$$}.pid")
     end
 
     def processArguments(argv)
@@ -92,7 +92,7 @@ EOT
       # Set some config variables if corresponding data was provided via the
       # command line.
       broker.port = @port if @port
-      broker.uriFile = @uriFile.untaint
+      broker.uriFile = @uriFile
       broker.projectFiles = sortInputFiles(files) unless files.empty?
       broker.daemonize = @daemonize
       # Create log files for standard IO for each child process if the daemon

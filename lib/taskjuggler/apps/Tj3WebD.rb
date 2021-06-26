@@ -89,7 +89,7 @@ EOT
       # Set some config variables if corresponding data was provided via the
       # command line.
       webServer.port = @port if @port
-      webServer.uriFile = @uriFile.untaint
+      webServer.uriFile = @uriFile
       webServer.webServerPort = @webServerPort if @webServerPort
       webServer.daemonize = @daemonize
       webServer.pidFile = @pidFile

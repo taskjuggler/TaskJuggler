@@ -76,8 +76,8 @@ class TaskJuggler
                                 a('openNodes'))
       taskList.sort!
 
-      @fileName = ((@report.name[0] == '/' ? '' : @project.outputDir) +
-                  @report.name + '.csv').untaint
+      @fileName = (@report.name[0] == '/' ? '' : @project.outputDir) +
+                  @report.name + '.csv'
 
       # Generate the table header.
       headers = [ 'Date' ] +

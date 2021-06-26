@@ -169,7 +169,7 @@ class TaskJuggler::TextParser
 
       def initialize(fileName, log, textScanner)
         super(log, textScanner)
-        @fileName = fileName.dup.untaint
+        @fileName = fileName.dup
         data = (fileName == '.' ? $stdin : File.new(@fileName, 'r')).read
         begin
           @stream = StringIO.new(data.forceUTF8Encoding)
