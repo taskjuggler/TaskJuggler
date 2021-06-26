@@ -38,7 +38,7 @@ class TaskJuggler
       # The log file
       @logFile = 'timesheets.log'
 
-      @signatureFilter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+      @signatureFilter = /^[ ]*timesheet\s[a-zA-Z_][a-zA-Z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
       @introText = <<'EOT'
 Please find enclosed your weekly report template. Please fill out
 the form and send it back to the sender of this email. You can either
