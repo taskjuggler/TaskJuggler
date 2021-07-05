@@ -172,7 +172,8 @@ you are encouraged to read and modify the source code.
 
 Before you download the source code, make sure you have all the
 necessary dependencies installed. You should have Ruby 1.9.2 or later
-and you need to have the following gems installed
+and you need to have the following gems installed, by running the
+following command as root or administrator
 
  gem install rake mail rspec term-ansicolor rcov
 
