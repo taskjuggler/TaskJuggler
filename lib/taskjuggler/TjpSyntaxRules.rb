@@ -673,7 +673,7 @@ EOT
   def rule_color
     pattern(%w( $STRING ), lambda {
       col = @val[0]
-      unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{3}/ =~ col
+      unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{6}/ =~ col
         error('bad_color',
               "Color values must be specified as '#RGB' or '#RRGGBB' values",
               @sourceFileInfo[0])
