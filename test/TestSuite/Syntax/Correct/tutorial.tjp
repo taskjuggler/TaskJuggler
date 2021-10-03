@@ -564,9 +564,9 @@ taskreport overview "" {
 # Macro to set the background color of a cell according to the alert
 # level of the task.
 macro AlertColor [
-  cellcolor plan.alert = 0 "#00D000" # green
-  cellcolor plan.alert = 1 "#D0D000" # yellow
-  cellcolor plan.alert = 2 "#D00000" # red
+  cellcolor plan.alert = 0 "#90FF90" # green
+  cellcolor plan.alert = 1 "#FFFF90" # yellow
+  cellcolor plan.alert = 2 "#FF9090" # red
 ]
 
 taskreport status "" {
