@@ -32,6 +32,10 @@ class TestProject < Test::Unit::TestCase
     @t.kill
   end
 
+  def test_basic
+    doRun(1, 1) { sleep 0.1 }
+  end
+
   def test_simple
     doRun(1, 1) { sleep 0.1 }
     doRun(1, 2) { sleep 0.1 }
@@ -63,7 +67,6 @@ class TestProject < Test::Unit::TestCase
     @cnt = 0
     lock = Monitor.new
     bp.wait do |j|
-      puts "Signal error" if j.retVal.signaled?
       postprocess(j)
       lock.synchronize { @cnt += 1 }
     end
@@ -75,12 +78,12 @@ class TestProject < Test::Unit::TestCase
     yield
     $stderr.puts "Error #{n}" if n % 2 == 0
     puts "Job #{n} finished"
+    # Return the job ID as return value
     n
   end
 
   def postprocess(job)
-    assert_equal(job.retVal.exitstatus, job.jobId, 'JobID mismatch')
-    assert_equal(job.retVal.pid, job.pid, 'PID mismatch')
+    assert_equal(job.retVal, job.jobId, 'PID mismatch')
     assert_equal("job #{job.jobId}", job.tag)
     text = <<"EOT"
 Job #{job.jobId} started
