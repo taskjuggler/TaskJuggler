@@ -35,7 +35,7 @@ class TaskJuggler
     include HTMLGraphics
 
     attr_reader :start, :end, :now, :weekStartsMonday, :header, :width,
-                :scale, :scales, :table
+                :scale, :scales, :table, :markdate
     attr_writer :viewWidth
 
     # Create the GanttChart object, but don't do much right now. We still need
@@ -43,13 +43,14 @@ class TaskJuggler
     # is the date that should be used as current date. _weekStartsMonday_ is
     # true if the weeks should start on Mondays instead of Sundays. _table_ is a
     # reference to the TableReport that the chart is part of.
-    def initialize(now, weekStartsMonday, columnDef, table = nil)
+    def initialize(now, weekStartsMonday, columnDef, table = nil, markdate = nil)
       # The start and end dates of the reported interval.
       @start = nil
       @end = nil
       @now = now
       @columnDef = columnDef
       @table = table
+      @markdate = markdate
 
       # This defines the possible horizontal scales that the Gantt chart can
       # have. The scales differ in their resolution and the amount of detail
@@ -255,6 +256,11 @@ class TaskJuggler
 
       # Also protect the current date line from other vertical lines.
       @router.addZone(@header.nowLineX - 1, 0, 3, @height - 1, false, true)
+
+      # Protect the date set in custom reference line from other vertical lines.
+      if @header.markdateLineX
+        @router.addZone(@header.markdateLineX - 1, 0, 3, @height - 1, false, true)
+      end
 
       # Generate the dependency arrows for all visible tasks.
       @tasks.each do |task, lines|

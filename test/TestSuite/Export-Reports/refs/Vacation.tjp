@@ -16,7 +16,6 @@ resource tuxus "Tuxus"
 
 task t "An important date" {
   start 2005-07-22-06:00-+0000
-  milestone
   scheduled
 }
 supplement task t {

@@ -79,7 +79,7 @@ class TaskJuggler
   # To optimize memory usage and computation time the Scoreboard objects for
   # similar ShiftAssignments are shared.
   #
-  # Scoreboard may be nil or a bit vector encoded as a Fixnum
+  # Scoreboard may be nil or a bit vector encoded as an Integer
   # nil: Value has not been determined yet.
   # Bit 0:      0: No assignment
   #             1: Has assignement

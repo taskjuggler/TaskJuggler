@@ -111,7 +111,7 @@ review the respective values for he project's tasks and resources.
 
 When the criticalness and pathcriticalness for all leaf resources and
 tasks has been determined, the leaf tasks are sorted by priority
-(hight to low), then by pathcricialness (high to low) and then by the
+(high to low), then by pathcricialness (high to low) and then by the
 index (low to high). In a loop that is terminated when all tasks have
 been scheduled or an error condition has been detected, the first
 task that is ready for scheduling is completely scheduled. This means

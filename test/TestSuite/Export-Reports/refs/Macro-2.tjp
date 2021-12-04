@@ -10,12 +10,10 @@ projectids prj
 
 task _Task_1 " Crème brûlée   Prepare " {
   start 2010-04-28-00:00-+0000
-  milestone
   scheduled
 }
 task _Task_2 "task" {
   start 2010-04-28-00:00-+0000
-  milestone
   scheduled
 }
 supplement task _Task_1 {

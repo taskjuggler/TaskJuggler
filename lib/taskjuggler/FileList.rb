@@ -17,7 +17,7 @@ class TaskJuggler
   class FileRecord
 
     def initialize(fileName)
-      @name = fileName.dup.untaint
+      @name = fileName.dup
       @mtime = File.mtime(@name)
     end
 

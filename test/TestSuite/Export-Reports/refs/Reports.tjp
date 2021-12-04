@@ -30,7 +30,6 @@ task t2 "FooTask2" {
 }
 task t3 "FooTask3" {
   start 2000-01-01-07:00-+0000
-  milestone
   scheduled
 }
 supplement task t1 {

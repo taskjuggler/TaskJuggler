@@ -30,13 +30,15 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This program can be used to receive filled-out time sheets via email.  It
 reads the emails from STDIN and extracts the time sheet from the attached
 files. The time sheet is checked for correctness. Good time sheets are filed
 away. The sender will be informed by email that the time sheets was accepted
 or rejected.
+
 EOT
+	)
       end
     end
 

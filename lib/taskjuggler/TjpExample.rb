@@ -75,7 +75,9 @@ class TaskJuggler
       @file.each_line do |line|
         if line[0, mark.length] == mark
           # We've found an annotation line. Get the tag and indicator.
-          dum, dum, dum, tag, indicator = line.split
+          tokens = line.split
+          tag = tokens[3]
+          indicator = tokens[4]
 
           if indicator == '+'
             # Start a new snip

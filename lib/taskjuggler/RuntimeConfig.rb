@@ -48,7 +48,7 @@ class RuntimeConfig
     return false unless (p = @config)
     sections.each do |sec|
       p = p['_' + sec]
-      unless p
+      unless p && p.is_a?(Hash)
         debug("Section #{section} not found in config file")
         return false
       end

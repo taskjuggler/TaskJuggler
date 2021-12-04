@@ -230,7 +230,7 @@ class TaskJuggler
     private
 
     def checkLevel(level)
-      if level.is_a?(Fixnum)
+      if level.is_a?(Integer)
         if level < 0 || level > 5
           raise ArgumentError, "Unsupported level #{level}"
         end
@@ -248,7 +248,7 @@ class TaskJuggler
 
       timeStamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
       begin
-        @logFile.untaint
+        @logFile
         File.open(@logFile, 'a') do |f|
           f.write("#{timeStamp} #{type} #{@appName}[#{Process.pid}]: " +
                   "#{message}\n")

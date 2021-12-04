@@ -46,11 +46,11 @@ class TaskJuggler
       @sourceFileInfo = nil
     end
 
-    # Store the number of worked time slots. If the value is a Fixnum, it can
+    # Store the number of worked time slots. If the value is an Integer, it can
     # be directly assigned. A Float is interpreted as percentage and must be
     # in the rage of 0.0 to 1.0.
     def work=(value)
-      if value.is_a?(Fixnum)
+      if value.is_a?(Integer)
         @work = value
       else
         # Must be percent value
@@ -325,9 +325,10 @@ class TaskJuggler
     def totalGrossWorkingSlots
       project = @resource.project
       # Calculate the number of weeks in the report
-      weeksToReport = (@interval.end - @interval.start) / (60 * 60 * 24 * 7)
+      weeksToReport = (@interval.end - @interval.start).to_f /
+        (60 * 60 * 24 * 7)
 
-      daysToSlots(project.weeklyWorkingDays * weeksToReport)
+      daysToSlots((project.weeklyWorkingDays * weeksToReport).to_i)
     end
 
     # Compute the total number of actual working time slots of the

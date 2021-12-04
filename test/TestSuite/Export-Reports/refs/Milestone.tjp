@@ -10,12 +10,10 @@ projectids prj
 
 task project_start "Project Start" {
   start 2005-07-15-06:00-+0000
-  milestone
   scheduled
 }
 task deadline "Important Deadline" {
   start 2005-07-20-06:00-+0000
-  milestone
   scheduled
 }
 supplement task project_start {

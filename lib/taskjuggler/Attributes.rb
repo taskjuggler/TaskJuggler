@@ -264,12 +264,12 @@ class TaskJuggler
 
   end
 
-  class FixnumAttribute < AttributeBase
+  class IntegerAttribute < AttributeBase
     def initialize(property, type, container)
       super
     end
 
-    def FixnumAttribute::tjpId
+    def IntegerAttribute::tjpId
       'integer'
     end
   end

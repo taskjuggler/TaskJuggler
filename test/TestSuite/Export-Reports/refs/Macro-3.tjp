@@ -10,7 +10,6 @@ projectids foo600
 
 task _Task_1 "foo" {
   start 2009-12-01-00:00-+0000
-  milestone
   scheduled
 }
 supplement task _Task_1 {

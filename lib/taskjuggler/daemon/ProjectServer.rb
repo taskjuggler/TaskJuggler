@@ -137,9 +137,9 @@ class TaskJuggler
     # directory. The second one is the master project file (.tjp file).
     # Additionally a list of optional .tji files can be provided.
     def loadProject(args)
-      dirAndFiles = args.dup.untaint
+      dirAndFiles = args.dup
       # The first argument is the working directory
-      Dir.chdir(args.shift.untaint)
+      Dir.chdir(args.shift)
 
       # Save a time stamp of when the project file loading started.
       @modifiedCheck = TjTime.new

@@ -1,0 +1,37 @@
+[NAME]
+tj3ts_sender \- send out time sheets templates via email
+
+[ENVIRONMENT]
+
+.TP
+\fBHOME\fR
+The user's home folder. Used to search for configuration file if not specified.
+
+[FILES]
+
+\fB.taskjugglerrc\fR or \fBtaskjuggler.rc\fR
+tj3d searches for a config file named .taskjugglerrc or taskjuggler.rc in the current path, the user's home path as specified by the HOME environment variable or /etc/. At a minimum the file must configure an authentication key, an e-mail delivery method and sender e-mail e.g.:
+
+_global:
+   authKey: ********
+   smtpServer: smtp.your_company.com
+   projectId: acso
+.br
+_timesheets:
+   senderEmail: 'TaskJuggler <statussheets@taskjuggler.amd.com>'
+
+(the user should specify their own auth key and set file permissions accordingly). An alternative config file location may be specified using the -c, --config FILE option.
+
+.TP
+\fBtimesheets.log\fR
+The timesheets log file, created in the working directory.
+
+.TP
+\fBTimeSheetTemplates\fR
+Base directory of the sheet templates, created in the working directory.
+
+
+[SEE ALSO]
+tj3ts_receiver(1)
+
+The full TaskJuggler manual is available online at http://www.taskjuggler.org/tj3/manual/, or via the tj3man command.

@@ -51,7 +51,7 @@ class TaskJuggler
       [
         [ 'id',   'ID',       StringAttribute, false,  false,  false,  '' ],
         [ 'name', 'Name',     StringAttribute, false,  false,  false,  '' ],
-        [ 'seqno', 'Seq. No', FixnumAttribute, false,  false,  false,  0 ]
+        [ 'seqno', 'Seq. No', IntegerAttribute, false,  false,  false,  0 ]
       ].each { |a| addAttributeType(AttributeDefinition.new(*a)) }
     end
 

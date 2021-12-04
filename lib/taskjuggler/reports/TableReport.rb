@@ -80,7 +80,7 @@ class TaskJuggler
     @@propertiesByType = {
       # Type                     Indent  Align
       DateAttribute         => [ false,  :left ],
-      FixnumAttribute       => [ false,  :right ],
+      IntegerAttribute       => [ false,  :right ],
       FloatAttribute        => [ false,  :right ],
       ResourceListAttribute => [ false, :left ],
       RichTextAttribute     => [ false,  :left ],
@@ -339,9 +339,9 @@ class TaskJuggler
       when 'chart'
         # For the 'chart' column we generate a GanttChart object. The sizes are
         # set so that the lines of the Gantt chart line up with the lines of the
-        # table.
+        # table
         gantt = GanttChart.new(a('now'),
-                               a('weekStartsMonday'), columnDef, self)
+                               a('weekStartsMonday'), columnDef, self, a('markdate'))
 
         gantt.generateByScale(rStart, rEnd, columnDef.scale)
         # The header consists of 2 lines separated by a 1 pixel boundary.
@@ -868,12 +868,6 @@ class TaskJuggler
     # the next cell.
     def genCalChartTaskCell(query, line, columnDef, t, sameTimeNextFunc)
       task = line.property
-      # Find out if we have an enclosing resource scope.
-      if line.scopeLine && line.scopeLine.property.is_a?(Resource)
-        resource = line.scopeLine.property
-      else
-        resource = nil
-      end
 
       # Get the interval of the task. In case a date is invalid due to a
       # scheduling problem, we use the full project interval.

@@ -16,10 +16,8 @@ projectids prj
 
 task t "Task" {
   start 2007-05-29-06:00-+0000
-  milestone
   scheduled
   actual:start 2007-06-03-06:00-+0000
-  actual:milestone
 }
 supplement task t {
   priority 500

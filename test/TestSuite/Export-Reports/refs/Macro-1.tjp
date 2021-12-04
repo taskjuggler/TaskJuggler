@@ -12,7 +12,6 @@ resource tux2 "Tux2"
 
 task t1 "Task1" {
   start 2008-01-18-00:00-+0000
-  milestone
   scheduled
 }
 task t2 "Task2" {

@@ -37,16 +37,18 @@ class TaskJuggler
       @port = nil
       @webServer = false
       @webServerPort = 8080
-      @webdPidFile = File.join(Dir.getwd, ".tj3webd-#{$$}.pid").untaint
+      @webdPidFile = File.join(Dir.getwd, ".tj3webd-#{$$}.pid")
     end
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 The TaskJuggler daemon can be used to quickly generate reports for a number
 of scheduled projects that are resident in memory. Once the daemon has been
 started tj3client can be used to control it.
+
 EOT
+	)
         @opts.on('-d', '--dont-daemonize',
                  format("Don't put program into daemon mode. Keep it " +
                         'connected to the terminal and show debug output.')) do
@@ -90,7 +92,7 @@ EOT
       # Set some config variables if corresponding data was provided via the
       # command line.
       broker.port = @port if @port
-      broker.uriFile = @uriFile.untaint
+      broker.uriFile = @uriFile
       broker.projectFiles = sortInputFiles(files) unless files.empty?
       broker.daemonize = @daemonize
       # Create log files for standard IO for each child process if the daemon

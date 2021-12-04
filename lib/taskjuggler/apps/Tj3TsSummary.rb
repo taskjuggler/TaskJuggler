@@ -36,12 +36,14 @@ class TaskJuggler
 
     def processArguments(argv)
       super do
-        @opts.banner += <<'EOT'
+        @opts.banner.prepend(<<'EOT'
 This program can be used to send out individual copies and a summary of all
 accepted time sheets a list of email addresses. The directory structures for
 templates and submitted time sheets must be present. The project data will be
 accesses via tj3client from a running TaskJuggler server process.
+
 EOT
+	)
         @opts.on('-r', '--resource <ID>', String,
                  format('Only generate summary for given resource')) do |arg|
           @resourceList << arg

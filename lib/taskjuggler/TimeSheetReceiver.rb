@@ -32,9 +32,9 @@ class TaskJuggler
       @logFile = 'timesheets.log'
 
       # Regular expression to identify time sheets.
-      @sheetHeader = /^[ ]*timesheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
+      @sheetHeader = /^[ ]*timesheet\s([a-zA-Z_][a-zA-Z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
       # Regular expression to extract the sheet signature (time period).
-      @signatureFilter = /^[ ]*timesheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+      @signatureFilter = /^[ ]*timesheet\s[a-zA-Z_][a-zA-Z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
       @emailSubject = "Report from %s for %s"
     end
 

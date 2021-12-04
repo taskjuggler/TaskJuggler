@@ -3,7 +3,7 @@
 #
 # = TjpSyntaxRules.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2020
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -673,7 +673,7 @@ EOT
   def rule_color
     pattern(%w( $STRING ), lambda {
       col = @val[0]
-      unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{3}/ =~ col
+      unless /#[0-9A-Fa-f]{3}/ =~ col || /#[0-9A-Fa-f]{6}/ =~ col
         error('bad_color',
               "Color values must be specified as '#RGB' or '#RRGGBB' values",
               @sourceFileInfo[0])
@@ -1825,6 +1825,11 @@ EOT
     pattern(%w( !reportStart ))
     pattern(%w( !rollupresource ))
     pattern(%w( !rolluptask ))
+    pattern(%w( _novevents), lambda { @property.set('novevents', [ true ]) })
+    doc('novevents', <<'EOT'
+Don't add VEVENT entries to generated [[icalreport]]s.
+EOT
+    )
 
     pattern(%w( _scenario !scenarioId ), lambda {
       # Don't include disabled scenarios in the report
@@ -1863,6 +1868,8 @@ EOT
         # Show all journal entries.
         @property.set('hideJournalEntry',
                       LogicalExpression.new(LogicalOperation.new(0)))
+        # Add VEVENT entries to icalreports by default
+        @property.set('novevents', [ false ])
       end
     })
     arg(1, 'file name', <<'EOT'
@@ -3267,6 +3274,21 @@ EOT
     arg(1, 'date', 'Alternative date to be used as current date for all ' +
         'computations')
 
+    pattern(%w( _markdate !date ), lambda {
+      @project['markdate'] = @val[1]
+      @scanner.addMacro(TextParser::Macro.new('markdate', @val[1].to_s,
+                                              @sourceFileInfo[0]))
+      @scanner.addMacro(TextParser::Macro.new(
+        'today', @val[1].to_s(@project['timeFormat']), @sourceFileInfo[0]))
+    })
+    doc('markdate', <<'EOT'
+Specify the reference date that TaskJuggler uses as date that can be specified
+and set by the user. It can be used as additional point in time to help with
+tracking tasks. If no value is specified, the current value of the system clock is used.
+EOT
+       )
+    arg(1, 'date', 'Alternative date to be used as custom date specified by the user')
+
     pattern(%w( !numberFormat ), lambda {
       @project['numberFormat'] = @val[0]
     })
@@ -3689,13 +3711,11 @@ EOT
       end
       if attributeDefinition.scenarioSpecific
         @scenarioIdx = 0 unless @val[1]
-        attr = @property[attrId, 0]
       else
         if @val[1]
           error('purge_non_sc_spec_attr',
                 'Scenario specified for a non-scenario specific attribute')
         end
-        attr = @property.get(attrId)
       end
       if @property.attributeDefinition(attrId).scenarioSpecific
         @property.getAttribute(attrId, @scenarioIdx).reset
@@ -3912,7 +3932,13 @@ EOT
     descr('The duration of a task')
 
     singlePattern('_duties')
-    descr('List of tasks that the resource is allocated to')
+    descr(<<'EOT'
+List of tasks that the resource is allocated to
+
+The list can be customized by the [[listitem.column|listitem]] and
+[[listtype.column|listtype]] attribute.
+EOT
+         )
 
     singlePattern('_efficiency')
     descr('Measure for how efficient a resource can perform tasks')

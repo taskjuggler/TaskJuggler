@@ -11,24 +11,20 @@ projectids prj
 task foo "Foo" {
   task _Task_2 "Foo 1" {
     start 2011-12-12-00:00-+0000
-    milestone
     scheduled
   }
   task _Task_3 "Foo 2" {
     start 2011-12-12-00:00-+0000
-    milestone
     scheduled
   }
 }
 task bar "Bar" {
   task _Task_5 "Bar 1" {
     start 2011-12-12-00:00-+0000
-    milestone
     scheduled
   }
   task _Task_6 "Bar 2" {
     start 2011-12-12-00:00-+0000
-    milestone
     scheduled
   }
 }

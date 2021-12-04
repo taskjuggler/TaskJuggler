@@ -35,16 +35,16 @@ GEM_SPEC = Gem::Specification.new { |s|
   s.summary = 'A Project Management Software'
   s.description = <<'EOT'
 TaskJuggler is a modern and powerful, Free and Open Source Software project
-management tool. Its new approach to project planing and tracking is more
+management tool. It's new approach to project planning and tracking is more
 flexible and superior to the commonly used Gantt chart editing tools.
 
 TaskJuggler is project management software for serious project managers. It
 covers the complete spectrum of project management tasks from the first idea
 to the completion of the project. It assists you during project scoping,
-resource assignment, cost and revenue planing, risk and communication
+resource assignment, cost and revenue planning, risk and communication
 management.
 EOT
-  s.license = 'GNU GPL version 2'
+  s.license = 'GPL-2.0'
   s.require_path = 'lib'
   s.files = (`git ls-files -- lib`).split("\n") +
             (`git ls-files -- data`).split("\n") +
@@ -53,7 +53,7 @@ EOT
             (`git ls-files -- tasks`).split("\n") +
             %w( .gemtest taskjuggler.gemspec Rakefile ) +
             # Generated files, not contained in Git repository.
-            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*')
+            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
   s.bindir = 'bin'
   s.executables = (`git ls-files -- bin`).split("\n").
                   map { |fn| File.basename(fn) }
@@ -63,9 +63,9 @@ EOT
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
 
-  s.add_dependency('mail', '>= 2.4.3')
-  s.add_dependency('term-ansicolor', '>= 1.0.7')
-  s.add_development_dependency('rspec', '>= 2.5.0')
+  s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
+  s.add_runtime_dependency('term-ansicolor', '~> 1.7', '>= 1.7.1')
+  s.add_development_dependency('rspec', '~> 2.5', '>= 2.5.0')
   s.platform = Gem::Platform::RUBY
   s.required_ruby_version  = '>= 2.0.0'
 }

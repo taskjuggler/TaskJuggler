@@ -3,7 +3,7 @@
 #
 # = LogicalOperation.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2019
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -64,7 +64,7 @@ class TaskJuggler
             coerceTime(o, expr)
           end
           return res
-        elsif opnd1.is_a?(Fixnum) || opnd1.is_a?(Float) || opnd1.is_a?(Bignum)
+        elsif opnd1.is_a?(Integer) || opnd1.is_a?(Float)
           return evalBinaryOperation(opnd1, operator, opnd2) do |o|
             coerceNumber(o, expr)
           end
@@ -145,14 +145,14 @@ class TaskJuggler
       # An empty String means false, else true.
       return !val.empty? if val.is_a?(String)
       # In TJP logic 'non 0' means false.
-      return val != 0 if val.is_a?(Fixnum) || val.is_a?(Bignum)
+      return val != 0 if val.is_a?(Integer)
 
       expr.error("Operand #{val} can't be evaluated to true or false.")
     end
 
     # Force the _val_ into a number. In case this fails, an exception is raised.
     def coerceNumber(val, expr)
-      unless val.is_a?(Fixnum) || val.is_a?(Float) || val.is_a?(Bignum)
+      unless val.is_a?(Integer) || val.is_a?(Float)
         expr.error("Operand #{val} of type #{val.class} must be a number.")
       end
       val
@@ -216,6 +216,9 @@ class TaskJuggler
         query.scenarioIdx = @scenario.sequenceNo - 1
         query.attributeId = @operand1
         query.process
+        unless query.ok
+          return "Error in conversion to String: #{query.errorMessage}"
+        end
         query.to_s
       else
         "#{@scenario.fullId}.#{@operand1}"

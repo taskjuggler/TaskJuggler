@@ -216,7 +216,7 @@ EOT
       it 'should have matching timesheets in body and attachment' do
         @tss_mails.each do |mail|
           bodySheet = extractTimeSheet(mail.parts[0].decoded)
-          attachedSheet = extractTimeSheet(mail.part[1].decoded)
+          attachedSheet = extractTimeSheet(mail.part[1].decoded).tr("\r", '')
           bodySheet.should == attachedSheet
         end
       end

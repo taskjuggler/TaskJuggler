@@ -18,7 +18,6 @@ task t "Enclosing" {
   }
   task intervalTask "Interval Task" {
     start 2007-06-17-06:00-+0000
-    milestone
     scheduled
   }
   task lengthTask "Length Task" {

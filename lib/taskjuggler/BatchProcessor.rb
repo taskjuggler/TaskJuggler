@@ -69,16 +69,16 @@ class TaskJuggler
     def initialize(maxCpuCores)
       @maxCpuCores = maxCpuCores
       # Jobs submitted by calling queue() are put in the @toRunQueue. The
-      # pusher Thread will pick them up and fork them off into another
+      # launcher Thread will pick them up and fork them off into another
       # process.
-      @toRunQueue = Queue.new
+      @toRunQueue =  [ ]
       # A hash that maps the JobInfo objects of running jobs by their PID.
       @runningJobs = { }
       # A list of jobs that wait to complete their writing.
       @spoolingJobs = [ ]
       # The wait() method will then clean the @toDropQueue, executes the post
       # processing block and removes all JobInfo related objects.
-      @toDropQueue = Queue.new
+      @toDropQueue = []
 
       # A semaphore to guard accesses to @runningJobs, @spoolingJobs and
       # following shared data structures.
@@ -106,28 +106,34 @@ class TaskJuggler
     # to identify the job upon completion. +block+ is a Ruby code block to be
     # executed in a separate process.
     def queue(tag = nil, &block)
-      raise 'You cannot call queue() while wait() is running!' if @jobsOut > 0
-
-      # If this is the first queued job for this run, we have to start the
-      # helper threads.
-      if @jobsIn == 0
-        # The JobInfo objects in the @toRunQueue are processed by the pusher
-        # thread.  It forkes off processes to execute the code block associated
-        # with the JobInfo.
-        @pusher = Thread.new { pusher }
-        # The popper thread waits for terminated childs and picks up the
-        # results.
-        @popper = Thread.new { popper }
-        # The grabber thread collects $stdout and $stderr data from each child
-        # process and stores them in the corresponding JobInfo.
-        @grabber = Thread.new { grabber }
-      end
 
       # Create a new JobInfo object for the job and push it to the @toRunQueue.
-      job = JobInfo.new(@jobsIn, block, tag)
-      # Increase job counter
-      @lock.synchronize { @jobsIn += 1 }
-      @toRunQueue.push(job)
+      @lock.synchronize do
+        raise 'You cannot call queue() while wait() is running!' if @jobsOut > 0
+
+        # If this is the first queued job for this run, we have to start the
+        # helper threads.
+        if @jobsIn == 0
+          # The JobInfo objects in the @toRunQueue are processed by the
+          # launcher thread.  It forkes off processes to execute the code
+          # block associated with the JobInfo.
+          @launcher = Thread.new { launcher }
+          # The receiver thread waits for terminated child processes and picks
+          # up the results.
+          @receiver = Thread.new { receiver }
+          # The grabber thread collects $stdout and $stderr data from each
+          # child process and stores them in the corresponding JobInfo.
+          @grabber = Thread.new { grabber }
+        end
+
+        # To track a job through the queues, we use a JobInfo object to hold
+        # all data associated with a job.
+        job = JobInfo.new(@jobsIn, block, tag)
+        # Increase job counter
+        @jobsIn += 1
+        # Push the job to the toRunQueue.
+        @toRunQueue.push(job)
+      end
     end
 
     # Wait for all jobs to complete. The code block will get the JobInfo
@@ -138,29 +144,27 @@ class TaskJuggler
 
       # When we have received as many jobs in the @toDropQueue than we have
       # started then we're done.
-      while !@lock.synchronize { @jobsIn == @jobsOut }
-        if @toDropQueue.empty?
-          sleep(@timeout)
-        else
-          # We have completed jobs.
-          while !@toDropQueue.empty?
-            # Pop a job from the @toDropQueue and call the block with it.
-            job = @toDropQueue.pop
-            # Remove the job related entries from the housekeeping tables.
-            @lock.synchronize { @jobsOut += 1 }
-
+      while @lock.synchronize { @jobsOut < @jobsIn }
+        job = nil
+        @lock.synchronize do
+          if !@toDropQueue.empty? && (job = @toDropQueue.pop)
             # Call the post-processing block that was passed to wait() with
             # the JobInfo object as argument.
+            @jobsOut += 1
             yield(job)
           end
+        end
+
+        unless job
+          sleep(@timeout)
         end
       end
 
       # Signal threads to stop
       @terminate = true
       # Wait for treads to finish
-      @pusher.join
-      @popper.join
+      @launcher.join
+      @receiver.join
       @grabber.join
 
       # Reset some variables so we can reuse the object for further job runs.
@@ -175,25 +179,22 @@ class TaskJuggler
 
     # This function runs in a separate thread to pop JobInfo items from the
     # @toRunQueue and create child processes for them.
-    def pusher
+    def launcher
       # Run until the terminate flag is set.
       until @terminate
-        if @toRunQueue.empty? ||
-           @lock.synchronize{ @runningJobs.length >= @maxCpuCores }
+        job = nil
+        unless @lock.synchronize { @runningJobs.length < @maxCpuCores &&
+                                   (job = @toRunQueue.pop) }
           # We have no jobs in the @toRunQueue or all CPU cores in use already.
           sleep(@timeout)
         else
           @lock.synchronize do
-            # Get a new job from the @toRunQueue
-            job = @toRunQueue.pop
-
             job.openPipes
-            # Add the receiver end of the pipe to the @pipes Array.
+            # Add the receiver end of the pipe to the pipes Arrays.
             @pipes << job.stdoutP
+            @pipes << job.stderrP
             # Map the pipe end to this JobInfo object.
             @pipeToJob[job.stdoutP] = job
-            # Same for $stderr.
-            @pipes << job.stderrP
             @pipeToJob[job.stderrP] = job
 
             pid = fork do
@@ -224,15 +225,20 @@ class TaskJuggler
 
     # This function runs in a separate thread to wait for completed jobs. It
     # waits for the process completion and stores the result in the
-    # corresponding JobInfo object.
-    def popper
+    # corresponding JobInfo object. Aborted jobs are pushed to the
+    # @toDropQueue while completed jobs are pushed to the @spoolingJobs queue.
+    def receiver
       until @terminate
-        if @runningJobs.empty?
-          # No pending jobs, wait a bit.
-          sleep(@timeout)
-        else
+        pid = retVal = nil
+        begin
           # Wait for the next job to complete.
           pid, retVal = Process.wait2
+        rescue Errno::ECHILD
+          # No running jobs. Wait a bit.
+          sleep(@timeout)
+        end
+
+        if pid && retVal
           job = nil
           @lock.synchronize do
             # Get the JobInfo object that corresponds to the process ID. The
@@ -242,7 +248,7 @@ class TaskJuggler
             # Remove the job from the @runningJobs Hash.
             @runningJobs.delete(pid)
             # Save the return value.
-            job.retVal = retVal.dup
+            job.retVal = retVal.exitstatus
             if retVal.signaled?
               cleanPipes(job)
               # Aborted jobs will probably not send an EOT. So we fastrack
@@ -269,22 +275,27 @@ class TaskJuggler
         res = nil
         begin
           @lock.synchronize do
-            if (res = select(@pipes, nil, @pipes, @timeout))
+            if (res = IO.select(@pipes, nil, nil, @timeout))
               # We have output data from at least one child. Check which pipe
               # actually triggered the select.
               res[0].each do |pipe|
                 # Find the corresponding JobInfo object.
                 job = @pipeToJob[pipe]
-                # Store the output.
+
+                # Store the standard output.
                 if pipe == job.stdoutP
                   # Look for the EOT character to signal the end of the text.
-                  if (c = pipe.getc) == ?\004
+                  if pipe.closed? || (c = pipe.read_nonblock(1)) == ?\004
                     job.stdoutEOT = true
                   else
                     job.stdout << c
                   end
-                else
-                  if (c = pipe.getc) == ?\004
+                end
+
+                # Store the error output.
+                if pipe == job.stderrP
+                  # Look for the EOT character to signal the end of the text.
+                  if pipe.closed? || (c = pipe.read_nonblock(1)) == ?\004
                     job.stderrEOT = true
                   else
                     job.stderr << c

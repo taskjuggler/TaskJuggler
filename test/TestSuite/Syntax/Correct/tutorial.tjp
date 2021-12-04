@@ -33,6 +33,11 @@ project acso "Accounting Software"  2002-01-16 +4m {
 # *** EXAMPLE: now +
   now 2002-03-05-13:00
 # *** EXAMPLE: now -
+  # The date that is used to show additional line on a Gannt chart
+  # and can be specified by the user.
+# *** EXAMPLE: markdate +
+  markdate 2002-08-07-03:00
+# *** EXAMPLE: markdate -
   # The currency for all money values is the Euro.
 # *** EXAMPLE: currency +
   currency "USD"
@@ -559,9 +564,9 @@ taskreport overview "" {
 # Macro to set the background color of a cell according to the alert
 # level of the task.
 macro AlertColor [
-  cellcolor plan.alert = 0 "#00D000" # green
-  cellcolor plan.alert = 1 "#D0D000" # yellow
-  cellcolor plan.alert = 2 "#D00000" # red
+  cellcolor plan.alert = 0 "#90FF90" # green
+  cellcolor plan.alert = 1 "#FFFF90" # yellow
+  cellcolor plan.alert = 2 "#FF9090" # red
 ]
 
 taskreport status "" {

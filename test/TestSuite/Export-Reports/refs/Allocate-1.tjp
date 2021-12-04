@@ -25,7 +25,6 @@ task t1 "Task 1" {
   }
   task m1 "Milestone 1" {
     start 2003-06-05-06:00-+0000
-    milestone
     scheduled
   }
 }

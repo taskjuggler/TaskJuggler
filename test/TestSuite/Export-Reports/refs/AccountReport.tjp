@@ -45,7 +45,6 @@ task _Task_1 "Products" {
   task _Task_6 "Final Payment" {
     depends _Task_1.mf
     start 2012-10-22-17:00-+0000
-    milestone
     scheduled
   }
 }

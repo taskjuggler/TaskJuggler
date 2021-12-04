@@ -51,16 +51,15 @@ class TaskJuggler
       @opts.summary_width = @optsSummaryWidth
       @opts.summary_indent = ' ' * @optsSummaryIndent
 
-      @opts.banner = "#{AppConfig.softwareName} v#{AppConfig.version} - " +
-                     "#{AppConfig.packageInfo}\n\n" +
-                     "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+      @opts.banner = "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
                      "              by #{AppConfig.authors.join(', ')}\n\n" +
                      "#{AppConfig.license}\n" +
                      "For more info about #{AppConfig.softwareName} see " +
                      "#{AppConfig.contact}\n\n" +
                      "Usage: #{AppConfig.appName} [options] " +
                      "#{@mandatoryArgs}\n\n"
-      @opts.separator ""
+
+      @opts.separator "\nOptions:"
       @opts.on('-c', '--config <FILE>', String,
                format('Use the specified YAML configuration file')) do |arg|
          @configFile = arg
@@ -91,8 +90,23 @@ EOT
         quit
       end
       @opts.on_tail('--version', format('Show version info')) do
-        puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
-          "#{AppConfig.packageInfo}"
+# Display the software name and version in GNU format
+# as expected by help2man
+# https://www.gnu.org/prep/standards/standards.html#g_t_002d_002dversion
+        puts "#{AppConfig.appName} (#{AppConfig.softwareName}) #{AppConfig.version}\n"
+# To also display the copyright and license statements in GNU format
+# uncomment the following and remove the equivalent statements from
+# --help
+# +
+#<<'EOT'
+#Copyright (C) 2016 Chris Schlaeger <cs@taskjuggler.org>
+#License GPLv2: GNU GPL version 2 <http://gnu.org/licenses/gpl.html>
+#This is free software; you can redistribute it and/or modify it under
+#the terms of version 2 of the GNU General Public License as published by the
+#Free Software Foundation.
+#
+#For more info about TaskJuggler see http://www.taskjuggler.org
+#EOT
         quit
       end
 

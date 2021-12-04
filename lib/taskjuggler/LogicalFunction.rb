@@ -139,7 +139,7 @@ class TaskJuggler
       # 2nd arg must be a scenario index.
       return false if (scenarioIdx = project.scenarioIdx(args[1])).nil?
       # 3rd arg must be an integer number.
-      return false unless args[2].is_a?(Fixnum)
+      return false unless args[2].is_a?(Integer)
 
       property.isDependencyOf(scenarioIdx, task, args[2])
     end

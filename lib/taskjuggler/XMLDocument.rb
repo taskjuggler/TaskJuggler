@@ -52,7 +52,7 @@ class TaskJuggler
 
     # Write the XMLDocument to the specified file.
     def write(filename)
-      f = filename == '.' ? $stdout : File.new(filename.untaint, 'w')
+      f = filename == '.' ? $stdout : File.new(filename, 'w')
       @elements.each do |element|
         f.puts element.to_s(0)
       end

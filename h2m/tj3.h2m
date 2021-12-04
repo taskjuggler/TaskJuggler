@@ -1,0 +1,25 @@
+[NAME]
+tj3 \- schedules tj3 projects and generates reports
+
+[ENVIRONMENT]
+
+.TP
+\fBTASKJUGGLER_DATA_PATH\fR
+Override the path to the TaskJuggler data folder.
+The data folder contains the css, icons and scripts
+for TaskJuggler reports.
+
+.TP
+\fBTZ\fR
+The POSIX Time Zone environment variable.
+
+Any environment variable may be used in a TaskJuggler file using the expression $(VAR_NAME).
+
+[EXAMPLES]
+
+tj3 tutorial.tjp
+
+[SEE ALSO]
+tj3client(1), tj3d(1), tj3man(1), tj3ss_receiver(1), tj3ss_sender(1), tj3ts_receiver(1), tj3ts_sender(1), tj3ts_summary(1), tj3webd(1)
+
+The full TaskJuggler manual is available online at http://www.taskjuggler.org/tj3/manual/, or via the tj3man command.

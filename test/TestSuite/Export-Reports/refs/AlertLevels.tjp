@@ -15,7 +15,6 @@ projectids prj
 
 task _Task_1 "Holiday Season" {
   start 2011-11-24-00:00-+0000
-  milestone
   scheduled
 }
 supplement task _Task_1 {

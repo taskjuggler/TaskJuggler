@@ -18,12 +18,10 @@ task project "Project" {
   task wp1 "Workpackage 1" {
     task t1 "Task 1" {
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
     task t2 "Task 2" {
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
   }
@@ -31,12 +29,10 @@ task project "Project" {
     depends project.wp1
     task t1 "Task 1" {
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
     task t2 "Task 2" {
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
   }
@@ -44,13 +40,11 @@ task project "Project" {
     task _Task_9 "Item 1" {
       depends project.wp1
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
     task _Task_10 "Item 2" {
       depends project.wp2
       start 2011-11-11-05:00-+0000
-      milestone
       scheduled
     }
   }

@@ -433,6 +433,10 @@ p.tj_journal {
   background-color:#EE0000;
   position:absolute;
 }
+.markdateline {
+  background-color:#000000;
+  position:absolute;
+}
 .white {
   background-color:#FFFFFF;
   position:absolute;

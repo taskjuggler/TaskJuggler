@@ -35,9 +35,9 @@ class TaskJuggler
       @logFile = 'statussheets.log'
 
       # Regular expression to identify status sheets.
-      @sheetHeader = /^[ ]*statussheet\s([a-z][a-z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
+      @sheetHeader = /^[ ]*statussheet\s([a-zA-Z_][a-zA-Z0-9_]*)\s[0-9\-:+]*\s-\s([0-9]*-[0-9]*-[0-9]*)/
       # Regular expression to extract the sheet signature (time period).
-      @signatureFilter = /^[ ]*statussheet\s[a-z][a-z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
+      @signatureFilter = /^[ ]*statussheet\s[a-zA-Z_][a-zA-Z0-9_]*\s([0-9:\-+]*\s-\s[0-9:\-+]*)/
       @emailSubject = "Status report from %s for %s"
     end
 

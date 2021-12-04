@@ -157,7 +157,7 @@ class TaskJuggler
           end
         when :fieldEnd
           # We've completed processing a field. Add the field to the list of
-          # fields. Convert Fixnums and Floats in native types.
+          # fields. Convert Integers and Floats in native types.
           fields << unMarshal(field, quoted)
 
           if c == "\n"
@@ -198,7 +198,7 @@ class TaskJuggler
       if str.nil?
         nil
       elsif /^[-+]?\d+$/ =~ str
-        # field is a Fixnum
+        # field is an Integer
         str.to_i
       elsif /^[-+]?\d*\.?\d+([eE][-+]?\d+)?$/ =~ str
         # field is a Float
@@ -216,12 +216,12 @@ class TaskJuggler
     def marshal(field)
       if field.nil?
         ''
-      elsif field.is_a?(Fixnum) || field.is_a?(Float) || field.is_a?(Bignum)
+      elsif field.is_a?(Integer) || field.is_a?(Float)
         # Numbers don't have to be quoted.
         field.to_s
       else
         # Duplicate quote characters.
-        f = field.gsub(/@quote/, "#{@quote * 2}")
+        f = field.gsub(Regexp.new(@quote), "#{@quote * 2}")
         # Enclose the field in quote characters
         @quote + f.to_s + @quote
       end

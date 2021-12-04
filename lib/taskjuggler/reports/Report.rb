@@ -297,7 +297,7 @@ EOT
         if @name == '.'
           $stdout.write(@content.to_tjp)
         else
-          fileName = absoluteFileName(@name)
+          fileName = @name
           fileName += a('definitions').include?('project') ? '.tjp' : '.tji'
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
@@ -401,7 +401,7 @@ EOT
       # The directory needs to be in the same directory as the HTML report.
       auxDstDir = File.dirname(absoluteFileName(@name)) + '/'
       # Find the data directory that came with the TaskJuggler installation.
-      auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0].untaint
+      auxSrcDir = AppConfig.dataDirs("data/#{dirName}")[0]
       # Raise an error if we haven't found the data directory
       if auxSrcDir.nil? || !File.exist?(auxSrcDir)
         dataDirError(dirName, AppConfig.dataSearchDirs("data/#{dirName}"))
@@ -419,13 +419,13 @@ EOT
     end
 
     def directoryUpToDate?(auxSrcDir, auxDstDir)
-      return false unless File.exist?(auxDstDir.untaint)
+      return false unless File.exist?(auxDstDir)
 
       Dir.entries(auxSrcDir).each do |file|
         next if file == '.' || file == '..'
 
-        srcFile = (auxSrcDir + '/' + file).untaint
-        dstFile = (auxDstDir + '/' + file).untaint
+        srcFile = (auxSrcDir + '/' + file)
+        dstFile = (auxDstDir + '/' + file)
         return false if !File.exist?(dstFile) ||
                         File.mtime(srcFile) > File.mtime(dstFile)
       end
@@ -473,7 +473,7 @@ EOT
     end
 
     def absoluteFileName(name)
-      ((absoluteFileName?(name) ? '' : @project.outputDir) + name).untaint
+      (absoluteFileName?(name) ? '' : @project.outputDir) + name
     end
 
   end

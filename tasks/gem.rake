@@ -3,6 +3,8 @@ require 'find'
 require 'rubygems'
 require 'rubygems/package'
 
+CLOBBER.include "pkg/"
+
 # Unfortunately Rake::GemPackageTest cannot deal with files that are generated
 # by Rake targets. So we have to write our own packaging task.
 desc 'Build the gem package'
@@ -11,6 +13,7 @@ task :gem => [:clobber] do
   Rake::Task[:manual].invoke
   Rake::Task[:changelog].invoke
   Rake::Task[:permissions].invoke
+  Rake::Task[:help2man].invoke
 
   load 'taskjuggler.gemspec';
 
