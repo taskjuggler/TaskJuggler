@@ -90,7 +90,7 @@ repository.
 The -s parameter is very important. We will only accept signed-off patches. By
 signing off on your patches you confirm that you wrote the code and have the
 right to pass it on as a patch. See
-[http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html this
+[https://gerrit-review.googlesource.com/Documentation/user-signedoffby.html this
 document] for more information!
 
 Please include a meaningful commit message. The first line (header line) should
