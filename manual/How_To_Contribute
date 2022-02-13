@@ -25,8 +25,8 @@ so that we can track the authorship of each submission. There is
 use github. 
 
 Make sure you have followed the steps described in the
-[Installation.html#Installation_Steps_for_Developers Installation
-Steps for Developers] chapter.
+[Installation.html#Installing_TaskJuggler_from_the_Git_Repository Installing
+TaskJuggler from the Git Repository] chapter.
 
 If you have never used Git before, you need to configure it first. You
 need to set your name and email address. This information will be
