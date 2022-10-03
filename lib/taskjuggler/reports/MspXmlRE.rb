@@ -249,11 +249,15 @@ EOT
         t << XMLNamedText.new('1', 'Manual')
         t << XMLNamedText.new('0', 'Summary')
         t << XMLNamedText.new('0', 'Estimated')
-        t << XMLNamedText.new('5', 'DurationFormat')
+        t << XMLNamedText.new('7', 'DurationFormat')
         if task['milestone', @scenarioIdx]
           t << XMLNamedText.new('1', 'Milestone')
         else
+          duration = task['end', @scenarioIdx] - task['start', @scenarioIdx]
+          t << XMLNamedText.new(durationToMsp(duration), 'Duration')
+          t << XMLNamedText.new(durationToMsp(duration), 'Work')
           t << XMLNamedText.new('0', 'Milestone')
+          t << XMLNamedText.new('1', 'EffortDriven')
           t << XMLNamedText.new(percentComplete.to_i.to_s,
                                 'PercentComplete')
           t << XMLNamedText.new(percentComplete.to_i.to_s,
@@ -394,8 +398,6 @@ EOT
     end
 
     def durationToMsp(duration)
-      return '' if duration == 0
-
       hours = (duration / (60 * 60)).to_i
       minutes = ((duration - (hours * 60 * 60)) / 60).to_i
       seconds = (duration % 60).to_i
