@@ -248,7 +248,6 @@ class TaskJuggler
 
       timeStamp = Time.new.strftime("%Y-%m-%d %H:%M:%S")
       begin
-        @logFile
         File.open(@logFile, 'a') do |f|
           f.write("#{timeStamp} #{type} #{@appName}[#{Process.pid}]: " +
                   "#{message}\n")
