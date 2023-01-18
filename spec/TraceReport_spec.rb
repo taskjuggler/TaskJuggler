@@ -55,7 +55,7 @@ EOT
     end
 
     it 'should generate a trace report' do
-      File.delete(@tf) if File.exists?(@tf)
+      File.delete(@tf) if File.exist?(@tf)
       tj3(@prj)
       ref = <<'EOT'
 "Date";"t1:plan.complete";"t2:plan.complete";"t3:plan.complete"

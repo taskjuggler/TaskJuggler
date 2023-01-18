@@ -48,7 +48,7 @@ EOT
       else
         # Wait for the daemon to get online.
         i = 0
-        while !File.exists?('.tj3d.uri') && i < 10
+        while !File.exist?('.tj3d.uri') && i < 10
           sleep 0.5
           i += 1
         end
@@ -63,7 +63,7 @@ EOT
       end
       raise "tj3d termination failed: #{res.stdErr}" if res.returnValue != 0
       i = 0
-      while File.exists?('.tj3d.uri') && i < 10
+      while File.exist?('.tj3d.uri') && i < 10
         sleep 0.5
         i += 1
       end
@@ -85,4 +85,3 @@ EOT
   end
 
 end
-
