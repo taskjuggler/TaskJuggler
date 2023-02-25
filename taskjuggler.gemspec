@@ -31,7 +31,6 @@ GEM_SPEC = Gem::Specification.new { |s|
   s.homepage = 'http://www.taskjuggler.org'
   s.author = 'Chris Schlaeger'
   s.email = 'chris@linux.com'
-  s.rubyforge_project = 'taskjuggler'
   s.summary = 'A Project Management Software'
   s.description = <<'EOT'
 TaskJuggler is a modern and powerful, Free and Open Source Software project
@@ -60,7 +59,6 @@ EOT
   s.test_files = (`git ls-files -- test`).split("\n") +
                  (`git ls-files -- spec`).split("\n")
 
-  s.has_rdoc = true
   s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
 
   s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
@@ -69,4 +67,3 @@ EOT
   s.platform = Gem::Platform::RUBY
   s.required_ruby_version  = '>= 2.0.0'
 }
-

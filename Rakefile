@@ -4,10 +4,13 @@ $:.unshift File.join(File.dirname(__FILE__))
 lib = File.expand_path('../lib', __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
+require 'rake'
+require 'rspec'
 require 'rake/clean'
+require 'bundler/gem_tasks'
 
 Dir.glob( 'tasks/*.rake').each do |fn|
-  begin 
+  begin
     load fn;
   rescue LoadError
     puts "#{fn.split('/')[1]} tasks unavailable: #{$!}"
