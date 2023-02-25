@@ -61,4 +61,3 @@ task :release do
   Rake::Task[:rdoc].invoke
   Rake::Task[:gem].invoke
 end
-
