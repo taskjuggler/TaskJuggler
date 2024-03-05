@@ -3,7 +3,7 @@
 #
 # = ReportTableCell.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2024
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@ class TaskJuggler
   class ReportTableCell
 
     attr_reader :line
-    attr_accessor :data, :category, :hidden, :alignment, :padding,
+    attr_accessor :data, :category, :hidden, :alignment, :padding, :force_string,
                   :text, :tooltip, :showTooltipHint,
                   :iconTooltip,
                   :cellColor, :indent, :icon, :fontSize, :fontColor,
@@ -60,6 +60,8 @@ class TaskJuggler
       @alignment = :center
       # Horizontal padding between frame and cell content
       @padding = 3
+      # Don't convert Strings that look like numbers to String
+      @force_string = false
       # Whether or not to indent the cell. If not nil, it is an Integer
       # indicating the indentation level.
       @indent = nil
@@ -181,11 +183,11 @@ class TaskJuggler
 
         # Try to convert numbers and other types to their native Ruby type if
         # they are supported by CSVFile.
-        native = CSVFile.strToNative(cell)
+        native = @force_string ? cell : CSVFile.strToNative(cell)
 
         # Only for String objects, we add the indentation.
-        csv[lineIdx][columnIdx] = (native.is_a?(String) ? indent + native :
-                                                          native)
+        csv[lineIdx][columnIdx] = (native.is_a?(String) && !@force_string ?
+                                   indent + native : native)
       end
 
       return columns

@@ -1,14 +1,14 @@
 "BSI";"Name";"Id";"Duration"
-1;"Plan Work";"plan";19.8
-1.1;"  Plan A";"plan.plan_a";11.4
-1.2;"  Plan B";"plan.plan_b";9.2
-1.3;"  Plan C";"plan.plan_c";4.4
-2;"Execute Work";"execute";32.4
-2.1;"  Step 1";"execute.ex1";25.4
-2.2;"  Step 2";"execute.ex2";32.4
+"1";"Plan Work";"plan";19.8
+"1.1";"  Plan A";"plan.plan_a";11.4
+"1.2";"  Plan B";"plan.plan_b";9.2
+"1.3";"  Plan C";"plan.plan_c";4.4
+"2";"Execute Work";"execute";32.4
+"2.1";"  Step 1";"execute.ex1";25.4
+"2.2";"  Step 2";"execute.ex2";32.4
 "2.2.1";"    Step 2.1";"execute.ex2.ex2_1";1.4
 "2.2.2";"    Step 2.2";"execute.ex2.ex2_2";4.4
-2.3;"  Milestone 1";"execute.ms1";0.0
-2.4;"  Step 3";"execute.ex3";15.4
-2.5;"  Step 4";"execute.ex4";1.4
-3;"Check Work";"check";4.4
+"2.3";"  Milestone 1";"execute.ms1";0.0
+"2.4";"  Step 3";"execute.ex3";15.4
+"2.5";"  Step 4";"execute.ex4";1.4
+"3";"Check Work";"check";4.4

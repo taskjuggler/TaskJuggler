@@ -3,7 +3,7 @@
 #
 # = TableReport.rb -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2024
 #               by Chris Schlaeger <cs@taskjuggler.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -755,6 +755,7 @@ class TaskJuggler
     def genCalculatedCell(query, line, columnDef)
       # Create a new cell
       cell = newCell(query, line)
+      cell.force_string = true if columnDef.id == 'bsi'
 
       unless setScenarioSettings(cell, query.scenarioIdx,
                                  TableReport.scenarioSpecific?(columnDef.id))
