@@ -80,7 +80,7 @@ class TestTjTime < Test::Unit::TestCase
         t2 = t2.sameTimeNextMonth
         t2_a = t2.to_a
         assert_equal(t1_a[0, 3], t2_a[0, 3])
-        assert(t2_a[3] == t2_a[3] ||
+        assert(t2_a[3] == old_t2_a[3] ||
                t2_a[3] > 28,
                "old_t2: #{old_t2_a.join(', ')}\nt2:     #{t2_a.join(', ')}")
         assert(t2_a[4] == old_t2_a[4] + 1 ||
