@@ -349,7 +349,7 @@ class TaskJuggler
         # The maximum width of the chart. In case it needs more space, a
         # scrollbar is shown or the chart gets truncated depending on the output
         # format.
-        gantt.viewWidth = columnDef.width ? columnDef.width : 450
+        gantt.viewWidth = columnDef.width ? columnDef.width : 1200
         column = ReportTableColumn.new(@table, columnDef, '')
         column.cell1.special = gantt
         column.cell2.hidden = true
