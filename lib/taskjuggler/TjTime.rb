@@ -501,18 +501,25 @@ class TaskJuggler
         end
 
         @time = Time.utc(year, month, day, hour, minute, second)
-        sign = zone[0] == ?- ? 1 : -1
+        sign = zone[0] == ?- ? -1 : 1
         tzHour = zone[1..2].to_i
-        if tzHour < 0 || tzHour > 12
-          raise TjException.new, "Time zone adjustment hour out of range " +
-                                 "(0 - 12) but is #{tzHour}"
-        end
         tzMinute = zone[3..4].to_i
         if tzMinute < 0 || tzMinute > 59
           raise TjException.new, "Time zone adjustment minute out of range " +
                                  "(0 - 59) but is #{tzMinute}"
         end
-        @time += sign * (tzHour * 3600 + tzMinute * 60)
+
+        time_offset = sign * (tzHour * 3600 + tzMinute * 60)
+        # UTC-1200 is the most westerly time zone but UTC+1400 is the most
+        # easterly time zone (Republic of Kiribati).
+        if time_offset < -12 * 3600 || time_offset > 14 * 3600
+          raise TjException.new, "Time zone adjustment out of range " +
+                                 "(-1200 - +1400} but is #{zone})"
+        end
+
+        # The time offset must be substracted from the base time to convert it
+        # to UTC.
+        @time -= time_offset
       else
         @time = Time.mktime(year, month, day, hour, minute, second)
       end

@@ -1,0 +1,8 @@
+project tz "Timezone" "1.0" 2005-06-06-00:00-+1300 - 2005-06-07-0:00-+1300 {
+  timezone "Pacific/Auckland"
+}
+
+task item "Project" {
+  start 2005-06-06-12:00
+}
+
