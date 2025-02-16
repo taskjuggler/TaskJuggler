@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Log.rb -- The TaskJuggler III Project Management Software
@@ -30,7 +31,7 @@ class TaskJuggler
     @@segments = []
     @@silent = true
     @@progress = 0
-    @@progressMeter = ''
+    @@progressMeter = +''
 
     # Set the maximum nesting level that should be shown. Segments with a
     # nesting level greater than _l_ will be silently dropped.

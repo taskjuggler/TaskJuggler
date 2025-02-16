@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Scoreboard.rb -- The TaskJuggler III Project Management Software
@@ -175,7 +176,7 @@ class TaskJuggler
     end
 
     def inspect
-      s = ''
+      s = +''
       0.upto(@sb.length - 1) do |i|
         s << "#{idxToDate(i)}: #{@sb[i]}"
       end

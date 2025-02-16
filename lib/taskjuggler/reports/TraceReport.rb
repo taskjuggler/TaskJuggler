@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TraceReport.rb -- The TaskJuggler III Project Management Software
@@ -177,7 +178,7 @@ class TaskJuggler
       @table.each do |line|
         line.length.times do |i|
           if line[i].nil?
-            line[i] = ''
+            line[i] = +''
           elsif line[i].is_a?(TjTime)
             line[i] = line[i].to_s('%Y-%m-%d')
           end

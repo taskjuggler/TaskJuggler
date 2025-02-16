@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = test_UTF8String.rb -- The TaskJuggler III Project Management Software
@@ -42,10 +43,10 @@ class TestUTF8String < Test::Unit::TestCase
 
   def test_concat
     patterns = [
-      [ '', 'a', 'a' ],
-      [ 'a', 'b', 'ab' ],
-      [ 'abc', 'à', 'abcà' ],
-      [ 'abá', 'b', 'abáb' ]
+      [ +'', 'a', 'a' ],
+      [ +'a', 'b', 'ab' ],
+      [ +'abc', 'à', 'abcà' ],
+      [ +'abá', 'b', 'abáb' ]
     ]
 
     patterns.each do |left, right, combined|

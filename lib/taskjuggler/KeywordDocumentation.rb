@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = KeywordDocumentation.rb -- The TaskJuggler III Project Management Software
@@ -197,7 +198,7 @@ class TaskJuggler
         if [ :deprecated, :removed ].include?(@pattern.supportLevel) &&
            @seeAlso.length > 0
           msg += "\n\nPlease use "
-          alsoStr = ''
+          alsoStr = +''
           @seeAlso.each do |also|
             unless alsoStr.empty?
               alsoStr += ', '
@@ -223,7 +224,7 @@ class TaskJuggler
         if @args.empty?
           str += format(tagW, "none\n", textW)
         else
-          argStr = ''
+          argStr = +''
           @args.each do |arg|
             argText = newRichText(arg.text ||
               "See '#{arg.name}' for details.").to_s
@@ -249,7 +250,7 @@ class TaskJuggler
       if @contexts.empty?
         str += format(tagW, 'Global scope', textW)
       else
-        cxtStr = ''
+        cxtStr = +''
         @contexts.each do |context|
           unless cxtStr.empty?
             cxtStr += ', '
@@ -263,7 +264,7 @@ class TaskJuggler
       if @optionalAttributes.empty?
         str += "none\n\n"
       else
-        attrStr = ''
+        attrStr = +''
         @optionalAttributes.sort! do |a, b|
           a.keyword <=> b.keyword
         end
@@ -308,7 +309,7 @@ class TaskJuggler
 
       unless @seeAlso.empty?
         str += blue('See also:') + "    "
-        alsoStr = ''
+        alsoStr = +''
         @seeAlso.each do |also|
           unless alsoStr.empty?
             alsoStr += ', '

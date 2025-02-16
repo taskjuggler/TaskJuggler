@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ICalendar.rb -- The TaskJuggler III Project Management Software
@@ -116,7 +117,7 @@ EOT
       # Generate the VTODO record as String.
       def to_s
         super do
-          str = ''
+          str = +''
           if @percentComplete < 100.0
             str += "DUE:#{dateTime(@endDate)}\n"
           else
@@ -226,7 +227,7 @@ EOT
     # Make sure that no line is longer than LINELENTH octets (excl. the
     # newline character)
     def foldLines(str)
-      newStr = ''
+      newStr = +''
       str.each_line do |line|
         bytes = 0
         line.each_utf8_char do |c|

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Attributes.rb -- The TaskJuggler III Project Management Software
@@ -75,7 +76,7 @@ class TaskJuggler
     end
 
     def to_s(query = nil)
-      out = ''
+      out = +''
       first = true
       get.each do |allocation|
         if first
@@ -697,7 +698,7 @@ class TaskJuggler
 
     def to_tjp
       dayNames = %w( sun mon tue wed thu fri sat )
-      str = ''
+      str = +''
       7.times do |day|
         str += "workinghours #{dayNames[day]} "
         whs = get.getWorkingHours(day)

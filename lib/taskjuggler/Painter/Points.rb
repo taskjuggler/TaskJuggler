@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Points.rb -- The TaskJuggler III Project Management Software
@@ -32,7 +33,7 @@ class TaskJuggler
       # Conver the list of coordinates into a String that is compatible with
       # SVG syntax.
       def to_s
-        str = ''
+        str = +''
         @points.each do |point|
           str += "#{point[0]},#{point[1]} "
         end

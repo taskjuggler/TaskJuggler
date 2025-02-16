@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = test_deep_copy.rb -- The TaskJuggler III Project Management Software
@@ -34,7 +35,7 @@ end
 class B
   def initialize
     @a = 1
-    @b = 'abc'
+    @b = +'abc'
     @c = [ 1, 2, 3 ]
     @d = [ [ 1, 2], [ 3, 4 ], A.new ]
     @e = { '0' => 49, '1' => 50, '2' => 51 }

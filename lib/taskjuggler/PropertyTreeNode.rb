@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = PropertyTreeNode.rb -- The TaskJuggler III Project Management Software
@@ -719,7 +720,7 @@ class TaskJuggler
       # The components of the message are either UTF-8 text or RichText. For
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
-      rText = ''
+      rText = +''
       entries.each do |entry|
         rText += "==== <nowiki>" + entry.headline + "</nowiki> ====\n"
         rText += "''Reported on #{entry.date.to_s(query.timeFormat)}'' "

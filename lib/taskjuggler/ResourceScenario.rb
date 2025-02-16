@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ResourceScenario.rb -- The TaskJuggler III Project Management Software
@@ -496,7 +497,14 @@ class TaskJuggler
     # A generic tree iterator that recursively accumulates the result of the
     # block for each leaf object.
     def treeSum(startIdx, endIdx, *args, &block)
-      cacheTag = "#{self.class}.#{caller[0][/`.*'/][1..-2]}"
+      # Starting with ruby 3.4.0, the out of caller was changed.
+      # https://www.ruby-lang.org/en/news/2024/12/25/ruby-3-4-0-released/
+      # This ugly bit of code ensure that older versions still work.
+      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.4.0')
+        cacheTag = caller[0][/'.*'/][1..-2]
+      else
+        cacheTag = "#{self.class}##{caller[0][/`.*'/][1..-2]}"
+      end
       treeSumR(cacheTag, startIdx, endIdx, *args, &block)
     end
 

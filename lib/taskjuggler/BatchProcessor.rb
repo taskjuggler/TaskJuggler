@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = BatchProcessor.rb -- The TaskJuggler III Project Management Software
@@ -37,13 +38,13 @@ class TaskJuggler
       # The pipe to transfer stdout data from the child to the parent.
       @stdoutP, @stdoutC = nil
       # The stdout output of the child
-      @stdout = ''
+      @stdout = +''
       # This flag is set to true when the EOT character has been received.
       @stdoutEOF = false
       # The pipe to transfer stderr data from the child to the parent.
       @stderrP, @stderrC = nil
       # The stderr output of the child
-      @stderr = ''
+      @stderr = +''
       # This flag is set to true when the EOT character has been received.
       @stderrEOT = false
     end

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = GanttLine.rb -- The TaskJuggler III Project Management Software
@@ -368,7 +369,7 @@ class TaskJuggler
         query.process
         title = query.to_s
       else
-        title = ''
+        title = +''
       end
       trigger['onclick'] = "TagToTip('ID#{trigger.object_id}', " +
                            "TITLE, '#{title.gsub(/'/, '&apos;')}')"

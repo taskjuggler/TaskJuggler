@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = RealFormat.rb -- The TaskJuggler III Project Management Software
@@ -74,7 +75,7 @@ class TaskJuggler
       if @thousandsSeparator.empty?
         out = intPart
       else
-        out = ''
+        out = +''
         1.upto(intPart.length) do |i|
           out = intPart[-i, 1] + out
           out = @thousandsSeparator + out if i % 3 == 0 && i < intPart.length

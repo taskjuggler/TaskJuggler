@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = CSVFile.rb -- The TaskJuggler III Project Management Software
@@ -68,7 +69,7 @@ class TaskJuggler
     def to_s
       raise "No seperator defined." if @separator.nil?
 
-      s = ''
+      s = +''
       @data.each do |line|
         first = true
         line.each do |field|
@@ -107,7 +108,7 @@ class TaskJuggler
           state = :startOfField
           redo
         when :startOfField
-          field = ''
+          field = +''
           quoted = false
           if c == @quote
             # We've found the start of a quoted field.

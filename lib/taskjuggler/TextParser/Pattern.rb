@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Pattern.rb -- The TaskJuggler III Project Management Software
@@ -323,7 +324,7 @@ class TaskJuggler::TextParser
       # "Push" us on the stack.
       stack[self] = true
 
-      str = ''
+      str = +''
       first = true
       # Analyze the tokens of the pattern skipping the first 'skip' tokens.
       skip.upto(@lastSyntaxToken) do |i|

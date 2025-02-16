@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TextFormatter.rb -- The TaskJuggler III Project Management Software
@@ -34,7 +35,7 @@ class TaskJuggler
     # first line will be indented by @firstLineIndent. Lines that are longer
     # than @width will be clipped.
     def indent(str)
-      out = ''
+      out = +''
       # Indentation to be used for the currently processed line. It will be
       # set to nil if it was inserted already.
       indentBuf = ' ' * @firstLineIndent
@@ -73,11 +74,11 @@ class TaskJuggler
     # Format the String _str_ according to the class settings.
     def format(str)
       # The resulting String.
-      @out = ''
+      @out = +''
       # The column of the last character of the current line.
       @linePos = 0
       # A buffer for the currently processed word.
-      @wordBuf = ''
+      @wordBuf = +''
       # True of we are at the beginning of a line.
       @beginOfLine = true
       # A buffer for the indentation to be used for the next line.
@@ -175,7 +176,7 @@ class TaskJuggler
 
       # Append the word and reset the @wordBuf.
       @out += @wordBuf
-      @wordBuf = ''
+      @wordBuf = +''
       @linePos += wordLength
       @beginOfLine = false if @beginOfLine
     end

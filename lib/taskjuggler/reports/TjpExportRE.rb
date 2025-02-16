@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TjpExportRE.rb -- The TaskJuggler III Project Management Software
@@ -51,7 +52,7 @@ class TaskJuggler
 
       getBookings
 
-      @file = ''
+      @file = +''
 
       generateProjectProperty if a('definitions').include?('project')
 
@@ -396,7 +397,7 @@ class TaskJuggler
 
     def generateAttributeText(text, indent, scenarioIdx = nil)
       @file << ' ' * indent
-      tag = ''
+      tag = +''
       if !scenarioIdx.nil? && scenarioIdx != 0
         tag = "#{@project.scenario(scenarioIdx).id}:"
         @file << tag
@@ -468,7 +469,7 @@ class TaskJuggler
     # after the first word of the first line. The text may not end with a line
     # break.
     def indentBlock(text, indent)
-      out = ''
+      out = +''
       firstSpace = 0
       text.length.times do |i|
         if firstSpace == 0 && text[i] == ?\ # There must be a space after ?

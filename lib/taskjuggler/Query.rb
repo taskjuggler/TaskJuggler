@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Query.rb -- The TaskJuggler III Project Management Software
@@ -217,7 +218,7 @@ class TaskJuggler
     # Converts the String items in _listItems_ into a RichTextIntermediate
     # objects and assigns it as result of the query.
     def assignList(listItems)
-      list = ''
+      list = +''
       listItems.each do |item|
         case @listType
         when nil, :comma

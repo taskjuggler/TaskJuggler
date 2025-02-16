@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ProjectFileScanner.rb -- The TaskJuggler III Project Management Software
@@ -272,7 +273,7 @@ class TaskJuggler
       end
       self.mode = :szrString1
       @startOfToken = sourceFileInfo
-      @string = ''
+      @string = +''
       [ nil, '' ]
     end
 
@@ -306,7 +307,7 @@ class TaskJuggler
         prefix = match[0..(start - 1)]
         envRef = match[start..-1]
       else
-        prefix = ''
+        prefix = +''
         envRef = match
       end
 
@@ -367,7 +368,7 @@ class TaskJuggler
         prefix = @macroCall[0..(macroStart - 1)]
         @macroCall = @macroCall[macroStart..-1]
       else
-        prefix = ''
+        prefix = +''
       end
 
       macroCallLength = @macroCall.length

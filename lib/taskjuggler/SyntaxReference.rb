@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = SyntaxReference.rb -- The TaskJuggler III Project Management Software
@@ -276,7 +277,7 @@ class TaskJuggler
           $stderr.puts "ERROR: #{keyword} is not a known keyword.\n\n"
         end
         # Create list of top-level keywords.
-        kwdStr = ''
+        kwdStr = +''
         @keywords.each_value do |kwd|
           if kwd.contexts.empty? ||
              (kwd.contexts.length == 1 && kwd.contexts[0] == kwd)

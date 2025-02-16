@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TjpExample.rb -- The TaskJuggler III Project Management Software
@@ -58,7 +59,7 @@ class TaskJuggler
       tag = 'full text' unless tag
       return nil unless @snippets[tag]
 
-      s = ''
+      s = +''
       @snippets[tag].each { |l| s << l }
       s
     end

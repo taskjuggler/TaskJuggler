@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = XMLElement.rb -- The TaskJuggler III Project Management Software
@@ -134,7 +135,7 @@ class TaskJuggler
 
     # Escape special characters in input String _str_.
     def escape(str, quotes = false)
-      out = ''
+      out = +''
       str.each_utf8_char do |c|
         case c
         when '&'
@@ -164,7 +165,7 @@ class TaskJuggler
     end
 
     def to_s(indent)
-      out = ''
+      out = +''
       @text.each_utf8_char do |c|
         case c
         when '<'
@@ -198,7 +199,7 @@ class TaskJuggler
   # This is a specialized XMLElement to represent a comment.
   class XMLComment < XMLElement
 
-    def initialize(text = '')
+    def initialize(text = +'')
       super(nil, {})
       @text = text
     end
@@ -224,14 +225,14 @@ class TaskJuggler
   # interpreted and must be valid XML in the content it is added.
   class XMLBlob < XMLElement
 
-    def initialize(blob = '')
+    def initialize(blob = +'')
       super(nil, {})
       raise ArgumentError, "blob may not be nil" if blob.nil?
       @blob = blob
     end
 
     def to_s(indent)
-      out = ''
+      out = +''
       @blob.each_utf8_char do |c|
         out += (c == "\n" ? "\n" + ' ' * indent : c)
       end

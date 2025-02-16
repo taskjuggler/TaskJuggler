@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = test_AlgorithmDiff.rb -- The TaskJuggler III Project Management Software
@@ -112,8 +113,8 @@ class AlgorithmDiff < Test::Unit::TestCase
   def test_StringDiff
     data = [
       TestData.new("Some insertions, some changes, some deletions",
-        "0\n1\n2\n4\n5\n6\n7\n",
-        "0\n2\nA\nB\n6\n5\n7\n \n",
+        +"0\n1\n2\n4\n5\n6\n7\n",
+        +"0\n2\nA\nB\n6\n5\n7\n \n",
         "2d1\n< 1\n4,5c3,4\n< 4\n< 5\n---\n> A\n> B\n6a6\n> 5\n7a8\n>  \n",
         "1a2\n> 1\n3,5c4\n< A\n< B\n< 6\n---\n> 4\n6a6\n> 6\n8d7\n<  \n"
       )

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Journal.rb -- The TaskJuggler III Project Management Software
@@ -74,11 +75,11 @@ class TaskJuggler
           "alt=[#{levelRecord.name}]|text-bottom]] "
         end
       else
-        alertName = ''
+        alertName = +''
       end
 
       # The String that will hold the result as RichText markup.
-      rText = ''
+      rText = +''
 
       # Markup to use for headlines.
       hlMark = '==='
@@ -144,7 +145,7 @@ class TaskJuggler
         end
 
         # We've shown the alert now. Don't show it again with the headline.
-        alertName = ''
+        alertName = +''
         # Increase level for subsequent headlines.
         hlMark += '='
       end
@@ -480,7 +481,7 @@ class TaskJuggler
       # The components of the message are either UTF-8 text or RichText. For
       # the RichText components, we use the originally provided markup since
       # we compose the result as RichText markup first.
-      rText = ''
+      rText = +''
       entries.each do |entry|
         rText += entry.to_rText(query)
       end

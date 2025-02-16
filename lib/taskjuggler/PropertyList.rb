@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = PropertyList.rb -- The TaskJuggler III Project Management Software
@@ -248,7 +249,7 @@ class TaskJuggler
         # property and all its parents.
         treeIdcs = property.getIndicies
         # Now convert them to a String.
-        tree = ''
+        tree = +''
         treeIdcs.each do |idx|
           # Prefix the level index with zeros so that we always have a 6
           # digit long String. 6 digits should be large enough for all

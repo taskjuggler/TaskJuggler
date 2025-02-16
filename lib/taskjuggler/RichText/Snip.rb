@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Snip.rb -- The TaskJuggler III Project Management Software
@@ -36,7 +37,7 @@ class TaskJuggler
       @name = fileName.index('/') ? fileName[fileName.rindex('/') + 1 .. -1] :
                                     fileName
 
-      text = ''
+      text = +''
       File.open(fileName) do |file|
         file.each_line { |line| text += line }
       end

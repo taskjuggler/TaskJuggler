@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = WorkingHours.rb -- The TaskJuggler III Project Management Software
@@ -177,7 +178,7 @@ class TaskJuggler
     # Returns the time interval settings for each day in a human readable form.
     def to_s
       dayNames = %w( Sun Mon Tue Wed Thu Fri Sat )
-      str = ''
+      str = +''
       7.times do |day|
         str += "#{dayNames[day]}: "
         if @days[day].empty?

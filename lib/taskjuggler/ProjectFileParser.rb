@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ProjectFileParser.rb -- The TaskJuggler III Project Management Software
@@ -459,7 +460,7 @@ class TaskJuggler
                                 resourceprefix accountprefix )
       stackEntry = {}
       @fileStackVariables.each do |var|
-        stackEntry[var] = ''
+        stackEntry[var] = +''
         instance_variable_set('@' + var, '')
       end
       @fileStack = [ stackEntry ]

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Tj3AppBase.rb -- The TaskJuggler III Project Management Software
@@ -34,7 +35,7 @@ class TaskJuggler
       # Show some progress information by default
       @silent = false
       @configFile = nil
-      @mandatoryArgs = ''
+      @mandatoryArgs = +''
       @mininumRubyVersion = '1.9.2'
 
       # If stdout is not a tty, we don't use ANSI escape sequences to color

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TimeSheetSummary.rb -- The TaskJuggler III Project Management Software
@@ -67,7 +68,7 @@ EOT
     def sendSummary(resourceIds)
       setWorkingDir
 
-      summary = ''
+      summary = +''
       defaulterList = []
       getResourceList.each do |resource|
         resourceId = resource[0]
@@ -152,7 +153,7 @@ EOT
     end
 
     def getResourceJournal(sheetFile)
-      err = ''
+      err = +''
       status = nil
       report = nil
       warnings = nil

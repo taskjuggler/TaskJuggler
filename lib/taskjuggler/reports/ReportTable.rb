@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ReportTable.rb -- The TaskJuggler III Project Management Software
@@ -47,7 +48,7 @@ class TaskJuggler
       # True if the report does not rely on the data of other files.
       @selfcontained = false
       # Path to the auxiliary data directory.
-      @auxDir = ''
+      @auxDir = +''
     end
 
     # This function should only be called by the ReportTableColumn constructor.

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Project.rb -- The TaskJuggler III Project Management Software
@@ -71,7 +72,7 @@ class TaskJuggler
         # members: the tjp syntax token, the user visible name and the
         # associated color as RGB byte array.
         'alertLevels' => AlertLevelDefinitions.new,
-        'auxdir' => '',
+        'auxdir' => +'',
         'copyright' => nil,
         'costaccount' => nil,
         'currency' => "EUR",
@@ -1049,7 +1050,7 @@ class TaskJuggler
     # Print the attribute values. It's used for debugging only.
     def to_s
       #raise "STOP!"
-      str = ''
+      str = +''
       @attributes.each do |attribute, value|
         if value
           str += "#{attribute}: " +

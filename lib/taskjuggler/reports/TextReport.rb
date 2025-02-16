@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TextReport.rb -- The TaskJuggler III Project Management Software
@@ -73,7 +74,7 @@ class TaskJuggler
           padding = instance_variable_get('@' + i[0].chr + 'Padding')
           if a(i)
             row << (col = XMLElement.new('td', 'class' => "tj_column_#{i}"))
-            style = ''
+            style = +''
             style += "width:#{width}%; " if width > 0
             style += "padding-right:#{padding}%; " if padding > 0
             col['style'] = style

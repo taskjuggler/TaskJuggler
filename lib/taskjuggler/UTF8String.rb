@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = UTF8String.rb -- The TaskJuggler III Project Management Software
@@ -29,7 +30,7 @@ class String
     # the String. This implementation looks more awkward but is noticeably
     # faster than the often propagated regexp based implementations.
     def each_utf8_char
-      c = ''
+      c = +''
       length = 0
       each_byte do |b|
         c << b
@@ -38,7 +39,7 @@ class String
           if (length -= 1) == 0
             # end of unicode character reached
             yield c
-            c = ''
+            c = +''
           end
         elsif (b & 0xC0) == 0xC0
           # first unicode byte
@@ -50,7 +51,7 @@ class String
         else
           # ASCII character
           yield c
-          c = ''
+          c = +''
         end
       end
     end

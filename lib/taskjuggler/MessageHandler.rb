@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = MessageHandler.rb -- The TaskJuggler III Project Management Software
@@ -222,7 +223,7 @@ class TaskJuggler
 
     # Convert all messages into a single String.
     def to_s
-      text = ''
+      text = +''
       @messages.each { |msg| text += msg.to_s }
       text
     end

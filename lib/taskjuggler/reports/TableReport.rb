@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TableReport.rb -- The TaskJuggler III Project Management Software
@@ -1168,7 +1169,7 @@ class TaskJuggler
              query.revenueAccount == query.property)
         prefix = 'revenue'
       else
-        prefix = ''
+        prefix = +''
       end
 
       cell.category = prefix + 'accountcell' +

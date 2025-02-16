@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = SheetHandlerBase.rb -- The TaskJuggler III Project Management Software
@@ -60,7 +61,7 @@ class TaskJuggler
       # The cutOut section
       cutOutText = nil
       quoteLen = 0
-      quoteMarks = emptyLine = ''
+      quoteMarks = emptyLine = +''
       text.each_line do |line|
         if cutOutText.nil?
           # We are looking for the line with the start marker (mark1)

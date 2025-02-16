@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Element.rb -- The TaskJuggler III Project Management Software
@@ -360,7 +361,7 @@ class TaskJuggler
         raise "Unknown RichTextElement category #{@category}"
       end
 
-      out = ''
+      out = +''
       @children.each do |el|
         if el.is_a?(RichTextElement)
           out << el.to_tagged + (el.appendSpace ? ' ' : '')
@@ -488,7 +489,7 @@ class TaskJuggler
 
     # Convert all childern into a single plain text String.
     def children_to_s
-      text = ''
+      text = +''
       @children.each do |c|
         text << c.to_s + (c.is_a?(RichTextElement) && c.appendSpace ? ' ' : '')
       end
@@ -507,7 +508,7 @@ class TaskJuggler
     # This function converts a String into a new String that only contains
     # characters that are acceptable for HTML tag IDs.
     def convertToID(text)
-      out = ''
+      out = +''
       text.each_utf8_char do |c|
         out << c if (c >= 'A' && c <= 'Z') ||
                     (c >= 'a' && c <= 'z') ||
@@ -520,7 +521,7 @@ class TaskJuggler
     private
 
     def sTitle(level)
-      s = ''
+      s = +''
       if @richText.sectionNumbers
         1.upto(level) do |i|
           s += '.' unless s.empty?
@@ -536,7 +537,7 @@ class TaskJuggler
       attrs['class'] = @richText.cssClass if @richText.cssClass
       el = XMLElement.new("h#{level}", attrs)
       if @richText.sectionNumbers
-        s = ''
+        s = +''
         1.upto(level) do |i|
           s += '.' unless s.empty?
           s += "#{@data[i - 1]}"

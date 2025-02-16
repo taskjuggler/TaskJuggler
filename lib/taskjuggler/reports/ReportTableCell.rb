@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = ReportTableCell.rb -- The TaskJuggler III Project Management Software
@@ -43,7 +44,7 @@ class TaskJuggler
       @query = query ? query.dup : nil
       # The cell textual content. This may be a String or a
       # RichTextIntermediate object.
-      self.text = text || ''
+      self.text = text || +''
       # A custom text for the tooltip.
       @tooltip = nil
       # Determines if the tooltip is triggered by an special hinting icon or
@@ -110,7 +111,7 @@ class TaskJuggler
       attribs['rowspan'] = "#{@rows}" if @rows > 1
       attribs['colspan'] = "#{@columns}" if @columns > 1
       attribs['class'] = @category ? @category : 'tabcell'
-      style = ''
+      style = +''
       style += "background-color: #{@cellColor}; " if @cellColor
       attribs['style'] = style unless style.empty?
       cell = XMLElement.new('td', attribs)
@@ -157,7 +158,7 @@ class TaskJuggler
     def to_csv(csv, columnIdx, lineIdx)
       # We only support left indentation in CSV files as the spaces for right
       # indentation will be disregarded by most applications.
-      indent = @indent && @alignment == :left ? '  ' * @indent : ''
+      indent = @indent && @alignment == :left ? '  ' * @indent : +''
       columns = 1
       if @special
         # This is for nested tables. They will be inserted as whole columns
@@ -249,7 +250,7 @@ class TaskJuggler
       # None:            -      x      -     -
       fixedHeight = @line && @line.table.equiLines
       fixedWidth = !@width.nil?
-      style = ''
+      style = +''
       style += "overflow:hidden; " if fixedHeight || fixedWidth
       style += "white-space:#{fixedWidth && !fixedHeight ?
                               'normal' : 'nowrap'}; "
@@ -339,7 +340,7 @@ class TaskJuggler
           if maxChars > 0
             text = text[0, maxChars]
           else
-            text = ''
+            text = +''
           end
           modified = true
         end
@@ -361,7 +362,7 @@ class TaskJuggler
         @query.process
         title = @query.to_s
       else
-        title = ''
+        title = +''
       end
       trigger['onclick'] = "TagToTip('ID#{trigger.object_id}', " +
                            "TITLE, '#{title.gsub(/'/, '&apos;')}')"

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TernarySearchTree.rb -- The TaskJuggler III Project Management Software
@@ -85,8 +86,8 @@ class TaskJuggler
         if index == maxIdx
           # We've reached the end of the search pattern.
           if partialMatch
-            # The strange looking ('' << val) is for Ruby 1.8 compatibility.
-            return collect { |v| str[0..-2] + ('' << v) }
+            # The strange looking (+'' << val) is for Ruby 1.8 compatibility.
+            return collect { |v| str[0..-2] + (+'' << v) }
           else
             return str if @last
           end
@@ -128,8 +129,8 @@ class TaskJuggler
       result = []
 
       result += @smaller.collect(str, &block) if @smaller
-      # The strange looking ('' << val) is for Ruby 1.8 compatibility.
-      newStr = str.nil? ? ('' << @value) : str + ('' << @value)
+      # The strange looking (+'' << val) is for Ruby 1.8 compatibility.
+      newStr = str.nil? ? (+'' << @value) : str + (+'' << @value)
       result << yield(newStr) if @last
       result += @equal.collect(newStr, &block) if @equal
       result += @larger.collect(str, &block) if @larger

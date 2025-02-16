@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TaskScenario.rb -- The TaskJuggler III Project Management Software
@@ -645,7 +646,7 @@ class TaskJuggler
       end
       # Used for debugging only
       if false
-        pathText = ''
+        pathText = +''
         path.each do |t, e|
           pathText += "#{t.fullId}(#{e ? 'end' : 'start'}) -> "
         end
@@ -2764,7 +2765,7 @@ class TaskJuggler
         query.string = date.to_s(query.timeFormat)
       else
         query.sortable = query.numerical = -1
-        query.string = ''
+        query.string = +''
       end
     end
 

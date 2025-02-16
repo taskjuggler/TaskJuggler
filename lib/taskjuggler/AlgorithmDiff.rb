@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = AlgorithmDiff.rb -- The TaskJuggler III Project Management Software
@@ -50,7 +51,7 @@ class Diff
     end
 
     def to_s
-      str = ''
+      str = +''
       showSeparator = false
       if insert? && delete?
         str << "#{aRange}c#{bRange}\n"
@@ -128,7 +129,7 @@ class Diff
 
   # Return the diff list as standard UNIX diff output.
   def to_s
-    str = ''
+    str = +''
     @hunks.each { |hunk| str << hunk.to_s }
     str
   end

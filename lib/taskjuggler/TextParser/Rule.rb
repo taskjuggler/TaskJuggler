@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Rule.rb -- The TaskJuggler III Project Management Software
@@ -158,11 +159,11 @@ class TaskJuggler::TextParser
     end
 
     def to_syntax(stack, docs, rules, skip)
-      str = ''
+      str = +''
       str << '[' if @optional || @repeatable
       str << '(' if @patterns.length > 1
       first = true
-      pStr = ''
+      pStr = +''
       @patterns.each do |pat|
         if first
           first = false

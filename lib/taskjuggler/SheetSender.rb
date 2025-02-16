@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = SheetSender.rb -- The TaskJuggler III Project Management Software
@@ -248,8 +249,8 @@ EOT
     end
 
     def generateReport(id, reportDef)
-      out = ''
-      err = ''
+      out = +''
+      err = +''
       res = nil
       begin
         command = [ '--unsafe', '--silent', 'report', @projectId, id, '=', '.' ]

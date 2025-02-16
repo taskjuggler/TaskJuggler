@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = XMLDocument.rb -- The TaskJuggler III Project Management Software
@@ -42,7 +43,7 @@ class TaskJuggler
 
     # Produce the XMLDocument as String.
     def to_s
-      str = ''
+      str = +''
       @elements.each do |element|
         str << element.to_s(0)
       end

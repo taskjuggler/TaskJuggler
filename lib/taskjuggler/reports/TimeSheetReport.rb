@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = TimeSheetReport.rb -- The TaskJuggler III Project Management Software
@@ -72,7 +73,7 @@ class TaskJuggler
     # Generate a time sheet in TJP syntax format.
     def to_tjp
       # This String will hold the result.
-      @file = <<'EOT'
+      @file = +<<'EOT'
 # The status headline should be no more than 60 characters and may
 # not be empty! The status summary is optional and should be no
 # longer than one or two sentences of plain text. The details section
@@ -294,7 +295,7 @@ EOT
     # after the first word of the first line. The text may not end with a line
     # break.
     def indentBlock(text, indent)
-      out = ''
+      out = +''
       firstSpace = 0
       text.length.times do |i|
         if firstSpace == 0 && text[i] == ?\ # There must be a space after ?

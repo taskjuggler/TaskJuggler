@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = LogicalOperation.rb -- The TaskJuggler III Project Management Software

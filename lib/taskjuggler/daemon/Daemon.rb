@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = Daemon.rb -- The TaskJuggler III Project Management Software
@@ -68,7 +69,7 @@ class TaskJuggler
 
       # We no longer have a controlling terminal, so these are useless.
       $stdin.reopen('/dev/null')
-      $stdout.reopen('/dev/null', 'a')
+      $stdout.reopen(StringIO.new)
       $stderr.reopen($stdout)
 
       info('daemon_pid',

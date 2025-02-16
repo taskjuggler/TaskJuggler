@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # = StatusSheetReport.rb -- The TaskJuggler III Project Management Software
@@ -143,7 +144,7 @@ class TaskJuggler
     def to_tjp
 
       # This String will hold the result.
-      @file = ''
+      @file = +''
 
       # Iterate over all the ManagerStatusRecord objects.
       @managers.each do |manager|
@@ -216,11 +217,11 @@ class TaskJuggler
     def indentBlock(indent, text)
       indentation = ' ' * indent + '#   '
       buffer = indentation
-      out = ''
+      out = +''
       text.each_utf8_char do |c|
         unless buffer.empty?
           out += buffer
-          buffer = ''
+          buffer = +''
         end
         out << c
         buffer = indentation if c == "\n"
