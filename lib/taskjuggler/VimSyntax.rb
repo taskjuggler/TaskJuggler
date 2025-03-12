@@ -188,7 +188,7 @@ syn match tjparg contained /\${.*}/
 syn match tjpcomment /#.*$/
 syn match tjpcomment "//.*$"
 syn match tjpinclude /include.*$/
-syn match tjpnumber /\s[-+]\?\d\+\(\.\d\+\)\?\([hdwmy]\|min\)\?/
+syn match tjpnumber /\s[-+]\?\d\+\(\.\d\+\)\?\(min\|[hdwmy]\)\?/
 syn match tjpdate /\s\d\{4}-\d\{1,2}-\d\{1,2}\(-\d\{1,2}:\d\{1,2}\(:\d\{1,2}\)\?\(-[-+]\?\d\{4}\)\?\)\?/
 syn match tjptime /\s\d\{1,2}:\d\d\(:\d\d\)\?/
 
