@@ -499,10 +499,23 @@ class TaskJuggler
     def treeSum(startIdx, endIdx, *args, &block)
       # Starting with ruby 3.4.0, the out of caller was changed.
       # https://www.ruby-lang.org/en/news/2024/12/25/ruby-3-4-0-released/
-      # This ugly bit of code ensure that older versions still work.
+      # This code handles the change and ensures older versions still work.
+      # Ref: https://bugs.ruby-lang.org/issues/19836 - caller format change
       if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.4.0')
-        cacheTag = caller[0][/'.*'/][1..-2]
+        # Ruby 3.4+ might not have backticks/quotes around the method name.
+        # Use a regex that captures the method name after 'in ' optionally handling quotes.
+        match_data = caller[0].match(/in\s+`?([^'`\s]+)'?/)
+        if match_data && match_data[1]
+          method_name = match_data[1]
+          # Use the original '.' separator intended for this branch
+          cacheTag = "#{self.class}.#{method_name}"
+        else
+          # Fallback if parsing fails unexpectedly
+          $stderr.puts "Warning: Could not parse method name from caller: #{caller[0]}"
+          cacheTag = "#{self.class}.caller.#{caller[0].hash}" # Use a hash as fallback
+        end
       else
+        # Original logic for Ruby versions < 3.4.0
         cacheTag = "#{self.class}##{caller[0][/`.*'/][1..-2]}"
       end
       treeSumR(cacheTag, startIdx, endIdx, *args, &block)
