@@ -43,7 +43,7 @@ to the completion of the project. It assists you during project scoping,
 resource assignment, cost and revenue planning, risk and communication
 management.
 EOT
-  s.license = 'GPL-2.0'
+  s.license = 'GPL-2.0-only'
   s.require_path = 'lib'
   s.files = (`git ls-files -- lib`).split("\n") +
             (`git ls-files -- data`).split("\n") +
