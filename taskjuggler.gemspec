@@ -2,7 +2,7 @@
 #
 # = taskjuggler.gemspec -- The TaskJuggler III Project Management Software
 #
-# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
+# Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2025
 #               by Chris Schlaeger <chris@linux.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -62,6 +62,7 @@ EOT
   s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
 
   s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
+  s.add_dependency('webrick', '~> 1.9', '>= 1.9.1')
   s.add_runtime_dependency('term-ansicolor', '~> 1.7', '>= 1.7.1')
   s.add_development_dependency('rspec', '~> 2.5', '>= 2.5.0')
   s.platform = Gem::Platform::RUBY
