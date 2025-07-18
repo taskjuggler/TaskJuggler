@@ -52,14 +52,14 @@ EOT
             (`git ls-files -- tasks`).split("\n") +
             %w( .gemtest taskjuggler.gemspec Rakefile ) +
             # Generated files, not contained in Git repository.
-            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
+            Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
   s.bindir = 'bin'
   s.executables = (`git ls-files -- bin`).split("\n").
                   map { |fn| File.basename(fn) }
   s.test_files = (`git ls-files -- test`).split("\n") +
                  (`git ls-files -- spec`).split("\n")
 
-  s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
+  s.extra_rdoc_files = %w(README.rdoc COPYING)
 
   s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
   s.add_runtime_dependency('term-ansicolor', '~> 1.7', '>= 1.7.1')
