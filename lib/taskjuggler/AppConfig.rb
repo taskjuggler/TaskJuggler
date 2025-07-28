@@ -29,7 +29,7 @@ class AppConfig
     @@packageInfo = 'no info'
     @@appName = 'unnamed'
     @@authors = []
-    @@copyright = []
+    @@copyright = ''
     @@contact = 'not specified'
     @@license = 'no license'
   end

@@ -103,7 +103,7 @@ class TaskJuggler
             EM.new { 'Project Management beyond Gantt Chart drawing' },
             BR.new,
             B.new do
-              "Copyright (c) #{AppConfig.copyright.join(', ')} " +
+              "Copyright (c) #{AppConfig.copyright} " +
               "by #{AppConfig.authors.join(', ')}"
             end,
             BR.new,
@@ -139,7 +139,7 @@ class TaskJuggler
     def generateHTMLFooter
       DIV.new('align' => 'center', 'style' => 'font-size:10px;') do
         [
-          "Copyright (c) #{AppConfig.copyright.join(', ')} by " +
+          "Copyright (c) #{AppConfig.copyright} by " +
           "#{AppConfig.authors.join(', ')}.",
           A.new('href' => AppConfig.contact) do
             'TaskJuggler'

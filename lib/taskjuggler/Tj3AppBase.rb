@@ -52,7 +52,7 @@ class TaskJuggler
       @opts.summary_width = @optsSummaryWidth
       @opts.summary_indent = ' ' * @optsSummaryIndent
 
-      @opts.banner = "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+      @opts.banner = "Copyright (c) #{AppConfig.copyright}\n" +
                      "              by #{AppConfig.authors.join(', ')}\n\n" +
                      "#{AppConfig.license}\n" +
                      "For more info about #{AppConfig.softwareName} see " +
@@ -149,7 +149,7 @@ EOT
         unless @silent
           puts "#{AppConfig.softwareName} v#{AppConfig.version} - " +
                "#{AppConfig.packageInfo}\n\n" +
-               "Copyright (c) #{AppConfig.copyright.join(', ')}\n" +
+               "Copyright (c) #{AppConfig.copyright}\n" +
                "              by #{AppConfig.authors.join(', ')}\n\n" +
                "#{AppConfig.license}\n"
         end
