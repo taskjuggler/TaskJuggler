@@ -3347,7 +3347,8 @@ EOT
     doc('timingresolution', <<'EOT'
 Sets the minimum timing resolution. The smaller the value, the longer the
 scheduling process lasts and the more memory the application needs. The
-default and maximum value is 1 hour. The smallest value is 5 min.
+default and maximum value is 60 min. The smallest value is 5 min.
+Valid values are 5, 10, 15, 20, 30 and 60 min.
 This value is a pretty fundamental setting of TaskJuggler. It has a severe
 impact on memory usage and scheduling performance. You should set this value
 to the minimum required resolution. Make sure that all values that you specify
