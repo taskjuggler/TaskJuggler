@@ -921,6 +921,14 @@ class TaskJuggler
       slots
     end
 
+    def countOnShiftSlots(startIdx, endIdx)
+      slots = 0
+      startIdx.upto(endIdx - 1) do |idx|
+        slots += 1 if onShift?(idx)
+      end
+      slots
+    end
+
     # Limit the _startIdx_ and _endIdx_ to the actually assigned interval.
     # If _task_ is provided, fit it for the bookings of this particular task.
     def fitIndicies(startIdx, endIdx, task = nil)
