@@ -298,7 +298,7 @@ EOT
         if @name == '.'
           $stdout.write(@content.to_tjp)
         else
-          fileName = @name
+          fileName = absoluteFileName(@name)
           fileName += a('definitions').include?('project') ? '.tjp' : '.tji'
           File.open(fileName, 'w') { |f| f.write(@content.to_tjp) }
         end
