@@ -128,6 +128,7 @@ class String
     else
       begin
         # Ensure that the text has LF line ends and is UTF-8 encoded.
+        force_encoding("UTF-8")
         encode('UTF-8', :universal_newline => true)
       rescue
         # The encoding of the String is broken. Find the first broken line and
