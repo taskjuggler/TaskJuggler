@@ -249,7 +249,7 @@ class TaskJuggler
             # Remove the job from the @runningJobs Hash.
             @runningJobs.delete(pid)
             # Save the return value.
-            job.retVal = retVal.exitstatus
+            job.retVal = retVal
             if retVal.signaled?
               cleanPipes(job)
               # Aborted jobs will probably not send an EOT. So we fastrack
